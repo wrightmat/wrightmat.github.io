@@ -316,5 +316,16 @@
         16
       ]
     }
-  }
+  },
+  "caster_type": "full",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "charisma",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }

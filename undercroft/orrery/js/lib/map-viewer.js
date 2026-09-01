@@ -513,6 +513,41 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   const pixelPosition = getMarkerElementPixelPosition(baseMapManager, map, layer, markerElement);
   dot.style.left = `${pixelPosition.x}px`;
   dot.style.top = `${pixelPosition.y}px`;
+  // Live Marker Resource Bar (see resolveMarkerResourceBar's own header
+  // comment) — resolved OUTSIDE this function and passed in via options,
+  // the same "options.resolveConditionIcons"-shaped contract every other
+  // per-marker live-data lookup in this file already uses.
+  // `resourceBarHeight` is computed here (not just inline on the element
+  // below) so the label block right after can stack itself further out
+  // when both render "above" the same marker, instead of the two
+  // overlapping. Sized off `cellSize` (the grid's own single-cell size),
+  // NOT `size` (cellSize * sizeCells) — confirmed real ask: a bigger
+  // monster's own multi-cell token shouldn't get a proportionally bigger
+  // bar, unlike every other per-marker overlay in this function (labels,
+  // condition badges), which deliberately DOES scale with the token's own
+  // footprint. Still scales with zoom, same as everything else here, since
+  // cellSize itself is a content-space pixel value.
+  const resourceBar = options.resolveResourceBar ? options.resolveResourceBar(markerElement) : null;
+  const resourceBarHeight = Math.max(4, Math.round(cellSize * 0.14));
+  if (resourceBar && typeof resourceBar.max === "number" && resourceBar.max > 0) {
+    const barWidth = Math.max(cellSize * 0.9, 20);
+    const bar = document.createElement("div");
+    bar.className = "orrery-marker-resource-bar";
+    bar.style.width = `${barWidth}px`;
+    bar.style.height = `${resourceBarHeight}px`;
+    if (resourceBar.label) bar.title = `${resourceBar.label}: ${resourceBar.current} / ${resourceBar.max}`;
+    const fraction = Math.max(0, Math.min(1, resourceBar.current / resourceBar.max));
+    const fill = document.createElement("div");
+    fill.className = "orrery-marker-resource-bar-fill";
+    fill.style.width = `${Math.round(fraction * 100)}%`;
+    // Green above half, amber above a quarter, red at/below a quarter —
+    // the same 3-stop convention Combat Tracker's own HP display already
+    // uses, so a GM reads "this token is in trouble" identically whether
+    // they're looking at the tracker row or the map.
+    fill.style.backgroundColor = fraction > 0.5 ? "#22c55e" : fraction > 0.25 ? "#f59e0b" : "#ef4444";
+    bar.appendChild(fill);
+    dot.appendChild(bar);
+  }
   if (markerElement.label) {
     dot.title = markerElement.label;
     if (layer.settings?.showLabels) {
@@ -522,10 +557,19 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       // pixels," growing/shrinking with zoom exactly like the marker's own
       // size does, not a fixed on-screen size.
       const label = document.createElement("span");
-      label.className = `orrery-marker-label orrery-marker-label--${layer.settings.labelPosition === "above" || layer.settings.labelPosition === "over" ? layer.settings.labelPosition : "below"}`;
+      const labelPosition = layer.settings.labelPosition === "above" || layer.settings.labelPosition === "over" ? layer.settings.labelPosition : "below";
+      label.className = `orrery-marker-label orrery-marker-label--${labelPosition}`;
       label.textContent = markerElement.label;
       const labelSize = Number.isFinite(layer.settings.labelSize) && layer.settings.labelSize > 0 ? layer.settings.labelSize : 12;
       label.style.fontSize = `${labelSize}px`;
+      // The Marker Resource Bar above already occupies the label's own
+      // default "above" spot (.orrery-marker-label--above's bottom:
+      // calc(100% + 4px)) — bump the label further out past it so the two
+      // stack (label, then bar, then the token) instead of overlapping
+      // illegibly.
+      if (labelPosition === "above" && resourceBar) {
+        label.style.bottom = `calc(100% + ${resourceBarHeight + 8}px)`;
+      }
       dot.appendChild(label);
     }
   }
@@ -921,6 +965,11 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
         // opened yet.
         isGMViewer: Boolean(options.isPrivilegedMarkerViewer),
         conditionIcons: options.resolveConditionIcons ? options.resolveConditionIcons(markerElement) : [],
+        // Forwarded as the resolver function itself, not pre-resolved here —
+        // createMarkerDot needs `markerElement` in scope to call it, same as
+        // options.resolveConditionIcons is called above rather than
+        // pre-computed in this .map() loop.
+        resolveResourceBar: options.resolveResourceBar,
       })
     );
   });
@@ -1453,6 +1502,13 @@ export function buildRestrictedMapOptions({
   // like getCharacterPayload just above; this function never calls it
   // itself.
   resolveConditionIcons,
+  // (marker) => {current,max,label}|null — see resolveMarkerResourceBar's
+  // own header comment. Same passthrough-only treatment as
+  // resolveConditionIcons just above; the restricted map widget
+  // (common/js/lib/widgets/map.js) builds this itself (its own active-
+  // encounter cache + orrery-settings preference lookup) and hands it in
+  // here.
+  resolveResourceBar,
   status,
   onMarkerMoved,
   onDoorToggled,
@@ -1567,6 +1623,7 @@ export function buildRestrictedMapOptions({
       blockingSegments.some((segment) => segmentsIntersect(fromPixel, toPixel, segment.a, segment.b)),
     getCharacterPayload,
     resolveConditionIcons,
+    resolveResourceBar,
     hasMapOwnerAccess: isOwner,
   };
 }
@@ -1706,6 +1763,44 @@ function resolveMarkerLinkedCombatant(marker, encounter) {
     return matches.find((entry) => entry.id === marker.linkedCombatantId) || null;
   }
   return null;
+}
+
+// A marker's own Marker Resource Bar data — same resolveMarkerLinkedCombatant
+// lookup resolveMarkerConditionIcons' Monster/NPC branch already uses, but
+// here unconditionally, for ANY refKind (including "character") rather than
+// only Monster/NPC — the GM's own explicit choice for this feature was that
+// the bar always reflects Combat Tracker's own live combatant.hp/maxHp (or
+// combatant.resources, for a non-primary resource — see preferredResourceName
+// below), never a Character record's own hitPoints field read directly,
+// since those two are only ever kept in sync THROUGH an active encounter
+// (writeThroughToCharacter/refreshCombatantFromCharacter) — reading the
+// combatant is simplest and correct for every refKind uniformly. Returns
+// null whenever there's nothing to show: no active encounter, marker isn't
+// a current combatant, or (rare) a System with no resolvable max at all —
+// callers treat null as "render no bar," not a zeroed-out one.
+//
+// `preferredResourceName` is Orrery's own per-System "which resource backs
+// the Marker Resource Bar" setting (see orrery-settings' barResourceName) —
+// when it names something other than the combatant's PRIMARY resource
+// (combatant.hpResourceName), this looks for a matching entry in the
+// combatant's own `resources` array (see resolveCombatantStats' own
+// secondary-resource comment in combat-bindings.js) instead. A combatant
+// with no matching secondary resource (e.g. this System has no such
+// resource, or this specific combatant's payload never resolved one) falls
+// straight through to the primary hp/maxHp — a missing preference match
+// degrades to the sane default rather than showing nothing.
+export function resolveMarkerResourceBar(marker, encounter, preferredResourceName) {
+  if (!encounter?.systemId) return null;
+  const combatant = resolveMarkerLinkedCombatant(marker, encounter);
+  if (!combatant) return null;
+  if (preferredResourceName && preferredResourceName !== combatant.hpResourceName) {
+    const secondary = (combatant.resources || []).find((entry) => entry.name === preferredResourceName);
+    if (secondary && typeof secondary.max === "number" && secondary.max > 0) {
+      return { current: secondary.current, max: secondary.max, label: secondary.name };
+    }
+  }
+  if (typeof combatant.maxHp !== "number" || combatant.maxHp <= 0) return null;
+  return { current: combatant.hp, max: combatant.maxHp, label: combatant.hpResourceName || "HP" };
 }
 
 // A light's EFFECTIVE position — its own stored `origin` for a freestanding
@@ -3462,6 +3557,7 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         hiddenFromPlayerElementIds,
         isPrivilegedMarkerViewer,
         resolveConditionIcons: options.resolveConditionIcons,
+        resolveResourceBar: options.resolveResourceBar,
       });
     } else {
       element = createVectorLayerElement(baseMapManager, map, layer, {

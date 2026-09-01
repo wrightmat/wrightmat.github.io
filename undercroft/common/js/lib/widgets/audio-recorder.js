@@ -770,9 +770,11 @@ export function initAudioRecorderWidget(
         `${entry.index + 1} · ${formatElapsed(entry.startOffsetMs)}`
       );
       pill.type = "button";
-      pill.title = entry.startedAtReal
+      const pillTitle = entry.startedAtReal
         ? `Download ${chunkFilename(entry)} (started ${formatTimestamp(entry.startedAtReal)})`
         : `Download ${chunkFilename(entry)}`;
+      pill.setAttribute("data-bs-toggle", "tooltip");
+      pill.setAttribute("data-bs-title", pillTitle);
       pill.addEventListener("click", () => downloadChunk(entry));
       list.appendChild(pill);
     });

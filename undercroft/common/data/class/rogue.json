@@ -468,5 +468,16 @@
         6
       ]
     }
-  }
+  },
+  "caster_type": "none",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "dexterity",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }

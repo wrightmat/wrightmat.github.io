@@ -6,7 +6,7 @@ import {
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
 import { setElementCollapsed, bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
-import { createJsonDataPanel, createCollapsibleSection, createIconButton, createCompactField } from "../../../common/js/lib/ui-components.js";
+import { createJsonDataPanel, createCollapsibleSection, createIconButton, createCompactField, createToolbarButtonGroup } from "../../../common/js/lib/ui-components.js";
 import { escapeHtml } from "../../../common/js/lib/auth-ui.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../../../common/js/lib/tooltips.js";
 import { confirmDelete } from "../../../common/js/lib/ownership.js";
@@ -22,10 +22,28 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
-import { renderTextContent, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
+import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding, createLookupFn } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn, findRoleBoundField, findBindingByRole } from "../../../common/js/lib/bindings.js";
+import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
+import { hitPointsPerLevelAverage, proficiencyBonusForLevel, abilityModifier } from "../../../common/js/lib/dnd-rules.js";
+import { loadAbilityFieldDefs, loadArrayFieldValues } from "../../../common/js/lib/generator-kit.js";
+import {
+  findLevelUpBinding,
+  resolveGrantChoices,
+  matchFeaturesAtLevel,
+  resolveChoiceList,
+  resolveEquipmentChoice,
+  applyEquipmentBundle,
+  applyProficiencyGrant,
+  getSubclassGrantLevel,
+  grantSubclassFeaturesAtLevel,
+  describeMulticlassPrerequisites,
+  characterMeetsMulticlassPrerequisites,
+  computeSpellSlots,
+  mergeLimitedUses,
+} from "../../../common/js/lib/level-up-bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, rollSystemMove, extractSystemSymbolDice, rollSymbolPoolExpression } from "../../../common/js/lib/widgets/dice-roll.js";
 import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
@@ -71,7 +89,7 @@ import { collectSystemFields } from "../../../common/js/lib/system-schema.js";
 // ("view"/"edit") exactly as before, just now driven by the outer suite-wide
 // View toggle (createCycleToggleButton) via the returned setMode() instead
 // of an in-page toggle-mode button.
-export async function initCharacterView({ status, undoStack, dataManager, onStateChange }) {
+export async function initCharacterView({ status, undoStack, dataManager, onStateChange, onRequestEditMode }) {
   // This page's own Dice tool pane (see the quick-dice wiring below) can
   // roll at any time once it's open — warm up the 3D overlay (and the
   // user's chosen theme) now instead of on the first roll click.
@@ -233,6 +251,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   };
 
   const notesState = { collapsed: true };
+  const characterPropertiesState = { collapsed: true };
   const dicePanelState = { collapsed: false };
   const gameLogPanelState = { collapsed: false };
   const nowShowingPanelState = { collapsed: false };
@@ -242,6 +261,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // setGroupShareCollapsed (further below) can drive them programmatically,
   // replacing the old bespoke updateCollapsibleSection() helper.
   let applyNotesCollapse = () => {};
+  let applyCharacterPropertiesCollapse = () => {};
   let applyDiceCollapse = () => {};
   let applyGameLogCollapse = () => {};
   let applyNowShowingCollapse = () => {};
@@ -523,6 +543,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     "import-character-template",
     createCompactField({ type: "select", id: "import-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-import-character-template", name: "template", required: true })
   );
+  mountField("build-character-name", createCompactField({ type: "text", id: "build-character-name", label: "Character Name", dataAttr: "data-build-character-name", name: "name", required: true, placeholder: "e.g. Elandra" }));
+  mountField(
+    "build-character-template",
+    createCompactField({ type: "select", id: "build-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-build-character-template", name: "template", required: true })
+  );
+  mountField(
+    "build-character-image",
+    createCompactField({ type: "text", id: "build-character-image", label: "Image URL", dataAttr: "data-build-character-image", name: "image", placeholder: "https://…" })
+  );
 
   const elements = {
     characterSelect: document.querySelector("[data-character-select]"),
@@ -533,8 +562,24 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     duplicateCharacterButton: document.querySelector('[data-action="duplicate-character"]'),
     addCharacterModeBlank: document.querySelector('[data-add-character-mode="blank"]'),
     addCharacterModeImport: document.querySelector('[data-add-character-mode="import"]'),
+    addCharacterModeBuild: document.querySelector('[data-add-character-mode="build"]'),
     addCharacterSubmitBlank: document.querySelector('[data-add-character-submit="blank"]'),
     addCharacterSubmitImport: document.querySelector('[data-add-character-submit="import"]'),
+    addCharacterSubmitBuild: document.querySelector('[data-add-character-submit="build"]'),
+    buildWizard: document.querySelector("[data-build-wizard]"),
+    buildStepLabel: document.querySelector("[data-build-step-label]"),
+    buildCharacterName: document.querySelector("[data-build-character-name]"),
+    buildCharacterTemplate: document.querySelector("[data-build-character-template]"),
+    buildCharacterImage: document.querySelector("[data-build-character-image]"),
+    buildSpeciesMount: document.querySelector("[data-build-species-mount]"),
+    buildClassMount: document.querySelector("[data-build-class-mount]"),
+    buildSubclassMount: document.querySelector("[data-build-subclass-mount]"),
+    buildBackgroundMount: document.querySelector("[data-build-background-mount]"),
+    buildAbilitiesMount: document.querySelector("[data-build-abilities-mount]"),
+    buildReviewMount: document.querySelector("[data-build-review-mount]"),
+    buildResolveMount: document.querySelector("[data-build-resolve-mount]"),
+    buildBackButton: document.querySelector("[data-build-back]"),
+    buildNextButton: document.querySelector("[data-build-next]"),
     importCharacterForm: document.querySelector("[data-import-character-form]"),
     importCharacterStage1: document.querySelector("[data-import-stage-1]"),
     importCharacterStage2: document.querySelector("[data-import-stage-2]"),
@@ -548,7 +593,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     importCharacterSubmit: document.querySelector("[data-import-character-submit]"),
     saveButton: document.querySelector('[data-action="save-character"]'),
     deleteCharacterButton: document.querySelector('[data-delete-character]'),
-    reimportCharacterButton: document.querySelector('[data-reimport-character]'),
     notesSection: document.querySelector("[data-notes-section]"),
     noteEditor: document.querySelector("[data-note-editor]"),
     notesPanel: document.querySelector("[data-notes-panel]"),
@@ -562,6 +606,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     relationshipsGraphControls: document.querySelector("[data-relationships-graph-controls]"),
     relationshipsGraphToolbarMount: document.querySelector("[data-relationships-graph-toolbar-mount]"),
     relationshipsGraphEmpty: document.querySelector("[data-relationships-graph-empty]"),
+    characterPropertiesSection: document.querySelector("[data-character-properties-section]"),
+    characterPropertiesPanel: document.querySelector("[data-character-properties-panel]"),
+    characterPropertiesToolbarMount: document.querySelector("[data-character-properties-toolbar-mount]"),
+    pendingChoicesMount: document.querySelector("[data-pending-choices-mount]"),
+    levelUpModalEl: document.getElementById("level-up-modal"),
+    levelUpModalBody: document.querySelector("[data-level-up-modal-body]"),
+    levelUpCancelButton: document.querySelector("[data-level-up-cancel]"),
+    levelUpConfirmButton: document.querySelector("[data-level-up-confirm]"),
+    addClassModalEl: document.getElementById("add-class-modal"),
+    addClassModalBody: document.querySelector("[data-add-class-modal-body]"),
+    addClassCancelButton: document.querySelector("[data-add-class-cancel]"),
+    addClassConfirmButton: document.querySelector("[data-add-class-confirm]"),
     diceSection: document.querySelector("[data-dice-section]"),
     diceForm: document.querySelector("[data-dice-form]"),
     diceExpression: document.querySelector("[data-dice-expression]"),
@@ -632,6 +688,70 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     elements.notesToggle = notesSection.toggle;
     applyNotesCollapse = notesSection.setCollapsed;
     syncCollapsedStateOnClick(notesSection.toggle, notesState);
+  }
+  if (elements.characterPropertiesPanel) {
+    const characterPropertiesSectionBuilt = createCollapsibleSection({
+      label: "Character Properties",
+      collapsed: characterPropertiesState.collapsed,
+      content: elements.characterPropertiesPanel,
+    });
+    document.querySelector("[data-character-properties-mount]")?.appendChild(characterPropertiesSectionBuilt.section);
+    applyCharacterPropertiesCollapse = characterPropertiesSectionBuilt.setCollapsed;
+    syncCollapsedStateOnClick(characterPropertiesSectionBuilt.toggle, characterPropertiesState);
+    // Same shape as Forge/Crucible's own NPC/Monster Properties toolbar
+    // (createToolbarButtonGroup into a btn-group mount) rather than plain
+    // hand-built buttons — keeps this consistent with the one other place
+    // this exact "own named right-pane section, not the primary toolbar"
+    // pattern already exists. Re-import moved here from the left-pane
+    // Selections row (icon-only, matching Level Up, rather than the
+    // full-text button it used to be — both are now equally
+    // occasional/situational character-lifecycle actions, not core sheet
+    // editing) — same click behavior as before (reimportCurrentCharacter),
+    // just relocated and always visible (setDisabledTooltip, not d-none)
+    // so an unavailable state reads as "disabled, here's why" rather than
+    // silently vanishing.
+    createToolbarButtonGroup([
+      {
+        icon: "tabler:arrow-big-up-lines",
+        label: "Level Up",
+        disabled: true,
+        attrs: { "data-level-up-character": true },
+      },
+      {
+        icon: "tabler:stack-2",
+        label: "Add a Class",
+        disabled: true,
+        attrs: { "data-add-class-character": true },
+      },
+      {
+        icon: "tabler:cloud-download",
+        label: "Re-import",
+        disabled: true,
+        attrs: { "data-reimport-character": true },
+      },
+    ]).forEach((button) => elements.characterPropertiesToolbarMount?.appendChild(button));
+    elements.levelUpButton = document.querySelector("[data-level-up-character]");
+    elements.levelUpButton?.addEventListener("click", () => void openLevelUpModal());
+    elements.addClassButton = document.querySelector("[data-add-class-character]");
+    elements.addClassButton?.addEventListener("click", () => void openAddClassModal());
+    elements.levelUpConfirmButton?.addEventListener("click", () => {
+      if (levelUpStage === "resolve") {
+        levelUpModalInstance?.hide();
+        return;
+      }
+      void applyLevelUp();
+    });
+    elements.addClassConfirmButton?.addEventListener("click", () => {
+      if (addClassStage === "resolve") {
+        addClassModalInstance?.hide();
+        return;
+      }
+      void applyAddClass();
+    });
+    elements.reimportCharacterButton = document.querySelector("[data-reimport-character]");
+    elements.reimportCharacterButton?.addEventListener("click", () => {
+      void reimportCurrentCharacter();
+    });
   }
   if (elements.relationshipsMount && elements.relationshipsPanel) {
     const relationshipsSection = createCollapsibleSection({
@@ -723,6 +843,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   const renderPreview = characterJsonPanel.render;
 
   setNotesCollapsed(true);
+  setCharacterPropertiesCollapsed(true);
   setGroupShareCollapsed(groupShareState.collapsed);
   setDiceCollapsed(false);
   setNowShowingCollapsed(false);
@@ -879,6 +1000,59 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       });
     }
 
+    if (elements.addCharacterModeBuild) {
+      elements.addCharacterModeBuild.addEventListener("click", () => {
+        setAddCharacterMode("build");
+      });
+    }
+
+    if (elements.buildBackButton) {
+      elements.buildBackButton.addEventListener("click", () => goToBuildStep(buildWizardState.step - 1));
+    }
+    if (elements.buildNextButton) {
+      elements.buildNextButton.addEventListener("click", () => {
+        const step = getActiveBuildSteps().steps[buildWizardState.step];
+        if (step === "choices") {
+          // Only NOW — the wizard's own last step, everything resolved or
+          // deliberately left for later — do we tell the user this is
+          // finished. The character record itself was created earlier (on
+          // Review), but that was a background technical step, never
+          // surfaced as its own "done" moment.
+          const finishedName = (elements.buildCharacterName?.value || "").trim();
+          if (finishedName) {
+            status.show(`Created ${finishedName}`, { type: "success", timeout: 2400 });
+          }
+          newCharacterModalInstance?.hide();
+        } else if (step === "review") {
+          void submitBuildWizard();
+        } else {
+          goToBuildStep(buildWizardState.step + 1);
+        }
+      });
+    }
+    if (elements.buildCharacterName) {
+      elements.buildCharacterName.addEventListener("input", () => updateBuildNextState());
+    }
+    if (elements.buildCharacterTemplate) {
+      elements.buildCharacterTemplate.addEventListener("change", () => {
+        buildWizardState.abilityDefs = [];
+        // Species/Class/Background are System-filtered — switching
+        // Templates mid-wizard means a different (or no) System, so the
+        // previously rendered lists (and whatever was picked from them)
+        // can no longer be trusted.
+        void refreshBuildLibraryPickers();
+        updateBuildNextState();
+      });
+    }
+    document.querySelectorAll("[data-build-ability-method]").forEach((button) => {
+      button.addEventListener("click", () => {
+        buildWizardState.abilityMethod = button.dataset.buildAbilityMethod;
+        buildWizardState.abilityScores = {};
+        renderBuildAbilitiesStep();
+        updateBuildNextState();
+      });
+    });
+
     if (elements.importCharacterMapping) {
       elements.importCharacterMapping.addEventListener("change", () => {
         void applyImportValuePlaceholder();
@@ -909,12 +1083,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (elements.deleteCharacterButton) {
       elements.deleteCharacterButton.addEventListener("click", () => {
         void deleteCurrentCharacter();
-      });
-    }
-
-    if (elements.reimportCharacterButton) {
-      elements.reimportCharacterButton.addEventListener("click", () => {
-        void reimportCurrentCharacter();
       });
     }
 
@@ -977,6 +1145,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const next = Boolean(collapsed);
     notesState.collapsed = next;
     applyNotesCollapse(next);
+  }
+
+  function setCharacterPropertiesCollapsed(collapsed) {
+    const next = Boolean(collapsed);
+    characterPropertiesState.collapsed = next;
+    applyCharacterPropertiesCollapse(next);
+  }
+
+  function expandCharacterPropertiesSection() {
+    setCharacterPropertiesCollapsed(false);
   }
 
   function setDiceCollapsed(collapsed) {
@@ -1344,6 +1522,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (selectedValue) {
       elements.newCharacterTemplate.value = selectedValue;
     }
+    // Build mode's own Template select — same option list, same modal, so
+    // it shares this refresh rather than a second near-identical function.
+    if (elements.buildCharacterTemplate) {
+      populateSelect(elements.buildCharacterTemplate, options, { placeholder: "Select template" });
+      if (selectedValue) {
+        elements.buildCharacterTemplate.value = selectedValue;
+      }
+    }
   }
 
   function removeCharacterRecord(id) {
@@ -1452,19 +1638,29 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const hasReimportPermission =
         isAdminForReimport || (draftHasId && userOwnsCharacter(state.draft.id)) || gameLogContext.access === "owner";
       const showReimport =
-        draftHasId &&
-        hasReimportSource &&
-        hasReimportPermission &&
-        canWrite &&
-        !locked &&
-        state.mode === "edit" &&
-        document.body.dataset.workbenchMode === "character";
-      elements.reimportCharacterButton.classList.toggle("d-none", !showReimport);
+        draftHasId && hasReimportSource && hasReimportPermission && canWrite && !locked && state.mode === "edit";
+      // Always visible now (moved to Character Properties, icon-only) —
+      // previously d-none-toggled, which just made an unavailable state
+      // look like the button had vanished/broken rather than explaining
+      // why. setDisabledTooltip gives a concrete reason instead.
       updateToolbarButton(elements.reimportCharacterButton, {
         disabled: !showReimport,
+        disabledTitle: !draftHasId
+          ? "Select a character first."
+          : !hasReimportSource
+            ? "This character wasn't imported from an external source."
+            : !hasReimportPermission
+              ? "You don't have permission to re-import this character."
+              : locked
+                ? "Group characters must be claimed before re-importing."
+                : !canWrite
+                  ? "You don't have permission to re-import this character."
+                  : "Switch to Edit mode to re-import.",
         enabledTitle: "Re-fetch this character from its original source.",
       });
     }
+
+    refreshCharacterPropertiesPanel({ draftHasId, canWrite, canEditRecord, locked });
 
     if (!elements.deleteCharacterButton) {
       return;
@@ -1497,22 +1693,1306 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       canDeleteRecord && canWrite && state.mode === "edit" && document.body.dataset.workbenchMode === "character";
     elements.deleteCharacterButton.classList.toggle("d-none", !showDelete);
     if (!showDelete) {
+      // setDisabledTooltip first — unwraps/disposes any stale wrapper from a
+      // previous "Built-in characters cannot be deleted" state before this
+      // button goes hidden, so nothing orphaned lingers behind d-none.
+      setDisabledTooltip(elements.deleteCharacterButton, "");
       elements.deleteCharacterButton.disabled = true;
       elements.deleteCharacterButton.setAttribute("aria-disabled", "true");
-      elements.deleteCharacterButton.removeAttribute("title");
       return;
     }
     const origin = state.characterOrigin || metadata?.source || metadata?.origin || state.character?.origin || "";
     const isBuiltin = origin === "builtin";
     const deletable = !isBuiltin;
-    elements.deleteCharacterButton.disabled = !deletable;
-    elements.deleteCharacterButton.classList.toggle("disabled", !deletable);
     elements.deleteCharacterButton.setAttribute("aria-disabled", deletable ? "false" : "true");
-    if (!deletable) {
-      elements.deleteCharacterButton.title = "Built-in characters cannot be deleted.";
-    } else {
-      elements.deleteCharacterButton.removeAttribute("title");
+    // setDisabledTooltip owns real `disabled` + the explanation together —
+    // a real `disabled` attribute blocks hover entirely, so the previous
+    // bare `title` set alongside it could never actually show.
+    setDisabledTooltip(elements.deleteCharacterButton, deletable ? "" : "Built-in characters cannot be deleted.");
+  }
+
+  // --- Level Up (Phase 3, character-builder-roadmap) ---------------------
+  // "levelUpBindings" is a reserved System field key, the same convention
+  // combatBindings/challengeRating/dice already use (README.md's own
+  // "Reserved-key System fields" section) — found by key, not by role shape,
+  // since findRoleBoundField's own ROLE_BOUND_ROLES set is combatBindings-
+  // specific (resource/value/tags/modifier) and doesn't include
+  // levelUpBindings' own role vocabulary.
+  function getLevelUpBindings() {
+    const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
+    const field = fields.find((entry) => entry?.key === "levelUpBindings");
+    return Array.isArray(field?.values) ? field.values : [];
+  }
+
+  function getCombatBindings() {
+    const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
+    const field = findRoleBoundField(fields);
+    return Array.isArray(field?.values) ? field.values : [];
+  }
+
+  function getPendingChoices() {
+    return Array.isArray(state.draft?.pendingChoices) ? state.draft.pendingChoices : [];
+  }
+
+  // Recomputes and merges spell slots (multiclass-aware, Phase 5) onto
+  // `draft` for its FULL current class list — shared by every place
+  // classes[] changes (ordinary Level Up, Add a Class, Build creation) so
+  // there's one implementation of "read the System's own
+  // spellSlotProgression/pactMagicProgression tables, resolve each class's
+  // effective caster type, merge into limitedUses[] without clobbering
+  // tracked `used`," not three copies. A no-op (graceful degradation) if
+  // the System hasn't authored either table.
+  async function refreshCharacterSpellSlots(draft) {
+    const classes = Array.isArray(draft?.identity?.classes) ? draft.identity.classes : [];
+    if (!classes.length) {
+      return;
     }
+    const classIds = [...new Set(classes.map((cls) => cls?.refId).filter(Boolean))];
+    const variantIds = [...new Set(classes.map((cls) => cls?.subclass?.refId).filter(Boolean))];
+    const [classResults, variantResults] = await Promise.all([
+      Promise.all(classIds.map((id) => dataManager.get("class", id, { preferLocal: false }).catch(() => null))),
+      Promise.all(variantIds.map((id) => dataManager.get("variant", id, { preferLocal: false }).catch(() => null))),
+    ]);
+    const classRecordsById = new Map(
+      classIds.map((id, index) => [id, classResults[index]?.payload]).filter(([, record]) => record)
+    );
+    const variantRecordsById = new Map(
+      variantIds.map((id, index) => [id, variantResults[index]?.payload]).filter(([, record]) => record)
+    );
+    const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
+    const spellSlotProgression = fields.find((field) => field?.key === "spellSlotProgression")?.values || [];
+    const pactMagicProgression = fields.find((field) => field?.key === "pactMagicProgression")?.values || [];
+    const computed = computeSpellSlots(classes, classRecordsById, variantRecordsById, spellSlotProgression, pactMagicProgression);
+    draft.limitedUses = mergeLimitedUses(draft.limitedUses, computed);
+  }
+
+  // A subclass picked LATE (character already past level 1) needs its
+  // features backfilled for every level up through the character's
+  // current one, not just the one exact level grantSubclassFeaturesAtLevel
+  // (level-up-bindings.js) checks — this loops that same shared function
+  // once per level instead of duplicating its matching logic.
+  function grantSubclassFeaturesThroughLevel(variantRecord, throughLevel, featureNameById, existingFeatureIds) {
+    const granted = [];
+    const existing = [...(Array.isArray(existingFeatureIds) ? existingFeatureIds : [])];
+    for (let level = 1; level <= throughLevel; level += 1) {
+      grantSubclassFeaturesAtLevel(variantRecord, level, featureNameById, existing).forEach((id) => {
+        if (!existing.includes(id)) {
+          existing.push(id);
+          granted.push(id);
+        }
+      });
+    }
+    return granted;
+  }
+
+  let levelUpModalInstance = null;
+  // "confirm" (preview, nothing applied yet) or "resolve" (applied — any
+  // pendingChoices the level produced render inline here too, so a player
+  // resolves them without ever leaving the modal; Close ends the flow,
+  // whether or not everything got resolved — anything left over is still
+  // sitting in state.draft.pendingChoices regardless, so it just shows up
+  // in the Character Properties list afterward, same data, same UI).
+  let levelUpStage = "confirm";
+  let levelUpPreviewState = null;
+
+  function setLevelUpModalStage(stage) {
+    levelUpStage = stage;
+    elements.levelUpCancelButton?.classList.toggle("d-none", stage === "resolve");
+    if (elements.levelUpConfirmButton) {
+      elements.levelUpConfirmButton.textContent = stage === "resolve" ? "Close" : "Level Up";
+    }
+  }
+
+  // Pure — computes what a Level Up WOULD do without touching state.draft,
+  // so it can back both the modal's own preview and (unchanged) the actual
+  // apply step, from the exact same numbers, computed once. `allClasses` is
+  // the character's FULL identity.classes list (multiclass-aware
+  // proficiency bonus needs every class's level, not just the one being
+  // leveled).
+  async function computeLevelUpPreview(cls, classRecord, allClasses) {
+    const nextLevel = (Number(cls.level) || 0) + 1;
+
+    // Subclass features at this level too, if this class already has one
+    // chosen — fetched up front so the feature-id fetch below can cover
+    // both the class's own featureIds AND the subclass's.
+    let subclassRecord = null;
+    if (cls.subclass?.refId) {
+      try {
+        const result = await dataManager.get("variant", cls.subclass.refId, { preferLocal: false });
+        subclassRecord = result?.payload || null;
+      } catch (error) {
+        console.error("Character editor: unable to fetch subclass record for Level Up", error);
+      }
+    }
+
+    // Feature grants — every class.features[] entry at exactly this level,
+    // matched against class.featureIds[] (the already-promoted real
+    // `feature` kind ids). NOT a blind index pairing: real class records
+    // confirmed to have the two arrays drift out of alignment partway
+    // through (e.g. fighter.json's own data — a pre-existing content gap,
+    // not something to silently trust). The same INDEX is checked first as
+    // the fast/common-case match (true for most classes/levels), falling
+    // back to a name-matched search across the whole featureIds list
+    // otherwise — a level with genuinely no matching id anywhere (a real
+    // content gap) grants nothing rather than the wrong feature.
+    const classFeatures = Array.isArray(classRecord.features) ? classRecord.features : [];
+    const classFeatureIds = Array.isArray(classRecord.featureIds) ? classRecord.featureIds : [];
+    const needsFeatureFetch = classFeatureIds.length || (Array.isArray(subclassRecord?.featureIds) && subclassRecord.featureIds.length);
+    const featureEntries = needsFeatureFetch ? await fetchKindEntriesWithIds(dataManager, "feature") : [];
+    const featureEntityById = new Map(featureEntries.map((entry) => [entry.id, entry.entity]));
+    const featureNameById = new Map(featureEntries.map((entry) => [entry.id, (entry.entity?.name || "").trim().toLowerCase()]));
+    const existingFeatureIds = Array.isArray(state.draft?.featureIds) ? state.draft.featureIds : [];
+    const classFeatureMatches = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, nextLevel, existingFeatureIds);
+    const subclassFeatureMatches = subclassRecord
+      ? grantSubclassFeaturesAtLevel(subclassRecord, nextLevel, featureNameById, [...existingFeatureIds, ...classFeatureMatches])
+      : [];
+    const newFeatureIds = [...classFeatureMatches, ...subclassFeatureMatches];
+
+    // Subclass CHOICE — does THIS level grant the pick (per the class
+    // record's own data, never assumed to be level 3)? Only offered once,
+    // when the class doesn't already have a subclass set.
+    let subclassChoiceOptions = null;
+    if (!cls.subclass && getSubclassGrantLevel(classRecord) === nextLevel) {
+      try {
+        const variantEntries = await fetchKindEntriesWithIds(dataManager, "variant");
+        subclassChoiceOptions = variantEntries
+          .filter((entry) => entry.entity?.parentKind === "class" && entry.entity?.parentId === classRecord.index)
+          .map((entry) => ({ id: entry.id, label: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }));
+      } catch (error) {
+        console.error("Character editor: unable to fetch subclass options for Level Up", error);
+        subclassChoiceOptions = [];
+      }
+    }
+
+    // Feat choice — does any newly-granted feature (e.g. a class's own
+    // "Ability Score Improvement" slot) carry a featChoice grant? Deferred
+    // rather than auto-granted — applyLevelUp skips deferredFeatureId in
+    // its own auto-push loop, offering a pendingChoice instead.
+    let featChoiceOptions = null;
+    let deferredFeatureId = null;
+    for (const featureId of newFeatureIds) {
+      const record = featureEntityById.get(featureId);
+      const featChoiceGrant = Array.isArray(record?.grants) ? record.grants.find((grant) => grant?.type === "featChoice") : null;
+      if (featChoiceGrant) {
+        deferredFeatureId = featureId;
+        try {
+          const featEntries = await fetchKindEntriesWithIds(dataManager, "feature");
+          featChoiceOptions = featEntries
+            .filter((entry) => Array.isArray(entry.entity?.tags?.categories) && entry.entity.tags.categories.includes("feat"))
+            .map((entry) => ({ id: entry.id, label: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }));
+        } catch (error) {
+          console.error("Character editor: unable to fetch feat options for Level Up", error);
+          featChoiceOptions = [];
+        }
+        break;
+      }
+    }
+
+    // Resource growth (HP) — graceful no-op (growth stays 0) if the System
+    // hasn't authored this levelUpBindings role at all.
+    const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
+    let growth = 0;
+    let resourceBinding = null;
+    if (growthBinding?.path) {
+      const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
+      growth = hitPointsPerLevelAverage(hitDieSides);
+      if (growth && growthBinding.abilityBinding) {
+        growth += abilityModifier(resolveBinding(growthBinding.abilityBinding, state.draft));
+      }
+      resourceBinding = findBindingByRole(getCombatBindings(), growthBinding.resourceRole);
+    }
+
+    // Proficiency bonus off the TOTAL level across every class this
+    // character has, not just the one being leveled — a genuine multiclass
+    // fix (single-class nextLevel WAS total level, but no longer is once a
+    // second class exists).
+    const classes = Array.isArray(allClasses) && allClasses.length ? allClasses : [cls];
+    const totalLevel = classes.reduce((sum, entry) => sum + (entry === cls ? nextLevel : Number(entry.level) || 0), 0);
+
+    return {
+      nextLevel,
+      className: cls.name || "this class",
+      newFeatureIds,
+      featureEntityById,
+      growth,
+      resourceBinding,
+      newProficiencyBonus: proficiencyBonusForLevel(totalLevel),
+      subclassChoiceOptions,
+      featChoiceOptions,
+      deferredFeatureId,
+    };
+  }
+
+  function renderLevelUpModalConfirm(preview) {
+    const body = elements.levelUpModalBody;
+    if (!body) {
+      return;
+    }
+    body.innerHTML = "";
+    const intro = document.createElement("p");
+    intro.className = "mb-2";
+    intro.textContent = `Level up ${preview.className} to level ${preview.nextLevel}.`;
+    body.appendChild(intro);
+    const lines = [];
+    if (preview.newFeatureIds.length) {
+      const names = preview.newFeatureIds.map((id) => preview.featureEntityById.get(id)?.name || id);
+      lines.push(`New feature${names.length > 1 ? "s" : ""}: ${names.join(", ")}`);
+    }
+    if (preview.growth && preview.resourceBinding) {
+      const maxPathSegs = resolveBindingPath(preview.resourceBinding.maxPath);
+      const currentMax = maxPathSegs ? Number(getValueAtPath(maxPathSegs)) || 0 : 0;
+      lines.push(`+${preview.growth} max HP (${currentMax} → ${currentMax + preview.growth})`);
+    }
+    if (preview.newProficiencyBonus) {
+      lines.push(`Proficiency Bonus: +${preview.newProficiencyBonus}`);
+    }
+    if (preview.subclassChoiceOptions) {
+      lines.push(`Choose a subclass (${preview.subclassChoiceOptions.length} options)`);
+    }
+    if (preview.featChoiceOptions) {
+      lines.push("Choose a feat");
+    }
+    if (!lines.length) {
+      lines.push("No other changes at this level.");
+    }
+    const list = document.createElement("ul");
+    list.className = "d-flex flex-column gap-1 small mb-0 ps-3";
+    lines.forEach((text) => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      list.appendChild(li);
+    });
+    body.appendChild(list);
+  }
+
+  function renderLevelUpModalResolve(pendingEntries) {
+    const body = elements.levelUpModalBody;
+    if (!body) {
+      return;
+    }
+    body.innerHTML = "";
+    const summary = document.createElement("p");
+    summary.className = "mb-2";
+    summary.textContent = pendingEntries.length
+      ? "Leveled up! Resolve the choices below, or close and finish them later from Character Properties."
+      : "Leveled up!";
+    body.appendChild(summary);
+    if (pendingEntries.length) {
+      const list = document.createElement("div");
+      list.className = "d-flex flex-column gap-2";
+      pendingEntries.forEach((choice) => {
+        const row = renderPendingChoiceRow(choice, {
+          onResolved: () => {
+            row.remove();
+            if (!list.children.length) {
+              summary.textContent = "All done!";
+            }
+          },
+        });
+        list.appendChild(row);
+      });
+      body.appendChild(list);
+    }
+  }
+
+  // 1 class: unchanged UX (straight to the confirm screen). 2+ classes: a
+  // "which class?" list first — Level Up levels an EXISTING class either
+  // way; adding a brand-new one is the separate "Add a Class" action.
+  async function openLevelUpModal() {
+    const classes = Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : [];
+    if (!classes.length || !elements.levelUpModalEl || !state.draft) {
+      return;
+    }
+    if (classes.length === 1) {
+      await openLevelUpModalForClass(classes[0]);
+      return;
+    }
+    setLevelUpModalStage("confirm");
+    levelUpPreviewState = null;
+    if (elements.levelUpConfirmButton) {
+      elements.levelUpConfirmButton.disabled = true;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+      levelUpModalInstance = window.bootstrap.Modal.getOrCreateInstance(elements.levelUpModalEl);
+      levelUpModalInstance.show();
+    }
+    renderLevelUpClassPicker(classes);
+  }
+
+  function renderLevelUpClassPicker(classes) {
+    const body = elements.levelUpModalBody;
+    if (!body) {
+      return;
+    }
+    body.innerHTML = "";
+    const intro = document.createElement("p");
+    intro.className = "mb-2";
+    intro.textContent = "Which class?";
+    body.appendChild(intro);
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-1";
+    classes.forEach((cls) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-outline-secondary text-start";
+      const level = Number(cls?.level) || 0;
+      button.textContent = `${cls.name || "Class"} (${level} → ${level + 1})`;
+      button.addEventListener("click", () => {
+        void openLevelUpModalForClass(cls);
+      });
+      list.appendChild(button);
+    });
+    body.appendChild(list);
+  }
+
+  async function openLevelUpModalForClass(cls) {
+    if (!cls || !cls.refId || !elements.levelUpModalEl || !state.draft) {
+      return;
+    }
+    setLevelUpModalStage("confirm");
+    levelUpPreviewState = null;
+    if (elements.levelUpModalBody) {
+      elements.levelUpModalBody.textContent = "Loading…";
+    }
+    if (elements.levelUpConfirmButton) {
+      elements.levelUpConfirmButton.disabled = true;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+      levelUpModalInstance = window.bootstrap.Modal.getOrCreateInstance(elements.levelUpModalEl);
+      levelUpModalInstance.show();
+    }
+    let classRecord;
+    try {
+      const result = await dataManager.get("class", cls.refId, { preferLocal: false });
+      classRecord = result?.payload;
+    } catch (error) {
+      console.error("Character editor: unable to fetch class record for Level Up", error);
+      classRecord = null;
+    }
+    if (!classRecord) {
+      if (elements.levelUpModalBody) {
+        elements.levelUpModalBody.textContent = "Unable to fetch this character's class record.";
+      }
+      return;
+    }
+    const allClasses = Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : [cls];
+    const preview = await computeLevelUpPreview(cls, classRecord, allClasses);
+    levelUpPreviewState = { cls, preview };
+    if (elements.levelUpConfirmButton) {
+      elements.levelUpConfirmButton.disabled = false;
+    }
+    renderLevelUpModalConfirm(preview);
+  }
+
+  // --- Add a Class (multiclass, Phase 5) ----------------------------------
+  // A SEPARATE action from Level Up (which only ever levels a class the
+  // character already has) — this is the one that actually starts
+  // multiclassing. Reuses the SAME level-1 grant sequence Build Character's
+  // own creation flow uses (matchFeaturesAtLevel, resolveChoiceList/
+  // resolveEquipmentChoice as pendingChoices) — the "simple, same grants
+  // every time" decision — with one narrow, real-5e-rule exception: saving-
+  // throw proficiency only ever comes from a character's FIRST class, never
+  // a class added here (unless the character genuinely had zero classes
+  // before this, in which case this IS effectively their first).
+  let addClassModalInstance = null;
+  let addClassStage = "pick";
+  let addClassPickedRecord = null;
+
+  function setAddClassModalStage(stage) {
+    addClassStage = stage;
+    elements.addClassCancelButton?.classList.toggle("d-none", stage === "resolve");
+    if (elements.addClassConfirmButton) {
+      elements.addClassConfirmButton.textContent = stage === "resolve" ? "Close" : "Add Class";
+      elements.addClassConfirmButton.disabled = stage === "pick" && !addClassPickedRecord;
+    }
+  }
+
+  async function openAddClassModal() {
+    if (!elements.addClassModalEl || !state.draft) {
+      return;
+    }
+    addClassPickedRecord = null;
+    setAddClassModalStage("pick");
+    if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+      addClassModalInstance = window.bootstrap.Modal.getOrCreateInstance(elements.addClassModalEl);
+      addClassModalInstance.show();
+    }
+    await renderAddClassPicker();
+  }
+
+  // Multiclass prerequisites (Area 1) are shown inline in each candidate's
+  // own description — informational only, never filtering/disabling a
+  // candidate, per this suite's own standing "GM/player judgment stays
+  // authoritative" policy.
+  async function renderAddClassPicker() {
+    const body = elements.addClassModalBody;
+    if (!body) {
+      return;
+    }
+    body.textContent = "Loading…";
+    const existingRefIds = new Set(
+      (Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : []).map((cls) => cls?.refId).filter(Boolean)
+    );
+    let entries = [];
+    try {
+      entries = await fetchKindEntriesWithIds(dataManager, "class");
+    } catch (error) {
+      body.textContent = "Unable to load class options.";
+      return;
+    }
+    const systemId = state.template?.schema || "";
+    const abilityDefs = await loadAbilityFieldDefs(dataManager, systemId);
+    const abilityLabelByKey = new Map(abilityDefs.map((def) => [def.key, def.label]));
+    const abilities = state.draft?.stats?.abilities || {};
+    const candidates = entries
+      .filter((entry) => !existingRefIds.has(entry.id))
+      .filter((entry) => {
+        const systemIds = entry.entity?.systemIds;
+        return !systemId || !Array.isArray(systemIds) || !systemIds.length || systemIds.includes(systemId);
+      })
+      .map((entry) => {
+        const prereqText = describeMulticlassPrerequisites(entry.entity?.multiclassPrerequisites, abilityLabelByKey);
+        const meets = characterMeetsMulticlassPrerequisites(entry.entity?.multiclassPrerequisites, abilities);
+        const prereqLine = prereqText
+          ? `<p class="mb-1${meets ? "" : " text-warning"}"><strong>Requires:</strong> ${escapeHtml(prereqText)}${meets ? "" : " (not met)"}</p>`
+          : "";
+        return {
+          id: entry.id,
+          name: entry.entity?.name || entry.id,
+          description: `${prereqLine}${resolveNotes(entry.entity) || ""}`,
+          raw: entry.entity,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    body.innerHTML = "";
+    const picker = createFilterableListPicker({
+      options: candidates,
+      emptyMessage: "No class options available.",
+      onSelect: (option) => {
+        addClassPickedRecord = { id: option.id, name: option.name, raw: option.raw };
+        if (elements.addClassConfirmButton) {
+          elements.addClassConfirmButton.disabled = false;
+        }
+      },
+    });
+    body.appendChild(picker.element);
+  }
+
+  async function applyAddClass() {
+    if (!addClassPickedRecord || !state.draft) {
+      return;
+    }
+    if (elements.addClassConfirmButton) {
+      elements.addClassConfirmButton.disabled = true;
+    }
+    const classRecord = addClassPickedRecord.raw;
+    const classId = addClassPickedRecord.id;
+
+    if (!state.draft.identity || typeof state.draft.identity !== "object") {
+      state.draft.identity = {};
+    }
+    if (!Array.isArray(state.draft.identity.classes)) {
+      state.draft.identity.classes = [];
+    }
+    const classes = state.draft.identity.classes;
+    const isFirstClass = classes.length === 0;
+    classes.push({ name: classRecord.name || addClassPickedRecord.name || "", level: 1, refKind: "class", refId: classId });
+    state.draft.identity.level = classes.reduce((sum, entry) => sum + (Number(entry.level) || 0), 0);
+
+    const classFeatures = Array.isArray(classRecord.features) ? classRecord.features : [];
+    const classFeatureIds = Array.isArray(classRecord.featureIds) ? classRecord.featureIds : [];
+    const featureEntries = classFeatureIds.length ? await fetchKindEntriesWithIds(dataManager, "feature") : [];
+    const featureEntityById = new Map(featureEntries.map((entry) => [entry.id, entry.entity]));
+    const featureNameById = new Map(featureEntries.map((entry) => [entry.id, (entry.entity?.name || "").trim().toLowerCase()]));
+    const existingFeatureIds = Array.isArray(state.draft.featureIds) ? state.draft.featureIds : [];
+    const newFeatureIds = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, 1, existingFeatureIds);
+    if (!Array.isArray(state.draft.featureIds)) {
+      state.draft.featureIds = [];
+    }
+    newFeatureIds.forEach((id) => {
+      if (!state.draft.featureIds.includes(id)) {
+        state.draft.featureIds.push(id);
+      }
+    });
+
+    // HP growth — the ORDINARY average-growth formula, never creation's
+    // max-at-level-1 rule (that's specific to a character's very first
+    // level ever, not every new class's own "level 1").
+    const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
+    if (growthBinding?.path) {
+      const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
+      let growth = hitPointsPerLevelAverage(hitDieSides);
+      if (growth && growthBinding.abilityBinding) {
+        growth += abilityModifier(resolveBinding(growthBinding.abilityBinding, state.draft));
+      }
+      const resourceBinding = findBindingByRole(getCombatBindings(), growthBinding.resourceRole);
+      if (growth && resourceBinding) {
+        const maxPathSegs = resolveBindingPath(resourceBinding.maxPath);
+        const currentPathSegs = resolveBindingPath(resourceBinding.binding);
+        if (maxPathSegs) {
+          setValueAtPath(maxPathSegs, (Number(getValueAtPath(maxPathSegs)) || 0) + growth);
+        }
+        if (currentPathSegs) {
+          setValueAtPath(currentPathSegs, (Number(getValueAtPath(currentPathSegs)) || 0) + growth);
+        }
+      }
+    }
+
+    if (!state.draft.stats || typeof state.draft.stats !== "object") {
+      state.draft.stats = {};
+    }
+    state.draft.stats.proficiencyBonus = proficiencyBonusForLevel(state.draft.identity.level);
+
+    // Saving-throw proficiency — only a character's very FIRST class ever
+    // grants it (real 5e rule); this mirrors buildCharacterFromWizard's own
+    // saving-throw seeding exactly, reached only in the edge case of Add a
+    // Class being used on a character with zero classes so far.
+    if (isFirstClass) {
+      const systemId = state.template?.schema || "";
+      const abilityDefs = await loadAbilityFieldDefs(dataManager, systemId);
+      const abilities = state.draft.stats.abilities && typeof state.draft.stats.abilities === "object" ? state.draft.stats.abilities : {};
+      const classSaveIndexes = new Set(
+        (Array.isArray(classRecord?.saving_throws) ? classRecord.saving_throws : []).map((entry) => String(entry?.index || "").toLowerCase())
+      );
+      state.draft.stats.savingThrows = abilityDefs.map((def, index) => {
+        const isProficient = classSaveIndexes.has(String(def.label || "").toLowerCase());
+        const modifier = abilityModifier(abilities[def.key] ?? 10);
+        return {
+          id: index + 1,
+          name: def.key,
+          friendlyName: def.key.charAt(0).toUpperCase() + def.key.slice(1),
+          shortName: def.label || def.key.slice(0, 3).toUpperCase(),
+          value: modifier + (isProficient ? state.draft.stats.proficiencyBonus : 0),
+          proficiency: isProficient ? 2 : 0,
+          advantage: false,
+          disadvantage: false,
+        };
+      });
+    }
+
+    await refreshCharacterSpellSlots(state.draft);
+
+    if (!Array.isArray(state.draft.pendingChoices)) {
+      state.draft.pendingChoices = [];
+    }
+    const newlyPending = [];
+    const pushChoice = (resolved, sourceName) => {
+      resolved.forEach((entry, index) => {
+        const pending = {
+          id: `${classId}-addclass-${index}-${Date.now()}`,
+          sourceKind: "class",
+          sourceId: classId,
+          sourceName,
+          type: entry.type || "",
+          desc: entry.desc,
+          choose: entry.choose,
+          options: entry.options,
+        };
+        state.draft.pendingChoices.push(pending);
+        newlyPending.push(pending);
+      });
+    };
+    pushChoice(resolveChoiceList(classRecord.proficiency_choices).filter((entry) => entry.options.length), classRecord.name || "Class");
+    const equipmentChoice = resolveEquipmentChoice((classRecord.starting_equipment_options || [])[0]);
+    if (equipmentChoice) {
+      pushChoice([{ ...equipmentChoice, type: "equipmentChoice" }], classRecord.name || "Class");
+    }
+    newFeatureIds.forEach((featureId) => {
+      const featureRecord = featureEntityById.get(featureId);
+      if (!featureRecord || !Array.isArray(featureRecord.grants) || !featureRecord.grants.length) {
+        return;
+      }
+      const resolved = resolveGrantChoices(featureRecord.grants, state.draft);
+      resolved.forEach((entry, index) => {
+        const pending = {
+          id: `${featureId}-addclass-${index}-${Date.now()}`,
+          sourceKind: "feature",
+          sourceId: featureId,
+          sourceName: featureRecord.name || featureId,
+          type: entry.type,
+          desc: entry.desc,
+          choose: entry.choose,
+          options: entry.options,
+        };
+        state.draft.pendingChoices.push(pending);
+        newlyPending.push(pending);
+      });
+    });
+
+    renderCanvas();
+    renderPreview();
+    await persistDraft({ silent: false });
+    syncCharacterActions();
+    expandCharacterPropertiesSection();
+    status.show(`Added ${classRecord.name || "class"}.`, { type: "success", timeout: 2400 });
+
+    setAddClassModalStage("resolve");
+    renderAddClassResolvePanel(newlyPending);
+  }
+
+  function renderAddClassResolvePanel(pendingEntries) {
+    const body = elements.addClassModalBody;
+    if (!body) {
+      return;
+    }
+    body.innerHTML = "";
+    const summary = document.createElement("p");
+    summary.className = "mb-2";
+    summary.textContent = pendingEntries.length
+      ? "Class added! Resolve the choices below, or close and finish them later from Character Properties."
+      : "Class added!";
+    body.appendChild(summary);
+    if (pendingEntries.length) {
+      const list = document.createElement("div");
+      list.className = "d-flex flex-column gap-2";
+      pendingEntries.forEach((choice) => {
+        const row = renderPendingChoiceRow(choice, {
+          onResolved: () => {
+            row.remove();
+            if (!list.children.length) {
+              summary.textContent = "All done!";
+            }
+          },
+        });
+        list.appendChild(row);
+      });
+      body.appendChild(list);
+    }
+  }
+
+  // Applies the ALREADY-COMPUTED preview (no second fetch/recompute) —
+  // mutates state.draft directly (a bulk, multi-field, atomic action, not a
+  // series of updateBinding calls, which would fragment into many separate
+  // undo entries for one conceptual action), persists exactly the way any
+  // other explicit, deliberate save already does, then switches the modal
+  // to its resolve stage so any pendingChoices this level produced can be
+  // handled right here.
+  async function applyLevelUp() {
+    if (!levelUpPreviewState || !state.draft) {
+      return;
+    }
+    const { cls, preview } = levelUpPreviewState;
+
+    if (!Array.isArray(state.draft.featureIds)) {
+      state.draft.featureIds = [];
+    }
+    preview.newFeatureIds.forEach((id) => {
+      // A feature deferred to a featChoice pendingChoice (below) is NOT
+      // auto-granted here — the player might pick a totally different feat
+      // than the one that triggered it.
+      if (id === preview.deferredFeatureId) {
+        return;
+      }
+      if (!state.draft.featureIds.includes(id)) {
+        state.draft.featureIds.push(id);
+      }
+    });
+
+    if (preview.growth && preview.resourceBinding) {
+      const maxPathSegs = resolveBindingPath(preview.resourceBinding.maxPath);
+      const currentPathSegs = resolveBindingPath(preview.resourceBinding.binding);
+      if (maxPathSegs) {
+        setValueAtPath(maxPathSegs, (Number(getValueAtPath(maxPathSegs)) || 0) + preview.growth);
+      }
+      if (currentPathSegs) {
+        setValueAtPath(currentPathSegs, (Number(getValueAtPath(currentPathSegs)) || 0) + preview.growth);
+      }
+    }
+
+    if (!state.draft.stats || typeof state.draft.stats !== "object") {
+      state.draft.stats = {};
+    }
+    state.draft.stats.proficiencyBonus = preview.newProficiencyBonus;
+
+    cls.level = preview.nextLevel;
+    if (!state.draft.identity || typeof state.draft.identity !== "object") {
+      state.draft.identity = {};
+    }
+    const allClasses = Array.isArray(state.draft.identity.classes) ? state.draft.identity.classes : [cls];
+    state.draft.identity.level = allClasses.reduce((sum, entry) => sum + (Number(entry.level) || 0), 0);
+
+    // Spell slots — recomputed for the character's FULL class list (not
+    // just this one), since multiclass caster-level math needs every class.
+    await refreshCharacterSpellSlots(state.draft);
+
+    if (!Array.isArray(state.draft.pendingChoices)) {
+      state.draft.pendingChoices = [];
+    }
+    const newlyPending = [];
+
+    // Subclass choice, if this level grants it.
+    if (preview.subclassChoiceOptions) {
+      const pending = {
+        id: `${cls.refId}-subclass-${preview.nextLevel}-${Date.now()}`,
+        sourceKind: "class",
+        sourceId: cls.refId,
+        sourceName: cls.name || "Class",
+        type: "subclassChoice",
+        desc: `Choose your ${cls.name || "class"} subclass.`,
+        choose: 1,
+        options: preview.subclassChoiceOptions,
+        targetClassRefId: cls.refId,
+      };
+      state.draft.pendingChoices.push(pending);
+      newlyPending.push(pending);
+    }
+
+    // Feat choice, if a newly-granted feature deferred to one.
+    if (preview.featChoiceOptions) {
+      const deferredRecord = preview.featureEntityById.get(preview.deferredFeatureId);
+      const pending = {
+        id: `${preview.deferredFeatureId}-feat-${preview.nextLevel}-${Date.now()}`,
+        sourceKind: "feature",
+        sourceId: preview.deferredFeatureId,
+        sourceName: deferredRecord?.name || "Feature",
+        type: "featChoice",
+        desc: "Choose a feat.",
+        choose: 1,
+        options: preview.featChoiceOptions,
+      };
+      state.draft.pendingChoices.push(pending);
+      newlyPending.push(pending);
+    }
+
+    // Pending choices — every OTHER newly granted Feature's own grants[],
+    // including resolving a dynamic source (e.g. "proficientSkills")
+    // against this character's CURRENT state right now, so the UI never
+    // has to interpret a source string later. The deferred feature (if any)
+    // is skipped — its own grants resolve once the player's actual feat
+    // pick is known (resolvePendingChoice's own "featChoice" branch).
+    preview.newFeatureIds.forEach((featureId) => {
+      if (featureId === preview.deferredFeatureId) {
+        return;
+      }
+      const featureRecord = preview.featureEntityById.get(featureId);
+      if (!featureRecord || !Array.isArray(featureRecord.grants) || !featureRecord.grants.length) {
+        return;
+      }
+      const resolved = resolveGrantChoices(featureRecord.grants, state.draft);
+      if (!resolved.length) {
+        return;
+      }
+      resolved.forEach((entry, index) => {
+        const pending = {
+          id: `${featureId}-${preview.nextLevel}-${index}-${Date.now()}`,
+          sourceKind: "feature",
+          sourceId: featureId,
+          sourceName: featureRecord.name || featureId,
+          type: entry.type,
+          desc: entry.desc,
+          choose: entry.choose,
+          options: entry.options,
+        };
+        state.draft.pendingChoices.push(pending);
+        newlyPending.push(pending);
+      });
+    });
+
+    renderCanvas();
+    renderPreview();
+    await persistDraft({ silent: false });
+    syncCharacterActions();
+    expandCharacterPropertiesSection();
+    status.show(`Leveled up ${preview.className} to level ${preview.nextLevel}.`, { type: "success", timeout: 2400 });
+
+    setLevelUpModalStage("resolve");
+    renderLevelUpModalResolve(newlyPending);
+  }
+
+  // Resolving a pending choice writes per its own `type`. abilityScoreBonus/
+  // abilityScoreImprovement intentionally have no generic write here — they
+  // resolve through their own dedicated renderer/apply path
+  // (resolveAbilityScoreBonusChoice below), never through this generic
+  // picks-array signature at all.
+  async function resolvePendingChoice(choice, picks) {
+    if (!state.draft) {
+      return;
+    }
+    const pendingChoices = getPendingChoices();
+    const index = pendingChoices.findIndex((entry) => entry.id === choice.id);
+    if (index === -1) {
+      return;
+    }
+    const additionalPending = [];
+    if (choice.type === "skillExpertise") {
+      const skills = Array.isArray(state.draft.stats?.skills) ? state.draft.stats.skills : [];
+      picks.forEach((pick) => {
+        const skill = skills.find((entry) => entry?.name === pick.id);
+        if (skill) {
+          skill.proficiency = 3;
+        }
+      });
+    } else if (choice.type === "proficiencies") {
+      // A resolveChoiceList-produced option's own `raw` is the original
+      // {id, name} reference — `name` still carries the "Skill: X"/
+      // "Tool: X" prefix applyProficiencyGrant already parses (Character
+      // Creation's own Background proficiency GRANTS use the exact same
+      // function for the unconditional case; a proficiency CHOICE just
+      // reaches it one pick at a time instead).
+      picks.forEach((pick) => applyProficiencyGrant(pick?.raw?.name || pick?.label, state.draft));
+    } else if (choice.type === "equipmentChoice") {
+      picks.forEach((pick) => applyEquipmentBundle(pick?.raw?.bundle, state.draft));
+    } else if (choice.type === "subclassChoice") {
+      // Filterable-picker picks carry {id, label, raw: choiceOption} — the
+      // choice's own option object ({id, label, description, raw: variant
+      // record}, built in computeLevelUpPreview), same one-extra-level-of-
+      // nesting equipmentChoice's own pick.raw.bundle already established.
+      const variantOption = picks[0]?.raw;
+      const variantRecord = variantOption?.raw;
+      const classes = Array.isArray(state.draft.identity?.classes) ? state.draft.identity.classes : [];
+      const cls = classes.find((entry) => entry.refId === choice.targetClassRefId);
+      if (cls && variantOption && variantRecord) {
+        cls.subclass = { name: variantOption.label || variantRecord.name || "", refKind: "variant", refId: variantOption.id };
+        const featureEntries = await fetchKindEntriesWithIds(dataManager, "feature");
+        const featureNameById = new Map(featureEntries.map((entry) => [entry.id, (entry.entity?.name || "").trim().toLowerCase()]));
+        const grantedIds = grantSubclassFeaturesThroughLevel(
+          variantRecord,
+          Number(cls.level) || 1,
+          featureNameById,
+          Array.isArray(state.draft.featureIds) ? state.draft.featureIds : []
+        );
+        if (!Array.isArray(state.draft.featureIds)) {
+          state.draft.featureIds = [];
+        }
+        grantedIds.forEach((id) => {
+          if (!state.draft.featureIds.includes(id)) {
+            state.draft.featureIds.push(id);
+          }
+        });
+        await refreshCharacterSpellSlots(state.draft);
+      }
+    } else if (choice.type === "featChoice") {
+      const featOption = picks[0]?.raw;
+      const featRecord = featOption?.raw;
+      const featId = featOption?.id;
+      if (featId) {
+        if (!Array.isArray(state.draft.featureIds)) {
+          state.draft.featureIds = [];
+        }
+        if (!state.draft.featureIds.includes(featId)) {
+          state.draft.featureIds.push(featId);
+        }
+        // If the picked feat itself has its OWN grants (true for
+        // feat.ability-score-improvement once picked), resolve those too —
+        // one level of recursion, filtering out any nested "featChoice"
+        // entry so re-picking ASI as the feat doesn't re-trigger ANOTHER
+        // "pick a feat" prompt (that trigger only ever fires from class-
+        // level progression, never from an already-resolved feat pick).
+        const secondaryGrants = Array.isArray(featRecord?.grants) ? featRecord.grants.filter((grant) => grant?.type !== "featChoice") : [];
+        if (secondaryGrants.length) {
+          const resolved = resolveGrantChoices(secondaryGrants, state.draft);
+          resolved.forEach((entry, i) => {
+            additionalPending.push({
+              id: `${featId}-secondary-${i}-${Date.now()}`,
+              sourceKind: "feature",
+              sourceId: featId,
+              sourceName: featRecord.name || featId,
+              type: entry.type,
+              desc: entry.desc,
+              choose: entry.choose,
+              options: entry.options,
+            });
+          });
+        }
+      }
+    }
+    const remaining = pendingChoices.filter((_, i) => i !== index);
+    state.draft.pendingChoices = [...remaining, ...additionalPending];
+    renderCanvas();
+    renderPreview();
+    await persistDraft({ silent: false });
+    syncCharacterActions();
+    status.show("Choice resolved.", { type: "success", timeout: 1800 });
+  }
+
+  // Dispatches purely on choice.type — abilityScoreBonus/
+  // abilityScoreImprovement are genuinely bespoke (not a flat pick-N-of-M),
+  // so they get their own renderer; subclassChoice/featChoice share a
+  // filterable-list-with-description renderer (too many candidates, and
+  // descriptions matter, for the flat generic shape below); every other
+  // type (including equipmentChoice, whose options carry `label` instead
+  // of `name`) shares this one generic flat-option-list shape.
+  function renderPendingChoiceRow(choice, { onResolved } = {}) {
+    if (choice.type === "abilityScoreBonus") {
+      return renderAbilityScoreBonusChoiceRow(choice, { onResolved });
+    }
+    if (choice.type === "abilityScoreImprovement") {
+      return renderClassAbilityScoreImprovementChoiceRow(choice, { onResolved });
+    }
+    if (choice.type === "subclassChoice" || choice.type === "featChoice") {
+      return renderFilterableChoiceRow(choice, { onResolved });
+    }
+    const row = document.createElement("div");
+    row.className = "d-flex flex-column gap-2 border rounded-3 p-2";
+    const title = document.createElement("div");
+    title.className = "small";
+    title.innerHTML = `<span class="fw-semibold">${escapeHtml(choice.sourceName || "Feature")}</span>${
+      choice.desc ? " — " + escapeHtml(choice.desc) : ""
+    }`;
+    row.appendChild(title);
+    const rawOptions = Array.isArray(choice.options) ? choice.options : [];
+    const options = rawOptions.map((option) => ({ label: option.label || option.name, id: option.id, kind: "", raw: option }));
+    const choose = Math.max(1, Number(choice.choose) || 1);
+    const fields = Array.from({ length: choose }, () =>
+      createSearchField({
+        ready: true,
+        options,
+        onChange: () => {
+          refreshFieldOptions();
+          updateConfirmState();
+        },
+      })
+    );
+    const controlsRow = document.createElement("div");
+    controlsRow.className = "d-flex gap-2 align-items-center flex-wrap";
+    fields.forEach((field) => controlsRow.appendChild(field.element));
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className = "btn btn-sm btn-outline-primary";
+    confirmButton.textContent = "Confirm";
+    confirmButton.disabled = true;
+    // "Choose 2" (feat.skill-expertise's own real shape) shares one options
+    // pool across multiple fields — each field's own available options
+    // excludes whatever's currently picked in every OTHER field, same
+    // "already-picked can't be picked again" behavior the ability-score
+    // assignment/bonus pickers already have, so picking the same skill
+    // twice is never even offered, not just caught after the fact.
+    function refreshFieldOptions() {
+      fields.forEach((field, index) => {
+        const otherIds = fields
+          .filter((_, i) => i !== index)
+          .map((other) => other.getSelected()?.id)
+          .filter((id) => id !== undefined);
+        field.setOptions(options.filter((option) => !otherIds.includes(option.id)));
+      });
+    }
+    function hasDuplicatePicks() {
+      const picks = fields.map((field) => field.getSelected()?.id).filter((id) => id !== undefined);
+      return new Set(picks).size !== picks.length;
+    }
+    function updateConfirmState() {
+      confirmButton.disabled = fields.some((field) => !field.getSelected()) || hasDuplicatePicks();
+    }
+    confirmButton.addEventListener("click", () => {
+      const picks = fields.map((field) => field.getSelected());
+      if (picks.some((pick) => !pick) || hasDuplicatePicks()) {
+        return;
+      }
+      void resolvePendingChoice(choice, picks).then(() => onResolved?.());
+    });
+    controlsRow.appendChild(confirmButton);
+    row.appendChild(controlsRow);
+    return row;
+  }
+
+  // Writes a resolved background ability-score bonus directly onto
+  // stats.abilities — a genuinely different write shape than
+  // resolvePendingChoice's own generic "picks" array (a {abilityKey:
+  // bonus} distribution, not a list of picked options), so it's its own
+  // small function rather than a third branch grafted onto that one.
+  async function resolveAbilityScoreBonusChoice(choice, distribution) {
+    if (!state.draft) {
+      return;
+    }
+    const pendingChoices = getPendingChoices();
+    const index = pendingChoices.findIndex((entry) => entry.id === choice.id);
+    if (index === -1) {
+      return;
+    }
+    if (!state.draft.stats || typeof state.draft.stats !== "object") {
+      state.draft.stats = {};
+    }
+    if (!state.draft.stats.abilities || typeof state.draft.stats.abilities !== "object") {
+      state.draft.stats.abilities = {};
+    }
+    Object.entries(distribution).forEach(([key, bonus]) => {
+      state.draft.stats.abilities[key] = (Number(state.draft.stats.abilities[key]) || 0) + bonus;
+    });
+    state.draft.pendingChoices = pendingChoices.filter((_, i) => i !== index);
+    renderCanvas();
+    renderPreview();
+    await persistDraft({ silent: false });
+    syncCharacterActions();
+    status.show("Choice resolved.", { type: "success", timeout: 1800 });
+  }
+
+  // Shared by Background's own ability-score bonus AND class-granted
+  // Ability Score Improvement — "choose a distribution pattern, then which
+  // ability(ies) get which bonus" isn't a flat pick-N-of-M the generic
+  // createSearchField-per-choose shape can express. `patterns` is an
+  // explicit list of `{value, label, slots: [{bonus, label}]}` — when a
+  // pattern's own slot count matches the FULL options list (Background's
+  // "+1/+1/+1" against its own fixed 3 candidates), every option gets that
+  // slot's bonus with no selection needed; otherwise each slot renders its
+  // own `<select>`, cross-filtered against every other slot's current pick
+  // (same "already-picked can't be picked again" behavior the ability-
+  // SCORE assignment UI already has, applied here to "which ability"
+  // instead of "which rolled number").
+  function renderPointBuyAbilityChoiceRow(choice, patterns, { onResolved, resolveFn, defaultSourceLabel } = {}) {
+    const row = document.createElement("div");
+    row.className = "d-flex flex-column gap-2 border rounded-3 p-2";
+    const title = document.createElement("div");
+    title.className = "small";
+    title.innerHTML = `<span class="fw-semibold">${escapeHtml(choice.sourceName || defaultSourceLabel || "")}</span>${
+      choice.desc ? " — " + escapeHtml(choice.desc) : ""
+    }`;
+    row.appendChild(title);
+    const options = Array.isArray(choice.options) ? choice.options : [];
+    const patternRow = document.createElement("div");
+    patternRow.className = "btn-group btn-group-sm";
+    const pickerMount = document.createElement("div");
+    pickerMount.className = "d-flex gap-2 align-items-center flex-wrap";
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className = "btn btn-sm btn-outline-primary align-self-start";
+    confirmButton.textContent = "Confirm";
+    let pattern = patterns[0]?.value;
+    let selects = [];
+    function activePattern() {
+      return patterns.find((entry) => entry.value === pattern) || patterns[0];
+    }
+    function renderPatternButtons() {
+      patternRow.innerHTML = "";
+      patterns.forEach((entry) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = entry.value === pattern ? "btn btn-primary" : "btn btn-outline-secondary";
+        button.textContent = entry.label;
+        button.addEventListener("click", () => {
+          pattern = entry.value;
+          renderPatternButtons();
+          renderPicker();
+        });
+        patternRow.appendChild(button);
+      });
+    }
+    function refreshSelectOptions() {
+      selects.forEach((select, index) => {
+        const current = select.value;
+        const otherValues = selects.filter((_, i) => i !== index).map((entry) => entry.value);
+        select.innerHTML = "";
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = "—";
+        select.appendChild(blank);
+        options.forEach((option) => {
+          if (otherValues.includes(option.id) && option.id !== current) {
+            return;
+          }
+          const opt = document.createElement("option");
+          opt.value = option.id;
+          opt.textContent = option.name;
+          select.appendChild(opt);
+        });
+        select.value = current;
+      });
+    }
+    function updateConfirm() {
+      const values = selects.map((select) => select.value);
+      confirmButton.disabled = values.some((value) => !value) || new Set(values).size !== values.length;
+    }
+    function renderPicker() {
+      pickerMount.innerHTML = "";
+      selects = [];
+      const slots = activePattern()?.slots || [];
+      if (slots.length >= options.length) {
+        const note = document.createElement("div");
+        note.className = "small text-body-secondary";
+        note.textContent = `${slots[0]?.label || "+1"} to each: ${options.map((option) => option.name).join(", ")}`;
+        pickerMount.appendChild(note);
+        confirmButton.disabled = false;
+        return;
+      }
+      slots.forEach((slot) => {
+        const wrap = document.createElement("div");
+        wrap.className = "d-flex align-items-center gap-1";
+        const label = document.createElement("span");
+        label.className = "small";
+        label.textContent = slot.label;
+        const select = document.createElement("select");
+        select.className = "form-select form-select-sm";
+        select.style.maxWidth = "8rem";
+        wrap.append(label, select);
+        pickerMount.appendChild(wrap);
+        selects.push(select);
+      });
+      refreshSelectOptions();
+      selects.forEach((select) => {
+        select.addEventListener("change", () => {
+          refreshSelectOptions();
+          updateConfirm();
+        });
+      });
+      updateConfirm();
+    }
+    renderPatternButtons();
+    renderPicker();
+    confirmButton.addEventListener("click", () => {
+      const slots = activePattern()?.slots || [];
+      const distribution = {};
+      if (slots.length >= options.length) {
+        options.forEach((option) => {
+          distribution[option.id] = slots[0]?.bonus || 1;
+        });
+      } else {
+        const values = selects.map((select) => select.value);
+        if (values.some((value) => !value) || new Set(values).size !== values.length) {
+          return;
+        }
+        slots.forEach((slot, index) => {
+          distribution[values[index]] = slot.bonus;
+        });
+      }
+      void resolveFn(choice, distribution).then(() => onResolved?.());
+    });
+    row.append(patternRow, pickerMount, confirmButton);
+    return row;
+  }
+
+  const BACKGROUND_ABILITY_BONUS_PATTERNS = [
+    { value: "2-1", label: "+2 / +1", slots: [{ bonus: 2, label: "+2" }, { bonus: 1, label: "+1" }] },
+    {
+      value: "1-1-1",
+      label: "+1 / +1 / +1",
+      slots: [{ bonus: 1, label: "+1" }, { bonus: 1, label: "+1" }, { bonus: 1, label: "+1" }],
+    },
+  ];
+
+  // Background's own 2024 ability-score bonus — choice.options is always
+  // its own 3 candidate abilities ({id: abilityKey, name: shortLabel},
+  // sourced via loadAbilityFieldDefs at creation time — never hardcoded).
+  function renderAbilityScoreBonusChoiceRow(choice, { onResolved } = {}) {
+    return renderPointBuyAbilityChoiceRow(choice, BACKGROUND_ABILITY_BONUS_PATTERNS, {
+      onResolved,
+      resolveFn: resolveAbilityScoreBonusChoice,
+      defaultSourceLabel: "Background",
+    });
+  }
+
+  const CLASS_ABILITY_IMPROVEMENT_PATTERNS = [
+    { value: "2", label: "+2 to one", slots: [{ bonus: 2, label: "+2" }] },
+    { value: "1-1", label: "+1 to two", slots: [{ bonus: 1, label: "+1" }, { bonus: 1, label: "+1" }] },
+  ];
+
+  // A class-granted Ability Score Improvement (feat.ability-score-
+  // improvement's own "abilityScoreImprovement" grant, resolved once ASI
+  // is picked as the feat) — choice.options is every one of the character's
+  // own stats.abilities keys (resolveDynamicGrantOptions' "allAbilities"
+  // source), all 6 typically, so "+1 to two" genuinely needs a 2-of-N
+  // picker rather than Background's own "apply to all 3" shortcut.
+  // resolveAbilityScoreBonusChoice's own write (a flat {abilityKey: bonus}
+  // distribution) is already fully generic — no separate resolve function
+  // needed here.
+  function renderClassAbilityScoreImprovementChoiceRow(choice, { onResolved } = {}) {
+    return renderPointBuyAbilityChoiceRow(choice, CLASS_ABILITY_IMPROVEMENT_PATTERNS, {
+      onResolved,
+      resolveFn: resolveAbilityScoreBonusChoice,
+      defaultSourceLabel: "Ability Score Improvement",
+    });
+  }
+
+  // Shared by subclassChoice/featChoice — both are "pick ONE from a
+  // Library-kind list where seeing the description matters" (same
+  // reasoning the Build wizard's own Species/Class/Background steps
+  // already established for createFilterableListPicker over the flat
+  // createSearchField-per-choose shape the generic pendingChoice row
+  // above uses — too many subclasses/feats for that shape). Confirms via
+  // the SAME resolvePendingChoice(choice, picks) signature every other
+  // type uses, picks[0] = {id, label, raw: theChoiceOption} — one apply
+  // path, not a second one bolted on for these two types.
+  function renderFilterableChoiceRow(choice, { onResolved } = {}) {
+    const row = document.createElement("div");
+    row.className = "d-flex flex-column gap-2 border rounded-3 p-2";
+    const title = document.createElement("div");
+    title.className = "small";
+    title.innerHTML = `<span class="fw-semibold">${escapeHtml(choice.sourceName || "")}</span>${
+      choice.desc ? " — " + escapeHtml(choice.desc) : ""
+    }`;
+    row.appendChild(title);
+    const options = Array.isArray(choice.options) ? choice.options : [];
+    let selected = null;
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className = "btn btn-sm btn-outline-primary align-self-start";
+    confirmButton.textContent = "Confirm";
+    confirmButton.disabled = true;
+    const picker = createFilterableListPicker({
+      options: options.map((option) => ({ id: option.id, name: option.label, description: option.description, raw: option })),
+      emptyMessage: "No options available.",
+      onSelect: (option) => {
+        selected = option;
+        confirmButton.disabled = false;
+      },
+    });
+    row.appendChild(picker.element);
+    confirmButton.addEventListener("click", () => {
+      if (!selected) {
+        return;
+      }
+      const pick = { id: selected.id, label: selected.name, raw: selected.raw };
+      void resolvePendingChoice(choice, [pick]).then(() => onResolved?.());
+    });
+    row.appendChild(confirmButton);
+    return row;
+  }
+
+  function renderPendingChoices() {
+    const mount = elements.pendingChoicesMount;
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    const choices = getPendingChoices();
+    if (!choices.length) {
+      return;
+    }
+    const heading = document.createElement("div");
+    heading.className = "fw-semibold text-body-secondary small";
+    heading.textContent = "Pending choices";
+    mount.appendChild(heading);
+    choices.forEach((choice) => mount.appendChild(renderPendingChoiceRow(choice)));
+  }
+
+  // Called from syncCharacterActions (already the universal choke point for
+  // every load/Save/edit-permission change) rather than a second parallel
+  // set of state checks — reuses the exact draftHasId/canWrite/canEditRecord/
+  // locked values that block already computed for Save/Duplicate/Delete.
+  function refreshCharacterPropertiesPanel({ draftHasId = false, canWrite = false, canEditRecord = false, locked = false } = {}) {
+    if (!elements.characterPropertiesPanel) {
+      return;
+    }
+    const classes = Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : [];
+    const hasLinkedClass = classes.some((cls) => cls?.refId);
+    // Level Up levels an EXISTING class (a "which class?" picker appears
+    // first once there's more than one) — Add a Class is the separate
+    // action for actually multiclassing, so neither button needs to know
+    // or care how many classes the character already has beyond "at least
+    // one, linked" for Level Up specifically.
+    const commonlyDisabled = !draftHasId || locked || !canEditRecord || !canWrite || state.mode !== "edit";
+    const commonDisabledTitle = !draftHasId
+      ? "Select a character first."
+      : locked
+        ? "Group characters must be claimed before use."
+        : !canEditRecord || !canWrite
+          ? "You don't have permission to edit this character."
+          : state.mode !== "edit"
+            ? "Switch to Edit mode."
+            : "";
+    const levelUpDisabled = commonlyDisabled || !hasLinkedClass;
+    const levelUpDisabledTitle = commonlyDisabled
+      ? commonDisabledTitle
+      : !classes.length
+        ? "This character has no class recorded."
+        : "Link this character's class to a Library record first.";
+    if (elements.levelUpButton) {
+      setDisabledTooltip(elements.levelUpButton, levelUpDisabled ? levelUpDisabledTitle : "");
+      initTooltip(elements.levelUpButton, { title: levelUpDisabled ? "" : "Level up this character" });
+    }
+    if (elements.addClassButton) {
+      setDisabledTooltip(elements.addClassButton, commonlyDisabled ? commonDisabledTitle : "");
+      initTooltip(elements.addClassButton, { title: commonlyDisabled ? "" : "Add a class (multiclass)" });
+    }
+    renderPendingChoices();
   }
 
   function initNotesEditor() {
@@ -1670,13 +3150,27 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
+  // The exact SAME resolution combat-tracker.js and character-sheet.js
+  // already use for HP/AC/Conditions/Initiative (see findRoleBoundField's
+  // own comment, bindings.js) — "which field is Initiative" is a System-
+  // level question, answered by whichever combatBindings entry the active
+  // System itself tags role:"modifier" (editable in Loom's own System
+  // editor, property-schema-editor.js's Role column), never a Workbench
+  // Template component's own id/binding compared against a literal string.
+  function findInitiativeCombatBinding() {
+    const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
+    const combatBindings = findRoleBoundField(fields)?.values;
+    return findBindingByRole(combatBindings, "modifier");
+  }
+
   async function handleComponentRoll(expression, label, component, targetValue) {
     if (!expression) {
       return;
     }
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
     const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue });
-    if (result && component?.id === "initiative") {
+    const initiativeBinding = findInitiativeCombatBinding();
+    if (result && initiativeBinding && component?.binding === initiativeBinding.binding) {
       void pushInitiativeToActiveEncounter(result.total);
     }
   }
@@ -1695,9 +3189,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     button.className = "btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center";
     const label = component.label || component.name || "Roll";
     button.setAttribute("aria-label", `Roll ${label}`);
-    if (Array.isArray(expressions) && expressions.length) {
-      button.title = expressions.join(" • ");
-    }
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute(
+      "data-bs-title",
+      Array.isArray(expressions) && expressions.length ? expressions.join(" • ") : `Roll ${label}`
+    );
     const icon = document.createElement("span");
     icon.className = "iconify";
     icon.setAttribute("data-icon", "tabler:dice-5");
@@ -1723,6 +3219,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     button.type = "button";
     button.className = "btn btn-outline-secondary";
     button.setAttribute("aria-label", label);
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", label);
     const icon = document.createElement("span");
     icon.className = "iconify";
     icon.dataset.icon = iconName;
@@ -1866,6 +3364,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!elements.diceMovesRow) {
       return;
     }
+    // Disposed before removal, not after — see tooltips.js's own BUG CLASS
+    // 2. Scoped to diceMovesRow, not the whole canvasRoot sweep elsewhere in
+    // this file, since this rebuilds independently on every System-
+    // resolution refresh.
+    disposeTooltips(elements.diceMovesRow);
     moveButtons.forEach((button) => button.remove());
     moveButtons.clear();
     // NOT `.hidden` — `.dice-quick-grid`'s own `display: grid` (an author
@@ -1880,12 +3383,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       button.textContent = move.label;
       button.setAttribute("aria-label", `Roll ${move.label}`);
       if (move.expression) {
-        button.title = move.expression;
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-title", move.expression);
       }
       button.addEventListener("click", () => void executeSystemMove(move));
       moveButtons.set(index, button);
       elements.diceMovesRow.appendChild(button);
     });
+    refreshTooltips(elements.diceMovesRow);
   }
 
   // Rolls a System-defined Move (Section 1.3/4) and posts it to the Game
@@ -3433,19 +4938,26 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       syncNotesEditor();
       renderCanvas();
       renderPreview();
-      // Pre-warms the Features tab's own reference-chip name/description
-      // cache (ensureFeatureSummaryCache) as soon as the character loads,
-      // not lazily on that tab's own first render — confirmed real,
-      // reported UX gap: switching to Features triggered this bulk fetch
-      // for the first time right then, showing every chip as its own raw
-      // "feat.xyz" id until it resolved. Fire-and-forget — its own .then
+      // Pre-warms every id-storage Repeater's own reference cache (Features'
+      // @featureIds today, generically any component.itemStorage === "id"
+      // repeater the template happens to define) as soon as the character
+      // loads, not lazily on that tab's own first render — confirmed real,
+      // reported UX gap: switching tabs triggered this bulk fetch for the
+      // first time right then, showing every chip as its own raw id until
+      // it resolved. Fire-and-forget — ensureSourceKindCached's own .then
       // already calls renderCanvas() once populated, and every OTHER tab
       // (already rendered above) doesn't wait on this at all.
-      void ensureFeatureSummaryCache();
+      collectIdStorageKinds(state.components).forEach((kind) => ensureSourceKindCached(kind));
       void refreshRelationshipsSection();
       syncCharacterOptions();
       syncCharacterActions();
       syncCharacterToolbarVisibility();
+      // Always expands on load — this section now holds Level Up/Add a
+      // Class/Re-import (Phase 5), core actions relevant to every loaded
+      // character, not just a "something's waiting" indicator the way it
+      // was when this only ever showed pendingChoices from a prior Level
+      // Up. Matches NPC/Monster Properties' own always-expanded precedent.
+      expandCharacterPropertiesSection();
       status.show(`Loaded ${state.draft.name || metadata.title || state.draft.id}`, {
         type: "success",
         timeout: 2000,
@@ -4770,6 +6282,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     button.type = "button";
     button.className = "btn btn-sm btn-outline-danger flex-shrink-0";
     button.setAttribute("aria-label", "Remove item");
+    // A bare icon button with no visible tooltip is never acceptable in
+    // this suite — aria-label alone covers screen readers, not a sighted
+    // user hovering it. initTooltip is the same mechanism every other icon
+    // button's tooltip already goes through.
+    initTooltip(button, { title: "Remove item" });
     const icon = document.createElement("span");
     icon.className = "iconify";
     icon.dataset.icon = "tabler:trash";
@@ -4786,16 +6303,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // (not per-row, unlike Remove) — same iconify/tabler pattern, label text
   // included since a bare icon here would be too easy to miss below a long
   // list.
-  function createRepeaterAddButton(onAdd) {
+  function createRepeaterAddButton(onAdd, { label = "Add item" } = {}) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "btn btn-sm btn-outline-secondary align-self-start d-inline-flex align-items-center gap-1";
+    // Standard size (not btn-sm), no align-self override — when this sits
+    // beside a Source picker's own input-group (Inventory's "Add custom
+    // item"), it needs to match that control's height and vertical center
+    // exactly, not anchor to its own top edge at a smaller size.
+    button.className = "btn btn-outline-secondary d-inline-flex align-items-center gap-1";
     const icon = document.createElement("span");
     icon.className = "iconify";
     icon.dataset.icon = "tabler:plus";
     icon.setAttribute("aria-hidden", "true");
     button.appendChild(icon);
-    button.appendChild(document.createTextNode("Add item"));
+    button.appendChild(document.createTextNode(label));
     button.addEventListener("click", (event) => {
       event.preventDefault();
       onAdd();
@@ -4893,59 +6414,659 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     });
   }
 
-  // `@featureIds` is a suite-wide convention field name (Monster/NPC/
-  // Class/Species/Variant/Character all use this exact literal — see
-  // content-feature-matching.js's own header comment), not System-specific
-  // — recognized here the same deliberate way `component.binding === "@value"`
-  // already is, not a generic "any bare-string array" heuristic (which would
-  // wrongly turn an unrelated string list, e.g. Languages, into feature
-  // chips). `featureIds` itself is a bare id array (Monster's own shape,
-  // not {refKind,refId,name} objects — see content-feature-matching.js's
-  // own reasoning for why), so each entry needs its own display name (and,
-  // as of this fix, description — see the Features Repeater's own second
-  // item-row field in tpl.5e.flex-basic.json, added so a player can read
-  // what a feature actually does without hovering/clicking every pill)
-  // looked up before a Text/reference-chip cell has anything to show. Uses
-  // fetchKindEntriesWithIds (full bodies), not fetchKindEntrySummaries
-  // (list-endpoint metadata only, no description field at all) — still one
-  // bulk, cached call per character-sheet load (cachedBulkFetch's own
-  // cross-visit cache), never one fetch per row.
-  let featureSummaryCache = null;
-  let featureSummaryFetchInFlight = false;
-  function ensureFeatureSummaryCache() {
-    if (featureSummaryCache || featureSummaryFetchInFlight || !dataManager) return;
-    featureSummaryFetchInFlight = true;
-    fetchKindEntriesWithIds(dataManager, "feature")
-      .then((entries) => {
-        featureSummaryCache = new Map(
-          entries.map((entry) => [
-            entry.id,
-            { name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity) },
-          ])
-        );
-        renderCanvas();
-      })
-      .catch(() => {
-        featureSummaryCache = new Map();
-      })
-      .finally(() => {
-        featureSummaryFetchInFlight = false;
+  // A Repeater's own stored array is sometimes a COLLAPSED-REFERENCE array
+  // — bare Library-kind ids (Character.featureIds is the real example: a
+  // suite-wide structural convention shared with Monster/NPC/Class/Species/
+  // Variant, see content-feature-matching.js's own header comment) even
+  // though the item template's own cells expect real object fields
+  // (@name/@description) to bind against. This is never detected by
+  // checking a specific binding path — `component.itemStorage === "id"` is
+  // a real, ordinary authored field (same tier as `allowAdd`/`allowRemove`),
+  // set on whichever Repeater actually needs it, so a Template author can
+  // see and change it in the Inspector. Which KIND to resolve those ids
+  // against comes from the item template's own pickable cell (the SAME
+  // Source a Select would use — see findRepeaterSourceFormula/
+  // findPickableCell below), never a second hardcoded kind name, and reuses
+  // the SAME per-kind cache the Add picker itself populates (sourceKindCache,
+  // defined below function-hoists this file fine), so displaying and adding
+  // a feature never fetch the kind twice.
+  function isIdStorageRepeater(component) {
+    return component?.itemStorage === "id";
+  }
+
+  // Reads a Repeater's own real pickable cell — wherever it lives in the
+  // item template, same discovery findPickableCell/renderGenericAddControls
+  // already do — purely to get back at ITS sourceFormula, for the two
+  // display-side (not Add-side) callers below that need to know which kind
+  // a collapsed-reference array resolves against.
+  function findRepeaterSourceFormula(component) {
+    const columns = getRepeaterColumnCount(component);
+    const itemColumns = Array.from({ length: columns }, (_, col) => getRepeaterColumnZoneNodes(component, "item", col));
+    const cell = findPickableCell(itemColumns.flat());
+    return typeof cell?.sourceFormula === "string" ? cell.sourceFormula : "";
+  }
+
+  function expandIdStorageItems(component, ids) {
+    const kind = sourceFormulaKind(findRepeaterSourceFormula(component));
+    if (!kind) return [];
+    if (!sourceKindCache.has(kind)) {
+      ensureSourceKindCached(kind);
+      return [];
+    }
+    const entries = sourceKindCache.get(kind) || [];
+    const byId = new Map(entries.map((entry) => [entry.id, entry.entity]));
+    return (Array.isArray(ids) ? ids : [])
+      .filter((id) => typeof id === "string" && id)
+      .map((id) => {
+        const entity = byId.get(id);
+        return { refKind: kind, refId: id, name: entity?.name || id, description: resolveNotes(entity) };
       });
   }
 
-  function expandFeatureIdsToRepeaterItems(ids) {
-    ensureFeatureSummaryCache();
-    return ids
-      .filter((id) => typeof id === "string" && id)
-      .map((id) => {
-        const summary = featureSummaryCache?.get(id);
-        return { refKind: "feature", refId: id, name: summary?.name || id, description: summary?.description || "" };
+  // Walks the WHOLE template's own component tree (state.components, the
+  // root array every top-level card renders from) collecting the distinct
+  // Library kinds every id-storage Repeater the template happens to define
+  // resolves against — used only to pre-warm those kinds' caches on
+  // character load (see this file's own loadCharacter, above). Generic
+  // over however many such repeaters a template defines, not hardcoded to
+  // "feature" — a future id-storage repeater for a different kind gets the
+  // same pre-warm for free.
+  function collectIdStorageKinds(nodes) {
+    const kinds = new Set();
+    const walk = (list) => {
+      for (const node of list || []) {
+        if (!node) continue;
+        if (node.type === "repeater" && isIdStorageRepeater(node)) {
+          const kind = sourceFormulaKind(findRepeaterSourceFormula(node));
+          if (kind) kinds.add(kind);
+        }
+        if (node.zones && typeof node.zones === "object") {
+          Object.values(node.zones).forEach(walk);
+        }
+      }
+    };
+    walk(nodes);
+    return [...kinds];
+  }
+
+  // --- Source-bound Add pickers for Repeaters -----------------------------
+  // A Repeater's Add control normally just pushes a blank row (see
+  // createBlankRepeaterItem below). When a Repeater is authored with a
+  // Source/Options binding — the exact same field every Select already has
+  // (createDataControls, workbench-template-view.js), now also accepting a
+  // formula the way Visible/Editable in Play already do — Add opens a
+  // picker over that source instead, so a GM never has to hand-type a
+  // value that already has a real, authored home (a System's own
+  // vocabulary field, or a Library kind). Nothing here is hardcoded to a
+  // particular System or kind: `sourceBinding`/`sourceFormula` are ordinary
+  // authored fields, and `libraryEntries`'s own filter arguments (below)
+  // are plain data — a kind, a field path on that kind's own records, and
+  // the value to match — never JS.
+
+  // Per-kind Library entry cache — shared by the Add picker mechanism
+  // below AND expandIdStorageItems above, so displaying an id-storage
+  // Repeater's own rows and adding a new one never fetch the same kind
+  // twice. fetchKindEntriesWithIds itself is already cross-visit-cached
+  // (content-fetch.js's own cachedBulkFetch), so this is only ever a fresh
+  // network request the first time any tool in this browser tab has asked
+  // for that kind.
+  const sourceKindCache = new Map();
+  const sourceKindFetchInFlight = new Set();
+  function ensureSourceKindCached(kind) {
+    if (!kind || sourceKindCache.has(kind) || sourceKindFetchInFlight.has(kind) || !dataManager) return;
+    sourceKindFetchInFlight.add(kind);
+    fetchKindEntriesWithIds(dataManager, kind)
+      .then((entries) => {
+        sourceKindCache.set(kind, entries);
+        renderCanvas();
+      })
+      .catch(() => {
+        sourceKindCache.set(kind, []);
+      })
+      .finally(() => {
+        sourceKindFetchInFlight.delete(kind);
       });
+  }
+
+  // Registered as a real formula function (see evaluateFormulaWithLookup
+  // above), the same way `lookup` already is — so a Source/Options field
+  // holding "=libraryEntries('wonder', 'properties.form', 'spell')"
+  // resolves through the ordinary formula engine, no special parsing case
+  // of its own. `path`/`value` are always plain literal arguments, never a
+  // nested "@..." formula string — evaluateFormula's own "@path"
+  // substitution runs once, blindly, across the WHOLE formula before any
+  // function call is parsed (formula-engine.js), so a per-candidate
+  // predicate expressed as a second formula string would get mangled the
+  // moment it referenced its own "@" path. Literal path/value filtering
+  // sidesteps that entirely and covers every case this suite needs today
+  // in one function: a scalar match (Spells' own "properties.form" =
+  // "spell"), a negated scalar match (Inventory's own "properties.form" !=
+  // "spell", via a leading "!"), and an array-contains match (Features' own
+  // "tags.categories" includes "character"). Omitting path/value returns
+  // every entry of the kind unfiltered.
+  function libraryEntries(kind, path, value) {
+    if (!kind || typeof kind !== "string") return [];
+    if (!sourceKindCache.has(kind)) {
+      ensureSourceKindCached(kind);
+      return [];
+    }
+    const entries = sourceKindCache.get(kind) || [];
+    if (!path) return entries;
+    const negate = typeof value === "string" && value.startsWith("!");
+    const target = negate ? value.slice(1) : value;
+    return entries.filter((entry) => {
+      const raw = resolveDottedPath(entry.entity, path);
+      const matches = Array.isArray(raw) ? raw.includes(target) : raw === target;
+      return negate ? !matches : matches;
+    });
+  }
+
+  // Lightweight pre-check for the one thing resolveRepeaterAddCandidates
+  // can't get by just evaluating the formula: whether the picker should
+  // show "Loading…" instead of "Nothing available" while a Library kind's
+  // entries are still in flight. Recognizes libraryEntries' own call shape
+  // well enough to read the kind name back out; doesn't need to understand
+  // its other arguments.
+  function sourceFormulaKind(formula) {
+    const trimmed = typeof formula === "string" ? formula.trim() : "";
+    const match = trimmed.match(/libraryEntries\(\s*['"]([a-z][a-z0-9_-]*)['"]/i);
+    return match ? match[1] : "";
+  }
+
+  function hasConfiguredSource(component) {
+    return Boolean(
+      (typeof component?.sourceBinding === "string" && component.sourceBinding.trim()) ||
+        (typeof component?.sourceFormula === "string" && component.sourceFormula.trim())
+    );
+  }
+
+  // Resolves a Repeater's own Add-picker candidate list — same two Source
+  // shapes every Select already distinguishes: a plain binding
+  // ("@armorCategories") reads straight from the active System's own
+  // authored vocabulary; a formula runs through the real formula engine
+  // (evaluateFormulaWithLookup), with `libraryEntries` registered alongside
+  // `lookup` — so any Source formula, not just this one call shape, is
+  // naturally supported. `ready: false` while a Library fetch is still in
+  // flight, so the picker can show "Loading…" instead of an empty,
+  // possibly-misleading list.
+  function resolveRepeaterAddCandidates(component) {
+    const sourceBinding = typeof component?.sourceBinding === "string" ? component.sourceBinding.trim() : "";
+    if (sourceBinding) {
+      const values = resolveSystemFieldValues(sourceBinding) || [];
+      return {
+        ready: true,
+        options: values.map((entry) => ({
+          label: entry?.name || entry?.label || String(entry),
+          kind: "",
+          id: "",
+          raw: entry,
+        })),
+      };
+    }
+    const formula = typeof component?.sourceFormula === "string" ? component.sourceFormula.trim() : "";
+    if (!formula) return { ready: true, options: [] };
+    const kind = sourceFormulaKind(formula);
+    if (kind && !sourceKindCache.has(kind)) {
+      ensureSourceKindCached(kind);
+      return { ready: false, options: [] };
+    }
+    let result;
+    try {
+      result = evaluateFormulaWithLookup(formula, getBindingContext(), {});
+    } catch (error) {
+      console.warn("Character editor: unable to evaluate Add source formula", error);
+      result = [];
+    }
+    const entries = Array.isArray(result) ? result : [];
+    return {
+      ready: true,
+      options: entries
+        .map((entry) => ({ label: entry.entity?.name || entry.id, kind, id: entry.id, raw: entry.entity }))
+        .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" })),
+    };
+  }
+
+  // Bare search-then-pick combobox — no Add button of its own. A text
+  // input filters the candidate list as you type, a dropdown of matches
+  // appears below it (mirrors icon-picker.js's own attachIconAutocomplete:
+  // arrow keys navigate, Enter/click selects), rather than a plain
+  // <select> — Spells/Features/Inventory can each have hundreds of
+  // candidates, too many to usefully scan in a native dropdown. Exposes
+  // `getSelected()`/`reset()` so createMultiPickerRow (below) can combine
+  // one or several of these into a single Add action sharing one button —
+  // every pickable cell in a row (Defenses has two; everything else has
+  // one) gets the exact same control, never a different one per case.
+  function createSearchField({ options, ready, placeholder = "Search…", onChange, narrow = false }) {
+    const group = document.createElement("div");
+    // Fixed width (not max-width) is what "consistent width for all of
+    // them" actually needs — every pickable cell in the suite funnels
+    // through this one function, so setting it once here is the only way
+    // to guarantee every instance matches instead of drifting per call
+    // site. Narrowed automatically once more than one field shares an Add
+    // row (createMultiPickerRow), so a compound row like Defenses' own
+    // doesn't run two full-width search boxes side by side.
+    group.className = "position-relative";
+    group.style.width = narrow ? "14rem" : "28rem";
+    group.style.maxWidth = "100%";
+    const input = document.createElement("input");
+    input.type = "search";
+    input.className = "form-control";
+    input.placeholder = !ready ? "Loading…" : options.length ? placeholder : "Nothing available";
+    input.disabled = !ready || !options.length;
+    const dropdown = document.createElement("div");
+    dropdown.className = "list-group position-absolute top-100 start-0 w-100 shadow-sm bg-body border mt-1 d-none";
+    dropdown.style.zIndex = "1300";
+    dropdown.style.maxHeight = "16rem";
+    dropdown.style.overflowY = "auto";
+    dropdown.style.fontSize = "0.8125rem";
+    // Without this, dragging the dropdown's own scrollbar (a real,
+    // reported bug — the list is scrollable, maxHeight 16rem, once matches
+    // exceed a handful) fires a plain mousedown on the dropdown container
+    // itself, not on any row — only rows had their own preventDefault
+    // before this, so that mousedown blurred the input and the dropdown
+    // closed itself out from under an attempted scroll. One listener on
+    // the whole container covers the scrollbar AND every row (the rows'
+    // own identical listener stays, harmless but redundant now).
+    dropdown.addEventListener("mousedown", (event) => event.preventDefault());
+
+    let selected = null;
+    let matches = [];
+    let activeIndex = -1;
+
+    const closeDropdown = () => {
+      dropdown.classList.add("d-none");
+      dropdown.innerHTML = "";
+      matches = [];
+      activeIndex = -1;
+    };
+    const selectOption = (option) => {
+      selected = option;
+      input.value = option.label;
+      onChange?.(option);
+      closeDropdown();
+    };
+    const renderMatches = () => {
+      dropdown.innerHTML = "";
+      if (!matches.length) {
+        closeDropdown();
+        return;
+      }
+      matches.forEach((option, index) => {
+        const row = document.createElement("button");
+        row.type = "button";
+        row.className = `list-group-item list-group-item-action py-1${index === activeIndex ? " active" : ""}`;
+        row.textContent = option.label;
+        row.addEventListener("mousedown", (event) => event.preventDefault());
+        row.addEventListener("click", () => selectOption(option));
+        dropdown.appendChild(row);
+      });
+      dropdown.classList.remove("d-none");
+    };
+    const MAX_MATCHES = 25;
+    const updateMatches = () => {
+      selected = null;
+      onChange?.(null);
+      const query = input.value.trim().toLowerCase();
+      matches = (query ? options.filter((option) => option.label.toLowerCase().includes(query)) : options).slice(0, MAX_MATCHES);
+      activeIndex = -1;
+      renderMatches();
+    };
+
+    input.addEventListener("input", updateMatches);
+    input.addEventListener("focus", () => {
+      if (!input.disabled) updateMatches();
+    });
+    input.addEventListener("keydown", (event) => {
+      if (input.disabled) return;
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (!matches.length) updateMatches();
+        else {
+          activeIndex = Math.min(activeIndex + 1, matches.length - 1);
+          renderMatches();
+        }
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        activeIndex = Math.max(activeIndex - 1, 0);
+        renderMatches();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        if (activeIndex >= 0 && matches[activeIndex]) selectOption(matches[activeIndex]);
+      } else if (event.key === "Escape") {
+        closeDropdown();
+      }
+    });
+    // A short delay, not an immediate close, so a click on a dropdown row
+    // (which blurs the input first) still lands — the row's own mousedown
+    // handler above already prevents the blur from stealing focus, but
+    // click order across browsers isn't worth relying on for this alone.
+    input.addEventListener("blur", () => {
+      window.setTimeout(closeDropdown, 150);
+    });
+
+    group.append(input, dropdown);
+    return {
+      element: group,
+      getSelected: () => selected,
+      reset: () => {
+        selected = null;
+        input.value = "";
+      },
+      // Lets a caller with several of these fields sharing one options pool
+      // (e.g. a "choose 2" pendingChoice) exclude whatever's already picked
+      // in a SIBLING field — same "already-picked can't be picked again"
+      // behavior the ability-score assignment/bonus pickers already have.
+      // Re-validates the CURRENT selection too: if it's no longer in the
+      // new list (another field just took it), it's cleared rather than
+      // left silently pointing at an option that's no longer offered here.
+      setOptions: (nextOptions) => {
+        options = Array.isArray(nextOptions) ? nextOptions : [];
+        input.disabled = !ready || !options.length;
+        input.placeholder = !ready ? "Loading…" : options.length ? placeholder : "Nothing available";
+        if (selected && !options.some((option) => option.id === selected.id)) {
+          selected = null;
+          input.value = "";
+          onChange?.(null);
+        }
+        if (!dropdown.classList.contains("d-none")) {
+          updateMatches();
+        }
+      },
+    };
+  }
+
+  // Single-select, filterable, WITH a details panel — for the Build
+  // Character wizard's own Species/Class/Background steps, where "which one
+  // sounds right" genuinely benefits from seeing the description, unlike
+  // the Add/Remove picker's own createSearchField (a bare combobox is
+  // enough there — hundreds of candidates, but the player already knows
+  // roughly what they're looking for by name). Not a replacement for
+  // createSearchField; a different, purpose-built shape for a different
+  // situation. Clicking a row both selects it (single-select, exactly one
+  // active at a time) and renders its own description below — one action,
+  // not a separate preview-then-confirm step.
+  function createFilterableListPicker({ options, onSelect, emptyMessage = "Nothing available" }) {
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    const filterInput = document.createElement("input");
+    filterInput.type = "search";
+    filterInput.className = "form-control form-control-sm";
+    filterInput.placeholder = "Filter…";
+    const list = document.createElement("div");
+    list.className = "list-group";
+    list.style.maxHeight = "11rem";
+    list.style.overflowY = "auto";
+    // Same scrollbar-drag-closes-the-list class of bug createSearchField's
+    // own dropdown had — this list isn't blur-driven the way that one is,
+    // but the mousedown-inside-a-scrollable-list hazard is worth guarding
+    // against here too rather than waiting for a second report.
+    list.addEventListener("mousedown", (event) => event.preventDefault());
+    const details = document.createElement("div");
+    details.className = "border rounded-3 p-2 small text-body-secondary";
+    details.style.maxHeight = "8rem";
+    details.style.overflowY = "auto";
+    details.textContent = "Select an option to see its description.";
+    wrap.append(filterInput, list, details);
+
+    let selectedId = null;
+
+    function renderList() {
+      const query = filterInput.value.trim().toLowerCase();
+      const filtered = query ? options.filter((option) => option.name.toLowerCase().includes(query)) : options;
+      list.innerHTML = "";
+      if (!filtered.length) {
+        const empty = document.createElement("div");
+        empty.className = "text-body-secondary small p-2";
+        empty.textContent = emptyMessage;
+        list.appendChild(empty);
+        return;
+      }
+      filtered.forEach((option) => {
+        const row = document.createElement("button");
+        row.type = "button";
+        const isSelected = option.id === selectedId;
+        row.className = `list-group-item list-group-item-action py-1 d-flex align-items-center gap-2${isSelected ? " active" : ""}`;
+        const icon = document.createElement("span");
+        icon.className = "iconify flex-shrink-0";
+        icon.dataset.icon = isSelected ? "tabler:circle-check-filled" : "tabler:circle";
+        icon.setAttribute("aria-hidden", "true");
+        const label = document.createElement("span");
+        label.textContent = option.name;
+        row.append(icon, label);
+        row.addEventListener("click", () => {
+          selectedId = option.id;
+          details.innerHTML = option.description || "No description available.";
+          renderList();
+          onSelect(option);
+        });
+        list.appendChild(row);
+      });
+    }
+    filterInput.addEventListener("input", renderList);
+    renderList();
+    return {
+      element: wrap,
+      getSelectedId: () => selectedId,
+      reset: () => {
+        selectedId = null;
+        filterInput.value = "";
+        details.textContent = "Select an option to see its description.";
+        renderList();
+      },
+    };
+  }
+
+  // Combines N pickable cells into one Add row — 1 for the common case
+  // (Features/Spells/Inventory/Proficiencies), 2+ for a genuinely compound
+  // row (Defenses). One search field per cell, sharing a single Add button
+  // that only enables once every field has a selection — same physical
+  // shape (and same Bootstrap input-group sizing) regardless of how many
+  // pickable cells a given Repeater turns out to have.
+  function createMultiPickerRow(pickableCells, onAdd) {
+    const wrap = document.createElement("div");
+    // align-items-center (not the default cross-axis start) so every field
+    // and the shared Add button line up on one visual baseline.
+    wrap.className = "d-flex gap-2 align-items-center flex-wrap";
+    const narrow = pickableCells.length > 1;
+    const fields = pickableCells.map((cell) => {
+      const { ready, options } = resolveRepeaterAddCandidates(cell);
+      return createSearchField({ ready, options, narrow, onChange: () => updateAddButton() });
+    });
+    const group = document.createElement("div");
+    group.className = "input-group";
+    group.style.width = "auto";
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "btn btn-outline-secondary";
+    initTooltip(addButton, { title: "Add" });
+    const addIcon = document.createElement("span");
+    addIcon.className = "iconify";
+    addIcon.dataset.icon = "tabler:plus";
+    addIcon.setAttribute("aria-hidden", "true");
+    addButton.appendChild(addIcon);
+    function updateAddButton() {
+      addButton.disabled = fields.some((field) => !field.getSelected());
+    }
+    updateAddButton();
+    addButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      const selections = fields.map((field) => field.getSelected());
+      if (selections.some((selection) => !selection)) return;
+      onAdd(selections);
+      fields.forEach((field) => field.reset());
+      updateAddButton();
+    });
+    fields.forEach((field) => wrap.appendChild(field.element));
+    group.appendChild(addButton);
+    wrap.appendChild(group);
+    return wrap;
+  }
+
+  // Resolves the write path for a picked cell: `binding` stripped of its
+  // leading "@" — where a picked candidate's own value actually lands.
+  function cellFieldPath(node) {
+    const binding = typeof node?.binding === "string" ? node.binding.trim() : "";
+    return binding.startsWith("@") ? binding.slice(1) : "";
+  }
+
+  function setDottedField(target, path, value) {
+    if (!path) return;
+    const segments = path.split(".").filter(Boolean);
+    let cursor = target;
+    for (let i = 0; i < segments.length - 1; i += 1) {
+      const key = segments[i];
+      if (!cursor[key] || typeof cursor[key] !== "object") cursor[key] = {};
+      cursor = cursor[key];
+    }
+    cursor[segments[segments.length - 1]] = value;
+  }
+
+  // Recursively finds the first item-template node matching `predicate` —
+  // container nodes nest their own children under `zones` (a Repeater row
+  // is frequently a Container laying out several cells, e.g. Defenses' own
+  // two-column row). A nested Repeater ALSO has its own `zones`, but those
+  // describe ITS OWN item template — a separate scope — so recursion stops
+  // there by default; pass `intoRepeaters: true` to deliberately cross
+  // that boundary (used only when already looking inside a KNOWN nested
+  // repeater, e.g. a grouped repeater's own inner list below).
+  function findItemTemplateNode(nodes, predicate, { intoRepeaters = false } = {}) {
+    for (const node of nodes || []) {
+      if (!node) continue;
+      if (predicate(node)) return node;
+      if (node.zones && typeof node.zones === "object" && (intoRepeaters || node.type !== "repeater")) {
+        for (const zoneNodes of Object.values(node.zones)) {
+          const found = findItemTemplateNode(zoneNodes, predicate, { intoRepeaters });
+          if (found) return found;
+        }
+      }
+    }
+    return null;
+  }
+
+  // The one signal the whole Add mechanism needs to find a searchable
+  // field: any item-template node authored with its own Source/Options
+  // (sourceBinding/sourceFormula) — the exact same field every Select
+  // already has. Which binding path it targets, which column it lives in,
+  // and which kind/System-field it searches are all ordinary authored
+  // data; nothing here is hardcoded to any particular repeater's identity.
+  function findPickableCell(nodes) {
+    return findItemTemplateNode(nodes, (node) => hasConfiguredSource(node));
+  }
+
+  // A repeater's own items are GROUPS (Spells: one group per level) purely
+  // by having `groupByBinding` authored — never a binding-path check. Its
+  // own pickable field lives one level down, inside whichever nested
+  // Repeater its item template contains, found generically here rather
+  // than by name.
+  function findNestedRepeater(nodes) {
+    return findItemTemplateNode(nodes, (node) => node?.type === "repeater");
+  }
+
+  // Builds the object to push for a picked selection (or a SET of them,
+  // for a compound row like Defenses). Each pickable cell writes its own
+  // candidate's label to its own `binding` path — never a hardcoded
+  // per-repeater shape. Any selection that came from a Library kind
+  // (candidate.kind is non-empty) attaches a real `{refKind, refId}`
+  // reference alongside whatever the cells wrote — a property of the PICK
+  // itself, not of which repeater it landed in, so Inventory/Features/
+  // Spells all get a real reference with no per-binding-path special case.
+  function buildPickedItem(pickableCells, selections) {
+    if (pickableCells.length === 1 && cellFieldPath(pickableCells[0]) === "value") {
+      return selections[0]?.label;
+    }
+    const item = {};
+    let libraryPick = null;
+    pickableCells.forEach((cell, index) => {
+      const candidate = selections[index];
+      if (!candidate) return;
+      setDottedField(item, cellFieldPath(cell), candidate.label);
+      if (candidate.kind) libraryPick = candidate;
+    });
+    if (libraryPick) {
+      item.refKind = libraryPick.kind;
+      item.refId = libraryPick.id;
+    }
+    return item;
+  }
+
+  // The one Add-controls builder every Repeater with allowAdd goes
+  // through — no per-repeater special case anywhere. Ungrouped repeaters
+  // (Proficiencies, Features, Inventory, and Defenses' own genuine
+  // 2-column table) render one search field per pickable COLUMN, sharing
+  // one Add button. A grouped repeater (component.groupByBinding set —
+  // Spells) instead finds its pickable field inside its own nested inner
+  // repeater, and routes a pick into the matching group — creating it if
+  // this character has nothing at that key yet — rather than appending to
+  // the outer array directly. `candidateBinding` on the group-key cell
+  // (e.g. "@stats.level") says where to read that key FROM a picked
+  // candidate's own record — needed because the group's own key field name
+  // and the source record's own field path are two different schemas that
+  // don't happen to line up, the same kind of reshaping buildPickedItem
+  // above already does generically for every other field.
+  function renderGenericAddControls(component, items, writeback, itemColumns) {
+    if (component.groupByBinding) {
+      const innerRepeater = findNestedRepeater(itemColumns.flat());
+      if (!innerRepeater) return null;
+      const innerFieldPath = cellFieldPath(innerRepeater);
+      const groupKeyPath = cellFieldPath({ binding: component.groupByBinding });
+      if (!innerFieldPath || !groupKeyPath) return null;
+      const innerColumns = Array.from({ length: getRepeaterColumnCount(innerRepeater) }, (_, col) =>
+        getRepeaterColumnZoneNodes(innerRepeater, "item", col)
+      );
+      const pickableCells = innerColumns.map((nodes) => findPickableCell(nodes)).filter(Boolean);
+      if (!pickableCells.length) return null;
+      const groupKeyCell = findItemTemplateNode(itemColumns.flat(), (node) => cellFieldPath(node) === groupKeyPath);
+      const candidatePath =
+        typeof groupKeyCell?.candidateBinding === "string" ? groupKeyCell.candidateBinding.replace(/^@/, "") : "";
+      return createMultiPickerRow(pickableCells, (selections) => {
+        const item = buildPickedItem(pickableCells, selections);
+        const primary = selections.find(Boolean);
+        const keyValue = candidatePath && primary ? resolveDottedPath(primary.raw, candidatePath) : undefined;
+        const key = keyValue !== undefined && keyValue !== null ? keyValue : 0;
+        const existingIndex = items.findIndex((group) => resolveDottedPath(group, groupKeyPath) === key);
+        let nextItems;
+        if (existingIndex >= 0) {
+          nextItems = items.map((group, index) => {
+            if (index !== existingIndex) return group;
+            const innerList = Array.isArray(group?.[innerFieldPath]) ? group[innerFieldPath] : [];
+            return { ...group, [innerFieldPath]: [...innerList, item] };
+          });
+        } else {
+          const newGroup = { [innerFieldPath]: [item] };
+          setDottedField(newGroup, groupKeyPath, key);
+          nextItems = [...items, newGroup].sort(
+            (a, b) => (resolveDottedPath(a, groupKeyPath) ?? 0) - (resolveDottedPath(b, groupKeyPath) ?? 0)
+          );
+        }
+        writeback(nextItems);
+      });
+    }
+    const pickableCells = itemColumns.map((nodes) => findPickableCell(nodes)).filter(Boolean);
+    if (!pickableCells.length) return null;
+    return createMultiPickerRow(pickableCells, (selections) => {
+      if (isIdStorageRepeater(component)) {
+        const primary = selections.find(Boolean);
+        if (!primary) return;
+        writeback([...items, primary.id]);
+        return;
+      }
+      writeback([...items, buildPickedItem(pickableCells, selections)]);
+    });
   }
 
   function renderRepeaterComponent(component, itemContext = null) {
     const wrapper = document.createElement("div");
-    wrapper.className = "d-flex flex-column gap-2";
+    wrapper.className = "d-flex flex-column";
+    // Matches the Horizontal renderers' own "Grid gap (px)" field exactly
+    // (renderRepeaterHorizontalList/Grid above) — was a fixed Bootstrap
+    // gap-2 utility class here with no way to change it (confirmed real:
+    // Padding/Margin under Advanced are a DIFFERENT pair of fields
+    // entirely, so a template author setting both to blank still saw
+    // spacing they had no control over, since neither one drove this).
+    // Applies to the heading + every item row + Add controls uniformly,
+    // same as Horizontal's own single gapped container already does.
+    const gapPx = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
+    wrapper.style.gap = `${gapPx}px`;
     const labelText = component.label || component.name;
     if (labelText) {
       const heading = document.createElement("div");
@@ -4973,48 +7094,84 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       ? resolveItemContextValue(itemContext, component.binding)
       : resolveComponentValue(component);
     const items =
-      Array.isArray(value) && component.binding === "@featureIds"
-        ? expandFeatureIdsToRepeaterItems(value)
+      Array.isArray(value) && isIdStorageRepeater(component)
+        ? expandIdStorageItems(component, value)
         : Array.isArray(value)
           ? value
           : value && typeof value === "object"
             ? expandObjectBindingToRepeaterItems(value, component)
             : [];
-    // Add/Remove-row controls — first gated by component.allowAddRemove
-    // (createRepeaterAllowAddRemoveToggle, workbench-template-view.js): an
-    // explicit per-Repeater authoring choice, off by default, since most
-    // Repeaters (ability scores, skills, a fixed defenses list, ...) have a
-    // fixed cardinality where Add/Remove would be actively wrong to offer —
-    // only a genuinely open-ended list (Inventory, Upgrades, ...) turns it
-    // on. Once on, WHEN it's usable follows the same authored "Editable in
-    // Play" setting every other component uses (isComponentEditableInPlay),
-    // checked on the Repeater ITSELF rather than a per-node condition,
-    // since adding/removing a whole row isn't one field's own concern. Edit
-    // mode always allows it, same as every other field's own gating; a
-    // Repeater with no binding at all has nothing to write to, so it's
-    // excluded regardless of mode.
+    // Add and Remove are two separate authored toggles (createRepeaterAllowAddToggle/
+    // createRepeaterAllowRemoveToggle, workbench-template-view.js) — off by
+    // default, since most Repeaters (ability scores, skills, a fixed
+    // defenses list, ...) have a fixed cardinality where either would be
+    // actively wrong to offer; only a genuinely open-ended list (Inventory,
+    // Features, ...) turns them on, independently, whichever it actually
+    // needs (e.g. Spells' own inner per-level Repeater allows Remove but not
+    // Add — its Add flow is owned by the outer level-grouped Repeater
+    // instead, see renderGenericAddControls's grouped branch above).
     // Adding/removing a whole row is this Repeater's OWN top-level binding
     // (component.binding, e.g. "@group.partyInventory"), unlike a single
     // cell's item-relative one — same group-permission reasoning as
     // isRepeaterCellEditable, checked directly against component.binding
     // here instead since there's no itemContext at this level.
-    const canManage =
-      Boolean(component.allowAddRemove) &&
-      Boolean(component.binding) &&
-      !isGroupBindingBlocked(component?.binding) &&
-      (state.mode === "edit" || isComponentEditableInPlay(component));
+    // Add/Remove only ever show in Edit mode — unlike per-field "Editable in
+    // Play" (isComponentEditableInPlay, an explicit per-component opt-in for
+    // a handful of live-session values like HP/AC/Conditions), structurally
+    // adding or removing a whole row is a sheet-editing action, not a
+    // play-time one, and never opts into Play mode regardless of what else
+    // is authored on the component.
+    const canManageBase = Boolean(component.binding) && !isGroupBindingBlocked(component?.binding) && state.mode === "edit";
+    // A grouped repeater's (component.groupByBinding set — Spells) own
+    // "items" are whole GROUPS, not individual picks — a generic per-row
+    // Remove there would delete every spell at a level in one click, not
+    // the single spell a GM actually meant to remove. Detected purely by
+    // that authored flag, never a binding-path check; the inner per-level
+    // repeater (itemContext set, no groupByBinding of its own) is where
+    // per-spell Remove actually lives, and keeps it.
+    const suppressRowRemove = Boolean(component.groupByBinding) && !itemContext;
+    const canAdd = canManageBase && Boolean(component.allowAdd);
+    const canRemove = canManageBase && Boolean(component.allowRemove) && !suppressRowRemove;
     const handleAddItem = () => {
       writeRepeaterItems(component, itemContext, [...items, createBlankRepeaterItem(itemColumns)]);
     };
     const handleRemoveItem = (index) => {
       writeRepeaterItems(component, itemContext, items.filter((_, i) => i !== index));
     };
-    const onRemoveItem = canManage ? handleRemoveItem : null;
+    const onRemoveItem = canRemove ? handleRemoveItem : null;
+    // Add controls — either the plain blank-row button every Repeater has
+    // always had, a Source-bound picker (see renderGenericAddControls
+    // above — the one builder every Repeater goes through, no per-repeater
+    // special case), or both at once in ONE row (component.allowCustomAdd
+    // — Inventory's own real-item-picker-plus-freeform-fallback, the
+    // picker on the left and "Add custom item" on the right rather than
+    // two separate stacked rows).
+    function renderAddControls() {
+      if (!canAdd) return [];
+      const writeback = (nextItems) => writeRepeaterItems(component, itemContext, nextItems);
+      const pickerRow = renderGenericAddControls(component, items, writeback, itemColumns);
+      const showCustomAdd = !pickerRow || component.allowCustomAdd;
+      if (!pickerRow && !showCustomAdd) return [];
+      // Flows left-to-right with a plain gap — "Add custom item" sits
+      // directly beside the picker's own Add button, not pushed to the far
+      // right edge of the row (space-between reads as two unrelated
+      // controls that happen to share a line, not "here's a second way to
+      // add the same list").
+      const row =
+        pickerRow ||
+        (() => {
+          const empty = document.createElement("div");
+          empty.className = "d-flex gap-2 align-items-center flex-wrap";
+          return empty;
+        })();
+      if (showCustomAdd) {
+        row.appendChild(createRepeaterAddButton(handleAddItem, { label: pickerRow ? "Add custom item" : "Add item" }));
+      }
+      return [row];
+    }
     if (!items.length) {
       wrapper.appendChild(createCanvasPlaceholder("No items.", { variant: "compact" }));
-      if (canManage) {
-        wrapper.appendChild(createRepeaterAddButton(handleAddItem));
-      }
+      renderAddControls().forEach((node) => wrapper.appendChild(node));
       return wrapper;
     }
     if (component.orientation === "horizontal") {
@@ -5023,16 +7180,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           ? renderRepeaterHorizontalGrid(component, columns, itemColumns, items, onRemoveItem)
           : renderRepeaterHorizontalList(component, itemColumns[0], items, onRemoveItem)
       );
-      if (canManage) {
-        wrapper.appendChild(createRepeaterAddButton(handleAddItem));
-      }
+      renderAddControls().forEach((node) => wrapper.appendChild(node));
       return wrapper;
     }
     if (columns > 1) {
       wrapper.appendChild(renderRepeaterTable(component, columns, itemColumns, items, onRemoveItem));
-      if (canManage) {
-        wrapper.appendChild(createRepeaterAddButton(handleAddItem));
-      }
+      renderAddControls().forEach((node) => wrapper.appendChild(node));
       return wrapper;
     }
     if (component.showHeader) {
@@ -5045,9 +7198,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const row = renderRepeaterItemRow(component, itemColumns[0], item, index, onRemoveItem);
       if (row) wrapper.appendChild(row);
     });
-    if (canManage) {
-      wrapper.appendChild(createRepeaterAddButton(handleAddItem));
-    }
+    renderAddControls().forEach((node) => wrapper.appendChild(node));
     return wrapper;
   }
 
@@ -5262,7 +7413,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // resolveComponentValue's own formula-before-binding order uses for every
   // generic-Data-section-driven type.
   function renderImageComponent(component, itemContext = null) {
-    return renderImageContent(component, {
+    const element = renderImageContent(component, {
       resolveBindableString(raw) {
         if (itemContext) {
           return resolveItemContextValue(itemContext, raw);
@@ -5273,6 +7424,43 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       evaluateFormula(formula) {
         return resolveContextFormula(formula, itemContext);
       },
+    });
+    attachImageUrlEditing(component, element, itemContext);
+    return element;
+  }
+
+  // Image is otherwise a pure display component (renderImageContent only
+  // ever renders an <img> or an empty placeholder, unlike Text/Input, which
+  // become real inputs in Edit mode) — this is the only way to change what
+  // it shows. Deliberately a plain window.prompt rather than a bespoke
+  // inline editor or a permanent template field: the user's own call —
+  // "just a browser popup input would work fine," no sheet real estate
+  // spent on something only relevant while actively editing. Scoped to a
+  // component whose own url is a plain "@path" binding (not itemContext,
+  // not a literal string, not a formula) — the only shape with somewhere
+  // real to write the result back to.
+  function attachImageUrlEditing(component, element, itemContext) {
+    if (itemContext || state.mode !== "edit") {
+      return;
+    }
+    const formula = typeof component.formula === "string" ? component.formula.trim() : "";
+    if (formula) {
+      return;
+    }
+    const raw = resolveImageUrl(component);
+    const path = typeof raw === "string" && raw.startsWith("@") ? resolveBindingPath(raw) : null;
+    if (!path) {
+      return;
+    }
+    element.style.cursor = "pointer";
+    initTooltip(element, { title: "Click to set image URL" });
+    element.addEventListener("click", () => {
+      const current = getValueAtPath(path) || "";
+      const next = window.prompt("Image URL", current);
+      if (next === null) {
+        return;
+      }
+      applyBindingValue(path, next.trim());
     });
   }
 
@@ -5482,7 +7670,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   function evaluateFormulaWithLookup(formula, context, options = {}) {
     return evaluateFormula(formula, context, {
       ...options,
-      functions: { ...(options.functions || {}), lookup: createLookupFn(context, state.systemDefinition?.fields) },
+      functions: {
+        ...(options.functions || {}),
+        lookup: createLookupFn(context, state.systemDefinition?.fields),
+        // Registered here (not just for Repeater Add sources) so ANY
+        // formula field in the suite — Visible, Editable in Play, a
+        // Select's own Source/Options — can search a Library kind the same
+        // way `lookup` already searches a System field. See this file's own
+        // "Source-bound Add pickers" section for libraryEntries' own
+        // definition.
+        libraryEntries,
+      },
     });
   }
 
@@ -5492,13 +7690,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // precedence the Template editor's own resolveTrackSegmentCount uses:
   // formula first, then a binding (either a literal number or an @path into
   // the live draft), then the component's own static `segments`, then 6.
-  // Previously nothing in this file read any of these three fields at all —
-  // the segmented-track concept authored in the editor didn't exist here.
-  function resolveTrackSegments(component) {
+  // `itemContext`, when set, resolves both formula and binding relative to
+  // the CURRENT repeater item instead of the top-level draft (reusing
+  // resolveContextFormula/resolveItemContextValue — the same generic
+  // itemContext resolvers Image/Icon/Container already use — rather than a
+  // parallel implementation) — needed for a Repeater of Tracks where every
+  // row's own segment count genuinely differs (e.g. one row per spell
+  // level, each with its own total slot count). Previously this ALWAYS
+  // read the top-level draft regardless of itemContext, silently making a
+  // per-row varying segment count impossible inside any Repeater.
+  function resolveTrackSegments(component, itemContext = null) {
     const formula = typeof component.segmentFormula === "string" ? component.segmentFormula.trim() : "";
     if (formula) {
       try {
-        const result = evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression });
+        const result = itemContext
+          ? resolveContextFormula(formula, itemContext)
+          : evaluateFormulaWithLookup(formula, getBindingContext(), { rollDice: rollDiceExpression });
         const numeric = Number(result);
         if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
       } catch (error) {
@@ -5507,13 +7714,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const binding = typeof component.segmentBinding === "string" ? component.segmentBinding.trim() : "";
     if (binding) {
-      const path = resolveBindingPath(binding);
-      if (path) {
-        const resolved = Number(getValueAtContext(getBindingContext(), path));
+      if (itemContext) {
+        const resolved = Number(resolveItemContextValue(itemContext, binding));
         if (Number.isFinite(resolved) && resolved > 0) return Math.round(resolved);
       } else {
-        const numeric = Number(binding);
-        if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
+        const path = resolveBindingPath(binding);
+        if (path) {
+          const resolved = Number(getValueAtContext(getBindingContext(), path));
+          if (Number.isFinite(resolved) && resolved > 0) return Math.round(resolved);
+        } else {
+          const numeric = Number(binding);
+          if (Number.isFinite(numeric) && numeric > 0) return Math.round(numeric);
+        }
       }
     }
     const fallback = Number(component.segments);
@@ -5523,7 +7735,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   function renderTrackComponent(component, itemContext = null) {
     const ctx = {
       resolveTrackState(comp) {
-        const segments = Math.max(1, resolveTrackSegments(comp));
+        const segments = Math.max(1, resolveTrackSegments(comp, itemContext));
         const resolvedValue = Number(
           itemContext
             ? resolveItemContextValue(itemContext, comp.binding) ?? (comp.value ?? 0)
@@ -6760,22 +8972,30 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     createNewCharacterPromptFallback();
   }
 
-  // Toggles between the modal's two panels — a blank New Character form and
-  // the Import Character one — sharing a single toolbar entry point/modal
-  // instead of each getting its own toolbar button (see the comment on
+  // Toggles between the modal's three panels — a blank New Character form,
+  // the Import Character one, and Build Character (a real multi-step
+  // wizard) — sharing a single toolbar entry point/modal instead of each
+  // getting its own toolbar button (see the comment on
   // newCharacterModalInstance above for why).
   function setAddCharacterMode(mode) {
-    const isImport = mode === "import";
-    elements.addCharacterModeBlank?.classList.toggle("btn-primary", !isImport);
-    elements.addCharacterModeBlank?.classList.toggle("btn-outline-primary", isImport);
-    elements.addCharacterModeImport?.classList.toggle("btn-primary", isImport);
-    elements.addCharacterModeImport?.classList.toggle("btn-outline-primary", !isImport);
-    elements.newCharacterForm?.classList.toggle("d-none", isImport);
-    elements.importCharacterForm?.classList.toggle("d-none", !isImport);
-    elements.addCharacterSubmitBlank?.classList.toggle("d-none", isImport);
-    elements.addCharacterSubmitImport?.classList.toggle("d-none", !isImport);
-    if (isImport) {
+    const normalized = mode === "import" || mode === "build" ? mode : "blank";
+    elements.addCharacterModeBlank?.classList.toggle("btn-primary", normalized === "blank");
+    elements.addCharacterModeBlank?.classList.toggle("btn-outline-primary", normalized !== "blank");
+    elements.addCharacterModeImport?.classList.toggle("btn-primary", normalized === "import");
+    elements.addCharacterModeImport?.classList.toggle("btn-outline-primary", normalized !== "import");
+    elements.addCharacterModeBuild?.classList.toggle("btn-primary", normalized === "build");
+    elements.addCharacterModeBuild?.classList.toggle("btn-outline-primary", normalized !== "build");
+    elements.newCharacterForm?.classList.toggle("d-none", normalized !== "blank");
+    elements.importCharacterForm?.classList.toggle("d-none", normalized !== "import");
+    elements.buildWizard?.classList.toggle("d-none", normalized !== "build");
+    elements.addCharacterSubmitBlank?.classList.toggle("d-none", normalized !== "blank");
+    elements.addCharacterSubmitImport?.classList.toggle("d-none", normalized !== "import");
+    elements.addCharacterSubmitBuild?.classList.toggle("d-none", normalized !== "build");
+    elements.addCharacterSubmitBuild?.classList.toggle("d-flex", normalized === "build");
+    if (normalized === "import") {
       void activateImportMode();
+    } else if (normalized === "build") {
+      void activateBuildMode();
     } else {
       const defaultTemplate = state.template?.id || elements.newCharacterTemplate?.value || "";
       prepareNewCharacterForm(defaultTemplate);
@@ -6797,6 +9017,999 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       elements.newCharacterName.focus();
       elements.newCharacterName.select();
     }
+  }
+
+  // --- Build Character (Phase 4, character-builder-roadmap) --------------
+  // A real multi-step wizard living inside the SAME New Character modal as
+  // Blank/Import (a third data-add-character-mode) — Import already
+  // establishes multi-stage-within-one-mode (its own stage-1/stage-2), so
+  // Build's own Back/Next step navigation is a continuation of that
+  // pattern, not a new one. Deliberately does NOT try to resolve every
+  // choice (skill picks, starting equipment, the background ability bonus)
+  // INSIDE the wizard — those all become ordinary pendingChoices entries,
+  // resolved via the exact same Character Properties UI Level Up already
+  // built, once the character actually exists.
+  // "choices" (last) is a real, counted step — reached only after Create
+  // Character on Review actually creates the record (pendingChoices need a
+  // real character id to resolve against), never via ordinary Back/Next —
+  // but it still occupies a real slot in the numbered sequence
+  // (goToBuildStep clamps ordinary navigation to the active steps' own
+  // length - 2; submitBuildWizard is the only path that ever reaches it)
+  // so the user sees "Step N of N," never a step that materializes out of
+  // nowhere. See getActiveBuildSteps below for the "subclass" step, which
+  // is conditionally spliced into this same base sequence.
+  const BUILD_STEPS_BASE = ["identity", "species", "class", "background", "abilities", "details", "review", "choices"];
+  const BUILD_STEP_LABELS_BASE = ["Name & Template", "Species", "Class", "Background", "Ability Scores", "Details", "Review", "Finish Choices"];
+  const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8];
+  const POINT_BUY_COST = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
+  const POINT_BUY_BUDGET = 27;
+
+  // A "subclass" step is spliced in right after "class" whenever the
+  // SELECTED class's own data says it grants its subclass choice at level
+  // 1 (getSubclassGrantLevel — the SAME System-agnostic helper Level Up
+  // uses to detect this at any level, not a Build-wizard-only copy). Every
+  // class record in THIS repo currently grants it at level 3 (never
+  // reachable at creation), but nothing here may assume that — a 2014-
+  // ruleset class, or another System entirely, can and does grant it at
+  // level 1. Recomputed fresh every time step-navigation logic runs (never
+  // cached across a re-pick), so switching to a different class mid-wizard
+  // correctly grows/shrinks the sequence.
+  function getActiveBuildSteps() {
+    if (!buildWizardState.needsSubclassStep) {
+      return { steps: BUILD_STEPS_BASE, labels: BUILD_STEP_LABELS_BASE };
+    }
+    const classIndex = BUILD_STEPS_BASE.indexOf("class");
+    return {
+      steps: [...BUILD_STEPS_BASE.slice(0, classIndex + 1), "subclass", ...BUILD_STEPS_BASE.slice(classIndex + 1)],
+      labels: [...BUILD_STEP_LABELS_BASE.slice(0, classIndex + 1), "Subclass", ...BUILD_STEP_LABELS_BASE.slice(classIndex + 1)],
+    };
+  }
+
+  const buildWizardState = {
+    step: 0,
+    speciesId: "",
+    speciesName: "",
+    classId: "",
+    className: "",
+    classRecord: null,
+    needsSubclassStep: false,
+    subclassId: "",
+    subclassName: "",
+    backgroundId: "",
+    backgroundName: "",
+    abilityMethod: "pointBuy",
+    abilityScores: {},
+    abilityDefs: [],
+    rolledScores: [],
+  };
+
+  async function activateBuildMode() {
+    buildWizardState.step = 0;
+    buildWizardState.speciesId = "";
+    buildWizardState.speciesName = "";
+    buildWizardState.classId = "";
+    buildWizardState.className = "";
+    buildWizardState.classRecord = null;
+    buildWizardState.needsSubclassStep = false;
+    buildWizardState.subclassId = "";
+    buildWizardState.subclassName = "";
+    buildWizardState.backgroundId = "";
+    buildWizardState.backgroundName = "";
+    buildWizardState.abilityMethod = "pointBuy";
+    buildWizardState.abilityScores = {};
+    buildWizardState.abilityDefs = [];
+    buildWizardState.rolledScores = [];
+    if (elements.buildCharacterName) {
+      elements.buildCharacterName.value = "";
+    }
+    if (elements.buildCharacterImage) {
+      elements.buildCharacterImage.value = "";
+    }
+    const defaultTemplate = state.template?.id || elements.newCharacterTemplate?.value || "";
+    refreshNewCharacterTemplateOptions(defaultTemplate);
+    if (elements.buildCharacterTemplate && defaultTemplate) {
+      elements.buildCharacterTemplate.value = defaultTemplate;
+    }
+    goToBuildStep(0);
+    await refreshBuildLibraryPickers();
+  }
+
+  // Re-renders all three Library-kind steps against whichever Template is
+  // currently selected — called on initial activation AND whenever the
+  // Template step's own select changes, so switching Templates mid-wizard
+  // re-filters by the new System instead of leaving stale, possibly wrong-
+  // System options selectable. Clears any prior picks (a Species valid for
+  // the old System may not even exist in the new one's own filtered list).
+  async function refreshBuildLibraryPickers() {
+    buildWizardState.speciesId = "";
+    buildWizardState.speciesName = "";
+    buildWizardState.classId = "";
+    buildWizardState.className = "";
+    buildWizardState.classRecord = null;
+    buildWizardState.needsSubclassStep = false;
+    buildWizardState.subclassId = "";
+    buildWizardState.subclassName = "";
+    buildWizardState.backgroundId = "";
+    buildWizardState.backgroundName = "";
+    await Promise.all([
+      renderBuildLibraryPicker(elements.buildSpeciesMount, "species", (option) => {
+        buildWizardState.speciesId = option?.id || "";
+        buildWizardState.speciesName = option?.label || "";
+        updateBuildNextState();
+      }),
+      renderBuildLibraryPicker(elements.buildClassMount, "class", (option) => {
+        buildWizardState.classId = option?.id || "";
+        buildWizardState.className = option?.label || "";
+        buildWizardState.classRecord = option?.raw || null;
+        buildWizardState.needsSubclassStep = getSubclassGrantLevel(option?.raw) === 1;
+        buildWizardState.subclassId = "";
+        buildWizardState.subclassName = "";
+        if (buildWizardState.needsSubclassStep) {
+          void renderBuildSubclassPicker();
+        }
+        updateBuildNextState();
+      }),
+      renderBuildLibraryPicker(elements.buildBackgroundMount, "background", (option) => {
+        buildWizardState.backgroundId = option?.id || "";
+        buildWizardState.backgroundName = option?.label || "";
+        updateBuildNextState();
+      }),
+    ]);
+    updateBuildNextState();
+  }
+
+  // Subclass options depend on whichever class was just picked (Variant
+  // records filtered to parentKind:"class" && parentId === the class's own
+  // index) — only rendered when needsSubclassStep is true (this System/
+  // class grants its subclass choice at creation, level 1).
+  async function renderBuildSubclassPicker() {
+    const mount = elements.buildSubclassMount;
+    if (!mount || !buildWizardState.classRecord) {
+      return;
+    }
+    mount.textContent = "Loading…";
+    let entries = [];
+    try {
+      entries = await fetchKindEntriesWithIds(dataManager, "variant");
+    } catch (error) {
+      mount.textContent = "Unable to load subclass options.";
+      return;
+    }
+    const options = entries
+      .filter((entry) => entry.entity?.parentKind === "class" && entry.entity?.parentId === buildWizardState.classRecord.index)
+      .map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    mount.innerHTML = "";
+    const picker = createFilterableListPicker({
+      options,
+      emptyMessage: "No subclass options available.",
+      onSelect: (option) => {
+        buildWizardState.subclassId = option.id;
+        buildWizardState.subclassName = option.name;
+        updateBuildNextState();
+      },
+    });
+    mount.appendChild(picker.element);
+  }
+
+  // Shared by all three Library-kind picker steps — createFilterableListPicker
+  // (filter box + single-select list + description panel), sourced via the
+  // same bulk-fetch-and-cache helper used everywhere else in this file
+  // (fetchKindEntriesWithIds). Filtered to the currently selected
+  // Template's own System — confirmed real: every Species/Class/Background
+  // record carries a real systemIds array, but nothing was reading it here,
+  // so a character built for one System could pick species/classes from a
+  // completely unrelated one. A record with NO systemIds at all (an
+  // authoring gap, not a deliberate "universal" marker anywhere else in
+  // this suite) is left visible rather than hidden, matching the rest of
+  // this suite's own "absence restricts nothing" convention.
+  async function renderBuildLibraryPicker(mount, kind, onPick) {
+    if (!mount) {
+      return;
+    }
+    mount.textContent = "Loading…";
+    let entries = [];
+    try {
+      entries = await fetchKindEntriesWithIds(dataManager, kind);
+    } catch (error) {
+      mount.textContent = `Unable to load ${kind} options.`;
+      return;
+    }
+    const templateId = elements.buildCharacterTemplate?.value || "";
+    const systemId = templateCatalog.get(templateId)?.schema || "";
+    const filteredEntries = systemId
+      ? entries.filter((entry) => {
+          const systemIds = entry.entity?.systemIds;
+          return !Array.isArray(systemIds) || !systemIds.length || systemIds.includes(systemId);
+        })
+      : entries;
+    mount.innerHTML = "";
+    const options = filteredEntries
+      .map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    const picker = createFilterableListPicker({
+      options,
+      emptyMessage: systemId ? `No ${kind} options for this System.` : `No ${kind} options available.`,
+      onSelect: (option) => onPick({ id: option.id, label: option.name, kind, raw: option.raw }),
+    });
+    mount.appendChild(picker.element);
+  }
+
+  // Shows/hides the right step panel and updates the label/Back/Next chrome
+  // for a given active-steps index — shared by ordinary Back/Next
+  // navigation (goToBuildStep, clamped to everything before "choices") and
+  // submitBuildWizard's own jump straight to "choices" once the character
+  // actually exists. "Step N of <active length>" always reflects the FULL
+  // active sequence (subclass included, when it applies), "choices"
+  // included, even though the latter is only reachable one specific way —
+  // the user should never see the step count grow mid-wizard.
+  function applyBuildStepChrome(index) {
+    const { steps, labels } = getActiveBuildSteps();
+    steps.forEach((step, i) => {
+      document.querySelector(`[data-build-step="${step}"]`)?.classList.toggle("d-none", i !== index);
+    });
+    if (elements.buildStepLabel) {
+      elements.buildStepLabel.textContent = `Step ${index + 1} of ${steps.length}: ${labels[index]}`;
+    }
+    const step = steps[index];
+    elements.buildBackButton?.classList.toggle("d-none", index === 0 || step === "choices");
+    if (elements.buildNextButton) {
+      elements.buildNextButton.textContent = step === "review" ? "Create Character" : step === "choices" ? "Finish" : "Next";
+    }
+  }
+
+  // Ordinary Back/Next navigation — clamped BEFORE "choices" (the active
+  // sequence's own last index), since that step only exists once Create
+  // Character has actually run; submitBuildWizard is the sole path that
+  // ever shows it.
+  function goToBuildStep(index) {
+    const { steps } = getActiveBuildSteps();
+    const lastNavStep = steps.length - 2;
+    const clamped = Math.max(0, Math.min(index, lastNavStep));
+    buildWizardState.step = clamped;
+    applyBuildStepChrome(clamped);
+    if (steps[clamped] === "subclass") {
+      void renderBuildSubclassPicker();
+    }
+    if (steps[clamped] === "abilities") {
+      void ensureBuildAbilityDefs();
+    }
+    if (steps[clamped] === "review") {
+      renderBuildReview();
+    }
+    updateBuildNextState();
+  }
+
+  function updateBuildNextState() {
+    if (!elements.buildNextButton) {
+      return;
+    }
+    const { steps } = getActiveBuildSteps();
+    const step = steps[buildWizardState.step];
+    let valid = true;
+    if (step === "identity") {
+      valid = Boolean((elements.buildCharacterName?.value || "").trim()) && Boolean(elements.buildCharacterTemplate?.value);
+    } else if (step === "species") {
+      valid = Boolean(buildWizardState.speciesId);
+    } else if (step === "class") {
+      valid = Boolean(buildWizardState.classId);
+    } else if (step === "subclass") {
+      valid = Boolean(buildWizardState.subclassId);
+    } else if (step === "background") {
+      valid = Boolean(buildWizardState.backgroundId);
+    } else if (step === "abilities") {
+      valid = isBuildAbilitiesComplete();
+    }
+    elements.buildNextButton.disabled = !valid;
+  }
+
+  async function ensureBuildAbilityDefs() {
+    if (!buildWizardState.abilityDefs.length) {
+      const templateId = elements.buildCharacterTemplate?.value || "";
+      const systemId = templateCatalog.get(templateId)?.schema || state.template?.schema || "";
+      buildWizardState.abilityDefs = await loadAbilityFieldDefs(dataManager, systemId);
+    }
+    renderBuildAbilitiesStep();
+  }
+
+  function isBuildAbilitiesComplete() {
+    return buildWizardState.abilityDefs.length > 0 && buildWizardState.abilityDefs.every((def) => buildWizardState.abilityScores[def.key] != null);
+  }
+
+  function renderBuildAbilitiesStep() {
+    const mount = elements.buildAbilitiesMount;
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    document.querySelectorAll("[data-build-ability-method]").forEach((button) => {
+      const active = button.dataset.buildAbilityMethod === buildWizardState.abilityMethod;
+      button.classList.toggle("btn-primary", active);
+      button.classList.toggle("btn-outline-secondary", !active);
+    });
+    const defs = buildWizardState.abilityDefs;
+    if (!defs.length) {
+      mount.textContent = "This System has no ability scores defined.";
+      return;
+    }
+    if (buildWizardState.abilityMethod === "pointBuy") {
+      renderPointBuyAbilities(mount, defs);
+    } else if (buildWizardState.abilityMethod === "roll") {
+      renderRollAbilities(mount, defs);
+    } else {
+      renderValueAssignmentAbilities(mount, defs, STANDARD_ARRAY);
+    }
+  }
+
+  // Shared by Array (a fixed standard array) and Roll (6 freshly rolled
+  // values) — both are "assign these N fixed values across the abilities,
+  // each value used exactly once," differing only in where the value list
+  // comes from.
+  function renderValueAssignmentAbilities(mount, defs, values) {
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    defs.forEach((def) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2";
+      const label = document.createElement("label");
+      label.className = "fw-semibold";
+      label.style.width = "4rem";
+      label.textContent = def.label;
+      const select = document.createElement("select");
+      select.className = "form-select form-select-sm";
+      select.style.maxWidth = "8rem";
+      select.dataset.abilityKey = def.key;
+      row.append(label, select);
+      wrap.appendChild(row);
+    });
+    mount.appendChild(wrap);
+    const selects = Array.from(wrap.querySelectorAll("select"));
+    // Tracked by SLOT (index into `values`), not by the value itself — Roll
+    // can produce duplicate numbers across its 6 results (two abilities
+    // both rolling, say, 13), and tracking "is this VALUE used" rather than
+    // "is this SLOT used" meant assigning one instance of a duplicated
+    // value made EVERY instance unavailable, silently leaving one ability
+    // with no option left to pick at all. Confirmed real, reported
+    // directly. `buildWizardState.abilityScores[key]` still ends up a
+    // plain resolved number either way — nothing downstream needs to know
+    // slots exist at all.
+    const assignments = {};
+    function refresh() {
+      selects.forEach((select) => {
+        const key = select.dataset.abilityKey;
+        const currentSlot = assignments[key];
+        const usedSlots = new Set(
+          Object.entries(assignments)
+            .filter(([otherKey]) => otherKey !== key)
+            .map(([, slot]) => slot)
+        );
+        select.innerHTML = "";
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = "—";
+        select.appendChild(blank);
+        values.forEach((value, slotIndex) => {
+          if (usedSlots.has(slotIndex) && slotIndex !== currentSlot) {
+            return;
+          }
+          const option = document.createElement("option");
+          option.value = String(slotIndex);
+          option.textContent = String(value);
+          select.appendChild(option);
+        });
+        select.value = currentSlot != null ? String(currentSlot) : "";
+      });
+    }
+    selects.forEach((select) => {
+      select.addEventListener("change", () => {
+        const key = select.dataset.abilityKey;
+        if (select.value === "") {
+          delete assignments[key];
+          buildWizardState.abilityScores[key] = undefined;
+        } else {
+          const slotIndex = Number(select.value);
+          assignments[key] = slotIndex;
+          buildWizardState.abilityScores[key] = values[slotIndex];
+        }
+        refresh();
+        updateBuildNextState();
+      });
+    });
+    refresh();
+  }
+
+  function renderPointBuyAbilities(mount, defs) {
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    defs.forEach((def) => {
+      if (buildWizardState.abilityScores[def.key] == null) {
+        buildWizardState.abilityScores[def.key] = 8;
+      }
+    });
+    const remainingLabel = document.createElement("div");
+    remainingLabel.className = "fw-semibold small";
+    wrap.appendChild(remainingLabel);
+    defs.forEach((def) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2";
+      const label = document.createElement("label");
+      label.className = "fw-semibold";
+      label.style.width = "4rem";
+      label.textContent = def.label;
+      const minusButton = document.createElement("button");
+      minusButton.type = "button";
+      minusButton.className = "btn btn-sm btn-outline-secondary";
+      minusButton.textContent = "−";
+      const valueSpan = document.createElement("span");
+      valueSpan.className = "text-center";
+      valueSpan.style.width = "2rem";
+      const plusButton = document.createElement("button");
+      plusButton.type = "button";
+      plusButton.className = "btn btn-sm btn-outline-secondary";
+      plusButton.textContent = "+";
+      row.append(label, minusButton, valueSpan, plusButton);
+      wrap.appendChild(row);
+      const spent = () =>
+        defs.reduce((total, entry) => total + (POINT_BUY_COST[buildWizardState.abilityScores[entry.key]] ?? 0), 0);
+      const refreshRow = () => {
+        const score = buildWizardState.abilityScores[def.key];
+        valueSpan.textContent = String(score);
+        minusButton.disabled = score <= 8;
+        const nextCost = POINT_BUY_COST[score + 1];
+        plusButton.disabled = score >= 15 || nextCost === undefined || spent() - POINT_BUY_COST[score] + nextCost > POINT_BUY_BUDGET;
+        remainingLabel.textContent = `Points remaining: ${POINT_BUY_BUDGET - spent()}`;
+      };
+      minusButton.addEventListener("click", () => {
+        buildWizardState.abilityScores[def.key] = Math.max(8, buildWizardState.abilityScores[def.key] - 1);
+        refreshRow();
+        updateBuildNextState();
+      });
+      plusButton.addEventListener("click", () => {
+        buildWizardState.abilityScores[def.key] = Math.min(15, buildWizardState.abilityScores[def.key] + 1);
+        refreshRow();
+        updateBuildNextState();
+      });
+      refreshRow();
+    });
+    mount.appendChild(wrap);
+    remainingLabel.textContent = `Points remaining: ${POINT_BUY_BUDGET - defs.reduce((total, entry) => total + (POINT_BUY_COST[buildWizardState.abilityScores[entry.key]] ?? 0), 0)}`;
+  }
+
+  function renderRollAbilities(mount, defs) {
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    const rollButton = document.createElement("button");
+    rollButton.type = "button";
+    rollButton.className = "btn btn-outline-primary btn-sm align-self-start";
+    rollButton.textContent = buildWizardState.rolledScores.length ? "Reroll (4d6, drop lowest)" : "Roll scores (4d6, drop lowest)";
+    rollButton.addEventListener("click", () => {
+      try {
+        buildWizardState.rolledScores = Array.from({ length: 6 }, () => rollDiceExpression("4d6d1").total);
+      } catch (error) {
+        console.warn("Character editor: unable to roll ability scores", error);
+        return;
+      }
+      buildWizardState.abilityScores = {};
+      renderBuildAbilitiesStep();
+      updateBuildNextState();
+    });
+    wrap.appendChild(rollButton);
+    mount.appendChild(wrap);
+    if (buildWizardState.rolledScores.length) {
+      const assignMount = document.createElement("div");
+      assignMount.className = "mt-2";
+      mount.appendChild(assignMount);
+      renderValueAssignmentAbilities(assignMount, defs, buildWizardState.rolledScores);
+    }
+  }
+
+  function renderBuildReview() {
+    const mount = elements.buildReviewMount;
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    const imageUrl = (elements.buildCharacterImage?.value || "").trim();
+    const lines = [
+      `Name: ${(elements.buildCharacterName?.value || "").trim() || "—"}`,
+      `Species: ${buildWizardState.speciesName || "—"}`,
+      `Class: ${buildWizardState.className || "—"}`,
+      ...(buildWizardState.needsSubclassStep ? [`Subclass: ${buildWizardState.subclassName || "—"}`] : []),
+      `Background: ${buildWizardState.backgroundName || "—"}`,
+      ...buildWizardState.abilityDefs.map((def) => `${def.label}: ${buildWizardState.abilityScores[def.key] ?? "—"}`),
+      `Image URL: ${imageUrl || "—"}`,
+    ];
+    const list = document.createElement("ul");
+    list.className = "d-flex flex-column gap-1 small mb-0 ps-3";
+    lines.forEach((text) => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      list.appendChild(li);
+    });
+    mount.appendChild(list);
+  }
+
+  // Mirrors the Level Up modal's own confirm→resolve transition: creating
+  // the character doesn't close the modal immediately — it advances to the
+  // wizard's own last step ("choices," a real, counted step in the active
+  // sequence — see applyBuildStepChrome/getActiveBuildSteps) showing
+  // whatever pendingChoices the build
+  // produced (same renderPendingChoiceRow UI, same generic/bespoke type
+  // dispatch), per the user's own explicit ask — "choices presented in the
+  // Build modal, and then only represented in the right pane if something
+  // isn't completed in that modal." The character record genuinely gets
+  // created here (pendingChoices need a real id to resolve against), but
+  // that's a background technical step — nothing here announces "created,"
+  // the step label just reads like any other step in the same sequence;
+  // the actual success toast waits until the user clicks Finish on that
+  // step (see the Next-button handler). Closing early needs no special
+  // handling: anything left unresolved is already sitting in
+  // state.draft.pendingChoices, which the Character Properties sidebar
+  // already renders from that same data.
+  async function submitBuildWizard() {
+    if (elements.buildNextButton) {
+      elements.buildNextButton.disabled = true;
+    }
+    let pendingChoices;
+    try {
+      pendingChoices = await buildCharacterFromWizard();
+    } finally {
+      if (elements.buildNextButton) {
+        elements.buildNextButton.disabled = false;
+      }
+    }
+    if (!Array.isArray(pendingChoices)) {
+      return;
+    }
+    const choicesIndex = getActiveBuildSteps().steps.length - 1;
+    buildWizardState.step = choicesIndex;
+    applyBuildStepChrome(choicesIndex);
+    renderBuildResolvePanel(pendingChoices);
+  }
+
+  function renderBuildResolvePanel(pendingChoices) {
+    const mount = elements.buildResolveMount;
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    const summary = document.createElement("p");
+    summary.className = "mb-2";
+    summary.textContent = pendingChoices.length
+      ? "A few last choices to make — resolve them below, or close and finish them later from Character Properties."
+      : "Nothing left to choose — click Finish.";
+    mount.appendChild(summary);
+    if (pendingChoices.length) {
+      const list = document.createElement("div");
+      list.className = "d-flex flex-column gap-2";
+      pendingChoices.forEach((choice) => {
+        const row = renderPendingChoiceRow(choice, {
+          onResolved: () => {
+            row.remove();
+            if (!list.children.length) {
+              summary.textContent = "All set — click Finish.";
+            }
+          },
+        });
+        list.appendChild(row);
+      });
+      mount.appendChild(list);
+    }
+  }
+
+  // Applies everything the wizard collected: identity links (species/class/
+  // background, all real refKind/refId — the first creation flow to ever
+  // set identity.race/identity.background, mirroring identity.classes'
+  // already-established shape), ability scores, starting HP (the level-1
+  // SRD rule — max hit die + CON modifier, NOT hitPointsPerLevelAverage,
+  // which is specifically the 2nd-level+ growth formula), proficiency bonus,
+  // every level-1/unconditional feature grant (species — every featureId,
+  // no level gate; class — level-1 matched; background's own origin feat),
+  // background's flat proficiency grants, and a pendingChoices entry for
+  // every genuine pick (class/background proficiency choices, the
+  // background ability-score bonus, class/background starting equipment,
+  // and any grants[] a newly-granted feature itself carries) — resolved
+  // afterward via the same Character Properties UI Level Up already built,
+  // never inside this wizard.
+  async function buildCharacterFromWizard() {
+    const name = (elements.buildCharacterName?.value || "").trim();
+    const templateId = (elements.buildCharacterTemplate?.value || "").trim();
+    if (!name || !templateId || !buildWizardState.classId) {
+      status.show("Complete every step before creating the character.", { type: "warning", timeout: 2400 });
+      return;
+    }
+    const id = generateCharacterId(name);
+    if (characterCatalog.has(id)) {
+      status.show("Character ID already exists. Choose another name.", { type: "warning", timeout: 2400 });
+      return;
+    }
+    const templateMetadata = templateCatalog.get(templateId);
+    if (!templateMetadata) {
+      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      return;
+    }
+    if (state.template?.id !== templateId) {
+      await loadTemplateById(templateId);
+    }
+    // loadTemplateById's own state.systemDefinition refresh
+    // (updateSystemContext) is fire-and-forget internally (`void`) — awaited
+    // explicitly here so getLevelUpBindings/getCombatBindings below are
+    // guaranteed to read THIS template's own System, not whatever was
+    // active before switching (a real race otherwise, since this whole
+    // function runs right after picking a possibly-different template).
+    await updateSystemContext(state.template?.schema || templateMetadata.schema || "");
+
+    let speciesRecord = null;
+    let classRecord = null;
+    let backgroundRecord = null;
+    let subclassRecord = null;
+    const pickedSubclassId = buildWizardState.needsSubclassStep ? buildWizardState.subclassId : "";
+    try {
+      const [speciesResult, classResult, backgroundResult, subclassResult] = await Promise.all([
+        buildWizardState.speciesId ? dataManager.get("species", buildWizardState.speciesId, { preferLocal: false }) : null,
+        dataManager.get("class", buildWizardState.classId, { preferLocal: false }),
+        buildWizardState.backgroundId ? dataManager.get("background", buildWizardState.backgroundId, { preferLocal: false }) : null,
+        pickedSubclassId ? dataManager.get("variant", pickedSubclassId, { preferLocal: false }) : null,
+      ]);
+      speciesRecord = speciesResult?.payload || null;
+      classRecord = classResult?.payload || null;
+      backgroundRecord = backgroundResult?.payload || null;
+      subclassRecord = subclassResult?.payload || null;
+    } catch (error) {
+      console.error("Character editor: unable to fetch Build Character source records", error);
+    }
+    if (!classRecord) {
+      status.show("Unable to fetch the selected class.", { type: "danger", timeout: 2800 });
+      return;
+    }
+
+    const initialSchema = state.template?.schema || templateMetadata?.schema || "";
+    const abilities = {};
+    buildWizardState.abilityDefs.forEach((def) => {
+      abilities[def.key] = Number(buildWizardState.abilityScores[def.key]) || 10;
+    });
+    const imageUrl = (elements.buildCharacterImage?.value || "").trim();
+    const draft = {
+      id,
+      name,
+      title: name,
+      template: templateId,
+      systemIds: initialSchema ? [initialSchema] : [],
+      data: { name },
+      state: { timers: {}, log: [] },
+      ...(imageUrl ? { image: imageUrl } : {}),
+      identity: {
+        name,
+        level: 1,
+        classes: [
+          {
+            name: buildWizardState.className || classRecord.name || "",
+            level: 1,
+            refKind: "class",
+            refId: buildWizardState.classId,
+            ...(buildWizardState.needsSubclassStep && buildWizardState.subclassId
+              ? { subclass: { name: buildWizardState.subclassName || "", refKind: "variant", refId: buildWizardState.subclassId } }
+              : {}),
+          },
+        ],
+        ...(buildWizardState.speciesId
+          ? { race: { name: buildWizardState.speciesName || speciesRecord?.name || "", refKind: "species", refId: buildWizardState.speciesId } }
+          : {}),
+        ...(buildWizardState.backgroundId
+          ? {
+              background: {
+                name: buildWizardState.backgroundName || backgroundRecord?.name || "",
+                refKind: "background",
+                refId: buildWizardState.backgroundId,
+              },
+            }
+          : {}),
+      },
+      stats: { abilities, proficiencyBonus: proficiencyBonusForLevel(1) },
+      featureIds: [],
+      currencies: {},
+      inventory: [],
+      proficiencies: {},
+      pendingChoices: [],
+    };
+
+    // Seeds a real stats.skills[] from the System's own "skills" array field
+    // (loadArrayFieldValues — the same generic array-field reader
+    // loadAbilityFieldDefs' own module already exports, never a hardcoded
+    // skill list) — without this, Background's own flat proficiency grants
+    // below (applyProficiencyGrant's Skill: branch) would have nowhere real
+    // to write a proficiency onto, since a freshly built character has no
+    // skills array at all otherwise. `name` slugified to match the real
+    // lowercase-hyphenated convention this suite's own character records
+    // already use ("animal-handling") — confirmed against a real imported
+    // character, not guessed.
+    const systemSkills = await loadArrayFieldValues(dataManager, initialSchema, "skills");
+    draft.stats.skills = systemSkills.map((entry) => {
+      const abilityKey = String(entry.ability || "").toLowerCase();
+      const abilityDef = buildWizardState.abilityDefs.find((def) => def.key === abilityKey);
+      return {
+        name: String(entry.name || "").toLowerCase().replace(/\s+/g, "-"),
+        friendlyName: entry.name || "",
+        ability: abilityDef?.label || abilityKey.slice(0, 3).toUpperCase(),
+        value: abilityModifier(abilities[abilityKey] ?? 10),
+        proficiency: 0,
+        advantage: false,
+        disadvantage: false,
+      };
+    });
+
+    // Starting HP — level-1 SRD rule (max die, not the average-growth
+    // formula Level Up uses for every level after this one). Written
+    // whenever the System's own combatBindings resource exists, even if
+    // the Class record's own hit-die field turns out to be missing (a
+    // content gap, not something to silently swallow) — a freshly built
+    // character always ends up with a real, visible HP block rather than
+    // no `stats.hitPoints` key at all.
+    const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
+    const resourceBinding = growthBinding ? findBindingByRole(getCombatBindings(), growthBinding.resourceRole) : null;
+    if (growthBinding?.path && resourceBinding) {
+      const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
+      if (!hitDieSides) {
+        console.warn(`Character editor: class "${classRecord.name}" has no ${growthBinding.path} — starting HP will be understated.`);
+      }
+      let maxHp = hitDieSides;
+      if (growthBinding.abilityBinding) {
+        maxHp += abilityModifier(resolveBinding(growthBinding.abilityBinding, draft));
+      }
+      const maxPathSegs = resolveBindingPath(resourceBinding.maxPath);
+      const currentPathSegs = resolveBindingPath(resourceBinding.binding);
+      if (maxPathSegs) setValueAtContext(draft, maxPathSegs, maxHp);
+      if (currentPathSegs) setValueAtContext(draft, currentPathSegs, maxHp);
+    }
+
+    // Saving Throws — same shape as stats.skills[], sourced from the
+    // wizard's own ability defs rather than the System's separate "saves"
+    // field (whose labels are full sentences like "Strength Saving Throw",
+    // not display-ready). Class grants a fixed 2-save proficiency via its
+    // own `saving_throws` field (a real 5e-data convention, `index` is the
+    // lowercase 3-letter ability abbreviation) — a hard grant, not a choice.
+    const classSaveIndexes = new Set(
+      (Array.isArray(classRecord?.saving_throws) ? classRecord.saving_throws : []).map((entry) =>
+        String(entry?.index || "").toLowerCase()
+      )
+    );
+    draft.stats.savingThrows = buildWizardState.abilityDefs.map((def, index) => {
+      const isProficient = classSaveIndexes.has(String(def.label || "").toLowerCase());
+      const modifier = abilityModifier(abilities[def.key] ?? 10);
+      return {
+        id: index + 1,
+        name: def.key,
+        friendlyName: def.key.charAt(0).toUpperCase() + def.key.slice(1),
+        shortName: def.label || def.key.slice(0, 3).toUpperCase(),
+        value: modifier + (isProficient ? draft.stats.proficiencyBonus : 0),
+        proficiency: isProficient ? 2 : 0,
+        advantage: false,
+        disadvantage: false,
+      };
+    });
+
+    // Initiative and Armor Class — resolved via the SAME combatBindings
+    // role lookup Combat Tracker/character-sheet.js already use (role
+    // "modifier"/"value"), never a hardcoded field path. Both entries only
+    // resolve a default when the System's own binding carries an
+    // `abilityBinding` (author-configurable, not assumed) — Armor Class
+    // also adds its own `base` (10 for a System using the standard 5e
+    // "unarmored" default) before equipment ever raises it.
+    const combatBindings = getCombatBindings();
+    const initiativeBinding = findBindingByRole(combatBindings, "modifier");
+    if (initiativeBinding?.abilityBinding) {
+      const initiativePathSegs = resolveBindingPath(initiativeBinding.binding);
+      if (initiativePathSegs) {
+        setValueAtContext(draft, initiativePathSegs, abilityModifier(resolveBinding(initiativeBinding.abilityBinding, draft)));
+      }
+    }
+    const armorClassBinding = findBindingByRole(combatBindings, "value");
+    if (armorClassBinding) {
+      const acPathSegs = resolveBindingPath(armorClassBinding.binding);
+      if (acPathSegs) {
+        const acAbilityMod = armorClassBinding.abilityBinding
+          ? abilityModifier(resolveBinding(armorClassBinding.abilityBinding, draft))
+          : 0;
+        setValueAtContext(draft, acPathSegs, (Number(armorClassBinding.base) || 0) + acAbilityMod);
+      }
+    }
+
+    // Speed — every Species carries at least a walk speed (a flat number,
+    // not a breakdown); other movement types stay 0 until a Feature grants
+    // them (this system doesn't auto-apply numeric Feature effects).
+    if (speciesRecord) {
+      draft.stats.speed = {
+        walk: Number(speciesRecord.speed) || 0,
+        burrow: 0,
+        climb: 0,
+        fly: 0,
+        swim: 0,
+      };
+    }
+
+    // Feature grants — species (every featureId, no level gate), class
+    // (level-1 matched), subclass (level-1 matched, only when the wizard's
+    // own conditional Subclass step actually ran), background's own
+    // already-linked origin feat.
+    const classFeatures = Array.isArray(classRecord.features) ? classRecord.features : [];
+    const classFeatureIds = Array.isArray(classRecord.featureIds) ? classRecord.featureIds : [];
+    const speciesFeatureIds = Array.isArray(speciesRecord?.featureIds) ? speciesRecord.featureIds : [];
+    const subclassFeatureIds = Array.isArray(subclassRecord?.featureIds) ? subclassRecord.featureIds : [];
+    const allCandidateIds = [
+      ...new Set([
+        ...classFeatureIds,
+        ...speciesFeatureIds,
+        ...subclassFeatureIds,
+        ...(backgroundRecord?.feat?.refId ? [backgroundRecord.feat.refId] : []),
+      ]),
+    ];
+    const featureEntries = allCandidateIds.length ? await fetchKindEntriesWithIds(dataManager, "feature") : [];
+    const featureEntityById = new Map(featureEntries.map((entry) => [entry.id, entry.entity]));
+    const featureNameById = new Map(featureEntries.map((entry) => [entry.id, (entry.entity?.name || "").trim().toLowerCase()]));
+    const speciesFeaturesAsClassShape = speciesFeatureIds.map((fid) => ({
+      name: featureEntityById.get(fid)?.name || "",
+      level: null,
+    }));
+    const grantedFromSpecies = matchFeaturesAtLevel(speciesFeaturesAsClassShape, speciesFeatureIds, featureNameById, null, []);
+    const grantedFromClass = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, 1, grantedFromSpecies);
+    const grantedFromSubclass = subclassRecord
+      ? grantSubclassFeaturesAtLevel(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass])
+      : [];
+    const grantedFeatureIds = [...grantedFromSpecies, ...grantedFromClass, ...grantedFromSubclass];
+    if (backgroundRecord?.feat?.refKind === "feature" && backgroundRecord.feat.refId) {
+      grantedFeatureIds.push(backgroundRecord.feat.refId);
+    }
+    grantedFeatureIds.forEach((fid) => {
+      if (!draft.featureIds.includes(fid)) draft.featureIds.push(fid);
+    });
+
+    // Spell slots — full multiclass math even at creation (a single-class
+    // character is just the degenerate case), reusing the SAME merge
+    // function Level Up/Add a Class share.
+    await refreshCharacterSpellSlots(draft);
+
+    // Background's own flat, hard-granted proficiencies (unconditional).
+    (Array.isArray(backgroundRecord?.proficiencies) ? backgroundRecord.proficiencies : []).forEach((entry) => {
+      applyProficiencyGrant(entry?.name, draft);
+    });
+    // Recomputes every now-proficient skill's own `value` to include the
+    // proficiency bonus just granted above (expertise doubles it) — without
+    // this, a skill Background just made proficient would still show its
+    // stale ability-modifier-only value until manually noticed/fixed.
+    draft.stats.skills.forEach((skill) => {
+      if (skill.proficiency >= 2) {
+        const abilityDef = buildWizardState.abilityDefs.find((def) => def.label === skill.ability);
+        const score = abilityDef ? abilities[abilityDef.key] : undefined;
+        skill.value = abilityModifier(score ?? 10) + draft.stats.proficiencyBonus * (skill.proficiency === 3 ? 2 : 1);
+      }
+    });
+
+    // Pending choices.
+    const pendingChoices = [];
+    const pushChoice = (source, resolved, targetPath) => {
+      resolved.forEach((entry, index) => {
+        pendingChoices.push({
+          id: `${source.id}-create-${index}-${Date.now()}`,
+          sourceKind: source.kind,
+          sourceId: source.id,
+          sourceName: source.name,
+          type: entry.type || targetPath || "",
+          desc: entry.desc,
+          choose: entry.choose,
+          options: entry.options,
+        });
+      });
+    };
+    pushChoice(
+      { kind: "class", id: buildWizardState.classId, name: classRecord.name || "Class" },
+      resolveChoiceList(classRecord.proficiency_choices).filter((entry) => entry.options.length),
+      "proficiencies"
+    );
+    if (backgroundRecord) {
+      pushChoice(
+        { kind: "background", id: buildWizardState.backgroundId, name: backgroundRecord.name || "Background" },
+        resolveChoiceList(backgroundRecord.proficiency_choices).filter((entry) => entry.options.length),
+        "proficiencies"
+      );
+      const classEquipment = resolveEquipmentChoice((classRecord.starting_equipment_options || [])[0]);
+      if (classEquipment) {
+        pushChoice({ kind: "class", id: buildWizardState.classId, name: classRecord.name || "Class" }, [{ ...classEquipment, type: "equipmentChoice" }], "inventory");
+      }
+      const backgroundEquipment = resolveEquipmentChoice((backgroundRecord.equipment_options || [])[0]);
+      if (backgroundEquipment) {
+        pushChoice(
+          { kind: "background", id: buildWizardState.backgroundId, name: backgroundRecord.name || "Background" },
+          [{ ...backgroundEquipment, type: "equipmentChoice" }],
+          "inventory"
+        );
+      }
+      // Background's own ability-score bonus (2024 rules: pick +2/+1 or
+      // +1/+1/+1 among 3 candidate abilities) — synthesized directly
+      // rather than through resolveGrantChoices, since the source data
+      // (`ability_scores`: a flat 3-candidate list) isn't a {choose, from}
+      // shape at all.
+      const candidates = Array.isArray(backgroundRecord.ability_scores) ? backgroundRecord.ability_scores : [];
+      if (candidates.length) {
+        const abilityByShortName = new Map(buildWizardState.abilityDefs.map((def) => [def.label.toUpperCase(), def]));
+        const options = candidates
+          .map((entry) => abilityByShortName.get((entry?.name || "").toUpperCase()))
+          .filter(Boolean)
+          .map((def) => ({ id: def.key, name: def.label }));
+        if (options.length) {
+          pendingChoices.push({
+            id: `background-ability-bonus-${Date.now()}`,
+            sourceKind: "background",
+            sourceId: buildWizardState.backgroundId,
+            sourceName: backgroundRecord.name || "Background",
+            type: "abilityScoreBonus",
+            desc: "Choose your background ability score bonus.",
+            choose: 1,
+            options,
+          });
+        }
+      }
+    }
+    grantedFeatureIds.forEach((featureId) => {
+      const featureRecord = featureEntityById.get(featureId);
+      if (!featureRecord || !Array.isArray(featureRecord.grants) || !featureRecord.grants.length) {
+        return;
+      }
+      pushChoice({ kind: "feature", id: featureId, name: featureRecord.name || featureId }, resolveGrantChoices(featureRecord.grants, draft), "");
+    });
+    draft.pendingChoices = pendingChoices;
+
+    state.character = cloneCharacter(draft);
+    state.draft = cloneCharacter(draft);
+    state.characterOrigin = "local";
+    // A freshly created character (Blank/Import/Build — never Duplicate,
+    // which deliberately keeps whatever mode you were already in) always
+    // drops the player into Edit — they just made this, they're almost
+    // certainly about to keep configuring it. Routed through
+    // onRequestEditMode (workbench.js's own setSubView("edit")) rather than
+    // a direct `state.mode = "edit"` assignment — confirmed real bug: a
+    // direct assignment here left workbench.js's own subView tracking
+    // (a SEPARATE variable, the actual source of truth the View/Edit
+    // toggle and Delete-button visibility both read) stuck on "view",
+    // desynced from this file's own state.mode, until the next manual
+    // toggle click forced the two back into agreement. onRequestEditMode
+    // threads through the SAME setMode() path an ordinary toggle click
+    // already uses, so nothing here diverges from that one path.
+    if (onRequestEditMode) {
+      onRequestEditMode();
+    } else {
+      state.mode = "edit";
+    }
+    const user = sessionUser();
+    registerCharacterRecord({
+      id,
+      title: name,
+      template: templateId,
+      source: "local",
+      ownership: user ? "owned" : "local",
+      ownerId: user?.id ?? null,
+      ownerUsername: user?.username ?? "",
+      ownerTier: user?.tier ?? "",
+    });
+    if (elements.characterSelect) {
+      elements.characterSelect.value = id;
+    }
+    await persistDraft({ silent: false });
+    syncNotesEditor();
+    renderCanvas();
+    renderPreview();
+    void refreshRelationshipsSection();
+    syncCharacterActions();
+    if (pendingChoices.length) {
+      expandCharacterPropertiesSection();
+    }
+    state.shareToken = "";
+    clearGameLogContext();
+    // No "Created X" toast here — the wizard isn't done yet from the
+    // user's own point of view (there's still at least the "choices" step
+    // ahead). The real success toast fires once they click Finish there
+    // (see the Next-button handler) so nothing announces completion before
+    // the process actually is complete.
+    return pendingChoices;
   }
 
   async function createNewCharacterFromForm() {
@@ -6901,9 +10114,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const draft = cloneCharacter(state.draft);
     draft.id = id;
+    draft.name = duplicateName;
     draft.title = duplicateName;
     if (draft.data && typeof draft.data === "object") {
       draft.data = { ...draft.data, name: duplicateName };
+    }
+    if (draft.identity && typeof draft.identity === "object") {
+      draft.identity = { ...draft.identity, name: duplicateName };
     }
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);
@@ -6973,16 +10190,35 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const initialSchema = state.template?.schema || templateMetadata?.schema || "";
     const draft = {
       id: trimmedId,
+      name: trimmedName,
       title: trimmedName,
       template: trimmedTemplate,
       systemIds: initialSchema ? [initialSchema] : [],
       data: { name: trimmedName },
       state: { timers: {}, log: [] },
+      identity: { name: trimmedName },
     };
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);
     state.characterOrigin = "local";
-    state.mode = "edit";
+    // A freshly created character (Blank/Import/Build — never Duplicate,
+    // which deliberately keeps whatever mode you were already in) always
+    // drops the player into Edit — they just made this, they're almost
+    // certainly about to keep configuring it. Routed through
+    // onRequestEditMode (workbench.js's own setSubView("edit")) rather than
+    // a direct `state.mode = "edit"` assignment — confirmed real bug: a
+    // direct assignment here left workbench.js's own subView tracking
+    // (a SEPARATE variable, the actual source of truth the View/Edit
+    // toggle and Delete-button visibility both read) stuck on "view",
+    // desynced from this file's own state.mode, until the next manual
+    // toggle click forced the two back into agreement. onRequestEditMode
+    // threads through the SAME setMode() path an ordinary toggle click
+    // already uses, so nothing here diverges from that one path.
+    if (onRequestEditMode) {
+      onRequestEditMode();
+    } else {
+      state.mode = "edit";
+    }
     const user = sessionUser();
     registerCharacterRecord({
       id: trimmedId,
@@ -7256,6 +10492,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const draft = {
       ...merged,
       id: trimmedId,
+      name: trimmedName,
       title: trimmedName,
       template: trimmedTemplate,
       systemIds: initialSchema ? [initialSchema] : [],
@@ -7263,11 +10500,29 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       url: sourceValue,
       data: { name: trimmedName },
       state: { timers: {}, log: [] },
+      identity: { ...(merged?.identity || {}), name: trimmedName },
     };
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);
     state.characterOrigin = "local";
-    state.mode = "edit";
+    // A freshly created character (Blank/Import/Build — never Duplicate,
+    // which deliberately keeps whatever mode you were already in) always
+    // drops the player into Edit — they just made this, they're almost
+    // certainly about to keep configuring it. Routed through
+    // onRequestEditMode (workbench.js's own setSubView("edit")) rather than
+    // a direct `state.mode = "edit"` assignment — confirmed real bug: a
+    // direct assignment here left workbench.js's own subView tracking
+    // (a SEPARATE variable, the actual source of truth the View/Edit
+    // toggle and Delete-button visibility both read) stuck on "view",
+    // desynced from this file's own state.mode, until the next manual
+    // toggle click forced the two back into agreement. onRequestEditMode
+    // threads through the SAME setMode() path an ordinary toggle click
+    // already uses, so nothing here diverges from that one path.
+    if (onRequestEditMode) {
+      onRequestEditMode();
+    } else {
+      state.mode = "edit";
+    }
     const user = sessionUser();
     registerCharacterRecord({
       id: trimmedId,

@@ -95,7 +95,7 @@
     },
     {
       "id": "template.properties",
-      "title": "Template Properties Panel",
+      "title": "Inspector",
       "summary": "Configure binding targets, layout rules, and conditional visibility for each component.",
       "details": [
         "Changes here apply to the canvas immediately, and each change can be undone.",
@@ -1183,6 +1183,18 @@
       ],
       "category": "Orrery",
       "href": "../common/account.html?help=orrery.markers"
+    },
+    {
+      "id": "orrery.barResourceName",
+      "title": "Marker resource bar",
+      "summary": "Which of the active Encounter's System's Combat Bindings resources the small bar above each combatant's marker shows.",
+      "details": [
+        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
+        "Only appears once a campaign has an active, running Encounter — the bar always reflects Combat Tracker's own live values for that Encounter's System, not a character record's own stats read directly.",
+        "Most Systems track only one resource (Hit Points) and never need this touched — it only matters for a System that tracks more than one, like d20 Modern's Hit Points and Action Points, or Daggerheart's Hope alongside HP. Whichever one looks like Hit Points is already selected for you, marked \"(auto-detected)\", but this can point at any resource a System defines, not just HP."
+      ],
+      "category": "Orrery",
+      "href": "../common/account.html?help=orrery.barResourceName"
     },
     {
       "id": "orrery.views",

@@ -12,7 +12,7 @@ import {
 } from "../lib/canvas-card.js";
 import { createRootInsertionHandler } from "../lib/root-inserter.js";
 import { expandPane } from "../../../common/js/lib/panes.js";
-import { disposeTooltips, refreshTooltips, refreshTooltip } from "../../../common/js/lib/tooltips.js";
+import { disposeTooltips, refreshTooltips, refreshTooltip, setDisabledTooltip } from "../../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
 import {
   createJsonDataPanel,
@@ -401,9 +401,9 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // collapseComponentPropertiesSection below), so their
   // bindCollapsibleToggle() return value is kept.
   const applyTemplatePropertiesCollapse = bindCollapsibleToggle(
-    createSectionToggleButton("[data-template-properties-toggle-mount]", false),
+    createSectionToggleButton("[data-template-properties-toggle-mount]", true),
     elements.templatePropertiesPanel,
-    { collapsed: false }
+    { collapsed: true }
   );
   const applyComponentPropertiesCollapse = bindCollapsibleToggle(
     createSectionToggleButton("[data-component-properties-toggle-mount]", true),
@@ -2264,35 +2264,33 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       const canEditRecord = dataManager.getUserTier() === "admin" || templateAllowsEdits(metadata);
       const hasChanges = hasTemplate && hasUnsavedTemplateChanges();
       const enabled = hasTemplate && hasChanges && canWrite && canEditRecord;
-      elements.saveButton.disabled = !enabled;
+      // setDisabledTooltip (tooltips.js) owns real `disabled` + the
+      // explanation together — a real `disabled` attribute blocks hover
+      // entirely, so a bare `title` set alongside it (the previous approach
+      // here) could never actually show; same bug class as every other
+      // disabled-button-tooltip fix in the suite, just missed here since it
+      // used native `title` instead of a Bootstrap tooltip.
+      const reason = !hasTemplate
+        ? "Create or load a template to save."
+        : !state.template.id || !state.template.schema
+          ? "Add an ID and system before saving."
+          : !canWrite
+            ? dataManager.describeRequiredWriteTier("templates")
+              ? `Saving templates requires a ${dataManager.describeRequiredWriteTier("templates")} tier.`
+              : "Your tier cannot save templates."
+            : !canEditRecord
+              ? describeTemplateEditRestriction(metadata)
+              : !hasChanges
+                ? "No changes to save."
+                : "";
+      setDisabledTooltip(elements.saveButton, reason);
       elements.saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
-      if (!hasTemplate) {
-        elements.saveButton.title = "Create or load a template to save.";
-      } else if (!state.template.id || !state.template.schema) {
-        elements.saveButton.title = "Add an ID and system before saving.";
-      } else if (!canWrite) {
-        const required = dataManager.describeRequiredWriteTier("templates");
-        elements.saveButton.title = required
-          ? `Saving templates requires a ${required} tier.`
-          : "Your tier cannot save templates.";
-      } else if (!canEditRecord) {
-        elements.saveButton.title = describeTemplateEditRestriction(metadata);
-      } else if (!hasChanges) {
-        elements.saveButton.title = "No changes to save.";
-      } else {
-        elements.saveButton.removeAttribute("title");
-      }
     }
 
     if (elements.clearButton) {
       const isEmpty = !Array.isArray(state.components) || state.components.length === 0;
-      elements.clearButton.disabled = isEmpty;
       elements.clearButton.setAttribute("aria-disabled", isEmpty ? "true" : "false");
-      if (isEmpty) {
-        elements.clearButton.title = "Canvas is already empty.";
-      } else {
-        elements.clearButton.removeAttribute("title");
-      }
+      setDisabledTooltip(elements.clearButton, isEmpty ? "Canvas is already empty." : "");
     }
 
     if (elements.duplicateTemplateButton) {
@@ -2341,13 +2339,8 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     }
     const { showDelete, deletable, title } = resolveDeleteTemplateState();
     button.classList.toggle("d-none", !showDelete);
-    button.disabled = !deletable;
     button.setAttribute("aria-disabled", deletable ? "false" : "true");
-    if (title) {
-      button.title = title;
-    } else {
-      button.removeAttribute("title");
-    }
+    setDisabledTooltip(button, deletable ? "" : title);
   }
 
   async function initializeBuiltins() {
@@ -3096,6 +3089,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       },
       removeButtonOptions: {
         srLabel: "Remove component",
+        tooltip: "Remove component",
         dataset: { action: "remove-component", componentId: component.uid },
         attributes: { "aria-label": "Remove component" },
       },
@@ -4646,10 +4640,11 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     const focusSnapshot = captureTemplatePropertiesFocus();
     elements.templateProperties.innerHTML = "";
     if (!state.template) {
-      const placeholder = document.createElement("p");
-      placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
-      placeholder.textContent = "Select or create a template to edit its properties.";
-      elements.templateProperties.appendChild(placeholder);
+      // No placeholder box — the section starts collapsed instead (see
+      // applyTemplatePropertiesCollapse's own default below) and only ever
+      // opens once expandTemplatePropertiesSection() is called by a real
+      // template load, so there's nothing to show here at all.
+      collapseTemplatePropertiesSection();
       return;
     }
 
@@ -5027,11 +5022,21 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     renderTemplateProperties();
     if (!elements.inspector) return;
     const focusSnapshot = captureInspectorFocus();
+    // Disposed before the wipe, not left to be garbage-collected — see
+    // tooltips.js's own BUG CLASS 2. This reruns on every selection change.
+    disposeTooltips(elements.inspector);
     elements.inspector.innerHTML = "";
     const selection = findComponent(state.selectedId);
     const component = selection?.component;
     if (!component) {
-      expandTemplatePropertiesSection();
+      // Only steals focus back to Template Properties when there's actually
+      // a template to show there — renderTemplateProperties() (called just
+      // above) already collapsed it when there isn't, and this would
+      // otherwise immediately re-expand an empty section on a fresh,
+      // template-less load.
+      if (state.template) {
+        expandTemplatePropertiesSection();
+      }
       collapseComponentPropertiesSection();
       const placeholder = document.createElement("p");
       placeholder.className = "border border-dashed rounded-3 p-4 text-body-secondary";
@@ -5328,6 +5333,56 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // fallback would have been, making the two indistinguishable. This
   // output is merged directly into each type's own Component section now
   // (renderInspector), not a separate generic "Data" section.
+  // The one Source/Options shape that supports BOTH a plain System-field
+  // binding ("@armorCategories") and a Library-search formula
+  // ("=libraryEntries('feature', 'tags.categories', 'character')") — used
+  // wherever a component might serve as a Repeater's own pickable Add-cell
+  // (see hasConfiguredSource/findPickableCell, workbench-character-view.js)
+  // as well as anywhere else a richer, formula-capable source is useful.
+  // Not context-gated to "only show inside a Repeater's item template" —
+  // same reasoning as Container's own tabs Source field showing
+  // unconditionally: the field is simply inert wherever nothing reads it.
+  function createSourceOptionsInput(component) {
+    return createBindingFormulaInput(component, {
+      labelText: "Source / Options",
+      placeholder: "@fieldKey or =libraryEntries('kind', 'path', 'value')",
+      bindingKey: "sourceBinding",
+      formulaKey: "sourceFormula",
+      allowedFieldCategories: ["array", "object"],
+      afterCommit: ({ draft, result }) => {
+        if (!result || result.type === "empty") {
+          draft.sourceBinding = "";
+          draft.sourceFormula = "";
+        }
+      },
+    });
+  }
+
+  // Only meaningful on the one cell within a grouped Repeater's item
+  // template whose own Binding matches that Repeater's own Group by field
+  // (see renderGenericAddControls, workbench-character-view.js) — but, same
+  // as Source/Options above, offered unconditionally rather than trying to
+  // detect that ancestry from inside a single component's own Inspector.
+  // Tells a grouped Add pick where to read its matching group key FROM the
+  // picked candidate's own record, since the group's own key field (here)
+  // and the candidate's own record shape (there) are two different
+  // schemas that don't necessarily share a path name.
+  function createCandidateBindingInput(component) {
+    return createTextInput(
+      component,
+      "Group key source (optional)",
+      component.candidateBinding || "",
+      (value) => {
+        const trimmed = value.trim();
+        updateComponent(component.uid, (draft) => {
+          if (trimmed) draft.candidateBinding = trimmed;
+          else delete draft.candidateBinding;
+        }, { rerenderCanvas: true });
+      },
+      { placeholder: "@stats.level — read from a picked item, when this is a group key" }
+    );
+  }
+
   function createDataControls(component, definition = {}) {
     const supportsBinding = definition.supportsBinding !== false;
     const supportsFormula = definition.supportsFormula !== false;
@@ -5337,27 +5392,23 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     ) {
       return [];
     }
-    if (component.type === "input" && (component.variant || "text") === "select") {
+    if (component.type === "input") {
+      // Offered for every variant, not just Select — a plain Text/Number
+      // input can equally serve as a Repeater's own pickable Add-cell
+      // (see createSourceOptionsInput above), where Source/Options never
+      // drives a dropdown of its own but still tells the Add mechanism
+      // where a candidate list comes from. Formula support (not just a
+      // plain binding) is the same generalization: a Select's own options
+      // can now come from a Library search too, not only System vocabulary.
       const controls = [
-        createBindingFormulaInput(component, {
-          labelText: "Source / Options",
-          placeholder: "@data.options",
-          bindingKey: "sourceBinding",
-          formulaKey: null,
-          supportsFormula: false,
-          allowedFieldCategories: ["array", "object"],
-          afterCommit: ({ draft, result }) => {
-            if (!result || result.type === "empty") {
-              draft.sourceBinding = "";
-            }
-          },
-        }),
+        createSourceOptionsInput(component),
         createBindingFormulaInput(component, {
           labelText: "Binding / Text",
           supportsBinding,
           supportsFormula,
           allowedFieldCategories: ["string", "number"],
         }),
+        createCandidateBindingInput(component),
       ];
       appendRollerControl(controls, component);
       return controls;
@@ -6834,24 +6885,96 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     });
   }
 
-  // Off by default — most Repeaters (ability scores, skills, a fixed
-  // defenses/senses list, ...) have a fixed, System-defined cardinality
-  // where an Add/Remove control would be actively wrong to offer. Turned on
-  // per-Repeater for the genuinely open-ended lists (Inventory, a crew's
-  // Upgrades/Claims/Cohorts, ...) — see renderRepeaterComponent
-  // (workbench-character-view.js) for what this actually gates: its own
-  // Add-item button and each row's own Remove button, still further gated
-  // by mode/Editable in Play the same as everything else there. Same
+  // Two independent switches, not one combined "Add/remove items" — Add and
+  // Remove are genuinely separate capabilities a Repeater can need on their
+  // own (see renderRepeaterComponent's own canAdd/canRemove,
+  // workbench-character-view.js): most Repeaters (ability scores, skills, a
+  // fixed defenses/senses list, ...) want neither, most open-ended lists
+  // (Inventory, Features, ...) want both, but a nested Repeater whose own
+  // Add flow is delegated to an ancestor (Spells' inner per-level Repeater —
+  // see the grouped branch of renderGenericAddControls) genuinely needs
+  // Remove without Add, and that choice has to be a real switch a Template
+  // author can see and flip, never an unexposed flag baked into JS. Both
+  // still further gated by mode the same as everything else there. Same
   // "purely structural/authoring-time choice" reasoning as
-  // createRepeaterHeaderToggle above — a plain switch, not the unified
-  // toggle/formula control, since whether a list is open-ended at all
-  // isn't state that plausibly varies by character.
-  function createRepeaterAllowAddRemoveToggle(component) {
-    return createSwitchField("Add/remove items", !!component.allowAddRemove, (checked) => {
+  // createRepeaterHeaderToggle above — plain switches, not the unified
+  // toggle/formula control, since whether a list is open-ended at all isn't
+  // state that plausibly varies by character.
+  function createRepeaterAllowAddToggle(component) {
+    return createSwitchField("Allow adding items", !!component.allowAdd, (checked) => {
       updateComponent(component.uid, (draft) => {
-        draft.allowAddRemove = checked;
+        draft.allowAdd = checked;
+      }, { rerenderCanvas: true, rerenderInspector: true });
+    });
+  }
+
+  function createRepeaterAllowRemoveToggle(component) {
+    return createSwitchField("Allow removing items", !!component.allowRemove, (checked) => {
+      updateComponent(component.uid, (draft) => {
+        draft.allowRemove = checked;
       }, { rerenderCanvas: true });
     });
+  }
+
+  // Meaningless with Add off (there's no Add flow for it to be an
+  // alternative TO) — listed directly under "Allow adding items" itself
+  // (not after "Allow removing items" or the Source controls below, which
+  // it used to sit among) and only rendered at all when that's on, gated
+  // the same way at the call site as createRepeaterSourceControls' own
+  // fields are.
+  function createRepeaterAllowCustomAddToggle(component) {
+    return createSwitchField("Also allow a custom/blank item", !!component.allowCustomAdd, (checked) => {
+      updateComponent(component.uid, (draft) => {
+        draft.allowCustomAdd = checked;
+      }, { rerenderCanvas: true });
+    });
+  }
+
+  // A Repeater's own Add picker never sources from the Repeater component
+  // itself — it's discovered generically from whichever cell(s) INSIDE its
+  // item template carry their own Source/Options (see hasConfiguredSource/
+  // findPickableCell, workbench-character-view.js): give the pickable
+  // field (a Text or Input dropped into the item template) its own Source/
+  // Options there, the exact same field every Select already has
+  // (createSourceOptionsInput above). What's offered here, alongside
+  // Add/remove items, is the handful of concerns that genuinely belong to
+  // the REPEATER as a whole rather than to any one cell.
+  function createRepeaterSourceControls(component) {
+    const controls = [
+      // Off by default — the item's own binding directly holds the array
+      // (Inventory, Features). Set when this Repeater's own top-level
+      // items are actually GROUPS keyed by some shared field on each pick
+      // (Spells, grouped by @level): a pick then routes into the matching
+      // existing group, or creates a new one, instead of appending to the
+      // Repeater's own array directly. See renderGenericAddControls'
+      // grouped branch (workbench-character-view.js) for exactly how.
+      createTextInput(
+        component,
+        "Group by (optional)",
+        component.groupByBinding || "",
+        (value) => {
+          const trimmed = value.trim();
+          updateComponent(component.uid, (draft) => {
+            if (trimmed) draft.groupByBinding = trimmed;
+            else delete draft.groupByBinding;
+          }, { rerenderCanvas: true, rerenderInspector: true });
+        },
+        { placeholder: "@level — groups items by this field instead of a flat list" }
+      ),
+      // Off by default — a Repeater's own array normally holds full item
+      // objects (Inventory, Proficiencies). On, it instead holds bare
+      // Library-kind ids (Features' own @featureIds), expanded for display
+      // against the matching Library kind (see expandIdStorageItems);
+      // picking one writes just the picked entity's own id, not a copy of
+      // its fields.
+      createSwitchField("Store items as ids, not objects", component.itemStorage === "id", (checked) => {
+        updateComponent(component.uid, (draft) => {
+          if (checked) draft.itemStorage = "id";
+          else delete draft.itemStorage;
+        }, { rerenderCanvas: true });
+      }),
+    ];
+    return controls;
   }
 
   // Vertical (default) stacks repeated items top-to-bottom; Horizontal
@@ -6909,7 +7032,14 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       );
     }
     controls.push(createRepeaterHeaderToggle(component, { isHorizontal }));
-    controls.push(createRepeaterAllowAddRemoveToggle(component));
+    controls.push(createRepeaterAllowAddToggle(component));
+    if (component.allowAdd) {
+      controls.push(createRepeaterAllowCustomAddToggle(component));
+    }
+    controls.push(createRepeaterAllowRemoveToggle(component));
+    if (component.allowAdd) {
+      controls.push(...createRepeaterSourceControls(component));
+    }
     // Only meaningful for Vertical list mode — the divider it toggles
     // (renderRepeaterItemRow) only ever renders there; Table mode
     // (columns>1) has its own real <table> row borders instead, and
@@ -7041,7 +7171,8 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     const patternButton = document.createElement("button");
     patternButton.type = "button";
     patternButton.className = "btn btn-outline-secondary";
-    patternButton.title = "Insert a pattern or shape";
+    patternButton.setAttribute("data-bs-toggle", "tooltip");
+    patternButton.setAttribute("data-bs-title", "Insert a pattern or shape");
     patternButton.setAttribute("aria-label", "Insert a pattern or shape");
     const icon = document.createElement("span");
     icon.className = "iconify";
@@ -7626,6 +7757,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
   function renderTextInspector(component) {
     return [
+      createSourceOptionsInput(component),
       createBindingFormulaInput(component, {
         labelText: "Binding / Text",
         placeholder: "Static text, @path, or =formula",
@@ -7633,6 +7765,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         supportsBinding: true,
         supportsFormula: true,
       }),
+      createCandidateBindingInput(component),
     ];
   }
 
@@ -7999,7 +8132,8 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       const label = document.createElement("span");
       label.className = "small text-body-secondary flex-grow-1 text-truncate";
       label.textContent = displayLabel;
-      label.title = displayLabel;
+      label.setAttribute("data-bs-toggle", "tooltip");
+      label.setAttribute("data-bs-title", displayLabel);
 
       const fillInput = document.createElement("input");
       fillInput.type = "number";

@@ -157,7 +157,6 @@
       "label": "Upgrades",
       "name": "Upgrades",
       "binding": "@upgrades",
-      "allowAddRemove": true,
       "columns": 2,
       "showHeader": true,
       "zones": {
@@ -207,7 +206,9 @@
             "text": "Purchased"
           }
         ]
-      }
+      },
+      "allowAdd": true,
+      "allowRemove": true
     },
     {
       "uid": "bitd-37",
@@ -216,7 +217,6 @@
       "label": "Claims",
       "name": "Claims",
       "binding": "@claims",
-      "allowAddRemove": true,
       "columns": 2,
       "showHeader": true,
       "zones": {
@@ -265,7 +265,9 @@
             "text": "Controlled"
           }
         ]
-      }
+      },
+      "allowAdd": true,
+      "allowRemove": true
     },
     {
       "uid": "bitd-47",
@@ -274,7 +276,6 @@
       "label": "Cohorts",
       "name": "Cohorts",
       "binding": "@cohorts",
-      "allowAddRemove": true,
       "columns": 2,
       "showHeader": true,
       "zones": {
@@ -320,7 +321,9 @@
             "text": "Expertise / Notes"
           }
         ]
-      }
+      },
+      "allowAdd": true,
+      "allowRemove": true
     }
   ]
 }

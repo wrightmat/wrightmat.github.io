@@ -1,0 +1,68 @@
+{
+  "name": "Human",
+  "tagline": "An ordinary person in an extraordinary situation",
+  "description": [
+    "d20 Modern has no race/species axis of its own — every hero and nearly every ordinary person is a human being, distinguished by Occupation and Basic Class rather than biology. What varies is background, not ancestry: a contemporary population drawing on every corner of the real world, reflected in one broad, deliberately diverse name pool rather than several invented cultural buckets the game itself never defines."
+  ],
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "names": {
+    "nameMode": "blend",
+    "lastNameForm": "family",
+    "firstNames": [
+      "James",
+      "Michael",
+      "David",
+      "Daniel",
+      "Marcus",
+      "Anthony",
+      "Carlos",
+      "Miguel",
+      "Wei",
+      "Kenji",
+      "Raj",
+      "Ahmed",
+      "Omar",
+      "Malik",
+      "Jamal",
+      "Sarah",
+      "Jennifer",
+      "Maria",
+      "Sofia",
+      "Priya",
+      "Aisha",
+      "Yuki",
+      "Elena",
+      "Natasha",
+      "Grace",
+      "Olivia",
+      "Nicole",
+      "Destiny",
+      "Alexis",
+      "Samantha"
+    ],
+    "lastNames": [
+      "Reyes",
+      "Martinez",
+      "Nguyen",
+      "Kim",
+      "Patel",
+      "Johnson",
+      "Williams",
+      "Brown",
+      "Anderson",
+      "Walker",
+      "Rodriguez",
+      "Chen",
+      "Hassan",
+      "Okafor",
+      "Kowalski",
+      "O'Brien",
+      "Russo",
+      "Silva",
+      "Novak",
+      "Sato"
+    ]
+  }
+}

@@ -110,7 +110,8 @@ function buildMacroChip(ref, { status, interactive, dataManager, groupContext, e
   icon.setAttribute("aria-hidden", "true");
   button.append(icon, el("span", null, `Macro: ${ref}`));
   if (interactive) {
-    button.title = `Click to run "${ref}"`;
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", `Click to run "${ref}"`);
     button.addEventListener("click", () =>
       void runMacroReference(ref, { dataManager, groupContext, status, ensureWidget, onWledDevicesChange })
     );

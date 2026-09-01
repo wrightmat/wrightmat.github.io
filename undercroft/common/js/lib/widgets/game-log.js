@@ -7,6 +7,7 @@ import { connectLiveStream } from "../live.js";
 import { el, setElementVisible } from "../dom.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { fetchKindEntrySummaries } from "../content-fetch.js";
+import { disposeTooltips, refreshTooltips } from "../tooltips.js";
 
 const POLL_INTERVAL_MS = 30000;
 const CLEARED_WATERMARK_PREFIX = "undercroft.gamelog.clearedBefore.";
@@ -660,6 +661,12 @@ export function initGameLogWidget(
   }
 
   function renderEntries(list, entries) {
+    // Disposed before the wipe, not left to be garbage-collected — this
+    // rebuilds on every poll (POLL_INTERVAL_MS), including while a tooltip
+    // from a previous render might still be open, so skipping this leaves an
+    // orphaned popup on <body> on a recurring timer, not just an occasional
+    // user action. See tooltips.js's own BUG CLASS 2.
+    disposeTooltips(list);
     list.innerHTML = "";
     if (!entries.length) {
       list.appendChild(el("p", "text-body-secondary small mb-0", "No log activity yet."));
@@ -689,7 +696,8 @@ export function initGameLogWidget(
         if (isReplyable) {
           iconEl.type = "button";
           iconEl.classList.add("gamelog-entry-icon--clickable");
-          iconEl.title = `Reply to ${entry.author?.name || "them"}`;
+          iconEl.setAttribute("data-bs-toggle", "tooltip");
+          iconEl.setAttribute("data-bs-title", `Reply to ${entry.author?.name || "them"}`);
           iconEl.addEventListener("click", () => replyHandler(entry));
         } else if (visual.clickable) {
           iconEl.type = "button";
@@ -701,7 +709,11 @@ export function initGameLogWidget(
           // consistent is the whole point of this rework.
           const isOn = Boolean(isSpotlightOnDashboard?.({ kind: visual.kind, id: visual.id }));
           iconEl.classList.add(isOn ? "spotlight-panel-icon--mine" : "spotlight-panel-icon--available");
-          iconEl.title = isOn ? "On your dashboard — click to remove" : "Click to add to your dashboard";
+          iconEl.setAttribute("data-bs-toggle", "tooltip");
+          iconEl.setAttribute(
+            "data-bs-title",
+            isOn ? "On your dashboard — click to remove" : "Click to add to your dashboard"
+          );
           iconEl.addEventListener("click", () =>
             onToggleSpotlight?.({ kind: visual.kind, id: visual.id, templateId: visual.templateId })
           );
@@ -770,16 +782,14 @@ export function initGameLogWidget(
           // One compact inline pill, not a whole second row — the pill
           // text itself IS the @mention (who this was whispered to), and
           // the real account username (when known — see idToUsername's own
-          // comment on the GM case) only ever shows on hover, via the
-          // native title tooltip rather than this suite's Bootstrap
-          // tooltip machinery — that needs an explicit dispose/refresh
-          // cycle around every re-render (this list rebuilds on every
-          // poll), which is real ongoing upkeep this compact a hint doesn't
-          // justify.
+          // comment on the GM case) only ever shows on hover.
           const pill = el("span", "badge text-bg-secondary gamelog-mention-pill");
           pill.textContent = entry.recipient_ids.map((id) => `@${mentionDirectory.idToLabel(id) || "someone"}`).join(" ");
           const usernames = entry.recipient_ids.map((id) => mentionDirectory.idToUsername(id)).filter(Boolean);
-          if (usernames.length) pill.title = usernames.join(", ");
+          if (usernames.length) {
+            pill.setAttribute("data-bs-toggle", "tooltip");
+            pill.setAttribute("data-bs-title", usernames.join(", "));
+          }
           textEl.appendChild(pill);
           textEl.appendChild(document.createTextNode(" "));
         }
@@ -814,6 +824,7 @@ export function initGameLogWidget(
 
         list.appendChild(row);
       });
+    refreshTooltips(list);
   }
 
   async function refresh(list) {
@@ -834,8 +845,27 @@ export function initGameLogWidget(
         : entries;
       renderEntries(list, visible);
     } catch (error) {
+      // Always logged, regardless of where the failure came from (network,
+      // auth, a server error, or a client-side exception inside
+      // renderEntries itself) — the one catch-all message below used to be
+      // the ONLY trace of a failure anywhere, with nothing in the console
+      // to tell those apart. dataManager._request already console.warns
+      // real HTTP failures itself now; this covers the same ground for a
+      // caller (like this one) whose own catch previously threw that away,
+      // and for a non-HTTP failure (e.g. a bug in renderEntries) that
+      // dataManager never sees at all.
+      console.error("Game log widget: unable to load the log", error);
       list.innerHTML = "";
-      list.appendChild(el("p", "text-danger small mb-0", "Unable to load the log."));
+      const status = Number(error?.status) || 0;
+      const message =
+        status === 401 || status === 403
+          ? "You don't have access to this campaign's log."
+          : status === 404
+            ? "This campaign's log couldn't be found."
+            : status
+              ? "Unable to load the log — the server returned an error."
+              : "Unable to load the log — check your connection.";
+      list.appendChild(el("p", "text-danger small mb-0", message));
     }
   }
 

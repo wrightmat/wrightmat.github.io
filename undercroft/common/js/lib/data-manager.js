@@ -663,6 +663,14 @@ export class DataManager {
     }
     if (!response.ok) {
       const message = data && data.error ? data.error : response.statusText;
+      // Every non-2xx failure gets logged here, once — not just 5xx.
+      // Confirmed real gap: a 4xx (401/403/404/...) previously logged
+      // NOTHING at all, so a caller whose own catch block doesn't print the
+      // error either (several don't) left a failure with zero trace
+      // anywhere a developer could find it — "the log won't load" with no
+      // way to tell auth/routing/server-error apart without re-deriving it
+      // from scratch each time. Always visible now regardless of status.
+      console.warn(`DataManager: request failed (${response.status}) on ${method} ${path}`, message);
       if (response.status >= 500) {
         // A 5xx means an uncaught exception on the server (a Python
         // traceback's own str(), e.g. a raw "[WinError 5] Access is
@@ -671,9 +679,8 @@ export class DataManager {
         // act on by reading it. Every existing call site across the suite
         // just does `status.show(error.message)` on catch with no
         // per-site handling of this case, so the fix belongs here, once:
-        // log the real detail to the console for whoever's debugging, and
-        // let `error.message` be a clean, generic string instead.
-        console.warn(`DataManager: server error on ${method} ${path}`, message);
+        // the console already has the real detail (just above); let
+        // `error.message` be a clean, generic string instead.
         const error = new Error("Something went wrong on the server. Please try again.");
         error.status = response.status;
         error.payload = data;

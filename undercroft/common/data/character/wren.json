@@ -12,28 +12,30 @@
   "community": "Wanderborne",
   "class": "Bard",
   "subclass": "Troubadour",
-  "traits": {
-    "agility": 0,
-    "strength": -1,
-    "finesse": 1,
-    "instinct": 0,
-    "presence": 2,
-    "knowledge": 1
-  },
-  "hp": {
-    "current": 5,
-    "max": 5
-  },
-  "stress": {
-    "current": 0,
-    "max": 6
-  },
-  "hope": 2,
-  "evasion": 10,
-  "armorScore": 0,
-  "thresholds": {
-    "major": 1,
-    "severe": 2
+  "stats": {
+    "traits": {
+      "agility": 0,
+      "strength": -1,
+      "finesse": 1,
+      "instinct": 0,
+      "presence": 2,
+      "knowledge": 1
+    },
+    "hp": {
+      "current": 5,
+      "max": 5
+    },
+    "stress": {
+      "current": 0,
+      "max": 6
+    },
+    "hope": 2,
+    "evasion": 10,
+    "armorScore": 0,
+    "thresholds": {
+      "major": 1,
+      "severe": 2
+    }
   },
   "gold": {
     "handfuls": 1,

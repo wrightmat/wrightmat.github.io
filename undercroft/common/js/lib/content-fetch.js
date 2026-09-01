@@ -140,24 +140,46 @@ export function extractDdbId(value) {
   return matches[matches.length - 1];
 }
 
+// Same local-proxy-first, public-CORS-proxy-fallback shape as
+// fetchDdbContentPage below — character-service.dndbeyond.com is an allowed
+// /ddb-proxy host (server/config.py's ddb_proxy_allowed_hosts) for exactly
+// the same reason monster-service is: a public third-party CORS proxy
+// (corsproxy.io) is an external dependency outside this suite's control —
+// confirmed to reject this endpoint outright even for a character verified
+// reachable directly, unrelated to that character's own DDB privacy
+// setting. The local route also means a private/gated character resolves
+// fully via the same session-cookie mechanism monster-service/class pages
+// already use, not just a public one.
 export async function fetchDdbCharacter(id) {
-  const url = `${CORS_PROXY}${encodeURIComponent(`${DDB_CHARACTER_URL}${id}`)}`;
-  const response = await fetch(url);
+  const url = `${DDB_CHARACTER_URL}${id}`;
+  const localResponse = await fetch(`/ddb-proxy?url=${encodeURIComponent(url)}`).catch(() => null);
+  if (localResponse) {
+    if (localResponse.ok) {
+      const payload = await parseJsonResponse(localResponse, url);
+      return payload?.data ?? payload;
+    }
+    if (localResponse.status !== 404) {
+      throw new Error(`D&D Beyond fetch failed (${localResponse.status}).`);
+    }
+  }
+  const proxied = `${CORS_PROXY}${encodeURIComponent(url)}`;
+  const response = await fetch(proxied);
   if (!response.ok) {
     throw new Error(`D&D Beyond fetch failed (${response.status}).`);
   }
-  const payload = await parseJsonResponse(response, url);
+  const payload = await parseJsonResponse(response, proxied);
   return payload?.data ?? payload;
 }
 
-// Unlike fetchDdbCharacter above (public CORS proxy only), this goes through
-// fetchDdbContentPage's own local-proxy-first path — monster-service is
-// already an allowed host on server/app.py's /ddb-proxy route, and a non-SRD
-// monster (per this suite's own loom.source.ddb-monster help topic) may only
-// resolve in full with the session cookie that local proxy attaches, same
-// reasoning as a gated class/background/species page. Falls back to the
-// public CORS proxy exactly like every other content-page fetch when the
-// local server isn't available.
+// Goes through fetchDdbContentPage's own local-proxy-first path (same shape
+// fetchDdbCharacter above now also uses directly, since its own JSON
+// response isn't scraped HTML) — monster-service is an allowed host on
+// server/app.py's /ddb-proxy route, and a non-SRD monster (per this suite's
+// own loom.source.ddb-monster help topic) may only resolve in full with the
+// session cookie that local proxy attaches, same reasoning as a gated
+// class/background/species page. Falls back to the public CORS proxy
+// exactly like every other content-page fetch when the local server isn't
+// available.
 export async function fetchDdbMonster(id) {
   const text = await fetchDdbContentPage(`${DDB_MONSTER_URL}${id}`);
   let payload;

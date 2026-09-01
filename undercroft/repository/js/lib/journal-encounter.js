@@ -128,7 +128,9 @@ export async function buildEncounterPayload({ title, creatures, dataManager, id 
   matches.forEach(({ creature, match }) => {
     const qty = Math.max(1, Number(creature.qty) || 1);
     for (let i = 0; i < qty; i += 1) {
-      const stats = match ? resolveCombatantStats(combatBindings, match.payload) : { hp: 0, maxHp: 0, tempHp: 0, ac: 0 };
+      const stats = match
+        ? resolveCombatantStats(combatBindings, match.payload)
+        : { hp: 0, maxHp: 0, tempHp: 0, ac: 0, hpResourceName: "", resources: [] };
       const baseName = match ? match.payload?.name || match.payload?.title || creature.name : creature.name;
       combatants.push({
         id: randomId(),
@@ -140,6 +142,9 @@ export async function buildEncounterPayload({ title, creatures, dataManager, id 
         maxHp: stats.maxHp,
         tempHp: stats.tempHp,
         ac: stats.ac,
+        // See combat-tracker.js's own addCombatant comment.
+        hpResourceName: stats.hpResourceName,
+        resources: stats.resources,
         conditions: [],
         isPc: false,
         hidden: false,

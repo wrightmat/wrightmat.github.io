@@ -906,7 +906,8 @@ export function renderLinearTrackContent(component, ctx) {
     segment.style.backgroundColor =
       (index < active ? component.foregroundColor : component.backgroundColor) ||
       (index < active ? "var(--bs-primary)" : "var(--bs-border-color)");
-    segment.title = `Segment ${index + 1}`;
+    segment.setAttribute("data-bs-toggle", "tooltip");
+    segment.setAttribute("data-bs-title", `Segment ${index + 1}`);
     if (editable) {
       segment.type = "button";
       // A plain <button> reset — .template-linear-track__segment supplies
@@ -1390,7 +1391,8 @@ export function renderToggleContent(component, ctx) {
   if (height) glyph.style.height = height;
   const stateLabel = activeEntry ? activeEntry.label || "Toggle state" : "Toggle preview";
   glyph.setAttribute("aria-label", stateLabel);
-  glyph.title = stateLabel;
+  glyph.setAttribute("data-bs-toggle", "tooltip");
+  glyph.setAttribute("data-bs-title", stateLabel);
   if (typeof ctx.decorate === "function") ctx.decorate(glyph, component);
   if (editable) {
     glyph.addEventListener("click", () => {

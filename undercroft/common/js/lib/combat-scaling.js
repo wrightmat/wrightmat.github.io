@@ -16,6 +16,28 @@ export function slugify(name) {
     .replace(/(^-|-$)/g, "");
 }
 
+// Best-effort guess for which array field IS a System's Combat Scaling data,
+// used only to pre-fill the combatScalingField settings preference below
+// when a GM hasn't explicitly chosen one yet — never the sole source of
+// truth (see feedback_settings_preference_with_guessed_default). Unlike
+// guessAbilityFieldKey (common/js/lib/generator-kit.js), there's no reliable
+// SHAPE signature here — a scaling field's own value shape is whatever
+// stats that System's generator needs (D&D's CR carries armorClass/
+// hitPoints/attackBonus/saveDC, Daggerheart's Tier carries none of that) —
+// so this is name-preference only, checked against whatever array fields
+// the System actually defines. The three names below are every real one
+// found across this suite's own Systems as of 2026-08-30: "combatScaling"
+// (the majority, and the literal hardcoded default every loader here already
+// falls back to), "challengeRating" (D&D 3.5e/5e/5e2014, Pathfinder 1E,
+// Starfinder 1E, d20 Modern — a confirmed real, recurring alternate name,
+// not a one-off), and "tier" (Daggerheart).
+const COMBAT_SCALING_FIELD_NAME_PREFERENCE = ["combatScaling", "challengeRating", "tier"];
+
+export function guessCombatScalingFieldKey(fields) {
+  const arrayFieldKeys = new Set((Array.isArray(fields) ? fields : []).filter((f) => f?.type === "array").map((f) => f.key));
+  return COMBAT_SCALING_FIELD_NAME_PREFERENCE.find((name) => arrayFieldKeys.has(name)) || "";
+}
+
 // combatScaling is an ordinary array field on the active System's `fields`
 // (Loom's Properties editor) — same mechanism as Vault's generator-property
 // fields (see vault/js/lib/tables.js#getSystemPropertyTypes), but unlike
@@ -32,17 +54,23 @@ export function slugify(name) {
 // ceiling field — see vault/js/app.js), not System data: a different
 // generator entirely might not care about combat scaling at all, or a
 // System might want to reuse the same field for a different purpose.
-// Defaults to "combatScaling" so existing Systems keep working without
-// needing to set anything.
-export async function loadCombatScalingLevels(dataManager, systemId, combatScalingField = "combatScaling") {
-  if (!dataManager || !systemId || !combatScalingField) return [];
+// `combatScalingField` is the GM's own explicit preference, if stored —
+// empty/omitted falls through to guessCombatScalingFieldKey's own name-
+// preference guess, then the literal "combatScaling" key as the very last
+// resort (the old, sole hardcoded assumption, kept only as the final
+// fallback now — never hardcoded as the only option, since a System like
+// D&D 3.5e/5e or d20 Modern authors its scaling data under a completely
+// different key, "challengeRating").
+export async function loadCombatScalingLevels(dataManager, systemId, combatScalingField = "") {
+  if (!dataManager || !systemId) return [];
   try {
     // preferLocal: false — a Loom edit to the System's fields must be
     // visible immediately, not hidden behind a stale local cache. Same
     // reasoning as combat-tracker.js's System reads.
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "array" && entry.key === combatScalingField);
+    const key = combatScalingField || guessCombatScalingFieldKey(fields) || "combatScaling";
+    const field = fields.find((entry) => entry.type === "array" && entry.key === key);
     if (!field) return [];
     return (field.values || []).map((value, index) => ({
       id: value.id || slugify(value.name) || `combat-scaling-${index}`,

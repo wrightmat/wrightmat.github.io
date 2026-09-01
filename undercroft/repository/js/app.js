@@ -59,7 +59,13 @@ const { status, undoStack, undo, redo } = initAppShell({
     return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
   },
 });
-const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.repository" });
+// Unified onto the shared "undercroft" local-storage prefix every other tool
+// already uses by default (DataManager's own DEFAULT_STORAGE_PREFIX) —
+// Repository's own bucket names (journal, ...) already fully disambiguate
+// its content, so a second, tool-specific prefix layer on top was pure
+// redundant fragmentation (the whole reason suite-search.js needed its own
+// per-kind local-prefix lookup just to search across tools).
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 initAuthControls({ root: document, status, dataManager });
 
 // The built element itself (not a wrapper — unlike the other generator
@@ -886,6 +892,11 @@ function resolveWikiLinkTarget(title, titleIndex, questIndex) {
 function renderPreview() {
   if (!previewEl || !workingPayload) return;
   destroyMountedStoryBoards();
+  // Disposed before the wipe, not left to be garbage-collected — dice/
+  // macro/encounter/date chips inside rendered journal content all carry
+  // real tooltips now, and this reruns on every edit. See tooltips.js's own
+  // BUG CLASS 2.
+  disposeTooltips(previewEl);
   previewEl.innerHTML = "";
   const titleIndex = buildTitleIndex(entries);
   const questIndex = buildQuestIndex(entries);
@@ -939,6 +950,7 @@ function renderPreview() {
     questEl.id = `repo-quest-${index}`;
   });
   mountStoryBoardsInPreview();
+  refreshTooltips(previewEl);
 }
 
 // Upgrades every rendered `[data-callout="story-board"]` element (plain
@@ -1413,6 +1425,7 @@ function renderTags() {
   if (!tagsBadgesEl || !tagsInputEl || !workingPayload) return;
   const tags = workingPayload.tags || [];
   const lockedTags = parentGroupTags();
+  disposeTooltips(tagsBadgesEl);
   tagsBadgesEl.innerHTML = "";
   tagsBadgesEl.appendChild(
     renderTagBadges(tags, null, {
@@ -1427,6 +1440,7 @@ function renderTags() {
       },
     })
   );
+  refreshTooltips(tagsBadgesEl);
   tagsInputEl.innerHTML = "";
   tagsInputEl.appendChild(
     buildTagInputRow(TAG_DATALIST_ID, {

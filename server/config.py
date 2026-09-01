@@ -55,7 +55,12 @@ class ServerOptions:
     # hardcoded so a fork targeting a different system's content site isn't
     # forced to patch app.py.
     ddb_proxy_allowed_hosts: List[str] = field(
-        default_factory=lambda: ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com"]
+        default_factory=lambda: [
+            "www.dndbeyond.com",
+            "dndbeyond.com",
+            "monster-service.dndbeyond.com",
+            "character-service.dndbeyond.com",
+        ]
     )
 
 

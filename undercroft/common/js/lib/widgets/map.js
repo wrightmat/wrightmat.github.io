@@ -39,6 +39,7 @@ import {
   renderShapeElement,
   resolveMarkerLinkTarget,
   resolveMarkerConditionIcons,
+  resolveMarkerResourceBar,
   resetParticleEffectPlayState,
   findPrimaryGridLayer,
   hasMapMeasurementConfigured,
@@ -57,8 +58,8 @@ import { resolveIsSpotlighted, resolveActiveSpotlightId } from "../spotlight.js"
 import { createCharacterOwnershipPrimer, matchesOwner, refreshOwnershipCatalog } from "../ownership.js";
 import { el } from "../dom.js";
 import { getIconTokens } from "../icon-picker.js";
-import { findBindingByRole } from "../bindings.js";
-import { deriveCombatBindings } from "./combat-bindings.js";
+import { findBindingByRole, findBindingsByRole } from "../bindings.js";
+import { deriveCombatBindings, guessBarResourceName } from "./combat-bindings.js";
 import { deriveConditionsVocabulary } from "./tag-editor.js";
 // Same icon-picker/overlay-icon shape Orrery's own marker inspector uses for
 // a token's badge icons — reused as-is rather than a second, player-scoped
@@ -74,6 +75,7 @@ import {
   removeElement,
 } from "../map-live-sync.js";
 import { claimMarkerContentEntry, describeMarkerContentEntry, resolveGiveToOptions } from "../marker-contents.js";
+import { disposeTooltips, initTooltip, setDisabledTooltip, updateTooltipContent } from "../tooltips.js";
 
 // 10s (was 30s) — same reasoning as combat-tracker.js's own
 // POLL_INTERVAL_MS, kept a bit more conservative here since a map's own
@@ -228,13 +230,26 @@ export function initMapWidget(
   function refreshToolAvailability() {
     const measureConfigured = hasMapMeasurementConfigured(map);
     const shapeAvailable = Boolean(findPrimaryGridLayer(map));
+    // setDisabledTooltip owns `disabled` itself — a real `disabled` on the
+    // SAME element as the explanatory tooltip blocks the hover that would
+    // ever show it (see tooltips.js's own BUG CLASS 1); the old
+    // `.disabled = ...` + `.title = ...` pair here silently never showed
+    // the "ask the GM..." explanation for exactly that reason.
     if (measureButtonEl) {
-      measureButtonEl.disabled = !measureConfigured;
-      measureButtonEl.title = measureConfigured ? "Measure distance" : "Ask the GM to set a map scale to enable measuring";
+      if (measureConfigured) {
+        setDisabledTooltip(measureButtonEl, "");
+        updateTooltipContent(measureButtonEl, "Measure distance");
+      } else {
+        setDisabledTooltip(measureButtonEl, "Ask the GM to set a map scale to enable measuring");
+      }
     }
     if (shapeButtonEl) {
-      shapeButtonEl.disabled = !shapeAvailable;
-      shapeButtonEl.title = shapeAvailable ? "Draw an AoE shape" : "Ask the GM to add a grid layer to enable AoE shapes";
+      if (shapeAvailable) {
+        setDisabledTooltip(shapeButtonEl, "");
+        updateTooltipContent(shapeButtonEl, "Draw an AoE shape");
+      } else {
+        setDisabledTooltip(shapeButtonEl, "Ask the GM to add a grid layer to enable AoE shapes");
+      }
     }
     if (!measureConfigured && activeTool === "measure") {
       setActiveTool(activeTool);
@@ -392,8 +407,8 @@ export function initMapWidget(
     colorInput.style.width = "1.5rem";
     colorInput.style.height = "1.5rem";
     colorInput.style.flexShrink = "0";
-    colorInput.title = "Color";
     colorInput.setAttribute("aria-label", "Color");
+    initTooltip(colorInput, { title: "Color" });
     colorInput.value = element.strokeColor || element.fillColor || "#0f172a";
     colorInput.addEventListener("change", () => {
       // A shape's fillColor and strokeColor stay locked together (one
@@ -415,8 +430,8 @@ export function initMapWidget(
     deleteButton.style.width = "1.5rem";
     deleteButton.style.height = "1.5rem";
     deleteButton.style.flexShrink = "0";
-    deleteButton.title = "Delete";
     deleteButton.setAttribute("aria-label", "Delete");
+    initTooltip(deleteButton, { title: "Delete" });
     deleteButton.textContent = "×";
     deleteButton.addEventListener("click", () => {
       closeMarkerEditor();
@@ -435,8 +450,8 @@ export function initMapWidget(
       opacityInput.min = "0";
       opacityInput.max = "1";
       opacityInput.step = "0.05";
-      opacityInput.title = "Opacity";
       opacityInput.setAttribute("aria-label", "Opacity");
+      initTooltip(opacityInput, { title: "Opacity" });
       opacityInput.value = Number.isFinite(element.opacity) ? element.opacity : 0.5;
       opacityInput.addEventListener("change", () => {
         void persistElementField(layer, element.id, "opacity", Number(opacityInput.value));
@@ -715,7 +730,6 @@ export function initMapWidget(
     button.type = "button";
     button.setAttribute("aria-pressed", "false");
     button.setAttribute("aria-label", label);
-    button.title = label;
     const iconEl = el("span", "iconify");
     iconEl.dataset.icon = icon;
     iconEl.setAttribute("aria-hidden", "true");
@@ -756,6 +770,7 @@ export function initMapWidget(
     const zoomOutButton = el("button", "btn btn-outline-secondary");
     zoomOutButton.type = "button";
     zoomOutButton.setAttribute("aria-label", "Zoom out");
+    initTooltip(zoomOutButton, { title: "Zoom out" });
     const zoomOutIcon = el("span", "iconify");
     zoomOutIcon.dataset.icon = "tabler:zoom-out";
     zoomOutIcon.setAttribute("aria-hidden", "true");
@@ -767,6 +782,7 @@ export function initMapWidget(
     const zoomInButton = el("button", "btn btn-outline-secondary");
     zoomInButton.type = "button";
     zoomInButton.setAttribute("aria-label", "Zoom in");
+    initTooltip(zoomInButton, { title: "Zoom in" });
     const zoomInIcon = el("span", "iconify");
     zoomInIcon.dataset.icon = "tabler:zoom-in";
     zoomInIcon.setAttribute("aria-hidden", "true");
@@ -784,6 +800,7 @@ export function initMapWidget(
     toolGroup.setAttribute("aria-label", "Map tools");
 
     pingButtonEl = createToolToggleButton({ icon: "tabler:location", label: "Ping the map" });
+    initTooltip(pingButtonEl, { title: "Ping the map" });
     pingButtonEl.addEventListener("click", () => setActiveTool("ping"));
 
     measureButtonEl = createToolToggleButton({ icon: "tabler:ruler-2", label: "Measure distance" });
@@ -793,6 +810,7 @@ export function initMapWidget(
     });
 
     drawButtonEl = createToolToggleButton({ icon: "tabler:pencil", label: "Draw" });
+    initTooltip(drawButtonEl, { title: "Draw" });
     drawButtonEl.addEventListener("click", () => setActiveTool("draw"));
 
     shapeButtonEl = createToolToggleButton({ icon: "tabler:target", label: "Draw an AoE shape" });
@@ -816,8 +834,8 @@ export function initMapWidget(
     drawColorInputEl = document.createElement("input");
     drawColorInputEl.type = "color";
     drawColorInputEl.className = "form-control form-control-color form-control-sm flex-shrink-0 p-1 d-none";
-    drawColorInputEl.title = "Drawing color";
     drawColorInputEl.setAttribute("aria-label", "Drawing color");
+    initTooltip(drawColorInputEl, { title: "Drawing color" });
     drawColorInputEl.value = drawColor;
     drawColorInputEl.addEventListener("input", () => {
       drawColor = drawColorInputEl.value;
@@ -1089,6 +1107,61 @@ export function initMapWidget(
     });
   }
 
+  // A System's own `resource`-role combatBindings names — same shape as
+  // systemConditionsCache just above, a second independent thing this
+  // widget needs to know about a System's fields (see orrery/js/app.js's
+  // own systemResourceBarConfigCache for why this can't just reuse
+  // systemConditionsCache's own fetch/cache).
+  const systemResourceBarConfigCache = new Map();
+  function getCachedSystemResourceBarConfig(systemId) {
+    return systemResourceBarConfigCache.get(systemId) || null;
+  }
+  const pendingSystemResourceBarConfigFetches = new Set();
+  function ensureSystemResourceBarConfigCached(systemId, onLoaded) {
+    if (!systemId || systemResourceBarConfigCache.has(systemId) || pendingSystemResourceBarConfigFetches.has(systemId)) return;
+    pendingSystemResourceBarConfigFetches.add(systemId);
+    dataManager
+      .get("systems", systemId, { preferLocal: false })
+      .then((result) => {
+        const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+        const resourceBindings = findBindingsByRole(deriveCombatBindings(fields), "resource");
+        systemResourceBarConfigCache.set(systemId, { resourceNames: resourceBindings.map((entry) => entry.name).filter(Boolean) });
+      })
+      .catch(() => {
+        systemResourceBarConfigCache.set(systemId, { resourceNames: [] });
+      })
+      .finally(() => {
+        pendingSystemResourceBarConfigFetches.delete(systemId);
+        onLoaded?.();
+      });
+  }
+
+  // Reads Orrery's own per-System "which resource is the Marker Resource Bar"
+  // preference straight out of its `orrery-settings` localStorage bucket —
+  // same precedent as the Dashboard's own Encounter Difficulty calculator
+  // widget reading Crucible's `crucible-settings` bucket directly
+  // (calculator.js) — rather than this widget owning a second, independent
+  // copy of that setting. Read-only here (only Orrery's own Settings modal
+  // ever writes it); falls back to the same guessBarResourceName heuristic
+  // Orrery itself falls back to when nothing's explicitly set yet.
+  function resolveEffectiveBarResourceName(systemId) {
+    if (!systemId) return "";
+    const explicit = dataManager?.getLocal?.("orrery-settings", systemId)?.barResourceName || "";
+    if (explicit) return explicit;
+    const config = getCachedSystemResourceBarConfig(systemId);
+    return config ? guessBarResourceName(config.resourceNames.map((name) => ({ name }))) : "";
+  }
+
+  // Thin wrapper around map-viewer.js's own shared resolveMarkerResourceBar — same
+  // "this widget only supplies its own cache-backed getters, the actual
+  // resolution algorithm lives in the one shared place" shape
+  // resolveMarkerConditionIconsForMarker just above already uses.
+  function resolveMarkerResourceBarForMarker(markerElement) {
+    const activeEncounter = getCachedActiveEncounter();
+    if (!activeEncounter?.systemId) return null;
+    return resolveMarkerResourceBar(markerElement, activeEncounter, resolveEffectiveBarResourceName(activeEncounter.systemId));
+  }
+
   // Fires the fetches for every condition-icon-eligible marker on this map —
   // a Character-linked one needs its own System resolved (Template hop);
   // a Monster/NPC-linked one just needs the active Encounter (shared across
@@ -1118,6 +1191,34 @@ export function initMapWidget(
       if (activeEncounter?.systemId) {
         ensureSystemConditionsCached(activeEncounter.systemId, () => renderLayers());
       }
+    }
+  }
+
+  // The Marker Resource Bar (resolveMarkerResourceBarForMarker) shows for ANY combatant
+  // with a linked marker — character, monster, or NPC alike — unlike
+  // condition icons above, which only need the active Encounter fetch for
+  // Monster/NPC markers (a Character's own conditions read straight off its
+  // own payload instead). So this primes the active Encounter (and, once
+  // its systemId is known, that System's own resource-name config)
+  // whenever the map has ANY referenced marker at all, not gated on
+  // Monster/NPC presence the way primeConditionIconCache's own
+  // hasMonsterOrNpcMarker gate is.
+  function primeResourceBarCache() {
+    const hasCombatantMarker = (map.layers || []).some(
+      (layer) =>
+        layer.type === "marker" &&
+        (layer.elements || []).some(
+          (marker) =>
+            marker.kind === "marker" &&
+            (marker.refKind === "character" || marker.refKind === "monster" || marker.refKind === "npc") &&
+            marker.refId
+        )
+    );
+    if (!hasCombatantMarker) return;
+    ensureActiveEncounterCached(() => renderLayers());
+    const activeEncounter = getCachedActiveEncounter();
+    if (activeEncounter?.systemId) {
+      ensureSystemResourceBarConfigCached(activeEncounter.systemId, () => renderLayers());
     }
   }
 
@@ -1175,6 +1276,11 @@ export function initMapWidget(
   // doesn't tear it out from under the viewer.
   let markerEditorPopover = null;
   function closeMarkerEditor() {
+    // Disposed before removal, not left to be garbage-collected — this
+    // popover's own color/opacity/icon inputs all carry real tooltips now,
+    // any of which could still be open the moment this runs. See
+    // tooltips.js's own BUG CLASS 2.
+    if (markerEditorPopover) disposeTooltips(markerEditorPopover);
     markerEditorPopover?.remove();
     markerEditorPopover = null;
     document.removeEventListener("pointerdown", onOutsidePointerDown, true);
@@ -1253,8 +1359,7 @@ export function initMapWidget(
     popover.style.left = `${Math.max(hostRect.left + 4, left)}px`;
 
     // One row: color swatch, icon picker directly beside it. No visible
-    // labels — tooltips (native `title`, same as every other control in
-    // these compact popovers) carry that instead, per the "as compact as
+    // labels — tooltips carry that instead, per the "as compact as
     // possible" brief.
     const mainRow = el("div", "d-flex align-items-center gap-1");
     const colorInput = document.createElement("input");
@@ -1263,8 +1368,8 @@ export function initMapWidget(
     colorInput.style.width = "1.5rem";
     colorInput.style.height = "1.5rem";
     colorInput.style.flexShrink = "0";
-    colorInput.title = "Outline color";
     colorInput.setAttribute("aria-label", "Outline color");
+    initTooltip(colorInput, { title: "Outline color" });
     colorInput.value = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
     colorInput.addEventListener("change", () => {
       void persistElementField(layer, markerElement.id, "outlineColor", colorInput.value);
@@ -1288,8 +1393,8 @@ export function initMapWidget(
     const iconGroup = iconField.querySelector(".input-group");
     iconGroup.classList.add("flex-grow-1");
     const iconInput = iconGroup.querySelector("input");
-    iconInput.title = "Add icon";
     iconInput.setAttribute("aria-label", "Add icon");
+    initTooltip(iconInput, { title: "Add icon" });
     mainRow.appendChild(iconGroup);
     popover.appendChild(mainRow);
 
@@ -1310,6 +1415,7 @@ export function initMapWidget(
         removeButton.style.width = "0.5rem";
         removeButton.style.height = "0.5rem";
         removeButton.setAttribute("aria-label", "Remove icon");
+        initTooltip(removeButton, { title: "Remove icon" });
         removeButton.addEventListener("click", () => {
           const nextIcons = (markerElement.overlayIcons || []).filter((icon) => icon.id !== entry.id);
           void persistElementField(layer, markerElement.id, "overlayIcons", nextIcons).then(() =>
@@ -1528,6 +1634,7 @@ export function initMapWidget(
     if (isDraggingMarker) return;
     primeCharacterPayloadCache();
     primeConditionIconCache();
+    primeResourceBarCache();
     primeCharacterOwnershipCatalog();
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
@@ -1561,6 +1668,7 @@ export function initMapWidget(
         characterOwnershipCatalog: characterOwnershipPrimer.getCatalog(),
         getCharacterPayload: getCachedCharacterPayload,
         resolveConditionIcons: resolveMarkerConditionIconsForMarker,
+        resolveResourceBar: resolveMarkerResourceBarForMarker,
         status,
         onMarkerMoved: (layer, markerElement, snappedPosition) =>
           void persistMarkerMove(layer.id, markerElement.id, snappedPosition),

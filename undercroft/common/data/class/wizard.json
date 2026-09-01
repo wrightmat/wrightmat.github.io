@@ -325,5 +325,16 @@
         16
       ]
     }
-  }
+  },
+  "caster_type": "full",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "intelligence",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }

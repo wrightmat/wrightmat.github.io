@@ -13,6 +13,7 @@
 // journal-timeline.js, which consumes it.
 import { el } from "../../../common/js/lib/dom.js";
 import { describeDate } from "../../../common/js/lib/widgets/calendar.js";
+import { setDisabledTooltip } from "../../../common/js/lib/tooltips.js";
 
 // `123` or `123|Label` — dayIndex is a raw signed integer, the exact same
 // day-count representation the Calendar widget and the ambient campaign
@@ -46,6 +47,11 @@ function styleAsChip(button) {
 // indicator, tabler:calendar-star instead of tabler:calendar-event) and the
 // tooltip wording so a `date:current` chip still visually reads as distinct
 // from a fixed date, even once formatted the same way.
+// Returns `{ button, tooltipText }`, not just `button` — a genuinely
+// `disabled` control can never itself carry a working tooltip trigger (see
+// tooltips.js's own BUG CLASS 1), so the caller has to wire this up via
+// setDisabledTooltip AFTER this chip has a real DOM parent (applyDateReferences'
+// own codeEl.replaceWith), not here where it doesn't have one yet.
 function buildDateChip(dayIndex, label, calendar, { isCurrent = false } = {}) {
   const button = el("button", "repository-date-chip");
   button.type = "button";
@@ -59,13 +65,11 @@ function buildDateChip(dayIndex, label, calendar, { isCurrent = false } = {}) {
   icon.setAttribute("aria-hidden", "true");
   if (dayIndex === null) {
     button.append(icon, el("span", null, label ? `${label}: no campaign date set` : "No campaign date set"));
-    button.title = "This campaign has no active date yet — set one from a Calendar widget.";
-    return button;
+    return { button, tooltipText: "This campaign has no active date yet — set one from a Calendar widget." };
   }
   const formatted = describeDate(calendar || {}, dayIndex);
   button.append(icon, el("span", null, label ? `${label}: ${formatted}` : formatted));
-  button.title = isCurrent ? `Today — Day ${dayIndex}` : `Day ${dayIndex}`;
-  return button;
+  return { button, tooltipText: isCurrent ? `Today — Day ${dayIndex}` : `Day ${dayIndex}` };
 }
 
 // Same match/parse as applyDateReferences below, factored out so
@@ -127,9 +131,13 @@ export function applyDateReferences(container, { activeCalendar, currentDayIndex
     if (!parsed) return;
     if (parsed.isCurrent) {
       const dayIndex = Number.isFinite(currentDayIndex) ? currentDayIndex : null;
-      codeEl.replaceWith(buildDateChip(dayIndex, parsed.label, activeCalendar, { isCurrent: true }));
+      const { button, tooltipText } = buildDateChip(dayIndex, parsed.label, activeCalendar, { isCurrent: true });
+      codeEl.replaceWith(button);
+      setDisabledTooltip(button, tooltipText);
       return;
     }
-    codeEl.replaceWith(buildDateChip(parsed.dayIndex, parsed.label, activeCalendar));
+    const { button, tooltipText } = buildDateChip(parsed.dayIndex, parsed.label, activeCalendar);
+    codeEl.replaceWith(button);
+    setDisabledTooltip(button, tooltipText);
   });
 }

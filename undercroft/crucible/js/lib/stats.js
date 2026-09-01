@@ -6,8 +6,9 @@
 // side of things, and pulls scaling targets from the active System's
 // combatScaling field (tables.js#loadCombatScalingLevels) exactly the way
 // Vault pulls Rarity/Activation/Form from its own generator-property fields.
-import { loadCombatScalingLevels, loadDamageTypesPropertyType, loadAbilityFieldDefs } from "./tables.js";
+import { loadCombatScalingLevels, loadDamageTypesPropertyType } from "./tables.js";
 import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
+import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
 
 function pickRandom(list, random) {
   if (!list.length) return null;
@@ -148,11 +149,23 @@ export async function deriveStats({
   features = [],
   dataManager,
   random = Math.random,
+  // The active System's own resolved ability-block field defs/key
+  // (crucible/js/app.js's own abilityFieldDefs/abilityFieldKey, already
+  // fetched once with the GM's real abilityField preference applied) and
+  // combatBindings — passed in rather than re-fetched here, both to avoid a
+  // second, preference-less fetch (confirmed real bug this fixes: this
+  // function used to call loadAbilityFieldDefs a SECOND time with no
+  // preferredKey at all, silently ignoring whatever the GM had configured in
+  // Settings) and so every value this function writes can route through
+  // setAtBinding against wherever THIS System's own combatBindings/
+  // abilityField actually point, never a hardcoded field name.
+  abilityFieldDefs = [],
+  abilityFieldKey = "",
+  combatBindings = null,
 }) {
-  const [levels, damageTypeList, abilityFieldDefs] = await Promise.all([
+  const [levels, damageTypeList] = await Promise.all([
     loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
     loadDamageTypesPropertyType(dataManager, systemId),
-    loadAbilityFieldDefs(dataManager, systemId),
   ]);
 
   const level = resolveCombatScalingLevel(levels, combatScalingId, random);
@@ -190,67 +203,95 @@ export async function deriveStats({
   }
 
   const abilities = deriveAbilities(role, abilityFieldDefs);
+  const initiativeBonus = abilityModifier(abilities.dexterity ?? 10);
 
-  return {
-    stats: {
-      // shortName, not id — id is only ever an internal slug (e.g.
-      // "cr-1-2"), never meant to be shown to a GM. shortName is the real,
-      // portable CR value (e.g. "1/2") — see combat-scaling.js's own
-      // shortName fallback for why it's always populated regardless of
-      // whether the active System's own combat-scaling field authors one.
-      challengeRating: level?.shortName || null,
-      armorClass,
-      // { max, current } — the shape every kind's stats.hitPoints uses now
-      // (see undercroft/common/js/lib/widgets/combat-tracker.js#addCombatant).
-      // A freshly generated monster is undamaged, so current starts at max.
-      hitPoints: { max: hitPoints, current: hitPoints },
-      abilities,
-      // Combat Tracker's "Roll Initiative" button reads this via the
-      // System's combatBindings (sys.dnd5e.json's Initiative modifier
-      // binding) rather than deriving it itself — the D&D-specific math
-      // stays here in the 5e generator, not in system-agnostic tracker code.
-      // Falls back to 10 (a flat +0) if this System's abilities don't
-      // include a "dexterity" key at all. `{bonus}` — this suite's one
-      // shared initiative shape (see the monster-data-alignment plan),
-      // matching every import mapping's own initiative and Character's own
-      // initiativeTable exactly (advantage/disadvantage are optional extras
-      // native generation has no source to derive, so they're simply
-      // absent, not false).
-      initiative: { bonus: abilityModifier(abilities.dexterity ?? 10) },
-      saveDC,
-      proficiencyBonus,
-      // `defenses` — this suite's one shared shape for resistances/
-      // immunities/vulnerabilities/condition-immunities (see the monster-
-      // data-alignment plan), matching every import mapping's own defenses
-      // function and Character's own proficiencies.defenses exactly.
-      // Condition immunities fold into the same array as `type:
-      // "immunity"` too — no separate bucket, same convention Character's
-      // own data already uses. No native concept of languages — a
-      // generated monster's `proficiencies.languages` stays absent.
-      proficiencies: {
-        defenses: [
-          ...(creatureType?.defaultResistances || []).map((name) => ({ name, type: "resistance" })),
-          ...(creatureType?.defaultVulnerabilities || []).map((name) => ({ name, type: "vulnerability" })),
-          ...(creatureType?.defaultImmunities || []).map((name) => ({ name, type: "immunity" })),
-          ...(creatureType?.defaultConditionImmunities || []).map((name) => ({ name, type: "immunity" })),
-        ],
-      },
-      // {passives:{perception}, darkvision, blindsight, ...} — this suite's
-      // one shared senses shape (see monster-data-alignment plan), matching
-      // every import mapping's own senses function and Character's own
-      // sensesTable. defaultSenses on the creature type already carries this
-      // exact structured shape (sys.dnd5e.json); passive Perception isn't
-      // authored there since it depends on the generated monster's own
-      // Wisdom, not the creature type — same "10 + modifier" formula
-      // Character's own sensesTable uses. Falls back to 10 (flat +0) if
-      // this System's abilities don't include a "wisdom" key at all, same
-      // fallback convention initiative.bonus above uses for dexterity.
-      senses: {
-        ...(creatureType?.defaultSenses || {}),
-        passives: { perception: 10 + abilityModifier(abilities.wisdom ?? 10) },
-      },
-      actions,
-      budget,
+  // Every value below is written through setAtBinding against a scratch
+  // object, then unwrapped to just its own `.stats` sub-object at the end —
+  // this keeps this function's own external contract (a plain `{ stats }`
+  // wrapper) unchanged while routing each value through wherever the active
+  // System's own combatBindings/abilityField actually declare, never a
+  // hardcoded field name (see forge/js/lib/tables.js#getStatsForArchetype,
+  // which uses the exact same technique — kept in sync, don't drift the two
+  // apart).
+  const scratch = {};
+
+  // Ability scores — the one structural nesting always applied (stats.*);
+  // the sub-key itself is 100% dynamic (abilityFieldKey).
+  setAtBinding(`@stats.${abilityFieldKey || "abilities"}`, scratch, abilities);
+
+  // HP-like resource.
+  const primaryResource = findBindingsByRole(combatBindings, "resource")[0];
+  if (primaryResource) {
+    setAtBinding(primaryResource.binding, scratch, hitPoints);
+    if (primaryResource.maxPath) setAtBinding(primaryResource.maxPath, scratch, hitPoints);
+  }
+
+  // AC-like single value.
+  const valueBinding = findBindingByRole(combatBindings, "value");
+  if (valueBinding) setAtBinding(valueBinding.binding, scratch, armorClass);
+
+  // Initiative — not authored data at all, derived from `abilities.dexterity`
+  // (D&D's own ability key) via the standard ability-modifier formula. This
+  // one piece of D&D-specific rules logic has no data-driven home on a
+  // System record — same documented exception the HP-band Constitution bonus
+  // above already carries. Only WHERE this gets written comes from the
+  // System's own combatBindings; a System with no `modifier`-role binding at
+  // all (Daggerheart) simply never reaches this. `{bonus}` — this suite's
+  // one shared initiative shape (see the monster-data-alignment plan),
+  // matching every import mapping's own initiative and Character's own
+  // initiativeTable exactly.
+  const modifierBinding = findBindingByRole(combatBindings, "modifier");
+  if (modifierBinding) setAtBinding(modifierBinding.binding, scratch, { bonus: initiativeBonus });
+
+  // Everything else here has no combatBindings role to route through (no
+  // System defines a "role" for Challenge Rating, Save DC, Proficiency Bonus,
+  // Defenses, Senses, Actions, or Budget) — these are already this suite's
+  // own shared stats.* shape regardless of System (see the monster-data-
+  // alignment plan), so they apply the same "stats." structural prefix
+  // directly rather than needing a per-System path lookup.
+  const rest = {
+    // shortName, not id — id is only ever an internal slug (e.g.
+    // "cr-1-2"), never meant to be shown to a GM. shortName is the real,
+    // portable CR value (e.g. "1/2") — see combat-scaling.js's own
+    // shortName fallback for why it's always populated regardless of
+    // whether the active System's own combat-scaling field authors one.
+    challengeRating: level?.shortName || null,
+    saveDC,
+    proficiencyBonus,
+    // `defenses` — this suite's one shared shape for resistances/
+    // immunities/vulnerabilities/condition-immunities (see the monster-
+    // data-alignment plan), matching every import mapping's own defenses
+    // function and Character's own proficiencies.defenses exactly.
+    // Condition immunities fold into the same array as `type:
+    // "immunity"` too — no separate bucket, same convention Character's
+    // own data already uses. No native concept of languages — a
+    // generated monster's `proficiencies.languages` stays absent.
+    proficiencies: {
+      defenses: [
+        ...(creatureType?.defaultResistances || []).map((name) => ({ name, type: "resistance" })),
+        ...(creatureType?.defaultVulnerabilities || []).map((name) => ({ name, type: "vulnerability" })),
+        ...(creatureType?.defaultImmunities || []).map((name) => ({ name, type: "immunity" })),
+        ...(creatureType?.defaultConditionImmunities || []).map((name) => ({ name, type: "immunity" })),
+      ],
     },
+    // {passives:{perception}, darkvision, blindsight, ...} — this suite's
+    // one shared senses shape (see monster-data-alignment plan), matching
+    // every import mapping's own senses function and Character's own
+    // sensesTable. defaultSenses on the creature type already carries this
+    // exact structured shape (sys.dnd5e.json); passive Perception isn't
+    // authored there since it depends on the generated monster's own
+    // Wisdom, not the creature type — same "10 + modifier" formula
+    // Character's own sensesTable uses. Falls back to 10 (flat +0) if
+    // this System's abilities don't include a "wisdom" key at all, same
+    // fallback convention initiative.bonus above uses for dexterity.
+    senses: {
+      ...(creatureType?.defaultSenses || {}),
+      passives: { perception: 10 + abilityModifier(abilities.wisdom ?? 10) },
+    },
+    actions,
+    budget,
   };
+  Object.entries(rest).forEach(([key, value]) => setAtBinding(`@stats.${key}`, scratch, value));
+
+  return { stats: scratch.stats || {} };
 }

@@ -11,6 +11,7 @@
 // saved one) — no upload, no file hosting by this app, same philosophy as
 // the font/soundboard pickers this mirrors.
 import { getAllTokens, registerToken, removeTokenLocally, loadTokenLibrary, saveToken, deleteToken } from "./token-library.js";
+import { disposeTooltips, refreshTooltips } from "./tooltips.js";
 
 // Matches server/app.py's own gate on POST /token-library.
 const ADD_TOKEN_TIERS = new Set(["gm", "creator", "admin"]);
@@ -155,6 +156,8 @@ export function createTokenImageField({
       removeButton.type = "button";
       removeButton.className = "btn btn-sm btn-link text-body-secondary p-0";
       removeButton.setAttribute("aria-label", `Remove ${token.name} from the library`);
+      removeButton.setAttribute("data-bs-toggle", "tooltip");
+      removeButton.setAttribute("data-bs-title", `Remove ${token.name} from the library`);
       removeButton.innerHTML = "&times;";
       removeButton.addEventListener("mousedown", (event) => event.preventDefault());
       removeButton.addEventListener("click", (event) => {
@@ -195,6 +198,10 @@ export function createTokenImageField({
   function renderList() {
     const query = searchInput.value.trim().toLowerCase();
     const tokens = getAllTokens().filter((token) => !query || token.name.toLowerCase().includes(query));
+    // Disposed before the wipe — each removable row's own "x" carries a real
+    // tooltip now, and this reruns on every search keystroke/add/remove. See
+    // tooltips.js's own BUG CLASS 2.
+    disposeTooltips(listHost);
     listHost.innerHTML = "";
     if (!tokens.length) {
       const empty = document.createElement("div");
@@ -204,6 +211,7 @@ export function createTokenImageField({
     } else {
       tokens.forEach((token) => listHost.appendChild(renderTokenRow(token)));
     }
+    refreshTooltips(listHost);
   }
 
   if (canAdd) {

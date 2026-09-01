@@ -5,6 +5,7 @@ import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
 import { attachHoverDropdown } from "./dom.js";
 import { initSuiteSearch } from "./suite-search.js";
+import { initTooltip } from "./tooltips.js";
 
 // `icon` is an Iconify `tabler:*` id — same convention used everywhere else
 // across every tool page (`<span class="iconify" data-icon="tabler:...">`).
@@ -310,7 +311,6 @@ function initToolNavigation(root = document) {
     const homeLink = document.createElement("a");
     homeLink.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
     homeLink.href = resolveToolHref("home", currentSection);
-    homeLink.title = "Home";
     homeLink.setAttribute("aria-label", "Home");
     const homeIcon = document.createElement("span");
     homeIcon.className = "iconify fs-5";
@@ -318,6 +318,7 @@ function initToolNavigation(root = document) {
     homeIcon.setAttribute("aria-hidden", "true");
     homeLink.appendChild(homeIcon);
     primaryNav.appendChild(homeLink);
+    initTooltip(homeLink, { title: "Home" });
   }
 
   attachHoverDropdown(dropdown, toggle);
@@ -325,17 +326,21 @@ function initToolNavigation(root = document) {
 
 // One pane-toggle button — a fourth, header-only button shape distinct from
 // ui-components.js's "compact"/"toolbar" kinds: default (non-btn-sm, non-p-2)
-// Bootstrap button sizing, a `fs-5` icon, and a visually-hidden label, but
-// deliberately no tooltip attributes at all (initPaneToggles, not Bootstrap's
-// Tooltip, owns this control's affordance). Used only here, twice per page —
-// not worth generalizing into the shared icon-button factory for a shape
-// that appears nowhere else in the suite.
+// Bootstrap button sizing, a `fs-5` icon, and a visually-hidden label.
+// initPaneToggles (panes.js) owns the pressed/unpressed VISUAL state
+// (solid vs. outline button, via updateToggleAppearance) — a real hover
+// tooltip is still needed on top of that, same as every other icon-only
+// button in the suite; that's a different concern (what does clicking do)
+// from a pressed-state indicator (what's it doing right now). Used only
+// here, twice per page — not worth generalizing into the shared icon-button
+// factory for a shape that appears nowhere else in the suite.
 function buildPaneToggleButton(key, label) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
   button.dataset.paneToggle = key;
   button.setAttribute("aria-label", label);
+  initTooltip(button, { title: label });
   const icon = document.createElement("span");
   icon.className = "iconify fs-5";
   icon.dataset.icon = key === "left" ? "tabler:layout-sidebar-right" : "tabler:adjustments-horizontal";
@@ -357,6 +362,7 @@ function buildThemeToggleButton(option, ariaLabel, hiddenLabelText, icon) {
   button.className = "btn btn-outline-primary";
   button.dataset.themeOption = option;
   button.setAttribute("aria-label", ariaLabel);
+  initTooltip(button, { title: hiddenLabelText });
   const iconEl = document.createElement("span");
   iconEl.className = "iconify fs-5";
   iconEl.dataset.icon = icon;

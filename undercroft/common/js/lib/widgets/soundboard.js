@@ -32,6 +32,7 @@ import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
 import { createReliableInterval } from "../reliable-interval.js";
 import { getAllClips, getClipById, registerClip, removeClipLocally, loadClipLibrary, saveClip, deleteClip } from "../audio-clip-library.js";
+import { disposeTooltips, refreshTooltips, updateTooltipContent } from "../tooltips.js";
 
 // 5s — same cadence every other inline-kind follower in this suite polls at.
 const POLL_INTERVAL_MS = 5000;
@@ -60,7 +61,8 @@ function iconButton(name, { active = false, disabled = false, title } = {}) {
   button.type = "button";
   button.appendChild(icon(name));
   if (title) {
-    button.title = title;
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", title);
     button.setAttribute("aria-label", title);
   }
   button.disabled = disabled;
@@ -767,8 +769,9 @@ export function initSoundboardWidget(
       addType = addType === "music" ? "sfx" : "music";
       typeButton.innerHTML = "";
       typeButton.appendChild(icon(TYPE_ICON[addType]));
-      typeButton.title = `${TYPE_LABEL[addType]} — click to switch type`;
-      typeButton.setAttribute("aria-label", typeButton.title);
+      const nextTitle = `${TYPE_LABEL[addType]} — click to switch type`;
+      updateTooltipContent(typeButton, nextTitle);
+      typeButton.setAttribute("aria-label", nextTitle);
     });
 
     const nameInput = document.createElement("input");
@@ -807,6 +810,10 @@ export function initSoundboardWidget(
     });
 
     form.append(typeButton, nameInput, urlInput, addButton);
+    // This form is built once and never re-swept by renderSection's own
+    // dispose/refresh cycle (see this function's own header comment) — arm
+    // typeButton/addButton's tooltips directly, here, once.
+    refreshTooltips(form);
     return form;
   }
 
@@ -818,6 +825,11 @@ export function initSoundboardWidget(
   let sfxHost = null;
 
   function renderSection(hostEl, type) {
+    // Disposed before the wipe, not left to be garbage-collected — every
+    // clip row's play/stop/loop/edit/remove button carries a real tooltip
+    // now, and this rebuilds on every playback-state/search/library change.
+    // See tooltips.js's own BUG CLASS 2.
+    disposeTooltips(hostEl);
     hostEl.innerHTML = "";
     const clips = clipsByType(type);
     if (!clips.length) {
@@ -825,6 +837,7 @@ export function initSoundboardWidget(
     } else {
       clips.forEach((clip) => hostEl.appendChild(renderClipRow(type, clip)));
     }
+    refreshTooltips(hostEl);
   }
 
   function renderLists() {
@@ -901,6 +914,7 @@ export function initSoundboardWidget(
     async destroy(removed) {
       destroyed = true;
       player.destroyAll();
+      disposeTooltips(container);
       container.innerHTML = "";
       if (removed && visible && groupId && instanceId) {
         try {

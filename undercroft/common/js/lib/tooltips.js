@@ -96,6 +96,53 @@
 //   caller (loom/js/app.js) supplies the genuine function from here, so
 //   this still funnels through the same single implementation — the
 //   injection is a wiring detail, not a duplicate.
+//
+// -----------------------------------------------------------------------
+// Confirmed exceptions — deliberately NOT converted, NOT bugs
+// -----------------------------------------------------------------------
+// The suite-wide rule is every hover explanation goes through this module —
+// no bare `title` attribute, and no icon-only control left aria-label-only
+// (screen-reader-visible but never shown on hover), as an oversight. Two
+// narrow categories are legitimate exceptions to that rule. Every exception
+// must be:
+//   1. Confirmed with the user first (AskUserQuestion) — never assumed
+//      unilaterally just because a spot "looks like" one of the categories
+//      below.
+//   2. Listed here, so a future audit doesn't flag it as a miss.
+//
+// Category 1 — scale/performance (plain native `title`, not a real tooltip):
+// a real Bootstrap tooltip is a live `MutationObserver`+Popper instance per
+// element, and at large-N (dozens to hundreds of instances, rebuilt on a hot
+// render path) that cost is real, while the content is purely informational
+// (never a button, never interactive) — so a plain native `title` is the
+// CORRECT choice there, not a gap.
+// - `orrery/js/lib/map-viewer.js`'s map marker/badge hover text — a map can
+//   have dozens to hundreds of markers; user confirmed keeping native title
+//   over converting to real tooltip instances (2026-08-30).
+// - `press/js/template-renderer.js`'s applyOverflowIndicators (the
+//   "content overflows this card" warning on a card/chip tile) — reruns on
+//   every auto-width/font-sizing layout pass, potentially across many tiles
+//   per page, purely informational; user confirmed keeping native title
+//   over converting (2026-08-30).
+// If a new spot looks like this shape (many instances, hot rebuild path,
+// non-interactive/informational only) — ask before assuming; converting is
+// still the default for everything else, including bare titles on actual
+// buttons/controls regardless of how many exist.
+//
+// Category 2 — standardized platform idiom (aria-label only, no tooltip at
+// all): a control so universally recognized by its own shape/position that
+// a hover explanation adds nothing a user doesn't already know — the same
+// reasoning a browser's own native window-close button needs no tooltip.
+// - Bootstrap's own `.btn-close` modal-dismiss button (confirm-modal.js,
+//   share-modal.js, connection-modal.js, auth-ui.js, tool-settings.js,
+//   content-picker.js, and every other modal built from the same markup
+//   shape) — the "×" in a modal's own top-right corner, `data-bs-dismiss=
+//   "modal"` + `aria-label="Close"` is Bootstrap's own complete, documented
+//   treatment for this exact component; user confirmed keeping it
+//   tooltip-free over converting every instance suite-wide (2026-08-30).
+// This category is narrow — it's for a genuinely standardized third-party
+// component idiom, not an excuse to skip a bespoke icon button just because
+// it "seems obvious." When in doubt, ask.
 
 // Bootstrap renders a tooltip's actual popup as a sibling appended to
 // <body> (via Popper) — see BUG CLASS 2 above for why disposal ordering

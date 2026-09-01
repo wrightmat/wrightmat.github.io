@@ -1,7 +1,7 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips, disposeTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import {
   createJsonDataPanel,
   createToolbarButtonGroup,
@@ -26,6 +26,11 @@ import {
 } from "./lib/tables.js";
 import { generateMonster, getMonsterGenerationBlockReason, matchesCategory, rerollAttribute } from "./lib/generator.js";
 import { deriveStats } from "./lib/stats.js";
+import { loadSystemFields, deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
+import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
+import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
+import { convertLibraryRecord, seedCharacterDefaults } from "../../common/js/lib/library-record-convert.js";
+import { loadArrayFieldValues } from "../../common/js/lib/generator-kit.js";
 import { createMonsterRecord, toPressExportShape } from "./lib/monster-schema.js";
 import { hasConvertibleStatBlock, convertStatBlockToFeatures } from "../../common/js/lib/monster-feature-matching.js";
 import { createReferenceChip } from "../../common/js/lib/library-reference.js";
@@ -81,6 +86,13 @@ let roles = [];
 let features = [];
 let combatScalingLevels = [];
 let arrayFieldOptions = [];
+// Which array field guessCombatScalingFieldKey/guessCreatureTypeFieldKey
+// would auto-pick for the active System — same "ride along with the
+// options fetch, no second round trip" shape as abilityFieldGuess below,
+// so each settings dropdown can pre-select its own guess and label it
+// instead of offering a separate "Auto-detect" placeholder option.
+let combatScalingFieldGuess = "";
+let creatureTypeFieldGuess = "";
 // Candidate list for the abilityField settings preference below — every
 // object-type field the active System defines, since an ability/stat block
 // is always authored as one (unlike arrayFieldOptions' array fields) — plus
@@ -94,6 +106,16 @@ let abilityFieldGuess = "";
 // so renderStats' display rows use the System's real ability vocabulary
 // instead of a second hardcoded STR/DEX/CON/INT/WIS/CHA copy.
 let abilityFieldDefs = [];
+// Which of these ability keys the active System actually stores its stat
+// block under — "abilities" for D&D, "traits" for Daggerheart, ... — never
+// hardcoded (see stats.js#deriveStats' own header comment).
+let abilityFieldKey = "";
+// The active System's own live-play-state bindings (HP/AC/Initiative/...) —
+// stats.js#deriveStats writes each generated value through setAtBinding
+// against whatever path THIS System's own combatBindings declare, never a
+// hardcoded "stats.hitPoints"-shaped assumption. null for a System with no
+// Role-bound field at all.
+let combatBindings = null;
 let currentRecord = null;
 const featureParamsEditor = createFeatureParamsEditor({
   getRecord: () => currentRecord,
@@ -202,6 +224,21 @@ createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-undo-monster": true } },
   { action: "redo", label: "Redo", attrs: { "data-redo-monster": true } },
 ]).forEach((button) => document.querySelector("[data-monster-undo-toolbar-mount]")?.appendChild(button));
+// A genuinely new, cross-tool action, not a 5th slot on the primary
+// Generate/Save/Duplicate/Delete cluster above, and NOT a second row on
+// that same left-pane toolbar either — that still reads as part of the
+// primary action bar regardless of grouping. Lives in its own "Monster
+// Properties" section in the right-pane Inspector instead (mounted below,
+// alongside inspectorSection) — see forge/js/app.js's identical comment
+// for the shared reasoning.
+createToolbarButtonGroup([
+  {
+    icon: "tabler:user-plus",
+    label: "Convert to Character",
+    disabled: true,
+    attrs: { "data-convert-to-character-monster": true },
+  },
+]).forEach((button) => document.querySelector("[data-monster-convert-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   {
     label: "Edit Feature",
@@ -264,6 +301,20 @@ mountField(
     dataAttr: "data-locked-features", helpTopic: "crucible.lockedFeatures",
   })
 );
+mountField(
+  "convert-character-name",
+  createCompactField({
+    type: "text", id: "crucibleConvertCharacterName", label: "Character Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control",
+    dataAttr: "data-convert-character-name", required: true,
+  })
+);
+mountField(
+  "convert-character-template",
+  createCompactField({
+    type: "select", id: "crucibleConvertCharacterTemplate", label: "Template", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-convert-character-template", required: true,
+  })
+);
 // Same field-box style as Identity/Stats below (and Forge's own Name box) —
 // per explicit feedback that Name/Image standing out with plain
 // Bootstrap form-control styling, instead of matching the boxes around
@@ -286,6 +337,12 @@ const elements = {
   deleteButton: document.querySelector("[data-delete-monster]"),
   undoButton: document.querySelector("[data-undo-monster]"),
   redoButton: document.querySelector("[data-redo-monster]"),
+  convertToCharacterButton: document.querySelector("[data-convert-to-character-monster]"),
+  convertCharacterForm: document.querySelector("[data-convert-to-character-form]"),
+  convertCharacterNameInput: document.querySelector("[data-convert-character-name]"),
+  convertCharacterTemplateSelect: document.querySelector("[data-convert-character-template]"),
+  convertCharacterSubmitButton: document.querySelector("[data-convert-to-character-submit]"),
+  convertToCharacterModalEl: document.getElementById("convert-to-character-modal"),
   emptyState: document.querySelector("[data-monster-empty-state]"),
   display: document.querySelector("[data-monster-display]"),
   nameInput: document.querySelector("[data-monster-name]"),
@@ -332,6 +389,22 @@ const elements = {
   featureBasicDescription: document.querySelector("[data-feature-basic-description]"),
   featureBasicBudgetCost: document.querySelector("[data-feature-basic-budget-cost]"),
 };
+
+// Monster Properties — currently just the Convert to Character action, but
+// its own named section (not the Inspector's) since it's about the
+// generated Monster itself, not whatever the Inspector below happens to be
+// showing (Feature detail). Starts collapsed; expandMonsterPropertiesSection
+// (below) opens it whenever a new Monster is generated or selected — see
+// forge/js/app.js's identical npcPropertiesSection.
+const monsterPropertiesSection = createCollapsibleSection({
+  label: "Monster Properties",
+  collapsed: true,
+  content: document.querySelector("[data-monster-properties-panel]"),
+});
+document.querySelector("[data-monster-properties-mount]")?.appendChild(monsterPropertiesSection.section);
+function expandMonsterPropertiesSection() {
+  monsterPropertiesSection.setCollapsed(false);
+}
 
 // Adopts each section's existing static `[data-xxx-panel]` markup (its own
 // content stays hand-authored HTML — only the header+chevron wrapper is
@@ -509,38 +582,26 @@ function setAbilityFieldPreference(systemId, fieldKey) {
   setCrucibleSystemSetting(systemId, "abilityField", fieldKey || "");
 }
 
-// Both settings share the same option list (every top-level array field the
-// active System defines) — built once here rather than duplicated in each
-// definition below.
-function fieldPreferenceOptions() {
-  return [{ value: "", label: "None" }, ...arrayFieldOptions.map((field) => ({ value: field.key, label: field.label || field.key }))];
-}
-
-// The conventional field-name fallback each loader applies on its own when
-// given no explicit preference (loadCombatScalingLevels's/
-// listCreatureTypesForSystem's own default parameters) — duplicated here
-// only so the Settings modal can show what's actually in effect (e.g.
-// "Creature Types") instead of misleadingly showing "None" while generation
-// quietly uses that field anyway.
-const CONVENTIONAL_FIELD_DEFAULTS = {
-  combatScalingField: "combatScaling",
-  creatureTypeField: "creatureTypes",
-};
-
-// Display-only: the value the Settings modal should show as "currently in
-// effect" for one of these pickers — the explicit stored choice if there is
-// one, else the conventional default key IF the active System actually
-// defines a field with that name, else genuinely nothing ("None"). Kept
-// separate from getCombatScalingFieldPreference/getCreatureTypeFieldPreference
-// (used for the real Promise.all calls in reloadReferenceData), which stay a
-// plain "raw preference or ''" — the loader functions they feed already
-// apply this same conventional default themselves when given '', so
-// resolving it again here is purely about what the dropdown displays, not a
-// second source of truth for generation.
-function resolveEffectiveFieldPreference(prefKey, rawValue) {
-  if (rawValue) return rawValue;
-  const conventionalDefault = CONVENTIONAL_FIELD_DEFAULTS[prefKey];
-  return arrayFieldOptions.some((field) => field.key === conventionalDefault) ? conventionalDefault : "";
+// combatScalingField/creatureTypeField share the same candidate list (every
+// top-level array field the active System defines), but each has its own
+// guessed key — `guessedKey`/`rawPreference` parameterize which one this
+// call is for. A real "None" option (unlike abilityField, which has no
+// off-switch) lets a GM explicitly force "no field" for a System that
+// genuinely has neither concept, distinguishing that from "never
+// configured yet". Same "(auto-detected)" labeling convention as
+// abilityField below — the guessed field IS the selected value until the
+// GM picks something else, no separate "Auto-detect" placeholder.
+function fieldPreferenceOptions(guessedKey, rawPreference) {
+  return [
+    { value: "", label: "None" },
+    ...arrayFieldOptions.map((field) => ({
+      value: field.key,
+      label:
+        field.key === guessedKey && !rawPreference
+          ? `${field.label || field.key} (auto-detected)`
+          : field.label || field.key,
+    })),
+  ];
 }
 
 async function populateSystemSelect() {
@@ -619,7 +680,9 @@ async function reloadReferenceData() {
   const creatureTypeField = getCreatureTypeFieldPreference(systemId);
   let fetchedFeatures;
   let objectFieldResult;
-  [creatureTypes, archetypes, roles, fetchedFeatures, combatScalingLevels, arrayFieldOptions, objectFieldResult, abilityFieldDefs] =
+  let arrayFieldResult;
+  let systemFields;
+  [creatureTypes, archetypes, roles, fetchedFeatures, combatScalingLevels, arrayFieldResult, objectFieldResult, abilityFieldDefs, systemFields] =
     await Promise.all([
       listCreatureTypesForSystem(dataManager, systemId, creatureTypeField || undefined),
       listArchetypesForSystem(dataManager, systemId),
@@ -629,9 +692,15 @@ async function reloadReferenceData() {
       listArrayFieldOptions(dataManager, systemId),
       listObjectFieldOptions(dataManager, systemId),
       loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId)),
+      loadSystemFields(dataManager, systemId),
     ]);
   objectFieldOptions = objectFieldResult.options;
   abilityFieldGuess = objectFieldResult.guessedKey;
+  abilityFieldKey = getAbilityFieldPreference(systemId) || abilityFieldGuess || "abilities";
+  combatBindings = deriveCombatBindings(systemFields);
+  arrayFieldOptions = arrayFieldResult.options;
+  combatScalingFieldGuess = arrayFieldResult.guessedCombatScalingKey;
+  creatureTypeFieldGuess = arrayFieldResult.guessedCreatureTypeKey;
   // The shared `feature` kind also holds Sanctum's location features and
   // Vault's spell/item features (tagged accordingly) — filtered here, once,
   // right after fetching, so every consumer of the module-level `features`
@@ -1541,6 +1610,10 @@ function legendaryActionReferenceDescriptionText(feature) {
 
 function renderFeatureList(record) {
   if (!elements.featureList) return;
+  // Disposed before the wipe — each row's own Remove button carries a real
+  // tooltip now, and this reruns on every feature add/remove. See
+  // tooltips.js's own BUG CLASS 2.
+  disposeTooltips(elements.featureList);
   elements.featureList.innerHTML = "";
   // NOT isImportedStatBlock — that's a provenance question (did this record
   // come from an import?) and stays true forever once it does, by design.
@@ -1676,6 +1749,8 @@ function renderFeatureList(record) {
     removeButton.type = "button";
     removeButton.className = "btn btn-outline-danger btn-sm flex-shrink-0";
     removeButton.setAttribute("aria-label", "Remove feature");
+    removeButton.setAttribute("data-bs-toggle", "tooltip");
+    removeButton.setAttribute("data-bs-title", "Remove feature");
     removeButton.innerHTML = '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>';
     removeButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1706,6 +1781,7 @@ function renderFeatureList(record) {
       row.append(name, mechanics);
       elements.featureList.appendChild(row);
     });
+  refreshTooltips(elements.featureList);
 }
 
 // Same small helper Sanctum's own app.js already has — a disabled-looking
@@ -2187,6 +2263,19 @@ function updateActionButtons() {
     elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !monsterAllowsDelete(currentMonsterId);
   }
   if (elements.duplicateButton) elements.duplicateButton.disabled = !hasRecord;
+  // Not saved-gated like Delete — a freshly generated, not-yet-saved Monster
+  // can convert too (mirrors Duplicate's own gate). Does need a System to
+  // filter the Template picker against.
+  if (elements.convertToCharacterButton) {
+    setDisabledTooltip(
+      elements.convertToCharacterButton,
+      !hasRecord
+        ? "Generate or select a Monster first."
+        : !Array.isArray(currentRecord.systemIds) || !currentRecord.systemIds.length
+          ? "Assign a System to this Monster before converting."
+          : ""
+    );
+  }
 }
 
 // One button, not a two-way radio group — clicking it steps to the OTHER
@@ -2202,8 +2291,13 @@ let notesMode = "view";
 
 function renderNotesPreview() {
   if (!elements.notesPreview) return;
+  // Disposed before the wipe — a `` `date:...` `` reference or a missing
+  // wiki-link inside Notes both carry real tooltips now, and this reruns on
+  // every edit. See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
   elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
+  refreshTooltips(elements.notesPreview);
 }
 
 function applyNotesMode(mode) {
@@ -2438,6 +2532,9 @@ async function handleGenerate() {
       creatureType: findById(creatureTypes, generated.type),
       features: generated.featureIds.map((id) => findById(features, id)).filter(Boolean),
       dataManager,
+      abilityFieldDefs,
+      abilityFieldKey,
+      combatBindings,
     });
     const record = createMonsterRecord({ ...generated, stats });
     dirtyGate.markDirty();
@@ -2448,6 +2545,7 @@ async function handleGenerate() {
     if (elements.monsterSelect) elements.monsterSelect.value = "";
     updateGenerationFieldsVisibility();
     recordHistory("generate monster", () => renderMonster(record));
+    expandMonsterPropertiesSection();
     status?.show("Monster generated.", { type: "success", timeout: 1500 });
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
@@ -2543,8 +2641,125 @@ function handleDuplicate() {
   currentMonsterId = null;
   if (elements.monsterSelect) elements.monsterSelect.value = "";
   renderMonster(duplicate);
+  expandMonsterPropertiesSection();
   status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
 }
+
+// --- Convert to Character -------------------------------------------------
+// Mirrors forge/js/app.js's own identical block — same helper
+// (convertLibraryRecord), same id shape, same Template-picker filter, same
+// navigation. Kept in sync between the two files rather than factored into
+// a shared function, since each tool's own `elements`/`currentRecord`
+// plumbing differs enough that a shared version would need its own
+// adapter layer for little real savings.
+function generateCharacterId(name) {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return `cha_${crypto.randomUUID()}`;
+  }
+  const slug = String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `cha_${slug || "character"}_${rand}`;
+}
+
+let convertToCharacterModalInstance = null;
+
+async function loadConvertTemplateOptions(systemIds) {
+  const entries = await fetchKindEntriesWithIds(dataManager, "template").catch(() => []);
+  return entries
+    .filter(({ entity }) => entity?.schema && systemIds.includes(entity.schema))
+    .map(({ id, entity }) => ({ id, title: entity.title || id, schema: entity.schema }))
+    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+}
+
+function updateConvertSubmitReadiness() {
+  if (!elements.convertCharacterSubmitButton) return;
+  const hasTemplate = Boolean(elements.convertCharacterTemplateSelect?.value);
+  const hasName = Boolean(elements.convertCharacterNameInput?.value.trim());
+  elements.convertCharacterSubmitButton.disabled = !hasTemplate || !hasName;
+}
+
+async function openConvertToCharacterModal() {
+  if (!currentRecord || !Array.isArray(currentRecord.systemIds) || !currentRecord.systemIds.length) return;
+  const source = buildRecordForSave();
+  if (elements.convertCharacterForm) elements.convertCharacterForm.classList.remove("was-validated");
+  if (elements.convertCharacterNameInput) elements.convertCharacterNameInput.value = source.name || "";
+  if (elements.convertCharacterTemplateSelect) {
+    elements.convertCharacterTemplateSelect.innerHTML = "";
+    const loading = document.createElement("option");
+    loading.value = "";
+    loading.textContent = "Loading…";
+    elements.convertCharacterTemplateSelect.appendChild(loading);
+  }
+  updateConvertSubmitReadiness();
+  const bsModal =
+    elements.convertToCharacterModalEl && window.bootstrap && typeof window.bootstrap.Modal === "function"
+      ? window.bootstrap.Modal.getOrCreateInstance(elements.convertToCharacterModalEl)
+      : null;
+  convertToCharacterModalInstance = bsModal;
+  bsModal?.show();
+
+  const options = await loadConvertTemplateOptions(currentRecord.systemIds);
+  if (!elements.convertCharacterTemplateSelect) return;
+  elements.convertCharacterTemplateSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = options.length ? "Select a template…" : "No templates available for this System";
+  elements.convertCharacterTemplateSelect.appendChild(blank);
+  options.forEach((option) => {
+    const opt = document.createElement("option");
+    opt.value = option.id;
+    opt.dataset.schema = option.schema;
+    opt.textContent = option.title;
+    elements.convertCharacterTemplateSelect.appendChild(opt);
+  });
+  updateConvertSubmitReadiness();
+}
+
+elements.convertToCharacterButton?.addEventListener("click", () => void openConvertToCharacterModal());
+elements.convertCharacterNameInput?.addEventListener("input", updateConvertSubmitReadiness);
+elements.convertCharacterTemplateSelect?.addEventListener("change", updateConvertSubmitReadiness);
+
+elements.convertCharacterForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!currentRecord) return;
+  const name = elements.convertCharacterNameInput?.value.trim() || "";
+  const templateId = elements.convertCharacterTemplateSelect?.value || "";
+  const selectedOption = elements.convertCharacterTemplateSelect?.selectedOptions?.[0];
+  const templateSchema = selectedOption?.dataset.schema || "";
+  if (!name || !templateId) {
+    elements.convertCharacterForm.classList.add("was-validated");
+    return;
+  }
+  const id = generateCharacterId(name);
+  const converted = convertLibraryRecord(buildRecordForSave(), {
+    fromKind: "monster",
+    toKind: "character",
+    systemId: templateSchema,
+    templateId,
+    name,
+  });
+  const [abilityDefs, skillValues] = await Promise.all([
+    loadAbilityFieldDefs(dataManager, templateSchema),
+    loadArrayFieldValues(dataManager, templateSchema, "skills"),
+  ]);
+  const payload = seedCharacterDefaults(converted, { abilityDefs, skillDefs: skillValues });
+  try {
+    await dataManager.save("characters", id, payload);
+  } catch (error) {
+    status?.show(error?.message || "Unable to create the character.", { type: "error" });
+    return;
+  }
+  // The Monster itself was never saved this session (only converted-and-
+  // saved as a Character instead) — without this, beforeunload's own dirty
+  // check below still sees it as unsaved and throws up a "leave unsaved
+  // changes?" browser prompt on the very next line's navigation, even
+  // though nothing is actually about to be lost.
+  dirtyGate.markClean();
+  convertToCharacterModalInstance?.hide();
+  status?.show(`Converted to ${name}.`, { type: "success", timeout: 2000 });
+  const href = buildKindToolUrl("character", id);
+  if (href) window.location.href = href;
+});
 
 async function handleGenerateNote() {
   const before = currentRecord ? recordSnapshot() : null;
@@ -2702,6 +2917,7 @@ async function init() {
       // creation time on every load.
       renderMonster({ ...result.payload, id });
       dirtyGate.markClean(toPressExportShape(currentRecord));
+      expandMonsterPropertiesSection();
       updateActionButtons();
     } catch (error) {
       status?.show(`Unable to load monster: ${error.message}`, { type: "error", timeout: 4000 });
@@ -2722,15 +2938,14 @@ async function init() {
     title: "Crucible Settings",
     definitions: () => {
       const systemId = currentSystemId();
-      const options = fieldPreferenceOptions();
       return [
         {
           key: "combatScalingField",
           type: "select",
           label: "Combat scaling field",
           helpTopic: "crucible.combatScalingField",
-          options,
-          getValue: () => resolveEffectiveFieldPreference("combatScalingField", getCombatScalingFieldPreference(systemId)),
+          options: fieldPreferenceOptions(combatScalingFieldGuess, getCombatScalingFieldPreference(systemId)),
+          getValue: () => getCombatScalingFieldPreference(systemId) || combatScalingFieldGuess,
           setValue: (value) => {
             setCombatScalingFieldPreference(systemId, value);
             reloadReferenceData();
@@ -2741,8 +2956,8 @@ async function init() {
           type: "select",
           label: "Creature type field",
           helpTopic: "crucible.creatureTypeField",
-          options,
-          getValue: () => resolveEffectiveFieldPreference("creatureTypeField", getCreatureTypeFieldPreference(systemId)),
+          options: fieldPreferenceOptions(creatureTypeFieldGuess, getCreatureTypeFieldPreference(systemId)),
+          getValue: () => getCreatureTypeFieldPreference(systemId) || creatureTypeFieldGuess,
           setValue: (value) => {
             setCreatureTypeFieldPreference(systemId, value);
             reloadReferenceData();
@@ -2943,6 +3158,7 @@ async function init() {
       updateGenerationFieldsVisibility();
       renderMonster({ ...payload, id: monsterId });
       dirtyGate.markClean(toPressExportShape(currentRecord));
+      expandMonsterPropertiesSection();
       updateActionButtons();
       // Phase 2 — deliberately not awaited here; runs after this function
       // has already returned `true`. NOT handleSystemSelectChange (which

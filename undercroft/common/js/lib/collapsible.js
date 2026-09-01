@@ -10,6 +10,8 @@
 // class's own !important rule (inline beats a class selector at equal
 // importance), so that's what this uses instead — no need to know or
 // enumerate the element's own classes.
+import { updateTooltipContent } from "./tooltips.js";
+
 export function setElementCollapsed(element, isCollapsed) {
   if (!element) return;
   if (isCollapsed) {
@@ -38,7 +40,17 @@ export function setCollapsibleState(toggle, panel, { collapsed, expandLabel, col
   panel.hidden = isCollapsed;
   panel.classList.toggle("d-none", isCollapsed);
   panel.setAttribute("aria-hidden", isCollapsed ? "true" : "false");
-  panel.style.display = isCollapsed ? "none" : "";
+  // !important, same reasoning as setElementCollapsed above — a panel that
+  // also carries a Bootstrap display utility (.d-flex, .d-grid, ...), which
+  // several real collapsible panels in this suite do, silently never hides
+  // with a plain `panel.style.display = "none"` (confirmed real: Orrery's
+  // own Map Properties panel, `class="d-flex flex-column gap-3"`, toggled
+  // through this exact function).
+  if (isCollapsed) {
+    panel.style.setProperty("display", "none", "important");
+  } else {
+    panel.style.removeProperty("display");
+  }
   toggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
   toggle.dataset.collapsed = isCollapsed ? "true" : "false";
   if (label) {
@@ -89,7 +101,7 @@ export function createCollapseToggleButton({ label = "section", collapsed = fals
     const actionLabel = isCollapsed ? `Expand${expandedLabel}` : `Collapse${expandedLabel}`;
     button.setAttribute("aria-expanded", String(!isCollapsed));
     button.setAttribute("aria-label", actionLabel);
-    button.setAttribute("title", actionLabel);
+    updateTooltipContent(button, actionLabel);
   }
 
   update(isCollapsed);

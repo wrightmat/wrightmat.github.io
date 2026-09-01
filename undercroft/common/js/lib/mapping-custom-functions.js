@@ -15,6 +15,7 @@
 // `context.root` is always the original raw character object, regardless of
 // how deep the mapping tree has descended.
 import { resolveDottedPath as resolvePath } from "./dotted-path.js";
+import { proficiencyBonusForLevel } from "./dnd-rules.js";
 
 // Factory rather than a static export: ABILITIES/SAVING_THROW_SUBTYPES/
 // SKILLS/SIZES used to be static imports from common/js/lib/lookup-tables.js
@@ -828,7 +829,7 @@ function getTotalLevelRaw(classes) {
 }
 
 function getProficiencyBonusRaw(totalLevel) {
-  return totalLevel > 0 ? 2 + Math.floor((totalLevel - 1) / 4) : 0;
+  return proficiencyBonusForLevel(totalLevel);
 }
 
 function calculateAbilityScores(rawCharacter, modifiers) {

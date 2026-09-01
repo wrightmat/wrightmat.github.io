@@ -611,20 +611,57 @@ body[data-theme="dark"] .hover-lift:hover {
   padding: 0.25rem;
 }
 
+/* The row itself is a plain, non-interactive <div> — .suite-search-result-main
+   (the real navigating link) and .suite-search-result-popout (the "open in a
+   new tab" button) are its two sibling children, see suite-search.js's own
+   buildResultRow comment for why. This still draws one unified hover/active
+   card across both — :focus-within, not :focus-visible, so the highlight
+   also shows when keyboard focus lands on the popout button, not just the
+   main link. */
 .suite-search-result {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.25rem;
   padding: 0.4rem 0.5rem;
   border-radius: var(--bs-border-radius-sm);
+}
+
+.suite-search-result:hover,
+.suite-search-result:focus-within,
+.suite-search-result.suite-search-result-active {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.suite-search-result-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1 1 auto;
+  min-width: 0;
   text-decoration: none;
   color: inherit;
 }
 
-.suite-search-result:hover,
-.suite-search-result:focus-visible,
-.suite-search-result.suite-search-result-active {
-  background-color: var(--bs-tertiary-bg);
+/* Always visible (not hover-only) — a hover-only affordance would be
+   unreachable for a touchscreen or keyboard-only viewer. */
+.suite-search-result-popout {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--bs-border-radius-sm);
+  background: transparent;
+  color: var(--bs-secondary-color);
+}
+
+.suite-search-result-popout:hover,
+.suite-search-result-popout:focus-visible {
+  background-color: var(--bs-secondary-bg, var(--bs-tertiary-bg));
+  color: var(--bs-body-color);
 }
 
 .suite-search-result-icon {

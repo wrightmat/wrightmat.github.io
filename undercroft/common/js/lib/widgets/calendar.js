@@ -26,6 +26,7 @@ import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
 import { createReliableInterval } from "../reliable-interval.js";
+import { disposeTooltips, refreshTooltips } from "../tooltips.js";
 
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) --------
 // Same "active only, no portable target" story as Clock's own
@@ -183,7 +184,8 @@ function renderMonthGrid(container, calendar, dayIndex, onDayClick) {
       }
       if (onDayClick) {
         cell.style.cursor = "pointer";
-        cell.title = "Jump to this day";
+        cell.setAttribute("data-bs-toggle", "tooltip");
+        cell.setAttribute("data-bs-title", "Jump to this day");
         cell.addEventListener("click", () => onDayClick(grid.firstOfMonthIndex + (day - 1)));
       }
     }
@@ -282,7 +284,8 @@ function buildEditableHeading(calendar, dayIndex, { onSetMonth, onSetYear }) {
 
   const monthSpan = el("span", "");
   monthSpan.textContent = monthName;
-  monthSpan.title = "Click to change month";
+  monthSpan.setAttribute("data-bs-toggle", "tooltip");
+  monthSpan.setAttribute("data-bs-title", "Click to change month");
   styleEditableField(monthSpan);
   // Plain unstyled controls, not Bootstrap's form-select/form-control-sm —
   // those add a border, background, and (for select) a chevron/padding
@@ -327,7 +330,8 @@ function buildEditableHeading(calendar, dayIndex, { onSetMonth, onSetYear }) {
 
   const yearSpan = el("span", "");
   yearSpan.textContent = String(year);
-  yearSpan.title = "Click to change year";
+  yearSpan.setAttribute("data-bs-toggle", "tooltip");
+  yearSpan.setAttribute("data-bs-title", "Click to change year");
   styleEditableField(yearSpan);
   yearSpan.addEventListener("click", () => {
     const input = document.createElement("input");
@@ -454,8 +458,9 @@ function iconButton(name, title) {
   // icon-only steppers with no text label to keep clear of.
   button.style.padding = "0.1rem 0.4rem";
   button.appendChild(icon(name));
-  button.title = title;
   button.setAttribute("aria-label", title);
+  button.setAttribute("data-bs-toggle", "tooltip");
+  button.setAttribute("data-bs-title", title);
   return button;
 }
 
@@ -817,6 +822,11 @@ export function initCalendarWidget(
 
   function render() {
     if (destroyed) return;
+    // Disposed before the wipe, not just left to be garbage-collected — see
+    // BUG CLASS 2 in tooltips.js's own header comment for why the ordering
+    // matters (the month/year stepper buttons and the click-to-edit
+    // month/year heading below all carry real tooltips now).
+    disposeTooltips(container);
     container.innerHTML = "";
     const calendar = settingRecord?.calendar;
     if (!settingId || !calendar) {
@@ -877,6 +887,7 @@ export function initCalendarWidget(
     wrap.appendChild(displayHost);
     wrap.appendChild(renderTimeSection());
     container.appendChild(wrap);
+    refreshTooltips(container);
   }
 
   // Keeps this instance's own day/time mirror current with whatever ANY

@@ -338,5 +338,16 @@
         16
       ]
     }
-  }
+  },
+  "caster_type": "full",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "wisdom",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }

@@ -16,6 +16,7 @@ import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
 // until this re-export replaced the stale local copy.
 import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
 export { loadAbilityFieldDefs };
+import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
 
 // Re-exported so undercroft/forge/js/app.js's own import (from this file)
 // keeps working unchanged — the implementation moved to content-fetch.js
@@ -170,18 +171,52 @@ export async function loadAlignmentFaces(dataManager, systemId) {
   return faces.length ? faces : DEFAULT_ALIGNMENT_FACES;
 }
 
+// Best-effort guess for which array field IS a System's Archetype table,
+// used only to pre-fill the archetypeField settings preference (app.js)
+// when a GM hasn't explicitly chosen one yet — never the sole source of
+// truth (see feedback_settings_preference_with_guessed_default). Name-
+// preference only, like guessCombatScalingFieldKey (common/js/lib/
+// combat-scaling.js) — an Archetype table's own value shape varies too much
+// per System to shape-detect (a name + Stats vs. a name alone). "npcTypes"
+// is the majority convention across this suite's own Systems as of
+// 2026-08-30 (already the literal hardcoded default this loader falls back
+// to); "occupations" (Call of Cthulhu, d20 Modern) and "backgrounds"
+// (Pathfinder 2E, Starfinder 2E, Triskele) are confirmed real, recurring
+// alternates — the same underlying concept ("what kind of NPC is this"),
+// just named to fit that System's own genre.
+const ARCHETYPE_FIELD_NAME_PREFERENCE = ["npcTypes", "occupations", "backgrounds"];
+
+export function guessArchetypeFieldKey(fields) {
+  const arrayFieldKeys = new Set((Array.isArray(fields) ? fields : []).filter((f) => f?.type === "array").map((f) => f.key));
+  return ARCHETYPE_FIELD_NAME_PREFERENCE.find((name) => arrayFieldKeys.has(name)) || "";
+}
+
+// Same reasoning as guessArchetypeFieldKey above, for NPC Attitude levels —
+// "npcAttitudes" is the only real name found across this suite's own
+// Systems so far, but kept as a genuine preference list (not a single
+// hardcoded string) so a future System's own alternate name has an obvious
+// place to be added.
+const ATTITUDE_FIELD_NAME_PREFERENCE = ["npcAttitudes"];
+
+export function guessAttitudeFieldKey(fields) {
+  const arrayFieldKeys = new Set((Array.isArray(fields) ? fields : []).filter((f) => f?.type === "array").map((f) => f.key));
+  return ATTITUDE_FIELD_NAME_PREFERENCE.find((name) => arrayFieldKeys.has(name)) || "";
+}
+
 // Which array field on the active System supplies NPC Attitude levels is
-// Forge's own tool preference (getAttitudeFieldPreference in app.js), same
-// pattern as Archetype's own npcTypes field — defaults to the conventional
-// "npcAttitudes" key when unset. Each value's `name` is the attitude's own
-// description (e.g. "Hostile") and `value` is the numeric scale position
-// (see sys.dnd5e.json's own npcAttitudes field) — falls back to
-// DEFAULT_ATTITUDES if the System defines no such field, or its entries
-// don't resolve to a valid {value, label} shape.
-export async function loadNpcAttitudes(dataManager, systemId, attitudeField = "npcAttitudes") {
+// Forge's own tool preference (getAttitudeFieldPreference in app.js).
+// `attitudeField` is the GM's own explicit preference, if stored — empty/
+// omitted falls through to guessAttitudeFieldKey's own guess, then the
+// literal "npcAttitudes" key as the last resort. Each value's `name` is the
+// attitude's own description (e.g. "Hostile") and `value` is the numeric
+// scale position (see sys.dnd5e.json's own npcAttitudes field) — falls back
+// to DEFAULT_ATTITUDES if nothing resolves, or entries don't resolve to a
+// valid {value, label} shape.
+export async function loadNpcAttitudes(dataManager, systemId, attitudeField = "") {
   const system = await fetchSystemRecord(dataManager, systemId);
   const fields = Array.isArray(system?.fields) ? system.fields : [];
-  const field = fields.find((entry) => entry.type === "array" && entry.key === attitudeField);
+  const key = attitudeField || guessAttitudeFieldKey(fields) || "npcAttitudes";
+  const field = fields.find((entry) => entry.type === "array" && entry.key === key);
   const attitudes = (field?.values || [])
     .map((value) => ({ value: Number(value.value), label: value.name || "" }))
     .filter((entry) => entry.label && Number.isFinite(entry.value));
@@ -189,22 +224,32 @@ export async function loadNpcAttitudes(dataManager, systemId, attitudeField = "n
 }
 
 // Every top-level array field on the active System, so Forge's Settings
-// modal (Archetype field picker) can list all real candidates —
-// deliberately unfiltered (unlike Vault's own cost/targetBudget-shaped
-// field lister), same reasoning and same preferLocal: false as Crucible's
-// own listArrayFieldOptions (crucible/js/lib/tables.js): a live Loom edit
-// to the System's fields must be visible immediately, not hidden behind a
-// stale local cache.
+// modal (Archetype field/Attitude field pickers) can list all real
+// candidates — deliberately unfiltered (unlike Vault's own cost/
+// targetBudget-shaped field lister), same reasoning and same
+// preferLocal: false as Crucible's own listArrayFieldOptions (crucible/js/
+// lib/tables.js): a live Loom edit to the System's fields must be visible
+// immediately, not hidden behind a stale local cache.
+// `guessedArchetypeKey`/`guessedAttitudeKey` ride along (computed here, in
+// the same fetch, rather than a second round trip) so each settings
+// dropdown can pre-select its own guess and label it as auto-detected —
+// mirrors listObjectFieldOptions's own `guessedKey` (common/js/lib/
+// generator-kit.js) for abilityField.
 export async function listArrayFieldOptions(dataManager, systemId) {
-  if (!dataManager || !systemId) return [];
+  if (!dataManager || !systemId) return { options: [], guessedArchetypeKey: "", guessedAttitudeKey: "" };
   try {
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    return fields
+    const options = fields
       .filter((entry) => entry.type === "array")
       .map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
+    return {
+      options,
+      guessedArchetypeKey: guessArchetypeFieldKey(fields),
+      guessedAttitudeKey: guessAttitudeFieldKey(fields),
+    };
   } catch (error) {
-    return [];
+    return { options: [], guessedArchetypeKey: "", guessedAttitudeKey: "" };
   }
 }
 
@@ -295,9 +340,11 @@ export async function loadSkillGenerationConfig(dataManager, systemId) {
 // statsKeyOptionsFrom/getStatsForArchetype). One field, not two — a name
 // and its own stat block are one concept, not two things a GM would ever
 // want to bind separately. Which array field supplies it is Forge's own
-// tool preference (see getArchetypeFieldPreference in app.js), defaulting
-// to "npcTypes" so an existing System (D&D) works with no configuration.
-// Values are read in order and zipped to rolls 2-21; a value with no name
+// tool preference (see getArchetypeFieldPreference in app.js) — empty/
+// omitted falls through to guessArchetypeFieldKey's own guess, then the
+// literal "npcTypes" key as the last resort, so an existing System (D&D)
+// works with no configuration. Values are read in order and zipped to
+// rolls 2-21; a value with no name
 // is skipped rather than producing a blank/"undefined" entry, so an
 // under-authored System just has gaps (resolved to "Unknown" by
 // rollArchetype's own existing fallback) instead of a broken display.
@@ -312,13 +359,14 @@ export async function loadSkillGenerationConfig(dataManager, systemId) {
 // Stats is a *separate* Forge tool preference (see getStatsKeysPreference/
 // resolveArchetypeStats in app.js), since a System might carry extra
 // per-archetype metadata that isn't meant to be shown as a Stat at all.
-export async function loadArchetypeTable(dataManager, systemId, archetypeField = "npcTypes") {
+export async function loadArchetypeTable(dataManager, systemId, archetypeField = "") {
   const rawValues = [];
-  if (dataManager && systemId && archetypeField) {
+  if (dataManager && systemId) {
     try {
       const result = await dataManager.get("systems", systemId, { preferLocal: false });
       const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-      const field = fields.find((entry) => entry.type === "array" && entry.key === archetypeField);
+      const key = archetypeField || guessArchetypeFieldKey(fields) || "npcTypes";
+      const field = fields.find((entry) => entry.type === "array" && entry.key === key);
       (field?.values || []).slice(0, 20).forEach((value) => {
         if (value?.name) rawValues.push(value);
       });
@@ -598,6 +646,35 @@ export function rollAttitude(attitudes, { random = Math.random } = {}) {
   return { value: entry?.value ?? face, label: entry?.label || "", roll: face, notation };
 }
 
+// The archetype entry's own raw key that feeds a `resource`-role
+// combatBindings entry (HP-like) — derived from the binding's OWN declared
+// path, never a hardcoded "hitPoints" literal, so this works for any
+// System's own naming (D&D's "hitPoints", Daggerheart's "hp", ...). A
+// resource with `maxPath` is nested (`stats.hp.current`/`stats.hp.max`) —
+// the archetype's raw entry only ever authors the single max value, so the
+// key to look for is the PARENT segment shared by both paths (second-to-
+// last of `.binding`). A resource with a literal `max` instead (Daggerheart's
+// Hope: `binding: "@stats.hope", max: 6`) has no such parent — the archetype
+// entry's own key is the binding's own last segment directly.
+function resourceArchetypeKey(binding) {
+  const path = String(binding?.binding || "").trim();
+  if (!path.startsWith("@")) return "";
+  const segments = path.slice(1).split(".").filter(Boolean);
+  if (binding.maxPath && segments.length >= 2) return segments[segments.length - 2];
+  return segments[segments.length - 1] || "";
+}
+
+// Same idea for a `value`/`modifier`-role binding (AC-like, always a single
+// flat value, never nested) — the archetype entry's own key is simply the
+// binding's last path segment (D&D's "armorClass", Daggerheart's
+// "armorScore", ...).
+function flatArchetypeKey(binding) {
+  const path = String(binding?.binding || "").trim();
+  if (!path.startsWith("@")) return "";
+  const segments = path.slice(1).split(".").filter(Boolean);
+  return segments[segments.length - 1] || "";
+}
+
 // Basic combat stats for this archetype, whatever shape the active
 // System's own npcTypes entries happen to define (ability scores/AC/HP
 // for D&D, an Adversary-style block for another System, or nothing at
@@ -612,55 +689,92 @@ export function rollAttitude(attitudes, { random = Math.random } = {}) {
 // identity/no stat concept — callers get null and should show a graceful
 // fallback rather than blank/zeroed stats.
 //
-// Three things get special handling so a generated NPC can be added to
-// Combat Tracker and show up correctly, matching the exact shape Crucible's
-// own generated monsters and Characters both already use (see
-// crucible/js/lib/stats.js#deriveStats and sys.dnd5e.json's own "abilities"
-// object field — confirmed the suite-wide standard, not a Forge-specific
-// choice, after this shape's own bug report): `abilityKeys` (the active
-// System's own ability field keys, e.g. strength/dexterity/...) get pulled
-// out of the raw npcTypes entry's flat keys and bundled into a nested
-// `abilities` object rather than left sitting flat on `stats` — a flat
-// ability key on `stats` isn't just wrong shape, it renders as a jumbled
-// mess (confirmed real bug — see Belimmar/Berosalia's own saved records,
-// undercroft/common/data/npc/*.json, both corrected back to this nested
-// shape directly). `hitPoints` is authored as a flat number (the
-// archetype's max), wrapped here into { max, current } — a freshly rolled
-// NPC is undamaged, so current starts at max. `initiative.bonus` isn't
-// authored data at all — it's derived from `abilities.dexterity` (D&D's own
-// ability key, same hardcoded assumption Crucible's own stats.js makes for
-// its generated monsters) via the standard ability-modifier formula,
-// whenever dexterity is present in the resolved Stats subset — `{bonus}`,
-// this suite's one shared initiative shape (see the monster-data-alignment
-// plan), matching Monster/Character exactly. Every other
-// key (armorClass, ...) passes through verbatim at the top level; Combat
-// Tracker resolves AC/etc. through the System's own combatBindings
-// directly.
-export function getStatsForArchetype(statsMap, archetypeName, abilityKeys) {
+// Every value this function places gets written through `setAtBinding`
+// against a full-record-shaped path (always starting "@stats." — the one
+// suite-wide STRUCTURAL convention every kind's own record already shares,
+// see feedback_full_path_shape_alignment — never a hardcoded key beyond
+// that prefix). `abilityFieldKey`/`combatBindings` are both resolved
+// upstream from the active System's own settings/fields (forge/js/app.js's
+// own `refreshSystemVocabulary`) — this function never hardcodes "abilities",
+// "hitPoints", "armorClass", or any other System-specific field name; it
+// only ever follows whatever path those two already resolved to. Building
+// into a scratch `{}` and unwrapping `.stats` at the end (rather than
+// building the sub-object directly) keeps this function's own external
+// contract — return null/undefined/an object exactly as before — unchanged,
+// while still routing every individual value through the fully general
+// combatBindings-driven path resolution internally.
+export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abilityFieldKey, combatBindings) {
   const entry = statsMap?.[archetypeName];
   if (!entry) return null;
   const { name, ...rest } = entry;
   const keySet = abilityKeys instanceof Set ? abilityKeys : new Set(abilityKeys || []);
   const abilities = {};
-  const result = {};
+  const otherKeys = {};
   Object.entries(rest).forEach(([key, value]) => {
     if (keySet.has(key)) {
       abilities[key] = value;
     } else {
-      result[key] = value;
+      otherKeys[key] = value;
     }
   });
+
+  const scratch = {};
+
+  // Ability scores/Traits — the ONE structural nesting this function always
+  // applies (stats.*); the sub-key underneath it is 100% dynamic
+  // (abilityFieldKey — "abilities" for D&D, "traits" for Daggerheart, ...).
   if (Object.keys(abilities).length) {
-    result.abilities = abilities;
+    setAtBinding(`@stats.${abilityFieldKey || "abilities"}`, scratch, abilities);
   }
-  if (result.hitPoints !== undefined && typeof result.hitPoints !== "object") {
-    const maxHp = Number(result.hitPoints) || 0;
-    result.hitPoints = { max: maxHp, current: maxHp };
+
+  // Every resource-role binding this System defines (HP, and for a System
+  // like Daggerheart that tracks more than one — Stress, Hope, ...), not
+  // just the first — a freshly generated NPC is undamaged, so whichever of
+  // these the archetype entry actually authors a value for seeds both
+  // current and max. A resource the entry doesn't author anything for
+  // (Daggerheart's own npcTypes never author Hope, only hp/stress) is simply
+  // left unset, same as any other stat this table doesn't provide.
+  findBindingsByRole(combatBindings, "resource").forEach((resource) => {
+    const archetypeKey = resourceArchetypeKey(resource);
+    if (!archetypeKey || otherKeys[archetypeKey] === undefined) return;
+    const maxValue = Number(otherKeys[archetypeKey]) || 0;
+    setAtBinding(resource.binding, scratch, maxValue);
+    if (resource.maxPath) setAtBinding(resource.maxPath, scratch, maxValue);
+    delete otherKeys[archetypeKey];
+  });
+
+  // AC-like single value.
+  const valueBinding = findBindingByRole(combatBindings, "value");
+  if (valueBinding) {
+    const archetypeKey = flatArchetypeKey(valueBinding);
+    if (archetypeKey && otherKeys[archetypeKey] !== undefined) {
+      setAtBinding(valueBinding.binding, scratch, otherKeys[archetypeKey]);
+      delete otherKeys[archetypeKey];
+    }
   }
-  if (typeof abilities.dexterity === "number") {
-    result.initiative = { bonus: abilityModifier(abilities.dexterity) };
+
+  // Initiative — not authored data at all, derived from `abilities.dexterity`
+  // (D&D's own ability key) via the standard ability-modifier formula. This
+  // one piece of D&D-specific rules logic (which ability drives Initiative)
+  // has no data-driven home on a System record — same documented exception
+  // crucible/js/lib/stats.js#deriveStats already carries for its own
+  // Constitution-driven HP-band bonus. Only WHERE this gets written
+  // (`modifierBinding.binding`) comes from the System's own combatBindings;
+  // a System with no `modifier`-role binding at all (Daggerheart) simply
+  // never reaches this.
+  const modifierBinding = findBindingByRole(combatBindings, "modifier");
+  if (modifierBinding && typeof abilities.dexterity === "number") {
+    setAtBinding(modifierBinding.binding, scratch, abilityModifier(abilities.dexterity));
   }
-  return result;
+
+  // Anything else the archetype entry defines with no matching combatBindings
+  // role (a flavor stat some GM authored, or a System with no Role-bound
+  // field at all) — still lands under stats.*, same structural convention.
+  Object.entries(otherKeys).forEach(([key, value]) => {
+    setAtBinding(`@stats.${key}`, scratch, value);
+  });
+
+  return scratch.stats || {};
 }
 
 // Resolves every archetype entry to its final display name for a given

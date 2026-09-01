@@ -9,6 +9,7 @@
 // here.
 import { findBindingByRole } from "../bindings.js";
 import { el } from "../dom.js";
+import { updateTooltipContent } from "../tooltips.js";
 
 // The tags-role binding's own `sourceField` names which other array field on
 // a System supplies the tag vocabulary (default "conditions") — a generic
@@ -59,7 +60,8 @@ export function renderTagBadges(list, vocabulary, { removable = false, onRemove,
       hiddenIcon.style.fontSize = "0.7rem";
       hiddenIcon.setAttribute("aria-hidden", "true");
       badge.appendChild(hiddenIcon);
-      badge.title = `${label} — hidden from the map`;
+      badge.setAttribute("data-bs-toggle", "tooltip");
+      badge.setAttribute("data-bs-title", `${label} — hidden from the map`);
     }
     badge.appendChild(document.createTextNode(label));
     if (removable && !(typeof isLocked === "function" && isLocked(value))) {
@@ -67,6 +69,8 @@ export function renderTagBadges(list, vocabulary, { removable = false, onRemove,
       removeBtn.type = "button";
       removeBtn.style.fontSize = "0.55rem";
       removeBtn.setAttribute("aria-label", `Remove ${label}`);
+      removeBtn.setAttribute("data-bs-toggle", "tooltip");
+      removeBtn.setAttribute("data-bs-title", `Remove ${label}`);
       removeBtn.addEventListener("click", () => onRemove?.(value));
       badge.appendChild(removeBtn);
     }
@@ -179,7 +183,7 @@ export function applyTagVisibilityState(visibilityButton, hidden) {
   const visibilityIcon = visibilityButton.querySelector(".iconify");
   if (visibilityIcon) visibilityIcon.dataset.icon = hidden ? "tabler:eye-off" : "tabler:eye";
   const label = hidden ? "Hidden from the map — click to show this tag" : "Shown on the map — click to hide this tag";
-  visibilityButton.title = label;
+  updateTooltipContent(visibilityButton, label);
   visibilityButton.setAttribute("aria-label", label);
   // No highlighted/active styling — that visual language stays reserved for
   // "Show to table" (combat-tracker.js's own updateVisibilityAction).

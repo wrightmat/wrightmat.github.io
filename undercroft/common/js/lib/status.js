@@ -1,3 +1,5 @@
+import { disposeTooltips, initTooltip, flashTooltipMessage } from "./tooltips.js";
+
 const DEFAULT_TIMEOUT = 4000;
 let counter = 0;
 
@@ -90,11 +92,13 @@ export class StatusManager {
     copyButton.className = "btn btn-sm btn-link status-toast-copy p-0 ms-2 align-baseline lh-1";
     setCopyIcon("tabler:copy");
     copyButton.setAttribute("aria-label", "Copy message text");
+    initTooltip(copyButton, { title: "Copy message text" });
     copyButton.addEventListener("click", (event) => {
       event.stopPropagation();
       if (!navigator.clipboard?.writeText) return;
       navigator.clipboard.writeText(item.message).then(() => {
         setCopyIcon("tabler:check");
+        flashTooltipMessage(copyButton, "Copied!", { duration: 1200 });
         window.setTimeout(() => {
           setCopyIcon("tabler:copy");
         }, 1200);
@@ -115,6 +119,7 @@ export class StatusManager {
       closeIcon.setAttribute("aria-hidden", "true");
       closeButton.appendChild(closeIcon);
       closeButton.setAttribute("aria-label", "Dismiss");
+      initTooltip(closeButton, { title: "Dismiss" });
       closeButton.addEventListener("click", (event) => {
         event.stopPropagation();
         this.remove(item.id);
@@ -132,6 +137,7 @@ export class StatusManager {
     const next = this.queue.shift();
     this.active = next;
     const element = this._render(next);
+    disposeTooltips(this.root);
     this.root.innerHTML = "";
     this.root.appendChild(element);
     requestAnimationFrame(() => {

@@ -979,30 +979,30 @@
         {
           "name": "Hit Points",
           "role": "resource",
-          "binding": "@hp.current",
-          "maxPath": "@hp.max"
+          "binding": "@stats.hp.current",
+          "maxPath": "@stats.hp.max"
         },
         {
           "name": "Stress",
           "role": "resource",
-          "binding": "@stress.current",
-          "maxPath": "@stress.max"
+          "binding": "@stats.stress.current",
+          "maxPath": "@stats.stress.max"
         },
         {
           "name": "Hope",
           "role": "resource",
-          "binding": "@hope",
+          "binding": "@stats.hope",
           "max": 6
         },
         {
           "name": "Evasion",
           "role": "value",
-          "binding": "@evasion"
+          "binding": "@stats.evasion"
         },
         {
           "name": "Armor Score",
           "role": "value",
-          "binding": "@armorScore"
+          "binding": "@stats.armorScore"
         }
       ]
     },
@@ -1014,7 +1014,7 @@
         {
           "name": "Legendary Duelist",
           "difficulty": 18,
-          "hitPoints": 10,
+          "hp": 10,
           "stress": 5,
           "attackModifier": 6,
           "feature": "Riposte: reacts to a missed attack against them with a free strike."
@@ -1022,7 +1022,7 @@
         {
           "name": "Arch-Cultist",
           "difficulty": 16,
-          "hitPoints": 8,
+          "hp": 8,
           "stress": 5,
           "attackModifier": 5,
           "feature": "Dark Ritual: spends Stress to empower a nearby cultist's next roll."
@@ -1030,7 +1030,7 @@
         {
           "name": "Knight-Captain",
           "difficulty": 15,
-          "hitPoints": 9,
+          "hp": 9,
           "stress": 4,
           "attackModifier": 4,
           "feature": "Rally: an ally within Close clears a Stress."
@@ -1038,7 +1038,7 @@
         {
           "name": "Battle Mage",
           "difficulty": 14,
-          "hitPoints": 7,
+          "hp": 7,
           "stress": 5,
           "attackModifier": 4,
           "feature": "Arcane Bolt: a Far-range magic attack."
@@ -1046,7 +1046,7 @@
         {
           "name": "Bounty Hunter",
           "difficulty": 13,
-          "hitPoints": 7,
+          "hp": 7,
           "stress": 4,
           "attackModifier": 4,
           "feature": "Snare: on a hit, the target is Restrained until they break free."
@@ -1054,7 +1054,7 @@
         {
           "name": "Cult Adept",
           "difficulty": 12,
-          "hitPoints": 6,
+          "hp": 6,
           "stress": 4,
           "attackModifier": 3,
           "feature": "Dark Bolt: a Far-range magic attack."
@@ -1062,7 +1062,7 @@
         {
           "name": "Veteran Soldier",
           "difficulty": 12,
-          "hitPoints": 6,
+          "hp": 6,
           "stress": 3,
           "attackModifier": 3,
           "feature": "Shield Wall: gains Armor Score +1 while standing with another Soldier."
@@ -1070,7 +1070,7 @@
         {
           "name": "Hedge Wizard",
           "difficulty": 11,
-          "hitPoints": 5,
+          "hp": 5,
           "stress": 4,
           "attackModifier": 2,
           "feature": "Minor Ward: reduces the next instance of incoming magic damage by 1d4."
@@ -1078,7 +1078,7 @@
         {
           "name": "Highway Bandit",
           "difficulty": 11,
-          "hitPoints": 5,
+          "hp": 5,
           "stress": 3,
           "attackModifier": 2,
           "feature": "Ambush: advantage on the first attack of a scene."
@@ -1086,7 +1086,7 @@
         {
           "name": "Mercenary",
           "difficulty": 10,
-          "hitPoints": 5,
+          "hp": 5,
           "stress": 3,
           "attackModifier": 2,
           "feature": "Professional: rerolls one failed reaction roll per scene."
@@ -1094,7 +1094,7 @@
         {
           "name": "Town Guard",
           "difficulty": 10,
-          "hitPoints": 5,
+          "hp": 5,
           "stress": 2,
           "attackModifier": 1,
           "feature": "Call for Backup: summons another Guard once per scene."
@@ -1102,7 +1102,7 @@
         {
           "name": "Farmer",
           "difficulty": 7,
-          "hitPoints": 3,
+          "hp": 3,
           "stress": 2,
           "attackModifier": 0,
           "feature": "Harmless: deals no real damage on a hit, just a shove or a scare."
@@ -1110,7 +1110,7 @@
         {
           "name": "Tavern Keeper",
           "difficulty": 8,
-          "hitPoints": 3,
+          "hp": 3,
           "stress": 2,
           "attackModifier": 0,
           "feature": "Homebrew Courage: fights back only when cornered."
@@ -1118,7 +1118,7 @@
         {
           "name": "Peddler",
           "difficulty": 8,
-          "hitPoints": 3,
+          "hp": 3,
           "stress": 2,
           "attackModifier": 0,
           "feature": "Haggler: talks their way out of a fight if given the chance."
@@ -1126,7 +1126,7 @@
         {
           "name": "Dockhand",
           "difficulty": 9,
-          "hitPoints": 4,
+          "hp": 4,
           "stress": 2,
           "attackModifier": 1,
           "feature": "Strong Back: advantage on rolls to shove or grapple."
@@ -1134,7 +1134,7 @@
         {
           "name": "Cutpurse",
           "difficulty": 9,
-          "hitPoints": 4,
+          "hp": 4,
           "stress": 3,
           "attackModifier": 1,
           "feature": "Slippery: advantage on rolls to flee or hide."
@@ -1142,7 +1142,7 @@
         {
           "name": "Scout",
           "difficulty": 10,
-          "hitPoints": 5,
+          "hp": 5,
           "stress": 3,
           "attackModifier": 2,
           "feature": "Keen Eyes: can't be caught unaware."
@@ -1150,7 +1150,7 @@
         {
           "name": "Smuggler",
           "difficulty": 10,
-          "hitPoints": 5,
+          "hp": 5,
           "stress": 3,
           "attackModifier": 2,
           "feature": "Hidden Blade: advantage on the first attack if unnoticed."
@@ -1158,7 +1158,7 @@
         {
           "name": "Bandit Captain",
           "difficulty": 12,
-          "hitPoints": 6,
+          "hp": 6,
           "stress": 4,
           "attackModifier": 3,
           "feature": "Rally Cry: an ally within Close clears a Stress."
@@ -1166,7 +1166,7 @@
         {
           "name": "Rogue Knight",
           "difficulty": 14,
-          "hitPoints": 8,
+          "hp": 8,
           "stress": 4,
           "attackModifier": 4,
           "feature": "Oathbreaker's Fury: deals +1d8 damage but marks a Stress."
@@ -1184,7 +1184,7 @@
           "sourceId": 1,
           "armorClass": 11,
           "attackBonus": 1,
-          "hitPoints": 5,
+          "hp": 5,
           "majorThreshold": 7,
           "severeThreshold": 12,
           "targetBudget": 4
@@ -1195,7 +1195,7 @@
           "sourceId": 2,
           "armorClass": 14,
           "attackBonus": 2,
-          "hitPoints": 7,
+          "hp": 7,
           "majorThreshold": 10,
           "severeThreshold": 20,
           "targetBudget": 8
@@ -1206,7 +1206,7 @@
           "sourceId": 3,
           "armorClass": 17,
           "attackBonus": 3,
-          "hitPoints": 9,
+          "hp": 9,
           "majorThreshold": 20,
           "severeThreshold": 32,
           "targetBudget": 12
@@ -1217,7 +1217,7 @@
           "sourceId": 4,
           "armorClass": 20,
           "attackBonus": 4,
-          "hitPoints": 11,
+          "hp": 11,
           "majorThreshold": 25,
           "severeThreshold": 45,
           "targetBudget": 16

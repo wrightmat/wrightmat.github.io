@@ -26,14 +26,14 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 1.75,
+    "zoom": 0.7068620078276089,
     "center": {
       "lat": 0,
       "lng": 0
     },
     "pan": {
-      "x": -109,
-      "y": 781
+      "x": 25,
+      "y": 78
     }
   },
   "initialView": {
@@ -78,18 +78,134 @@
       },
       "elements": [
         {
-          "id": "d465d577-6772-45e0-923c-f8c42c316695",
+          "id": "11b47105-1124-4147-b6c2-3f8782c66da5",
           "kind": "marker",
           "refKind": "character",
-          "refId": "octavian-hoff",
-          "label": "Octavian Hoff",
-          "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "refId": "maris-wavedeep",
+          "refAnchor": null,
+          "label": "Maris Wavedeep",
+          "image": "https://www.dndbeyond.com/avatars/54575/480/1581111423-159871601.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
           "position": {
-            "x": 11,
-            "y": -287
+            "x": 581,
+            "y": -257
           },
           "sizeCells": 1,
-          "outlineColor": "#3f59d9"
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
+        },
+        {
+          "id": "4407efa8-0e08-4639-a36a-c929dbce7fc4",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "ghomuth",
+          "refAnchor": null,
+          "label": "Ghomuth",
+          "image": "https://www.dndbeyond.com/avatars/57495/323/1581111423-117384722.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
+          "position": {
+            "x": 731,
+            "y": -257
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
+        },
+        {
+          "id": "11523a57-d9db-4c7c-a8f5-40fc55855ea6",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "cordelia",
+          "refAnchor": null,
+          "label": "Cordelia",
+          "image": "https://www.dndbeyond.com/avatars/55549/900/1581111423-159804558.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
+          "position": {
+            "x": 581,
+            "y": 343
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
+        },
+        {
+          "id": "96fad49d-4c75-4f3e-a2ec-c85e2f4b55e4",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "ira-sly",
+          "refAnchor": null,
+          "label": "Ira Sly",
+          "image": "",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
+          "position": {
+            "x": 731,
+            "y": 343
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
+        },
+        {
+          "id": "e760cb78-427c-4943-aa53-bc787e8123ef",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "lotor-sphinx-cast-iron-chef",
+          "refAnchor": null,
+          "label": "Lotor Sphinx",
+          "image": "https://www.dndbeyond.com/avatars/54251/380/1581111423-159803326.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
+          "position": {
+            "x": 731,
+            "y": 103
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
         }
       ],
       "settings": {
@@ -110,5 +226,5 @@
     "unit": ""
   },
   "createdAt": "2026-08-07T15:25:48.585Z",
-  "updatedAt": "2026-08-07T17:15:47.263Z"
+  "updatedAt": "2026-09-01T03:58:04.199Z"
 }

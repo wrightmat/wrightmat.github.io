@@ -1,3 +1,5 @@
+import { updateTooltipContent } from "./tooltips.js";
+
 function toPrettyJson(data) {
   if (typeof data === "string") {
     return data;
@@ -38,11 +40,8 @@ function formatSize(bytes) {
 function updateCopyButtonSize(copyButton, byteCount) {
   if (!copyButton) return;
   const title = `Copy to clipboard (${formatSize(byteCount)})`;
-  copyButton.setAttribute("data-bs-title", title);
-  copyButton.setAttribute("title", title);
   copyButton.setAttribute("aria-label", title);
-  const instance = window.bootstrap?.Tooltip?.getInstance?.(copyButton);
-  instance?.setContent?.({ ".tooltip-inner": title });
+  updateTooltipContent(copyButton, title);
 }
 
 export function updateJsonPreview(previewElement, copyButton, data) {

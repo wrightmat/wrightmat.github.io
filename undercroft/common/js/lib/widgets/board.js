@@ -228,7 +228,8 @@ export function initBoardWidget(
     // title in sync without needing a full widget re-render — same
     // convention the old Macro board widget's own button used.
     button.dataset.macroRunButton = "";
-    button.title = isEditing?.() ? "Edit in Loom" : "Run macro";
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", isEditing?.() ? "Edit in Loom" : "Run macro");
     const iconEl = el("span", "iconify fs-4");
     iconEl.dataset.icon = card.icon || "tabler:bolt";
     iconEl.setAttribute("aria-hidden", "true");

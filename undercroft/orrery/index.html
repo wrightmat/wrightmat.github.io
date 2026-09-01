@@ -78,12 +78,12 @@
             <div class="d-flex flex-column gap-1 orrery-view-handle" data-view-handle>
               <div class="d-flex align-items-center gap-2 flex-wrap">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Map zoom controls">
-                  <button class="btn btn-outline-secondary" type="button" data-zoom-out>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-out data-bs-toggle="tooltip" data-bs-title="Zoom out">
                     <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
                     <span class="visually-hidden">Zoom out</span>
                   </button>
                   <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
-                  <button class="btn btn-outline-secondary" type="button" data-zoom-in>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-in data-bs-toggle="tooltip" data-bs-title="Zoom in">
                     <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
                     <span class="visually-hidden">Zoom in</span>
                   </button>
@@ -166,7 +166,7 @@
                     <span class="visually-hidden">Dynamic light</span>
                   </button>
                 </span>
-                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-view-toggle aria-expanded="false">
+                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-view-toggle aria-expanded="false" data-bs-toggle="tooltip" data-bs-title="Expand view details">
                   <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
                   <span class="visually-hidden">Expand view details</span>
                 </button>
@@ -239,35 +239,31 @@
                 </div>
                 <span data-base-map-toggle-mount></span>
               </div>
-              <p class="small text-body-secondary mb-0 d-none" data-map-properties-empty-state>Select or create a map to edit its properties.</p>
-              <!-- data-map-properties-wrapper is the "is a real map loaded"
-                   gate (app.js's showMapEmptyState/hideMapEmptyState) — kept
-                   as a SEPARATE outer element from data-base-map-panel
-                   itself (not toggled directly) so it doesn't fight over the
-                   same d-none/hidden state the collapse toggle button
-                   already owns on the inner panel. -->
-              <div data-map-properties-wrapper>
-                <div class="d-flex flex-column gap-3" data-base-map-panel>
-                  <div data-field-mount="map-name"></div>
-                  <div data-field-mount="base-map-type"></div>
+              <!-- No empty-state note — "no map loaded" is represented by
+                   this section starting collapsed (see setBaseMapCollapsed's
+                   own default in app.js) rather than a placeholder line of
+                   text; loading a real map expands it (applyMapSnapshot's
+                   own setPanelFocus(false) call). -->
+              <div class="d-flex flex-column gap-3" data-base-map-panel>
+                <div data-field-mount="map-name"></div>
+                <div data-field-mount="base-map-type"></div>
 
-                  <div class="d-flex flex-column gap-2" data-base-map-settings="tile">
-                    <div data-field-mount="base-map-tile-provider"></div>
-                    <div data-field-mount="base-map-tile-quick-pick"></div>
-                  </div>
-
-                  <div class="d-flex flex-column gap-2" data-base-map-settings="image">
-                    <div data-field-mount="base-map-image-src"></div>
-                    <div data-field-mount="base-map-image-size"></div>
-                  </div>
-
-                  <div class="d-flex flex-column gap-2" data-base-map-settings="canvas">
-                    <div data-field-mount="base-map-canvas-background"></div>
-                  </div>
-
-                  <div data-field-mount="map-measurement"></div>
-                  <div data-field-mount="map-initial-view"></div>
+                <div class="d-flex flex-column gap-2" data-base-map-settings="tile">
+                  <div data-field-mount="base-map-tile-provider"></div>
+                  <div data-field-mount="base-map-tile-quick-pick"></div>
                 </div>
+
+                <div class="d-flex flex-column gap-2" data-base-map-settings="image">
+                  <div data-field-mount="base-map-image-src"></div>
+                  <div data-field-mount="base-map-image-size"></div>
+                </div>
+
+                <div class="d-flex flex-column gap-2" data-base-map-settings="canvas">
+                  <div data-field-mount="base-map-canvas-background"></div>
+                </div>
+
+                <div data-field-mount="map-measurement"></div>
+                <div data-field-mount="map-initial-view"></div>
               </div>
             </section>
 

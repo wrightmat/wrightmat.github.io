@@ -1,6 +1,7 @@
 import { loadHelpTopics } from "./help.js";
 import { expandPane } from "./panes.js";
 import { bindCollapsibleToggle } from "./collapsible.js";
+import { disposeTooltips, refreshTooltips, updateTooltipContent } from "./tooltips.js";
 
 function groupHelpTopicsByCategory(topics) {
   const grouping = new Map();
@@ -107,7 +108,10 @@ export async function initHelpBrowser({
     button.type = "button";
     button.className = "btn btn-link p-0 text-decoration-none flex-shrink-0";
     const pinned = isPinned(topicId);
-    button.setAttribute("aria-label", pinned ? "Unpin topic" : "Pin topic for quick reference");
+    const label = pinned ? "Unpin topic" : "Pin topic for quick reference";
+    button.setAttribute("aria-label", label);
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", label);
     const icon = document.createElement("span");
     icon.className = "iconify";
     icon.dataset.icon = pinned ? "tabler:pinned-filled" : "tabler:pin";
@@ -126,6 +130,10 @@ export async function initHelpBrowser({
   function renderPinned() {
     if (!elements.pinnedWrap || !pinningEnabled) return;
     const pinnedIds = getPinnedIds();
+    // Disposed before the wipe — each pinned topic row's own pin button
+    // carries a real tooltip now, and this reruns on every pin toggle. See
+    // tooltips.js's own BUG CLASS 2.
+    disposeTooltips(elements.pinnedWrap);
     elements.pinnedWrap.innerHTML = "";
     if (!pinnedIds.length) {
       elements.pinnedWrap.classList.add("d-none");
@@ -143,10 +151,14 @@ export async function initHelpBrowser({
     toggle.addEventListener("click", () => {
       pinnedExpanded = !panel.hidden;
     });
+    refreshTooltips(elements.pinnedWrap);
   }
 
   function renderList(topics) {
     if (!elements.list) return;
+    // Disposed before the wipe — same reasoning as renderPinned above; this
+    // reruns on every search keystroke.
+    disposeTooltips(elements.list);
     elements.list.innerHTML = "";
     if (!topics.length) {
       const empty = document.createElement("p");
@@ -170,6 +182,7 @@ export async function initHelpBrowser({
         else expandedCategories.add(category);
       });
     });
+    refreshTooltips(elements.list);
   }
 
   function syncDetailPinButton() {
@@ -177,7 +190,9 @@ export async function initHelpBrowser({
     const pinned = isPinned(activeTopicId);
     const icon = elements.detailPin.querySelector(".iconify");
     if (icon) icon.dataset.icon = pinned ? "tabler:pinned-filled" : "tabler:pin";
-    elements.detailPin.setAttribute("aria-label", pinned ? "Unpin topic" : "Pin topic for quick reference");
+    const label = pinned ? "Unpin topic" : "Pin topic for quick reference";
+    elements.detailPin.setAttribute("aria-label", label);
+    updateTooltipContent(elements.detailPin, label);
   }
 
   function showTopic(topicId) {

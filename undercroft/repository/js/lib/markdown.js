@@ -186,7 +186,8 @@ function applyWikiLinkStyling(container, { onNavigate } = {}) {
     if (isMissing) {
       anchor.classList.add("journal-link-missing");
       anchor.style.color = "var(--bs-danger, #dc3545)";
-      anchor.title = `journal missing: ${value}`;
+      anchor.setAttribute("data-bs-toggle", "tooltip");
+      anchor.setAttribute("data-bs-title", `journal missing: ${value}`);
     } else {
       anchor.classList.add("journal-link");
       anchor.style.color = "var(--bs-link-color, #0d6efd)";
@@ -244,7 +245,8 @@ function buildEncounterChip(creatures, blockIndex, { interactive, onStartEncount
   icon.setAttribute("aria-hidden", "true");
   button.append(icon, label);
   if (interactive) {
-    button.title = "Click to start this encounter";
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", "Click to start this encounter");
     button.addEventListener("click", () => onStartEncounter?.(creatures, blockIndex));
   }
   return button;

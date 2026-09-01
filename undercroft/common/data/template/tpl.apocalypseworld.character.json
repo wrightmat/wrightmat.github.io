@@ -1292,8 +1292,9 @@
             "segmentFormula": "",
             "statesBinding": "",
             "roller": "",
-            "allowAddRemove": true,
-            "itemDivider": false
+            "itemDivider": false,
+            "allowAdd": true,
+            "allowRemove": true
           },
           {
             "type": "repeater",
@@ -1572,8 +1573,9 @@
             "segmentFormula": "",
             "statesBinding": "",
             "roller": "",
-            "allowAddRemove": true,
-            "itemDivider": false
+            "itemDivider": false,
+            "allowAdd": true,
+            "allowRemove": true
           },
           {
             "type": "repeater",
@@ -1961,8 +1963,9 @@
             "segmentFormula": "",
             "statesBinding": "",
             "roller": "",
-            "allowAddRemove": true,
-            "itemDivider": false
+            "itemDivider": false,
+            "allowAdd": true,
+            "allowRemove": true
           }
         ]
       },

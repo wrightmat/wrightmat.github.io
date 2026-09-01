@@ -253,17 +253,26 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   const moveButtons = new Map();
 
   function renderMoveButtons() {
+    // Disposed before removal, not after — see tooltips.js's own BUG CLASS
+    // 2. Scoped to movesRow (not the whole widget container) since this
+    // rebuilds independently of the rest of the widget, on every
+    // activeSystemRolls change.
+    disposeTooltips(movesRow);
     moveButtons.forEach((button) => button.remove());
     moveButtons.clear();
     activeSystemRolls.forEach((move, index) => {
       const button = el("button", "btn btn-outline-primary btn-sm", move.label);
       button.type = "button";
       button.setAttribute("aria-label", `Roll ${move.label}`);
-      if (move.expression) button.title = move.expression;
+      if (move.expression) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-title", move.expression);
+      }
       button.addEventListener("click", () => void rollMove(move));
       moveButtons.set(index, button);
       movesRow.appendChild(button);
     });
+    refreshTooltips(movesRow);
     setElementVisible(movesRow, activeSystemRolls.length > 0, "flex");
   }
 
@@ -306,6 +315,10 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   symbolSection.append(symbolLabel, symbolSteppers, symbolRollButton);
 
   function renderSymbolPool() {
+    // Disposed before the wipe — each stepper's own -/+ button carries a
+    // real tooltip now, and this reruns on every System-resolution refresh.
+    // See tooltips.js's own BUG CLASS 2.
+    disposeTooltips(symbolSteppers);
     symbolSteppers.innerHTML = "";
     activeSymbolDice.forEach((die) => {
       const row = el("div", "d-flex align-items-center gap-2");
@@ -313,11 +326,15 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       const minus = el("button", "btn btn-outline-secondary btn-sm", "−");
       minus.type = "button";
       minus.setAttribute("aria-label", `Remove one ${die.label}`);
+      minus.setAttribute("data-bs-toggle", "tooltip");
+      minus.setAttribute("data-bs-title", `Remove one ${die.label}`);
       const countSpan = el("span", "text-center", String(symbolPoolCounts.get(die.id) || 0));
       countSpan.style.minWidth = "1.5rem";
       const plus = el("button", "btn btn-outline-secondary btn-sm", "+");
       plus.type = "button";
       plus.setAttribute("aria-label", `Add one ${die.label}`);
+      plus.setAttribute("data-bs-toggle", "tooltip");
+      plus.setAttribute("data-bs-title", `Add one ${die.label}`);
       minus.addEventListener("click", () => {
         const next = Math.max(0, (symbolPoolCounts.get(die.id) || 0) - 1);
         symbolPoolCounts.set(die.id, next);
@@ -331,6 +348,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       row.append(minus, countSpan, plus);
       symbolSteppers.appendChild(row);
     });
+    refreshTooltips(symbolSteppers);
   }
 
   // Swaps standardSection <-> symbolSection — NOT via `.hidden`, which

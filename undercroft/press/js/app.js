@@ -63,7 +63,7 @@ import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
 import { resolveBinding, createLookupFn } from "../../common/js/lib/bindings.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
-import { refreshTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
 import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
 import { collectDataFields } from "../../common/js/lib/data-fields.js";
@@ -2166,31 +2166,24 @@ function updateSaveState() {
   const hasTemplate = Boolean(getActiveTemplate());
   const hasChanges = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
   const enabled = hasChanges && !isSaving;
+  // setDisabledTooltip (tooltips.js) owns real `disabled` + the explanation
+  // together — a real `disabled` attribute blocks hover entirely, so a bare
+  // `title` set alongside it (the previous approach here) could never
+  // actually show; same bug class as every other disabled-button-tooltip
+  // fix in the suite, just missed here since it used native `title` instead
+  // of a Bootstrap tooltip.
+  const reason = !hasTemplate
+    ? "Select a template before saving."
+    : isSaving
+      ? "Saving template..."
+      : !hasChanges
+        ? "No changes to save."
+        : "";
   if (saveButton) {
-    saveButton.disabled = !enabled;
+    setDisabledTooltip(saveButton, reason);
     saveButton.setAttribute("aria-disabled", enabled ? "false" : "true");
-    if (!hasTemplate) {
-      saveButton.title = "Select a template before saving.";
-    } else if (isSaving) {
-      saveButton.title = "Saving template...";
-    } else if (!hasChanges) {
-      saveButton.title = "No changes to save.";
-    } else {
-      saveButton.removeAttribute("title");
-    }
   }
-  if (templateSaveButton) {
-    templateSaveButton.disabled = !enabled;
-    if (!hasTemplate) {
-      templateSaveButton.title = "Select a template before saving.";
-    } else if (isSaving) {
-      templateSaveButton.title = "Saving template...";
-    } else if (!hasChanges) {
-      templateSaveButton.title = "No changes to save.";
-    } else {
-      templateSaveButton.removeAttribute("title");
-    }
-  }
+  if (templateSaveButton) setDisabledTooltip(templateSaveButton, reason);
   updateTemplateDeleteState();
 }
 
@@ -2208,17 +2201,15 @@ function updateTemplateDeleteState() {
   const template = getActiveTemplate();
   const allowed = Boolean(template) && templateAllowsDelete(template);
   templateDeleteButton.classList.toggle("d-none", !allowed);
-  templateDeleteButton.disabled = !allowed;
   templateDeleteButton.setAttribute("aria-disabled", allowed ? "false" : "true");
-  if (!template) {
-    templateDeleteButton.title = "Select a template before deleting.";
-  } else if (template.origin === "draft") {
-    templateDeleteButton.title = "Save the template before deleting it.";
-  } else if (!allowed) {
-    templateDeleteButton.title = "You don't have permission to delete this template.";
-  } else {
-    templateDeleteButton.removeAttribute("title");
-  }
+  const reason = !template
+    ? "Select a template before deleting."
+    : template.origin === "draft"
+      ? "Save the template before deleting it."
+      : !allowed
+        ? "You don't have permission to delete this template."
+        : "";
+  setDisabledTooltip(templateDeleteButton, reason);
 }
 
 function markLayoutSaved(snapshot) {
@@ -4080,6 +4071,10 @@ function renderPalette() {
 
 function renderLayoutList() {
   if (!layoutList) return;
+  // Disposed before the wipe — the "Make Unique" badge carries a real
+  // tooltip now, and this reruns on every component add/remove/reorder/
+  // select. See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(layoutList);
   layoutList.innerHTML = "";
   const children = getRootChildren(currentSide);
   if (layoutEmptyState) {
@@ -4119,7 +4114,8 @@ function renderLayoutList() {
       const uniqueBadge = document.createElement("span");
       uniqueBadge.className = "iconify text-warning flex-shrink-0";
       uniqueBadge.dataset.icon = "tabler:fingerprint";
-      uniqueBadge.setAttribute("title", "Has per-card overrides (Make Unique)");
+      uniqueBadge.setAttribute("data-bs-toggle", "tooltip");
+      uniqueBadge.setAttribute("data-bs-title", "Has per-card overrides (Make Unique)");
       uniqueBadge.setAttribute("aria-label", "Has per-card overrides");
       item.append(uniqueBadge);
     }
@@ -4129,6 +4125,7 @@ function renderLayoutList() {
   });
 
   layoutList.appendChild(fragment);
+  refreshTooltips(layoutList);
 }
 
 function getNodeText(node) {
@@ -5847,7 +5844,7 @@ function initPressCollapsibles() {
   applyCardCollapse = gridPropertiesGroup?.setCollapsed || (() => {});
 
   const componentSection = createCollapsibleSection({
-    label: "Component Properties",
+    label: "Inspector",
     helpTopic: "press.inspector",
     collapsed: true,
     className: "d-flex flex-column gap-4",
@@ -7688,7 +7685,13 @@ function initPatternModal() {
 
 async function initPress() {
   initShell();
-  dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.press" });
+  // Unified onto the shared "undercroft" local-storage prefix every other
+  // tool already uses by default (DataManager's own DEFAULT_STORAGE_PREFIX)
+  // — Press's own bucket names already fully disambiguate its content, so a
+  // second, tool-specific prefix layer on top was pure redundant
+  // fragmentation (the whole reason suite-search.js needed its own per-kind
+  // local-prefix lookup just to search across tools).
+  dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
   initPressCollapsibles();
   removeDuplicateSampleDataSections();

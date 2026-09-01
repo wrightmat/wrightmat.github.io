@@ -51,6 +51,7 @@ import { listWondersForSystem } from "../../../../vault/js/lib/tables.js";
 import { attachCodeBlockAutocomplete } from "../../../../repository/js/lib/code-block-autocomplete.js";
 import { attachWikiLinkAutocomplete } from "../../../../repository/js/lib/wiki-link-autocomplete.js";
 import { el, setElementVisible } from "../dom.js";
+import { initTooltip } from "../tooltips.js";
 
 const PACE_MULTIPLIERS = { fast: 1.25, normal: 1, slow: 0.75 };
 const PACE_NOTES = {
@@ -294,7 +295,7 @@ export function initCalculatorWidget(
   meansRow.appendChild(speedDisplay);
   meansRow.appendChild(el("span", "small text-body-secondary", "for"));
   const hoursField = numberField("Hours traveled per day", 8, 1);
-  hoursField.input.title = "Hours traveled per day";
+  initTooltip(hoursField.input, { title: "Hours traveled per day" });
   meansRow.appendChild(hoursField.input);
   meansRow.appendChild(el("span", "small text-body-secondary", "hours"));
 
@@ -338,7 +339,7 @@ export function initCalculatorWidget(
   dailyMacroChanceInput.style.maxWidth = "4.5rem";
   dailyMacroChanceInput.min = "0";
   dailyMacroChanceInput.max = "100";
-  dailyMacroChanceInput.title = "Chance (%) the Daily macro triggers each day";
+  initTooltip(dailyMacroChanceInput, { title: "Chance (%) the Daily macro triggers each day" });
   dailyMacroChanceInput.value = String(config.dailyMacroChance);
   dailyMacroChanceInput.addEventListener("change", () => {
     const value = Math.max(0, Math.min(100, Math.round(Number(dailyMacroChanceInput.value)) || 0));

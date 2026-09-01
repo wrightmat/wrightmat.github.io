@@ -17,7 +17,7 @@ import { bindCollapsibleToggle, setCollapsibleState } from "./collapsible.js";
 import { attachIconAutocomplete, buildIconPreviewElement } from "./icon-picker.js";
 import { bindCopyButton } from "./clipboard.js";
 import { createJsonPreviewRenderer } from "./json-preview.js";
-import { disposeTooltips, refreshTooltips } from "./tooltips.js";
+import { disposeTooltips, refreshTooltips, initTooltip } from "./tooltips.js";
 
 // One tooltipped icon button — the single most-repeated primitive in the
 // suite (162 hand-written instances measured across all 9 tools' index.html
@@ -1030,6 +1030,7 @@ export function createFieldBox({
       button.setAttribute("aria-label", `Reroll ${label}`);
       button.innerHTML = `<span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>`;
       box.appendChild(button);
+      initTooltip(button, { title: `Reroll ${label}` });
     }
   }
 
@@ -1192,6 +1193,7 @@ export function createListRow({ title, description, onRemove, removeLabel = "Rem
       onRemove();
     });
     buttonGroup.appendChild(removeButton);
+    initTooltip(removeButton, { title: removeLabel });
   }
 
   row.append(info, buttonGroup);

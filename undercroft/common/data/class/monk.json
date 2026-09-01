@@ -450,5 +450,24 @@
         16
       ]
     }
-  }
+  },
+  "caster_type": "none",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "dexterity",
+          "minimum": 13
+        }
+      ]
+    },
+    {
+      "any": [
+        {
+          "ability": "wisdom",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }
