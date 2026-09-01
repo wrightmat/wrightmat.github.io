@@ -16,6 +16,8 @@
 // its own binding/formula resolution rather than this module importing
 // bindings.js/a formula engine directly.
 
+import { initTooltip } from "./tooltips.js";
+
 // ---- Pure hex/rgb/hsv conversions (nothing like this existed yet) ----
 
 export function normalizeHex(value) {
@@ -248,10 +250,10 @@ export function createColorPickerField(labelText, {
     button.type = "button";
     button.className = "color-picker-theme-swatch";
     button.style.backgroundColor = `var(${entry.token})`;
-    button.title = `Theme color: ${entry.label}`;
     button.setAttribute("aria-label", `Theme color: ${entry.label}`);
     button.dataset.token = entry.token;
     themeSwatchRow.appendChild(button);
+    initTooltip(button, { title: `Theme color: ${entry.label}` });
     return button;
   });
 
@@ -276,18 +278,19 @@ export function createColorPickerField(labelText, {
   // =if(...)") moves to a hover tooltip rather than the placeholder text —
   // there's only one input now, and the placeholder above already has to
   // cover all four shapes at once.
-  valueInput.title = placeholder;
+  initTooltip(valueInput, { title: placeholder });
   const acceptButton = document.createElement("button");
   acceptButton.type = "button";
   acceptButton.className = "btn btn-primary btn-sm color-picker-accept flex-shrink-0";
   acceptButton.innerHTML = '<span class="iconify" data-icon="tabler:check" aria-hidden="true"></span>';
   acceptButton.setAttribute("aria-label", `Accept ${labelText.toLowerCase()} color`);
+  initTooltip(acceptButton, { title: `Accept ${labelText.toLowerCase()} color` });
   const clearButton = document.createElement("button");
   clearButton.type = "button";
   clearButton.className = "btn btn-outline-secondary btn-sm flex-shrink-0";
   clearButton.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
-  clearButton.title = `Clear ${labelText.toLowerCase()}`;
   clearButton.setAttribute("aria-label", `Clear ${labelText.toLowerCase()}`);
+  initTooltip(clearButton, { title: `Clear ${labelText.toLowerCase()}` });
   valueRow.append(valueInput, acceptButton, clearButton);
 
   popover.append(svSquare, hueSlider, themeSwatchRow, valueRow);

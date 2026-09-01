@@ -19,6 +19,7 @@
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { buildKindToolUrl, kindToolLabel } from "./kind-tool-route.js";
+import { initTooltip } from "./tooltips.js";
 
 // Icon/label per kind — deliberately NOT loaded from common/data/kind/*.json
 // (loadLibraryKinds(), content-fetch.js) to keep this header widget light on
@@ -53,18 +54,12 @@ const KIND_META = {
 };
 
 // Every kind's LOCAL (browser-only, not-yet-synced-or-genuinely-anonymous)
-// content lives in whichever tool's own DataManager first saved it — most
-// share the one default "undercroft" prefix (see data-manager.js's own
-// `initAuthControls` default), but Repository's journal and Workbench's
-// character/template each use their own tool-specific prefix instead. Not a
-// guess: matches exactly what each tool's own `new DataManager({...})` call
-// passes as `storagePrefix` today.
-const LOCAL_PREFIX_BY_KIND = {
-  journal: "undercroft.repository",
-  character: "undercroft.workbench",
-  template: "undercroft.workbench",
-};
-const DEFAULT_LOCAL_PREFIX = "undercroft";
+// content now lives under the one shared "undercroft" DataManager
+// storagePrefix — every tool unified onto it (see data-manager.js's own
+// DEFAULT_STORAGE_PREFIX). Used to need a per-kind prefix lookup here
+// (Repository's journal/Workbench's character/template each had their own
+// tool-specific prefix) purely to work around that fragmentation; not needed
+// anymore now that every tool's local bucket cache lives in the same place.
 
 const MIN_QUERY_LENGTH = 2;
 const SERVER_DEBOUNCE_MS = 250;
@@ -117,20 +112,7 @@ function buildSnippet(text, query, context = 50) {
   return `${prefix}${text.slice(start, end).trim()}${suffix}`;
 }
 
-// One DataManager per distinct local storage prefix, built lazily and
-// reused across searches (cheap — no network I/O in the constructor, see
-// data-manager.js — but no reason to rebuild on every keystroke either).
-function createLocalManagerPool() {
-  const pool = new Map();
-  return (prefix) => {
-    if (!pool.has(prefix)) {
-      pool.set(prefix, new DataManager({ baseUrl: resolveApiBase(), storagePrefix: prefix }));
-    }
-    return pool.get(prefix);
-  };
-}
-
-function searchLocal(query, getLocalManager) {
+function searchLocal(query, localManager) {
   const needle = query.toLowerCase();
   const titleResults = [];
   const bodyResults = [];
@@ -138,10 +120,9 @@ function searchLocal(query, getLocalManager) {
   const matchedEntities = new Map(); // id -> {kind, title}
 
   Object.keys(KIND_META).forEach((kind) => {
-    const prefix = LOCAL_PREFIX_BY_KIND[kind] || DEFAULT_LOCAL_PREFIX;
     let entries;
     try {
-      entries = getLocalManager(prefix).listLocalEntries(kind);
+      entries = localManager.listLocalEntries(kind);
     } catch (error) {
       entries = [];
     }
@@ -261,6 +242,16 @@ function appendHighlighted(el, text, query) {
   el.appendChild(document.createTextNode(text.slice(idx + query.length)));
 }
 
+// The row is a plain <div> (not itself a link) containing two SIBLING
+// interactive children — `.suite-search-result-main` (the real navigating
+// link, icon+title+subtitle+snippet) and `.suite-search-result-popout` (a
+// small "open in a new tab" button on the row's right edge, for when a GM
+// doesn't want their current tab overwritten by clicking a result). Nesting
+// the popout <button> INSIDE an outer <a> would be invalid HTML (interactive
+// content can't contain interactive content) and unreliable for screen
+// readers, hence the sibling structure — .suite-search-result's own CSS
+// still draws one unified hover/active card across both, so visually this
+// still reads as a single row.
 function buildResultRow(entry, currentUsername, query) {
   const meta = KIND_META[entry.kind] || { label: entry.kind, icon: "tabler:file" };
   // A journal body match carries the query along as `?q=` — Repository's
@@ -271,16 +262,20 @@ function buildResultRow(entry, currentUsername, query) {
   // nothing buried in the body to scroll to.
   const extraParams = entry.kind === "journal" && entry.matchType === "body" ? { q: query } : undefined;
   const href = buildKindToolUrl(entry.kind, entry.id, { extraParams });
-  const row = document.createElement(href ? "a" : "div");
+
+  const row = document.createElement("div");
   row.className = "suite-search-result";
   row.setAttribute("role", "option");
-  if (href) row.href = href;
+
+  const main = document.createElement(href ? "a" : "div");
+  main.className = "suite-search-result-main";
+  if (href) main.href = href;
 
   const iconEl = document.createElement("span");
   iconEl.className = "iconify suite-search-result-icon";
   iconEl.dataset.icon = meta.icon;
   iconEl.setAttribute("aria-hidden", "true");
-  row.appendChild(iconEl);
+  main.appendChild(iconEl);
 
   const textWrap = document.createElement("span");
   textWrap.className = "suite-search-result-text";
@@ -316,7 +311,31 @@ function buildResultRow(entry, currentUsername, query) {
     textWrap.appendChild(snippetEl);
   }
 
-  row.appendChild(textWrap);
+  main.appendChild(textWrap);
+  row.appendChild(main);
+
+  // Same icon + window.open(url, "_blank", "noopener,noreferrer") convention
+  // relationship-editor.js's own "Open in X" row action already uses —
+  // doesn't call closeResults()/closeCompact() the way a real navigation
+  // implicitly would (the page never unloads), so the results list stays
+  // open for popping out more than one match in a row.
+  if (href) {
+    const popout = document.createElement("button");
+    popout.type = "button";
+    popout.className = "suite-search-result-popout";
+    popout.setAttribute("aria-label", `Open ${entry.title} in a new tab`);
+    initTooltip(popout, { title: "Open in new tab", placement: "left" });
+    const popoutIcon = document.createElement("span");
+    popoutIcon.className = "iconify";
+    popoutIcon.dataset.icon = "tabler:external-link";
+    popoutIcon.setAttribute("aria-hidden", "true");
+    popout.appendChild(popoutIcon);
+    popout.addEventListener("click", () => {
+      window.open(href, "_blank", "noopener,noreferrer");
+    });
+    row.appendChild(popout);
+  }
+
   return row;
 }
 
@@ -324,7 +343,6 @@ export function initSuiteSearch({ container } = {}) {
   if (!container) return;
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
-  const getLocalManager = createLocalManagerPool();
 
   const wrap = document.createElement("div");
   wrap.className = "suite-search";
@@ -342,6 +360,7 @@ export function initSuiteSearch({ container } = {}) {
   trigger.className = "btn btn-outline-secondary suite-search-trigger undercroft-header-icon-btn";
   trigger.setAttribute("aria-label", "Search Undercroft");
   trigger.setAttribute("aria-expanded", "false");
+  initTooltip(trigger, { title: "Search Undercroft" });
   const triggerIcon = document.createElement("span");
   triggerIcon.className = "iconify fs-5";
   triggerIcon.dataset.icon = "tabler:search";
@@ -448,7 +467,7 @@ export function initSuiteSearch({ container } = {}) {
       return;
     }
     const thisRequest = ++requestId;
-    const localEntries = searchLocal(trimmed, getLocalManager);
+    const localEntries = searchLocal(trimmed, dataManager);
     renderRows(mergeResults(localEntries, [], trimmed), trimmed);
 
     window.clearTimeout(serverDebounceTimer);
@@ -474,7 +493,10 @@ export function initSuiteSearch({ container } = {}) {
     } else if (event.key === "Enter") {
       if (activeIndex >= 0 && rows[activeIndex]) {
         event.preventDefault();
-        rows[activeIndex].click();
+        // Not rows[activeIndex].click() — the row itself is a plain <div>
+        // now (see buildResultRow's own header comment); the real
+        // navigating link is its .suite-search-result-main child.
+        rows[activeIndex].querySelector(".suite-search-result-main")?.click();
       }
     } else if (event.key === "Escape") {
       closeResults();

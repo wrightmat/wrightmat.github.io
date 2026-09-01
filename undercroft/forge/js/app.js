@@ -12,7 +12,7 @@ import {
   createModeToggleGroup,
 } from "../../common/js/lib/ui-components.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
@@ -51,6 +51,12 @@ import { generateCharacterNote } from "./lib/llm-note.js";
 import { buildLocationPressTemplate } from "./lib/press-export.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
+import { findBindingByRole, findBindingsByRole, setAtBinding } from "../../common/js/lib/bindings.js";
+import { loadSystemFields, deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
+import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
+import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
+import { convertLibraryRecord, seedCharacterDefaults } from "../../common/js/lib/library-record-convert.js";
+import { loadArrayFieldValues } from "../../common/js/lib/generator-kit.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import {
@@ -86,6 +92,23 @@ createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-undo-npc": true } },
   { action: "redo", label: "Redo", attrs: { "data-redo-npc": true } },
 ]).forEach((button) => document.querySelector("[data-npc-undo-toolbar-mount]")?.appendChild(button));
+// A genuinely new, cross-tool action, not a 5th slot on the primary
+// Generate/Save/Duplicate/Delete cluster above (that cluster, plus its own
+// Undo/Redo pair, is already at the documented 6-button ceiling — see
+// ui-components.js's own createToolbarButtonGroup header comment) — but
+// also NOT a second row bolted onto that same left-pane toolbar, which
+// still reads as part of the primary action bar regardless of how it's
+// grouped. Lives in its own "NPC Properties" section in the right-pane
+// Inspector instead (mounted below, alongside inspectorSection), collapsed
+// until an NPC is actually generated/selected.
+createToolbarButtonGroup([
+  {
+    icon: "tabler:user-plus",
+    label: "Convert to Character",
+    disabled: true,
+    attrs: { "data-convert-to-character-npc": true },
+  },
+]).forEach((button) => document.querySelector("[data-npc-convert-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-export-location-template-mount]")?.appendChild(
   createIconButton({
     icon: "tabler:printer",
@@ -182,6 +205,21 @@ mountField(
   })
 );
 
+mountField(
+  "convert-character-name",
+  createCompactField({
+    type: "text", id: "forgeConvertCharacterName", label: "Character Name", labelClass: "form-label fw-semibold mb-0", controlClass: "form-control",
+    dataAttr: "data-convert-character-name", required: true,
+  })
+);
+mountField(
+  "convert-character-template",
+  createCompactField({
+    type: "select", id: "forgeConvertCharacterTemplate", label: "Template", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
+    dataAttr: "data-convert-character-template", required: true,
+  })
+);
+
 const systemSelect = document.querySelector("[data-system-select]");
 const settingSelect = document.querySelector("[data-setting-select]");
 const locationSelect = document.querySelector("[data-location-select]");
@@ -236,6 +274,12 @@ const duplicateButton = document.querySelector("[data-duplicate-npc]");
 const deleteButton = document.querySelector("[data-delete-npc]");
 const undoButton = document.querySelector("[data-undo-npc]");
 const redoButton = document.querySelector("[data-redo-npc]");
+const convertToCharacterButton = document.querySelector("[data-convert-to-character-npc]");
+const convertCharacterForm = document.querySelector("[data-convert-to-character-form]");
+const convertCharacterNameInput = document.querySelector("[data-convert-character-name]");
+const convertCharacterTemplateSelect = document.querySelector("[data-convert-character-template]");
+const convertCharacterSubmitButton = document.querySelector("[data-convert-to-character-submit]");
+const convertToCharacterModalEl = document.getElementById("convert-to-character-modal");
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => (currentRecord ? toPressExportShape(currentRecord) : {}),
@@ -249,6 +293,29 @@ const selectionsSection = createCollapsibleSection({
 });
 document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 
+// NPC Properties — currently just the Convert to Character action, but its
+// own named section (not the Inspector's) since it's about the generated
+// NPC itself, not whatever the Inspector below happens to be showing
+// (Location/Species editing). Starts collapsed; expandNpcPropertiesSection
+// (below) opens it whenever a new NPC is generated or selected.
+const npcPropertiesSection = createCollapsibleSection({
+  label: "NPC Properties",
+  collapsed: true,
+  content: document.querySelector("[data-npc-properties-panel]"),
+});
+document.querySelector("[data-npc-properties-mount]")?.appendChild(npcPropertiesSection.section);
+function expandNpcPropertiesSection() {
+  npcPropertiesSection.setCollapsed(false);
+}
+
+const inspectorSection = createCollapsibleSection({
+  label: "Inspector",
+  helpTopic: "forge.inspector",
+  collapsed: false,
+  content: document.querySelector("[data-inspector-panel]"),
+});
+document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
+
 // Adopts each section's existing static `[data-xxx-panel]` markup (its own
 // content stays hand-authored HTML — only the header+chevron wrapper is
 // JS-built) as createCollapsibleSection's content — same pattern Sanctum's
@@ -258,14 +325,6 @@ document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection
 // collapsed. Note keeps its "Generate Note" sibling button in static HTML
 // (a shape createCollapsibleSection would clobber by rebuilding the whole
 // header), so only its toggle button is built and mounted.
-const inspectorSection = createCollapsibleSection({
-  label: "Component Properties",
-  helpTopic: "forge.inspector",
-  collapsed: false,
-  content: document.querySelector("[data-inspector-panel]"),
-});
-document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
-
 document.querySelector("[data-identity-mount]")?.appendChild(
   createCollapsibleSection({
     label: "Identity",
@@ -494,8 +553,15 @@ let ABILITY_KEYS = new Set();
 
 // Every top-level array field the active System defines — refreshed
 // alongside everything else in refreshSystemVocabulary, used to populate
-// the Settings modal's Archetype field picker below.
+// the Settings modal's Archetype field/Attitude field pickers below.
+// archetypeFieldGuess/attitudeFieldGuess are which one guessArchetypeFieldKey/
+// guessAttitudeFieldKey would auto-pick, so each dropdown can pre-select
+// and label it instead of offering a separate "Auto-detect" placeholder
+// option — same "ride along, no second round trip" shape as
+// abilityFieldGuess below.
 let arrayFieldOptions = [];
+let archetypeFieldGuess = "";
+let attitudeFieldGuess = "";
 
 // Every top-level object field the active System defines — refreshed
 // alongside everything else in refreshSystemVocabulary, used to populate
@@ -601,42 +667,24 @@ function setStatsKeysPreference(systemId, keys) {
 }
 
 // Every array field the active System defines, for the Archetype/Attitude
-// field pickers (same shape Crucible's own fieldPreferenceOptions uses for
-// its Combat Scaling/Creature Type field pickers) — "None" is a real,
-// deliberate choice (a System with no archetype table/attitude scale
-// authored yet).
-function fieldPreferenceOptions() {
-  return [{ value: "", label: "None" }, ...arrayFieldOptions.map((field) => ({ value: field.key, label: field.label || field.key }))];
-}
-
-// The conventional field-name fallback loadArchetypeTable applies on its
-// own when given no explicit preference — duplicated here only so the
-// Settings modal can show what's actually in effect (e.g. "NPC Types")
-// instead of misleadingly showing "None" while generation quietly uses
-// that field anyway.
-const CONVENTIONAL_ARCHETYPE_FIELD = "npcTypes";
-
-// Display-only: the value the Settings modal should show as "currently in
-// effect" — the explicit stored choice if there is one, else the
-// conventional default key IF the active System actually defines a field
-// with that name, else genuinely "None". Kept separate from
-// getArchetypeFieldPreference (used for the real loadArchetypeTable call in
-// refreshSystemVocabulary), which stays a plain "raw preference or ''" —
-// the loader already applies this same conventional default itself when
-// given '', so resolving it again here is purely about what the dropdown
-// displays, not a second source of truth for generation.
-function resolveEffectiveArchetypeField(rawValue) {
-  if (rawValue) return rawValue;
-  return arrayFieldOptions.some((field) => field.key === CONVENTIONAL_ARCHETYPE_FIELD) ? CONVENTIONAL_ARCHETYPE_FIELD : "";
-}
-
-// Same reasoning as CONVENTIONAL_ARCHETYPE_FIELD/resolveEffectiveArchetypeField
-// above, for the Attitude field preference.
-const CONVENTIONAL_ATTITUDE_FIELD = "npcAttitudes";
-
-function resolveEffectiveAttitudeField(rawValue) {
-  if (rawValue) return rawValue;
-  return arrayFieldOptions.some((field) => field.key === CONVENTIONAL_ATTITUDE_FIELD) ? CONVENTIONAL_ATTITUDE_FIELD : "";
+// field pickers — "None" is a real, deliberate choice (a System with no
+// archetype table/attitude scale authored yet). `guessedKey`/`rawPreference`
+// parameterize which of the two settings this call is for, so each gets its
+// own "(auto-detected)" labeling on whichever option guessArchetypeFieldKey/
+// guessAttitudeFieldKey picked — same convention as abilityField below, and
+// as Crucible's own fieldPreferenceOptions (crucible/js/app.js) for its
+// Combat Scaling/Creature Type field pickers.
+function fieldPreferenceOptions(guessedKey, rawPreference) {
+  return [
+    { value: "", label: "None" },
+    ...arrayFieldOptions.map((field) => ({
+      value: field.key,
+      label:
+        field.key === guessedKey && !rawPreference
+          ? `${field.label || field.key} (auto-detected)`
+          : field.label || field.key,
+    })),
+  ];
 }
 
 // Every key (besides `name`) present on any archetype entry, nice-labeled —
@@ -694,7 +742,7 @@ async function refreshSystemVocabulary(systemId) {
   // below needs its already-resolved minimum/maximum data, so it can't join
   // the same Promise.all as everything else that doesn't depend on it.
   const abilityFieldDefs = await loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId));
-  const [alignmentFaces, fieldOptions, objFieldOptions, archetypeTable, npcAttitudes, systemFeatures, independentStatRanges, skillGenerationConfig] =
+  const [alignmentFaces, fieldOptions, objFieldOptions, archetypeTable, npcAttitudes, systemFeatures, independentStatRanges, skillGenerationConfig, systemFields] =
     await Promise.all([
       loadAlignmentFaces(dataManager, systemId),
       listArrayFieldOptions(dataManager, systemId),
@@ -704,10 +752,13 @@ async function refreshSystemVocabulary(systemId) {
       listFeaturesForSystem(dataManager, systemId),
       loadIndependentStatRanges(dataManager, systemId, abilityFieldDefs),
       loadSkillGenerationConfig(dataManager, systemId),
+      loadSystemFields(dataManager, systemId),
     ]);
   features = systemFeatures;
   populateAddFeatureSelect();
-  arrayFieldOptions = fieldOptions;
+  arrayFieldOptions = fieldOptions.options;
+  archetypeFieldGuess = fieldOptions.guessedArchetypeKey;
+  attitudeFieldGuess = fieldOptions.guessedAttitudeKey;
   objectFieldOptions = objFieldOptions.options;
   abilityFieldGuess = objFieldOptions.guessedKey;
   ABILITY_FIELD_DEFS = abilityFieldDefs;
@@ -720,9 +771,18 @@ async function refreshSystemVocabulary(systemId) {
     tables.npcAttitudes = npcAttitudes;
     // Threaded through to getStatsForArchetype (lib/tables.js, via
     // generator.js's own resolveStats) so it can tell an ability score
-    // apart from any other kind of stat and bundle it into stats.abilities
-    // — the shape Crucible's monsters/Characters both already use.
+    // apart from any other kind of stat and bundle it into stats.<key> — the
+    // System's own resolved ability-block field key (e.g. "abilities" for
+    // D&D, "traits" for Daggerheart), never a hardcoded literal.
     tables.abilityKeys = ABILITY_KEYS;
+    tables.abilityFieldKey = getAbilityFieldPreference(systemId) || abilityFieldGuess || "abilities";
+    // The System's own live-play-state bindings (HP/AC/Initiative/...) —
+    // getStatsForArchetype writes each one through setAtBinding against
+    // whatever path THIS System's own combatBindings declare, never a
+    // hardcoded "stats.hitPoints"-shaped assumption. null for a System with
+    // no Role-bound field at all (e.g. Blades in the Dark) — every
+    // combatBindings-driven write below is then simply skipped.
+    tables.combatBindings = deriveCombatBindings(systemFields);
     // Both optional, System-defined fallbacks resolveStats/generateNpc
     // (lib/generator.js) use for a System whose stats/skills genuinely
     // don't come from the Archetype table entry (see each helper's own
@@ -1009,6 +1069,19 @@ function refreshActionButtons() {
   saveButton.disabled = !currentRecord || !dirtyGate.isDirty();
   duplicateButton.disabled = !currentRecord;
   deleteButton.disabled = !currentRecord || !dirtyGate.hasSaved() || !npcAllowsDelete(currentNpcId);
+  // Not saved-gated like Delete — a freshly generated, not-yet-saved NPC can
+  // convert too (mirrors Duplicate's own gate). Does need a System to filter
+  // the Template picker against.
+  if (convertToCharacterButton) {
+    setDisabledTooltip(
+      convertToCharacterButton,
+      !currentRecord
+        ? "Generate or select an NPC first."
+        : !Array.isArray(currentRecord.systemIds) || !currentRecord.systemIds.length
+          ? "Assign a System to this NPC before converting."
+          : ""
+    );
+  }
 }
 
 function renderNpc(record) {
@@ -1168,6 +1241,10 @@ function findFeatureById(id) {
 
 function renderFeatureList(record) {
   if (!featureList) return;
+  // Disposed before the wipe — each row's own Remove button carries a real
+  // tooltip now, and this reruns on every feature add/remove. See
+  // tooltips.js's own BUG CLASS 2.
+  disposeTooltips(featureList);
   featureList.innerHTML = "";
   (record.featureIds || []).forEach((featureId) => {
     const feature = findFeatureById(featureId);
@@ -1192,6 +1269,8 @@ function renderFeatureList(record) {
     removeButton.type = "button";
     removeButton.className = "btn btn-outline-danger btn-sm flex-shrink-0";
     removeButton.setAttribute("aria-label", "Remove feature");
+    removeButton.setAttribute("data-bs-toggle", "tooltip");
+    removeButton.setAttribute("data-bs-title", "Remove feature");
     removeButton.innerHTML = '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>';
     removeButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1208,6 +1287,7 @@ function renderFeatureList(record) {
     empty.textContent = "No Features attached.";
     featureList.appendChild(empty);
   }
+  refreshTooltips(featureList);
 }
 
 function populateAddFeatureSelect() {
@@ -1925,6 +2005,7 @@ generateButton.addEventListener("click", () => {
     if (npcSelect) npcSelect.value = "";
     updateGenerationFieldsVisibility();
     recordHistory("generate NPC", () => renderNpc(record));
+    expandNpcPropertiesSection();
   } catch (error) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   }
@@ -2105,8 +2186,13 @@ let noteMode = "view";
 
 function renderNotePreview() {
   if (!notePreview) return;
+  // Disposed before the wipe — a `` `date:...` `` reference or a missing
+  // wiki-link inside the note both carry real tooltips now, and this
+  // reruns on every edit. See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(notePreview);
   notePreview.innerHTML = "";
   notePreview.appendChild(renderMarkdown(currentRecord?.note || ""));
+  refreshTooltips(notePreview);
 }
 
 function applyNoteMode(mode) {
@@ -2213,11 +2299,129 @@ duplicateButton.addEventListener("click", () => {
   currentNpcId = null;
   if (npcSelect) npcSelect.value = "";
   renderNpc(duplicate);
+  expandNpcPropertiesSection();
   status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
 });
 
 undoButton.addEventListener("click", () => performUndo());
 redoButton.addEventListener("click", () => performRedo());
+
+// --- Convert to Character ---------------------------------------------
+// Mirrors workbench-character-view.js's own generateCharacterId shape
+// exactly, so a converted NPC's new id looks identical to one Workbench
+// itself would have generated.
+function generateCharacterId(name) {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return `cha_${crypto.randomUUID()}`;
+  }
+  const slug = String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `cha_${slug || "character"}_${rand}`;
+}
+
+let convertToCharacterModalInstance = null;
+
+// Every real Template whose own `schema` matches one of this NPC's
+// `systemIds` — same filter workbench-character-view.js#
+// refreshImportTemplateOptions already applies for DDB imports, just
+// against fetchKindEntriesWithIds instead of Workbench's own live
+// templateCatalog (Forge has no such cache of its own).
+async function loadConvertTemplateOptions(systemIds) {
+  const entries = await fetchKindEntriesWithIds(dataManager, "template").catch(() => []);
+  return entries
+    .filter(({ entity }) => entity?.schema && systemIds.includes(entity.schema))
+    .map(({ id, entity }) => ({ id, title: entity.title || id, schema: entity.schema }))
+    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: "base" }));
+}
+
+function updateConvertSubmitReadiness() {
+  if (!convertCharacterSubmitButton) return;
+  const hasTemplate = Boolean(convertCharacterTemplateSelect?.value);
+  const hasName = Boolean(convertCharacterNameInput?.value.trim());
+  convertCharacterSubmitButton.disabled = !hasTemplate || !hasName;
+}
+
+async function openConvertToCharacterModal() {
+  if (!currentRecord || !Array.isArray(currentRecord.systemIds) || !currentRecord.systemIds.length) return;
+  if (convertCharacterForm) convertCharacterForm.classList.remove("was-validated");
+  if (convertCharacterNameInput) convertCharacterNameInput.value = currentRecord.name || "";
+  if (convertCharacterTemplateSelect) {
+    convertCharacterTemplateSelect.innerHTML = "";
+    const loading = document.createElement("option");
+    loading.value = "";
+    loading.textContent = "Loading…";
+    convertCharacterTemplateSelect.appendChild(loading);
+  }
+  updateConvertSubmitReadiness();
+  const bsModal =
+    convertToCharacterModalEl && window.bootstrap && typeof window.bootstrap.Modal === "function"
+      ? window.bootstrap.Modal.getOrCreateInstance(convertToCharacterModalEl)
+      : null;
+  convertToCharacterModalInstance = bsModal;
+  bsModal?.show();
+
+  const options = await loadConvertTemplateOptions(currentRecord.systemIds);
+  if (!convertCharacterTemplateSelect) return;
+  convertCharacterTemplateSelect.innerHTML = "";
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = options.length ? "Select a template…" : "No templates available for this System";
+  convertCharacterTemplateSelect.appendChild(blank);
+  options.forEach((option) => {
+    const opt = document.createElement("option");
+    opt.value = option.id;
+    opt.dataset.schema = option.schema;
+    opt.textContent = option.title;
+    convertCharacterTemplateSelect.appendChild(opt);
+  });
+  updateConvertSubmitReadiness();
+}
+
+convertToCharacterButton?.addEventListener("click", () => void openConvertToCharacterModal());
+convertCharacterNameInput?.addEventListener("input", updateConvertSubmitReadiness);
+convertCharacterTemplateSelect?.addEventListener("change", updateConvertSubmitReadiness);
+
+convertCharacterForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!currentRecord) return;
+  const name = convertCharacterNameInput?.value.trim() || "";
+  const templateId = convertCharacterTemplateSelect?.value || "";
+  const selectedOption = convertCharacterTemplateSelect?.selectedOptions?.[0];
+  const templateSchema = selectedOption?.dataset.schema || "";
+  if (!name || !templateId) {
+    convertCharacterForm.classList.add("was-validated");
+    return;
+  }
+  const id = generateCharacterId(name);
+  const converted = convertLibraryRecord(currentRecord, {
+    fromKind: "npc",
+    toKind: "character",
+    systemId: templateSchema,
+    templateId,
+    name,
+  });
+  const [abilityDefs, skillValues] = await Promise.all([
+    loadAbilityFieldDefs(dataManager, templateSchema),
+    loadArrayFieldValues(dataManager, templateSchema, "skills"),
+  ]);
+  const payload = seedCharacterDefaults(converted, { abilityDefs, skillDefs: skillValues });
+  try {
+    await dataManager.save("characters", id, payload);
+  } catch (error) {
+    status?.show(error?.message || "Unable to create the character.", { type: "error" });
+    return;
+  }
+  // The NPC itself was never saved this session (only converted-and-saved
+  // as a Character instead) — without this, beforeunload's own dirty check
+  // below still sees the NPC as unsaved and throws up a "leave unsaved
+  // changes?" browser prompt on the very next line's navigation, even
+  // though nothing is actually about to be lost.
+  dirtyGate.markClean();
+  convertToCharacterModalInstance?.hide();
+  status?.show(`Converted to ${name}.`, { type: "success", timeout: 2000 });
+  const href = buildKindToolUrl("character", id);
+  if (href) window.location.href = href;
+});
 
 // Proactive "insufficient reference data" state for Generate NPC — a
 // Setting is the one hard requirement (generateNpc degrades gracefully to
@@ -2325,6 +2529,7 @@ npcSelect?.addEventListener("change", async () => {
     // on every load.
     renderNpc({ ...result.payload, id });
     dirtyGate.markClean(toPressExportShape(currentRecord));
+    expandNpcPropertiesSection();
     refreshActionButtons();
   } catch (error) {
     status?.show(`Unable to load NPC: ${error.message}`, { type: "error", timeout: 4000 });
@@ -2384,6 +2589,7 @@ async function applyDeepLinkParams() {
     updateGenerationFieldsVisibility();
     renderNpc({ ...payload, id: npcId });
     dirtyGate.markClean(toPressExportShape(currentRecord));
+    expandNpcPropertiesSection();
     // Phase 2 — deliberately not awaited here; runs after this function has
     // already returned `true`.
     void (async () => {
@@ -2459,8 +2665,8 @@ async function init() {
           key: "archetypeField",
           type: "select",
           label: "Archetype field",
-          options: fieldPreferenceOptions(),
-          getValue: () => resolveEffectiveArchetypeField(getArchetypeFieldPreference(systemId)),
+          options: fieldPreferenceOptions(archetypeFieldGuess, getArchetypeFieldPreference(systemId)),
+          getValue: () => getArchetypeFieldPreference(systemId) || archetypeFieldGuess,
           setValue: (value) => {
             setArchetypeFieldPreference(systemId, value);
             refreshSystemVocabulary(systemId);
@@ -2470,8 +2676,8 @@ async function init() {
           key: "attitudeField",
           type: "select",
           label: "Attitude field",
-          options: fieldPreferenceOptions(),
-          getValue: () => resolveEffectiveAttitudeField(getAttitudeFieldPreference(systemId)),
+          options: fieldPreferenceOptions(attitudeFieldGuess, getAttitudeFieldPreference(systemId)),
+          getValue: () => getAttitudeFieldPreference(systemId) || attitudeFieldGuess,
           setValue: (value) => {
             setAttitudeFieldPreference(systemId, value);
             refreshSystemVocabulary(systemId);

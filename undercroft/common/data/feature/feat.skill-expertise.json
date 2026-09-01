@@ -11,6 +11,14 @@
     "text": "You gain Expertise in two of your skill proficiencies of your choice."
   },
   "budgetCost": 0,
+  "grants": [
+    {
+      "type": "skillExpertise",
+      "desc": "Choose 2 of your own current skill proficiencies to gain Expertise in.",
+      "choose": 2,
+      "from": { "source": "proficientSkills" }
+    }
+  ],
   "tags": {
     "behaviors": [],
     "recipeSlots": [],

@@ -6,7 +6,7 @@
     "sys.dnd5e2014"
   ],
   "primary_ability": null,
-  "hit_die": null,
+  "hit_die": 8,
   "proficiency_choices": [],
   "proficiencies": [],
   "saving_throws": [],
@@ -203,5 +203,16 @@
         16
       ]
     }
-  }
+  },
+  "caster_type": "half",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "intelligence",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }

@@ -296,7 +296,8 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   countInput.className = "form-control form-control-sm";
   countInput.style.width = "3.5rem";
   countInput.setAttribute("aria-label", "Number of cards to draw");
-  countInput.title = "Cards to draw";
+  countInput.setAttribute("data-bs-toggle", "tooltip");
+  countInput.setAttribute("data-bs-title", "Cards to draw");
 
   const drawButton = el("button", "btn btn-outline-primary btn-sm", "Draw");
   drawButton.type = "button";

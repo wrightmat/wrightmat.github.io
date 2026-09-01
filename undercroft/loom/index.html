@@ -127,6 +127,8 @@
                 type="button"
                 data-recent-saves-refresh
                 aria-label="Refresh recent saves"
+                data-bs-toggle="tooltip"
+                data-bs-title="Refresh recent saves"
               >
                 <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
                 <span class="visually-hidden">Refresh</span>
@@ -215,7 +217,7 @@
                                input, so it reads as a distinct alternate-input-source affordance
                                rather than crowding the Fetch button on the right. -->
                           <input class="d-none" type="file" id="loomSourceBulkFolder" data-source-bulk-folder accept=".md" multiple webkitdirectory />
-                          <button class="btn btn-outline-secondary d-none" type="button" data-source-bulk-folder-button title="Choose a folder of Markdown files">
+                          <button class="btn btn-outline-secondary d-none" type="button" data-source-bulk-folder-button data-bs-toggle="tooltip" data-bs-title="Choose a folder of Markdown files">
                             <span class="iconify" data-icon="tabler:folder" aria-hidden="true"></span>
                           </button>
                           <input class="form-control" type="text" id="loomSourceValue" data-source-value placeholder="" />
@@ -325,6 +327,13 @@
                     <div class="d-flex flex-column gap-1" data-library-template-section hidden>
                       <div data-field-mount="library-template-select"></div>
                     </div>
+                    <!-- Informational only, never blocking — see
+                         updateLibraryContentNudge in app.js. Shown when the
+                         selected Feature record looks player-facing but has
+                         no `grants` configured for the Character Builder
+                         engine yet; a nudge to author it, not a validation
+                         error. -->
+                    <div class="alert alert-info py-2 px-3 mb-0 small d-none" data-library-content-nudge role="status"></div>
                     <div class="d-flex flex-column gap-1">
                       <div data-field-mount="library-json"></div>
                       <div class="invalid-feedback d-block mt-0 d-none" data-library-json-error></div>
@@ -651,7 +660,8 @@
                   class="btn btn-outline-secondary btn-sm align-self-start d-none"
                   type="button"
                   data-loom-library-table-rename
-                  title="Admin only — renames this record's own id and repairs every reference to it elsewhere"
+                  data-bs-toggle="tooltip"
+                  data-bs-title="Admin only — renames this record's own id and repairs every reference to it elsewhere"
                 >
                   Rename
                 </button>

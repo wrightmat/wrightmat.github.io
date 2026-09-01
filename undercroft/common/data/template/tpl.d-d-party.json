@@ -1,12 +1,14 @@
 {
-  "title": "D&D Party",
+  "title": "D&D 5.5E Party",
   "version": "0.1",
   "schema": "sys.dnd5e",
   "description": "",
   "type": "sheet",
   "baseFontFamily": "",
   "defaults": {
-    "fontColor": "#ffffff"
+    "fontColor": "#ffffff",
+    "fontColorBinding": "",
+    "fontColorFormula": ""
   },
   "backgroundColor": "",
   "backgroundColorBinding": "",
@@ -161,6 +163,7 @@
             "readOnly": false,
             "collapsible": false,
             "text": "Name",
+            "richText": false,
             "sourceBinding": "",
             "segmentBinding": "",
             "segmentFormula": "",
@@ -213,6 +216,7 @@
             "readOnly": false,
             "collapsible": false,
             "text": "Qty",
+            "richText": false,
             "sourceBinding": "",
             "segmentBinding": "",
             "segmentFormula": "",
@@ -321,6 +325,7 @@
             "readOnly": false,
             "collapsible": false,
             "text": "Notes",
+            "richText": false,
             "sourceBinding": "",
             "segmentBinding": "",
             "segmentFormula": "",
@@ -395,12 +400,14 @@
       "orientation": "vertical",
       "gap": 16,
       "fill": false,
+      "itemDivider": false,
       "sourceBinding": "",
       "segmentBinding": "",
       "segmentFormula": "",
       "statesBinding": "",
       "roller": "",
-      "allowAddRemove": true
+      "allowAdd": true,
+      "allowRemove": true
     }
   ]
 }

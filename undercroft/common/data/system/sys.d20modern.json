@@ -1,0 +1,1210 @@
+{
+  "title": "d20 Modern",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Character Name",
+      "required": true
+    },
+    {
+      "type": "string",
+      "key": "player",
+      "label": "Player Name"
+    },
+    {
+      "type": "array",
+      "key": "occupations",
+      "label": "Starting Occupation",
+      "values": [
+        {
+          "name": "Academic",
+          "description": "Librarians, archaeologists, and scholars — a life spent in research and study."
+        },
+        {
+          "name": "Adventurer",
+          "description": "Professional daredevils, big-game hunters, and treasure seekers who live for the next expedition."
+        },
+        {
+          "name": "Athlete",
+          "description": "A professional or amateur competitor whose training has honed body and reflexes alike."
+        },
+        {
+          "name": "Blue Collar",
+          "description": "Tradespeople and laborers — mechanics, electricians, construction workers — who know how things actually get built and fixed."
+        },
+        {
+          "name": "Celebrity",
+          "description": "Someone famous, for better or worse — an actor, musician, or public figure whose name opens doors."
+        },
+        {
+          "name": "Creative",
+          "description": "Artists, writers, and performers who make a living from imagination."
+        },
+        {
+          "name": "Criminal",
+          "description": "Someone who's lived on the wrong side of the law — a thief, a con artist, or worse."
+        },
+        {
+          "name": "Dilettante",
+          "description": "Independently wealthy, with no need to work — free to pursue whatever catches their interest."
+        },
+        {
+          "name": "Doctor",
+          "description": "A physician, surgeon, or psychiatrist trained to heal the human body and mind."
+        },
+        {
+          "name": "Emergency Services",
+          "description": "Firefighters, paramedics, and first responders trained to run toward danger, not away from it."
+        },
+        {
+          "name": "Entrepreneur",
+          "description": "A business owner who built something from nothing, and knows how to make a deal."
+        },
+        {
+          "name": "Investigative",
+          "description": "Private investigators and journalists who dig for the truth others would rather stayed buried."
+        },
+        {
+          "name": "Law Enforcement",
+          "description": "Police officers and detectives sworn to uphold the law."
+        },
+        {
+          "name": "Military",
+          "description": "Trained soldiers, veterans of a service branch, disciplined in combat and command."
+        },
+        {
+          "name": "Religious",
+          "description": "Clergy and the devout, whose calling shapes how they see the world."
+        },
+        {
+          "name": "Rural",
+          "description": "Farmers, ranchers, and small-town folk with practical, hands-on know-how."
+        },
+        {
+          "name": "Student",
+          "description": "Still in school — high school, college, or graduate study — with a major field in mind."
+        },
+        {
+          "name": "Technician",
+          "description": "Engineers, programmers, and IT professionals fluent in the machinery of the modern world."
+        },
+        {
+          "name": "White Collar",
+          "description": "Office professionals — accountants, lawyers, managers — who navigate institutions for a living."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Basic Class",
+      "values": [
+        {
+          "name": "Strong Hero",
+          "description": "Trained in athletic endeavors and raw physical power — excels at melee combat and feats of Strength."
+        },
+        {
+          "name": "Fast Hero",
+          "description": "Trained in agility, hand-eye coordination, and reflexes — excels at ranged combat and getting out of the way."
+        },
+        {
+          "name": "Tough Hero",
+          "description": "Improved physical fitness, health, and stamina — built to take a hit and keep standing."
+        },
+        {
+          "name": "Smart Hero",
+          "description": "Improved reasoning and applied knowledge — research, technology, and outthinking the opposition."
+        },
+        {
+          "name": "Dedicated Hero",
+          "description": "A devotion to a cause, an ideal, or a higher purpose — investigative, empathic, healing, and spiritual talents."
+        },
+        {
+          "name": "Charismatic Hero",
+          "description": "Training in winning friends and influencing people — a leader, a celebrity, a con artist, or a flirt."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "advancedClasses",
+      "label": "Advanced Class",
+      "values": [
+        {
+          "name": "Soldier",
+          "description": "A trained military combatant, disciplined in weapons, tactics, and teamwork."
+        },
+        {
+          "name": "Martial Artist",
+          "description": "A master of unarmed and melee combat, striking with speed and precision."
+        },
+        {
+          "name": "Gunslinger",
+          "description": "A firearms specialist whose speed and accuracy with a gun border on legend."
+        },
+        {
+          "name": "Daredevil",
+          "description": "A death-defying stunt performer who pushes body and luck past their limits."
+        },
+        {
+          "name": "Bodyguard",
+          "description": "A protector, trained to keep someone else alive at any cost."
+        },
+        {
+          "name": "Field Scientist",
+          "description": "A researcher who applies hard science under real-world pressure."
+        },
+        {
+          "name": "Techie",
+          "description": "A builder and hacker who can jury-rig, repair, or improve almost any piece of technology."
+        },
+        {
+          "name": "Field Medic",
+          "description": "A combat medic, trained to keep people alive when the nearest hospital is nowhere close."
+        },
+        {
+          "name": "Investigator",
+          "description": "A detective who reads a scene, a suspect, and a lie better than anyone else in the room."
+        },
+        {
+          "name": "Negotiator",
+          "description": "A master of leverage, persuasion, and the art of getting what they want from people."
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Character Level",
+      "minimum": 1,
+      "maximum": 20
+    },
+    {
+      "type": "array",
+      "key": "allegiances",
+      "label": "Allegiances",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Allegiance"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Ability Scores",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.strength",
+          "label": "Strength",
+          "shortName": "STR",
+          "color": "#e74c3c",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.dexterity",
+          "label": "Dexterity",
+          "shortName": "DEX",
+          "color": "#f1c40f",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.constitution",
+          "label": "Constitution",
+          "shortName": "CON",
+          "color": "#e67e22",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.intelligence",
+          "label": "Intelligence",
+          "shortName": "INT",
+          "color": "#3498db",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.wisdom",
+          "label": "Wisdom",
+          "shortName": "WIS",
+          "color": "#2ecc71",
+          "minimum": 1,
+          "maximum": 30
+        },
+        {
+          "type": "number",
+          "key": "abilities.charisma",
+          "label": "Charisma",
+          "shortName": "CHA",
+          "color": "#9b59b6",
+          "minimum": 1,
+          "maximum": 30
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "saves",
+      "label": "Saving Throws",
+      "children": [
+        {
+          "type": "number",
+          "key": "saves.fortitude",
+          "label": "Fortitude",
+          "shortName": "Fort"
+        },
+        {
+          "type": "number",
+          "key": "saves.reflex",
+          "label": "Reflex",
+          "shortName": "Ref"
+        },
+        {
+          "type": "number",
+          "key": "saves.will",
+          "label": "Will",
+          "shortName": "Will"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "skills",
+      "label": "Skills",
+      "children": [
+        {
+          "type": "number",
+          "key": "skills.balance",
+          "label": "Balance",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.bluff",
+          "label": "Bluff",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.climb",
+          "label": "Climb",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.computeruse",
+          "label": "Computer Use",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.concentration",
+          "label": "Concentration",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.craft",
+          "label": "Craft",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.decipherscript",
+          "label": "Decipher Script",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.demolitions",
+          "label": "Demolitions",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.diplomacy",
+          "label": "Diplomacy",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.disabledevice",
+          "label": "Disable Device",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.disguise",
+          "label": "Disguise",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.drive",
+          "label": "Drive",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.escapeartist",
+          "label": "Escape Artist",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.forgery",
+          "label": "Forgery",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.gamble",
+          "label": "Gamble",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.gatherinformation",
+          "label": "Gather Information",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.handleanimal",
+          "label": "Handle Animal",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.hide",
+          "label": "Hide",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.intimidate",
+          "label": "Intimidate",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.investigate",
+          "label": "Investigate",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.jump",
+          "label": "Jump",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.knowledge",
+          "label": "Knowledge",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.listen",
+          "label": "Listen",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.movesilently",
+          "label": "Move Silently",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.navigate",
+          "label": "Navigate",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.perform",
+          "label": "Perform",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.pilot",
+          "label": "Pilot",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.profession",
+          "label": "Profession",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.readwritelanguage",
+          "label": "Read/Write Language",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.repair",
+          "label": "Repair",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.research",
+          "label": "Research",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.ride",
+          "label": "Ride",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.search",
+          "label": "Search",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.sensemotive",
+          "label": "Sense Motive",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.sleightofhand",
+          "label": "Sleight of Hand",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.speaklanguage",
+          "label": "Speak Language",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.spot",
+          "label": "Spot",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.survival",
+          "label": "Survival",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.swim",
+          "label": "Swim",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.treatinjury",
+          "label": "Treat Injury",
+          "minimum": 0,
+          "maximum": 40
+        },
+        {
+          "type": "number",
+          "key": "skills.tumble",
+          "label": "Tumble",
+          "minimum": 0,
+          "maximum": 40
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "baseAttackBonus",
+      "label": "Base Attack Bonus",
+      "minimum": 0,
+      "maximum": 20
+    },
+    {
+      "type": "number",
+      "key": "grapple",
+      "label": "Grapple Check Bonus"
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Hit Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.nonlethal",
+          "label": "Nonlethal Damage",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "defense",
+      "label": "Defense",
+      "children": [
+        {
+          "type": "number",
+          "key": "defense.normal",
+          "label": "Defense",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "defense.touch",
+          "label": "Touch",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "defense.flatFooted",
+          "label": "Flat-Footed",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "initiative",
+      "label": "Initiative"
+    },
+    {
+      "type": "number",
+      "key": "speed",
+      "label": "Speed (ft.)",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "reputation",
+      "label": "Reputation Bonus"
+    },
+    {
+      "type": "number",
+      "key": "wealth",
+      "label": "Wealth Bonus"
+    },
+    {
+      "type": "object",
+      "key": "actionPoints",
+      "label": "Action Points",
+      "children": [
+        {
+          "type": "number",
+          "key": "actionPoints.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "actionPoints.max",
+          "label": "Max",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "sizes",
+      "label": "Size",
+      "values": [
+        {
+          "name": "Fine",
+          "modifier": 8
+        },
+        {
+          "name": "Diminutive",
+          "modifier": 4
+        },
+        {
+          "name": "Tiny",
+          "modifier": 2
+        },
+        {
+          "name": "Small",
+          "modifier": 1
+        },
+        {
+          "name": "Medium",
+          "modifier": 0
+        },
+        {
+          "name": "Large",
+          "modifier": -1
+        },
+        {
+          "name": "Huge",
+          "modifier": -2
+        },
+        {
+          "name": "Gargantuan",
+          "modifier": -4
+        },
+        {
+          "name": "Colossal",
+          "modifier": -8
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "languages",
+      "label": "Languages",
+      "values": [
+        {
+          "name": "English"
+        },
+        {
+          "name": "Spanish"
+        },
+        {
+          "name": "French"
+        },
+        {
+          "name": "German"
+        },
+        {
+          "name": "Italian"
+        },
+        {
+          "name": "Portuguese"
+        },
+        {
+          "name": "Russian"
+        },
+        {
+          "name": "Mandarin"
+        },
+        {
+          "name": "Japanese"
+        },
+        {
+          "name": "Korean"
+        },
+        {
+          "name": "Arabic"
+        },
+        {
+          "name": "Hindi"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "feats",
+      "label": "Feats",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Feat"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "talents",
+      "label": "Talents",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Talent"
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "weight",
+          "label": "Weight (lb)",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "weaponCategories",
+      "label": "Weapon Categories",
+      "values": [
+        {
+          "name": "Simple Weapons"
+        },
+        {
+          "name": "Archaic Weapons"
+        },
+        {
+          "name": "Personal Firearms"
+        },
+        {
+          "name": "Advanced Firearms"
+        },
+        {
+          "name": "Exotic Firearms"
+        },
+        {
+          "name": "Exotic Melee Weapons"
+        },
+        {
+          "name": "Heavy Weapons"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "armorCategories",
+      "label": "Armor Categories",
+      "values": [
+        {
+          "name": "Light"
+        },
+        {
+          "name": "Medium"
+        },
+        {
+          "name": "Heavy"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "restriction",
+      "label": "Restriction",
+      "values": [
+        {
+          "name": "Unrestricted",
+          "targetBudget": 3,
+          "description": "Available for purchase without any special license or qualification."
+        },
+        {
+          "name": "Licensed",
+          "targetBudget": 6,
+          "description": "The owner must obtain a license before the purchase is legal."
+        },
+        {
+          "name": "Restricted",
+          "targetBudget": 10,
+          "description": "Only specially qualified individuals or organizations are technically allowed to own it."
+        },
+        {
+          "name": "Military",
+          "targetBudget": 14,
+          "description": "Sold primarily to legitimate police and military organizations."
+        },
+        {
+          "name": "Illegal",
+          "targetBudget": 20,
+          "description": "Illegal to own in all but specific, highly regulated circumstances."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "environment",
+      "label": "Environment",
+      "values": [
+        {
+          "name": "Urban"
+        },
+        {
+          "name": "Suburban"
+        },
+        {
+          "name": "Rural"
+        },
+        {
+          "name": "Wilderness"
+        },
+        {
+          "name": "Desert"
+        },
+        {
+          "name": "Arctic"
+        },
+        {
+          "name": "Coastal"
+        },
+        {
+          "name": "Industrial"
+        },
+        {
+          "name": "Corporate"
+        },
+        {
+          "name": "Underground"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "conditions",
+      "label": "Conditions",
+      "values": [
+        {
+          "name": "Ability Damaged",
+          "description": "A temporary reduction to an ability score, recovered through natural healing."
+        },
+        {
+          "name": "Ability Drained",
+          "description": "A permanent reduction to an ability score, only restored by extraordinary means."
+        },
+        {
+          "name": "Blinded",
+          "description": "Cannot see; -2 to Defense, loses Dex bonus to Defense, -4 on most Str/Dex-based checks."
+        },
+        {
+          "name": "Cowering",
+          "description": "Frozen in fear; loses Dex bonus to Defense, can take no actions."
+        },
+        {
+          "name": "Dazed",
+          "description": "Can take no actions, but has no penalty to Defense."
+        },
+        {
+          "name": "Dead",
+          "description": "Character has died from massive damage or accumulated wounds."
+        },
+        {
+          "name": "Deafened",
+          "description": "-4 on initiative, automatic failure on hearing-based checks."
+        },
+        {
+          "name": "Disabled",
+          "description": "At exactly 0 hit points; can take a single move or attack action each round, but a standard action deals 1 point of damage afterward."
+        },
+        {
+          "name": "Dying",
+          "description": "At negative hit points and unstable, losing 1 hit point per round until stabilized."
+        },
+        {
+          "name": "Entangled",
+          "description": "-2 on attack rolls, -4 Dexterity, can only move at half speed."
+        },
+        {
+          "name": "Exhausted",
+          "description": "Moves at half speed, -6 penalty to Str and Dex."
+        },
+        {
+          "name": "Fatigued",
+          "description": "Cannot run or charge, -2 penalty to Str and Dex."
+        },
+        {
+          "name": "Flat-Footed",
+          "description": "Loses Dex bonus to Defense, cannot make attacks of opportunity."
+        },
+        {
+          "name": "Grappled",
+          "description": "Restrained by another; limited actions, no free movement."
+        },
+        {
+          "name": "Helpless",
+          "description": "Effectively has a Dexterity of 0; treated as paralyzed."
+        },
+        {
+          "name": "Nauseated",
+          "description": "Can take no actions other than a single move action."
+        },
+        {
+          "name": "Panicked",
+          "description": "Must drop items and flee; -2 on attack rolls, saves, skills."
+        },
+        {
+          "name": "Paralyzed",
+          "description": "Frozen in place, cannot act, loses Dex bonus to Defense."
+        },
+        {
+          "name": "Pinned",
+          "description": "Held immobile (but not helpless) in a grapple by a superior opponent."
+        },
+        {
+          "name": "Prone",
+          "description": "Lying on the ground; -4 on melee attacks, +4 Defense vs. ranged."
+        },
+        {
+          "name": "Shaken",
+          "description": "-2 penalty on attack rolls, saves, skills, and ability checks."
+        },
+        {
+          "name": "Stable",
+          "description": "No longer losing hit points, but still unconscious at negative hit points until recovering."
+        },
+        {
+          "name": "Stunned",
+          "description": "Drops everything held, can't act, loses Dex bonus to Defense."
+        },
+        {
+          "name": "Unconscious",
+          "description": "Knocked out or asleep; helpless."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Bludgeoning"
+        },
+        {
+          "name": "Piercing"
+        },
+        {
+          "name": "Slashing"
+        },
+        {
+          "name": "Ballistic"
+        },
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Electricity"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Sonic"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "challengeRating",
+      "label": "Challenge Rating",
+      "values": [
+        {
+          "name": "CR 1/2",
+          "shortName": "1/2"
+        },
+        {
+          "name": "CR 1",
+          "shortName": "1"
+        },
+        {
+          "name": "CR 2",
+          "shortName": "2"
+        },
+        {
+          "name": "CR 3",
+          "shortName": "3"
+        },
+        {
+          "name": "CR 4",
+          "shortName": "4"
+        },
+        {
+          "name": "CR 5",
+          "shortName": "5"
+        },
+        {
+          "name": "CR 6",
+          "shortName": "6"
+        },
+        {
+          "name": "CR 7",
+          "shortName": "7"
+        },
+        {
+          "name": "CR 8",
+          "shortName": "8"
+        },
+        {
+          "name": "CR 9",
+          "shortName": "9"
+        },
+        {
+          "name": "CR 10",
+          "shortName": "10"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Hit Points",
+          "maxPath": "@hitPoints.max",
+          "binding": "@hitPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Action Points",
+          "maxPath": "@actionPoints.max",
+          "binding": "@actionPoints.current",
+          "role": "resource"
+        },
+        {
+          "name": "Defense",
+          "binding": "@defense.normal",
+          "role": "value"
+        },
+        {
+          "name": "Conditions",
+          "binding": "@conditions",
+          "sourceField": "conditions",
+          "role": "tags"
+        },
+        {
+          "name": "Initiative",
+          "die": "d20",
+          "binding": "@initiative",
+          "role": "modifier"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d4",
+          "sides": 4
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d8",
+          "sides": 8
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        },
+        {
+          "name": "d12",
+          "sides": 12
+        },
+        {
+          "name": "d20",
+          "sides": 20
+        },
+        {
+          "name": "d100",
+          "sides": 100
+        }
+      ]
+    }
+  ]
+}

@@ -27,7 +27,7 @@
 // hardcoded — this file knows nothing about Crucible's `currentRecord` or
 // Vault's own selection state.
 import { createIconButton } from "./ui-components.js";
-import { refreshTooltips } from "./tooltips.js";
+import { disposeTooltips, refreshTooltips } from "./tooltips.js";
 import { setElementVisible } from "./dom.js";
 
 // Small local field-building helpers — every editor below needs several.
@@ -280,7 +280,7 @@ export function createFeatureParamsEditor(hooks) {
     button.setAttribute("aria-label", label);
     button.setAttribute("data-bs-toggle", "tooltip");
     button.setAttribute("data-bs-placement", "top");
-    button.title = label;
+    button.setAttribute("data-bs-title", label);
     button.addEventListener("click", onClick);
     return button;
   }
@@ -1017,6 +1017,11 @@ export function createFeatureParamsEditor(hooks) {
     const record = getRecord();
     const shouldShow = Boolean(record) && (isWeaponAttack || isSaveEffect || hasOptions || isActive || hasTiers);
     setElementVisible(container, shouldShow, "flex");
+    // Disposed before either wipe, not left to be garbage-collected — the
+    // scaling-level/dice-table row's own remove "×" carries a real tooltip
+    // now, and this rebuilds on every feature-params edit. See tooltips.js's
+    // own BUG CLASS 2.
+    disposeTooltips(container);
     if (!shouldShow) {
       container.innerHTML = "";
       return;
@@ -1033,7 +1038,7 @@ export function createFeatureParamsEditor(hooks) {
       const params = record.featureParams?.[feature.id] || {};
       container.appendChild(renderGenericActiveParamsEditor(feature, params));
     }
-    refreshTooltips();
+    refreshTooltips(container);
   }
 
   return { renderFeatureParamsEditor, deleteSelectedParam };

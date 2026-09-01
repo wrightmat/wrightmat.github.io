@@ -313,6 +313,35 @@
   line-height: 1;
 }
 
+/* A combatant marker's live Marker Resource Bar (see map-viewer.js's own
+   createMarkerDot and resolveMarkerResourceBar) — sits above the marker the
+   same way .orrery-marker-label--above does (bottom: calc(100% + Npx)),
+   since a label ALSO positioned "above" needs to stack further out past
+   this bar rather than overlap it (createMarkerDot's own inline offset
+   handles that). Track + fill rather than a single colored div so a
+   partial-resource combatant reads at a glance even at small marker sizes,
+   where a plain color-shifting bar with no visible "empty" portion could be
+   mistaken for a full resource just rendered in a darker color. Sized off
+   the grid's own single-cell size, not the token's own (possibly
+   multi-cell) footprint — see createMarkerDot's own comment for why a
+   bigger monster doesn't get a proportionally bigger bar. */
+.orrery-marker-resource-bar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.orrery-marker-resource-bar-fill {
+  height: 100%;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
 /* The marker inspector's own "Icons" collapsible section — capped height so
    a marker carrying many icons scrolls internally rather than pushing
    Position X/Y and the toolbar further down the panel. */

@@ -23,6 +23,7 @@ import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
 import { createReliableInterval } from "../reliable-interval.js";
+import { disposeTooltips, refreshTooltips } from "../tooltips.js";
 
 const DEFAULT_CONFIG = {
   name: "New Clock",
@@ -361,6 +362,7 @@ export function initClockWidget(
   // handle here anymore.
   function render() {
     if (destroyed) return;
+    disposeTooltips(container);
     container.innerHTML = "";
     const wrap = el("div", "d-flex flex-column gap-2");
 
@@ -385,7 +387,8 @@ export function initClockWidget(
     segmentsInput.type = "number";
     segmentsInput.className = "form-control form-control-sm";
     segmentsInput.style.width = "4rem";
-    segmentsInput.title = "Segments";
+    segmentsInput.setAttribute("data-bs-toggle", "tooltip");
+    segmentsInput.setAttribute("data-bs-title", "Segments");
     segmentsInput.setAttribute("aria-label", "Segments");
     segmentsInput.min = "2";
     segmentsInput.max = "24";
@@ -398,7 +401,8 @@ export function initClockWidget(
     const directionSelect = document.createElement("select");
     directionSelect.className = "form-select form-select-sm";
     directionSelect.style.width = "auto";
-    directionSelect.title = "Direction";
+    directionSelect.setAttribute("data-bs-toggle", "tooltip");
+    directionSelect.setAttribute("data-bs-title", "Direction");
     directionSelect.setAttribute("aria-label", "Direction");
     directionSelect.appendChild(new Option("Fills up", "up"));
     directionSelect.appendChild(new Option("Counts down", "down"));
@@ -418,7 +422,8 @@ export function initClockWidget(
     colorInput.type = "color";
     colorInput.className = "form-control form-control-sm form-control-color";
     colorInput.style.width = "2.5rem";
-    colorInput.title = "Bar color";
+    colorInput.setAttribute("data-bs-toggle", "tooltip");
+    colorInput.setAttribute("data-bs-title", "Bar color");
     colorInput.setAttribute("aria-label", "Bar color");
     colorInput.value = config.color || defaultColorFor(config.direction);
     colorInput.addEventListener("change", () => persist({ ...config, color: colorInput.value }));
@@ -432,11 +437,15 @@ export function initClockWidget(
     const minusButton = el("button", "btn btn-sm btn-outline-secondary");
     minusButton.type = "button";
     minusButton.setAttribute("aria-label", "Retreat");
+    minusButton.setAttribute("data-bs-toggle", "tooltip");
+    minusButton.setAttribute("data-bs-title", "Retreat");
     minusButton.appendChild(icon("tabler:minus"));
     minusButton.addEventListener("click", () => persist({ ...config, filled: Math.max(0, config.filled - 1) }));
     const plusButton = el("button", "btn btn-sm btn-outline-secondary");
     plusButton.type = "button";
     plusButton.setAttribute("aria-label", "Advance");
+    plusButton.setAttribute("data-bs-toggle", "tooltip");
+    plusButton.setAttribute("data-bs-title", "Advance");
     plusButton.appendChild(icon("tabler:plus"));
     plusButton.addEventListener("click", () =>
       persist({ ...config, filled: Math.min(config.segments, config.filled + 1) })
@@ -447,7 +456,8 @@ export function initClockWidget(
     const resetButton = el("button", "btn btn-sm btn-outline-secondary");
     resetButton.type = "button";
     resetButton.setAttribute("aria-label", "Reset");
-    resetButton.title = "Reset";
+    resetButton.setAttribute("data-bs-toggle", "tooltip");
+    resetButton.setAttribute("data-bs-title", "Reset");
     resetButton.appendChild(icon("tabler:refresh"));
     resetButton.addEventListener("click", () =>
       persist({ ...config, filled: config.direction === "down" ? config.segments : 0 })
@@ -488,6 +498,7 @@ export function initClockWidget(
     wrap.appendChild(autoRow);
 
     container.appendChild(wrap);
+    refreshTooltips(container);
   }
 
   render();
@@ -515,6 +526,7 @@ export function initClockWidget(
     async destroy(removed) {
       destroyed = true;
       stopAutoTick();
+      disposeTooltips(container);
       container.innerHTML = "";
       if (removed && visible && groupId && instanceId) {
         try {

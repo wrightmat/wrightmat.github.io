@@ -124,7 +124,8 @@ function buildDiceRoller(expression, { status, interactive, dataManager }) {
     })();
   }
   if (interactive) {
-    button.title = tableRef ? `Click to reroll on "${tableRef.blockId}"` : `Click to roll ${expression}`;
+    button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", tableRef ? `Click to reroll on "${tableRef.blockId}"` : `Click to roll ${expression}`);
     // Clicking anywhere in the button (the value, the expression, or the
     // icon) rolls — one click target, not separate handlers per piece, so
     // there's no dead zone between them.

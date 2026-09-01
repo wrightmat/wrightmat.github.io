@@ -19,7 +19,7 @@
       "refId": "sea-elf"
     },
     "class": "Druid",
-    "level": 6,
+    "level": 8,
     "levels": {
       "level_monk": 0,
       "level_multiclass": 0
@@ -28,7 +28,7 @@
     "classes": [
       {
         "name": "Druid",
-        "level": 6,
+        "level": 7,
         "subclass": {
           "name": "Circle of the Sea",
           "refKind": "variant",
@@ -36,6 +36,12 @@
         },
         "refKind": "class",
         "refId": "druid"
+      },
+      {
+        "name": "Monk",
+        "level": 1,
+        "refKind": "class",
+        "refId": "monk"
       }
     ]
   },
@@ -43,8 +49,8 @@
   "conditions": [],
   "stats": {
     "hitPoints": {
-      "max": 33,
-      "current": 29,
+      "max": 43,
+      "current": 39,
       "temp": 0
     },
     "armorClass": 16,
@@ -145,7 +151,7 @@
         "stat": 1,
         "ability": "DEX",
         "value": 2,
-        "proficiency": 0,
+        "proficiency": 2,
         "advantage": false,
         "disadvantage": false
       },
@@ -178,7 +184,7 @@
         "stat": 0,
         "ability": "STR",
         "value": -1,
-        "proficiency": 0,
+        "proficiency": 2,
         "advantage": false,
         "disadvantage": false
       },
@@ -355,13 +361,14 @@
         "Common",
         "Druidic"
       ]
-    }
+    },
+    "proficiencyBonus": 3
   },
   "currencies": {
     "cp": 0,
     "sp": 8,
     "ep": 0,
-    "gp": 70,
+    "gp": 120,
     "pp": 0
   },
   "inventory": [
@@ -862,18 +869,34 @@
     {
       "name": "Level 1 Spell Slots",
       "level": 1,
-      "total": 1,
-      "available": 0,
+      "total": 4,
+      "available": 3,
       "used": 1,
       "reset": "Long Rest"
     },
     {
       "name": "Level 3 Spell Slots",
       "level": 3,
-      "total": 1,
-      "available": 0,
+      "total": 3,
+      "available": 2,
       "used": 1,
       "reset": "Long Rest"
+    },
+    {
+      "name": "Level 2 Spell Slots",
+      "level": 2,
+      "total": 3,
+      "reset": "Long Rest",
+      "available": 3,
+      "used": 0
+    },
+    {
+      "name": "Level 4 Spell Slots",
+      "level": 4,
+      "total": 1,
+      "reset": "Long Rest",
+      "available": 1,
+      "used": 0
     }
   ],
   "campaign": {
@@ -1411,7 +1434,9 @@
     "feat.bugbear-fey-ancestry",
     "feat.sea-elf-friend-of-the-sea",
     "feat.eladrin-keen-senses",
-    "feat.trance"
+    "feat.trance",
+    "feat.druid-elemental-fury",
+    "feat.monk-martial-arts"
   ],
   "featureParams": {
     "feat.druid-circle-of-the-sea-spells": {
@@ -1477,5 +1502,6 @@
         5
       ]
     }
-  }
+  },
+  "pendingChoices": []
 }

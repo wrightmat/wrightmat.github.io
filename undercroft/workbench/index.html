@@ -48,25 +48,6 @@
               </div>
               <div class="d-flex flex-column gap-2" data-workbench-mode-panel="character">
                 <div data-field-mount="character-select"></div>
-                <!-- Full-text, not icon-only — deliberately NOT part of the
-                     left-pane icon toolbar (see undercroft/README.md's UI &
-                     Style Conventions section, "Button count" note). Hidden
-                     by default; workbench-character-view.js's own
-                     syncCharacterActions shows it only for a character that
-                     actually has both url+mapping and the viewer has
-                     permission. -->
-                <button
-                  class="btn btn-outline-secondary d-none"
-                  type="button"
-                  data-action="reimport-character"
-                  data-reimport-character
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="bottom"
-                  data-bs-title="Re-fetch this character from its original source."
-                >
-                  <span class="iconify" data-icon="tabler:cloud-download" aria-hidden="true"></span>
-                  Re-import
-                </button>
               </div>
             </div>
 
@@ -249,14 +230,11 @@
                 <span data-template-properties-toggle-mount></span>
               </div>
               <div data-template-properties-panel>
-                <div class="d-flex flex-column gap-3 fs-6" data-template-properties>
-                  <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select or create a template to edit its properties.</p>
-                </div>
+                <div class="d-flex flex-column gap-3 fs-6" data-template-properties></div>
               </div>
-              <hr class="border-body-tertiary opacity-50 my-2" />
               <div class="d-flex justify-content-between align-items-center">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2 mb-0">
-                  <span>Component Properties</span>
+                  <span>Inspector</span>
                   <span class="align-middle" data-help-topic="template.properties" data-help-insert="replace"></span>
                 </h2>
                 <span data-component-properties-toggle-mount></span>
@@ -265,6 +243,16 @@
                 <div class="d-flex flex-column gap-3 fs-6" data-inspector>
                   <p class="border border-dashed rounded-3 p-4 text-body-secondary">Select a component on the canvas to edit its settings.</p>
                 </div>
+              </div>
+            </section>
+
+            <section class="d-flex flex-column gap-3" data-workbench-mode-panel="character" data-character-properties-section>
+              <div data-character-properties-mount></div>
+              <div class="d-flex flex-column gap-3" data-character-properties-panel>
+                <div class="btn-toolbar justify-content-center" role="toolbar" aria-label="Character properties actions">
+                  <div class="btn-group" role="group" data-character-properties-toolbar-mount></div>
+                </div>
+                <div class="d-flex flex-column gap-2" data-pending-choices-mount></div>
               </div>
             </section>
 
@@ -352,7 +340,7 @@
       </div>
     </div>
     <div class="modal fade" id="new-character-modal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title fs-5">Add Character</h2>
@@ -361,6 +349,7 @@
           <div class="modal-body d-flex flex-column gap-3">
             <div class="btn-group" role="group" aria-label="Add character mode">
               <button type="button" class="btn btn-primary" data-add-character-mode="blank">Blank Character</button>
+              <button type="button" class="btn btn-outline-primary" data-add-character-mode="build">Build Character</button>
               <button type="button" class="btn btn-outline-primary" data-add-character-mode="import">Import Character</button>
             </div>
             <form class="needs-validation" novalidate id="new-character-form" data-new-character-form data-add-character-panel="blank">
@@ -402,11 +391,73 @@
                 </div>
               </div>
             </form>
+            <!-- Multi-step, not a <form> — the Import mode above already
+                 establishes multi-stage-within-one-mode (stage-1/stage-2),
+                 this just carries that further with real Back/Next
+                 navigation between steps instead of a single reveal.
+                 Template select reuses the same field as Blank mode. -->
+            <div class="d-none d-flex flex-column gap-3" data-add-character-panel="build" data-build-wizard>
+              <div class="d-flex flex-column gap-3" data-build-step="identity">
+                <div data-field-mount="build-character-name"></div>
+                <div data-field-mount="build-character-template"></div>
+              </div>
+              <div class="d-none" data-build-step="species">
+                <label class="form-label fw-semibold">Species</label>
+                <div data-build-species-mount></div>
+              </div>
+              <div class="d-none" data-build-step="class">
+                <label class="form-label fw-semibold">Class</label>
+                <div data-build-class-mount></div>
+              </div>
+              <!-- Only ever shown when the picked Class's own data says it
+                   grants its subclass choice at level 1 (getSubclassGrantLevel
+                   in workbench-character-view.js) — spliced into the active
+                   step sequence dynamically, not a fixed part of it. -->
+              <div class="d-none" data-build-step="subclass">
+                <label class="form-label fw-semibold">Subclass</label>
+                <div data-build-subclass-mount></div>
+              </div>
+              <div class="d-none" data-build-step="background">
+                <label class="form-label fw-semibold">Background</label>
+                <div data-build-background-mount></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="abilities">
+                <div class="btn-group" role="group" aria-label="Ability score method">
+                  <button type="button" class="btn btn-outline-secondary" data-build-ability-method="array">Standard Array</button>
+                  <button type="button" class="btn btn-outline-secondary" data-build-ability-method="pointBuy">Point Buy</button>
+                  <button type="button" class="btn btn-outline-secondary" data-build-ability-method="roll">Roll</button>
+                </div>
+                <div data-build-abilities-mount></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="details">
+                <p class="text-body-secondary small mb-0">Optional — you can always change these later.</p>
+                <div data-field-mount="build-character-image"></div>
+              </div>
+              <div class="d-none" data-build-step="review">
+                <div data-build-review-mount></div>
+              </div>
+              <!-- A real, counted BUILD_STEPS entry (the last one) — not
+                   reachable via ordinary Back/Next, only entered once Create
+                   Character on the Review step actually creates the record
+                   (a technical necessity: pendingChoices need a real
+                   character id to resolve against). Framed to the user as
+                   just another step in the same wizard, not a separate
+                   "character created, now do more" moment — see
+                   applyBuildStepChrome/submitBuildWizard. -->
+              <div class="d-none" data-build-step="choices">
+                <div data-build-resolve-mount></div>
+              </div>
+            </div>
           </div>
           <div class="modal-footer d-flex justify-content-between">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" form="new-character-form" class="btn btn-primary" data-add-character-submit="blank">Create</button>
             <button type="submit" form="import-character-form" class="btn btn-primary d-none" data-add-character-submit="import" data-import-character-submit disabled>Create Character</button>
+            <div class="d-none gap-2 align-items-center" data-add-character-submit="build">
+              <span class="text-body-secondary small" data-build-step-label></span>
+              <button type="button" class="btn btn-outline-primary d-none" data-build-back>Back</button>
+              <button type="button" class="btn btn-primary" data-build-next disabled>Next</button>
+            </div>
           </div>
         </div>
       </div>
@@ -430,6 +481,43 @@
         </div>
       </div>
     </div>
+    <div class="modal fade" id="level-up-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Level Up</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" data-level-up-modal-body></div>
+          <div class="modal-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-level-up-cancel>Cancel</button>
+            <button type="button" class="btn btn-primary" data-level-up-confirm>Level Up</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Multiclassing — a separate modal from Level Up (which only ever
+         levels an EXISTING class): picks a brand-new class to add, shows
+         its own multiclass prerequisite text (informational only, never
+         blocking — see refreshCharacterSpellSlots/applyAddClass's own
+         comments), then the same confirm/resolve stage shape Level Up
+         already uses. -->
+    <div class="modal fade" id="add-class-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5">Add a Class</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" data-add-class-modal-body></div>
+          <div class="modal-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-add-class-cancel>Cancel</button>
+            <button type="button" class="btn btn-primary" data-add-class-confirm disabled>Add Class</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Ported from Press's own identical pattern/shape picker (same
          markup, same common/js/lib/pattern-library.js presets) — the Image
          component's own "brush" button opens this. -->

@@ -13,7 +13,7 @@ import {
   createSearchableCheckList,
 } from "../../common/js/lib/ui-components.js";
 import { readLockedFeatureIds, populateStringChecklist } from "../../common/js/lib/generator-kit.js";
-import { refreshTooltips } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { applyMapping } from "../../common/js/lib/mapping-engine.js";
 import { deriveLookupTables } from "../../common/js/lib/system-lookup-tables.js";
@@ -548,6 +548,7 @@ const libraryTemplateSection = document.querySelector("[data-library-template-se
 const libraryTemplateSelect = document.querySelector("[data-library-template-select]");
 const libraryJsonTextarea = document.querySelector("[data-library-json]");
 const libraryJsonError = document.querySelector("[data-library-json-error]");
+const libraryContentNudge = document.querySelector("[data-library-content-nudge]");
 const libraryNewButton = document.querySelector("[data-library-new]");
 const librarySaveButton = document.querySelector("[data-library-save]");
 const libraryDuplicateButton = document.querySelector("[data-library-duplicate]");
@@ -5302,7 +5303,8 @@ function renderFeatureTierRow(tier, index) {
   removeButton.type = "button";
   removeButton.className = "btn btn-outline-danger btn-sm p-1";
   removeButton.setAttribute("aria-label", "Remove tier");
-  removeButton.title = "Remove tier";
+  removeButton.setAttribute("data-bs-toggle", "tooltip");
+  removeButton.setAttribute("data-bs-title", "Remove tier");
   removeButton.innerHTML = `<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>`;
   removeButton.addEventListener("click", () => removeFeatureTier(index));
   headerRow.appendChild(removeButton);
@@ -5333,6 +5335,10 @@ let featureTiersSortable = null;
 
 function renderFeatureTiersEditor() {
   if (!featureTiersList) return;
+  // Disposed before the wipe — each tier row's own Remove button carries a
+  // real tooltip now, and this reruns on every tier edit/add/remove/reorder.
+  // See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(featureTiersList);
   featureTiersList.innerHTML = "";
   if (featureTiersEmpty) featureTiersEmpty.classList.toggle("d-none", featureEditorTiers.length > 0);
   featureEditorTiers.forEach((tier, index) => {
@@ -5350,6 +5356,7 @@ function renderFeatureTiersEditor() {
       },
     });
   }
+  refreshTooltips(featureTiersList);
 }
 
 if (featureAddTierButton) {
@@ -6199,7 +6206,8 @@ function renderMacroActionRow(action, index) {
   removeButton.type = "button";
   removeButton.className = "btn btn-outline-danger btn-sm p-1";
   removeButton.setAttribute("aria-label", "Remove action");
-  removeButton.title = "Remove action";
+  removeButton.setAttribute("data-bs-toggle", "tooltip");
+  removeButton.setAttribute("data-bs-title", "Remove action");
   removeButton.innerHTML = `<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>`;
   removeButton.addEventListener("click", () => removeMacroAction(index));
   headerRow.appendChild(removeButton);
@@ -6234,6 +6242,10 @@ let macroActionsSortable = null;
 
 function renderMacroActionsEditor() {
   if (!macroActionsList) return;
+  // Disposed before the wipe — each action row's own Remove button carries
+  // a real tooltip now, and this reruns on every action edit/add/remove/
+  // reorder. See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(macroActionsList);
   macroActionsList.innerHTML = "";
   if (!macroEditorActions.length) {
     const empty = document.createElement("p");
@@ -6257,6 +6269,7 @@ function renderMacroActionsEditor() {
       },
     });
   }
+  refreshTooltips(macroActionsList);
 }
 
 function currentMacroPayload() {
@@ -6519,8 +6532,31 @@ function newLibraryEntry({ reveal = true } = {}) {
   populateLibrarySystemCheckboxes([]);
   populateLibrarySettingCheckboxes([]);
   populateLibraryTemplateSelect({});
+  libraryContentNudge?.classList.add("d-none");
   if (reveal) setLibraryFormVisible(true);
   markClean("library");
+}
+
+// A lightweight nudge, never a gate — shown only when the loaded record
+// LOOKS player-facing (a Feature tagged "character") but has no `grants`
+// authored yet, so the Character Builder engine (Workbench's Level Up/Add
+// a Class/Build wizard) has nothing to offer the player for it. Computed
+// fresh on every load, never persisted or cached; doesn't try to guess
+// whether a given Feature SHOULD have grants (most legitimately don't —
+// only a small fraction of Feature records are ever choice-bearing) —
+// just surfaces the fact plainly so an author who DOES mean to wire this
+// one up knows where to start.
+function updateLibraryContentNudge(kind, entity) {
+  if (!libraryContentNudge) return;
+  const isCharacterFeature =
+    kind === "feature" && Array.isArray(entity?.tags?.categories) && entity.tags.categories.includes("character");
+  const hasGrants = Array.isArray(entity?.grants) && entity.grants.length > 0;
+  const show = isCharacterFeature && !hasGrants;
+  libraryContentNudge.classList.toggle("d-none", !show);
+  if (show) {
+    libraryContentNudge.textContent =
+      "This feature has no structured Character Builder data (grants) configured yet — the player will need to apply it manually.";
+  }
 }
 
 async function loadLibraryEntry(kind, id) {
@@ -6538,6 +6574,7 @@ async function loadLibraryEntry(kind, id) {
     const entity = (await dataManager?.get(kind, id, { preferLocal: false }))?.payload;
     if (!entity) throw new Error("Not found");
     setLibraryFormVisible(true);
+    updateLibraryContentNudge(kind, entity);
     if (libraryIdInput) {
       libraryIdInput.value = id;
       libraryIdInput.disabled = true;
@@ -6578,6 +6615,7 @@ async function loadLibraryEntry(kind, id) {
     // manual Delete at least has the right target, same as the success path.
     // Reveals the panel too, since that Delete button lives inside it.
     setLibraryFormVisible(true);
+    updateLibraryContentNudge(kind, null);
     if (libraryIdInput) {
       libraryIdInput.value = id;
       libraryIdInput.disabled = true;

@@ -1,7 +1,7 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import {
   createJsonDataPanel,
@@ -596,9 +596,10 @@ function canDeleteLocation() {
 // generating something new — once an existing Location is loaded they're
 // just clutter (per-tool "feel the same" convention shared with Crucible/
 // Forge/Vault's own generation fields). Purely visual: hiding never clears
-// an override's underlying value, so a pinned override still applies if the
-// GM regenerates in place afterward (see handleGenerate's own reuse of
-// currentLocationId).
+// an override's underlying value, so a pinned override still applies the
+// next time the GM hits Generate — handleGenerate always resets the
+// Location select back to blank once it runs (see its own comment), which
+// is what brings this section back into view afterward.
 function updateGenerationFieldsVisibility() {
   elements.generationFields?.classList.toggle("d-none", Boolean(elements.locationSelect?.value));
 }
@@ -1598,8 +1599,13 @@ function markLocationClean() {
 
 function renderNotesPreview() {
   if (!elements.notesPreview) return;
+  // Disposed before the wipe — a `` `date:...` `` reference or a missing
+  // wiki-link inside Notes both carry real tooltips now, and this reruns on
+  // every edit. See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
   elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
+  refreshTooltips(elements.notesPreview);
 }
 
 function applyNotesMode(mode) {
@@ -1715,9 +1721,18 @@ function handleGenerate() {
       environmentPropertyType,
       lockedFeatureIds: readLockedFeatureIds(),
     });
-    const record = createLocationRecord(generated, currentLocationId);
-    // Freshly generated content is always unsaved, regardless of whatever
-    // baseline a previously loaded/saved Location left behind.
+    // A fresh id, never the previously loaded Location's own — reusing it
+    // here (a leftover "regenerate in place" behavior) was silently turning
+    // a Save right after Generate into an overwrite of whatever was loaded
+    // before, and left the Location select stuck showing that old entry
+    // instead of resetting to "New / Unsaved". Freshly generated content is
+    // always unsaved, regardless of whatever baseline a previously loaded/
+    // saved Location left behind — same principle as `locationCleanSnapshot`
+    // below, now actually applied to the id and the picker too.
+    const record = createLocationRecord(generated, null);
+    currentLocationId = null;
+    if (elements.locationSelect) elements.locationSelect.value = "";
+    updateGenerationFieldsVisibility();
     locationCleanSnapshot = null;
     recordHistory("generate location", () => renderLocation(record));
     status?.show("Location generated.", { type: "success", timeout: 1500 });

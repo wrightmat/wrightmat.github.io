@@ -32,7 +32,7 @@ import {
   removeElement,
 } from "../../common/js/lib/map-live-sync.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { refreshTooltips, disposeTooltips, initTooltip } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, initTooltip, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
@@ -43,8 +43,9 @@ import { getIconTokens } from "../../common/js/lib/icon-picker.js";
 import { refreshOwnershipCatalog, createCharacterOwnershipPrimer, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
 import { collectSystemFields } from "../../common/js/lib/system-schema.js";
 import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
-import { findBindingByRole } from "../../common/js/lib/bindings.js";
-import { deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
+import { findBindingByRole, findBindingsByRole } from "../../common/js/lib/bindings.js";
+import { deriveCombatBindings, guessBarResourceName } from "../../common/js/lib/widgets/combat-bindings.js";
+import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { deriveConditionsVocabulary } from "../../common/js/lib/widgets/tag-editor.js";
 import { resolveActiveSpotlightId } from "../../common/js/lib/spotlight.js";
 import { connectLiveStream } from "../../common/js/lib/live.js";
@@ -106,6 +107,7 @@ import {
   resetParticleEffectPlayState,
   resolveMarkerVisionRangeCells,
   resolveMarkerConditionIcons,
+  resolveMarkerResourceBar,
   resolveVisibleCells,
   renderLightElement,
   resolveLightOrigin,
@@ -136,6 +138,7 @@ const { status, undoStack, undo, redo } = initAppShell({
   namespace: "orrery",
   storagePrefix: "undercroft.orrery.undo",
   leftPaneLabel: "Toggle palette pane",
+  settingsSlotAttr: "data-orrery-settings-slot",
   onUndo: (entry) => {
     if (!entry) {
       return null;
@@ -156,6 +159,110 @@ const { status, undoStack, undo, redo } = initAppShell({
 
 const auth = initAuthControls({ status });
 const dataManager = auth.dataManager;
+
+// Which System the Settings modal's Marker Resource Bar picker is
+// currently configuring — unlike Crucible/Forge/Vault (each authoring
+// against one explicitly-selected System), Orrery has no System selector
+// at all; the only System that's ever actually relevant here is whichever
+// one the active campaign's own running Encounter is tagged with, the
+// exact same systemId resolveMarkerResourceBarForMarker itself resolves
+// the preference against at render time. Proactively kicks off the active-
+// Encounter fetch itself (not just relying on primeResourceBarCache, which
+// only ever runs as part of rendering an actual map) — Settings is reachable
+// from the header with no map loaded at all, and an active Encounter can
+// exist perfectly well with nothing on-screen to have primed this cache yet
+// (confirmed real bug: this returned "" — "No active encounter" — for a
+// genuinely running Encounter, purely because no map had rendered since
+// page load). No active encounter at all still means there's nothing this
+// setting could apply to yet.
+function currentResourceBarSettingsSystemId() {
+  const groupId = getActiveCampaignGroupId();
+  if (!groupId) return "";
+  ensureActiveEncounterCached(groupId, () => {});
+  const encounter = getCachedActiveEncounter(groupId);
+  return encounter?.systemId || "";
+}
+
+// Gear-icon Settings modal (upper-left header, settingsSlotAttr above) —
+// same shared module/visual pattern Crucible's own Combat Scaling/Creature
+// Type/Ability field pickers use. Just the one per-System preference so
+// far: which named `resource`-role binding (see combat-bindings.js's own
+// resolveCombatantStats) the Marker Resource Bar represents, for a System
+// that tracks more than one (d20 Modern's Hit Points + Action Points,
+// Daggerheart's Hope alongside HP, ...) — a System with only one resource
+// never needs this touched at all, since the guessed default already
+// matches resolveCombatantStats' own "first resource is the primary"
+// convention.
+initToolSettings({
+  toolId: "orrery",
+  dataManager,
+  status,
+  title: "Orrery Settings",
+  definitions: () => {
+    const systemId = currentResourceBarSettingsSystemId();
+    if (!systemId) {
+      return [
+        {
+          key: "barResourceName",
+          type: "select",
+          label: "Marker resource bar",
+          helpTopic: "orrery.barResourceName",
+          options: [{ value: "", label: "No active encounter" }],
+          getValue: () => "",
+          setValue: () => {},
+        },
+      ];
+    }
+    // Kicks off the fetch if nothing's cached yet (e.g. Settings opened
+    // before any combatant-linked marker triggered primeResourceBarCache) — a
+    // no-op when already cached/in-flight. The modal itself doesn't
+    // live-refresh once this resolves (tool-settings.js has no such hook),
+    // but every combatant marker on the actual map already primes this
+    // during ordinary rendering, well before a GM would reach for Settings
+    // in practice.
+    ensureSystemResourceBarConfigCached(systemId, () => {});
+    const resourceNames = getCachedSystemResourceBarConfig(systemId)?.resourceNames || [];
+    if (!resourceNames.length) {
+      return [
+        {
+          key: "barResourceName",
+          type: "select",
+          label: "Marker resource bar",
+          helpTopic: "orrery.barResourceName",
+          options: [{ value: "", label: "This System has no resource fields" }],
+          getValue: () => "",
+          setValue: () => {},
+        },
+      ];
+    }
+    const guessed = guessBarResourceName(resourceNames.map((name) => ({ name })));
+    return [
+      {
+        key: "barResourceName",
+        type: "select",
+        label: "Marker resource bar",
+        helpTopic: "orrery.barResourceName",
+        // No separate "Auto-detect" option — the guessed resource IS the
+        // selected value until the GM picks a different one, with " (auto-
+        // detected)" on its own option label as the only indicator (see
+        // feedback_settings_preference_with_guessed_default).
+        options: resourceNames.map((name) => ({
+          value: name,
+          label: name === guessed && !getBarResourceNamePreference(systemId) ? `${name} (auto-detected)` : name,
+        })),
+        getValue: () => getBarResourceNamePreference(systemId) || guessed,
+        setValue: (value) => {
+          setBarResourceNamePreference(systemId, value);
+          renderLayerOverlays();
+        },
+      },
+    ];
+  },
+  // Queried live, not via `elements` — the settings slot is built by
+  // initAppShell() itself, above; mountButton fires synchronously right
+  // after that, so the slot already exists in the DOM by then.
+  mountButton: (button) => document.querySelector("[data-orrery-settings-slot]")?.appendChild(button),
+});
 
 // Ownership metadata for saved Maps, used only for the Delete button's
 // access gate (owner-or-admin, or a local/anonymous entry) — same
@@ -646,7 +753,7 @@ const elements = {
   // markup; everything else in each section's header (label, help mount,
   // clear-selection mount) stays hand-authored HTML since it predates and
   // is unrelated to the toggle itself.
-  baseMapToggle: createCollapsibleToggleButton("[data-base-map-toggle-mount]", false),
+  baseMapToggle: createCollapsibleToggleButton("[data-base-map-toggle-mount]", true),
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
   selectionToggle: createCollapsibleToggleButton("[data-selection-toggle-mount]", true),
   selectionPanel: document.querySelector("[data-selection-panel]"),
@@ -701,8 +808,6 @@ const elements = {
   viewDetails: document.querySelector("[data-view-details]"),
   viewPanel: document.querySelector("[data-view-panel]"),
   mapEmptyState: document.querySelector("[data-map-empty-state]"),
-  mapPropertiesEmptyState: document.querySelector("[data-map-properties-empty-state]"),
-  mapPropertiesWrapper: document.querySelector("[data-map-properties-wrapper]"),
   viewHandle: document.querySelector("[data-view-handle]"),
   viewMode: document.querySelector("[data-view-mode]"),
   viewZoom: document.querySelector("[data-view-zoom]"),
@@ -786,7 +891,7 @@ const VIEW_TIER_OPTIONS = [
 const VIEW_TIER_VALUES = new Set(VIEW_TIER_OPTIONS.map((option) => option.value));
 
 const setBaseMapCollapsed = bindCollapsibleToggle(elements.baseMapToggle, elements.baseMapPanel, {
-  collapsed: false,
+  collapsed: true,
   expandLabel: "Expand base map",
   collapseLabel: "Collapse base map",
 });
@@ -892,18 +997,13 @@ function showMapEmptyState() {
   // Measurement, Initial View) sitting there blank/at-default with no map
   // to actually belong to — confusing, since a blank Name field or a
   // default Tile/OSM radio reads as "this is the map's real state," not
-  // "there is no map." Swapped for a single small line of static text
-  // (data-map-properties-empty-state, right in the HTML — no card/icon,
-  // unlike the canvas's own empty state, since this is a small aside under
-  // an existing section header, not the page's main empty-canvas moment).
-  // Toggles the OUTER data-map-properties-wrapper, not data-base-map-panel
-  // itself —
-  // that inner panel's own d-none/hidden is already owned by the Map
-  // Properties collapse toggle button (setCollapsibleState), and fighting
-  // over the same element's visibility state is exactly the kind of bug
-  // this suite keeps tripping over.
-  elements.mapPropertiesWrapper?.classList.add("d-none");
-  elements.mapPropertiesEmptyState?.classList.remove("d-none");
+  // "there is no map." Collapsing the section itself (same mechanism the
+  // toggle button drives — setBaseMapCollapsed already defaults to
+  // collapsed) represents "nothing to see" instead of a separate
+  // placeholder line of text; hideMapEmptyState's own caller
+  // (applyMapSnapshot -> setPanelFocus(false)) re-expands it once a real
+  // map exists.
+  setBaseMapCollapsed(true);
   setMapActionsEnabled(false);
 }
 
@@ -911,8 +1011,6 @@ function hideMapEmptyState() {
   mapIsLoaded = true;
   elements.mapEmptyState?.classList.add("d-none");
   elements.viewPanel?.classList.remove("d-none");
-  elements.mapPropertiesWrapper?.classList.remove("d-none");
-  elements.mapPropertiesEmptyState?.classList.add("d-none");
   setMapActionsEnabled(true);
 }
 
@@ -3529,6 +3627,36 @@ function primeMonsterConditionCache() {
   }
 }
 
+// The Marker Resource Bar (resolveMarkerResourceBarForMarker) shows for ANY combatant
+// with a linked marker — character, monster, or NPC alike, per the GM's own
+// explicit choice for this feature (unlike condition icons, which only ever
+// needed the active Encounter fetch for Monster/NPC markers, since a
+// Character's own conditions read straight off its own payload instead —
+// see resolveMarkerConditionIcons' own header comment). So this primes the
+// active Encounter (and, once its systemId is known, that System's own
+// resource-name config) whenever the map has ANY referenced marker at all,
+// not gated on Monster/NPC presence the way primeMonsterConditionCache is.
+function primeResourceBarCache() {
+  const groupId = getActiveCampaignGroupId();
+  if (!groupId) return;
+  const hasCombatantMarker = (state.map.layers || []).some(
+    (layer) =>
+      layer.type === "marker" &&
+      (layer.elements || []).some(
+        (marker) =>
+          marker.kind === "marker" &&
+          (marker.refKind === "character" || marker.refKind === "monster" || marker.refKind === "npc") &&
+          marker.refId
+      )
+  );
+  if (!hasCombatantMarker) return;
+  ensureActiveEncounterCached(groupId, () => renderLayerOverlays());
+  const encounter = getCachedActiveEncounter(groupId);
+  if (encounter?.systemId) {
+    ensureSystemResourceBarConfigCached(encounter.systemId, () => renderLayerOverlays());
+  }
+}
+
 // Which characters the current viewer has owner/admin/edit-shared access to
 // (allowsDelete's own established owner-or-admin-or-edit-shared rule — the
 // right rule for a CHARACTER, unlike mapAllowsDelete's own narrower
@@ -3688,6 +3816,7 @@ function renderLayerOverlays() {
   }
   primeCharacterPayloadCache();
   primeMonsterConditionCache();
+  primeResourceBarCache();
   primeCharacterOwnershipCatalog();
   syncOverlayInteractivity();
   const activeGroup =
@@ -3717,6 +3846,7 @@ function renderLayerOverlays() {
     // Binding field can display a resolved value once the record loads.
     getCharacterPayload: getCachedCharacterPayload,
     resolveConditionIcons: resolveMarkerConditionIconsForMarker,
+    resolveResourceBar: resolveMarkerResourceBarForMarker,
     onGridCellPointerDown: (layer, coord, event) => {
       const entry = createGridCellSelectionEntry(layer, coord);
       const isCtrl = event.metaKey || event.ctrlKey;
@@ -4079,6 +4209,7 @@ function openRestrictedMarkerLinkPopover(layer, markerElement, dotEl) {
 function renderRestrictedLayerOverlays(overlay) {
   primeCharacterPayloadCache();
   primeMonsterConditionCache();
+  primeResourceBarCache();
   primeCharacterOwnershipCatalog();
   renderMapLayers(overlay, baseMapManager, state.map, {
     viewerTier: getEffectiveViewerTier(),
@@ -4089,6 +4220,7 @@ function renderRestrictedLayerOverlays(overlay) {
       characterOwnershipCatalog: characterOwnershipPrimer.getCatalog(),
       getCharacterPayload: getCachedCharacterPayload,
       resolveConditionIcons: resolveMarkerConditionIconsForMarker,
+      resolveResourceBar: resolveMarkerResourceBarForMarker,
         status,
       onMarkerMoved: (layer, markerElement, snappedPosition) =>
         void persistRestrictedMarkerMove(layer, markerElement, snappedPosition),
@@ -4787,7 +4919,6 @@ function renderLayerSelectionEditor(layer) {
   pasteButton.setAttribute("data-bs-placement", "bottom");
   pasteButton.setAttribute("data-bs-title", "Paste properties");
   pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
-  pasteButton.disabled = !state.propertyClipboard;
   pasteButton.addEventListener("click", () => {
     if (!state.propertyClipboard) {
       return;
@@ -4806,6 +4937,14 @@ function renderLayerSelectionEditor(layer) {
   container.appendChild(
     createCollapsibleSection("Custom Properties", [actionRow, propertiesWrapper], { defaultCollapsed: entries.length === 0 })
   );
+  // setDisabledTooltip (not a bare `.disabled = ...`) — pasteButton already
+  // carries its own permanent "Paste properties" tooltip (set above); a real
+  // `disabled` attribute would block that tooltip from ever showing (see
+  // tooltips.js's own header), so the disabled-state explanation has to go
+  // on setDisabledTooltip's own separate wrapper instead. Must run AFTER
+  // the button is in its final DOM position (the appendChild calls above),
+  // since the wrapper needs a real parent to insert into.
+  setDisabledTooltip(pasteButton, state.propertyClipboard ? "" : "Nothing copied yet.");
   refreshTooltips();
 
   // Visible + reorder, together at the bottom — the same two controls the
@@ -5335,6 +5474,97 @@ function resolveMarkerConditionIconsForMarker(markerElement) {
   });
 }
 
+// A System's own `resource`-role combatBindings entries (name only — that's
+// all guessBarResourceName and the Settings dropdown below actually need)
+// — same "own cache, populated by a dedicated fetch, keyed by systemId"
+// shape as systemConditionsCache just above, for the same reason: the
+// Marker Resource Bar setting needs to know every candidate resource NAME a System
+// offers before it can either guess a default or list Settings options,
+// and that's a second, independent thing to know about a System's fields
+// from the tags-role vocabulary systemConditionsCache already tracks.
+const systemResourceBarConfigCache = new Map();
+function getCachedSystemResourceBarConfig(systemId) {
+  return systemResourceBarConfigCache.get(systemId) || null;
+}
+const pendingSystemResourceBarConfigFetches = new Set();
+function ensureSystemResourceBarConfigCached(systemId, onLoaded) {
+  if (!systemId || !dataManager) return;
+  if (systemResourceBarConfigCache.has(systemId) || pendingSystemResourceBarConfigFetches.has(systemId)) return;
+  pendingSystemResourceBarConfigFetches.add(systemId);
+  (async () => {
+    try {
+      // preferLocal: false — same staleness reasoning as every other direct
+      // System fields fetch in this file (ensureSystemConditionsCached,
+      // ensureCharacterSystemFieldsCached, resolveMonsterSizeCells).
+      const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
+      const fields = Array.isArray(systemResult?.payload?.fields) ? systemResult.payload.fields : [];
+      const resourceBindings = findBindingsByRole(deriveCombatBindings(fields), "resource");
+      systemResourceBarConfigCache.set(systemId, { resourceNames: resourceBindings.map((entry) => entry.name).filter(Boolean) });
+    } catch (error) {
+      systemResourceBarConfigCache.set(systemId, { resourceNames: [] });
+    } finally {
+      pendingSystemResourceBarConfigFetches.delete(systemId);
+      onLoaded?.();
+    }
+  })();
+}
+
+// Which named `resource`-role binding the Marker Resource Bar represents for a
+// given System — per-System, per-browser, same storage shape Crucible's own
+// combatScalingField/creatureTypeField preferences use (see that file's own
+// getCrucibleSystemSettings comment for why one bucket per System, not a
+// flat key, and why writes go through this pair of helpers rather than
+// dataManager.saveLocal directly).
+const ORRERY_SETTINGS_BUCKET = "orrery-settings";
+function getOrrerySystemSettings(systemId) {
+  if (!dataManager || !systemId) return {};
+  return dataManager.getLocal(ORRERY_SETTINGS_BUCKET, systemId) || {};
+}
+function setOrrerySystemSetting(systemId, key, value) {
+  if (!dataManager || !systemId) return;
+  const next = { ...getOrrerySystemSettings(systemId), [key]: value };
+  if (!next.barResourceName) {
+    dataManager.removeLocal(ORRERY_SETTINGS_BUCKET, systemId);
+  } else {
+    dataManager.saveLocal(ORRERY_SETTINGS_BUCKET, systemId, next);
+  }
+}
+function getBarResourceNamePreference(systemId) {
+  return getOrrerySystemSettings(systemId).barResourceName || "";
+}
+function setBarResourceNamePreference(systemId, resourceName) {
+  setOrrerySystemSetting(systemId, "barResourceName", resourceName || "");
+}
+
+// explicit preference || guessed default — see
+// feedback_settings_preference_with_guessed_default. A System with only one
+// `resource`-role binding (the common case — plain HP) never needs this to
+// disagree with resolveCombatantStats' own "first resource is the primary"
+// convention, since guessBarResourceName falls back to the first entry
+// too; this only ever changes anything for a System with more than one
+// (d20 Modern's Hit Points + Action Points, Daggerheart's Hope alongside
+// HP, ...).
+function resolveEffectiveBarResourceName(systemId) {
+  if (!systemId) return "";
+  const explicit = getBarResourceNamePreference(systemId);
+  if (explicit) return explicit;
+  const config = getCachedSystemResourceBarConfig(systemId);
+  return config ? guessBarResourceName(config.resourceNames.map((name) => ({ name }))) : "";
+}
+
+// Thin wrapper around map-viewer.js's own shared resolveMarkerResourceBar — same
+// "this file only supplies its own cache-backed getters, the actual
+// resolution algorithm lives in the one shared place" shape
+// resolveMarkerConditionIconsForMarker just above already uses, so Orrery
+// and the Dashboard's map.js widget can't quietly drift apart on what a
+// marker's Marker Resource Bar actually shows.
+function resolveMarkerResourceBarForMarker(markerElement) {
+  const groupId = getActiveCampaignGroupId();
+  const encounter = groupId ? getCachedActiveEncounter(groupId) : null;
+  if (!encounter?.systemId) return null;
+  return resolveMarkerResourceBar(markerElement, encounter, resolveEffectiveBarResourceName(encounter.systemId));
+}
+
 // A Monster's own token footprint, read straight off its System's own
 // "sizes" vocabulary (common/data/system/*.json's `sizes` array field) — no
 // hardcoded size table here (see undercroft/README.md's own "avoid
@@ -5722,6 +5952,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       removeButton.className = "btn-close";
       removeButton.style.fontSize = "0.5rem";
       removeButton.setAttribute("aria-label", "Remove icon");
+      removeButton.setAttribute("data-bs-toggle", "tooltip");
+      removeButton.setAttribute("data-bs-title", "Remove icon");
       removeButton.addEventListener("click", () => {
         applyMarkerElementChange("marker remove icon", () => {
           markerElement.overlayIcons = (markerElement.overlayIcons || []).filter((e) => e.id !== entry.id);
@@ -6440,6 +6672,11 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
   }
+  // The toolbar above gets its own scoped sweep since it lives outside
+  // `container` (elements.selectionToolbar is a separate mount) — this one
+  // covers everything actually built INTO container itself (marker icon
+  // chips' own remove buttons, ...), which was missing entirely before.
+  refreshTooltips(container);
 }
 
 function renderGridCellSelectionEditor(layer, selectedCells) {
@@ -6630,7 +6867,6 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   copyButton.setAttribute("data-bs-placement", "bottom");
   copyButton.setAttribute("data-bs-title", "Copy properties");
   copyButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:copy\" aria-hidden=\"true\"></span>";
-  copyButton.disabled = !primaryCoord;
   copyButton.addEventListener("click", () => {
     const props = primaryCell?.properties || {};
     state.propertyClipboard = JSON.parse(JSON.stringify(props));
@@ -6646,7 +6882,6 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   pasteButton.setAttribute("data-bs-placement", "bottom");
   pasteButton.setAttribute("data-bs-title", "Paste properties");
   pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
-  pasteButton.disabled = !state.propertyClipboard;
   pasteButton.addEventListener("click", () => {
     if (!state.propertyClipboard) {
       return;
@@ -6664,6 +6899,14 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   actionGroup.appendChild(copyButton);
   actionGroup.appendChild(pasteButton);
   actionRow.appendChild(actionGroup);
+  // setDisabledTooltip (not bare `.disabled = ...`) for both — each button
+  // already carries its own permanent tooltip (set above); a real `disabled`
+  // attribute would block that tooltip from showing at all (see
+  // tooltips.js's own header), so the disabled-state explanation has to go
+  // on setDisabledTooltip's own separate wrapper instead. Must run AFTER
+  // the appendChild calls above, since the wrapper needs a real parent.
+  setDisabledTooltip(copyButton, primaryCoord ? "" : "Select a cell first.");
+  setDisabledTooltip(pasteButton, state.propertyClipboard ? "" : "Nothing copied yet.");
   const customPropertiesFields = bulkNotice ? [bulkNotice, actionRow, propertiesWrapper] : [actionRow, propertiesWrapper];
   container.appendChild(
     createCollapsibleSection("Custom Properties", customPropertiesFields, { defaultCollapsed: entries.length === 0 })
@@ -6990,7 +7233,6 @@ function renderGroupSelectionEditor(group) {
   pasteButton.setAttribute("data-bs-placement", "bottom");
   pasteButton.setAttribute("data-bs-title", "Paste properties");
   pasteButton.innerHTML = "<span class=\"iconify\" data-icon=\"tabler:clipboard\" aria-hidden=\"true\"></span>";
-  pasteButton.disabled = !state.propertyClipboard;
   pasteButton.addEventListener("click", () => {
     if (!state.propertyClipboard) {
       return;
@@ -7008,6 +7250,10 @@ function renderGroupSelectionEditor(group) {
   container.appendChild(
     createCollapsibleSection("Custom Properties", [actionRow, propertiesWrapper], { defaultCollapsed: !entries.length })
   );
+  // setDisabledTooltip, not bare `.disabled = ...` — see the Layer/Cell
+  // panels' own identical fix just above for the full reasoning. Must run
+  // AFTER the appendChild calls above.
+  setDisabledTooltip(pasteButton, state.propertyClipboard ? "" : "Nothing copied yet.");
   refreshTooltips();
 }
 

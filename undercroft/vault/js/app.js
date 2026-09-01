@@ -1,7 +1,7 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
-import { refreshTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
 import {
   createJsonDataPanel,
   createToolbarButtonGroup,
@@ -18,7 +18,7 @@ import { renderRelationshipEditor } from "../../common/js/lib/relationship-edito
 import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
-import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
+import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses, guessBudgetCeilingFieldKey } from "./lib/tables.js";
 import { generateWonder, getWonderGenerationBlockReason, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createWonderRecord, toPressExportShape } from "./lib/wonder-schema.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
@@ -67,6 +67,12 @@ let performRedo = null;
 let dataManager = null;
 let features = [];
 let propertyTypes = [];
+// Which propertyTypes entry guessBudgetCeilingFieldKey would auto-pick for
+// the active System — same "ride along, no second round trip" shape as
+// abilityFieldGuess below, computed straight from propertyTypes itself
+// (already the isGeneratorPropertyField-eligible candidate list) rather
+// than a separate fetch.
+let budgetCeilingFieldGuess = "";
 // The active System's own casting classes (Wizard, Cleric, ...) — empty for
 // any System with no "classes" field at all (most Systems), in which case
 // the Casting Class select stays hidden entirely (see
@@ -340,6 +346,20 @@ const elements = {
   relationshipsGraphEmpty: document.querySelector("[data-relationships-graph-empty]"),
 };
 
+// Wonder Properties — no content yet (Vault has no Convert-style action of
+// its own today, unlike Forge/Crucible's own "NPC Properties"/"Monster
+// Properties"), but the section exists now for structural consistency
+// across all three generators' right-pane layout, ready for whatever gets
+// added here later. Starts (and stays) collapsed — nothing populates it yet.
+{
+  const wonderPropertiesSection = createCollapsibleSection({
+    label: "Wonder Properties",
+    collapsed: true,
+    content: document.querySelector("[data-wonder-properties-panel]"),
+  });
+  document.querySelector("[data-wonder-properties-mount]")?.appendChild(wonderPropertiesSection.section);
+}
+
 // Adopts each section's existing static `[data-xxx-panel]` markup (its own
 // content stays hand-authored HTML — only the header+chevron wrapper is
 // JS-built) as createCollapsibleSection's content — same pattern Sanctum's
@@ -475,22 +495,6 @@ function getAbilityFieldPreference(systemId) {
 
 function setAbilityFieldPreference(systemId, fieldKey) {
   setVaultSystemSetting(systemId, "abilityField", fieldKey || "");
-}
-
-// The conventional field-name fallback getSystemPropertyTypes applies on its
-// own when given no explicit preference (its own "rarity" default parameter)
-// — duplicated here only so the Settings modal can show what's actually in
-// effect (e.g. "Rarity") instead of misleadingly showing "None" while
-// generation quietly uses that field anyway. Mirrors Crucible's own
-// resolveEffectiveFieldPreference/CONVENTIONAL_FIELD_DEFAULTS exactly.
-const CONVENTIONAL_BUDGET_CEILING_FIELD = "rarity";
-
-function resolveEffectiveBudgetCeilingField(systemId) {
-  const stored = getBudgetCeilingFieldPreference(systemId);
-  if (stored) return stored;
-  return propertyTypes.some((propertyType) => propertyType.id === CONVENTIONAL_BUDGET_CEILING_FIELD)
-    ? CONVENTIONAL_BUDGET_CEILING_FIELD
-    : "";
 }
 
 async function populateSystemSelect() {
@@ -651,9 +655,10 @@ async function reloadReferenceData() {
   [fetchedFeatures, propertyTypes, classes, objectFieldResult, abilityFieldDefs] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
     // `|| undefined` (not the stored "" directly) so an unconfigured System
-    // falls through to getSystemPropertyTypes's own "rarity" default instead
-    // of resolving to no ceiling field at all — mirrors Crucible's own
-    // combatScalingField/creatureTypeField `|| undefined` call pattern.
+    // falls through to getSystemPropertyTypes's own guessBudgetCeilingFieldKey
+    // guess (then "rarity" as the last resort) instead of resolving to no
+    // ceiling field at all — mirrors Crucible's own combatScalingField/
+    // creatureTypeField `|| undefined` call pattern.
     getSystemPropertyTypes(dataManager, systemId, budgetCeilingField || undefined),
     getSystemClasses(dataManager, systemId),
     listObjectFieldOptions(dataManager, systemId),
@@ -661,6 +666,7 @@ async function reloadReferenceData() {
   ]);
   objectFieldOptions = objectFieldResult.options;
   abilityFieldGuess = objectFieldResult.guessedKey;
+  budgetCeilingFieldGuess = guessBudgetCeilingFieldKey(propertyTypes.map((propertyType) => propertyType.id));
   // The shared `feature` kind also holds Sanctum's location features and
   // Crucible's monster features (tagged accordingly) — filtered here, once,
   // so every consumer of the module-level `features` array (generateWonder,
@@ -1322,6 +1328,10 @@ function featureDescriptionText(feature, record, featureId) {
 
 function renderFeatureList(record) {
   if (!elements.featureList) return;
+  // Disposed before the wipe — each row's own Remove button carries a real
+  // tooltip now, and this reruns on every feature add/remove. See
+  // tooltips.js's own BUG CLASS 2.
+  disposeTooltips(elements.featureList);
   elements.featureList.innerHTML = "";
   record.featureIds.forEach((featureId) => {
     const feature = findById(features, featureId);
@@ -1361,6 +1371,8 @@ function renderFeatureList(record) {
     removeButton.type = "button";
     removeButton.className = "btn btn-outline-danger btn-sm flex-shrink-0";
     removeButton.setAttribute("aria-label", "Remove feature");
+    removeButton.setAttribute("data-bs-toggle", "tooltip");
+    removeButton.setAttribute("data-bs-title", "Remove feature");
     removeButton.innerHTML = '<span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>';
     removeButton.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1371,6 +1383,7 @@ function renderFeatureList(record) {
     row.addEventListener("click", () => selectFeatureRow(featureId));
     elements.featureList.appendChild(row);
   });
+  refreshTooltips(elements.featureList);
 }
 
 function refreshWonderView() {
@@ -1430,8 +1443,13 @@ function readLockedFeatureIds() {
 
 function renderNotesPreview() {
   if (!elements.notesPreview) return;
+  // Disposed before the wipe — a `` `date:...` `` reference or a missing
+  // wiki-link inside Notes both carry real tooltips now, and this reruns on
+  // every edit. See tooltips.js's own BUG CLASS 2.
+  disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
   elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
+  refreshTooltips(elements.notesPreview);
 }
 
 function applyNotesMode(mode) {
@@ -1942,12 +1960,21 @@ async function init() {
         type: "select",
         label: "Budget ceiling field",
         helpTopic: "vault.budgetCeilingField",
-        options: [{ value: "", label: "None" }, ...propertyTypes.map((propertyType) => ({ value: propertyType.id, label: propertyType.label || propertyType.id }))],
-        // Shows the effective value (falling back to "Rarity" when
-        // unconfigured), not the raw stored "", so the modal doesn't
-        // misleadingly show "None" while generation quietly uses Rarity
-        // anyway — mirrors Crucible's own resolveEffectiveFieldPreference.
-        getValue: () => resolveEffectiveBudgetCeilingField(currentSystemId()),
+        // "(auto-detected)" on the guessed field's own option label — same
+        // convention as abilityField below — plus a real "None" option so a
+        // GM can explicitly force no ceiling field for a System that
+        // genuinely wants every property type treated as pure spend.
+        options: [
+          { value: "", label: "None" },
+          ...propertyTypes.map((propertyType) => ({
+            value: propertyType.id,
+            label:
+              propertyType.id === budgetCeilingFieldGuess && !getBudgetCeilingFieldPreference(currentSystemId())
+                ? `${propertyType.label || propertyType.id} (auto-detected)`
+                : propertyType.label || propertyType.id,
+          })),
+        ],
+        getValue: () => getBudgetCeilingFieldPreference(currentSystemId()) || budgetCeilingFieldGuess,
         setValue: async (fieldKey) => {
           setBudgetCeilingFieldPreference(currentSystemId(), fieldKey);
           await reloadReferenceData();

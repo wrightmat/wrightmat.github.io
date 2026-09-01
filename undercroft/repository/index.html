@@ -119,19 +119,29 @@
                        checking several boxes in a row doesn't close the menu
                        after each click. -->
                   <div class="repository-graph-filter" data-repository-graph-filter>
-                    <div class="dropdown">
-                      <button
-                        class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        data-bs-auto-close="outside"
-                        aria-expanded="false"
-                      >
-                        <span class="iconify" data-icon="tabler:filter" aria-hidden="true"></span>
-                        <span class="visually-hidden">Filter by type</span>
-                      </button>
-                      <div class="dropdown-menu p-2" data-repository-graph-filter-menu style="min-width: 12rem"></div>
-                    </div>
+                    <!-- The dropdown-toggle button already claims data-bs-toggle
+                         for its own dropdown behavior, so it can't also carry a
+                         tooltip trigger directly (Bootstrap's data-bs-toggle is
+                         single-purpose per element) — an outer wrapper span
+                         carries the tooltip instead, around the whole .dropdown
+                         (not just the button) so the toggle/menu sibling
+                         relationship Bootstrap's own dropdown JS relies on stays
+                         untouched. -->
+                    <span class="d-inline-block" data-bs-toggle="tooltip" data-bs-title="Filter by type">
+                      <div class="dropdown">
+                        <button
+                          class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                          type="button"
+                          data-bs-toggle="dropdown"
+                          data-bs-auto-close="outside"
+                          aria-expanded="false"
+                        >
+                          <span class="iconify" data-icon="tabler:filter" aria-hidden="true"></span>
+                          <span class="visually-hidden">Filter by type</span>
+                        </button>
+                        <div class="dropdown-menu p-2" data-repository-graph-filter-menu style="min-width: 12rem"></div>
+                      </div>
+                    </span>
                   </div>
                   <div
                     class="repository-graph-controls d-flex align-items-center gap-2 flex-wrap"

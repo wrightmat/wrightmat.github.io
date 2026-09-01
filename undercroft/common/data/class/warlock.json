@@ -328,5 +328,16 @@
         16
       ]
     }
-  }
+  },
+  "caster_type": "pact",
+  "multiclassPrerequisites": [
+    {
+      "any": [
+        {
+          "ability": "charisma",
+          "minimum": 13
+        }
+      ]
+    }
+  ]
 }

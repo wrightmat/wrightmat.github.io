@@ -39,6 +39,7 @@
 // widget (or its own app/API directly) told it to, so there's nothing
 // external for a WLED card to poll for.
 import { el } from "../dom.js";
+import { disposeTooltips, refreshTooltips, setDisabledTooltip, updateTooltipContent } from "../tooltips.js";
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { connectLiveStream } from "../live.js";
 import { createReliableInterval } from "../reliable-interval.js";
@@ -161,7 +162,8 @@ function iconButton(name, label, { variant = "outline-secondary", size = "sm", a
   );
   button.type = "button";
   button.setAttribute("aria-label", label);
-  button.title = label;
+  button.setAttribute("data-bs-toggle", "tooltip");
+  button.setAttribute("data-bs-title", label);
   if (active) button.setAttribute("aria-pressed", "true");
   button.appendChild(icon(name));
   return button;
@@ -559,8 +561,6 @@ export function initWledWidget(
     // yet.
     const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
     const followButton = iconButton("tabler:clock", "Follow a Clock", { active: config.followEnabled });
-    followButton.disabled = !isWledSelected;
-    followButton.title = isWledSelected ? "Follow a Clock" : "Follow a Clock (WLED devices only)";
     followButton.addEventListener("click", () => {
       const next = !config.followEnabled;
       persistInstanceConfig({ followEnabled: next });
@@ -568,15 +568,32 @@ export function initWledWidget(
       render();
     });
     row.appendChild(followButton);
+    // setDisabledTooltip owns `disabled` itself — a real `disabled` on the
+    // SAME element as the explanatory tooltip blocks the hover that would
+    // ever show it (see tooltips.js's own BUG CLASS 1); the old
+    // `.disabled = ...` + `.title = ...` pair here silently never showed
+    // the "WLED devices only" explanation for exactly that reason. Called
+    // after row.appendChild, not before — setDisabledTooltip's own wrapper
+    // needs a real DOM parent to insert itself next to.
+    if (isWledSelected) {
+      setDisabledTooltip(followButton, "");
+      updateTooltipContent(followButton, "Follow a Clock");
+    } else {
+      setDisabledTooltip(followButton, "Follow a Clock (WLED devices only)");
+    }
 
     const advancedButton = iconButton("tabler:code", "Advanced Mode", { active: advancedExpanded });
-    advancedButton.disabled = !isWledSelected;
-    advancedButton.title = isWledSelected ? "Advanced Mode" : "Advanced Mode (WLED devices only)";
     advancedButton.addEventListener("click", () => {
       advancedExpanded = !advancedExpanded;
       render();
     });
     row.appendChild(advancedButton);
+    if (isWledSelected) {
+      setDisabledTooltip(advancedButton, "");
+      updateTooltipContent(advancedButton, "Advanced Mode");
+    } else {
+      setDisabledTooltip(advancedButton, "Advanced Mode (WLED devices only)");
+    }
 
     // HA-light-only, mirroring Follow/Advanced's own WLED-only gating —
     // opt-in per card (HA_POLL_INTERVAL_MS's own comment on why), so this
@@ -584,10 +601,6 @@ export function initWledWidget(
     // changes made outside Undercroft.
     const isHaSelected = currentDeviceType() === "haLight" && Boolean(config.selectedEntityId);
     const livePollButton = iconButton("tabler:activity", "Live Poll (every 30s)", { active: config.haLivePollEnabled });
-    livePollButton.disabled = !isHaSelected;
-    livePollButton.title = isHaSelected
-      ? "Live Poll — check for state changes made outside Undercroft every 30s"
-      : "Live Poll (HA light/group devices only)";
     livePollButton.addEventListener("click", () => {
       const next = !config.haLivePollEnabled;
       persistInstanceConfig({ haLivePollEnabled: next });
@@ -595,6 +608,12 @@ export function initWledWidget(
       render();
     });
     row.appendChild(livePollButton);
+    if (isHaSelected) {
+      setDisabledTooltip(livePollButton, "");
+      updateTooltipContent(livePollButton, "Live Poll — check for state changes made outside Undercroft every 30s");
+    } else {
+      setDisabledTooltip(livePollButton, "Live Poll (HA light/group devices only)");
+    }
 
     return row;
   }
@@ -847,7 +866,8 @@ export function initWledWidget(
       input.type = "color";
       input.className = "form-control form-control-color";
       input.value = colors[slot] ? rgbToHex(colors[slot]) : "#000000";
-      input.title = ["Primary", "Secondary", "Tertiary"][slot];
+      input.setAttribute("data-bs-toggle", "tooltip");
+      input.setAttribute("data-bs-title", ["Primary", "Secondary", "Tertiary"][slot]);
       return input;
     });
     const commitColors = () => {
@@ -1162,6 +1182,7 @@ export function initWledWidget(
 
   function render() {
     if (destroyed) return;
+    disposeTooltips(container);
     container.innerHTML = "";
     const wrap = el("div", "d-flex flex-column gap-2 overflow-auto");
     wrap.style.minHeight = "0";
@@ -1197,6 +1218,7 @@ export function initWledWidget(
     }
 
     container.appendChild(wrap);
+    refreshTooltips(container);
   }
 
   // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
@@ -1252,6 +1274,7 @@ export function initWledWidget(
       if (followTimer) followTimer.stop();
       followLiveStream?.close();
       if (haPollTimer) haPollTimer.stop();
+      disposeTooltips(container);
       container.innerHTML = "";
     },
   };

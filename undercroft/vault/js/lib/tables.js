@@ -95,6 +95,30 @@ function slugify(name) {
     .replace(/(^-|-$)/g, "");
 }
 
+// Best-effort guess for which of a System's isGeneratorPropertyField-eligible
+// fields should set the budget ceiling, used only to pre-fill the
+// budgetCeilingField settings preference when a GM hasn't explicitly chosen
+// one yet — never the sole source of truth (see
+// feedback_settings_preference_with_guessed_default). Name-preference only
+// (like guessCombatScalingFieldKey, common/js/lib/combat-scaling.js) rather
+// than a second shape filter — isGeneratorPropertyField has already narrowed
+// the field down to "this System's real Vault-eligible candidates" by the
+// time this runs, so there's nothing further to shape-detect. "rarity" is
+// the overwhelming majority across this suite's own Systems as of
+// 2026-08-30 (already the literal hardcoded default every caller here falls
+// back to); "restriction" (d20 Modern) and "tier" (Daggerheart) are the two
+// confirmed real alternates. Takes the candidate KEYS directly (not a
+// dataManager/systemId to re-fetch with) so both this file's own
+// getSystemPropertyTypes below and vault/js/app.js's Settings modal (which
+// already has `propertyTypes` in hand) can call it with zero extra round
+// trips.
+const BUDGET_CEILING_FIELD_NAME_PREFERENCE = ["rarity", "restriction", "tier"];
+
+export function guessBudgetCeilingFieldKey(candidateKeys) {
+  const keys = new Set(Array.isArray(candidateKeys) ? candidateKeys : []);
+  return BUDGET_CEILING_FIELD_NAME_PREFERENCE.find((name) => keys.has(name)) || "";
+}
+
 // setsBudgetCeiling isn't System data at all — which field acts as the
 // ceiling is Vault's own tool-level preference (which field Vault's
 // generator should treat specially), not part of the game system's schema.
@@ -122,22 +146,26 @@ function toLegacyPropertyType(field, budgetCeilingField) {
 // immediately, not hidden behind a stale local cache. Same reasoning as
 // combat-tracker.js's System reads.
 //
-// budgetCeilingField defaults to "rarity" — the conventionally-named field —
-// exactly mirroring loadCombatScalingLevels's own default-parameter fallback
-// (common/js/lib/combat-scaling.js) for the same reason: without it, a
-// System the GM never opened Vault's Settings modal for has NO ceiling field
-// at all, so every property type (including ones with real per-value costs,
-// like Activation/Item Form) is treated as pure spend against the fixed
-// DEFAULT_TARGET_BUDGET of 10 instead of Rarity ever setting a real ceiling
-// — confirmed as the other half of a real reported bug (Target stuck at 10).
-// The caller passes `budgetCeilingField || undefined` so an explicit stored
-// preference still wins and this default only applies when truly unset.
-export async function getSystemPropertyTypes(dataManager, systemId, budgetCeilingField = "rarity") {
+// `budgetCeilingField` is the GM's own explicit preference, if stored —
+// empty/omitted falls through to guessBudgetCeilingFieldKey's own name-
+// preference guess (checked against this System's actual eligible fields),
+// then the literal "rarity" key as the very last resort. Without SOME
+// ceiling field resolving, a System the GM never opened Vault's Settings
+// modal for has no ceiling field at all, so every property type (including
+// ones with real per-value costs, like Activation/Item Form) is treated as
+// pure spend against the fixed DEFAULT_TARGET_BUDGET of 10 instead of
+// anything ever setting a real ceiling — confirmed as the other half of a
+// real reported bug (Target stuck at 10). The caller passes
+// `budgetCeilingField || undefined` so an explicit stored preference still
+// wins and this default/guess only applies when truly unset.
+export async function getSystemPropertyTypes(dataManager, systemId, budgetCeilingField = "") {
   if (!dataManager || !systemId) return [];
   try {
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    return fields.filter(isGeneratorPropertyField).map((field) => toLegacyPropertyType(field, budgetCeilingField));
+    const eligibleFields = fields.filter(isGeneratorPropertyField);
+    const key = budgetCeilingField || guessBudgetCeilingFieldKey(eligibleFields.map((field) => field.key)) || "rarity";
+    return eligibleFields.map((field) => toLegacyPropertyType(field, key));
   } catch (error) {
     return [];
   }

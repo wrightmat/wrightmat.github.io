@@ -67,3 +67,27 @@ export function computeAverageDamage(baseDiceExpression, abilityScore) {
   if (base == null) return null;
   return base + abilityModifier(abilityScore);
 }
+
+// The SRD's own "take the average instead of rolling" rule for HP gained on
+// level-up — deliberately NOT averageDiceRoll's own plain statistical
+// average (which would give a d12 an average of 6): the 5e rule is
+// specifically floor(sides/2)+1, one higher than the true average, the same
+// number every official level-up table already prints.
+export function hitPointsPerLevelAverage(hitDieSides) {
+  const sides = Number(hitDieSides);
+  if (!Number.isFinite(sides) || sides <= 0) return 0;
+  return Math.floor(sides / 2) + 1;
+}
+
+// The standard 5e proficiency-bonus-by-level table, as a formula rather than
+// a lookup — extracted from mapping-custom-functions.js's own (DDB-import-
+// only) getProficiencyBonusRaw so the Level Up engine (workbench-character-
+// view.js) and the DDB mapper share one implementation instead of two
+// copies drifting apart, same reasoning averageDiceRoll's own doc comment
+// gives above. `totalLevel` is a character's own overall level (summed
+// across classes for multiclass; single-class today just IS the class
+// level).
+export function proficiencyBonusForLevel(totalLevel) {
+  const level = Number(totalLevel);
+  return level > 0 ? 2 + Math.floor((level - 1) / 4) : 0;
+}

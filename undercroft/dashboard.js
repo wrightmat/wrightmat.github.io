@@ -4,7 +4,7 @@ import { resolveApiBase } from "./common/js/lib/api.js";
 import { initAuthControls } from "./common/js/lib/auth-ui.js";
 import { initHelpSystem } from "./common/js/lib/help.js";
 import { initHelpBrowser } from "./common/js/lib/help-browser.js";
-import { refreshTooltips, disposeTooltips } from "./common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent } from "./common/js/lib/tooltips.js";
 import { createIconButton } from "./common/js/lib/ui-components.js";
 import { createSortable } from "./common/js/lib/dnd.js";
 import { initCharacterSummaryWidget } from "./common/js/lib/widgets/character-summary.js";
@@ -2657,7 +2657,7 @@ function applyEditingState() {
     // read stale after a toggle with no other reason for the widget itself
     // to re-render.
     gridEl.querySelectorAll("[data-macro-run-button]").forEach((button) => {
-      button.title = editing ? "Edit in Loom" : "Run macro";
+      updateTooltipContent(button, editing ? "Edit in Loom" : "Run macro");
     });
     // The drag-to-resize handle (mountWidget) — editing-only. Plain inline
     // style.display, not the .d-none/.d-flex classes used elsewhere here —

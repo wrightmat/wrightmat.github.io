@@ -626,6 +626,169 @@
     },
     {
       "type": "array",
+      "key": "toolCategories",
+      "label": "Tool Categories",
+      "values": [
+        {
+          "name": "Alchemist's Supplies",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Brewer's Supplies",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Calligrapher's Supplies",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Carpenter's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Cartographer's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Cobbler's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Cook's Utensils",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Glassblower's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Jeweler's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Leatherworker's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Mason's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Painter's Supplies",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Potter's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Smith's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Tinker's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Weaver's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Woodcarver's Tools",
+          "shortName": "artisan"
+        },
+        {
+          "name": "Dice Set",
+          "shortName": "gaming set"
+        },
+        {
+          "name": "Dragonchess Set",
+          "shortName": "gaming set"
+        },
+        {
+          "name": "Playing Card Set",
+          "shortName": "gaming set"
+        },
+        {
+          "name": "Three-Dragon Ante Set",
+          "shortName": "gaming set"
+        },
+        {
+          "name": "Bagpipes",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Drum",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Dulcimer",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Flute",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Horn",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Lute",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Lyre",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Pan Flute",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Shawm",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Viol",
+          "shortName": "musical instrument"
+        },
+        {
+          "name": "Disguise Kit",
+          "shortName": "kit"
+        },
+        {
+          "name": "Forgery Kit",
+          "shortName": "kit"
+        },
+        {
+          "name": "Herbalism Kit",
+          "shortName": "kit"
+        },
+        {
+          "name": "Navigator's Tools",
+          "shortName": "kit"
+        },
+        {
+          "name": "Poisoner's Kit",
+          "shortName": "kit"
+        },
+        {
+          "name": "Thieves' Tools",
+          "shortName": "kit"
+        },
+        {
+          "name": "Vehicles (Land)",
+          "shortName": "vehicle"
+        },
+        {
+          "name": "Vehicles (Water)",
+          "shortName": "vehicle"
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "rarity",
       "label": "Rarity",
       "values": [
@@ -935,7 +1098,9 @@
         {
           "name": "Armor Class",
           "binding": "@stats.armorClass",
-          "role": "value"
+          "role": "value",
+          "base": 10,
+          "abilityBinding": "@stats.abilities.dexterity"
         },
         {
           "name": "Conditions",
@@ -947,7 +1112,463 @@
           "name": "Initiative",
           "die": "d20",
           "binding": "@stats.initiative.bonus",
-          "role": "modifier"
+          "role": "modifier",
+          "abilityBinding": "@stats.abilities.dexterity"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "levelUpBindings",
+      "label": "Level Up Bindings",
+      "values": [
+        {
+          "name": "Class Proficiency Choices",
+          "role": "proficiencyChoices",
+          "kind": "class",
+          "path": "proficiency_choices",
+          "targetPath": "proficiencies"
+        },
+        {
+          "name": "Background Proficiency Choices",
+          "role": "proficiencyChoices",
+          "kind": "background",
+          "path": "proficiency_choices",
+          "targetPath": "proficiencies"
+        },
+        {
+          "name": "Class Starting Equipment",
+          "role": "equipmentChoices",
+          "kind": "class",
+          "path": "starting_equipment_options",
+          "targetPath": "inventory"
+        },
+        {
+          "name": "Background Equipment",
+          "role": "equipmentChoices",
+          "kind": "background",
+          "path": "equipment_options",
+          "targetPath": "inventory"
+        },
+        {
+          "name": "Class Features by Level",
+          "role": "featureLevels",
+          "kind": "class",
+          "path": "features"
+        },
+        {
+          "name": "Subclass Features by Level",
+          "role": "featureLevels",
+          "kind": "variant",
+          "path": "features"
+        },
+        {
+          "name": "Class Hit Die Growth",
+          "role": "resourceGrowth",
+          "kind": "class",
+          "path": "hit_die",
+          "resourceRole": "resource",
+          "abilityBinding": "@stats.abilities.constitution"
+        },
+        {
+          "name": "Background Proficiency Grants",
+          "role": "proficiencyGrants",
+          "kind": "background",
+          "path": "proficiencies"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "spellSlotProgression",
+      "label": "Spell Slot Progression",
+      "values": [
+        {
+          "level": 1,
+          "slots": [
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 2,
+          "slots": [
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 3,
+          "slots": [
+            4,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 4,
+          "slots": [
+            4,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 5,
+          "slots": [
+            4,
+            3,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 6,
+          "slots": [
+            4,
+            3,
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 7,
+          "slots": [
+            4,
+            3,
+            3,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 8,
+          "slots": [
+            4,
+            3,
+            3,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 9,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 10,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 11,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 12,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 13,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 14,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "level": 15,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            1,
+            1,
+            0
+          ]
+        },
+        {
+          "level": 16,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            1,
+            1,
+            0
+          ]
+        },
+        {
+          "level": 17,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            2,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "level": 18,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            3,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "level": 19,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            3,
+            2,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "level": 20,
+          "slots": [
+            4,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "pactMagicProgression",
+      "label": "Pact Magic Progression",
+      "values": [
+        {
+          "level": 1,
+          "slots": 1,
+          "slotLevel": 1
+        },
+        {
+          "level": 2,
+          "slots": 2,
+          "slotLevel": 1
+        },
+        {
+          "level": 3,
+          "slots": 2,
+          "slotLevel": 2
+        },
+        {
+          "level": 4,
+          "slots": 2,
+          "slotLevel": 2
+        },
+        {
+          "level": 5,
+          "slots": 2,
+          "slotLevel": 3
+        },
+        {
+          "level": 6,
+          "slots": 2,
+          "slotLevel": 3
+        },
+        {
+          "level": 7,
+          "slots": 2,
+          "slotLevel": 4
+        },
+        {
+          "level": 8,
+          "slots": 2,
+          "slotLevel": 4
+        },
+        {
+          "level": 9,
+          "slots": 2,
+          "slotLevel": 5
+        },
+        {
+          "level": 10,
+          "slots": 2,
+          "slotLevel": 5
+        },
+        {
+          "level": 11,
+          "slots": 3,
+          "slotLevel": 5
+        },
+        {
+          "level": 12,
+          "slots": 3,
+          "slotLevel": 5
+        },
+        {
+          "level": 13,
+          "slots": 3,
+          "slotLevel": 5
+        },
+        {
+          "level": 14,
+          "slots": 3,
+          "slotLevel": 5
+        },
+        {
+          "level": 15,
+          "slots": 3,
+          "slotLevel": 5
+        },
+        {
+          "level": 16,
+          "slots": 3,
+          "slotLevel": 5
+        },
+        {
+          "level": 17,
+          "slots": 4,
+          "slotLevel": 5
+        },
+        {
+          "level": 18,
+          "slots": 4,
+          "slotLevel": 5
+        },
+        {
+          "level": 19,
+          "slots": 4,
+          "slotLevel": 5
+        },
+        {
+          "level": 20,
+          "slots": 4,
+          "slotLevel": 5
         }
       ]
     },
@@ -1643,6 +2264,22 @@
         {
           "name": "Force",
           "sourceId": 13
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "damageRelationships",
+      "label": "Damage Relationships",
+      "values": [
+        {
+          "name": "Resistance"
+        },
+        {
+          "name": "Immunity"
+        },
+        {
+          "name": "Vulnerability"
         }
       ]
     },

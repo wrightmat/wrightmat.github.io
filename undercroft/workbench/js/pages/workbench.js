@@ -66,7 +66,14 @@ async function init() {
   });
 
   const { status, undoStack, undo, redo } = shell;
-  const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
+  // Unified onto the shared "undercroft" local-storage prefix every other
+  // tool already uses by default (DataManager's own DEFAULT_STORAGE_PREFIX)
+  // — Workbench's own bucket names (characters, templates) already fully
+  // disambiguate its content, so a second, tool-specific prefix layer on top
+  // was pure redundant fragmentation (the whole reason suite-search.js
+  // needed its own per-kind local-prefix lookup just to search across
+  // tools).
+  const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
   initHelpSystem({ root: document });
@@ -122,10 +129,19 @@ async function init() {
       icon: "tabler:file-plus",
       label: "New Character",
       variant: "outline-primary",
-      // Edit-only (not the whole Character mode) — a standalone attribute
-      // beyond data-workbench-mode-panel, since Character mode alone can't
-      // distinguish the View/Edit sub-state; see applyPanelVisibility below.
-      attrs: { "data-action": "new-character", "data-workbench-mode-panel": "character", "data-workbench-subview-panel": "edit" },
+      // Mode-gated (Character mode only) via the generic mechanism, but
+      // deliberately NOT data-workbench-subview-panel="edit" — own JS-
+      // managed visibility instead (syncNewCharacterButtonVisibility below),
+      // same precedent Delete Character already set. The generic Edit-only
+      // gate made sense for Save/Duplicate (nothing to act on without an
+      // already-loaded character), but starting a FIRST character is never
+      // "editing an existing one" — gating it the same way locked a fresh
+      // install with zero characters out of ever creating one at all: the
+      // View/Edit toggle itself only appears once a character is already
+      // active (see renderViewToggle's own gate), so subView could never
+      // reach "edit" to reveal this button in the first place. Confirmed
+      // real — reported directly.
+      attrs: { "data-action": "new-character", "data-workbench-mode-panel": "character" },
     },
     {
       icon: "tabler:device-floppy",
@@ -222,6 +238,7 @@ async function init() {
     // is the cheapest way to keep the toggle correct on load/unload without
     // a second onStateChange wire-up.
     renderViewToggle();
+    syncNewCharacterButtonVisibility();
     if (!emptyStateMount) return;
     const hasRecord = mode === "template" ? hasTemplate : hasCharacter;
     emptyStateMount.innerHTML = "";
@@ -234,7 +251,22 @@ async function init() {
   }
 
   templateView = await initTemplateView({ status, undoStack, dataManager, onStateChange: renderEmptyState });
-  characterView = await initCharacterView({ status, undoStack, dataManager, onStateChange: renderEmptyState });
+  characterView = await initCharacterView({
+    status,
+    undoStack,
+    dataManager,
+    onStateChange: renderEmptyState,
+    // Called once, right after Blank/Import/Build creates a brand-new
+    // character — routes through the SAME setSubView the View/Edit toggle
+    // itself uses (not a direct state.mode write on that module's own
+    // side), so subView (this file's own source of truth for the toggle
+    // and for Delete-button visibility) never drifts out of sync with
+    // workbench-character-view.js's own state.mode the way a bypassed
+    // assignment did — confirmed real: Delete stayed visible after
+    // creating a character until a manual View/Edit/View toggle forced
+    // the two back into agreement.
+    onRequestEditMode: () => setSubView("edit"),
+  });
 
   // Selections — the Template/Character select, whichever the active Mode
   // needs (the panel's own inner rows are individually gated by data-
@@ -275,6 +307,20 @@ async function init() {
       value: mode,
       onChange: (next) => setMode(next),
     });
+  }
+
+  // New Character's own visibility, replacing the generic data-workbench-
+  // subview-panel="edit" gate (see its own attrs comment above for why):
+  // visible whenever Character mode is active AND either the sub-view is
+  // actually Edit, OR there's no active character at all yet — the second
+  // clause is what makes starting a character from a completely empty
+  // Workbench possible, since the View/Edit toggle itself doesn't exist
+  // until a character does (renderViewToggle's own gate just below).
+  function syncNewCharacterButtonVisibility() {
+    const button = document.querySelector('[data-action="new-character"]');
+    if (!button) return;
+    const show = mode === "character" && (subView === "edit" || !characterView?.hasActiveCharacter?.());
+    button.classList.toggle("d-none", !show);
   }
 
   function renderViewToggle() {
@@ -331,6 +377,7 @@ async function init() {
     applyPanelVisibility();
     renderModeToggle();
     renderViewToggle();
+    syncNewCharacterButtonVisibility();
     if (characterView) {
       if (mode === "character") void characterView.setMode(subView);
       else {
@@ -360,6 +407,7 @@ async function init() {
     subView = nextView;
     applyPanelVisibility();
     renderViewToggle();
+    syncNewCharacterButtonVisibility();
     if (characterView) void characterView.setMode(subView);
     refreshTooltips(document);
   }

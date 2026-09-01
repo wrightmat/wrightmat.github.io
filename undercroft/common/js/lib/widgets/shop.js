@@ -680,7 +680,8 @@ export function initShopWidget(
       const rarityFallback = document.createElement("select");
       rarityFallback.className = "form-select form-select-sm";
       rarityFallback.style.maxWidth = "9rem";
-      rarityFallback.title = "Rarity (only used if this item can't be auto-priced)";
+      rarityFallback.setAttribute("data-bs-toggle", "tooltip");
+      rarityFallback.setAttribute("data-bs-title", "Rarity (only used if this item can't be auto-priced)");
       const blankRarity = document.createElement("option");
       blankRarity.value = "";
       blankRarity.textContent = "Pick a rarity…";

@@ -15,7 +15,7 @@ import {
   resolveLabelsForTargets,
   loadKindLabels,
 } from "./relationship-graph.js";
-import { disposeTooltips, refreshTooltips } from "./tooltips.js";
+import { disposeTooltips, refreshTooltips, updateTooltipContent } from "./tooltips.js";
 
 function edgeOtherEnd(edge, sourceKind, sourceId) {
   const outgoing = edge.fromKind === sourceKind && edge.fromId === sourceId;
@@ -150,7 +150,7 @@ export async function renderRelationshipEditor({
       const name = record?.data?.name || record?.name || record?.title || id;
       pickedTarget = { kind: targetKind, id, name };
       pickedLabelEl.textContent = `${name} (${kindLabel})`;
-      pickedLabelEl.title = pickedLabelEl.textContent;
+      updateTooltipContent(pickedLabelEl, pickedLabelEl.textContent);
       addButton.disabled = !typeInput.value.trim();
     },
   });
@@ -179,8 +179,9 @@ export async function renderRelationshipEditor({
   // flex-grow-1 — the picked-target name gets whatever room Type doesn't
   // need, instead of sitting pinned to a small flex-basis while Type
   // ballooned. Still truncates with an ellipsis (not wrap/overflow) once
-  // the row is genuinely out of room; `title` (set alongside textContent
-  // above) surfaces the untruncated name on hover.
+  // the row is genuinely out of room; a tooltip (kept in sync via
+  // updateTooltipContent alongside textContent above) surfaces the
+  // untruncated name on hover.
   pickedLabelEl.className = "small text-body-secondary text-truncate flex-grow-1 flex-shrink-1";
   pickedLabelEl.style.minWidth = "0";
   pickedLabelEl.textContent = "No target chosen yet.";

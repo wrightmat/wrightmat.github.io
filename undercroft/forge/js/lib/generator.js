@@ -48,7 +48,13 @@ function resolveStats(tables, archetypeName, random) {
   const existingKeys = new Set(Object.keys(archetypeEntry || {}));
   const rolled = rollIndependentStats(independentRanges, existingKeys, random);
   const merged = { ...(archetypeEntry || {}), ...rolled };
-  return getStatsForArchetype({ [archetypeName]: merged }, archetypeName, tables.abilityKeys);
+  return getStatsForArchetype(
+    { [archetypeName]: merged },
+    archetypeName,
+    tables.abilityKeys,
+    tables.abilityFieldKey,
+    tables.combatBindings
+  );
 }
 
 // A System-defined "Key Expertise Skills roll higher, everything else rolls

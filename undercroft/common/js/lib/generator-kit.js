@@ -18,7 +18,7 @@
 // Generate buttons, even though Forge doesn't share the rest of this file's
 // generate/save/export/note flow.
 
-import { setDisabledTooltip } from "./tooltips.js";
+import { setDisabledTooltip, disposeTooltips, refreshTooltips } from "./tooltips.js";
 
 export async function listAllSystems(dataManager) {
   if (!dataManager) return [];
@@ -151,6 +151,7 @@ export function populateLockedFeaturesCheckList(container, features) {
     Array.from(listBox.querySelectorAll("input[type=checkbox]:checked")).map((input) => input.value)
   );
   const query = (searchInput?.value || "").trim().toLowerCase();
+  disposeTooltips(listBox);
   listBox.innerHTML = "";
   features.forEach((feature) => {
     const name = feature.name || feature.id;
@@ -175,10 +176,12 @@ export function populateLockedFeaturesCheckList(container, features) {
     labelEl.className = "form-check-label small text-truncate d-block";
     labelEl.htmlFor = checkboxId;
     labelEl.textContent = name;
-    labelEl.title = name;
+    labelEl.setAttribute("data-bs-toggle", "tooltip");
+    labelEl.setAttribute("data-bs-title", name);
     row.append(input, labelEl);
     listBox.appendChild(row);
   });
+  refreshTooltips(listBox);
 }
 
 // Same rebuild as populateLockedFeaturesCheckList above, generalized from a
@@ -213,6 +216,7 @@ export function populateStringChecklist(container, items, selected) {
     if (aChecked !== bChecked) return aChecked ? -1 : 1;
     return a.label.localeCompare(b.label);
   });
+  disposeTooltips(listBox);
   listBox.innerHTML = "";
   ordered.forEach(({ value, label }) => {
     const searchLabel = label.toLowerCase();
@@ -234,10 +238,12 @@ export function populateStringChecklist(container, items, selected) {
     labelEl.className = "form-check-label small text-truncate d-block";
     labelEl.htmlFor = checkboxId;
     labelEl.textContent = label;
-    labelEl.title = label;
+    labelEl.setAttribute("data-bs-toggle", "tooltip");
+    labelEl.setAttribute("data-bs-title", label);
     row.append(input, labelEl);
     listBox.appendChild(row);
   });
+  refreshTooltips(listBox);
 }
 
 // `toPressExportShape` is each tool's own record-shaping function (monster/
@@ -416,5 +422,23 @@ export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey =
     return defs.length ? defs : DEFAULT_ABILITY_FIELD_DEFS;
   } catch (error) {
     return DEFAULT_ABILITY_FIELD_DEFS;
+  }
+}
+
+// Raw `values` of a single named array-type System field (e.g. sys.dnd5e's
+// own "skills" list — {name, ability, sourceId} entries) — a generic
+// lookup, not a skills-specific one, since nothing here depends on what the
+// entries look like. Empty for a System with no field by that key (a
+// System with no Skills concept at all, e.g. Blades in the Dark), same
+// graceful-degradation convention every other loader in this file follows.
+export async function loadArrayFieldValues(dataManager, systemId, key) {
+  if (!dataManager || !systemId || !key) return [];
+  try {
+    const result = await dataManager.get("systems", systemId, { preferLocal: false });
+    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
+    const field = fields.find((entry) => entry.type === "array" && entry.key === key);
+    return Array.isArray(field?.values) ? field.values : [];
+  } catch (error) {
+    return [];
   }
 }

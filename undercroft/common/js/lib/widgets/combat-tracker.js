@@ -7,7 +7,7 @@
 // see the Dashboard plan this widget was built for.
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../tooltips.js";
-import { resolveBinding, setAtBinding, findBindingByRole } from "../bindings.js";
+import { resolveBinding, setAtBinding, findBindingByRole, findBindingsByRole } from "../bindings.js";
 import {
   deriveConditionsVocabulary,
   renderTagBadges,
@@ -427,9 +427,9 @@ export function initCombatTrackerWidget(
   function iconButton(iconName, label, className = "btn-outline-secondary") {
     const button = el("button", `btn btn-sm ${className}`);
     button.type = "button";
-    button.title = label;
     button.setAttribute("aria-label", label);
     button.setAttribute("data-bs-toggle", "tooltip");
+    button.setAttribute("data-bs-title", label);
     button.appendChild(icon(iconName));
     return button;
   }
@@ -615,7 +615,7 @@ export function initCombatTrackerWidget(
   async function addCombatant({ refKind, refId, name }) {
     if (!state.encounter) return;
     let resolvedName = name;
-    let stats = { hp: 0, maxHp: 0, tempHp: 0, ac: 0 };
+    let stats = { hp: 0, maxHp: 0, tempHp: 0, ac: 0, hpResourceName: "", resources: [] };
     if (refKind && refId) {
       try {
         const result = await dataManager.get(refKind, refId, { preferLocal: false });
@@ -636,6 +636,14 @@ export function initCombatTrackerWidget(
       maxHp: stats.maxHp,
       tempHp: stats.tempHp,
       ac: stats.ac,
+      // Which named resource `hp`/`maxHp` actually represent for this
+      // System (e.g. "Hit Points"), plus every OTHER `resource`-role
+      // binding this System defines (e.g. d20 Modern's Action Points,
+      // Daggerheart's Hope) — read-only mirrors, no edit UI of their own in
+      // Combat Tracker, but real data a different consumer (Orrery's Marker
+      // Resource Bar) can read. See resolveCombatantStats' own comment.
+      hpResourceName: stats.hpResourceName,
+      resources: stats.resources,
       conditions: [],
       hiddenTags: [],
       isPc: refKind === "character",
@@ -1085,6 +1093,30 @@ export function initCombatTrackerWidget(
         const resolvedTags = resolveBinding(tags.binding, payload);
         if (Array.isArray(resolvedTags)) combatant.conditions = resolvedTags.slice();
       }
+      // Every OTHER resource-role binding (Action Points, Hope, ...) beyond
+      // the primary one above — same "leave alone if unresolvable" fallback,
+      // matched by name against whatever `combatant.resources` already has
+      // (seeded once at addCombatant time) so a resource this System no
+      // longer defines just stops updating rather than vanishing outright.
+      const secondaryResources = findBindingsByRole(state.combatBindings, "resource").slice(1);
+      if (secondaryResources.length && Array.isArray(combatant.resources)) {
+        secondaryResources.forEach((binding) => {
+          const existing = combatant.resources.find((entry) => entry.name === binding.name);
+          if (!existing || !binding.binding) return;
+          const current = resolveBinding(binding.binding, payload);
+          if (typeof current === "number") existing.current = current;
+          if (binding.maxPath) {
+            const max = resolveBinding(binding.maxPath, payload);
+            if (typeof max === "number") existing.max = max;
+          } else if (typeof binding.max === "number") {
+            existing.max = binding.max;
+          }
+          if (binding.tempPath) {
+            const temp = resolveBinding(binding.tempPath, payload);
+            if (typeof temp === "number") existing.temp = temp;
+          }
+        });
+      }
       markDirty();
     } catch (error) {
       // Character deleted/inaccessible — leave the combatant's existing
@@ -1390,7 +1422,8 @@ export function initCombatTrackerWidget(
   // background).
   function renderTurnBadge() {
     const marker = el("span", "text-warning fw-bold", "▶");
-    marker.title = "Current turn";
+    marker.setAttribute("data-bs-toggle", "tooltip");
+    marker.setAttribute("data-bs-title", "Current turn");
     marker.setAttribute("aria-label", "Current turn");
     return marker;
   }
@@ -1569,9 +1602,9 @@ export function initCombatTrackerWidget(
     hpDeltaInput.type = "number";
     hpDeltaInput.style.width = "4.5rem";
     hpDeltaInput.placeholder = "±HP";
-    hpDeltaInput.title = "Remove this much HP — type a negative number to heal instead";
     hpDeltaInput.setAttribute("aria-label", "Remove HP");
     hpDeltaInput.setAttribute("data-bs-toggle", "tooltip");
+    hpDeltaInput.setAttribute("data-bs-title", "Remove this much HP — type a negative number to heal instead");
     hpDeltaInput.addEventListener("change", () => {
       const amount = Number(hpDeltaInput.value);
       hpDeltaInput.value = "";
@@ -1707,6 +1740,7 @@ export function initCombatTrackerWidget(
     // added to the row, and broke again each time the exemption's own
     // query hook changed. Making the row genuinely stable removes the bug
     // class instead of chasing its next instance.
+    disposeTooltips(refs.badgesMount);
     refs.badgesMount.innerHTML = "";
     refs.badgesMount.appendChild(renderCombatantTagBadges(combatant, { removable: true }));
     applyTagVisibilityState(refs.tagVisibilityButton, pendingTagHidden);
@@ -2190,7 +2224,7 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
     encounter.started = false;
   } else if (actionName === "addCombatant") {
     let resolvedName = params.name;
-    let stats = { hp: 0, maxHp: 0, tempHp: 0, ac: 0 };
+    let stats = { hp: 0, maxHp: 0, tempHp: 0, ac: 0, hpResourceName: "", resources: [] };
     let combatBindings = null;
     if (params.refKind && params.refId) {
       try {
@@ -2214,6 +2248,9 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
       maxHp: stats.maxHp,
       tempHp: stats.tempHp,
       ac: stats.ac,
+      // See addCombatant's own identical comment above.
+      hpResourceName: stats.hpResourceName,
+      resources: stats.resources,
       conditions: [],
       hiddenTags: [],
       isPc: params.refKind === "character",

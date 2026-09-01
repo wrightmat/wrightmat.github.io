@@ -16,7 +16,8 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "character"
+      "character",
+      "feat"
     ]
   },
   "synergizesWith": [],

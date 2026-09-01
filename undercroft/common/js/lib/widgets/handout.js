@@ -27,6 +27,7 @@ import { loadLibraryData, fetchKindEntriesWithIds, loadLibraryKinds } from "../c
 import { resolveIsSpotlighted, listPrintTemplates } from "../spotlight.js";
 import { resolveToolContextPath } from "../app-shell.js";
 import { el } from "../dom.js";
+import { disposeTooltips, refreshTooltips } from "../tooltips.js";
 // Repository's own markdown renderer — journal pages are plain markdown
 // text, never a Press template, so they get a completely different render
 // path below (renderJournalEntry) than every other Handout kind.
@@ -414,6 +415,7 @@ export function initHandoutWidget(
       titleIndex = null;
     }
     if (destroyed) return;
+    disposeTooltips(container);
     container.innerHTML = "";
     const card = el("div", "border rounded-3 bg-body p-3 d-flex flex-column gap-2");
     // Always fills the widget's own mount point (a flex column sized to
@@ -458,6 +460,7 @@ export function initHandoutWidget(
       })
     );
     container.appendChild(card);
+    refreshTooltips(container);
   }
 
   // Crops a rendered page down to just its one drawn tile — ported straight
@@ -685,6 +688,7 @@ export function initHandoutWidget(
     async destroy(removed) {
       destroyed = true;
       resizeObserver?.disconnect();
+      disposeTooltips(renderTarget);
       renderTarget.innerHTML = "";
       if (removed && visible && groupId) {
         try {

@@ -33,6 +33,7 @@ import { preloadDiceOverlay } from "./dice-overlay.js";
 import { resolveGroupContext } from "./group-context.js";
 import { resolveActiveSpotlightId } from "../spotlight.js";
 import { el } from "../dom.js";
+import { disposeTooltips, refreshTooltips } from "../tooltips.js";
 
 const POLL_INTERVAL_MS = 30000;
 const TAG_DATALIST_ID = "undercroft-character-sheet-tag-suggestions";
@@ -124,6 +125,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   let pollTimer = 0;
 
   function renderError(message) {
+    disposeTooltips(container);
     container.innerHTML = "";
     container.appendChild(el("p", "text-danger small mb-0", message));
   }
@@ -276,6 +278,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
 
   function render() {
     if (destroyed) return;
+    disposeTooltips(container);
     container.innerHTML = "";
     const wrap = el("div", "d-flex flex-column gap-2");
 
@@ -405,6 +408,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     wrap.appendChild(notesSection);
 
     container.appendChild(wrap);
+    refreshTooltips(container);
   }
 
   async function load() {
@@ -455,6 +459,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       destroyed = true;
       if (pollTimer) window.clearInterval(pollTimer);
       liveStream?.close();
+      disposeTooltips(container);
       container.innerHTML = "";
     },
   };
