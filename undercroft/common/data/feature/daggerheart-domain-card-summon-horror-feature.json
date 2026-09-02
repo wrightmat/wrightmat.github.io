@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-summon-horror-feature",
+  "name": "feat.daggerheart-domain-card-summon-horror-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll against a target within Far range. Ona success, spend a Hope to call forth an otherworldly creature to attack them and deal d10 magic damage using your Proficiency. The target must succeed on a Reaction Roll (12) to steel themselves from the horror or mark 1d4 Stress.\n\nAfter making the attack, the creature dissipates.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll against a target within Far range. Ona success, spend a Hope to call forth an otherworldly creature to attack them and deal d10 magic damage using your Proficiency. The target must succeed on a Reaction Roll (12) to steel themselves from the horror or mark 1d4 Stress.\n\nAfter making the attack, the creature dissipates."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

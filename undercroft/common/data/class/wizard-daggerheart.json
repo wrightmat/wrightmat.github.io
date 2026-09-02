@@ -1,0 +1,38 @@
+{
+  "index": "wizard",
+  "name": "Wizard",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Whether through an institution or individual study, those known as wizards acquire and hone immense magical power over years of learning using a variety of tools, including books, stones, potions, and herbs. Some wizards dedicate their lives to mastering a particular school of magic, while others learn from a wide variety of disciplines. Many wizards become wise and powerful figures in their communities, advising rulers, providing medicines and healing, and even leading war councils. While these mages all work toward the common goal of collecting magical knowledge, wizards often have the most conflict within their own ranks, as the acquisition, keeping, and sharing of powerful secrets is a topic of intense debate that has resulted in innumerable deaths.",
+  "domains": [
+    "Codex",
+    "Splendor"
+  ],
+  "evasion": 11,
+  "hp": 5,
+  "classItems": [
+    "A book you're trying to translate",
+    "A tiny, harmless elemental pet"
+  ],
+  "hopeFeature": {
+    "name": "Not This Time",
+    "description": "Spend 3 Hope to force an adversary within Far range to reroll an attack or damage roll."
+  },
+  "hopeFeatureId": "feat.daggerheart-class-wizard-hope-not-this-time",
+  "features": [
+    {
+      "name": "Prestidigitation",
+      "description": "You can perform harmless, subtle magical effects at will. For example, you can change an object's color, create a smell, light a candle, cause a tiny object to float, illuminate a room, or repair a small object."
+    },
+    {
+      "name": "Strange Patterns",
+      "description": "Choose a number between 1 and 12. When you roll that number on a Duality Die, gain a Hope or clear a Stress.\n\nYou can change this number when you take a long rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-class-wizard-prestidigitation",
+    "feat.daggerheart-class-wizard-strange-patterns"
+  ],
+  "subclasses": []
+}

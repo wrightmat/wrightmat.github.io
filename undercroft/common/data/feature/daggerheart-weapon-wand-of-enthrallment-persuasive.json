@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-wand-of-enthrallment-persuasive",
+  "name": "Persuasive",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Before you make a Presence Roll, you can mark a Stress to gain a +2 bonus to the result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Before you make a Presence Roll, you can mark a Stress to gain a +2 bonus to the result."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-companion-case-feature",
+  "name": "feat.daggerheart-items-companion-case-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This case can fit a small animal companion. While the companion is inside, the animal and case are immune to all damage and harmful effects.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This case can fit a small animal companion. While the companion is inside, the animal and case are immune to all damage and harmful effects."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

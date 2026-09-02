@@ -1,0 +1,22 @@
+{
+  "index": "legendary-arcane-gauntlets",
+  "name": "Legendary Arcane Gauntlets",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 12,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

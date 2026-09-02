@@ -1,0 +1,19 @@
+{
+  "index": "companion-case",
+  "name": "Companion Case",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "This case can fit a small animal companion. While the companion is inside, the animal and case are immune to all damage and harmful effects."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-companion-case-feature"
+  ]
+}

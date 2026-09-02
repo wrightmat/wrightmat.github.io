@@ -1,0 +1,29 @@
+{
+  "index": "ghostblade",
+  "name": "Ghostblade",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 7,
+    "type": "Physical or Magical"
+  },
+  "features": [
+    {
+      "name": "Otherworldly",
+      "description": "On a successful attack, you can deal physical or magic damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-ghostblade-otherworldly"
+  ]
+}

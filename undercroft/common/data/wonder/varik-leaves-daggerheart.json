@@ -1,0 +1,19 @@
+{
+  "index": "varik-leaves",
+  "name": "Varik Leaves",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can eat these paired leaves to immediately gain 2 Hope."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-varik-leaves-feature"
+  ]
+}

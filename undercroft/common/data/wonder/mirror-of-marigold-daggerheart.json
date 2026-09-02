@@ -1,0 +1,19 @@
+{
+  "index": "mirror-of-marigold",
+  "name": "Mirror of Marigold",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When you take damage, you can spend a Hope to negate that damage, after which the mirror shatters."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-mirror-of-marigold-feature"
+  ]
+}

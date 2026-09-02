@@ -1,0 +1,19 @@
+{
+  "index": "gecko-gloves",
+  "name": "Gecko Gloves",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can climb up vertical surfaces and across ceilings."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-gecko-gloves-feature"
+  ]
+}

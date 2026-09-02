@@ -19,5 +19,25 @@
       "storedEffect": "delivers a spoken message imitating the caster's voice",
       "triggerCondition": "a visual/audible circumstance within 30 feet, chosen on activation"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

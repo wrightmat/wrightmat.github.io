@@ -1,0 +1,22 @@
+{
+  "index": "words-of-discord",
+  "name": "Words of Discord",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Grace",
+    "level": 5,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Whisper words of discord to an adversary within Melee range and make a Spellcast Roll (13). On a success, the target must mark a Stress and make an attack against another adversary instead of against you or your allies.\n\nOnce this attack is over, the target realizes what happened. The next time you cast Words of Discord on them, gain a -5 penalty to the Spellcast Roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-words-of-discord-feature"
+  ]
+}

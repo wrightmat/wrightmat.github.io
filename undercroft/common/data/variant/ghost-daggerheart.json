@@ -1,0 +1,23 @@
+{
+  "index": "ghost",
+  "name": "Ghost",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "character",
+  "description": "Ghosts are a spirit trapped between the mortal realm and the veil of death.",
+  "features": [
+    {
+      "name": "Spirit Form",
+      "description": "Your physical form can shift between corporeal and incorporeal. Mark a Stress to transition into and out of your Spirit Form. While in Spirit Form, you can move through solid objects, are immune to physical damage, and take double magic damage. You can spend 2 Hope to attack or physically interact with the material world."
+    },
+    {
+      "name": "Ephemeral",
+      "description": "Cross out a Hit Point slot when you take this card and when you increase your tier. When you mark your last Hit Point, you must choose Blaze of Glory as your death move."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-transformation-ghost-spirit-form",
+    "feat.daggerheart-transformation-ghost-ephemeral"
+  ]
+}

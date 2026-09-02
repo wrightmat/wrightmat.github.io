@@ -1,0 +1,19 @@
+{
+  "index": "major-arcane-shard",
+  "name": "Major Arcane Shard",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can make a Finesse Roll to throw this shard at a group of adversaries within Far range. Targets you succeed against take (d20 magic damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-major-arcane-shard-feature"
+  ]
+}

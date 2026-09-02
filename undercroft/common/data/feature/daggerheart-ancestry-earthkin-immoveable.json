@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-earthkin-immoveable",
+  "name": "Immoveable",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While your feet are touching the ground, you cannot be lifted or moved against your will.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While your feet are touching the ground, you cannot be lifted or moved against your will."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

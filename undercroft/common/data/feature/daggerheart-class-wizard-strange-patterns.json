@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-wizard-strange-patterns",
+  "name": "Strange Patterns",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Choose a number between 1 and 12. When you roll that number on a Duality Die, gain a Hope or clear a Stress.\n\nYou can change this number when you take a long rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose a number between 1 and 12. When you roll that number on a Duality Die, gain a Hope or clear a Stress.\n\nYou can change this number when you take a long rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

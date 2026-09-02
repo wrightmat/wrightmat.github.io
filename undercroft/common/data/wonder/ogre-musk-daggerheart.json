@@ -1,0 +1,19 @@
+{
+  "index": "ogre-musk",
+  "name": "Ogre Musk",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can use this musk to prevent anyone from tracking you by mundane or magical means until your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-ogre-musk-feature"
+  ]
+}

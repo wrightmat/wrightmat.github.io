@@ -13,5 +13,20 @@
   },
   "featureIds": [
     "feat.divine-consultation"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
+  }
 }

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-startling",
+  "name": "Startling",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to crack the whip and force all adversaries within Melee range back to Close range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to crack the whip and force all adversaries within Melee range back to Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-underborne-low-light-living",
+  "name": "Low-Light Living",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you're in an area with low light or heavy shadow, you have advantage on rolls to hide, investigate, or perceive details within that area.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you're in an area with low light or heavy shadow, you have advantage on rolls to hide, investigate, or perceive details within that area."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

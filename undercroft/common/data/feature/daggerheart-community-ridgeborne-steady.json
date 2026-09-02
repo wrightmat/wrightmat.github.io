@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-ridgeborne-steady",
+  "name": "Steady",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on rolls to traverse dangerous cliffs and ledges, navigate harsh environments, and use your survival knowledge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on rolls to traverse dangerous cliffs and ledges, navigate harsh environments, and use your survival knowledge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

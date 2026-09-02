@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-redthorn-saliva-feature",
+  "name": "feat.daggerheart-consumables-redthorn-saliva-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can apply this saliva to a weapon that deals physical damage to add a d12 to your next damage roll with that weapon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can apply this saliva to a weapon that deals physical damage to add a d12 to your next damage roll with that weapon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

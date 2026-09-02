@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-piercing-arrows-feature",
+  "name": "feat.daggerheart-items-piercing-arrows-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Three times per rest when you succeed on an attack with one of these arrows, you can add your Proficiency to the damage roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Three times per rest when you succeed on an attack with one of these arrows, you can add your Proficiency to the damage roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

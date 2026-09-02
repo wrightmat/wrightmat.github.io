@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-full-surge",
+  "name": "Full Surge",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, mark 3 Stress to push your body to its limits. Gain a +2 bonus to all of your character traits until your next rest.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per long rest, mark 3 Stress to push your body to its limits. Gain a +2 bonus to all of your character traits until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 8,
+  "recallCost": 1
+}

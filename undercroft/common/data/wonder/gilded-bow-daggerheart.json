@@ -1,0 +1,29 @@
+{
+  "index": "gilded-bow",
+  "name": "Gilded Bow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 7,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Self-Correcting",
+      "description": "When you roll a 1 on a damage die, it deals 6 damage instead."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-gilded-bow-self-correcting"
+  ]
+}

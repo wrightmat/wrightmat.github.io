@@ -1,0 +1,29 @@
+{
+  "index": "blessed-anlace",
+  "name": "Blessed Anlace",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Instinct",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 6,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Healing",
+      "description": "During downtime, automatically clear a Hit Point."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-blessed-anlace-healing"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-stalwart-foundation-iron-will",
+  "name": "Foundation: Iron Will",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you take physical damage, you can mark an additional Armor Slot to reduce the severity.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you take physical damage, you can mark an additional Armor Slot to reduce the severity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

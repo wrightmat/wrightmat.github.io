@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-martial-artist-specialization-spirit-blast",
+  "name": "Specialization: Spirit Blast",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend a Focus to make an Instinct Roll against an adversary within Close range. On a success, deal d20+3 magic damage using your Proficiency, and you can spend an additional Focus to make them temporarily Vulnerable.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend a Focus to make an Instinct Roll against an adversary within Close range. On a success, deal d20+3 magic damage using your Proficiency, and you can spend an additional Focus to make them temporarily Vulnerable."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

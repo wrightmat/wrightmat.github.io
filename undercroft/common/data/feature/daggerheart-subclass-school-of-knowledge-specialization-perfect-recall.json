@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-school-of-knowledge-specialization-perfect-recall",
+  "name": "Specialization: Perfect Recall",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, when you recall a domain card in your vault, you can reduce its Recall Cost by 1.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per rest, when you recall a domain card in your vault, you can reduce its Recall Cost by 1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

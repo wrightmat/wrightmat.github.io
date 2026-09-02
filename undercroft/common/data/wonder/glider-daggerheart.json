@@ -1,0 +1,19 @@
+{
+  "index": "glider",
+  "name": "Glider",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "While falling, you can mark a Stress to deploy this small parachute and glide safely to the ground."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-glider-feature"
+  ]
+}

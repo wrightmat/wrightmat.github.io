@@ -63,63 +63,63 @@
                 <div class="d-grid gap-2" data-palette>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="container" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:layout-grid-add" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Container</div>
                       <div class="text-body-secondary extra-small text-truncate">Grids and tabs</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="icon" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:icons" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Icon</div>
                       <div class="text-body-secondary extra-small text-truncate">A single icon glyph</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="image" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:photo" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Image</div>
                       <div class="text-body-secondary extra-small text-truncate">Portraits, logos, or patterns</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="input" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:forms" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Input</div>
-                      <div class="text-body-secondary extra-small text-truncate">Text, number, select, radio, checkbox</div>
+                      <div class="text-body-secondary extra-small text-truncate">Text, number, select, and more</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="repeater" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:list-details" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Repeater</div>
                       <div class="text-body-secondary extra-small text-truncate">Inventory and item lists</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="select-group" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:toggle-right" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Select Group</div>
                       <div class="text-body-secondary extra-small text-truncate">Pills, tags, or segmented toggles</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="text" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:typography" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Text</div>
                       <div class="text-body-secondary extra-small text-truncate">Static text or headings</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="toggle" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:adjustments" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Toggle</div>
                       <div class="text-body-secondary extra-small text-truncate">Multi-state proficiencies</div>
                     </div>
                   </div>
                   <div class="workbench-palette-item border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 hover-lift" data-component-type="track" data-sortable-handle="true">
                     <span class="iconify fs-4 text-primary" data-icon="tabler:timeline" aria-hidden="true"></span>
-                    <div class="d-flex flex-column">
+                    <div class="d-flex flex-column flex-grow-1" style="min-width: 0">
                       <div class="fw-semibold">Track</div>
                       <div class="text-body-secondary extra-small text-truncate">Progress bars or clocks</div>
                     </div>
@@ -397,29 +397,80 @@
                  navigation between steps instead of a single reveal.
                  Template select reuses the same field as Blank mode. -->
             <div class="d-none d-flex flex-column gap-3" data-add-character-panel="build" data-build-wizard>
-              <div class="d-flex flex-column gap-3" data-build-step="identity">
+              <!-- Only fields genuinely required to create ANY valid
+                   Workbench character, for ANY System, live on this step —
+                   it's the one step with no System-declared configuration
+                   at all (see REQUIRED_STEP_LABEL's own comment,
+                   workbench-character-view.js), so it can never grow an
+                   optional field a given System doesn't want. Pronouns
+                   isn't universally required — it lives on Details
+                   instead, alongside Image URL. Named "required," not
+                   "identity" — a future System's own buildSteps might
+                   legitimately want a real declared step called
+                   "identity" (e.g. free-form backstory fields), so this
+                   fixed landing step shouldn't squat on that name. -->
+              <div class="d-flex flex-column gap-3" data-build-step="required">
                 <div data-field-mount="build-character-name"></div>
                 <div data-field-mount="build-character-template"></div>
+                <!-- Shown instead of letting the wizard proceed with any
+                     stand-in step sequence — a System with no `buildSteps`
+                     declared has no content-step sequence for the wizard
+                     to run at all, so this blocks Next entirely rather
+                     than guessing one (see buildWizardSupported,
+                     workbench-character-view.js). -->
+                <div class="alert alert-warning d-none mb-0" role="alert" data-build-unsupported-message>
+                  This System hasn't been set up for the Build Wizard yet — no <code>buildSteps</code> are declared on its System record. Add a <code>buildSteps</code> entry to it in Loom to enable Build Character here.
+                </div>
               </div>
               <div class="d-none" data-build-step="species">
-                <label class="form-label fw-semibold">Species</label>
+                <!-- Text set dynamically from this step's own declared
+                     `label` (getBuildStepEntry) — no fallback text. -->
+                <label class="form-label fw-semibold" data-build-step-caption="species">Species</label>
                 <div data-build-species-mount></div>
               </div>
               <div class="d-none" data-build-step="class">
-                <label class="form-label fw-semibold">Class</label>
+                <label class="form-label fw-semibold" data-build-step-caption="class">Class</label>
                 <div data-build-class-mount></div>
               </div>
-              <!-- Only ever shown when the picked Class's own data says it
-                   grants its subclass choice at level 1 (getSubclassGrantLevel
-                   in workbench-character-view.js) — spliced into the active
-                   step sequence dynamically, not a fixed part of it. -->
+              <!-- Only ever reachable when the System's own buildSteps
+                   declares a "subclass" step AND (its own atCreation:true —
+                   Daggerheart, unconditional — OR the picked Class's own
+                   data says it grants its subclass choice at level 1,
+                   getSubclassGrantLevel) — see getActiveBuildSteps. -->
               <div class="d-none" data-build-step="subclass">
-                <label class="form-label fw-semibold">Subclass</label>
+                <label class="form-label fw-semibold" data-build-step-caption="subclass">Subclass</label>
                 <div data-build-subclass-mount></div>
               </div>
               <div class="d-none" data-build-step="background">
-                <label class="form-label fw-semibold">Background</label>
+                <label class="form-label fw-semibold" data-build-step-caption="background">Background</label>
                 <div data-build-background-mount></div>
+              </div>
+              <!-- Used instead of the separate species/background steps
+                   above when the System's own buildSteps declares a
+                   "heritage" step (Daggerheart: Ancestry + Community chosen
+                   together, with an optional Mixed Ancestry blend) — see
+                   getActiveBuildSteps/getBuildStepEntry. -->
+              <div class="d-none d-flex flex-column gap-3" data-build-step="heritage">
+                <div>
+                  <label class="form-label fw-semibold" data-build-heritage-pick-label="0">Species</label>
+                  <div data-build-heritage-species-mount></div>
+                </div>
+                <!-- Visibility driven by the heritage step's own declared
+                     allowMixedAncestry — a System that doesn't opt into
+                     this mechanic never sees the checkbox at all. -->
+                <div class="form-check d-none" data-build-mixed-ancestry-step>
+                  <input class="form-check-input" type="checkbox" id="build-mixed-ancestry" data-build-mixed-ancestry>
+                  <label class="form-check-label" for="build-mixed-ancestry">Mixed Ancestry</label>
+                </div>
+                <div class="d-none" data-build-second-species-step>
+                  <label class="form-label fw-semibold" data-build-heritage-second-pick-label>Second Species</label>
+                  <p class="text-body-secondary small mb-1">Take the first ancestry feature from your primary species above, and the second ancestry feature from this one.</p>
+                  <div data-build-second-species-mount></div>
+                </div>
+                <div>
+                  <label class="form-label fw-semibold" data-build-heritage-pick-label="1">Background</label>
+                  <div data-build-heritage-background-mount></div>
+                </div>
               </div>
               <div class="d-none d-flex flex-column gap-3" data-build-step="abilities">
                 <div class="btn-group" role="group" aria-label="Ability score method">
@@ -429,8 +480,22 @@
                 </div>
                 <div data-build-abilities-mount></div>
               </div>
+              <!-- Fully generic — NOT specific to Experiences or any other
+                   one concept. renderBuildInputStep renders exactly the
+                   labeled text inputs this System's own "input" buildStep
+                   entry declares (`inputs[]`), writing each one to
+                   `targetArrayPath`/`itemKey` (Daggerheart: Experiences —
+                   see sys.daggerheart.json's own "input" entry) — no
+                   fixed count, no fixed labels, no Experiences-specific
+                   text anywhere in this markup or its own JS. Any future
+                   System's own "type a few labeled things" step reuses
+                   this exact panel. -->
+              <div class="d-none d-flex flex-column gap-3" data-build-step="input">
+                <div data-build-input-mount></div>
+              </div>
               <div class="d-none d-flex flex-column gap-3" data-build-step="details">
                 <p class="text-body-secondary small mb-0">Optional — you can always change these later.</p>
+                <div data-field-mount="build-character-pronouns"></div>
                 <div data-field-mount="build-character-image"></div>
               </div>
               <div class="d-none" data-build-step="review">

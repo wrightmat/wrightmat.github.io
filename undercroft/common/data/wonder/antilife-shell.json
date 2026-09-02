@@ -19,5 +19,15 @@
       "shape": "10-foot radius, moves with you",
       "exemptions": "undead and constructs"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": []
   }
 }

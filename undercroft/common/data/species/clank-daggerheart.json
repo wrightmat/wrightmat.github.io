@@ -29,5 +29,20 @@
       "Forge"
     ],
     "lastNames": []
-  }
+  },
+  "index": "clank",
+  "features": [
+    {
+      "name": "Purposeful Design",
+      "description": "Decide who made you and for what purpose. At character creation, choose one of your Experiences that best aligns with this purpose and gain a permanent +1 bonus to it."
+    },
+    {
+      "name": "Efficient",
+      "description": "When you take a short rest, you can choose a long rest move instead of a short rest move."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-clank-purposeful-design",
+    "feat.daggerheart-ancestry-clank-efficient"
+  ]
 }

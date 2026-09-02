@@ -13,5 +13,15 @@
   },
   "featureIds": [
     "feat.restrict-movement"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
+  }
 }

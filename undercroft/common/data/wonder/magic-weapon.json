@@ -16,5 +16,25 @@
   ],
   "featureTiers": {
     "feat.weapon-enhancement": "plus-1"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

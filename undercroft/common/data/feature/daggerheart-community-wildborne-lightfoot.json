@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-wildborne-lightfoot",
+  "name": "Lightfoot",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your movement is naturally silent. You have advantage on rolls to move without being heard.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your movement is naturally silent. You have advantage on rolls to move without being heard."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-arcane-cloak-feature",
+  "name": "feat.daggerheart-items-arcane-cloak-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "A creature with a Spellcast trait wearing this cloak can adjust its color, texture, and size at will.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature with a Spellcast trait wearing this cloak can adjust its color, texture, and size at will."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-harrowbone-armor-resilient",
+  "name": "Resilient",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Before you mark your last Armor Slot, roll a d6. On a result of 6, reduce the severity by one threshold without marking an Armor Slot.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Before you mark your last Armor Slot, roll a d6. On a result of 6, reduce the severity by one threshold without marking an Armor Slot."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "index": "sword-of-light-flame",
+  "name": "Sword of Light & Flame",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 11,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Hot",
+      "description": "This weapon cuts through solid material."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-sword-of-light-flame-hot"
+  ]
+}

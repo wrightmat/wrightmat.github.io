@@ -1,0 +1,29 @@
+{
+  "index": "longbow",
+  "name": "Longbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 1,
+    "trait": "Agility",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 3,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Cumbersome",
+      "description": "-1 to Finesse"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-cumbersome"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-elf-quick-reactions",
+  "name": "Quick Reactions",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to gain advantage on a reaction roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to gain advantage on a reaction roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,22 @@
+{
+  "index": "legendary-spear",
+  "name": "Legendary Spear",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Finesse",
+    "range": "Very Close",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 12,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

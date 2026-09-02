@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-druid-wildtouch",
+  "name": "Wildtouch",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can perform harmless, subtle effects that involve nature -- such as causing a flower to rapidly grow, summoning a slight gust of wind, or starting a campfire -- at will.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can perform harmless, subtle effects that involve nature -- such as causing a flower to rapidly grow, summoning a slight gust of wind, or starting a campfire -- at will."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

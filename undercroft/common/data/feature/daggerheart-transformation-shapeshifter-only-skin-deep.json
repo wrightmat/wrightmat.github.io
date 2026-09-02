@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-shapeshifter-only-skin-deep",
+  "name": "Only Skin Deep",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you Change Shape, you only gain the benefit of one of the ancestry's features, which you select when you choose the ancestry. You can spend a downtime move to switch which of your ancestry's features you gain the benefit of.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you Change Shape, you only gain the benefit of one of the ancestry's features, which you select when you choose the ancestry. You can spend a downtime move to switch which of your ancestry's features you gain the benefit of."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-endless-mastery-dark-aegis",
+  "name": "Mastery: Dark Aegis",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, when you would mark any number of Hit Points, you can spend a Favor instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, when you would mark any number of Hit Points, you can spend a Favor instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

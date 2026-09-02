@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-brawler-combo-strikes",
+  "name": "Combo Strikes",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "After making a damage roll with a Melee weapon but before dealing that damage to the target, mark a Stress to start a combo strike. When you do, roll your Combo Die and note its value. Then, roll your Combo Die again. If the value of the second roll is equal to or greater than your first roll, continue rolling until the latest Combo Die's roll is less than the roll that preceeded it. Total all rolled values and add that amount to your weapon's damage. These values cannot be adjusted by features that affect damage dice.\n\nYour Combo Die starts as a d4. When you level up, once per tier you may use one of your advancement options to increase your Combo Die instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "After making a damage roll with a Melee weapon but before dealing that damage to the target, mark a Stress to start a combo strike. When you do, roll your Combo Die and note its value. Then, roll your Combo Die again. If the value of the second roll is equal to or greater than your first roll, continue rolling until the latest Combo Die's roll is less than the roll that preceeded it. Total all rolled values and add that amount to your weapon's damage. These values cannot be adjusted by features that affect damage dice.\n\nYour Combo Die starts as a d4. When you level up, once per tier you may use one of your advancement options to increase your Combo Die instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

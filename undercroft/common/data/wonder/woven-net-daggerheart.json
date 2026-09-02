@@ -1,0 +1,19 @@
+{
+  "index": "woven-net",
+  "name": "Woven Net",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can make a Finesse Roll using this net to trap a small creature. A trapped target can break free with a successful Attack Roll (16)."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-woven-net-feature"
+  ]
+}

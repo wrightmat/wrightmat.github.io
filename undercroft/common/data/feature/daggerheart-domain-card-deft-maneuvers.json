@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-deft-maneuvers",
+  "name": "Deft Maneuvers",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, mark a Stress to sprint anywhere within Far range without making an Agility Roll to get there.\n\nIf you end this movement within Melee range of an adversary and immediately make an attack against them, gain a +1 bonus to the attack roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per rest, mark a Stress to sprint anywhere within Far range without making an Agility Roll to get there.\n\nIf you end this movement within Melee range of an adversary and immediately make an attack against them, gain a +1 bonus to the attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 1,
+  "recallCost": 0
+}

@@ -1,0 +1,29 @@
+{
+  "index": "spiked-shield",
+  "name": "Spiked Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 2,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 2,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Double Duty",
+      "description": "+1 to Armor Score; +1 to primary weapon damage within Melee range"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-spiked-shield-double-duty"
+  ]
+}

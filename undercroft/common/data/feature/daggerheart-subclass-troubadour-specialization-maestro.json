@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-troubadour-specialization-maestro",
+  "name": "Specialization: Maestro",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your rallying songs steel the courage of those who listen. When you give a Rally Die to an ally, they can gain a Hope or clear a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your rallying songs steel the courage of those who listen. When you give a Rally Die to an ally, they can gain a Hope or clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,23 @@
+{
+  "index": "channeling-armor",
+  "name": "Channeling Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 13,
+  "baseSevereThreshold": 36,
+  "baseScore": 5,
+  "features": [
+    {
+      "name": "Channeling",
+      "description": "+1 to Spellcast Rolls"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-channeling-armor-channeling"
+  ]
+}

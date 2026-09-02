@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-highborne-privilege",
+  "name": "Privilege",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on rolls to consort with nobles, negotiate prices, or leverage your reputation to get what you want.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on rolls to consort with nobles, negotiate prices, or leverage your reputation to get what you want."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-wordsmith-mastery-epic-poetry",
+  "name": "Mastery: Epic Poetry",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your Rally Die increases to a d10. Additionally, when you Help an Ally, you can narrate the moment as if you were writing the tale of their heroism in a memoir. When you do, roll a d10 as your advantage die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your Rally Die increases to a d10. Additionally, when you Help an Ally, you can narrate the moment as if you were writing the tale of their heroism in a memoir. When you do, roll a d10 as your advantage die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "index": "meridian-cutlass",
+  "name": "Meridian Cutlass",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 5,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Dueling",
+      "description": "When there are no other creatures within Close range of the target, gain advantage on your attack roll against them."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-meridian-cutlass-dueling"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "index": "fusion-gloves",
+  "name": "Fusion Gloves",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Knowledge",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 9,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Bonded",
+      "description": "Gain a bonus to your damage rolls equal to your level."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-fusion-gloves-bonded"
+  ]
+}

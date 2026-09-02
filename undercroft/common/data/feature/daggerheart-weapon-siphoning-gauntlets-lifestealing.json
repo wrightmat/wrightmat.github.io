@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-siphoning-gauntlets-lifestealing",
+  "name": "Lifestealing",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, roll a d6. On a result of 6, clear a Hit Point or clear a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, roll a d6. On a result of 6, clear a Hit Point or clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

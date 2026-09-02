@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-strategic-approach",
+  "name": "Strategic Approach",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "After a long rest, place a number of tokens equal to your Knowledge on this card (minimum 1). The first time you move within Close range of an adversary and make an attack against them, you can spend one token to choose one of the following options:\n\n- You make the attack with advantage.\n- You clear a Stress on an ally within Melee range of the adversary.\n- You add a d8 to your damage roll.\n\nWhen you take a long rest, clear all unspent tokens.",
+  "mechanics": {
+    "type": "active",
+    "text": "After a long rest, place a number of tokens equal to your Knowledge on this card (minimum 1). The first time you move within Close range of an adversary and make an attack against them, you can spend one token to choose one of the following options:\n\n- You make the attack with advantage.\n- You clear a Stress on an ally within Melee range of the adversary.\n- You add a d8 to your damage roll.\n\nWhen you take a long rest, clear all unspent tokens."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 2,
+  "recallCost": 1
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-hideous-retribution-feature",
+  "name": "feat.daggerheart-domain-card-hideous-retribution-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an ally within Close range takes damage from a target you can see, you can make a Spellcast Reaction Roll against the target. On a success, mark a Stress to deal them d6 magic damage using your Proficiency.",
+  "mechanics": {
+    "type": "active",
+    "text": "When an ally within Close range takes damage from a target you can see, you can make a Spellcast Reaction Roll against the target. On a success, mark a Stress to deal them d6 magic damage using your Proficiency."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

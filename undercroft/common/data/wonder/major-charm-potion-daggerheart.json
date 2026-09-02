@@ -1,0 +1,19 @@
+{
+  "index": "major-charm-potion",
+  "name": "Major Charm Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You gain a +1 bonus to your Presence until your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-major-charm-potion-feature"
+  ]
+}

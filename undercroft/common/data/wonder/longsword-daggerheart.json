@@ -1,0 +1,22 @@
+{
+  "index": "longsword",
+  "name": "Longsword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 1,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 3,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

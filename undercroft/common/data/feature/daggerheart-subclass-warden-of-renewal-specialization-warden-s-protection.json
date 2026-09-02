@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-warden-of-renewal-specialization-warden-s-protection",
+  "name": "Specialization: Warden's Protection",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, spend 2 Hope to clear 2 Hit Points on 1d4 allies within Close range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, spend 2 Hope to clear 2 Hit Points on 1d4 allies within Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

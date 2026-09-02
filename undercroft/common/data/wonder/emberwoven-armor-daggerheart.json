@@ -1,0 +1,23 @@
+{
+  "index": "emberwoven-armor",
+  "name": "Emberwoven Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 13,
+  "baseSevereThreshold": 36,
+  "baseScore": 6,
+  "features": [
+    {
+      "name": "Burning",
+      "description": "When an adversary attacks you within Melee range, they mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-emberwoven-armor-burning"
+  ]
+}

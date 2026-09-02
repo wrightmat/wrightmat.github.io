@@ -1,0 +1,22 @@
+{
+  "index": "wall-walk",
+  "name": "Wall Walk",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Arcana",
+    "level": 1,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Spend a Hope to allow a creature you can touch to climb on walls and ceilings as easily as walking on the ground. This lasts until the end of the scene or you cast Wall Walk again."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-wall-walk-feature"
+  ]
+}

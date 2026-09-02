@@ -15,7 +15,7 @@
 // `context.root` is always the original raw character object, regardless of
 // how deep the mapping tree has descended.
 import { resolveDottedPath as resolvePath } from "./dotted-path.js";
-import { proficiencyBonusForLevel } from "./dnd-rules.js";
+import { evaluateDerivedFormula } from "./derived-formulas.js";
 
 // Factory rather than a static export: ABILITIES/SAVING_THROW_SUBTYPES/
 // SKILLS/SIZES used to be static imports from common/js/lib/lookup-tables.js
@@ -35,6 +35,7 @@ export function createMappingCustomFunctions({
   speeds: SPEEDS,
   damageTypes: DAMAGE_TYPES,
   durations: DURATIONS,
+  derivedFormulas: DERIVED_FORMULAS = [],
 }) {
 // Best-effort text parsing for D&D Beyond's scraped "Core <Class> Traits"
 // values (plain descriptive strings, e.g. "D12 per Barbarian level" or
@@ -829,7 +830,7 @@ function getTotalLevelRaw(classes) {
 }
 
 function getProficiencyBonusRaw(totalLevel) {
-  return proficiencyBonusForLevel(totalLevel);
+  return evaluateDerivedFormula(DERIVED_FORMULAS, "proficiencyBonusForLevel", { level: totalLevel }) || 0;
 }
 
 function calculateAbilityScores(rawCharacter, modifiers) {
@@ -1705,6 +1706,24 @@ return {
     const spellFormMatch = resolveLivePropertyValue("Spell", env?.lookupTables?.itemForms);
     const properties = spellFormMatch ? { form: slugifyPropertyValueName(spellFormMatch) } : {};
 
+    // Which classes can learn this spell — the suite's ordinary
+    // {refKind, refId, name} ref shape (identity.classes[].subclass
+    // already uses it), so a generic refKind-scanning matcher (see
+    // restrictByCharacterKind, workbench-character-view.js) can cross-
+    // reference this against a character's own identity.classes[]
+    // with zero D&D-specific code. `subclasses` is informational only
+    // — the SRD API's own subclass index (e.g. "land") doesn't match
+    // this repo's own Variant record ids (e.g.
+    // "druid-circle-of-the-sea"), so it's kept as a plain {index, name}
+    // pair rather than a refKind ref that would falsely imply it's
+    // safe to match against.
+    const classes = Array.isArray(s.classes)
+      ? s.classes.map((c) => ({ refKind: "class", refId: c.index, name: c.name }))
+      : [];
+    const subclasses = Array.isArray(s.subclasses)
+      ? s.subclasses.map((c) => ({ index: c.index, name: c.name }))
+      : [];
+
     return {
       name: s.name,
       level: s.level,
@@ -1720,6 +1739,8 @@ return {
       mechanic,
       candidateUnits,
       properties,
+      classes,
+      subclasses,
     };
   },
 

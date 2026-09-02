@@ -1,0 +1,29 @@
+{
+  "index": "bravesword",
+  "name": "Bravesword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D12",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Brave",
+      "description": "-1 to Evasion; +3 to Severe damage threshold"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-bravesword-brave"
+  ]
+}

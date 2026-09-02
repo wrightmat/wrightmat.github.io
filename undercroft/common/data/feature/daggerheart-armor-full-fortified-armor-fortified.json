@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-full-fortified-armor-fortified",
+  "name": "Fortified",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you mark an Armor Slot, you reduce the severity of an attack by two thresholds instead of one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you mark an Armor Slot, you reduce the severity of an attack by two thresholds instead of one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

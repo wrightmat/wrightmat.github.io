@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-wrathful-specialization-diminish-myfoes",
+  "name": "Specialization: Diminish MyFoes",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you succeed with Hope on an action roll against a target, you can spend a Hope to make your target mark a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you succeed with Hope on an action roll against a target, you can spend a Hope to make your target mark a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-arcane-reflection-feature",
+  "name": "feat.daggerheart-domain-card-arcane-reflection-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you would take magic damage, you can spend any number of Hope to roll that many d6s. If any roll a 6, the attack is reflected back to the caster, dealing the damage to them instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you would take magic damage, you can spend any number of Hope to roll that many d6s. If any roll a 6, the attack is reflected back to the caster, dealing the damage to them instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,38 @@
+{
+  "index": "assassin",
+  "name": "Assassin",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Assassins are masters in the art of slipping past their opponents' defenses to inflict terrible pain and deadly strikes. When an assassin marks someone for death, they pursue their prey with unwavering intent.",
+  "domains": [
+    "Blade",
+    "Midnight"
+  ],
+  "evasion": 12,
+  "hp": 5,
+  "classItems": [
+    "A list of names with several marked off",
+    "A mortar and pestle inscribed with a mysterious insignia"
+  ],
+  "hopeFeature": {
+    "name": "Grim Resolve",
+    "description": "Spend 3 Hope to clear 2 Stress."
+  },
+  "hopeFeatureId": "feat.daggerheart-class-assassin-hope-grim-resolve",
+  "features": [
+    {
+      "name": "Marked for Death",
+      "description": "On a successful weapon attack, you can mark a Stress to make the target Marked for Death. Attacks you make against a target that's Marked for Death gain a bonus to damage equal to +1d4 per tier. You can only have one adversary Marked for Death at a time, and can't transfer or remove the condition except by defeating the target. The GM can spend a number of Fear equal to your Proficiency to remove the Marked for Death condition. Otherwise, it ends automatically when you take a rest."
+    },
+    {
+      "name": "Get In & Get Out",
+      "description": "Spend a Hope to ask the GM for either a quick or inconspicuous way into or out of a building or structure you can see. The next roll you make that capitalizes on this information has advantage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-class-assassin-marked-for-death",
+    "feat.daggerheart-class-assassin-get-in-get-out"
+  ],
+  "subclasses": []
+}

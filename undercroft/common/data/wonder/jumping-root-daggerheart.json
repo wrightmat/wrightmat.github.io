@@ -1,0 +1,19 @@
+{
+  "index": "jumping-root",
+  "name": "Jumping Root",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Eat this root to leap up to Far range once without needing to roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-jumping-root-feature"
+  ]
+}

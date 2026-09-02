@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-school-of-war-foundation-battlemage",
+  "name": "Foundation: Battlemage",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You've focused your studies on becoming an unconquerable force on the battlefield. Gain an additional Hit Point slot.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You've focused your studies on becoming an unconquerable force on the battlefield. Gain an additional Hit Point slot."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

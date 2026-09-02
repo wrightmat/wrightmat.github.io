@@ -18,15 +18,12 @@
     "activation": "bonus-action"
   },
   "featureIds": [
-    "feat.random-effect",
+    "feat.choice-of-effect",
     "feat.requires-attunement",
     "feat.charges",
     "feat.extra-damage"
   ],
   "featureParams": {
-    "feat.random-effect": {
-      "optionCount": 4
-    },
     "feat.charges": {
       "max": 6,
       "rechargeFormula": "1d6"
@@ -37,6 +34,9 @@
       "saveDC": 15,
       "saveAbility": "dexterity",
       "saveEffect": "half"
+    },
+    "feat.choice-of-effect": {
+      "optionCount": 4
     }
   }
 }

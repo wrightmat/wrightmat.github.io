@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-dire-strike-feature",
+  "name": "feat.daggerheart-domain-card-dire-strike-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "After making a successful attack, you can spend 2 Hope to leach power from the target. For each Hit Point your target marked from this attack, the GM loses a Fear.",
+  "mechanics": {
+    "type": "active",
+    "text": "After making a successful attack, you can spend 2 Hope to leach power from the target. For each Hit Point your target marked from this attack, the GM loses a Fear."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

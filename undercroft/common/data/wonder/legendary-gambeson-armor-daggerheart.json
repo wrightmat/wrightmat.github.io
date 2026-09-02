@@ -1,0 +1,23 @@
+{
+  "index": "legendary-gambeson-armor",
+  "name": "Legendary Gambeson Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 11,
+  "baseSevereThreshold": 32,
+  "baseScore": 6,
+  "features": [
+    {
+      "name": "Flexible",
+      "description": "+1 to Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-feature-flexible"
+  ]
+}

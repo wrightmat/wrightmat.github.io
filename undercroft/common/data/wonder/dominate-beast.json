@@ -23,5 +23,20 @@
   },
   "featureTiers": {
     "feat.impose-condition": "moderate"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      }
+    ],
+    "subclasses": []
   }
 }

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-firbolg-unshakable",
+  "name": "Unshakable",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you would mark a Stress, roll a d6. On a result of 6, don't mark it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you would mark a Stress, roll a d6. On a result of 6, don't mark it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-urok-broadsword-deadly",
+  "name": "Deadly",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you deal Severe damage, the target must mark an additional HP.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you deal Severe damage, the target must mark an additional HP."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

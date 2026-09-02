@@ -1,0 +1,23 @@
+{
+  "index": "dragonscale-armor",
+  "name": "Dragonscale Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 11,
+  "baseSevereThreshold": 27,
+  "baseScore": 5,
+  "features": [
+    {
+      "name": "Impenetrable",
+      "description": "Once per short rest, when you would mark your last Hit Point, you can instead mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-dragonscale-armor-impenetrable"
+  ]
+}

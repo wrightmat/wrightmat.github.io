@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-poisoners-guild-mastery-twin-fang",
+  "name": "Mastery: Twin Fang",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you afflict a target with a known poison's effect, you can spend an additional token to inflict the effect of a second known poison.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you afflict a target with a known poison's effect, you can spend an additional token to inflict the effect of a second known poison."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

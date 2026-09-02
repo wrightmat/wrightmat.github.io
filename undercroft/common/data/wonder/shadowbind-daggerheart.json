@@ -1,0 +1,22 @@
+{
+  "index": "shadowbind",
+  "name": "Shadowbind",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Midnight",
+    "level": 2,
+    "recallCost": 0
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against all adversaries within Very Close range. Targets you succeed against are temporarily Restrained as their shadow binds them in place."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-shadowbind-feature"
+  ]
+}

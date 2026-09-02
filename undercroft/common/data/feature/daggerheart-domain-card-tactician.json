@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-tactician",
+  "name": "Tactician",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you Help an Ally, they can spend a Hope to add one of your Experiences to their roll alongside your advantage die.\n\nWhen making a Tag Team Roll, you can roll a d20 as your Hope Die.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you Help an Ally, they can spend a Hope to add one of your Experiences to their roll alongside your advantage die.\n\nWhen making a Tag Team Roll, you can roll a d20 as your Hope Die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 3,
+  "recallCost": 1
+}

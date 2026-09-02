@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-feature-amphibious",
+  "name": "Amphibious",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can breathe and move naturally underwater.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can breathe and move naturally underwater."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

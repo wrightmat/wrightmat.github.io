@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-critical-inspiration",
+  "name": "Critical Inspiration",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, when you critically succeed on an attack, all allies within Very Close range can clear a Stress or gain a Hope.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per rest, when you critically succeed on an attack, all allies within Very Close range can clear a Stress or gain a Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 3,
+  "recallCost": 1
+}

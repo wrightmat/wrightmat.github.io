@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-shadowhunter",
+  "name": "Shadowhunter",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your prowess is enhanced under the cover of shadow. While you're shrouded in low light or darkness, you gain a +1 bonus to your Evasion and make attack rolls with advantage.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your prowess is enhanced under the cover of shadow. While you're shrouded in low light or darkness, you gain a +1 bonus to your Evasion and make attack rolls with advantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Midnight",
+  "level": 8,
+  "recallCost": 2
+}

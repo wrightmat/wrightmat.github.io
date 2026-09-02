@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-dripfang-poison-feature",
+  "name": "feat.daggerheart-consumables-dripfang-poison-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "A creature who consumes this poison takes 8d10 direct magic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A creature who consumes this poison takes 8d10 direct magic damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

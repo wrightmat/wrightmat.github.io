@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-juggernaut-foundation-powerhouse",
+  "name": "Foundation: Powerhouse",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Increase the d8 damage dice for your unarmed attack to d10s. Additionally, you can mark a Stress to target two creatures within Melee range with a single attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Increase the d8 damage dice for your unarmed attack to d10s. Additionally, you can mark a Stress to target two creatures within Melee range with a single attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

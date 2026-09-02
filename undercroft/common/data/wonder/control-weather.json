@@ -12,11 +12,36 @@
     "form": "spell"
   },
   "featureIds": [
-    "feat.random-effect"
+    "feat.choice-of-effect"
   ],
   "featureParams": {
-    "feat.random-effect": {
+    "feat.choice-of-effect": {
       "optionCount": 6
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

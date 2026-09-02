@@ -1,0 +1,22 @@
+{
+  "index": "advanced-arcane-gauntlets",
+  "name": "Advanced Arcane Gauntlets",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 9,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

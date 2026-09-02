@@ -13,5 +13,15 @@
   },
   "featureIds": [
     "feat.personal-teleportation"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": []
+  }
 }

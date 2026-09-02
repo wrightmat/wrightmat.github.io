@@ -36,5 +36,24 @@
   },
   "featureTiers": {
     "feat.damage": "tier-4"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "devotion",
+        "name": "Devotion"
+      },
+      {
+        "index": "fiend",
+        "name": "Fiend"
+      }
+    ]
   }
 }

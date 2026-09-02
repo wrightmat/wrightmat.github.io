@@ -1,0 +1,23 @@
+{
+  "index": "runes-of-fortification",
+  "name": "Runes of Fortification",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 17,
+  "baseSevereThreshold": 43,
+  "baseScore": 6,
+  "features": [
+    {
+      "name": "Painful",
+      "description": "Each time you mark an Armor Slot, you must mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-runes-of-fortification-painful"
+  ]
+}

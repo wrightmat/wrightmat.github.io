@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-wayfinder-specialization-elusive-predator",
+  "name": "Specialization: Elusive Predator",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When your Focus makes an attack against you, you gain a +2 bonus to your Evasion against the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When your Focus makes an attack against you, you gain a +2 bonus to your Evasion against the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

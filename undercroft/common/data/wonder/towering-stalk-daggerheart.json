@@ -1,0 +1,22 @@
+{
+  "index": "towering-stalk",
+  "name": "Towering Stalk",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Sage",
+    "level": 3,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per rest, you can conjure a thick, twisting stalk within Close range that can be easily climbed. Its height can grow up to Far range.\n\nMark a Stress to use this spell as an attack. Make a Spellcast Roll against an adversary or group of adversaries within Close range. The erupting stalk lifts targets you succeed against into the air and drops them, dealing d8 physical damage using your Proficiency."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-towering-stalk-feature"
+  ]
+}

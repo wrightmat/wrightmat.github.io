@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-mirror-of-marigold-feature",
+  "name": "feat.daggerheart-consumables-mirror-of-marigold-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you take damage, you can spend a Hope to negate that damage, after which the mirror shatters.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you take damage, you can spend a Hope to negate that damage, after which the mirror shatters."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-versatile-fighter",
+  "name": "Versatile Fighter",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can use a different character trait for an equipped weapon, rather than the trait the weapon calls for.\n\nWhen you deal damage, you can mark a Stress to use the maximum result of one of your damage dice instead of rolling it.",
+  "mechanics": {
+    "type": "active",
+    "text": "You can use a different character trait for an equipped weapon, rather than the trait the weapon calls for.\n\nWhen you deal damage, you can mark a Stress to use the maximum result of one of your damage dice instead of rolling it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 3,
+  "recallCost": 1
+}

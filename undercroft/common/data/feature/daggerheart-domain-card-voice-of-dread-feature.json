@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-voice-of-dread-feature",
+  "name": "feat.daggerheart-domain-card-voice-of-dread-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can magically speak directly into the ears of a creature you can see. To torment them with your words, make a Spellcast Roll against them. On a success, they must mark a Stress and become temporarily Vulnerable.",
+  "mechanics": {
+    "type": "active",
+    "text": "You can magically speak directly into the ears of a creature you can see. To torment them with your words, make a Spellcast Roll against them. On a success, they must mark a Stress and become temporarily Vulnerable."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

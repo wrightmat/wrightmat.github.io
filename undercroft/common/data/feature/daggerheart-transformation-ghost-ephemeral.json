@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-ghost-ephemeral",
+  "name": "Ephemeral",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Cross out a Hit Point slot when you take this card and when you increase your tier. When you mark your last Hit Point, you must choose Blaze of Glory as your death move.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Cross out a Hit Point slot when you take this card and when you increase your tier. When you mark your last Hit Point, you must choose Blaze of Glory as your death move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

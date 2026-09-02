@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-paired-3",
+  "name": "Paired",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "+5 to primary weapon damage to targets within Melee range",
+  "mechanics": {
+    "type": "passive",
+    "text": "+5 to primary weapon damage to targets within Melee range"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

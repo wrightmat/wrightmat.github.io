@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-know-thy-enemy",
+  "name": "Know Thy Enemy",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When observing a creature, you can make an Instinct Roll against them. On a success, spend a Hope and ask the GM for one set of information about the target from the following options:\n\n- Their unmarked Hit Points and Stress.\n- Their Difficulty and damage thresholds.\n- Their tactics and standard attack damage dice.\n- Their features and Experiences.\n\nAdditionally on a success, you can mark a Stress to remove a Fear from the GM's Fear Pool.",
+  "mechanics": {
+    "type": "active",
+    "text": "When observing a creature, you can make an Instinct Roll against them. On a success, spend a Hope and ask the GM for one set of information about the target from the following options:\n\n- Their unmarked Hit Points and Stress.\n- Their Difficulty and damage thresholds.\n- Their tactics and standard attack damage dice.\n- Their features and Experiences.\n\nAdditionally on a success, you can mark a Stress to remove a Fear from the GM's Fear Pool."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 5,
+  "recallCost": 1
+}

@@ -1,0 +1,19 @@
+{
+  "index": "circle-of-the-void",
+  "name": "Circle of the Void",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Mark a Stress to create a void that extends up to Far range. No magic can be cast inside the void, and creatures within the void are immune to magic damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-circle-of-the-void-feature"
+  ]
+}

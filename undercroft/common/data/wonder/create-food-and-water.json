@@ -18,5 +18,34 @@
     "feat.resource-production": {
       "resourceText": "45 pounds of food and 30 gallons of water"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

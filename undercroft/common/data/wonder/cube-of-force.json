@@ -17,12 +17,12 @@
     "activation": "action"
   },
   "featureIds": [
-    "feat.random-effect",
+    "feat.choice-of-effect",
     "feat.requires-attunement",
     "feat.summoned-object"
   ],
   "featureParams": {
-    "feat.random-effect": {
+    "feat.choice-of-effect": {
       "optionCount": 5
     }
   }

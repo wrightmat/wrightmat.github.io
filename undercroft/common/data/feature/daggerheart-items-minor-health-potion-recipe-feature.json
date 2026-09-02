@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-minor-health-potion-recipe-feature",
+  "name": "feat.daggerheart-items-minor-health-potion-recipe-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "As a downtime move, you can use a vial of blood to craft a Minor Health Potion.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a downtime move, you can use a vial of blood to craft a Minor Health Potion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

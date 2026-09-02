@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-warden-of-renewal-foundation-regeneration",
+  "name": "Foundation: Regeneration",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Touch a creature and spend 3 Hope. That creature clears 1d4 Hit Points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Touch a creature and spend 3 Hope. That creature clears 1d4 Hit Points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

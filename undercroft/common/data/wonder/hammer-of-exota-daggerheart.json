@@ -1,0 +1,29 @@
+{
+  "index": "hammer-of-exota",
+  "name": "Hammer of Exota",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Instinct",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 6,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Eruptive",
+      "description": "On a successful attack against a target within Melee range, all other adversaries within Very Close range must succeed on a reaction roll (14) or take half damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-hammer-of-exota-eruptive"
+  ]
+}

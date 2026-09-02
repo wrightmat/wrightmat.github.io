@@ -14,11 +14,11 @@
     "activation": "action"
   },
   "featureIds": [
-    "feat.random-effect",
+    "feat.choice-of-effect",
     "feat.vehicle"
   ],
   "featureParams": {
-    "feat.random-effect": {
+    "feat.choice-of-effect": {
       "optionCount": 10
     }
   }

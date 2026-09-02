@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-soothing-speech",
+  "name": "Soothing Speech",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a short rest, when you take the time to comfort another character while using the Tend to Wounds downtime move on them, clear an additional Hit Point on that character. When you do, you also clear 2 Hit Points.",
+  "mechanics": {
+    "type": "active",
+    "text": "During a short rest, when you take the time to comfort another character while using the Tend to Wounds downtime move on them, clear an additional Hit Point on that character. When you do, you also clear 2 Hit Points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Grace",
+  "level": 4,
+  "recallCost": 1
+}

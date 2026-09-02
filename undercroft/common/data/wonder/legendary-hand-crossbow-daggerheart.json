@@ -1,0 +1,22 @@
+{
+  "index": "legendary-hand-crossbow",
+  "name": "Legendary Hand Crossbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

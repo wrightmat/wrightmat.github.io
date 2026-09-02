@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-rise-up",
+  "name": "Rise Up",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a bonus to your Severe threshold equal to your Proficiency.\n\nWhen you mark 1 or more Hit Points from an attack, clear a Stress.",
+  "mechanics": {
+    "type": "active",
+    "text": "Gain a bonus to your Severe threshold equal to your Proficiency.\n\nWhen you mark 1 or more Hit Points from an attack, clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 6,
+  "recallCost": 2
+}

@@ -1,0 +1,40 @@
+{
+  "index": "winged-sentinel",
+  "name": "Winged Sentinel",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "seraph-daggerheart",
+  "class": "Seraph",
+  "description": "Play the Winged Sentinel if you want to take flight and strike crushing blows from the sky.",
+  "domains": [
+    "Splendor",
+    "Valor"
+  ],
+  "spellcastTrait": "Strength",
+  "features": [
+    {
+      "name": "Foundation: Wings of Light",
+      "description": "You can fly. While flying, you can do the following:\n\n- Mark a Stress to pick up and carry another willing creature approximately your size or smaller.\n- Spend a Hope to deal an extra 1d8 damage on a successful attack."
+    },
+    {
+      "name": "Specialization: Ethereal Visage",
+      "description": "Your supernatural visage strikes awe and fear. While flying, you have advantage on Presence Rolls. When you succeed with Hope on a Presence Roll, you can remove a Fear from the GM's Fear pool instead of gaining Hope."
+    },
+    {
+      "name": "Mastery: Ascendant",
+      "description": "Gain a permanent +4 bonus to your Severe damage threshold."
+    },
+    {
+      "name": "Mastery: Power of the Gods",
+      "description": "While flying, you deal an extra 1d12 damage instead of 1d8 from your “Wings of Light” feature."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-winged-sentinel-foundation-wings-of-light",
+    "feat.daggerheart-subclass-winged-sentinel-specialization-ethereal-visage",
+    "feat.daggerheart-subclass-winged-sentinel-mastery-ascendant",
+    "feat.daggerheart-subclass-winged-sentinel-mastery-power-of-the-gods"
+  ]
+}

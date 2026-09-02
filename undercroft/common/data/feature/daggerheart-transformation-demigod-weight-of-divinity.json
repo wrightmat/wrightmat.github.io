@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-demigod-weight-of-divinity",
+  "name": "Weight of Divinity",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you roll a failure with Fear, you must mark a Stress or give the GM an additional Fear.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll a failure with Fear, you must mark a Stress or give the GM an additional Fear."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

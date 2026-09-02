@@ -1,0 +1,22 @@
+{
+  "index": "dire-strike",
+  "name": "Dire Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 5,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "After making a successful attack, you can spend 2 Hope to leach power from the target. For each Hit Point your target marked from this attack, the GM loses a Fear."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-dire-strike-feature"
+  ]
+}

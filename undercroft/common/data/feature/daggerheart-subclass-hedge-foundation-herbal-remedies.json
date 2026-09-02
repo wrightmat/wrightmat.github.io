@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-hedge-foundation-herbal-remedies",
+  "name": "Foundation: Herbal Remedies",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you or an ally clear one or more Hit Points or Stress as the result of using a consumable, increase the number cleared by one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you or an ally clear one or more Hit Points or Stress as the result of using a consumable, increase the number cleared by one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

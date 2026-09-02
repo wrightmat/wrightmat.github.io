@@ -19,5 +19,15 @@
       "storedEffect": "a spell of 5th level or lower cast as part of activating this",
       "triggerCondition": "a stated circumstance affecting only the caster"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

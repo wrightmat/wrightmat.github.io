@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-piper-whistle-feature",
+  "name": "feat.daggerheart-items-piper-whistle-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This handcrafted whistle has a distinctive sound. When you blow this whistle, its piercing tone can be heard within a 1-mile radius.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This handcrafted whistle has a distinctive sound. When you blow this whistle, its piercing tone can be heard within a 1-mile radius."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

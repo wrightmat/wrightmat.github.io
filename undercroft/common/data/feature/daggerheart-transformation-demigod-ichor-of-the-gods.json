@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-demigod-ichor-of-the-gods",
+  "name": "Ichor of the Gods",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your advantage die is always a d10 instead of a d6.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your advantage die is always a d10 instead of a d6."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

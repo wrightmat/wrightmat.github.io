@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-stalwart-foundation-unwavering",
+  "name": "Foundation: Unwavering",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a permanent +1 bonus to your damage thresholds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gain a permanent +1 bonus to your damage thresholds."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

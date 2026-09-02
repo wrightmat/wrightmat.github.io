@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-vitality",
+  "name": "Vitality",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you choose this card, permanently gain two of the following benefits:\n\n- One Stress slot\n- One Hit Point slot\n- +2 bonus to your damage thresholds\n\nThen place this card in your vault permanently.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you choose this card, permanently gain two of the following benefits:\n\n- One Stress slot\n- One Hit Point slot\n- +2 bonus to your damage thresholds\n\nThen place this card in your vault permanently."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 5,
+  "recallCost": 0
+}

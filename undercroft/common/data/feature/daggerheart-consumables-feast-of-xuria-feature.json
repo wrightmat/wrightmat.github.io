@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-feast-of-xuria-feature",
+  "name": "feat.daggerheart-consumables-feast-of-xuria-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can eat this meal to clear all HP and Stress and gain 1d4 Hope.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can eat this meal to clear all HP and Stress and gain 1d4 Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

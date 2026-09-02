@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-chokehold",
+  "name": "Chokehold",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you position yourself behind a creature who's about your size, you can mark a Stress to pull them into a chokehold, making them temporarily Vulnerable.\n\nWhen a creature attacks a target who is Vulnerable in this way, they deal an extra 2d6 damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you position yourself behind a creature who's about your size, you can mark a Stress to pull them into a chokehold, making them temporarily Vulnerable.\n\nWhen a creature attacks a target who is Vulnerable in this way, they deal an extra 2d6 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Midnight",
+  "level": 3,
+  "recallCost": 1
+}

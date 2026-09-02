@@ -1552,6 +1552,17 @@ a.undercroft-tool-card:focus-visible {
   border-radius: 999px;
 }
 
+/* A Button Input variant's own optional face image (renderInputContent's
+   "button" branch, component-renderers.js) — sized to sit comfortably
+   inside a .btn-sm alongside its own label text/icon, never the button's
+   own full square footprint the way a Track's fill glyph is. */
+.template-button-image {
+  height: 1rem;
+  width: auto;
+  max-width: 1.5rem;
+  object-fit: contain;
+}
+
 .template-toggle-shape--square {
   border-radius: 0.5rem;
 }

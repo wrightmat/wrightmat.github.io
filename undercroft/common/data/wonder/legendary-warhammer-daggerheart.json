@@ -1,0 +1,29 @@
+{
+  "index": "legendary-warhammer",
+  "name": "Legendary Warhammer",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D12",
+    "modifier": 12,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Heavy",
+      "description": "-1 to Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-equipment-feature-heavy"
+  ]
+}

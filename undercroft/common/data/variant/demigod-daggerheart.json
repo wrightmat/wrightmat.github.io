@@ -1,0 +1,23 @@
+{
+  "index": "demigod",
+  "name": "Demigod",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "character",
+  "description": "Demigods are creatures whose veins flow with the blood of the gods.",
+  "features": [
+    {
+      "name": "Ichor of the Gods",
+      "description": "Your advantage die is always a d10 instead of a d6."
+    },
+    {
+      "name": "Weight of Divinity",
+      "description": "When you roll a failure with Fear, you must mark a Stress or give the GM an additional Fear."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-transformation-demigod-ichor-of-the-gods",
+    "feat.daggerheart-transformation-demigod-weight-of-divinity"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-featherbone-feature",
+  "name": "feat.daggerheart-consumables-featherbone-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can use this bone to control your falling speed for a number of minutes equal to your level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can use this bone to control your falling speed for a number of minutes equal to your level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

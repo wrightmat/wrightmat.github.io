@@ -1,0 +1,49 @@
+{
+  "index": "juggernaut",
+  "name": "Juggernaut",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "brawler-daggerheart",
+  "class": "Brawler",
+  "domains": [
+    "Valor",
+    "Bone"
+  ],
+  "spellcastTrait": "",
+  "features": [
+    {
+      "name": "Foundation: Powerhouse",
+      "description": "Increase the d8 damage dice for your unarmed attack to d10s. Additionally, you can mark a Stress to target two creatures within Melee range with a single attack roll."
+    },
+    {
+      "name": "Foundation: Overwhelm",
+      "description": "On a successful attack, you can spend a Hope to force the target to mark a Stress or to throw them within Close range."
+    },
+    {
+      "name": "Specialization: Rugged",
+      "description": "Gain a permanent +3 bonus to your Severe damage threshold. Additionally, your Powerhouse feature can target up to three creatures instead of two."
+    },
+    {
+      "name": "Specialization: Eye for an Eye",
+      "description": "When you mark more than one Hit Point from an attack in Melee range, the attacker must make a Reaction Roll (13). On a failure, once per rest, they immediately mark the same number of Hit Points in return."
+    },
+    {
+      "name": "Mastery: Pummeljoy",
+      "description": "When you critically succeed on a weapon attack in Melee range, you gain an additional Hope, clear an additional Stress, and gain a +1 bonus to your Proficiency for the attack."
+    },
+    {
+      "name": "Mastery: Not Done Yet",
+      "description": "When you mark more than one HP from an attack, you can gain a Hope or clear a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-juggernaut-foundation-powerhouse",
+    "feat.daggerheart-subclass-juggernaut-foundation-overwhelm",
+    "feat.daggerheart-subclass-juggernaut-specialization-rugged",
+    "feat.daggerheart-subclass-juggernaut-specialization-eye-for-an-eye",
+    "feat.daggerheart-subclass-juggernaut-mastery-pummeljoy",
+    "feat.daggerheart-subclass-juggernaut-mastery-not-done-yet"
+  ]
+}

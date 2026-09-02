@@ -1,0 +1,44 @@
+{
+  "index": "martial-artist",
+  "name": "Martial Artist",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "brawler-daggerheart",
+  "class": "Brawler",
+  "domains": [
+    "Valor",
+    "Bone"
+  ],
+  "spellcastTrait": "",
+  "features": [
+    {
+      "name": "Foundation: Martial Form",
+      "description": "Take the Martial Form sheet. You start with two martial stances from Tier 1. When you reach a new tier, take two additional stances at your tier or lower."
+    },
+    {
+      "name": "Foundation: Focus",
+      "description": "During a rest, roll a number of d6s equal to your Instinct and place a number of Focus tokens equal to the highest value rolled on this card. Spend a Focus to shift into a stance until you take Severe damage, the scene ends, you mark your last Hit Point, or you shift into another stance."
+    },
+    {
+      "name": "Specialization: Keen Defenses",
+      "description": "When you are targeted by an attack, you can spend a Focus to give the attack roll disadvantage."
+    },
+    {
+      "name": "Specialization: Spirit Blast",
+      "description": "Spend a Focus to make an Instinct Roll against an adversary within Close range. On a success, deal d20+3 magic damage using your Proficiency, and you can spend an additional Focus to make them temporarily Vulnerable."
+    },
+    {
+      "name": "Mastery: Limit Breaker",
+      "description": "Once per rest, you can perform an unbelievable feat such as running across water, leaping between distant rooftops, or scaling the side of a building without needing to roll. When you do, gain a Hope and clear a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-martial-artist-foundation-martial-form",
+    "feat.daggerheart-subclass-martial-artist-foundation-focus",
+    "feat.daggerheart-subclass-martial-artist-specialization-keen-defenses",
+    "feat.daggerheart-subclass-martial-artist-specialization-spirit-blast",
+    "feat.daggerheart-subclass-martial-artist-mastery-limit-breaker"
+  ]
+}

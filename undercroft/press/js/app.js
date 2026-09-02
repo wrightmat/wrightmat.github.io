@@ -61,7 +61,7 @@ import {
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
-import { resolveBinding, createLookupFn } from "../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn, createLookupFieldFn } from "../../common/js/lib/bindings.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
@@ -1277,7 +1277,9 @@ const COLOR_FIELD_MAP = {
 // searches `context` (see createLookupFn's own comment on why Press never
 // gets a System-schema fallback).
 function resolveBindingWithLookup(raw, context) {
-  return resolveBinding(raw, context, { functions: { lookup: createLookupFn(context) } });
+  return resolveBinding(raw, context, {
+    functions: { lookup: createLookupFn(context), lookupField: createLookupFieldFn(context) },
+  });
 }
 
 // The picker's own evaluate() hook — mirrors template-renderer.js's

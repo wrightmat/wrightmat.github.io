@@ -22,5 +22,15 @@
   },
   "featureTiers": {
     "feat.impose-condition": "moderate"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      }
+    ],
+    "subclasses": []
   }
 }

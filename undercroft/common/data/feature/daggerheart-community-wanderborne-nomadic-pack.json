@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-wanderborne-nomadic-pack",
+  "name": "Nomadic Pack",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Add a Nomadic Pack to your inventory. Once per session, you can spend a Hope to reach into this pack and pull out a mundane item that's useful to your situation. Work with the GM to figure out what item you take out.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Add a Nomadic Pack to your inventory. Once per session, you can spend a Hope to reach into this pack and pull out a mundane item that's useful to your situation. Work with the GM to figure out what item you take out."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

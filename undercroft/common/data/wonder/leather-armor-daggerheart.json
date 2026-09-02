@@ -1,0 +1,16 @@
+{
+  "index": "leather-armor",
+  "name": "Leather Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 1
+  },
+  "baseMajorThreshold": 6,
+  "baseSevereThreshold": 13,
+  "baseScore": 3,
+  "features": [],
+  "featureIds": []
+}

@@ -1,0 +1,19 @@
+{
+  "index": "airblade-charm",
+  "name": "Airblade Charm",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can attach this charm to a weapon with a Melee range. Three times per rest, you can activate the charm and attack a target within Close range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-airblade-charm-feature"
+  ]
+}

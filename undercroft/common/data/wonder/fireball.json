@@ -38,5 +38,29 @@
   },
   "featureTiers": {
     "feat.damage": "tier-3"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "fiend",
+        "name": "Fiend"
+      }
+    ]
   }
 }

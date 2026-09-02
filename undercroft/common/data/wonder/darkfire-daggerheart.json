@@ -1,0 +1,22 @@
+{
+  "index": "darkfire",
+  "name": "Darkfire",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 6,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against all adversaries within Close range. You can spend a Hope for any you succeed against, and they must make a Reaction Roll (14). Ona failure, they take d8+6 magic damage using your Proficiency as they are engulfed in dark fire. On a success, they take half damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-darkfire-feature"
+  ]
+}

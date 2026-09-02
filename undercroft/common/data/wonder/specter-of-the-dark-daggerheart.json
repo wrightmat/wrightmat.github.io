@@ -1,0 +1,22 @@
+{
+  "index": "specter-of-the-dark",
+  "name": "Specter of the Dark",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Midnight",
+    "level": 10,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Mark a Stress to become Spectral until you make an action roll targeting another creature. While Spectral, you're immune to physical damage and can float and pass through solid objects. Other creatures can still see you while you're in this form."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-specter-of-the-dark-feature"
+  ]
+}

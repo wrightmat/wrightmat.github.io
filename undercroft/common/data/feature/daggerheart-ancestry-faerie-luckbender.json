@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-faerie-luckbender",
+  "name": "Luckbender",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per session, after you or a willing ally within Close range makes an action roll, you can spend 3 Hope to reroll the Duality Dice.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per session, after you or a willing ally within Close range makes an action roll, you can spend 3 Hope to reroll the Duality Dice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

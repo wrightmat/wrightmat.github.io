@@ -1,0 +1,29 @@
+{
+  "index": "swinging-ropeblade",
+  "name": "Swinging Ropeblade",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Presence",
+    "range": "Close",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 9,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Grappling",
+      "description": "On a successful attack, you can spend a Hope to Restrain the target or pull them into Melee range with you."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-swinging-ropeblade-grappling"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "index": "finehair-bow",
+  "name": "Finehair Bow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Agility",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 5,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Reliable",
+      "description": "+1 to attack rolls"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reliable"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "index": "improved-wand",
+  "name": "Improved Wand",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Knowledge",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 4,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

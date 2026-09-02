@@ -1,0 +1,22 @@
+{
+  "index": "divination",
+  "name": "Divination",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Splendor",
+    "level": 4,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per long rest, spend 3 Hope to reach out to the forces beyond and ask one “yes or no” question about an event, person, place, or situation in the near future. For a moment, the present falls away and you see the answer before you."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-divination-feature"
+  ]
+}

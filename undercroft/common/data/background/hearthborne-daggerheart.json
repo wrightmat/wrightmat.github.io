@@ -1,0 +1,18 @@
+{
+  "index": "hearthborne",
+  "name": "Hearthborne",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Coming from a hearthborne community means you come from humble origins, having lived in a small village or the countryside.",
+  "personalities": [],
+  "features": [
+    {
+      "name": "Close-Knit",
+      "description": "Once per long rest, you can spend any number of Hope to give an ally the same number of Hope."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-community-hearthborne-close-knit"
+  ]
+}

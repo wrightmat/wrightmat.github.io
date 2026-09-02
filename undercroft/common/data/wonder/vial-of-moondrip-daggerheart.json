@@ -1,0 +1,19 @@
+{
+  "index": "vial-of-moondrip",
+  "name": "Vial of Moondrip",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When you drink the contents of this vial, you can see in total darkness until your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-vial-of-moondrip-feature"
+  ]
+}

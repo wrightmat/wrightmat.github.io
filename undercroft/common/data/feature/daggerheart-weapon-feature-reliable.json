@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-reliable",
+  "name": "Reliable",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "+1 to attack rolls",
+  "mechanics": {
+    "type": "passive",
+    "text": "+1 to attack rolls"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

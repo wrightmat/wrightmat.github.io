@@ -1,0 +1,22 @@
+{
+  "index": "cutlass",
+  "name": "Cutlass",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 1,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 1,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

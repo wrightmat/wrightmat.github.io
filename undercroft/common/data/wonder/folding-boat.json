@@ -15,10 +15,10 @@
   },
   "featureIds": [
     "feat.vehicle",
-    "feat.random-effect"
+    "feat.choice-of-effect"
   ],
   "featureParams": {
-    "feat.random-effect": {
+    "feat.choice-of-effect": {
       "optionCount": 3
     }
   }

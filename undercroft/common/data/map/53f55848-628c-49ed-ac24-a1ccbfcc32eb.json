@@ -26,14 +26,14 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 0.7068620078276089,
+    "zoom": 1,
     "center": {
       "lat": 0,
       "lng": 0
     },
     "pan": {
-      "x": 25,
-      "y": 78
+      "x": -249,
+      "y": 49
     }
   },
   "initialView": {
@@ -62,7 +62,8 @@
         "fogOfWar": false,
         "revealGroupId": "",
         "fogOpacity": 0.92,
-        "fogPreviewOpacity": 0.6
+        "fogPreviewOpacity": 0.6,
+        "autoRevealFromVision": false
       },
       "properties": {}
     },
@@ -212,7 +213,10 @@
         "icon": "",
         "size": 24,
         "color": "#0ea5e9",
+        "outlineColor": "#0f172a",
+        "outlineWidth": 2,
         "showLabels": true,
+        "labelPosition": "below",
         "labelSize": 10
       },
       "properties": {}
@@ -226,5 +230,5 @@
     "unit": ""
   },
   "createdAt": "2026-08-07T15:25:48.585Z",
-  "updatedAt": "2026-09-01T03:58:04.199Z"
+  "updatedAt": "2026-09-01T18:24:51.226Z"
 }

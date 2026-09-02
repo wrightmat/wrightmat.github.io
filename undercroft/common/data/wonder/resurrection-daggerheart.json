@@ -1,0 +1,22 @@
+{
+  "index": "resurrection",
+  "name": "Resurrection",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Splendor",
+    "level": 10,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll (20). On a success, restore one creature who has been dead no longer than 100 years to full strength. Then roll a d6. On a result of 5 or lower, place this card in your vault permanently.\n\nOn a failure, you can't cast Resurrection again for a week."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-resurrection-feature"
+  ]
+}

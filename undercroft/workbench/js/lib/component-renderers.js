@@ -654,6 +654,158 @@ export function renderInputContent(component, ctx) {
     el.style.backgroundColor = component.backgroundColor || "";
   };
 
+  // A Button doesn't bind/display a value the way every other variant
+  // does — `ctx.runButtonAction` (the only genuinely different thing
+  // between the Template editor's inert preview and Play/Edit's real
+  // executor, see those two callers' own comments) is called on click
+  // instead. No createLabeledField wrapper — self-labeled, same "bare
+  // shape, no floating label above it" precedent Toggle's own return
+  // already sets. Face content prefers an icon, then an image, then the
+  // Label text, then a bare "Button" fallback — a small icon-only roll
+  // button (see the Roller-field migration this ships alongside) needs
+  // a face with no visible text at all, so at least one of the three
+  // has to render even when Label is empty.
+  if (variant === "button") {
+    const button = document.createElement("button");
+    button.type = "button";
+    // Bare .btn — no hardcoded outline-color class of our own. Border/
+    // radius are real, per-component fields the Border section already
+    // exposes to every component type (borderStyle/borderColor/
+    // borderWidth/borderRadius, read generically by applyComponentStyles,
+    // component-styles.js) — a Button gets its outline the exact same
+    // authored way anything else does, never a CSS default standing in
+    // for that.
+    button.className = "btn btn-sm d-inline-flex align-items-center justify-content-center gap-1";
+    applyControlColors(button);
+    // Font/Text Size (the same generic Text section every component
+    // exposes) previously did nothing at all here — a Button never called
+    // this, so its Text Size control was a silent no-op. Applied to the
+    // button itself (not just a label span, the way Toggle's own
+    // createLabeledField call formats a SEPARATE label above a
+    // fixed-shape glyph) since the button's own face text IS this
+    // component's content, same as Text's own applyTextFormatting call.
+    applyTextFormatting(button, component);
+    const width = typeof component.width === "string" ? component.width.trim() : "";
+    const height = typeof component.height === "string" ? component.height.trim() : "";
+    if (width) button.style.width = width;
+    if (height) button.style.height = height;
+    // .btn-sm's own padding (0.25rem/0.5rem — sized for a text label
+    // alongside the glyph) eats most of a small button's box before the
+    // icon even gets a chance to fill it — a labeled button (Cast) keeps
+    // that normal padding, but an icon/image-only face (no Label — the
+    // small roll-button case this shipped alongside) only needs enough
+    // room to keep the glyph off the border.
+    if (!labelText) {
+      button.style.padding = "2px";
+    }
+    // A bare icon glyph has no sizing of its own — it just inherits
+    // .btn-sm's own ~14px text size, which reads cramped against the
+    // button's own box even at its default (unset) size. Scaled here off
+    // the button's own Width/Height (minus the padding above) instead of a
+    // fixed rem value, so the glyph actually fills the box rather than
+    // shrinking proportionally with it — a floor keeps it legible even on
+    // a very small button. px/rem/em only (this suite's own Width/Height
+    // convention, see the placeholder text below) — a %, or anything else
+    // unparsed, falls back to the no-size-set default rather than guessing.
+    const parseBoxPx = (raw) => {
+      const match = /^(-?\d*\.?\d+)(px|rem|em)?$/.exec(raw);
+      if (!match) return null;
+      const num = Number(match[1]);
+      const unit = match[2] || "px";
+      return unit === "px" ? num : num * 16;
+    };
+    const boxDimensPx = [parseBoxPx(width), parseBoxPx(height)].filter((n) => Number.isFinite(n) && n > 0);
+    // Icon-only face: sized to fill the box (see above), independent of
+    // Text Size — there's no visible text for that control to size.
+    // Icon+label face: the icon sits next to real text now (applyTextFormatting
+    // above), so it needs to scale WITH that text — an em value tracks
+    // whatever font-size Text Size/Font Size just resolved to on the
+    // button itself, exactly like an inline icon next to any other text.
+    const iconFontSize = labelText
+      ? "1.15em"
+      : `${boxDimensPx.length ? Math.max(16, Math.min(Math.min(...boxDimensPx) - 6, 44)) : 22}px`;
+    // Same formula/binding/literal precedence renderIconContent's own
+    // iconClass and renderImageContent's own url resolve with — Button's
+    // Icon/Image fields ARE those exact fields (iconClass/url/formula),
+    // authored through those exact same picker controls
+    // (createIconFieldControl/createImageUrlControl), so a "=formula" or
+    // "@path" typed into either one has to resolve the same way here too,
+    // not just look the same in the inspector.
+    const componentFormula = typeof component.formula === "string" ? component.formula.trim() : "";
+    let resolvedIconClass;
+    if (componentFormula) {
+      resolvedIconClass = typeof ctx.evaluateFormula === "function" ? ctx.evaluateFormula(componentFormula) : undefined;
+    } else {
+      const rawIconClass = typeof component.iconClass === "string" ? component.iconClass.trim() : "";
+      resolvedIconClass = rawIconClass.startsWith("@") && typeof ctx.resolveBindableString === "function" ? ctx.resolveBindableString(rawIconClass) : rawIconClass;
+    }
+    let hasVisual = false;
+    const classes = resolveIconClassList(resolvedIconClass);
+    if (classes.length) {
+      const icon = document.createElement("span");
+      icon.className = classes.join(" ");
+      icon.style.fontSize = iconFontSize;
+      icon.setAttribute("aria-hidden", "true");
+      button.appendChild(icon);
+      hasVisual = true;
+    }
+    if (!hasVisual) {
+      let resolvedUrl;
+      if (componentFormula) {
+        resolvedUrl = typeof ctx.evaluateFormula === "function" ? ctx.evaluateFormula(componentFormula) : undefined;
+      } else {
+        const rawUrl = typeof component.url === "string" ? component.url.trim() : "";
+        resolvedUrl = rawUrl.startsWith("@") && typeof ctx.resolveBindableString === "function" ? ctx.resolveBindableString(rawUrl) : rawUrl;
+      }
+      if (resolvedUrl) {
+        const img = document.createElement("img");
+        img.src = resolvedUrl;
+        img.alt = "";
+        img.className = "template-button-image";
+        button.appendChild(img);
+        hasVisual = true;
+      }
+    }
+    if (labelText) {
+      const text = document.createElement("span");
+      text.textContent = labelText;
+      button.appendChild(text);
+    } else if (!hasVisual) {
+      button.textContent = "Button";
+    }
+    if (!labelText) {
+      // No visible label — the icon/image alone isn't accessible text,
+      // same "aria-label carries what the visible text can't" pattern
+      // every icon-only toolbar button in this suite already follows.
+      button.setAttribute("aria-label", (component.name || "Button").trim() || "Button");
+    }
+    button.disabled = !editable;
+    button.addEventListener("click", () => {
+      if (!editable) return;
+      ctx.runButtonAction?.(component);
+    });
+    decorate(button);
+    // Returned wrapped, not bare — applyComponentStyles (component-styles.js)
+    // is always called on whatever render*Component returns, and its own
+    // border/padding/margin fields correctly clear back to CSS when unset,
+    // but its width handling doesn't: it unconditionally sets a real inline
+    // width (or clears any inline width entirely) based on alignSelf alone,
+    // with no "unset means leave it alone" case. Toggle avoids this the
+    // same way (renderToggleContent returns a wrapping `field`, sizing its
+    // own inner glyph directly) — Button's own explicit width/height,
+    // above, needs the identical separation: sized on the actual button,
+    // wrapped in a plain inert span so applyComponentStyles's width
+    // handling lands on THAT instead and never touches it. Confirmed real
+    // bug this fixes: a Button rendered as a bare Repeater-item node
+    // (dispatchItemContextNode calls applyComponentStyles directly on
+    // whatever's returned, no wrapper of its own) had its own Width/Height
+    // silently cleared on every render, regardless of what was authored.
+    const wrapper = document.createElement("span");
+    wrapper.className = "d-inline-flex";
+    wrapper.appendChild(button);
+    return wrapper;
+  }
+
   if (variant === "select") {
     const currentValue = resolvedValue == null ? "" : String(resolvedValue);
     const options = ctx.resolveOptions(component);

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-brutal",
+  "name": "Brutal",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you roll the maximum value on a damage die, roll an additional damage die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll the maximum value on a damage die, roll an additional damage die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

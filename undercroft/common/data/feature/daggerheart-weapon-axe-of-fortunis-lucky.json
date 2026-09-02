@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-axe-of-fortunis-lucky",
+  "name": "Lucky",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a failed attack, you can mark a Stress to reroll your attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a failed attack, you can mark a Stress to reroll your attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

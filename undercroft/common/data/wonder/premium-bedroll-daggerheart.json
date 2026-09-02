@@ -1,0 +1,19 @@
+{
+  "index": "premium-bedroll",
+  "name": "Premium Bedroll",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "During downtime, you automatically clear a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-premium-bedroll-feature"
+  ]
+}

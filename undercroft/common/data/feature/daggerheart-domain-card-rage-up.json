@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-rage-up",
+  "name": "Rage Up",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Before you make an attack, you can mark a Stress to gain a bonus to your damage roll equal to twice your Strength.\n\nYou can Rage Up twice per attack.",
+  "mechanics": {
+    "type": "active",
+    "text": "Before you make an attack, you can mark a Stress to gain a bonus to your damage roll equal to twice your Strength.\n\nYou can Rage Up twice per attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 6,
+  "recallCost": 1
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-elusive-amulet-feature",
+  "name": "feat.daggerheart-items-elusive-amulet-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, you can activate this amulet to become Hidden until you move. While Hidden in this way, you remain unseen even if an adversary moves to where they would normally see you.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, you can activate this amulet to become Hidden until you move. While Hidden in this way, you remain unseen even if an adversary moves to where they would normally see you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-improved-scepter-versatile",
+  "name": "Versatile",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This weapon can also be used with these statistics—Presence, Melee, d8+3.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This weapon can also be used with these statistics—Presence, Melee, d8+3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

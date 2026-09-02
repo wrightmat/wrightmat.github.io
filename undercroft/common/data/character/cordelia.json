@@ -870,7 +870,7 @@
       "name": "Level 1 Spell Slots",
       "level": 1,
       "total": 4,
-      "available": 3,
+      "available": 2,
       "used": 1,
       "reset": "Long Rest"
     },

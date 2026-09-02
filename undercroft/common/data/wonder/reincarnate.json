@@ -18,5 +18,15 @@
     "feat.random-effect": {
       "optionCount": 14
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": []
   }
 }

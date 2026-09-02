@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-painful",
+  "name": "Painful",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Each time you make a successful attack, you must mark a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you make a successful attack, you must mark a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-ghostblade-otherworldly",
+  "name": "Otherworldly",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, you can deal physical or magic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, you can deal physical or magic damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

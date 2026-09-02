@@ -1,0 +1,19 @@
+{
+  "index": "mythic-dust-recipe",
+  "name": "Mythic Dust Recipe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "As a downtime move, you can use a handful of fine gold dust to craft Mythic Dust."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-mythic-dust-recipe-feature"
+  ]
+}

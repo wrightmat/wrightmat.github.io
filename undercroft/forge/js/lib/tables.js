@@ -6,7 +6,7 @@
 // rather than duplicating a second dice parser.
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
 import { fetchLibraryEntry, fetchKindEntriesWithIds, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
-import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
+import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.js";
 // loadAbilityFieldDefs moved to common/js/lib/generator-kit.js — this file
 // used to carry its own byte-identical copy (hardcoding a fixed "abilities"
 // key, with no preferredKey param), confirmed as a real, still-live
@@ -703,7 +703,7 @@ function flatArchetypeKey(binding) {
 // contract — return null/undefined/an object exactly as before — unchanged,
 // while still routing every individual value through the fully general
 // combatBindings-driven path resolution internally.
-export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abilityFieldKey, combatBindings) {
+export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abilityFieldKey, combatBindings, derivedFormulas) {
   const entry = statsMap?.[archetypeName];
   if (!entry) return null;
   const { name, ...rest } = entry;
@@ -754,17 +754,17 @@ export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abili
   }
 
   // Initiative — not authored data at all, derived from `abilities.dexterity`
-  // (D&D's own ability key) via the standard ability-modifier formula. This
-  // one piece of D&D-specific rules logic (which ability drives Initiative)
-  // has no data-driven home on a System record — same documented exception
-  // crucible/js/lib/stats.js#deriveStats already carries for its own
-  // Constitution-driven HP-band bonus. Only WHERE this gets written
-  // (`modifierBinding.binding`) comes from the System's own combatBindings;
-  // a System with no `modifier`-role binding at all (Daggerheart) simply
-  // never reaches this.
+  // (D&D's own ability key) via the System's own `derivedFormulas` role
+  // "abilityModifier" (derived-formulas.js) — WHICH ability drives
+  // Initiative is still a D&D-specific assumption baked in here (no
+  // data-driven home for that piece), but the FORMULA itself is no longer
+  // hardcoded JS. WHERE this gets written (`modifierBinding.binding`)
+  // comes from the System's own combatBindings; a System with no
+  // `modifier`-role binding at all (Daggerheart) simply never reaches this.
   const modifierBinding = findBindingByRole(combatBindings, "modifier");
   if (modifierBinding && typeof abilities.dexterity === "number") {
-    setAtBinding(modifierBinding.binding, scratch, abilityModifier(abilities.dexterity));
+    const modifier = evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: abilities.dexterity }) || 0;
+    setAtBinding(modifierBinding.binding, scratch, modifier);
   }
 
   // Anything else the archetype entry defines with no matching combatBindings

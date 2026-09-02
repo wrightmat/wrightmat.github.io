@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-jumping-root-feature",
+  "name": "feat.daggerheart-consumables-jumping-root-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Eat this root to leap up to Far range once without needing to roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Eat this root to leap up to Far range once without needing to roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-mythic-dust-recipe-feature",
+  "name": "feat.daggerheart-items-mythic-dust-recipe-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "As a downtime move, you can use a handful of fine gold dust to craft Mythic Dust.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a downtime move, you can use a handful of fine gold dust to craft Mythic Dust."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

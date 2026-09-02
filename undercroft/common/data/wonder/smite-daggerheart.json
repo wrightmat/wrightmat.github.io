@@ -1,0 +1,22 @@
+{
+  "index": "smite",
+  "name": "Smite",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Splendor",
+    "level": 5,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per rest, spend 3 Hope to charge your powerful smite. When you next successfully attack with a weapon, double the result of your damage roll. This attack deals magic damage regardless of the weapon's damage type."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-smite-feature"
+  ]
+}

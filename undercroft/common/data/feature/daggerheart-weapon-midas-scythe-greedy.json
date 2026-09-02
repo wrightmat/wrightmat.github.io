@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-midas-scythe-greedy",
+  "name": "Greedy",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend a handful of gold to gain a +1 bonus to your Proficiency on a damage roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend a handful of gold to gain a +1 bonus to your Proficiency on a damage roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

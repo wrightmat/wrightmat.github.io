@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-massive",
+  "name": "Massive",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "-1 to Evasion; on a successful attack, roll an additional damage die and discard the lowest result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "-1 to Evasion; on a successful attack, roll an additional damage die and discard the lowest result."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

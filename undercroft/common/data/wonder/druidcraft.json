@@ -12,11 +12,21 @@
     "form": "spell"
   },
   "featureIds": [
-    "feat.random-effect"
+    "feat.choice-of-effect"
   ],
   "featureParams": {
-    "feat.random-effect": {
+    "feat.choice-of-effect": {
       "optionCount": 4
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": []
   }
 }

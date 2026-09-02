@@ -1,0 +1,29 @@
+{
+  "index": "hammer-of-wrath",
+  "name": "Hammer of Wrath",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Devastating",
+      "description": "Before you make an attack roll, you can mark a Stress to use a d20 as your damage die."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-hammer-of-wrath-devastating"
+  ]
+}

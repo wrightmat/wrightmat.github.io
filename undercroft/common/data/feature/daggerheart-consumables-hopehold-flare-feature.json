@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-hopehold-flare-feature",
+  "name": "feat.daggerheart-consumables-hopehold-flare-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you use this flare, allies within Close range roll a d6 when they spend a Hope. On a result of 6, they gain the effect of that Hope without spending it. The flare lasts until the end of the scene.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you use this flare, allies within Close range roll a d6 when they spend a Hope. On a result of 6, they gain the effect of that Hope without spending it. The flare lasts until the end of the scene."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

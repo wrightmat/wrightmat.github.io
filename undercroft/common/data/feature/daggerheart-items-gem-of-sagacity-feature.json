@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-gem-of-sagacity-feature",
+  "name": "feat.daggerheart-items-gem-of-sagacity-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can attach this gem to a weapon, allowing you to use your Knowledge when making an attack with that weapon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can attach this gem to a weapon, allowing you to use your Knowledge when making an attack with that weapon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

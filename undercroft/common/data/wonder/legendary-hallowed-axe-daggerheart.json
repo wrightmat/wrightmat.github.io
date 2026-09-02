@@ -1,0 +1,22 @@
+{
+  "index": "legendary-hallowed-axe",
+  "name": "Legendary Hallowed Axe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 10,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

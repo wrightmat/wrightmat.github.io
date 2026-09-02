@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-reaper-s-strike",
+  "name": "Reaper's Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, spend a Hope to make an attack roll. The GM tells you which targets within range it would succeed against. Choose one of these targets and force them to mark 5 Hit Points.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per long rest, spend a Hope to make an attack roll. The GM tells you which targets within range it would succeed against. Choose one of these targets and force them to mark 5 Hit Points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 9,
+  "recallCost": 3
+}

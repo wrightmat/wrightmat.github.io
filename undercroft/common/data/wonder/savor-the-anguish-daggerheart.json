@@ -1,0 +1,22 @@
+{
+  "index": "savor-the-anguish",
+  "name": "Savor the Anguish",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 9,
+    "recallCost": 0
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When an adversary within Close range marks Stress or takes Severe damage, you can spend a Hope to clear a Stress or force the GM to lose a Fear."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-savor-the-anguish-feature"
+  ]
+}

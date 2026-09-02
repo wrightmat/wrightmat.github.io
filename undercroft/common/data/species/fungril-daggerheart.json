@@ -29,5 +29,20 @@
       "Reishi"
     ],
     "lastNames": []
-  }
+  },
+  "index": "fungril",
+  "features": [
+    {
+      "name": "Fungril Network",
+      "description": "Make an Instinct Roll (12) to use your mycelial array to speak with others of your ancestry. On a success, you can communicate across any distance."
+    },
+    {
+      "name": "Death Connection",
+      "description": "While touching a corpse that died recently, you can mark a Stress to extract one memory from the corpse related to a specific emotion or sensation of your choice."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-fungril-fungril-network",
+    "feat.daggerheart-ancestry-fungril-death-connection"
+  ]
 }

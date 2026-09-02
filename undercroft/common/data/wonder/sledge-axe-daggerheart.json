@@ -1,0 +1,29 @@
+{
+  "index": "sledge-axe",
+  "name": "Sledge Axe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D12",
+    "modifier": 13,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Destructive",
+      "description": "-1 to Agility; on a successful attack, all adversaries within Very Close range must mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-sledge-axe-destructive"
+  ]
+}

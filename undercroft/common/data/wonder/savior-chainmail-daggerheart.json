@@ -1,0 +1,23 @@
+{
+  "index": "savior-chainmail",
+  "name": "Savior Chainmail",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 18,
+  "baseSevereThreshold": 48,
+  "baseScore": 8,
+  "features": [
+    {
+      "name": "Difficult",
+      "description": "-1 to all character traits and Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-savior-chainmail-difficult"
+  ]
+}

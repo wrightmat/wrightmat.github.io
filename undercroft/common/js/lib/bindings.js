@@ -205,6 +205,55 @@ export function createLookupFn(context, fieldDefinitions) {
   };
 }
 
+// `lookup(table, key)` only ever matches an entry's identity-ish fields
+// (sourceId/id/key-suffix/name/shortName/label — see lookupEntryMatches
+// above), so it can't find e.g. a limitedUses entry by its `level`, or any
+// other arbitrary field a template author's own array happens to use as its
+// match key. `lookupField(table, matchField, matchValue, targetField)` is
+// the generic version — caller names which field to match on and which one
+// to read back, same shape runButtonComponentAction's own adjustField
+// lookup already uses (lookupBinding/matchField/matchValue/targetField,
+// workbench-character-view.js) for the WRITE side, now available to any
+// Visible/Locked/Editable-in-Play/etc. formula for the READ side too.
+// `rootContext` — unlike `lookup`, which resolves `table` against whatever
+// `context` the calling formula itself is scoped to (the item, inside a
+// Repeater) — is always the TOP-LEVEL record regardless of the calling
+// formula's own scope, same "a lookup table lives outside any one row"
+// convention the button action's own lookupBinding already established
+// (always getBindingContext(), never itemContext). `targetField` omitted
+// returns the whole matched entry, same as `lookup`. No match returns
+// undefined, never an invented 0/false a Locked/Visible formula could
+// silently misread as a real answer.
+export function createLookupFieldFn(rootContext) {
+  return (table, matchField, matchValue, targetField) => {
+    if (typeof table !== "string" || !table.trim()) return undefined;
+    if (typeof matchField !== "string" || !matchField.trim()) return undefined;
+    const list = resolveDottedPath(rootContext, table.trim());
+    if (!Array.isArray(list)) return undefined;
+    const field = matchField.trim();
+    const match = list.find((entry) => entry && typeof entry === "object" && String(entry[field]) === String(matchValue));
+    if (match === undefined) return undefined;
+    const target = typeof targetField === "string" ? targetField.trim() : "";
+    return target ? match[target] : match;
+  };
+}
+
+// Every reserved-key System field (dice, combatBindings, derivedFormulas,
+// buildSteps, ...) is an entry INSIDE the System record's own `fields`
+// array — `{type, key, label, default|values|children}` — never a flat
+// top-level property of the record itself (a System payload's only real
+// top-level keys are `title`/`version`/`fields`). Reading
+// `systemDefinition.derivedFormulas` directly is always undefined,
+// regardless of what the System actually declares; this is the one place
+// that does the correct lookup, matching system-lookup-tables.js's own
+// (previously unexported, now-duplicate) private copy. A scalar field's
+// value lives at `fieldByKey(fields, key)?.default`, an array field's at
+// `?.values`, an object field's nested values at `?.children` (each child
+// keyed like "parent.child", its own `.default`).
+export function fieldByKey(fields, key) {
+  return (Array.isArray(fields) ? fields : []).find((entry) => entry?.key === key) || null;
+}
+
 const ROLE_BOUND_ROLES = new Set(["resource", "value", "tags", "modifier"]);
 
 // A System's live play-state (health, AC, conditions, initiative, or

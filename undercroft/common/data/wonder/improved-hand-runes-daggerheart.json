@@ -1,0 +1,22 @@
+{
+  "index": "improved-hand-runes",
+  "name": "Improved Hand Runes",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Instinct",
+    "range": "Very Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 3,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

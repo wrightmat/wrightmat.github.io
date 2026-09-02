@@ -1,0 +1,22 @@
+{
+  "index": "glyph-of-nightfall",
+  "name": "Glyph of Nightfall",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Midnight",
+    "level": 4,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against a target within Very Close range. On a success, spend a Hope to conjure a dark glyph upon their body that exposes their weak points, temporarily reducing the target's Difficulty by a value equal to your Knowledge (minimum 1)."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-glyph-of-nightfall-feature"
+  ]
+}

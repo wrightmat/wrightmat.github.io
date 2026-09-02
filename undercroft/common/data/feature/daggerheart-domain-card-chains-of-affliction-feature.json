@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-chains-of-affliction-feature",
+  "name": "feat.daggerheart-domain-card-chains-of-affliction-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark 2 Stress to temporarily Chain a target within Close range. When a Chained creature deals damage, the target of their attack reduces the number of Hit Points they mark by one. You can’t have more than one creature Chained at a time.",
+  "mechanics": {
+    "type": "active",
+    "text": "Mark 2 Stress to temporarily Chain a target within Close range. When a Chained creature deals damage, the target of their attack reduces the number of Hit Points they mark by one. You can’t have more than one creature Chained at a time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

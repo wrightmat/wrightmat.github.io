@@ -1,0 +1,35 @@
+{
+  "index": "troubadour",
+  "name": "Troubadour",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "bard-daggerheart",
+  "class": "Bard",
+  "description": "Play the Troubadour if you want to play music to bolster your allies.",
+  "domains": [
+    "Grace",
+    "Codex"
+  ],
+  "spellcastTrait": "Presence",
+  "features": [
+    {
+      "name": "Foundation: Gifted Performer",
+      "description": "Describe how you perform for others. You can play each song once per long rest:\n\n- Relaxing Song: You and all allies within Close range clear a Hit Point.\n- Epic Song: Make a target within Close range temporarily Vulnerable.\n- Heartbreaking Song: You and all allies within Close range gain a Hope."
+    },
+    {
+      "name": "Specialization: Maestro",
+      "description": "Your rallying songs steel the courage of those who listen. When you give a Rally Die to an ally, they can gain a Hope or clear a Stress."
+    },
+    {
+      "name": "Mastery: Virtuoso",
+      "description": "You are among the greatest of your craft and your skill is boundless. You can perform each of your “Gifted Performer” feature's songs twice instead of once per long rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-troubadour-foundation-gifted-performer",
+    "feat.daggerheart-subclass-troubadour-specialization-maestro",
+    "feat.daggerheart-subclass-troubadour-mastery-virtuoso"
+  ]
+}

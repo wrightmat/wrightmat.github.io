@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-glancing-blow",
+  "name": "Glancing Blow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you fail an attack, you can mark a Stress to deal weapon damage using half your Proficiency.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you fail an attack, you can mark a Stress to deal weapon damage using half your Proficiency."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 7,
+  "recallCost": 1
+}

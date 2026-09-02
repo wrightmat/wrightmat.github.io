@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-executioners-guild-foundation-first-strike",
+  "name": "Foundation: First Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "The first time in a scene you succeed on an attack roll, double the damage of the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The first time in a scene you succeed on an attack roll, double the damage of the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-potion-of-stability-feature",
+  "name": "feat.daggerheart-consumables-potion-of-stability-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can drink this potion to choose one additional downtime move.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can drink this potion to choose one additional downtime move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

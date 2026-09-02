@@ -22,5 +22,15 @@
   },
   "featureTiers": {
     "feat.impose-condition": "minor"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": []
   }
 }

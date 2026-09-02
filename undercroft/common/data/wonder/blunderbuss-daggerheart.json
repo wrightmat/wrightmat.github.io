@@ -1,0 +1,29 @@
+{
+  "index": "blunderbuss",
+  "name": "Blunderbuss",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Finesse",
+    "range": "Close",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Reloading",
+      "description": "After you make an attack, roll a d6. On a result of 1, you must mark a Stress to reload this weapon before you can fire it again."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reloading"
+  ]
+}

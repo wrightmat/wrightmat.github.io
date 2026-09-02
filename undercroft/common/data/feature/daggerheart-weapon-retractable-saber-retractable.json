@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-retractable-saber-retractable",
+  "name": "Retractable",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "The blade can be hidden in the hilt to avoid detection.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The blade can be hidden in the hilt to avoid detection."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

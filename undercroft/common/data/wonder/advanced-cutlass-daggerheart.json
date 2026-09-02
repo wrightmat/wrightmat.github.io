@@ -1,0 +1,22 @@
+{
+  "index": "advanced-cutlass",
+  "name": "Advanced Cutlass",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

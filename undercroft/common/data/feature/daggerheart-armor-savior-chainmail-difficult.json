@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-savior-chainmail-difficult",
+  "name": "Difficult",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "-1 to all character traits and Evasion",
+  "mechanics": {
+    "type": "passive",
+    "text": "-1 to all character traits and Evasion"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

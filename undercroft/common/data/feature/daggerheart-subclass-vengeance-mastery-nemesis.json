@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-vengeance-mastery-nemesis",
+  "name": "Mastery: Nemesis",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 2 Hope to Prioritize an adversary until your next rest. When you make an attack against your Prioritized adversary, you can swap the results of your Hope and Fear Dice. You can only Prioritize one adversary at a time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend 2 Hope to Prioritize an adversary until your next rest. When you make an attack against your Prioritized adversary, you can swap the results of your Hope and Fear Dice. You can only Prioritize one adversary at a time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

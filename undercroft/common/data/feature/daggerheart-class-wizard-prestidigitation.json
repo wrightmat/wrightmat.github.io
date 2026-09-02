@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-wizard-prestidigitation",
+  "name": "Prestidigitation",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can perform harmless, subtle magical effects at will. For example, you can change an object's color, create a smell, light a candle, cause a tiny object to float, illuminate a room, or repair a small object.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can perform harmless, subtle magical effects at will. For example, you can change an object's color, create a smell, light a candle, cause a tiny object to float, illuminate a room, or repair a small object."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

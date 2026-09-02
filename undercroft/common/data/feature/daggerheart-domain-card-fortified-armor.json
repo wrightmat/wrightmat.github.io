@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-fortified-armor",
+  "name": "Fortified Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While you are wearing armor, gain a +2 bonus to your damage thresholds.",
+  "mechanics": {
+    "type": "active",
+    "text": "While you are wearing armor, gain a +2 bonus to your damage thresholds."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 4,
+  "recallCost": 0
+}

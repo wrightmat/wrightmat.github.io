@@ -1,0 +1,23 @@
+{
+  "index": "reanimated",
+  "name": "Reanimated",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "character",
+  "description": "Reanimated are corpses who have been brought back to life.",
+  "features": [
+    {
+      "name": "Stitch Up",
+      "description": "During a rest, you can only clear Hit Points if you have access to remains from a recently deceased creature. Describe how using this material affects your appearance. You cannot clear Hit Points by any means except a downtime move or the Risk It All death move."
+    },
+    {
+      "name": "Corpse",
+      "description": "When you Risk It All on a death move, if you fail, you can permanently mark a Hit Point to succeed instead. When you do, you still use the Hope Die's value to clear Hit Points and Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-transformation-reanimated-stitch-up",
+    "feat.daggerheart-transformation-reanimated-corpse"
+  ]
+}

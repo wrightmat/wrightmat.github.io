@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-major-stamina-potion-feature",
+  "name": "feat.daggerheart-consumables-major-stamina-potion-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Clear 1d4+2 Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Clear 1d4+2 Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

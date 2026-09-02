@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-flickerfly-pendant-feature",
+  "name": "feat.daggerheart-items-flickerfly-pendant-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While you carry this pendant, your weapons with a melee range that deal physical damage have a gossamer sheen and can attack targets within Very Close range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While you carry this pendant, your weapons with a melee range that deal physical damage have a gossamer sheen and can attack targets within Very Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

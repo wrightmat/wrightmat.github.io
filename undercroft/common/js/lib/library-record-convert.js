@@ -1,4 +1,4 @@
-import { abilityModifier } from "./dnd-rules.js";
+import { evaluateDerivedFormula } from "./derived-formulas.js";
 
 // Converts a Library record's payload from one kind to another WITHIN the
 // same System — Forge NPC -> Workbench Character, Crucible Monster ->
@@ -76,7 +76,7 @@ export function convertLibraryRecord(payload, { fromKind, toKind, systemId, temp
 // System with no Level/Skills concept at all, e.g. Daggerheart) — every
 // step below is inert in that case, exactly like every other "no field
 // authored" fallback in this suite.
-export function seedCharacterDefaults(payload, { abilityDefs = [], skillDefs = [] } = {}) {
+export function seedCharacterDefaults(payload, { abilityDefs = [], skillDefs = [], derivedFormulas = [] } = {}) {
   if (!payload || typeof payload !== "object") return payload;
   const identity = { ...(payload.identity || {}) };
   // NPC's own species (Forge's universal Identity layer — always the same
@@ -95,7 +95,7 @@ export function seedCharacterDefaults(payload, { abilityDefs = [], skillDefs = [
 
   const stats = { ...(payload.stats || {}) };
   const abilities = stats.abilities || {};
-  const abilityModOf = (key) => abilityModifier(abilities[key] ?? 10);
+  const abilityModOf = (key) => evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: abilities[key] ?? 10 }) || 0;
 
   if (abilityDefs.length && !stats.savingThrows) {
     stats.savingThrows = abilityDefs.map((ability) => ({

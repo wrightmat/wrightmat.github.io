@@ -50,7 +50,7 @@ import { createNpcRecord, toPressExportShape } from "./lib/npc-schema.js";
 import { generateCharacterNote } from "./lib/llm-note.js";
 import { buildLocationPressTemplate } from "./lib/press-export.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
-import { abilityModifier } from "../../common/js/lib/dnd-rules.js";
+import { abilityModifier } from "../../common/js/lib/derived-formulas.js";
 import { findBindingByRole, findBindingsByRole, setAtBinding } from "../../common/js/lib/bindings.js";
 import { loadSystemFields, deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
 import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
@@ -783,6 +783,13 @@ async function refreshSystemVocabulary(systemId) {
     // no Role-bound field at all (e.g. Blades in the Dark) — every
     // combatBindings-driven write below is then simply skipped.
     tables.combatBindings = deriveCombatBindings(systemFields);
+    // Reserved-key array field (dice/combatBindings/levelUpBindings' own
+    // convention), read the same plain way — [] for a System with none
+    // authored, same graceful-degradation every optional System field here
+    // already follows. Threaded through to getStatsForArchetype so
+    // Initiative's own ability-modifier math resolves via the System's own
+    // authored formula (derived-formulas.js) instead of a hardcoded D&D one.
+    tables.derivedFormulas = (systemFields || []).find((entry) => entry?.key === "derivedFormulas")?.values || [];
     // Both optional, System-defined fallbacks resolveStats/generateNpc
     // (lib/generator.js) use for a System whose stats/skills genuinely
     // don't come from the Archetype table entry (see each helper's own
@@ -860,7 +867,7 @@ function ensureOptionIncludesValue(options, value) {
 }
 
 function abilityModifierText(score) {
-  const modifier = abilityModifier(score);
+  const modifier = abilityModifier(score, tables?.derivedFormulas);
   return `(${modifier >= 0 ? "+" : ""}${modifier})`;
 }
 
@@ -2400,11 +2407,12 @@ convertCharacterForm?.addEventListener("submit", async (event) => {
     templateId,
     name,
   });
-  const [abilityDefs, skillValues] = await Promise.all([
+  const [abilityDefs, skillValues, derivedFormulas] = await Promise.all([
     loadAbilityFieldDefs(dataManager, templateSchema),
     loadArrayFieldValues(dataManager, templateSchema, "skills"),
+    loadArrayFieldValues(dataManager, templateSchema, "derivedFormulas"),
   ]);
-  const payload = seedCharacterDefaults(converted, { abilityDefs, skillDefs: skillValues });
+  const payload = seedCharacterDefaults(converted, { abilityDefs, skillDefs: skillValues, derivedFormulas });
   try {
     await dataManager.save("characters", id, payload);
   } catch (error) {

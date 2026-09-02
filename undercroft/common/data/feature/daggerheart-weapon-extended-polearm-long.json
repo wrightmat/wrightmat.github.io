@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-extended-polearm-long",
+  "name": "Long",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This weapon's attack targets all adversaries in a line within range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This weapon's attack targets all adversaries in a line within range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

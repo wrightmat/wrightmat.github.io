@@ -1,0 +1,22 @@
+{
+  "index": "healing-strike",
+  "name": "Healing Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Splendor",
+    "level": 7,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When you deal damage to an adversary, you can spend 2 Hope to clear a Hit Point on an ally within Close range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-healing-strike-feature"
+  ]
+}

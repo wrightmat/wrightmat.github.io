@@ -28,5 +28,15 @@
   },
   "featureTiers": {
     "feat.damage": "tier-3"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

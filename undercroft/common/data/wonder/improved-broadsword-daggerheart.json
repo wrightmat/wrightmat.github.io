@@ -1,0 +1,22 @@
+{
+  "index": "improved-broadsword",
+  "name": "Improved Broadsword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 3,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

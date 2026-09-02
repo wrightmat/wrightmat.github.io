@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-ribbet-long-tongue",
+  "name": "Long Tongue",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can use your long tongue to grab onto things within Close range. Mark a Stress to use your tongue as a Finesse Close weapon that deals d12 physical damage using your Proficiency.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can use your long tongue to grab onto things within Close range. Mark a Stress to use your tongue as a Finesse Close weapon that deals d12 physical damage using your Proficiency."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

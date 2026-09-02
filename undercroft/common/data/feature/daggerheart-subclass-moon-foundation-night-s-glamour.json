@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-moon-foundation-night-s-glamour",
+  "name": "Foundation: Night's Glamour",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to Glamour yourself in a magical facade that lasts until you mark a Hit Point, make an attack, or take a rest. While Glamoured, you can:\n\n- Disguise yourself to look like any creature of your approximate size that you've seen.\n- Enhance your own appearance. You gain advantage on Presence Rolls that leverage this change.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to Glamour yourself in a magical facade that lasts until you mark a Hit Point, make an attack, or take a rest. While Glamoured, you can:\n\n- Disguise yourself to look like any creature of your approximate size that you've seen.\n- Enhance your own appearance. You gain advantage on Presence Rolls that leverage this change."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

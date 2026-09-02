@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-vanishing-dodge-feature",
+  "name": "feat.daggerheart-domain-card-vanishing-dodge-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an attack made against you that would deal physical damage fails, you can spend a Hope to envelop yourself in shadow, becoming Hidden and teleporting to a point within Close range of the attacker. You remain Hidden until the next time you make an action roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "When an attack made against you that would deal physical damage fails, you can spend a Hope to envelop yourself in shadow, becoming Hidden and teleporting to a point within Close range of the attacker. You remain Hidden until the next time you make an action roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

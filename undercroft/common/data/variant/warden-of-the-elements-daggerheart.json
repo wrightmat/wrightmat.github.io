@@ -1,0 +1,35 @@
+{
+  "index": "warden-of-the-elements",
+  "name": "Warden of the Elements",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "druid-daggerheart",
+  "class": "Druid",
+  "description": "Play the Warden of the Elements if you want to embody the natural elements of the wild.",
+  "domains": [
+    "Sage",
+    "Arcana"
+  ],
+  "spellcastTrait": "Instinct",
+  "features": [
+    {
+      "name": "Foundation: Elemental Incarnation",
+      "description": "Mark a Stress to Channel one of the following elements until you take Severe damage or until your next rest:\n\n- Fire: When an adversary within Melee range deals damage to you, they take 1d10 magic damage.\n- Earth: Gain a bonus to your damage thresholds equal to your Proficiency.\n- Water: When you deal damage to an adversary within Melee range, all other adversaries within Very Close range must mark a Stress.\n- Air: You can hover, gaining advantage on Agility Rolls."
+    },
+    {
+      "name": "Specialization: Elemental Aura",
+      "description": "Once per rest while Channeling, you can assume an aura matching your element. The aura affects targets within Close range until your Channeling ends.\n\n- Fire: When an adversary marks 1 or more Hit Points, they must also mark a Stress.\n- Earth: Your allies gain a +1 bonus to Strength.\n- Water: When an adversary deals damage to you, you can mark a Stress to move them anywhere within Very Close range of where they are.\n- Air: When you or an ally takes damage from an attack beyond Melee range, reduce the damage by 1d8."
+    },
+    {
+      "name": "Mastery: Elemental Dominion",
+      "description": "You further embody your element. While Channeling, you gain the following benefit:\n\n- Fire: You gain a +1 bonus to your Proficiency for attacks and spells that deal damage.\n- Earth: When you would mark Hit Points, roll a d6 per Hit Point marked. For each result of 6, reduce the number of Hit Points you mark by 1.\n- Water: When an attack against you succeeds, you can mark a Stress to make the attacker temporarily Vulnerable.\n- Air: You gain a +1 bonus to your Evasion and can fly."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-warden-of-the-elements-foundation-elemental-incarnation",
+    "feat.daggerheart-subclass-warden-of-the-elements-specialization-elemental-aura",
+    "feat.daggerheart-subclass-warden-of-the-elements-mastery-elemental-dominion"
+  ]
+}

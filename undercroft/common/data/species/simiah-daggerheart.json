@@ -29,5 +29,20 @@
       "Illi"
     ],
     "lastNames": []
-  }
+  },
+  "index": "simiah",
+  "features": [
+    {
+      "name": "Natural Climber",
+      "description": "You have advantage on Agility Rolls that involve balancing and climbing."
+    },
+    {
+      "name": "Nimble",
+      "description": "Gain a permanent +1 bonus to your Evasion at character creation."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-simiah-natural-climber",
+    "feat.daggerheart-ancestry-simiah-nimble"
+  ]
 }

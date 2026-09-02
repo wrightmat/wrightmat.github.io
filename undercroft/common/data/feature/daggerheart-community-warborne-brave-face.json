@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-warborne-brave-face",
+  "name": "Brave Face",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per session, when an attack would cause you to mark a Stress, you can spend a Hope instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per session, when an attack would cause you to mark a Stress, you can spend a Hope instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

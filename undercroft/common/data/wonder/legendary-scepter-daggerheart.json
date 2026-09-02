@@ -1,0 +1,29 @@
+{
+  "index": "legendary-scepter",
+  "name": "Legendary Scepter",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Presence",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 9,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Versatile",
+      "description": "This weapon can also be used with these statistics—Presence, Melee, d8+6."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-legendary-scepter-versatile"
+  ]
+}

@@ -53,7 +53,8 @@ function resolveStats(tables, archetypeName, random) {
     archetypeName,
     tables.abilityKeys,
     tables.abilityFieldKey,
-    tables.combatBindings
+    tables.combatBindings,
+    tables.derivedFormulas
   );
 }
 

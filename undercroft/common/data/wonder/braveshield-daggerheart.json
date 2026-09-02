@@ -1,0 +1,29 @@
+{
+  "index": "braveshield",
+  "name": "Braveshield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D4",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Sheltering",
+      "description": "When you mark an Armor Slot, it reduces damage for you and all allies within Melee range of you who took the same damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-braveshield-sheltering"
+  ]
+}

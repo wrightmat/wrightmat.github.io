@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-sledge-axe-destructive",
+  "name": "Destructive",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "-1 to Agility; on a successful attack, all adversaries within Very Close range must mark a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "-1 to Agility; on a successful attack, all adversaries within Very Close range must mark a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

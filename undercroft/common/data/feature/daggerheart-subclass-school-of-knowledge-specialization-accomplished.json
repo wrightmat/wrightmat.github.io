@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-school-of-knowledge-specialization-accomplished",
+  "name": "Specialization: Accomplished",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Take an additional domain card of your level or lower from a domain you have access to.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Take an additional domain card of your level or lower from a domain you have access to."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

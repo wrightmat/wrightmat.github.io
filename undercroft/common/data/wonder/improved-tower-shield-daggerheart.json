@@ -1,0 +1,29 @@
+{
+  "index": "improved-tower-shield",
+  "name": "Improved Tower Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 2,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 2,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Barrier",
+      "description": "+3 to Armor Score; -1 to Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-improved-tower-shield-barrier"
+  ]
+}

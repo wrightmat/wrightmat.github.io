@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-call-of-the-brave-foundation-battle-ritual",
+  "name": "Foundation: Battle Ritual",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, before you attempt something incredibly dangerous or face off against a foe who clearly outmatches you, describe what ritual you perform or preparations you make. When you do, clear 2 Stress and gain 2 Hope.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, before you attempt something incredibly dangerous or face off against a foe who clearly outmatches you, describe what ritual you perform or preparations you make. When you do, clear 2 Stress and gain 2 Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

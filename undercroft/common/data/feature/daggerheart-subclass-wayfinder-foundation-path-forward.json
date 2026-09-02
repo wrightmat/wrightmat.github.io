@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-wayfinder-foundation-path-forward",
+  "name": "Foundation: Path Forward",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you're traveling to a place you've previously visited or you carry an object that has been at the location before, you can identify the shortest, most direct path to your destination.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you're traveling to a place you've previously visited or you carry an object that has been at the location before, you can identify the shortest, most direct path to your destination."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

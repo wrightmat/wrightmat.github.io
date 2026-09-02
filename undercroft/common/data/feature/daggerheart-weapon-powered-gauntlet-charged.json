@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-powered-gauntlet-charged",
+  "name": "Charged",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to gain a +1 bonus to your Proficiency on a primary weapon attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to gain a +1 bonus to your Proficiency on a primary weapon attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

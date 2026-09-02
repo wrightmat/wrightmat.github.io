@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-hedge-foundation-tethered-talisman",
+  "name": "Foundation: Tethered Talisman",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, you can imbue a small item with your protective essence. When the person holding the talisman takes damage, you can expend its magic to reduce the number of Hit Points they mark by one. You can't create a new talisman until the old one has been used.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per rest, you can imbue a small item with your protective essence. When the person holding the talisman takes damage, you can expend its magic to reduce the number of Hit Points they mark by one. You can't create a new talisman until the old one has been used."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

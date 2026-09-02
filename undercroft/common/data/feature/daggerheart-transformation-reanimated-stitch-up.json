@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-reanimated-stitch-up",
+  "name": "Stitch Up",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a rest, you can only clear Hit Points if you have access to remains from a recently deceased creature. Describe how using this material affects your appearance. You cannot clear Hit Points by any means except a downtime move or the Risk It All death move.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During a rest, you can only clear Hit Points if you have access to remains from a recently deceased creature. Describe how using this material affects your appearance. You cannot clear Hit Points by any means except a downtime move or the Risk It All death move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,22 @@
+{
+  "index": "improved-battleaxe",
+  "name": "Improved Battleaxe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

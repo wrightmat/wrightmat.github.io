@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-premonition-feature",
+  "name": "feat.daggerheart-domain-card-premonition-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can channel arcane energy to have visions of the future. Once per long rest, immediately after the GM conveys the consequences of a roll you made, you can rescind the move and consequences like they never happened and make another move instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "You can channel arcane energy to have visions of the future. Once per long rest, immediately after the GM conveys the consequences of a roll you made, you can rescind the move and consequences like they never happened and make another move instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

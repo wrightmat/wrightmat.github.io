@@ -1,0 +1,22 @@
+{
+  "index": "quarterstaff",
+  "name": "Quarterstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 1,
+    "trait": "Instinct",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 3,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-elf-celestial-trance",
+  "name": "Celestial Trance",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a rest, you can drop into a trance to choose an additional downtime move.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During a rest, you can drop into a trance to choose an additional downtime move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

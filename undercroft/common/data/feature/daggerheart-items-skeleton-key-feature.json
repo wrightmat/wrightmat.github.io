@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-skeleton-key-feature",
+  "name": "feat.daggerheart-items-skeleton-key-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you use this key to open a locked door, you gain advantage on the Finesse Roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you use this key to open a locked door, you gain advantage on the Finesse Roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

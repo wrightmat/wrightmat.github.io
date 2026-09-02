@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-replication-parchment-feature",
+  "name": "feat.daggerheart-consumables-replication-parchment-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "By touching this piece of parchment to another, you can perfectly copy the second parchment's contents. Once used, this parchment becomes mundane paper.",
+  "mechanics": {
+    "type": "passive",
+    "text": "By touching this piece of parchment to another, you can perfectly copy the second parchment's contents. Once used, this parchment becomes mundane paper."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

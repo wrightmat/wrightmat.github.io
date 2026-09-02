@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-infinite-bag-feature",
+  "name": "feat.daggerheart-items-infinite-bag-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you store items in this bag, they are kept in a pocket dimension that never runs out of space. You can retrieve an item at any time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you store items in this bag, they are kept in a pocket dimension that never runs out of space. You can retrieve an item at any time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

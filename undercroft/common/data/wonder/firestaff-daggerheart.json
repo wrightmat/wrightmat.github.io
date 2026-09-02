@@ -1,0 +1,29 @@
+{
+  "index": "firestaff",
+  "name": "Firestaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Instinct",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 7,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Burning",
+      "description": "When you roll a 6 on a damage die, the target must mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-firestaff-burning"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-beastbound-specialization-battle-bonded",
+  "name": "Specialization: Battle-Bonded",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an adversary attacks you while they're within your companion's Melee range, you gain a +2 bonus to your Evasion against the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When an adversary attacks you while they're within your companion's Melee range, you gain a +2 bonus to your Evasion against the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,23 @@
+{
+  "index": "monett-s-cloak",
+  "name": "Monett's Cloak",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 16,
+  "baseSevereThreshold": 39,
+  "baseScore": 6,
+  "features": [
+    {
+      "name": "Magic",
+      "description": "You can't mark an Armor Slot to reduce physical damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-monett-s-cloak-magic"
+  ]
+}

@@ -19,6 +19,7 @@ const FORMULA_FUNCTION_SIGNATURES = {
   sum: "sum(...values)",
   roller: "roller(notation, fallback)",
   lookup: "lookup(table, key)",
+  lookupField: "lookupField(table, matchField, matchValue, targetField)",
   len: "len(value)",
   upper: "upper(value)",
   lower: "lower(value)",

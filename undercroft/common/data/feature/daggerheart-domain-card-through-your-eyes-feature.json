@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-through-your-eyes-feature",
+  "name": "feat.daggerheart-domain-card-through-your-eyes-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Choose a target within Very Far range. You can see through their eyes and hear through their ears. You can transition between using your own senses or the target's freely until you cast another spell or until your next rest.",
+  "mechanics": {
+    "type": "active",
+    "text": "Choose a target within Very Far range. You can see through their eyes and hear through their ears. You can transition between using your own senses or the target's freely until you cast another spell or until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

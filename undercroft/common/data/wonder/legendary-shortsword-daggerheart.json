@@ -1,0 +1,29 @@
+{
+  "index": "legendary-shortsword",
+  "name": "Legendary Shortsword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Paired",
+      "description": "+5 to primary weapon damage to targets within Melee range"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-paired-3"
+  ]
+}

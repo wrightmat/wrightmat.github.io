@@ -407,7 +407,16 @@ export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey =
         const raw = String(child.key || "");
         return {
           key: raw.startsWith(`${key}.`) ? raw.slice(key.length + 1) : raw,
-          label: child.shortName || child.label || "",
+          // Full name preferred over the abbreviation whenever the System
+          // declares one — "Strength," not "STR," same for every System,
+          // not just the ones that happen to only have a short form.
+          label: child.label || child.shortName || "",
+          // The abbreviation itself, carried through SEPARATELY (not just
+          // folded into `label`'s own fallback above) — some consumers
+          // (Workbench's Build Character wizard matching a D&D background's
+          // own short-code `ability_scores` candidates) need the short form
+          // specifically, not whichever text `label` prefers to display.
+          shortName: child.shortName || "",
           // Carried through (when authored) for Forge's own independent-roll
           // fallback (loadIndependentStatRanges in forge/js/lib/tables.js) —
           // a System whose ability children define a real range (e.g.

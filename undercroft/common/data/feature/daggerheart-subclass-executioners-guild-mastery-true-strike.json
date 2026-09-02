@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-executioners-guild-mastery-true-strike",
+  "name": "Mastery: True Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, when you fail an attack roll, you can spend a Hope to make it a success instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, when you fail an attack roll, you can spend a Hope to make it a success instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

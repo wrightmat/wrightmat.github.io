@@ -1,0 +1,29 @@
+{
+  "index": "knuckle-blades",
+  "name": "Knuckle Blades",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Brutal",
+      "description": "When you roll the maximum value on a damage die, roll an additional damage die."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-brutal"
+  ]
+}

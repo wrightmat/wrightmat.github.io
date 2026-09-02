@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-nightwalker-specialization-adrenaline",
+  "name": "Specialization: Adrenaline",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While you're Vulnerable, add your level to your damage rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While you're Vulnerable, add your level to your damage rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

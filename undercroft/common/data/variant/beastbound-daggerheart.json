@@ -1,0 +1,45 @@
+{
+  "index": "beastbound",
+  "name": "Beastbound",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "ranger-daggerheart",
+  "class": "Ranger",
+  "description": "Play the Beastbound if you want to form a deep bond with an animal ally.",
+  "domains": [
+    "Bone",
+    "Sage"
+  ],
+  "spellcastTrait": "Agility",
+  "features": [
+    {
+      "name": "Foundation: Companion",
+      "description": "You have an animal companion of your choice (at the GM's discretion). They stay by your side unless you tell them otherwise.\n\nTake the Ranger Companion sheet. When you level up your character, choose a level-up option for your companion from this sheet as well."
+    },
+    {
+      "name": "Specialization: Expert Training",
+      "description": "Choose an additional level-up option for your companion."
+    },
+    {
+      "name": "Specialization: Battle-Bonded",
+      "description": "When an adversary attacks you while they're within your companion's Melee range, you gain a +2 bonus to your Evasion against the attack."
+    },
+    {
+      "name": "Mastery: Advanced Training",
+      "description": "Choose two additional level-up options for your companion."
+    },
+    {
+      "name": "Mastery: Loyal Friend",
+      "description": "Once per long rest, when the damage from an attack would mark your companion's last Stress or your last Hit Point and you're within Close range of each other, you or your companion can rush to the other's side and take that damage instead."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-beastbound-foundation-companion",
+    "feat.daggerheart-subclass-beastbound-specialization-expert-training",
+    "feat.daggerheart-subclass-beastbound-specialization-battle-bonded",
+    "feat.daggerheart-subclass-beastbound-mastery-advanced-training",
+    "feat.daggerheart-subclass-beastbound-mastery-loyal-friend"
+  ]
+}

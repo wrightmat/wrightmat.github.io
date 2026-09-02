@@ -1,0 +1,22 @@
+{
+  "index": "falling-sky",
+  "name": "Falling Sky",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Arcana",
+    "level": 10,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against all adversaries within Far range. Mark any number of Stress to make shards of arcana rain down from above. Targets you succeed against take 1d20+2 magic damage for each Stress marked."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-falling-sky-feature"
+  ]
+}

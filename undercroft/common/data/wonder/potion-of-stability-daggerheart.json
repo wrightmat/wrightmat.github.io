@@ -1,0 +1,19 @@
+{
+  "index": "potion-of-stability",
+  "name": "Potion of Stability",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can drink this potion to choose one additional downtime move."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-potion-of-stability-feature"
+  ]
+}

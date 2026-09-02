@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-dwarf-increased-fortitude",
+  "name": "Increased Fortitude",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope to halve incoming physical damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend 3 Hope to halve incoming physical damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

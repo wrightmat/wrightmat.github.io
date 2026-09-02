@@ -1,0 +1,22 @@
+{
+  "index": "shared-trauma",
+  "name": "Shared Trauma",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 3,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can transfer suffering from one creature to another. Once per rest, mark any number of Hit Points on a willing creature within Melee range to clear an equal number of Hit Points on another willing creature within Melee range. You can choose yourself in place of either creature."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-shared-trauma-feature"
+  ]
+}

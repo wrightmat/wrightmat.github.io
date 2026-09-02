@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-pick-and-pull",
+  "name": "Pick and Pull",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on action rolls to pick nonmagical locks, disarm nonmagical traps, or steal items from a target (either through stealth or by force).",
+  "mechanics": {
+    "type": "active",
+    "text": "You have advantage on action rolls to pick nonmagical locks, disarm nonmagical traps, or steal items from a target (either through stealth or by force)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Midnight",
+  "level": 1,
+  "recallCost": 0
+}

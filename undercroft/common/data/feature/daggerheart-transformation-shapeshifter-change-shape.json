@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-shapeshifter-change-shape",
+  "name": "Change Shape",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a long rest, you can spend a downtime move to swap your current ancestry with another. When you do, describe how your appearance changes.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During a long rest, you can spend a downtime move to swap your current ancestry with another. When you do, describe how your appearance changes."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

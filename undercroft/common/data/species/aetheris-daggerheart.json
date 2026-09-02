@@ -1,0 +1,24 @@
+{
+  "index": "aetheris",
+  "name": "Aetheris",
+  "description": [
+    "Aetheris are humanoids who possess radiant auras and glowing eyes. They are the descendants of celestials from the Hallows Above."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "features": [
+    {
+      "name": "Hallowed Aura",
+      "description": "Once per rest, when an ally within Close range rolls with Fear, you can make it a roll with Hope instead."
+    },
+    {
+      "name": "Divine Countenance",
+      "description": "You have advantage on rolls to command or persuade."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-aetheris-hallowed-aura",
+    "feat.daggerheart-ancestry-aetheris-divine-countenance"
+  ]
+}

@@ -125,12 +125,13 @@ export function evaluateFormula(formula, context = {}, options = {}) {
   return evaluator(getter, runtimeFunctions);
 }
 
-// "roller" and "lookup" aren't in BASE_FUNCTIONS itself — both are injected
-// per-caller via options.functions instead (see roller's own inline
-// definition above and bindings.js's createLookupFn). Every real caller
-// provides both in practice though, so they belong in the advertised
-// function list too — otherwise the inspector's own autocomplete
-// (formula-metadata.js) would never suggest either.
+// "roller", "lookup" and "lookupField" aren't in BASE_FUNCTIONS itself —
+// all three are injected per-caller via options.functions instead (see
+// roller's own inline definition above and bindings.js's createLookupFn/
+// createLookupFieldFn). Every real caller provides all three in practice
+// though, so they belong in the advertised function list too — otherwise
+// the inspector's own autocomplete (formula-metadata.js) would never
+// suggest any of them.
 export function listFormulaFunctions() {
-  return [...new Set([...Object.keys(BASE_FUNCTIONS), "roller", "lookup"])];
+  return [...new Set([...Object.keys(BASE_FUNCTIONS), "roller", "lookup", "lookupField"])];
 }

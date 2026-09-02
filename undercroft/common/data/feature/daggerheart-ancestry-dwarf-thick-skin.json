@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-dwarf-thick-skin",
+  "name": "Thick Skin",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you take Minor damage, you can mark 2 Stress instead of marking a Hit Point.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you take Minor damage, you can mark 2 Stress instead of marking a Hit Point."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

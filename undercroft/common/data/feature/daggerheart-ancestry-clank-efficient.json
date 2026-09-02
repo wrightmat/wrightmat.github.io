@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-clank-efficient",
+  "name": "Efficient",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you take a short rest, you can choose a long rest move instead of a short rest move.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you take a short rest, you can choose a long rest move instead of a short rest move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

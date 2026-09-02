@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-witch-hope-witch-s-charm",
+  "name": "Witch's Charm",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you or an ally within Far range rolls a failure on an action roll, you can spend 3 Hope to change it into a success with Fear instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you or an ally within Far range rolls a failure on an action roll, you can spend 3 Hope to change it into a success with Fear instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

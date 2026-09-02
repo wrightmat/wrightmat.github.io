@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-sorcerer-arcane-sense",
+  "name": "Arcane Sense",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can sense the presence of magical people and objects within Close range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can sense the presence of magical people and objects within Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

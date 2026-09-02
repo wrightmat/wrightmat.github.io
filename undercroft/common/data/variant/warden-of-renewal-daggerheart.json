@@ -1,0 +1,45 @@
+{
+  "index": "warden-of-renewal",
+  "name": "Warden of Renewal",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "druid-daggerheart",
+  "class": "Druid",
+  "description": "Play the Warden of Renewal if you want to use powerful magic to heal your party.",
+  "domains": [
+    "Sage",
+    "Arcana"
+  ],
+  "spellcastTrait": "Instinct",
+  "features": [
+    {
+      "name": "Foundation: Clarity of Nature",
+      "description": "Once per long rest, you can create a space of natural serenity within Close range. When you spend a few minutes resting within the space, clear Stress equal to your Instinct, distributed as you choose between you and your allies."
+    },
+    {
+      "name": "Foundation: Regeneration",
+      "description": "Touch a creature and spend 3 Hope. That creature clears 1d4 Hit Points."
+    },
+    {
+      "name": "Specialization: Regenerative Reach",
+      "description": "You can target creatures within Very Close range with your “Regeneration” feature."
+    },
+    {
+      "name": "Specialization: Warden's Protection",
+      "description": "Once per long rest, spend 2 Hope to clear 2 Hit Points on 1d4 allies within Close range."
+    },
+    {
+      "name": "Mastery: Defender",
+      "description": "Your animal transformation embodies a healing guardian spirit. When you're in Beastform and an ally within Close range marks 2 or more Hit Points, you can mark a Stress to reduce the number of Hit Points they mark by 1."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-warden-of-renewal-foundation-clarity-of-nature",
+    "feat.daggerheart-subclass-warden-of-renewal-foundation-regeneration",
+    "feat.daggerheart-subclass-warden-of-renewal-specialization-regenerative-reach",
+    "feat.daggerheart-subclass-warden-of-renewal-specialization-warden-s-protection",
+    "feat.daggerheart-subclass-warden-of-renewal-mastery-defender"
+  ]
+}

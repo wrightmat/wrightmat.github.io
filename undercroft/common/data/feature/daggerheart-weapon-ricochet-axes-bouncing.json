@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-ricochet-axes-bouncing",
+  "name": "Bouncing",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark 1 or more Stress to hit that many targets in range of the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark 1 or more Stress to hit that many targets in range of the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

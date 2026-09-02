@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-powerful",
+  "name": "Powerful",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, roll an additional damage die and discard the lowest result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, roll an additional damage die and discard the lowest result."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

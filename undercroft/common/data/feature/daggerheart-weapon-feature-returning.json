@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-returning",
+  "name": "Returning",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When this weapon is thrown within its range, it appears in your hand immediately after the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When this weapon is thrown within its range, it appears in your hand immediately after the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "index": "curved-dagger",
+  "name": "Curved Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 9,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Serrated",
+      "description": "When you roll a 1 on a damage die, it deals 8 damage instead."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-curved-dagger-serrated"
+  ]
+}

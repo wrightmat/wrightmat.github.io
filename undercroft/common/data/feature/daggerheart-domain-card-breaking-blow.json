@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-breaking-blow",
+  "name": "Breaking Blow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make a successful attack, you can mark a Stress to make the next successful attack against that same target deal an extra 2d12 damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you make a successful attack, you can mark a Stress to make the next successful attack against that same target deal an extra 2d12 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 8,
+  "recallCost": 3
+}

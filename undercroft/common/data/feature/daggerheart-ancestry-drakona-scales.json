@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-drakona-scales",
+  "name": "Scales",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your scales act as natural protection. When you would take Severe damage, you can mark a Stress to mark 1 fewer Hit Points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your scales act as natural protection. When you would take Severe damage, you can mark a Stress to mark 1 fewer Hit Points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

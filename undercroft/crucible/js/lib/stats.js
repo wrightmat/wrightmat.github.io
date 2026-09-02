@@ -7,7 +7,7 @@
 // combatScaling field (tables.js#loadCombatScalingLevels) exactly the way
 // Vault pulls Rarity/Activation/Form from its own generator-property fields.
 import { loadCombatScalingLevels, loadDamageTypesPropertyType } from "./tables.js";
-import { abilityModifier } from "../../../common/js/lib/dnd-rules.js";
+import { abilityModifier } from "../../../common/js/lib/derived-formulas.js";
 import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
 
 function pickRandom(list, random) {
@@ -59,8 +59,9 @@ function resolveCombatScalingLevel(levels, combatScalingId, random) {
 // field rather than a hardcoded six-key copy. Which key is "primary" for a
 // melee/ranged build and which one benefits from the HP-band Constitution
 // bonus is still D&D-specific rules logic (same class of thing as
-// dnd-rules.js's abilityModifier — there's no data-driven home for "which
-// ability is Constitution" on a System record), so those two boosts are only
+// derived-formulas.js's abilityModifier — there's no data-driven home for "which
+// ability is Constitution" on a System record — the FORMULA is data-driven
+// via derivedFormulas, just not which ability key feeds it), so those two boosts are only
 // applied if the resulting key set actually contains "strength"/"dexterity"/
 // "constitution" — a System without one of those simply doesn't get that
 // particular boost, rather than erroring.
@@ -162,6 +163,7 @@ export async function deriveStats({
   abilityFieldDefs = [],
   abilityFieldKey = "",
   combatBindings = null,
+  derivedFormulas = [],
 }) {
   const [levels, damageTypeList] = await Promise.all([
     loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
@@ -203,7 +205,7 @@ export async function deriveStats({
   }
 
   const abilities = deriveAbilities(role, abilityFieldDefs);
-  const initiativeBonus = abilityModifier(abilities.dexterity ?? 10);
+  const initiativeBonus = abilityModifier(abilities.dexterity ?? 10, derivedFormulas);
 
   // Every value below is written through setAtBinding against a scratch
   // object, then unwrapped to just its own `.stats` sub-object at the end —
@@ -286,7 +288,7 @@ export async function deriveStats({
     // fallback convention initiative.bonus above uses for dexterity.
     senses: {
       ...(creatureType?.defaultSenses || {}),
-      passives: { perception: 10 + abilityModifier(abilities.wisdom ?? 10) },
+      passives: { perception: 10 + abilityModifier(abilities.wisdom ?? 10, derivedFormulas) },
     },
     actions,
     budget,

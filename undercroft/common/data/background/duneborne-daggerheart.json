@@ -1,0 +1,18 @@
+{
+  "index": "duneborne",
+  "name": "Duneborne",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Being part of a duneborne community means you've made a home among the shifting sands and arid climate of the desert.",
+  "personalities": [],
+  "features": [
+    {
+      "name": "Oasis",
+      "description": "During a short rest, you or an ally can reroll a die used for a downtime action."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-community-duneborne-oasis"
+  ]
+}

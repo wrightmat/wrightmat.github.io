@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-channeling-armor-channeling",
+  "name": "Channeling",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "+1 to Spellcast Rolls",
+  "mechanics": {
+    "type": "passive",
+    "text": "+1 to Spellcast Rolls"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

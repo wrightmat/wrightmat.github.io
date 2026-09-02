@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-katari-feline-instincts",
+  "name": "Feline Instincts",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make an Agility Roll, you can spend 2 Hope to reroll your Hope Die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you make an Agility Roll, you can spend 2 Hope to reroll your Hope Die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

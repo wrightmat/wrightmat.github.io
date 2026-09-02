@@ -1,0 +1,22 @@
+{
+  "index": "vanishing-dodge",
+  "name": "Vanishing Dodge",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Midnight",
+    "level": 7,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When an attack made against you that would deal physical damage fails, you can spend a Hope to envelop yourself in shadow, becoming Hidden and teleporting to a point within Close range of the attacker. You remain Hidden until the next time you make an action roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-vanishing-dodge-feature"
+  ]
+}

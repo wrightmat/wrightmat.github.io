@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-winged-sentinel-mastery-power-of-the-gods",
+  "name": "Mastery: Power of the Gods",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While flying, you deal an extra 1d12 damage instead of 1d8 from your “Wings of Light” feature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While flying, you deal an extra 1d12 damage instead of 1d8 from your “Wings of Light” feature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

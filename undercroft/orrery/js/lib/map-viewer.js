@@ -786,6 +786,17 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       }
       event.preventDefault();
       event.stopPropagation();
+      // Ctrl/Cmd/Shift-click toggles this marker's multi-select membership
+      // instead of the ordinary single-select-and-maybe-drag flow below —
+      // checked here, before onDragStart/beginMarkerDrag ever run, so a
+      // modifier-held click never starts a drag (Orrery's own
+      // toggleMarkerMultiSelect calls setSelection directly, which is safe
+      // to do immediately since no drag gesture is in flight to have its
+      // dot element swapped out from under it).
+      if ((event.ctrlKey || event.metaKey || event.shiftKey) && options.onMultiSelectToggle) {
+        options.onMultiSelectToggle(dot);
+        return;
+      }
       options.onDragStart?.(dot);
       beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dot, {
         onDragEnd: options.onDragEnd,
@@ -816,6 +827,15 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       }
       event.preventDefault();
       event.stopPropagation();
+      // Same modifier-key multi-select toggle as the draggable branch
+      // above — never actually reached by Orrery's own restricted-viewer/
+      // widget callers today (neither passes onMultiSelectToggle), kept
+      // here so a non-draggable marker behaves identically if that ever
+      // changes.
+      if ((event.ctrlKey || event.metaKey || event.shiftKey) && options.onMultiSelectToggle) {
+        options.onMultiSelectToggle(dot);
+        return;
+      }
       try {
         dot.setPointerCapture(event.pointerId);
       } catch (error) {
@@ -944,8 +964,13 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
   visibleElements.forEach(({ markerElement, draggable }) => {
     container.appendChild(
       createMarkerDot(baseMapManager, map, layer, markerElement, {
-        selected: options.selectedElementId === markerElement.id,
+        // selectedElementIds (a Set) is the multi-select counterpart to
+        // selectedElementId — Orrery's own marker-elements selection kind
+        // populates it; every other caller (the widget, single-select)
+        // leaves it unset, so `?.has` is simply never true for them.
+        selected: options.selectedElementId === markerElement.id || Boolean(options.selectedElementIds?.has(markerElement.id)),
         draggable,
+        onMultiSelectToggle: options.onMarkerMultiSelectToggle ? (dotEl) => options.onMarkerMultiSelectToggle(layer, markerElement, dotEl) : undefined,
         onDragStart: options.onMarkerDragStart ? (dotEl) => options.onMarkerDragStart(layer, markerElement, dotEl) : undefined,
         onDragEnd: options.onMarkerDragEnd ? (nextPosition) => options.onMarkerDragEnd(layer, markerElement, nextPosition) : undefined,
         isMoveBlocked: options.resolveMarkerMoveBlocked
@@ -3483,8 +3508,14 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
     const isLayerSelected = selection?.kind === "layer" && selection.id === layer.id;
     const isGridCellsSelected = selection?.kind === "grid-cells" && selection.layerId === layer.id;
     const isMarkerElementSelected = selection?.kind === "marker-element" && selection.layerId === layer.id;
+    // Multi-select counterpart to isMarkerElementSelected — true whenever
+    // ANY of this layer's own markers are part of the current multi-
+    // selection (which can span several layers at once), not just when
+    // every selected marker happens to live here.
+    const isMarkerElementsSelected =
+      selection?.kind === "marker-elements" && (selection.elements || []).some((entry) => entry.layerId === layer.id);
     const isVectorPathSelected = selection?.kind === "vector-path" && selection.layerId === layer.id;
-    const isSelected = isLayerSelected || isGridCellsSelected || isMarkerElementSelected || isVectorPathSelected;
+    const isSelected = isLayerSelected || isGridCellsSelected || isMarkerElementSelected || isMarkerElementsSelected || isVectorPathSelected;
     const groupCells = options.activeGroup ? getGroupCellsForLayer(options.activeGroup, layer) : [];
     const wrapper = createLayerWrapper(map, layer, isSelected);
     let element = null;
@@ -3544,12 +3575,16 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         // excluding a fresh fallback click that never armed the layer.
         isInteractive: !locked && (isLayerSelected || options.armedMarkerLayerId === layer.id),
         selectedElementId: isMarkerElementSelected ? selection.id : null,
+        selectedElementIds: isMarkerElementsSelected
+          ? new Set(selection.elements.filter((entry) => entry.layerId === layer.id).map((entry) => entry.id))
+          : null,
         isMarkerDraggable:
           !locked && options.isMarkerDraggable ? (markerElement) => options.isMarkerDraggable(layer, markerElement) : undefined,
         onEmptyClick: options.onMarkerLayerEmptyClick ? (position, event) => options.onMarkerLayerEmptyClick(layer, position, event) : undefined,
         onMarkerDragStart: options.onMarkerDragStart,
         onMarkerDragEnd: options.onMarkerDragEnd,
         onMarkerClicked: options.onMarkerClicked,
+        onMarkerMultiSelectToggle: options.onMarkerMultiSelectToggle,
         // Never passed from Orrery's own app.js — see beginMarkerDrag's own
         // header comment for why free GM authoring must stay unrestricted.
         resolveMarkerMoveBlocked: options.resolveMarkerMoveBlocked,

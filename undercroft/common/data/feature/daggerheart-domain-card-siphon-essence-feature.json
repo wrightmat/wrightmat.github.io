@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-siphon-essence-feature",
+  "name": "feat.daggerheart-domain-card-siphon-essence-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll against a target within Very Close range. On a success, once per long rest, the target takes d20 magic damage using your Proficiency. You clear a number of Hit Points equal to the number of Hit Points the target marked from this attack. On a success with Fear, you gain a +1 bonus to your Proficiency for this attack.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll against a target within Very Close range. On a success, once per long rest, the target takes d20 magic damage using your Proficiency. You clear a number of Hit Points equal to the number of Hit Points the target marked from this attack. On a success with Fear, you gain a +1 bonus to your Proficiency for this attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

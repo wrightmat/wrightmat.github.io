@@ -1,0 +1,29 @@
+{
+  "index": "advanced-grappler",
+  "name": "Advanced Grappler",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Hooked",
+      "description": "On a successful attack, you can pull the target into Melee range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-hooked"
+  ]
+}

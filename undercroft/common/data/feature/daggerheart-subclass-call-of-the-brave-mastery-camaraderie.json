@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-call-of-the-brave-mastery-camaraderie",
+  "name": "Mastery: Camaraderie",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your unwavering bravery is a rallying point for your allies. You can initiate a Tag Team Roll one additional time per session. Additionally, when an ally initiates a Tag Team Roll with you, they only need to spend 2 Hope to do so.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your unwavering bravery is a rallying point for your allies. You can initiate a Tag Team Roll one additional time per session. Additionally, when an ally initiates a Tag Team Roll with you, they only need to spend 2 Hope to do so."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-giant-endurance",
+  "name": "Endurance",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain an additional Hit Point slot at character creation.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gain an additional Hit Point slot at character creation."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

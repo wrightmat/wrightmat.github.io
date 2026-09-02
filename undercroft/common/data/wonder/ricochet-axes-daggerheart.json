@@ -1,0 +1,29 @@
+{
+  "index": "ricochet-axes",
+  "name": "Ricochet Axes",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Agility",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 11,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Bouncing",
+      "description": "Mark 1 or more Stress to hit that many targets in range of the attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-ricochet-axes-bouncing"
+  ]
+}

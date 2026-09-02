@@ -1,0 +1,19 @@
+{
+  "index": "vial-of-darksmoke-recipe",
+  "name": "Vial of Darksmoke Recipe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "As a downtime move, you can mark a Stress to craft a Vial of Darksmoke."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-vial-of-darksmoke-recipe-feature"
+  ]
+}

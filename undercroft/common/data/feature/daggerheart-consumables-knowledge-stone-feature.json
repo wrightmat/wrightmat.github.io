@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-knowledge-stone-feature",
+  "name": "feat.daggerheart-consumables-knowledge-stone-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "If you die while holding this stone, an ally can take a card from your loadout to place in their loadout or vault. After they take this knowledge, the stone crumbles.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If you die while holding this stone, an ally can take a card from your loadout to place in their loadout or vault. After they take this knowledge, the stone crumbles."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

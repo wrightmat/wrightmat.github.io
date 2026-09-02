@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-forager",
+  "name": "Forager",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "As an additional downtime move you can choose, roll a d6 to see what you forage. Work with the GM to describe it and add it to your inventory as a consumable. Your party can carry up to five foraged consumables at a time.\n\n- A unique food (Clear 2 Stress)\n- A beautiful relic (Gain 2 Hope)\n- An arcane rune (+2 to a Spellcast Roll)\n- A healing vial (Clear 2 Hit Points)\n- A luck charm (Reroll any die)\n- Choose one of the options above.",
+  "mechanics": {
+    "type": "active",
+    "text": "As an additional downtime move you can choose, roll a d6 to see what you forage. Work with the GM to describe it and add it to your inventory as a consumable. Your party can carry up to five foraged consumables at a time.\n\n- A unique food (Clear 2 Stress)\n- A beautiful relic (Gain 2 Hope)\n- An arcane rune (+2 to a Spellcast Roll)\n- A healing vial (Clear 2 Hit Points)\n- A luck charm (Reroll any die)\n- Choose one of the options above."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Sage",
+  "level": 6,
+  "recallCost": 1
+}

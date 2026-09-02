@@ -1,0 +1,16 @@
+{
+  "index": "legendary-leather-armor",
+  "name": "Legendary Leather Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 13,
+  "baseSevereThreshold": 36,
+  "baseScore": 6,
+  "features": [],
+  "featureIds": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-vial-of-moondrip-feature",
+  "name": "feat.daggerheart-consumables-vial-of-moondrip-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you drink the contents of this vial, you can see in total darkness until your next rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you drink the contents of this vial, you can see in total darkness until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

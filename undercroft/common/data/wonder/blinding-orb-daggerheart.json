@@ -1,0 +1,19 @@
+{
+  "index": "blinding-orb",
+  "name": "Blinding Orb",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can activate this orb to create a flash of bright light. All targets within Close range become Vulnerable until they mark HP."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-blinding-orb-feature"
+  ]
+}

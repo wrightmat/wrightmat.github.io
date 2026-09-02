@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-simiah-nimble",
+  "name": "Nimble",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a permanent +1 bonus to your Evasion at character creation.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gain a permanent +1 bonus to your Evasion at character creation."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

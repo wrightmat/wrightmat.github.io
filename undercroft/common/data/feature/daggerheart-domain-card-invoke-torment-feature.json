@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-invoke-torment-feature",
+  "name": "feat.daggerheart-domain-card-invoke-torment-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Targets with all of their Stress marked take double damage from your attacks.\n\nAdditionally, when you defeat a creature with all of its Stress marked, you clear a Stress.",
+  "mechanics": {
+    "type": "active",
+    "text": "Targets with all of their Stress marked take double damage from your attacks.\n\nAdditionally, when you defeat a creature with all of its Stress marked, you clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

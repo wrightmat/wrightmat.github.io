@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-swinging-ropeblade-grappling",
+  "name": "Grappling",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, you can spend a Hope to Restrain the target or pull them into Melee range with you.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, you can spend a Hope to Restrain the target or pull them into Melee range with you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

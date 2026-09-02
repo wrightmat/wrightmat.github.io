@@ -1,0 +1,22 @@
+{
+  "index": "improved-dualstaff",
+  "name": "Improved Dualstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Instinct",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 6,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

@@ -1,0 +1,19 @@
+{
+  "index": "blood-of-the-yorgi",
+  "name": "Blood of the Yorgi",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can drink this blood to disappear from where you are and immediately reappear at a point you can see within Very Far range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-blood-of-the-yorgi-feature"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "index": "earthkin",
+  "name": "Earthkin",
+  "description": [
+    "Earthkin are descended from earth elementals. They are humanoids whose bodies are a combination of flesh and earth."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "features": [
+    {
+      "name": "Stoneskin",
+      "description": "Gain a +1 bonus to your Armor Score and Damage Thresholds."
+    },
+    {
+      "name": "Immoveable",
+      "description": "While your feet are touching the ground, you cannot be lifted or moved against your will."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-earthkin-stoneskin",
+    "feat.daggerheart-ancestry-earthkin-immoveable"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "index": "calming-pendant",
+  "name": "Calming Pendant",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When you would mark your last Stress, roll a d6. On a result of 5 or higher, don't mark it."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-calming-pendant-feature"
+  ]
+}

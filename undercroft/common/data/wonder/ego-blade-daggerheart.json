@@ -1,0 +1,29 @@
+{
+  "index": "ego-blade",
+  "name": "Ego Blade",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D12",
+    "modifier": 4,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Pompous",
+      "description": "You must have a Presence of 0 or lower to use this weapon."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-ego-blade-pompous"
+  ]
+}

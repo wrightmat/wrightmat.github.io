@@ -1,0 +1,16 @@
+{
+  "index": "improved-leather-armor",
+  "name": "Improved Leather Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 2
+  },
+  "baseMajorThreshold": 9,
+  "baseSevereThreshold": 20,
+  "baseScore": 4,
+  "features": [],
+  "featureIds": []
+}

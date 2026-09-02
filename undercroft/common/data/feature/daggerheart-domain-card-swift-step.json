@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-swift-step",
+  "name": "Swift Step",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an attack made against you fails, clear a Stress. If you can't clear a Stress, gain a Hope.",
+  "mechanics": {
+    "type": "active",
+    "text": "When an attack made against you fails, clear a Stress. If you can't clear a Stress, gain a Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 10,
+  "recallCost": 2
+}

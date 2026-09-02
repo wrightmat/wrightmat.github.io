@@ -1,0 +1,29 @@
+{
+  "index": "floating-bladeshards",
+  "name": "Floating Bladeshards",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Instinct",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 9,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Powerful",
+      "description": "On a successful attack, roll an additional damage die and discard the lowest result."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-powerful"
+  ]
+}

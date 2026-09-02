@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-poisoners-guild-specialization-poison-compendium",
+  "name": "Specialization: Poison Compendium",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You also know these poisons:\n\n- Midnight's Veil: The target gains a permanent -2 penalty to attack rolls. This can only affect them once.\n- Ghost Petal: Permanently decrease the damage dice of the target's standard attack by one step (d10 to d8, d8 to d6, etc.). This can only affect them once.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You also know these poisons:\n\n- Midnight's Veil: The target gains a permanent -2 penalty to attack rolls. This can only affect them once.\n- Ghost Petal: Permanently decrease the damage dice of the target's standard attack by one step (d10 to d8, d8 to d6, etc.). This can only affect them once."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

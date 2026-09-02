@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-beastbound-specialization-expert-training",
+  "name": "Specialization: Expert Training",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Choose an additional level-up option for your companion.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose an additional level-up option for your companion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "index": "legendary-round-shield",
+  "name": "Legendary Round Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D4",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Protective",
+      "description": "+4 to Armor Score"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-legendary-round-shield-protective"
+  ]
+}

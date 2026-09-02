@@ -38,5 +38,20 @@
       "Anvilheart",
       "Emberhold"
     ]
-  }
+  },
+  "index": "dwarf",
+  "features": [
+    {
+      "name": "Thick Skin",
+      "description": "When you take Minor damage, you can mark 2 Stress instead of marking a Hit Point."
+    },
+    {
+      "name": "Increased Fortitude",
+      "description": "Spend 3 Hope to halve incoming physical damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-dwarf-thick-skin",
+    "feat.daggerheart-ancestry-dwarf-increased-fortitude"
+  ]
 }

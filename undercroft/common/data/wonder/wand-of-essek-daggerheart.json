@@ -1,0 +1,29 @@
+{
+  "index": "wand-of-essek",
+  "name": "Wand of Essek",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Knowledge",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 13,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Timebending",
+      "description": "You can choose the target of your attack after making your attack roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-wand-of-essek-timebending"
+  ]
+}

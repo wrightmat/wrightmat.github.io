@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-human-high-stamina",
+  "name": "High Stamina",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain an additional Stress slot at character creation.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gain an additional Stress slot at character creation."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

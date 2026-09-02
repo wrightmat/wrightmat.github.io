@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-school-of-war-specialization-fueled-by-fear",
+  "name": "Specialization: Fueled by Fear",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "The extra magic damage from your “Face Your Fear” feature increases to 2d10.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The extra magic damage from your “Face Your Fear” feature increases to 2d10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

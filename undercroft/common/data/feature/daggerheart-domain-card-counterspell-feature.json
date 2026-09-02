@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-counterspell-feature",
+  "name": "feat.daggerheart-domain-card-counterspell-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can interrupt a magical effect taking place by making a reaction roll using your Spellcast trait. On a success, the effect stops and any consequences are avoided, and this card is placed in your vault.",
+  "mechanics": {
+    "type": "active",
+    "text": "You can interrupt a magical effect taking place by making a reaction roll using your Spellcast trait. On a success, the effect stops and any consequences are avoided, and this card is placed in your vault."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

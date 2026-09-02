@@ -1,0 +1,19 @@
+{
+  "index": "alistair-s-torch",
+  "name": "Alistair's Torch",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can light this magic torch at will. The flame's light fills a much larger space than it should, enough to illuminate a cave bright as day."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-alistair-s-torch-feature"
+  ]
+}

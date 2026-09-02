@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-goad-them-on",
+  "name": "Goad Them On",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Describe how you taunt a target within Close range, then make a Presence Roll against them. On a success, the target must mark a Stress, and the next time the GM spotlights them, they must target you with an attack, which they make with disadvantage.",
+  "mechanics": {
+    "type": "active",
+    "text": "Describe how you taunt a target within Close range, then make a Presence Roll against them. On a success, the target must mark a Stress, and the next time the GM spotlights them, they must target you with an attack, which they make with disadvantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 4,
+  "recallCost": 1
+}

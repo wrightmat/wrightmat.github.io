@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-fusion-gloves-bonded",
+  "name": "Bonded",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a bonus to your damage rolls equal to your level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gain a bonus to your damage rolls equal to your level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

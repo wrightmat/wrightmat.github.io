@@ -1,4 +1,4 @@
-import { resolveBinding, createLookupFn } from "../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn, createLookupFieldFn } from "../../common/js/lib/bindings.js";
 import { TEXT_SIZE_PX as TEXT_SIZE_MAP } from "../../common/js/lib/text-size.js";
 
 const GAP_UNIT_REM = 0.25;
@@ -18,7 +18,9 @@ const DEFAULT_LINE_HEIGHT = 1.3;
 // whatever's actually in `context`, same as any other @binding already
 // does.
 function resolveBindingWithLookup(raw, context) {
-  return resolveBinding(raw, context, { functions: { lookup: createLookupFn(context) } });
+  return resolveBinding(raw, context, {
+    functions: { lookup: createLookupFn(context), lookupField: createLookupFieldFn(context) },
+  });
 }
 
 // node.visibleWhen is a single combined literal/@path/=formula string, same

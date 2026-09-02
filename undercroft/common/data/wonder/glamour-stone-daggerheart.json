@@ -1,0 +1,19 @@
+{
+  "index": "glamour-stone",
+  "name": "Glamour Stone",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Activate this pebble-sized stone to memorize the appearance of someone you can see. Spend a Hope to magically recreate this guise on yourself as an illusion."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-glamour-stone-feature"
+  ]
+}

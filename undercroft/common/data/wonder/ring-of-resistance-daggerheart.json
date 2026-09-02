@@ -1,0 +1,19 @@
+{
+  "index": "ring-of-resistance",
+  "name": "Ring of Resistance",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per long rest, you can activate this ring after a successful attack against you to halve the damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-ring-of-resistance-feature"
+  ]
+}

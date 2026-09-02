@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-divine-wielder-mastery-sacred-resonance",
+  "name": "Mastery: Sacred Resonance",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you roll damage for your “Spirit Weapon” feature, if any of the die results match, double the value of each matching die. For example, if you roll two 5s, they count as two 10s.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll damage for your “Spirit Weapon” feature, if any of the die results match, double the value of each matching die. For example, if you roll two 5s, they count as two 10s."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

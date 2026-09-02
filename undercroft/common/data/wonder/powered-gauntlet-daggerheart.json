@@ -1,0 +1,29 @@
+{
+  "index": "powered-gauntlet",
+  "name": "Powered Gauntlet",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Knowledge",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Charged",
+      "description": "Mark a Stress to gain a +1 bonus to your Proficiency on a primary weapon attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-powered-gauntlet-charged"
+  ]
+}

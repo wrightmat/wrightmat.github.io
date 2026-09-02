@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-stalwart-mastery-undaunted",
+  "name": "Mastery: Undaunted",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a permanent +3 bonus to your damage thresholds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Gain a permanent +3 bonus to your damage thresholds."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-poisoners-guild-specialization-adder-s-blessing",
+  "name": "Specialization: Adder's Blessing",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You are immune to poisons and other toxins.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You are immune to poisons and other toxins."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

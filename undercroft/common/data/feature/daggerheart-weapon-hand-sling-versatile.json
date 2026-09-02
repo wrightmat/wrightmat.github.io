@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-hand-sling-versatile",
+  "name": "Versatile",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This weapon can also be used with these statistics—Finesse, Close, d8+4.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This weapon can also be used with these statistics—Finesse, Close, d8+4."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

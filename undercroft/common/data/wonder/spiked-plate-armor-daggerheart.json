@@ -1,0 +1,23 @@
+{
+  "index": "spiked-plate-armor",
+  "name": "Spiked Plate Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 10,
+  "baseSevereThreshold": 25,
+  "baseScore": 5,
+  "features": [
+    {
+      "name": "Sharp",
+      "description": "On a successful attack against a target within Melee range, add a d4 to the damage roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-spiked-plate-armor-sharp"
+  ]
+}

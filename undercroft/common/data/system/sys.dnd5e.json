@@ -1175,6 +1175,144 @@
           "role": "proficiencyGrants",
           "kind": "background",
           "path": "proficiencies"
+        },
+        {
+          "name": "Class Saving Throw Proficiencies",
+          "role": "savingThrowGrants",
+          "kind": "class",
+          "path": "saving_throws"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "derivedFormulas",
+      "label": "Derived Formulas",
+      "values": [
+        {
+          "role": "diceAverage",
+          "formula": "floor(@count*(@sides+1)/2)+@modifier"
+        },
+        {
+          "role": "abilityModifier",
+          "formula": "floor((@score-10)/2)"
+        },
+        {
+          "role": "hitPointsPerLevelAverage",
+          "formula": "floor(@sides/2)+1"
+        },
+        {
+          "role": "proficiencyBonusForLevel",
+          "formula": "2+floor((@level-1)/4)"
+        },
+        {
+          "role": "attackBonus",
+          "formula": "@abilityModifier+@proficiencyBonus"
+        },
+        {
+          "role": "saveDC",
+          "formula": "8+@abilityModifier+@proficiencyBonus"
+        },
+        {
+          "role": "averageDamage",
+          "formula": "floor(@count*(@sides+1)/2)+@modifier+@abilityModifier"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "buildSteps",
+      "label": "Build Wizard Steps",
+      "values": [
+        {
+          "step": "species",
+          "label": "Species",
+          "kind": "species"
+        },
+        {
+          "step": "class",
+          "label": "Class",
+          "kind": "class"
+        },
+        {
+          "step": "subclass",
+          "label": "Subclass",
+          "kind": "variant",
+          "parentKind": "class"
+        },
+        {
+          "step": "background",
+          "label": "Background",
+          "kind": "background"
+        },
+        {
+          "step": "abilities",
+          "label": "Abilities",
+          "methods": [
+            {
+              "name": "array",
+              "values": [
+                {
+                  "name": "15",
+                  "value": 15
+                },
+                {
+                  "name": "14",
+                  "value": 14
+                },
+                {
+                  "name": "13",
+                  "value": 13
+                },
+                {
+                  "name": "12",
+                  "value": 12
+                },
+                {
+                  "name": "10",
+                  "value": 10
+                },
+                {
+                  "name": "8",
+                  "value": 8
+                }
+              ]
+            },
+            {
+              "name": "pointBuy",
+              "min": 8,
+              "max": 15,
+              "budget": 27,
+              "costs": {
+                "8": 0,
+                "9": 1,
+                "10": 2,
+                "11": 3,
+                "12": 4,
+                "13": 5,
+                "14": 7,
+                "15": 9
+              }
+            },
+            {
+              "name": "roll",
+              "formula": "4d6d1",
+              "count": 6,
+              "label": "4d6, drop lowest"
+            }
+          ]
+        },
+        {
+          "step": "details",
+          "label": "Details"
+        },
+        {
+          "step": "review",
+          "label": "Review"
+        },
+        {
+          "step": "choices",
+          "label": "Finish Choices"
         }
       ]
     },

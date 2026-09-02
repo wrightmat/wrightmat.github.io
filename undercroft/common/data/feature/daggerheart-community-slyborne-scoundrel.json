@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-slyborne-scoundrel",
+  "name": "Scoundrel",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on rolls to negotiate with criminals, detect lies, or find a safe place to hide.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on rolls to negotiate with criminals, detect lies, or find a safe place to hide."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

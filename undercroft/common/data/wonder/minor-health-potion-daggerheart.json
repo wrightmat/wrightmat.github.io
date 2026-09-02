@@ -1,0 +1,19 @@
+{
+  "index": "minor-health-potion",
+  "name": "Minor Health Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Clear 1d4 HP."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-minor-health-potion-feature"
+  ]
+}

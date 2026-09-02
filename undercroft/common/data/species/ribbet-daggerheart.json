@@ -29,5 +29,20 @@
       "Tarn"
     ],
     "lastNames": []
-  }
+  },
+  "index": "ribbet",
+  "features": [
+    {
+      "name": "Amphibious",
+      "description": "You can breathe and move naturally underwater."
+    },
+    {
+      "name": "Long Tongue",
+      "description": "You can use your long tongue to grab onto things within Close range. Mark a Stress to use your tongue as a Finesse Close weapon that deals d12 physical damage using your Proficiency."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-feature-amphibious",
+    "feat.daggerheart-ancestry-ribbet-long-tongue"
+  ]
 }

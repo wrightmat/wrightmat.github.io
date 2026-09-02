@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-duneborne-oasis",
+  "name": "Oasis",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a short rest, you or an ally can reroll a die used for a downtime action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During a short rest, you or an ally can reroll a die used for a downtime action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,49 @@
+{
+  "index": "poisoners-guild",
+  "name": "Poisoners Guild",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "assassin-daggerheart",
+  "class": "Assassin",
+  "domains": [
+    "Blade",
+    "Midnight"
+  ],
+  "spellcastTrait": "Knowledge",
+  "features": [
+    {
+      "name": "Foundation: Toxic Concoctions",
+      "description": "Mark a Stress to add 1d4+1 tokens to this card. On your next long rest, clear this card. You know these poisons:\n\n- Gorgon Root: The target gains a permanent -1 penalty to their Difficulty. This can only affect them once.\n- Grave Spore: The target must also mark a Stress.\n- Leech Weed: Gain a +1d6 damage bonus on this attack."
+    },
+    {
+      "name": "Foundation: Envenomate",
+      "description": "When you make a successful weapon attack, you can spend a token from this card to afflict the target with a known poison's effect."
+    },
+    {
+      "name": "Specialization: Poison Compendium",
+      "description": "You also know these poisons:\n\n- Midnight's Veil: The target gains a permanent -2 penalty to attack rolls. This can only affect them once.\n- Ghost Petal: Permanently decrease the damage dice of the target's standard attack by one step (d10 to d8, d8 to d6, etc.). This can only affect them once."
+    },
+    {
+      "name": "Specialization: Adder's Blessing",
+      "description": "You are immune to poisons and other toxins."
+    },
+    {
+      "name": "Mastery: Venomancer",
+      "description": "You also know these poisons:\n\n- Blight Seed: The target gains a permanent -3 penalty to their damage thresholds. This can only affect them once.\n- Fear Leaf: This attack gains a damage bonus equal to the result of your Fear Die."
+    },
+    {
+      "name": "Mastery: Twin Fang",
+      "description": "When you afflict a target with a known poison's effect, you can spend an additional token to inflict the effect of a second known poison."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-poisoners-guild-foundation-toxic-concoctions",
+    "feat.daggerheart-subclass-poisoners-guild-foundation-envenomate",
+    "feat.daggerheart-subclass-poisoners-guild-specialization-poison-compendium",
+    "feat.daggerheart-subclass-poisoners-guild-specialization-adder-s-blessing",
+    "feat.daggerheart-subclass-poisoners-guild-mastery-venomancer",
+    "feat.daggerheart-subclass-poisoners-guild-mastery-twin-fang"
+  ]
+}

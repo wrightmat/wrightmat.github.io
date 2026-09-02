@@ -1,0 +1,22 @@
+{
+  "index": "improved-glowing-rings",
+  "name": "Improved Glowing Rings",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Agility",
+    "range": "Very Close",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 5,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

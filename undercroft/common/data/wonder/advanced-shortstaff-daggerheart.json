@@ -1,0 +1,22 @@
+{
+  "index": "advanced-shortstaff",
+  "name": "Advanced Shortstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Instinct",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 7,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

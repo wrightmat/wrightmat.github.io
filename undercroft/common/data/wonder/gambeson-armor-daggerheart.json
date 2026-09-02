@@ -1,0 +1,23 @@
+{
+  "index": "gambeson-armor",
+  "name": "Gambeson Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 1
+  },
+  "baseMajorThreshold": 5,
+  "baseSevereThreshold": 11,
+  "baseScore": 3,
+  "features": [
+    {
+      "name": "Flexible",
+      "description": "+1 to Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-feature-flexible"
+  ]
+}

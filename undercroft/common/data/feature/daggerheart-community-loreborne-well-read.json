@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-loreborne-well-read",
+  "name": "Well-Read",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on rolls that involve the history, culture, or politics of a prominent person or place.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on rolls that involve the history, culture, or politics of a prominent person or place."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -342,6 +342,36 @@
       </div>
     </div>
 
+    <div class="modal fade" id="orrery-move-marker-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" data-move-marker-title>Move Marker</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <div class="form-floating">
+              <select class="form-select" id="orrery-move-marker-map-select" data-move-marker-map-select>
+                <option value="" disabled selected>Select a map</option>
+              </select>
+              <label for="orrery-move-marker-map-select">Destination Map</label>
+            </div>
+            <div class="form-floating d-none" data-move-marker-layer-field>
+              <select class="form-select" id="orrery-move-marker-layer-select" data-move-marker-layer-select></select>
+              <label for="orrery-move-marker-layer-select">Destination Marker Layer</label>
+            </div>
+            <div class="small text-body-secondary d-none" data-move-marker-new-layer-note>
+              This map has no Marker Layer yet — one will be created.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-move-marker-apply disabled>Move</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- NOT reordered before these scripts, unlike every other tool page —
          js/app.js calls baseMapManager.setBaseMap(...) synchronously at
          module top level (not inside a deferred/lazy call), which for a

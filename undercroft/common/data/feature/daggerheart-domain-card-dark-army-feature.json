@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-dark-army-feature",
+  "name": "feat.daggerheart-domain-card-dark-army-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll (14). Once per long rest, on a success you can summon a group of fiends that surround and move with you. Place 8 tokens on this card. When you deal damage to a target within Very Close range, you can spend a token to increase it by +1d8. Additionally, when you take damage, you can spend a token to reduce it by 1d8. Each time you spend a token, a fiend acts on your behalf, then disappears.\n\nRemove all tokens from this card on your next rest.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll (14). Once per long rest, on a success you can summon a group of fiends that surround and move with you. Place 8 tokens on this card. When you deal damage to a target within Very Close range, you can spend a token to increase it by +1d8. Additionally, when you take damage, you can spend a token to reduce it by 1d8. Each time you spend a token, a fiend acts on your behalf, then disappears.\n\nRemove all tokens from this card on your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

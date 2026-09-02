@@ -1,0 +1,29 @@
+{
+  "index": "impact-gauntlet",
+  "name": "Impact Gauntlet",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 11,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Concussive",
+      "description": "On a successful attack, you can spend a Hope to knock the target back to Far range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-impact-gauntlet-concussive"
+  ]
+}

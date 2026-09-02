@@ -1,0 +1,23 @@
+{
+  "index": "shapeshifter",
+  "name": "Shapeshifter",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "character",
+  "description": "Shapeshifters are creatures that can change their physical form.",
+  "features": [
+    {
+      "name": "Change Shape",
+      "description": "During a long rest, you can spend a downtime move to swap your current ancestry with another. When you do, describe how your appearance changes."
+    },
+    {
+      "name": "Only Skin Deep",
+      "description": "When you Change Shape, you only gain the benefit of one of the ancestry's features, which you select when you choose the ancestry. You can spend a downtime move to switch which of your ancestry's features you gain the benefit of."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-transformation-shapeshifter-change-shape",
+    "feat.daggerheart-transformation-shapeshifter-only-skin-deep"
+  ]
+}

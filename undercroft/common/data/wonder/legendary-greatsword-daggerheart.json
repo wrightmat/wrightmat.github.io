@@ -1,0 +1,29 @@
+{
+  "index": "legendary-greatsword",
+  "name": "Legendary Greatsword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 12,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Massive",
+      "description": "-1 to Evasion; on a successful attack, roll an additional damage die and discard the lowest result."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-massive"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "index": "wand-of-enthrallment",
+  "name": "Wand of Enthrallment",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Presence",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 4,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Persuasive",
+      "description": "Before you make a Presence Roll, you can mark a Stress to gain a +2 bonus to the result."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-wand-of-enthrallment-persuasive"
+  ]
+}

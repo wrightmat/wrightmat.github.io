@@ -1,0 +1,19 @@
+{
+  "index": "major-bolster-potion",
+  "name": "Major Bolster Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You gain a +1 bonus to your Strength until your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-major-bolster-potion-feature"
+  ]
+}
