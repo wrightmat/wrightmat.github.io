@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-faun-caprine-leap",
+  "name": "Caprine Leap",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can leap anywhere within Close range as though you were using normal movement, allowing you to vault obstacles, jump across gaps, or scale barriers with ease.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can leap anywhere within Close range as though you were using normal movement, allowing you to vault obstacles, jump across gaps, or scale barriers with ease."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

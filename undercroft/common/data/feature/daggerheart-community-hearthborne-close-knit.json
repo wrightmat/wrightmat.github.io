@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-hearthborne-close-knit",
+  "name": "Close-Knit",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, you can spend any number of Hope to give an ally the same number of Hope.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, you can spend any number of Hope to give an ally the same number of Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "index": "legendary-whip",
+  "name": "Legendary Whip",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Presence",
+    "range": "Very Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Startling",
+      "description": "Mark a Stress to crack the whip and force all adversaries within Melee range back to Close range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-startling"
+  ]
+}

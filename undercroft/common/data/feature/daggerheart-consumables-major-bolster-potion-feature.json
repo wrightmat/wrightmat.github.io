@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-major-bolster-potion-feature",
+  "name": "feat.daggerheart-consumables-major-bolster-potion-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You gain a +1 bonus to your Strength until your next rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain a +1 bonus to your Strength until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

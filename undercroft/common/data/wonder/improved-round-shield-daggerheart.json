@@ -1,0 +1,29 @@
+{
+  "index": "improved-round-shield",
+  "name": "Improved Round Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 2,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D4",
+    "modifier": 2,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Protective",
+      "description": "+2 to Armor Score"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-improved-round-shield-protective"
+  ]
+}

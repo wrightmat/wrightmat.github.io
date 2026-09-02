@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-life-ward-feature",
+  "name": "feat.daggerheart-domain-card-life-ward-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope and choose an ally within Close range. They are marked with a glowing sigil of protection. When this ally would make a death move, they clear a Hit Point instead.\n\nThis effect ends when it saves the target from a death move, you cast Life Ward on another target, or you take a long rest.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend 3 Hope and choose an ally within Close range. They are marked with a glowing sigil of protection. When this ally would make a death move, they clear a Hit Point instead.\n\nThis effect ends when it saves the target from a death move, you cast Life Ward on another target, or you take a long rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

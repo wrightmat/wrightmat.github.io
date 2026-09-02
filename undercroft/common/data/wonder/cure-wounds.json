@@ -34,5 +34,44 @@
   },
   "featureTiers": {
     "feat.healing": "tier-2"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      },
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "life",
+        "name": "Life"
+      }
+    ]
   }
 }

@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-deft-deceiver",
+  "name": "Deft Deceiver",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend a Hope to gain advantage on a roll to deceive or trick someone into believing a lie you tell them.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend a Hope to gain advantage on a roll to deceive or trick someone into believing a lie you tell them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Grace",
+  "level": 1,
+  "recallCost": 0
+}

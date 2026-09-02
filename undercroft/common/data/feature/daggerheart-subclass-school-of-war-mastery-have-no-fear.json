@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-school-of-war-mastery-have-no-fear",
+  "name": "Mastery: Have No Fear",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "The extra magic damage from your “Face Your Fear” feature increases to 3d10.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The extra magic damage from your “Face Your Fear” feature increases to 3d10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

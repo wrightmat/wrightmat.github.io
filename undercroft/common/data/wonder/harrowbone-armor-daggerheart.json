@@ -1,0 +1,23 @@
+{
+  "index": "harrowbone-armor",
+  "name": "Harrowbone Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 2
+  },
+  "baseMajorThreshold": 9,
+  "baseSevereThreshold": 21,
+  "baseScore": 4,
+  "features": [
+    {
+      "name": "Resilient",
+      "description": "Before you mark your last Armor Slot, roll a d6. On a result of 6, reduce the severity by one threshold without marking an Armor Slot."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-harrowbone-armor-resilient"
+  ]
+}

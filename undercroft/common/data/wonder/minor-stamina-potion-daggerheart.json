@@ -1,0 +1,19 @@
+{
+  "index": "minor-stamina-potion",
+  "name": "Minor Stamina Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Clear 1d4 Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-minor-stamina-potion-feature"
+  ]
+}

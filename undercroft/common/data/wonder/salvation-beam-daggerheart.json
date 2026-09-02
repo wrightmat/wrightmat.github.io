@@ -1,0 +1,22 @@
+{
+  "index": "salvation-beam",
+  "name": "Salvation Beam",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Splendor",
+    "level": 9,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll (16). On a success, mark any number of Stress to target a line of allies within Far range. You can clear Hit Points on the targets equal to the number of Stress marked, divided among them however you'd like."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-salvation-beam-feature"
+  ]
+}

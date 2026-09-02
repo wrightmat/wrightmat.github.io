@@ -70,7 +70,7 @@ import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/wid
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
-import { abilityModifier, averageDiceRoll, computeAttackBonus, computeSaveDC, computeAverageDamage } from "../../common/js/lib/dnd-rules.js";
+import { abilityModifier, averageDiceRoll, computeAttackBonus, computeSaveDC, computeAverageDamage } from "../../common/js/lib/derived-formulas.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
@@ -116,6 +116,7 @@ let abilityFieldKey = "";
 // hardcoded "stats.hitPoints"-shaped assumption. null for a System with no
 // Role-bound field at all.
 let combatBindings = null;
+let derivedFormulas = [];
 let currentRecord = null;
 const featureParamsEditor = createFeatureParamsEditor({
   getRecord: () => currentRecord,
@@ -698,6 +699,7 @@ async function reloadReferenceData() {
   abilityFieldGuess = objectFieldResult.guessedKey;
   abilityFieldKey = getAbilityFieldPreference(systemId) || abilityFieldGuess || "abilities";
   combatBindings = deriveCombatBindings(systemFields);
+  derivedFormulas = (systemFields || []).find((entry) => entry?.key === "derivedFormulas")?.values || [];
   arrayFieldOptions = arrayFieldResult.options;
   combatScalingFieldGuess = arrayFieldResult.guessedCombatScalingKey;
   creatureTypeFieldGuess = arrayFieldResult.guessedCreatureTypeKey;
@@ -1344,7 +1346,7 @@ function formatDiceModifier(modifier) {
 // base die with NO modifier embedded, e.g. "1d10", and the attack bonus/
 // damage modifier are computed live from THIS monster's own
 // `stats.abilities[params.ability]` + `stats.proficiencyBonus` via
-// dnd-rules.js's computeAttackBonus/computeAverageDamage). Formula mode is
+// derived-formulas.js's computeAttackBonus/computeAverageDamage). Formula mode is
 // what makes a shared weapon-attack Feature genuinely reusable by a
 // brand-new native-generated monster — no per-monster hand-authored numbers
 // needed, just picking the Feature and setting `ability`/base `damageDice`
@@ -1361,7 +1363,7 @@ function formatDiceModifier(modifier) {
 function riderClauseText(rider) {
   if (!rider?.kind) return "";
   if (rider.kind === "secondary-damage") {
-    const avg = averageDiceRoll(rider.dice);
+    const avg = averageDiceRoll(rider.dice, derivedFormulas);
     if (avg == null) return "";
     return ` plus ${avg} (${rider.dice}) ${rider.damageType} damage.`;
   }
@@ -1387,14 +1389,14 @@ function riderClauseText(rider) {
   // Spider, Phase Spider, Guardian Naga, ...).
   if (rider.kind === "save-or-damage") {
     if (!rider.saveAbility || !rider.saveDC || !rider.dice || !rider.damageType) return "";
-    const avg = averageDiceRoll(rider.dice);
+    const avg = averageDiceRoll(rider.dice, derivedFormulas);
     if (avg == null) return "";
     const savingAbility = rider.saveAbility.charAt(0).toUpperCase() + rider.saveAbility.slice(1);
     const trailingNote = rider.trailingNote ? ` ${rider.trailingNote}` : "";
     return ` The target must make a DC ${rider.saveDC} ${savingAbility} saving throw, taking ${avg} (${rider.dice}) ${rider.damageType} damage on a failed save, or half as much damage on a successful one.${trailingNote}`;
   }
   if (rider.kind === "charge-bonus") {
-    const avg = averageDiceRoll(rider.dice);
+    const avg = averageDiceRoll(rider.dice, derivedFormulas);
     if (avg == null || !rider.triggerDistance) return "";
     return ` If the creature moved ${rider.triggerDistance}+ feet straight toward the target immediately before the hit, the target takes an extra ${avg} (${rider.dice}) ${rider.damageType} damage.`;
   }
@@ -1405,7 +1407,7 @@ function riderClauseText(rider) {
   // whatever it's own resistance happens to be, never baked in as a
   // literal `damageType` the way `secondary-damage` above is.
   if (rider.kind === "resistance-type-damage") {
-    const avg = averageDiceRoll(rider.dice);
+    const avg = averageDiceRoll(rider.dice, derivedFormulas);
     if (avg == null) return "";
     return ` plus ${avg} (${rider.dice}) damage of the type to which the creature has resistance.`;
   }
@@ -1444,10 +1446,10 @@ function versatileClauseText(params, record) {
   if (params.ability) {
     const abilityScore = record.stats?.abilities?.[params.ability];
     if (abilityScore == null) return "";
-    avg = computeAverageDamage(params.versatile.damageDice, abilityScore);
-    dice = `${params.versatile.damageDice}${formatDiceModifier(abilityModifier(abilityScore))}`;
+    avg = computeAverageDamage(params.versatile.damageDice, abilityScore, derivedFormulas);
+    dice = `${params.versatile.damageDice}${formatDiceModifier(abilityModifier(abilityScore, derivedFormulas))}`;
   } else {
-    avg = averageDiceRoll(params.versatile.damageDice);
+    avg = averageDiceRoll(params.versatile.damageDice, derivedFormulas);
     dice = params.versatile.damageDice;
   }
   if (avg == null) return "";
@@ -1479,13 +1481,13 @@ function weaponAttackDescriptionText(feature, record) {
     const abilityScore = record.stats?.abilities?.[params.ability];
     const proficiencyBonus = record.stats?.proficiencyBonus;
     if (abilityScore == null || proficiencyBonus == null) return fallback;
-    const attackBonus = computeAttackBonus(abilityScore, proficiencyBonus);
-    const avg = computeAverageDamage(params.damageDice, abilityScore);
+    const attackBonus = computeAttackBonus(abilityScore, proficiencyBonus, derivedFormulas);
+    const avg = computeAverageDamage(params.damageDice, abilityScore, derivedFormulas);
     if (avg == null) return fallback;
-    const modifier = abilityModifier(abilityScore);
+    const modifier = abilityModifier(abilityScore, derivedFormulas);
     return `${attackLead} ${params.attackKind} Attack: +${attackBonus} to hit, ${distanceClause}, one target. Hit: ${avg} (${params.damageDice}${formatDiceModifier(modifier)}) ${params.damageType} damage${versatile}.${rider}`;
   }
-  const avg = averageDiceRoll(params.damageDice);
+  const avg = averageDiceRoll(params.damageDice, derivedFormulas);
   if (avg == null) return fallback;
   // A bare flat damageDice ("1", no "d") — real source text for a handful
   // of tiny creatures omits the dice parenthetical entirely when the
@@ -1531,7 +1533,7 @@ function saveEffectDescriptionText(feature, record) {
   const dcAbilityScore = record.stats?.abilities?.[params.dcAbility];
   const proficiencyBonus = record.stats?.proficiencyBonus;
   if (dcAbilityScore == null || proficiencyBonus == null) return fallback;
-  const dc = computeSaveDC(dcAbilityScore, proficiencyBonus);
+  const dc = computeSaveDC(dcAbilityScore, proficiencyBonus, derivedFormulas);
   const width = params.lineWidth ? ` that is ${params.lineWidth} feet wide` : "";
   const savingAbility = params.ability.charAt(0).toUpperCase() + params.ability.slice(1);
   // 5e's own real convention (confirmed against every sample this pattern
@@ -1543,7 +1545,7 @@ function saveEffectDescriptionText(feature, record) {
   if (params.rider?.kind === "fail-condition" && params.rider.conditionText) {
     return `${lead} Each creature in that ${areaBackref} must make a DC ${dc} ${savingAbility} saving throw. ${params.rider.conditionText}`;
   }
-  const avg = averageDiceRoll(params.damageDice);
+  const avg = averageDiceRoll(params.damageDice, derivedFormulas);
   if (avg == null) return fallback;
   const base =
     `${lead} Each creature in that ${areaBackref} must make a DC ${dc} ${savingAbility} saving throw, taking ${avg} ` +
@@ -1957,7 +1959,7 @@ function buildStatCard({ key, label, value, compact = true, colClass = "col-4 co
 }
 
 function abilityModifierText(score) {
-  const modifier = abilityModifier(score);
+  const modifier = abilityModifier(score, derivedFormulas);
   return `(${modifier >= 0 ? "+" : ""}${modifier})`;
 }
 
@@ -2535,6 +2537,7 @@ async function handleGenerate() {
       abilityFieldDefs,
       abilityFieldKey,
       combatBindings,
+      derivedFormulas,
     });
     const record = createMonsterRecord({ ...generated, stats });
     dirtyGate.markDirty();
@@ -2738,11 +2741,12 @@ elements.convertCharacterForm?.addEventListener("submit", async (event) => {
     templateId,
     name,
   });
-  const [abilityDefs, skillValues] = await Promise.all([
+  const [abilityDefs, skillValues, derivedFormulas] = await Promise.all([
     loadAbilityFieldDefs(dataManager, templateSchema),
     loadArrayFieldValues(dataManager, templateSchema, "skills"),
+    loadArrayFieldValues(dataManager, templateSchema, "derivedFormulas"),
   ]);
-  const payload = seedCharacterDefaults(converted, { abilityDefs, skillDefs: skillValues });
+  const payload = seedCharacterDefaults(converted, { abilityDefs, skillDefs: skillValues, derivedFormulas });
   try {
     await dataManager.save("characters", id, payload);
   } catch (error) {

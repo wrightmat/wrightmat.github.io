@@ -1,0 +1,19 @@
+{
+  "index": "gem-of-sagacity",
+  "name": "Gem of Sagacity",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can attach this gem to a weapon, allowing you to use your Knowledge when making an attack with that weapon."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-gem-of-sagacity-feature"
+  ]
+}

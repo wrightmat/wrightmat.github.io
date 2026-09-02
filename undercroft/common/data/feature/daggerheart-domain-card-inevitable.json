@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-inevitable",
+  "name": "Inevitable",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you fail an action roll, your next action roll has advantage.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you fail an action roll, your next action roll has advantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 6,
+  "recallCost": 1
+}

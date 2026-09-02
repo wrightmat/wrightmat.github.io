@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-honing-relic-feature",
+  "name": "feat.daggerheart-items-honing-relic-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You gain a +1 bonus to an Experience of your choice. You can only carry one relic.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain a +1 bonus to an Experience of your choice. You can only carry one relic."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

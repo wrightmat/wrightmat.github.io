@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-orc-sturdy",
+  "name": "Sturdy",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you have 1 Hit Point remaining, attacks against you have disadvantage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you have 1 Hit Point remaining, attacks against you have disadvantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

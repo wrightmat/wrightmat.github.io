@@ -22,5 +22,35 @@
   },
   "featureTiers": {
     "feat.impose-condition": "severe"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      },
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      },
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

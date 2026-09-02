@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-brace",
+  "name": "Brace",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you mark an Armor Slot to reduce incoming damage, you can mark a Stress to mark an additional Armor Slot.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you mark an Armor Slot to reduce incoming damage, you can mark a Stress to mark an additional Armor Slot."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 3,
+  "recallCost": 1
+}

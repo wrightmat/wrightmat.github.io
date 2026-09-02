@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-guardian-hope-frontline-tank",
+  "name": "Frontline Tank",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope to clear 2 Armor Slots.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend 3 Hope to clear 2 Armor Slots."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

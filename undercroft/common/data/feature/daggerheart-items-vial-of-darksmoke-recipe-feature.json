@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-vial-of-darksmoke-recipe-feature",
+  "name": "feat.daggerheart-items-vial-of-darksmoke-recipe-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "As a downtime move, you can mark a Stress to craft a Vial of Darksmoke.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a downtime move, you can mark a Stress to craft a Vial of Darksmoke."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

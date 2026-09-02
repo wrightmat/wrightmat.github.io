@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-recovery",
+  "name": "Recovery",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a short rest, you can choose a long rest downtime move instead. You can spend a Hope to let an ally do the same.",
+  "mechanics": {
+    "type": "active",
+    "text": "During a short rest, you can choose a long rest downtime move instead. You can spend a Hope to let an ally do the same."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 6,
+  "recallCost": 1
+}

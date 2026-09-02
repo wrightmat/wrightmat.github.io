@@ -1,0 +1,22 @@
+{
+  "index": "advanced-hand-crossbow",
+  "name": "Advanced Hand Crossbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 5,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

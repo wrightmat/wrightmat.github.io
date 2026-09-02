@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-quick",
+  "name": "Quick",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make an attack, you can mark a Stress to target another creature within range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you make an attack, you can mark a Stress to target another creature within range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

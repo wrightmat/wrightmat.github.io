@@ -19,5 +19,34 @@
       "radius": 15,
       "mode": "darkness"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      },
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

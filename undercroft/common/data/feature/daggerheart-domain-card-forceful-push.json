@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-forceful-push",
+  "name": "Forceful Push",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make an attack with your primary weapon against a target within Melee range. On a success, you deal damage and knock them back to Close range. On a success with Hope, add a d6 to your damage roll.\n\nAdditionally, you can spend a Hope to make them temporarily Vulnerable.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make an attack with your primary weapon against a target within Melee range. On a success, you deal damage and knock them back to Close range. On a success with Hope, add a d6 to your damage roll.\n\nAdditionally, you can spend a Hope to make them temporarily Vulnerable."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 1,
+  "recallCost": 0
+}

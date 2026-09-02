@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-executioners-guild-mastery-backstab",
+  "name": "Mastery: Backstab",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your Marked for Death feature uses d8s instead of d6s.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your Marked for Death feature uses d8s instead of d6s."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

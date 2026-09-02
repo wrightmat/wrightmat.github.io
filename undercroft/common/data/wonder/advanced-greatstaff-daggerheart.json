@@ -1,0 +1,29 @@
+{
+  "index": "advanced-greatstaff",
+  "name": "Advanced Greatstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Knowledge",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 6,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Powerful",
+      "description": "On a successful attack, roll an additional damage die and discard the lowest result."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-powerful"
+  ]
+}

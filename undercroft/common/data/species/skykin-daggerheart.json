@@ -1,0 +1,24 @@
+{
+  "index": "skykin",
+  "name": "Skykin",
+  "description": [
+    "Skykin are descended from air elementals. They are humanoids whose bodies are a combination of flesh and air."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "features": [
+    {
+      "name": "Gale Force",
+      "description": "Mark a Stress to conjure a gust of wind that carries you or an ally up to Very Far range. Additionally, you can always control the speed at which you fall."
+    },
+    {
+      "name": "Eye of the Storm",
+      "description": "Spend 2 Hope to grant a +1 bonus to either your or an ally's Evasion until you next take Severe damage or you use Eye of the Storm again."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-skykin-gale-force",
+    "feat.daggerheart-ancestry-skykin-eye-of-the-storm"
+  ]
+}

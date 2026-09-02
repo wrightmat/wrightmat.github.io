@@ -1,0 +1,38 @@
+{
+  "index": "warlock",
+  "name": "Warlock",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Those who've traded their lives, or perhaps even their souls, to an otherworldly Patron in exchange for incredible power are known as Warlocks. Often, these mortals are at a point of desperation that leads them to such a sacrifice- to protect themselves or a loved one, aid their community, seek vengeance, increase their status, or otherwise further their ambitions.",
+  "domains": [
+    "Dread",
+    "Grace"
+  ],
+  "evasion": 11,
+  "hp": 5,
+  "classItems": [
+    "A carving that symbolizes your patron",
+    "A ring you can't remove"
+  ],
+  "hopeFeature": {
+    "name": "Patron's Boon",
+    "description": "Spend 3 Hope to call out to your patron for help, gaining 1d4 Favor."
+  },
+  "hopeFeatureId": "feat.daggerheart-class-warlock-hope-patron-s-boon",
+  "features": [
+    {
+      "name": "Warlock Patron",
+      "description": "You have committed yourself to a patron (god, demon, fae, or other supernatural entity) in exchange for power. Write their name above. Then choose their spheres of influence, at GM discretion (Nature & Mischief, Love & War, Knowledge & Shadow, etc.), record them below, and set their values to +2. Anytime you increase your tier, these spheres of influence gain a permanent +1 bonus. Before making an action roll that relates to one of your patron's spheres of influence, you can spend a Favor to call on them and add its value to the roll."
+    },
+    {
+      "name": "Favor",
+      "description": "Start with 3 Favor. During a rest, spend one of your downtime moves to tithe to your patron. When you do, gain Favor equal to your Presence. If you choose to forgo this offering, the GM instead gains a Fear."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-class-warlock-warlock-patron",
+    "feat.daggerheart-class-warlock-favor"
+  ],
+  "subclasses": []
+}

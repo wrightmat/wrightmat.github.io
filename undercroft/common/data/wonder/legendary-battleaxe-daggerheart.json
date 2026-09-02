@@ -1,0 +1,22 @@
+{
+  "index": "legendary-battleaxe",
+  "name": "Legendary Battleaxe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 12,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

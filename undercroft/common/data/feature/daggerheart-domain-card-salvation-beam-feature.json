@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-salvation-beam-feature",
+  "name": "feat.daggerheart-domain-card-salvation-beam-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll (16). On a success, mark any number of Stress to target a line of allies within Far range. You can clear Hit Points on the targets equal to the number of Stress marked, divided among them however you'd like.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll (16). On a success, mark any number of Stress to target a line of allies within Far range. You can clear Hit Points on the targets equal to the number of Stress marked, divided among them however you'd like."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,49 @@
+{
+  "index": "pact-of-the-wrathful",
+  "name": "Pact of the Wrathful",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "warlock-daggerheart",
+  "class": "Warlock",
+  "domains": [
+    "Dread",
+    "Grace"
+  ],
+  "spellcastTrait": "Presence",
+  "features": [
+    {
+      "name": "Foundation: Favored Weapon",
+      "description": "Mark a Stress to imbue your weapon with your Patron's fury until you deal Severe damage. On a successful imbued weapon attack, you can spend any number of Favor to gain a +1d6 damage bonus for each Favor spent."
+    },
+    {
+      "name": "Foundation: Herald of Death",
+      "description": "When you fail an attack roll, you can spend a Favor to reroll it. If it fails again, mark a Stress and take the new result."
+    },
+    {
+      "name": "Specialization: Menacing Reach",
+      "description": "When you imbue your weapon with your Patron's fury, you can mark an additional Stress to increase its range by one step (Melee to Very Close, Very Close to Close, etc.)."
+    },
+    {
+      "name": "Specialization: Diminish MyFoes",
+      "description": "When you succeed with Hope on an action roll against a target, you can spend a Hope to make your target mark a Stress."
+    },
+    {
+      "name": "Mastery: Fearsome Attack",
+      "description": "You can always spend a Favor to reroll any number of your damage dice. You can continue spending Favor to reroll the same dice as many times as you'd like."
+    },
+    {
+      "name": "Mastery: Divine Ire",
+      "description": "Once per rest, when you take damage, you can spend any number of Favor to target that many adversaries within Close range. Each target must mark a Hit Point."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-pact-of-the-wrathful-foundation-favored-weapon",
+    "feat.daggerheart-subclass-pact-of-the-wrathful-foundation-herald-of-death",
+    "feat.daggerheart-subclass-pact-of-the-wrathful-specialization-menacing-reach",
+    "feat.daggerheart-subclass-pact-of-the-wrathful-specialization-diminish-myfoes",
+    "feat.daggerheart-subclass-pact-of-the-wrathful-mastery-fearsome-attack",
+    "feat.daggerheart-subclass-pact-of-the-wrathful-mastery-divine-ire"
+  ]
+}

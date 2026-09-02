@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-assassin-hope-grim-resolve",
+  "name": "Grim Resolve",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope to clear 2 Stress.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend 3 Hope to clear 2 Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,19 @@
+{
+  "index": "piercing-arrows",
+  "name": "Piercing Arrows",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Three times per rest when you succeed on an attack with one of these arrows, you can add your Proficiency to the damage roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-piercing-arrows-feature"
+  ]
+}

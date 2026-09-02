@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-channelstone-feature",
+  "name": "feat.daggerheart-consumables-channelstone-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can use this stone to take a spell or grimoire from your vault, use it once, and return it to your vault.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can use this stone to take a spell or grimoire from your vault, use it once, and return it to your vault."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -16,5 +16,15 @@
   ],
   "featureTiers": {
     "feat.summoned-companion": "major"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": []
   }
 }

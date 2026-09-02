@@ -1,0 +1,29 @@
+{
+  "index": "improved-small-dagger",
+  "name": "Improved Small Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 2,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 2,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Paired",
+      "description": "+3 to primary weapon damage to targets within Melee range"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-paired-2"
+  ]
+}

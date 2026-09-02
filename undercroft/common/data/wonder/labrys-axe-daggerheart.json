@@ -1,0 +1,29 @@
+{
+  "index": "labrys-axe",
+  "name": "Labrys Axe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Protective",
+      "description": "+1 to Armor Score"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-protective"
+  ]
+}

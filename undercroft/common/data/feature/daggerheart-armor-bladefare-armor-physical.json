@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-bladefare-armor-physical",
+  "name": "Physical",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can't mark an Armor Slot to reduce magic damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can't mark an Armor Slot to reduce magic damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

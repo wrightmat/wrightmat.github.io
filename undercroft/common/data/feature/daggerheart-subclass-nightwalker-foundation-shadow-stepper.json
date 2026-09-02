@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-nightwalker-foundation-shadow-stepper",
+  "name": "Foundation: Shadow Stepper",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can move from shadow to shadow. When you move into an area of darkness or a shadow cast by another creature or object, you can mark a Stress to disappear from where you are and reappear inside another shadow within Far range. When you reappear, you are Cloaked.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can move from shadow to shadow. When you move into an area of darkness or a shadow cast by another creature or object, you can mark a Stress to disappear from where you are and reappear inside another shadow within Far range. When you reappear, you are Cloaked."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

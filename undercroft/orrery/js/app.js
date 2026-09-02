@@ -794,6 +794,13 @@ const elements = {
   shapeEffectPreviewLabel: document.querySelector("[data-shape-effect-preview-label]"),
   shapeEffectControls: document.querySelector("[data-shape-effect-controls]"),
   shapeEffectApply: document.querySelector("[data-shape-effect-apply]"),
+  moveMarkerModal: document.getElementById("orrery-move-marker-modal"),
+  moveMarkerTitle: document.querySelector("[data-move-marker-title]"),
+  moveMarkerMapSelect: document.querySelector("[data-move-marker-map-select]"),
+  moveMarkerLayerField: document.querySelector("[data-move-marker-layer-field]"),
+  moveMarkerLayerSelect: document.querySelector("[data-move-marker-layer-select]"),
+  moveMarkerNewLayerNote: document.querySelector("[data-move-marker-new-layer-note]"),
+  moveMarkerApply: document.querySelector("[data-move-marker-apply]"),
   drawColor: document.querySelector("[data-draw-color]"),
   drawColorWrap: document.querySelector("[data-draw-color-wrap]"),
   wallToggle: document.querySelector("[data-wall-toggle]"),
@@ -1047,7 +1054,7 @@ function applyMapSnapshot(snapshot) {
   (state.map.layers || []).forEach((layer) => {
     layer.settings = { ...createLayerSettings(layer.type), ...(layer.settings || {}) };
   });
-  state.selection = { kind: null, id: null, layerId: null, cells: [], anchor: null };
+  state.selection = { kind: null, id: null, layerId: null, cells: [], elements: [], anchor: null };
   hideMapEmptyState();
   // Always opens at the map's OWN configured Initial Zoom/Position, never
   // wherever a previous editing session's camera happened to be left —
@@ -1462,9 +1469,14 @@ function updateMapToolbarState() {
 // Uses fetchKindEntriesWithIds (common/js/lib/content-fetch.js) for remote
 // entries so each option's label can show the map's real name, not just its
 // id — the same list-then-fetch-each helper Forge/Loom/Crucible already share.
-async function populateMapSelect() {
-  if (!elements.mapSelect || !dataManager) return;
-  const previousId = state.map.id;
+// The combined remote+local map listing — every real map this signed-in
+// user (or this anonymous browser's own local saves) can see — factored
+// out of populateMapSelect so the Move to Map modal's own destination
+// picker (openMoveMarkerModal below) can reuse the exact same list
+// instead of a second, drifting copy of this remote-fetch-plus-local-
+// merge logic.
+async function fetchMapPickerEntries() {
+  if (!dataManager) return [];
   let remoteEntries = [];
   try {
     remoteEntries = await fetchKindEntriesWithIds(dataManager, "map");
@@ -1473,10 +1485,16 @@ async function populateMapSelect() {
   }
   const remoteIds = new Set(remoteEntries.map((entry) => entry.id));
   const localEntries = dataManager.listLocalEntries("map").filter((entry) => !remoteIds.has(entry.id));
-  const combined = [
+  return [
     ...remoteEntries.map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id })),
     ...localEntries.map((entry) => ({ id: entry.id, name: entry.payload?.name || entry.id })),
   ];
+}
+
+async function populateMapSelect() {
+  if (!elements.mapSelect || !dataManager) return;
+  const previousId = state.map.id;
+  const combined = await fetchMapPickerEntries();
   elements.mapSelect.innerHTML = "";
   // An inert placeholder, not a selectable "new/unsaved" state — matching
   // Workbench's own template/character selector convention (disabled
@@ -1729,6 +1747,10 @@ function setSelection(kind, id = null, extra = {}) {
     id,
     layerId: extra.layerId ?? null,
     cells: extra.cells ?? [],
+    // Multi-selected markers only — {layerId, id} pairs (a marker's own
+    // layer isn't necessarily the same for every entry, unlike the
+    // single-select `layerId` field above), see toggleMarkerMultiSelect.
+    elements: extra.elements ?? [],
     anchor: extra.anchor ?? (extra.cells?.[0]?.coord ?? null),
   };
   if (kind === "grid-cells" && state.selection.cells.length) {
@@ -1761,7 +1783,13 @@ function setSelection(kind, id = null, extra = {}) {
   updateWallAvailability();
   updateLightAvailability();
   const shouldExpand =
-    kind === "layer" || kind === "group" || kind === "grid-cells" || kind === "view" || kind === "marker-element" || kind === "vector-path";
+    kind === "layer" ||
+    kind === "group" ||
+    kind === "grid-cells" ||
+    kind === "view" ||
+    kind === "marker-element" ||
+    kind === "marker-elements" ||
+    kind === "vector-path";
   setPanelFocus(shouldExpand);
 }
 
@@ -1849,6 +1877,29 @@ function deleteCurrentSelection() {
     setSelection("layer", layer.id);
     return true;
   }
+  if (selection.kind === "marker-elements") {
+    const resolved = resolveSelectedMarkerElements(selection);
+    if (!resolved.length) return false;
+    // Grouped by layer (a multi-selection can span several marker
+    // layers) so every removal lands in one recordHistory entry, same
+    // "one undo step per user action" convention every other bulk
+    // mutation in this file already follows.
+    const idsByLayer = new Map();
+    resolved.forEach(({ layer, markerElement }) => {
+      if (!idsByLayer.has(layer.id)) idsByLayer.set(layer.id, new Set());
+      idsByLayer.get(layer.id).add(markerElement.id);
+    });
+    recordHistory("delete markers", () => {
+      idsByLayer.forEach((ids, layerId) => {
+        const layer = map.layers.find((entry) => entry.id === layerId);
+        if (!layer) return;
+        layer.elements = (layer.elements || []).filter((entry) => !ids.has(entry.id));
+      });
+      updateMapTimestamp(map);
+    });
+    setSelection(null);
+    return true;
+  }
   if (selection.kind === "vector-path") {
     const layer = map.layers.find((entry) => entry.id === selection.layerId);
     const element = layer?.elements?.find((entry) => entry.id === selection.id);
@@ -1892,16 +1943,24 @@ function isElementHiddenFromPlayers(elementId) {
   return Boolean(view?.hiddenElementIds?.includes(elementId));
 }
 
-function toggleElementHiddenFromPlayers(elementId) {
-  recordHistory("toggle hidden from players", () => {
+// Explicit target `hidden`, not a per-element flip — the right shape for
+// a bulk toggle over a multi-selection that can start in a MIXED state
+// (some already hidden, some not): one recordHistory entry sets every
+// listed id to the SAME final state, converging the whole group in one
+// action rather than each marker flipping independently of the others.
+// toggleElementHiddenFromPlayers (below) is just this called with a
+// single-element list and the opposite of its own current state — same
+// mechanism, not a second copy of it.
+function setElementsHiddenFromPlayers(elementIds, hidden) {
+  if (!elementIds.length) return;
+  recordHistory(hidden ? "hide from players" : "show to players", () => {
     const view = ensureAutoManagedPlayerView();
-    const hidden = new Set(view.hiddenElementIds || []);
-    if (hidden.has(elementId)) {
-      hidden.delete(elementId);
-    } else {
-      hidden.add(elementId);
-    }
-    view.hiddenElementIds = Array.from(hidden);
+    const hiddenSet = new Set(view.hiddenElementIds || []);
+    elementIds.forEach((elementId) => {
+      if (hidden) hiddenSet.add(elementId);
+      else hiddenSet.delete(elementId);
+    });
+    view.hiddenElementIds = Array.from(hiddenSet);
     updateMapTimestamp(state.map);
   });
   renderSelection();
@@ -1914,7 +1973,11 @@ function toggleElementHiddenFromPlayers(elementId) {
   // Dashboard's Map widget (reading the server, via its own poll) never
   // picked it up until the GM happened to hit the map's own batched Save
   // button. void — best-effort, same as the marker-field auto-saves.
-  void autoSaveHiddenFromPlayersView(elementId);
+  void autoSaveHiddenFromPlayersView(elementIds, hidden);
+}
+
+function toggleElementHiddenFromPlayers(elementId) {
+  setElementsHiddenFromPlayers([elementId], !isElementHiddenFromPlayers(elementId));
 }
 
 // Narrow read-modify-write against the server's OWN current copy of this
@@ -1922,15 +1985,17 @@ function toggleElementHiddenFromPlayers(elementId) {
 // map-live-sync.js: state.map may carry OTHER pending, not-yet-saved edits
 // the GM hasn't hit Save for yet, and this auto-save must never eagerly
 // persist those as a side effect of a quick visibility toggle). Applies
-// whatever isElementHiddenFromPlayers already resolved LOCALLY (post-
-// toggle) onto the fresh server copy's own auto-managed View, rather than
-// re-deriving/re-toggling independently — a rapid double-toggle before this
-// resolves must always converge on the same final state the GM's own
-// screen already shows, not whatever order two competing toggles happen to
-// land on the server in.
-async function autoSaveHiddenFromPlayersView(elementId) {
+// the SAME explicit `hidden` target setElementsHiddenFromPlayers already
+// applied LOCALLY onto the fresh server copy's own auto-managed View,
+// rather than re-deriving/re-toggling independently — a rapid double-
+// toggle before this resolves must always converge on the same final
+// state the GM's own screen already shows, not whatever order two
+// competing toggles happen to land on the server in. Bulk-capable
+// (elementIds is always an array, one or many) so a multi-marker
+// visibility change is one fetch-modify-save round trip, not one per
+// marker.
+async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
   if (!mapExistsOnServer || !dataManager) return;
-  const shouldBeHidden = isElementHiddenFromPlayers(elementId);
   try {
     const result = await dataManager.get("map", state.map.id, { shareToken: currentShareToken, preferLocal: false });
     const freshMap = result.payload;
@@ -1940,13 +2005,12 @@ async function autoSaveHiddenFromPlayersView(elementId) {
       view = createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
       freshMap.views.push(view);
     }
-    const hidden = new Set(view.hiddenElementIds || []);
-    if (shouldBeHidden) {
-      hidden.add(elementId);
-    } else {
-      hidden.delete(elementId);
-    }
-    view.hiddenElementIds = Array.from(hidden);
+    const hiddenSet = new Set(view.hiddenElementIds || []);
+    elementIds.forEach((elementId) => {
+      if (hidden) hiddenSet.add(elementId);
+      else hiddenSet.delete(elementId);
+    });
+    view.hiddenElementIds = Array.from(hiddenSet);
     await dataManager.save("map", state.map.id, freshMap);
     mapWatcher?.noteLocalWrite();
     // Confirmed real bug this fixes: this auto-save never re-baselined
@@ -1977,6 +2041,44 @@ async function autoSaveHiddenFromPlayersView(elementId) {
         // over what's still a successful save.
       }
     }
+  } catch (error) {
+    status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+  }
+}
+
+// Move to Map's own source-side removal (openMoveMarkerModal's Apply
+// handler) needs to persist just as immediately as the destination-side
+// add already does (dataManager.save, right in that same handler) — or a
+// moved marker briefly exists on BOTH maps until the GM remembers to hit
+// THIS map's own Save button. Confirmed real bug this fixes: the marker
+// correctly vanished from the current view (state.map itself was
+// mutated right away) but reappeared after navigating away and back,
+// because only the destination side had actually reached the server.
+// Same "fetch fresh, mutate, save" shape as autoSaveHiddenFromPlayersView
+// just above and removeElement (common/js/lib/map-live-sync.js) — a
+// local, bulk-capable version rather than looping that shared
+// single-element helper once per marker, so removing several markers in
+// one move is still one fetch-modify-save round trip against the source
+// map, not one per marker. idsByLayer: Map<layerId, Set<elementId>>.
+async function autoSaveRemovedMarkerElements(idsByLayer) {
+  if (!mapExistsOnServer || !dataManager) return;
+  try {
+    const result = await dataManager.get("map", state.map.id, { shareToken: currentShareToken, preferLocal: false });
+    const freshMap = result.payload;
+    idsByLayer.forEach((ids, layerId) => {
+      const layer = freshMap.layers?.find((entry) => entry.id === layerId);
+      if (!layer) return;
+      layer.elements = (layer.elements || []).filter((entry) => !ids.has(entry.id));
+    });
+    await dataManager.save("map", state.map.id, freshMap);
+    mapWatcher?.noteLocalWrite();
+    // Same per-element clean-snapshot patch autoSaveHistoryEntry's own
+    // Draw/Shape-deletion branch uses (syncCleanSnapshotForElement,
+    // element: null means "remove it") — so the Save button doesn't keep
+    // nagging the GM about a removal that's already reached the server.
+    idsByLayer.forEach((ids, layerId) => {
+      ids.forEach((elementId) => syncCleanSnapshotForElement(layerId, elementId, null));
+    });
   } catch (error) {
     status?.show(error?.message || "Unable to save that change.", { type: "danger" });
   }
@@ -2091,8 +2193,17 @@ function renderLayers() {
       if (hiddenLayerIds?.has(layer.id)) {
         return;
       }
+      // state.selection.layerId (the single-select field) is always null
+      // for a "marker-elements" selection — checked separately here, or
+      // every layer's own sub-list would collapse the instant a second
+      // marker gets Ctrl-clicked into a multi-selection, hiding the very
+      // list this feature needs to keep extending/shrinking that
+      // selection from. Confirmed real bug this avoids, caught alongside
+      // isLayerSelected's own matching fix just above.
       const isLayerActive =
-        (state.selection.kind === "layer" && state.selection.id === layer.id) || state.selection.layerId === layer.id;
+        (state.selection.kind === "layer" && state.selection.id === layer.id) ||
+        state.selection.layerId === layer.id ||
+        (state.selection.kind === "marker-elements" && (state.selection.elements || []).some((entry) => entry.layerId === layer.id));
       const item = document.createElement("button");
       item.type = "button";
       item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
@@ -2132,8 +2243,9 @@ function renderLayers() {
         componentList.forEach((element) => {
           const { icon: componentIcon, label: componentLabel } = describeLayerElement(element);
           const isSelected =
-            (state.selection.kind === "vector-path" || state.selection.kind === "marker-element") &&
-            state.selection.id === element.id;
+            ((state.selection.kind === "vector-path" || state.selection.kind === "marker-element") &&
+              state.selection.id === element.id) ||
+            (state.selection.kind === "marker-elements" && state.selection.elements.some((entry) => entry.id === element.id));
           const componentButton = document.createElement("button");
           componentButton.type = "button";
           componentButton.className = "list-group-item list-group-item-action d-flex align-items-center gap-2 py-1 small";
@@ -2148,7 +2260,16 @@ function renderLayers() {
           componentLabelEl.className = "text-truncate";
           componentLabelEl.textContent = componentLabel;
           componentButton.append(componentIconEl, componentLabelEl);
-          componentButton.addEventListener("click", () => {
+          componentButton.addEventListener("click", (event) => {
+            // Ctrl/Cmd/Shift-click extends/shrinks a marker multi-selection
+            // instead of replacing it — same modifier-key convention as the
+            // map canvas's own marker dots (createMarkerDot, map-viewer.js).
+            // Only markers support this; a vector-path element (wall,
+            // light, shape) click is unchanged regardless of modifier keys.
+            if (element.kind === "marker" && (event.ctrlKey || event.metaKey || event.shiftKey)) {
+              toggleMarkerMultiSelect(layer, element);
+              return;
+            }
             toggleSelection(element.kind === "marker" ? "marker-element" : "vector-path", element.id, { layerId: layer.id });
           });
           sublist.appendChild(componentButton);
@@ -2445,6 +2566,21 @@ function renderSelection() {
           : `${layer.name} · no reference set`;
       }
       void renderMarkerElementSelectionEditor(layer, markerElement);
+      return;
+    }
+  }
+
+  if (selection.kind === "marker-elements") {
+    const resolved = resolveSelectedMarkerElements(selection);
+    if (resolved.length) {
+      elements.selectionTitle.textContent = `${resolved.length} Markers Selected`;
+      setSelectionTypeIcon("tabler:map-pins");
+      if (elements.selectionDetails) {
+        elements.selectionDetails.textContent = resolved
+          .map((entry) => entry.markerElement.label || entry.markerElement.refKind || "Marker")
+          .join(", ");
+      }
+      renderMarkerElementsSelectionEditor(resolved);
       return;
     }
   }
@@ -3246,12 +3382,26 @@ function syncOverlayInteractivity() {
         ? state.selection.layerId
         : null;
   const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
+  // A "marker-elements" (plural) multi-selection has no single layerId of
+  // its own the way selectedLayerId above expects — it can span several
+  // layers at once — but every one of its entries is necessarily a
+  // marker, so its mere existence already tells us the overlay needs to
+  // stay interactive, same conclusion the single-marker branch above
+  // reaches via `layer.type === "marker"`. Without this, forming a
+  // multi-selection on a TILE base map (this whole pointer-events gate is
+  // Leaflet-pane-only, per the comment below) set the overlay pane
+  // non-interactive, silently swallowing every further click — including
+  // the very Ctrl-click meant to extend/shrink that same selection.
+  // Confirmed real bug this avoids, caught alongside isLayerSelected's/
+  // renderLayers' own matching fixes.
+  const hasMultiMarkerSelection = state.selection.kind === "marker-elements" && (state.selection.elements || []).length > 0;
   // A selected Group also arms its own target grid layer's interactivity
   // without the grid layer itself ever being the current `selection` — this
   // pointer-events gate (tile maps only, via the Leaflet pane below) has to
   // know about that too, or clicking/painting a group's cells would never
   // even reach the grid's own pointerdown listener on a tile base map.
-  const isInteractive = Boolean(layer && (layer.type === "grid" || layer.type === "marker")) || state.selection.kind === "group";
+  const isInteractive =
+    Boolean(layer && (layer.type === "grid" || layer.type === "marker")) || state.selection.kind === "group" || hasMultiMarkerSelection;
   overlay.classList.toggle("is-interactive", isInteractive);
   if (overlay.parentElement && overlay.parentElement.classList.contains("leaflet-pane")) {
     overlay.parentElement.style.pointerEvents = isInteractive ? "auto" : "none";
@@ -3431,7 +3581,7 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
     armedMarkerLayerId = null;
   }
   blurStaleActiveField();
-  state.selection = { kind: "marker-element", id: markerElement.id, layerId: layer.id, cells: [], anchor: null };
+  state.selection = { kind: "marker-element", id: markerElement.id, layerId: layer.id, cells: [], elements: [], anchor: null };
   renderSelection();
   setPanelFocus(true);
   const container = dotEl.parentElement;
@@ -3441,6 +3591,43 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
       .forEach((node) => node.classList.remove("is-selected"));
   }
   dotEl.classList.add("is-selected");
+}
+
+// Ctrl/Cmd/Shift-click on a marker (map canvas dot, or the left-pane
+// component list — see renderLayers' own click handler and
+// createMarkerDot's pointerdown branch in map-viewer.js) — extends the
+// current selection into (or shrinks/collapses out of) a multi-marker
+// selection, rather than replacing it the way a plain click does. Uses
+// the ordinary setSelection (not selectMarkerElementForDrag's own
+// bypass) since this never begins a drag, so there's no live dotEl to
+// preserve across a renderLayerOverlays() rebuild.
+function toggleMarkerMultiSelect(layer, markerElement) {
+  const current = state.selection;
+  let entries;
+  if (current.kind === "marker-elements") {
+    entries = current.elements.slice();
+  } else if (current.kind === "marker-element") {
+    entries = [{ layerId: current.layerId, id: current.id }];
+  } else {
+    entries = [];
+  }
+  const index = entries.findIndex((entry) => entry.id === markerElement.id);
+  if (index === -1) {
+    entries.push({ layerId: layer.id, id: markerElement.id });
+  } else {
+    entries.splice(index, 1);
+  }
+  if (entries.length === 0) {
+    setSelection(null);
+  } else if (entries.length === 1) {
+    // Collapses back to the ordinary single-marker editor the moment
+    // only one marker remains — the ONLY entry point into the full
+    // label/image/position/contents panel, so shrinking a multi-select
+    // down to one shouldn't strand the GM on the bulk-only panel.
+    setSelection("marker-element", entries[0].id, { layerId: entries[0].layerId });
+  } else {
+    setSelection("marker-elements", null, { elements: entries });
+  }
 }
 
 // Same reasoning as selectMarkerElementForDrag just above — updates
@@ -3455,7 +3642,7 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
 // exactly why shapes could be selected but never actually dragged.
 function selectShapeElementForDrag(layer, elementId) {
   blurStaleActiveField();
-  state.selection = { kind: "vector-path", id: elementId, layerId: layer.id, cells: [], anchor: null };
+  state.selection = { kind: "vector-path", id: elementId, layerId: layer.id, cells: [], elements: [], anchor: null };
   renderSelection();
   setPanelFocus(true);
 }
@@ -3704,6 +3891,20 @@ function isLayerSelected(layer) {
     (state.selection.kind === "layer" && state.selection.id === layer.id) ||
     (state.selection.kind === "grid-cells" && state.selection.layerId === layer.id) ||
     (state.selection.kind === "marker-element" && state.selection.layerId === layer.id) ||
+    // A layer stays "selected" (and therefore its markers stay
+    // draggable/clickable, see isMarkerDraggableForFullAccess below) if
+    // the current multi-selection includes ANY marker from it — without
+    // this, selecting a second marker anywhere flips state.selection.kind
+    // to "marker-elements", which matched none of this function's other
+    // branches, making every marker on every layer undraggable and
+    // silently breaking the Ctrl-click gesture that's supposed to extend
+    // the very selection that just formed. Confirmed real bug this
+    // avoids, not a hypothetical — caught while wiring
+    // toggleMarkerMultiSelect. A GM extending a multi-selection onto a
+    // layer with NO currently-selected markers still has to use the
+    // left-pane list (renderLayers), same as ordinary single-select
+    // already requires for a different, unselected layer today.
+    (state.selection.kind === "marker-elements" && (state.selection.elements || []).some((entry) => entry.layerId === layer.id)) ||
     (state.selection.kind === "vector-path" && state.selection.layerId === layer.id)
   );
 }
@@ -3889,6 +4090,7 @@ function renderLayerOverlays() {
       renderJson();
     },
     onMarkerDragStart: (layer, markerElement, dotEl) => selectMarkerElementForDrag(layer, markerElement, dotEl),
+    onMarkerMultiSelectToggle: (layer, markerElement) => toggleMarkerMultiSelect(layer, markerElement),
     onMarkerDragEnd: (layer, markerElement, nextPosition) => {
       const before = JSON.stringify(state.map);
       markerElement.position = snapMarkerPositionToGrid(nextPosition, layer);
@@ -5616,6 +5818,94 @@ async function resolveMonsterSizeCells(monsterPayload) {
 // three Position X/Y rows and two extra Delete buttons — one invocation per
 // cache fetch). markerSelectionEditorRenderId lets only the most recent
 // invocation's tail actually mutate the live container/toolbar.
+// Resolves a "marker-elements" selection's own {layerId, id} pairs back
+// into real {layer, markerElement} pairs — silently dropping any entry
+// whose marker or layer no longer exists (deleted from underneath an
+// open multi-selection by an undo, a remote map update, etc.), the same
+// defensive-lookup shape the single-select branches above already use.
+function resolveSelectedMarkerElements(selection) {
+  return (selection.elements || [])
+    .map((entry) => {
+      const layer = state.map.layers.find((candidate) => candidate.id === entry.layerId);
+      const markerElement = layer?.elements?.find((candidate) => candidate.id === entry.id);
+      return layer && markerElement ? { layer, markerElement } : null;
+    })
+    .filter(Boolean);
+}
+
+// The bulk counterpart to renderMarkerElementSelectionEditor — deliberately
+// lightweight: a read-only roster (label/image don't have one shared value
+// across N different markers, so there's no per-field editor here the way
+// the single-marker panel has) plus the shared selectionToolbar mount with
+// whatever bulk actions apply to a group of markers (Delete, Move to Map).
+function renderMarkerElementsSelectionEditor(resolved) {
+  const container = elements.selectionEditor;
+  disposeTooltips(container);
+  container.innerHTML = "";
+
+  const list = document.createElement("div");
+  list.className = "d-flex flex-column gap-1";
+  resolved.forEach(({ markerElement }) => {
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-center gap-2 small";
+    const icon = document.createElement("span");
+    icon.className = "iconify text-body-secondary flex-shrink-0";
+    icon.dataset.icon = "tabler:map-pin";
+    icon.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "text-truncate";
+    label.textContent = markerElement.label || markerElement.refKind || "Marker";
+    row.append(icon, label);
+    list.appendChild(row);
+  });
+  container.appendChild(list);
+
+  if (elements.selectionToolbar) {
+    const elementIds = resolved.map(({ markerElement }) => markerElement.id);
+    // Aggregate, not per-marker: a mixed-state selection (some already
+    // hidden, some not) reads as "visible" here — same tri-state
+    // "select all" convention a checkbox header row uses — so the next
+    // click always converges the WHOLE group to one state (hide
+    // everything not already hidden) rather than leaving it mixed.
+    // Clicking again once every selected marker IS hidden shows them
+    // all. setElementsHiddenFromPlayers (shared with the single-marker
+    // toggle below) takes that explicit target rather than flipping each
+    // marker independently, which is exactly what makes this converge.
+    const allHidden = resolved.length > 0 && resolved.every(({ markerElement }) => isElementHiddenFromPlayers(markerElement.id));
+    const buttons = [
+      {
+        action: "toggle-hidden-from-players",
+        label: allHidden ? "Hidden from players — click to show" : "Visible to players — click to hide",
+        icon: allHidden ? "tabler:eye-off" : "tabler:eye",
+        attrs: { "data-action": "toggle-hidden-from-players" },
+        onClick: () => setElementsHiddenFromPlayers(elementIds, !allHidden),
+      },
+      {
+        action: "delete",
+        label: "Delete markers",
+        attrs: { "data-action": "delete-selected" },
+        onClick: () => deleteCurrentSelection(),
+      },
+    ];
+    // Gated on currentUserHasFullMapAccess() specifically — a cross-map
+    // write, unlike everything else this toolbar can do, so it gets its
+    // own explicit check rather than relying on this panel only ever
+    // being reachable by an owner/admin in the first place (see
+    // openMoveMarkerModal's own header comment for the fuller reasoning).
+    if (currentUserHasFullMapAccess()) {
+      buttons.splice(1, 0, {
+        action: "move-to-map",
+        label: "Move to another map",
+        icon: "tabler:map-share",
+        attrs: { "data-action": "move-to-map" },
+        onClick: () => openMoveMarkerModal(),
+      });
+    }
+    createToolbarButtonGroup(buttons).forEach((button) => elements.selectionToolbar.appendChild(button));
+    refreshTooltips(elements.selectionToolbar);
+  }
+}
+
 let markerSelectionEditorRenderId = 0;
 async function renderMarkerElementSelectionEditor(layer, markerElement) {
   if (!elements.selectionEditor) {
@@ -6115,15 +6405,21 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   kindSelect.value = markerElement.refKind || "";
   await populateEntitySelect(markerElement.refKind, markerElement.refId);
   updateAnchorSelect(markerElement.refAnchor);
-  // Baseline for the anchor handler's own "still looks auto-inherited, safe
-  // to refine further" check below — whatever the label would currently
-  // read as from the MOST specific thing already selected (the anchor if
-  // one's picked, otherwise the entity's own name). Recomputed fresh on
-  // every render, since a kind/entity change tears this whole panel down
-  // and rebuilds it (see kindSelect/entitySelect's own change handlers).
+  // Baseline for the anchor AND entity handlers' own "still looks
+  // auto-inherited, safe to refine further" checks below — whatever the
+  // label would currently read as from the MOST specific thing already
+  // selected (the anchor if one's picked, otherwise the entity's own
+  // name). lastAutoImage is the same idea for Image — whatever's
+  // currently set is treated as "still looks auto" until a GM picks
+  // something that doesn't match it (a manual upload, say). Both
+  // recomputed fresh on every render, since a kind/entity change tears
+  // this whole panel down and rebuilds it (see kindSelect/entitySelect's
+  // own change handlers) — so the entity handler below never needs to
+  // update these itself, the next render already will.
   let lastAutoLabel = markerElement.refAnchor
     ? anchorDisplayLabel(markerElement.refAnchor)
     : entitySelect.selectedOptions[0]?.textContent || "";
+  let lastAutoImage = markerElement.image || "";
   await refreshPreview();
 
   // A newer invocation (triggered by one of the character-data cache
@@ -6185,7 +6481,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       // resolves its footprint even on a marker that already has a custom
       // image.
       let payload = null;
-      if (refId && kind && dataManager && (!markerElement.image || kind === "monster")) {
+      const imageLooksAutoInherited = !markerElement.image || markerElement.image === lastAutoImage;
+      if (refId && kind && dataManager && (imageLooksAutoInherited || kind === "monster")) {
         try {
           // preferLocal: false — a Monster's own size (or image) is exactly
           // the kind of content edited directly in Loom/Crucible out from
@@ -6197,7 +6494,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
           payload = null;
         }
       }
-      if (!markerElement.image) {
+      if (imageLooksAutoInherited) {
         inheritedImage = payload?.image || "";
       }
       // Re-resolved on every Monster pick (not gated behind a "still looks
@@ -6234,10 +6531,23 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         // quests — whatever anchor was picked for the PREVIOUS one almost
         // certainly doesn't mean the same thing (or exist at all) here.
         markerElement.refAnchor = null;
-        if (!markerElement.label && option && option.value) {
+        // "Still looks auto-inherited, safe to refine further" — same
+        // lastAutoLabel/lastAutoImage check the anchor handler below
+        // already uses, not just a blank check. A blank-only check
+        // (the original shape here) only ever populated Label/Image on
+        // a marker's very FIRST entity pick — switching an
+        // already-linked marker to a DIFFERENT entity left the prior
+        // entity's own name/portrait stuck, since neither field was
+        // blank anymore. Confirmed real bug, not by design — the
+        // deliberate "copy once, stays user-editable" protection this
+        // was built on only needs to block overwriting a GM's own
+        // hand-typed label or hand-picked image, which lastAutoLabel/
+        // lastAutoImage already distinguish from "still exactly what
+        // the last entity pick set."
+        if ((!markerElement.label || markerElement.label === lastAutoLabel) && option && option.value) {
           markerElement.label = option.textContent;
         }
-        if (!markerElement.image && inheritedImage) {
+        if (imageLooksAutoInherited && inheritedImage) {
           markerElement.image = inheritedImage;
         }
         if (!markerElement.outlineColor && inheritedOutlineColor) {
@@ -6655,7 +6965,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     // no stale-cached-icon-reference risk here to guard against; the
     // current state is just read fresh into the descriptor below.
     const hiddenFromPlayers = isElementHiddenFromPlayers(markerElement.id);
-    createToolbarButtonGroup([
+    const markerToolbarButtons = [
       {
         action: "toggle-hidden-from-players",
         label: hiddenFromPlayers ? "Hidden from players — click to show" : "Visible to players — click to hide",
@@ -6663,13 +6973,26 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         attrs: { "data-action": "toggle-hidden-from-players" },
         onClick: () => toggleElementHiddenFromPlayers(markerElement.id),
       },
-      {
-        action: "delete",
-        label: "Delete marker",
-        attrs: { "data-action": "delete-selected" },
-        onClick: () => deleteCurrentSelection(),
-      },
-    ]).forEach((button) => elements.selectionToolbar.appendChild(button));
+    ];
+    // See renderMarkerElementsSelectionEditor's own matching comment —
+    // same explicit currentUserHasFullMapAccess() gate on this one
+    // cross-map-write action.
+    if (currentUserHasFullMapAccess()) {
+      markerToolbarButtons.push({
+        action: "move-to-map",
+        label: "Move to another map",
+        icon: "tabler:map-share",
+        attrs: { "data-action": "move-to-map" },
+        onClick: () => openMoveMarkerModal(),
+      });
+    }
+    markerToolbarButtons.push({
+      action: "delete",
+      label: "Delete marker",
+      attrs: { "data-action": "delete-selected" },
+      onClick: () => deleteCurrentSelection(),
+    });
+    createToolbarButtonGroup(markerToolbarButtons).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
   }
   // The toolbar above gets its own scoped sweep since it lives outside
@@ -7656,6 +7979,7 @@ function setupViewEvents() {
   setupDrawTool();
   setupShapeTool();
   initShapeEffectModal();
+  initMoveMarkerModal();
   setupWallTool();
   setupLightTool();
   setupPingTool();
@@ -8432,6 +8756,241 @@ function initShapeEffectModal() {
       renderSelection();
     }
     window.bootstrap?.Modal?.getInstance(elements.shapeEffectModal)?.hide();
+  });
+}
+
+// Carries everything about a marker that isn't tied to WHERE it sits —
+// same intent as duplicateLayerElement's own marker branch, but broader:
+// a moved marker should read as "the same token, relocated," not a fresh
+// second copy a GM might expect to look different. Two fields
+// deliberately excluded: `position` (the caller — the Apply handler
+// below — overwrites it with computeMoveMarkerPositions' own output right
+// after cloning; the destination map's coordinate system has nothing in
+// common with the source's, so createMarkerElement's own {x:0,y:0}
+// default here is only ever a placeholder, never what actually lands)
+// and `linkedCombatantId` (scoped to the SOURCE map's own active
+// Encounter, meaningless anywhere else). overlayIcons isn't a
+// createMarkerElement constructor argument at all (always starts `[]`
+// there) so it's copied onto the clone afterward.
+function cloneMarkerElementForMove(element) {
+  const clone = createMarkerElement({
+    refKind: element.refKind,
+    refId: element.refId,
+    refAnchor: element.refAnchor ? { ...element.refAnchor } : null,
+    label: element.label,
+    image: element.image,
+    outlineColor: element.outlineColor,
+    showOutline: element.showOutline,
+    shape: element.shape,
+    sizeCells: element.sizeCells,
+    heightCells: element.heightCells,
+    opacity: element.opacity,
+    contents: (element.contents || []).map((entry) => ({ ...entry })),
+    claimTarget: element.claimTarget,
+  });
+  clone.overlayIcons = (element.overlayIcons || []).map((icon) => ({ ...icon }));
+  return clone;
+}
+
+// Per-marker "reset near origin" targets for a batch of moved markers,
+// aware of the DESTINATION map's own base map type (unknowable at clone
+// time — cloneMarkerElementForMove has no map context of its own) — two
+// real correctness needs, not just cosmetic ones:
+// - A tile base map stores position as {lat, lng}, never {x, y}
+//   (hasValidMarkerPosition, map-viewer.js); createMarkerElement's own
+//   {x:0,y:0} default fails that check entirely, so every moved marker
+//   would silently NOT RENDER at all on a tile destination map. Basing
+//   it on the destination's own current view center (falling back to
+//   getDefaultView("tile")'s {lat:20,lng:0} if the map has no `view` of
+//   its own yet) at least lands markers somewhere near what's actually
+//   on screen, matching "reset near origin" in spirit for a coordinate
+//   system that doesn't have a literal (0,0) worth using.
+// - Every marker in the batch landing on the EXACT same point stacked
+//   them directly on top of one another, functionally invisible/
+//   unclickable as separate tokens the moment there's more than one.
+//   Staggered by a small, fixed per-axis step (pixels for image/canvas,
+//   degrees for tile) so they're visibly and clickably distinct — not
+//   meant to be precise placement, the GM repositions from here same as
+//   a single moved marker always has.
+const MOVE_MARKER_OFFSET_PX = 32;
+const MOVE_MARKER_OFFSET_DEG = 0.0004;
+function computeMoveMarkerPositions(destPayload, count) {
+  const isTile = destPayload?.baseMap?.type === "tile";
+  const base = isTile ? destPayload?.view?.center || { lat: 20, lng: 0 } : { x: 0, y: 0 };
+  return Array.from({ length: count }, (_, index) =>
+    isTile
+      ? { lat: base.lat - index * MOVE_MARKER_OFFSET_DEG, lng: base.lng + index * MOVE_MARKER_OFFSET_DEG }
+      : { x: base.x + index * MOVE_MARKER_OFFSET_PX, y: base.y + index * MOVE_MARKER_OFFSET_PX }
+  );
+}
+
+// Captured at open time (not re-resolved from state.selection at Apply
+// time) — same reasoning as shapeEffectModalTarget just above: the modal
+// stays open across an await (populating the layer picker), and nothing
+// should change WHICH markers move if a stray render happens to touch
+// state.selection in that window.
+let moveMarkerModalEntries = [];
+
+// Opened from either selection toolbar (single marker or the bulk
+// "marker-elements" panel — both call this the same way, this function
+// itself resolves which one is current). Deliberately re-checks
+// currentUserHasFullMapAccess() here too, not just at the button's own
+// render-time gate — belt-and-suspenders against a stale toolbar button
+// surviving a permission change without a re-render in between.
+function openMoveMarkerModal() {
+  if (!elements.moveMarkerModal || !window.bootstrap?.Modal || !currentUserHasFullMapAccess()) return;
+  const selection = state.selection;
+  let entries = [];
+  if (selection.kind === "marker-element") {
+    const layer = state.map.layers.find((entry) => entry.id === selection.layerId);
+    const markerElement = layer?.elements?.find((entry) => entry.id === selection.id);
+    if (layer && markerElement) entries = [{ layer, markerElement }];
+  } else if (selection.kind === "marker-elements") {
+    entries = resolveSelectedMarkerElements(selection);
+  }
+  if (!entries.length) return;
+  moveMarkerModalEntries = entries;
+  if (elements.moveMarkerTitle) {
+    elements.moveMarkerTitle.textContent = entries.length === 1 ? "Move Marker" : `Move ${entries.length} Markers`;
+  }
+  if (elements.moveMarkerMapSelect) {
+    elements.moveMarkerMapSelect.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = "Select a map";
+    elements.moveMarkerMapSelect.appendChild(placeholder);
+  }
+  if (elements.moveMarkerLayerField) elements.moveMarkerLayerField.classList.add("d-none");
+  if (elements.moveMarkerNewLayerNote) elements.moveMarkerNewLayerNote.classList.add("d-none");
+  if (elements.moveMarkerApply) elements.moveMarkerApply.disabled = true;
+  fetchMapPickerEntries().then((mapEntries) => {
+    if (!elements.moveMarkerMapSelect) return;
+    // Can't move a marker to the map it's already on.
+    mapEntries
+      .filter((entry) => entry.id !== state.map.id)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach((entry) => {
+        const option = document.createElement("option");
+        option.value = entry.id;
+        option.textContent = entry.name;
+        elements.moveMarkerMapSelect.appendChild(option);
+      });
+  });
+  window.bootstrap.Modal.getOrCreateInstance(elements.moveMarkerModal).show();
+}
+
+function initMoveMarkerModal() {
+  if (!elements.moveMarkerModal) return;
+
+  function updateApplyEnabled() {
+    if (!elements.moveMarkerApply) return;
+    const hasMap = Boolean(elements.moveMarkerMapSelect?.value);
+    const layerFieldHidden = elements.moveMarkerLayerField?.classList.contains("d-none");
+    const hasLayer = layerFieldHidden || Boolean(elements.moveMarkerLayerSelect?.value);
+    elements.moveMarkerApply.disabled = !(hasMap && hasLayer);
+  }
+
+  elements.moveMarkerMapSelect?.addEventListener("change", async () => {
+    const destId = elements.moveMarkerMapSelect.value;
+    if (elements.moveMarkerLayerSelect) elements.moveMarkerLayerSelect.innerHTML = "";
+    if (!destId || !dataManager) {
+      elements.moveMarkerLayerField?.classList.add("d-none");
+      elements.moveMarkerNewLayerNote?.classList.add("d-none");
+      updateApplyEnabled();
+      return;
+    }
+    let payload = null;
+    try {
+      const result = await dataManager.get("map", destId, { preferLocal: false });
+      payload = result?.payload || null;
+    } catch (error) {
+      payload = null;
+    }
+    // Stale response — the GM picked a DIFFERENT map while this fetch was
+    // in flight. Discard rather than populate the layer picker for a map
+    // that's no longer selected.
+    if (elements.moveMarkerMapSelect.value !== destId) return;
+    const markerLayers = (payload?.layers || []).filter((layer) => layer.type === "marker");
+    if (!markerLayers.length) {
+      elements.moveMarkerLayerField?.classList.add("d-none");
+      elements.moveMarkerNewLayerNote?.classList.remove("d-none");
+    } else {
+      elements.moveMarkerNewLayerNote?.classList.add("d-none");
+      elements.moveMarkerLayerField?.classList.remove("d-none");
+      if (elements.moveMarkerLayerSelect) {
+        markerLayers.forEach((layer) => {
+          const option = document.createElement("option");
+          option.value = layer.id;
+          option.textContent = layer.name;
+          elements.moveMarkerLayerSelect.appendChild(option);
+        });
+      }
+    }
+    updateApplyEnabled();
+  });
+  elements.moveMarkerLayerSelect?.addEventListener("change", updateApplyEnabled);
+
+  elements.moveMarkerApply?.addEventListener("click", async () => {
+    const destId = elements.moveMarkerMapSelect?.value;
+    const entries = moveMarkerModalEntries;
+    if (!destId || !entries.length || !dataManager) return;
+    elements.moveMarkerApply.disabled = true;
+    let destPayload = null;
+    try {
+      const result = await dataManager.get("map", destId, { preferLocal: false });
+      destPayload = result?.payload || createMapModel();
+      let destLayer = (destPayload.layers || []).find(
+        (layer) => layer.type === "marker" && layer.id === elements.moveMarkerLayerSelect?.value
+      );
+      if (!destLayer) {
+        destLayer = createLayer({ type: "marker" });
+        destPayload.layers = [...(destPayload.layers || []), destLayer];
+      }
+      const positions = computeMoveMarkerPositions(destPayload, entries.length);
+      const movedClones = entries.map(({ markerElement }, index) => {
+        const clone = cloneMarkerElementForMove(markerElement);
+        clone.position = positions[index];
+        return clone;
+      });
+      destLayer.elements = [...(destLayer.elements || []), ...movedClones];
+      updateMapTimestamp(destPayload);
+      await dataManager.save("map", destId, destPayload);
+    } catch (error) {
+      status.show(`Unable to move marker(s): ${error.message}`, { type: "error", timeout: 4000 });
+      elements.moveMarkerApply.disabled = false;
+      return;
+    }
+    // Only remove the originals from the CURRENTLY open map once the
+    // destination write above has actually succeeded — a failed cross-map
+    // save must never lose the source marker.
+    const idsByLayer = new Map();
+    entries.forEach(({ layer, markerElement }) => {
+      if (!idsByLayer.has(layer.id)) idsByLayer.set(layer.id, new Set());
+      idsByLayer.get(layer.id).add(markerElement.id);
+    });
+    recordHistory("move marker to another map", () => {
+      idsByLayer.forEach((ids, layerId) => {
+        const layer = state.map.layers.find((entry) => entry.id === layerId);
+        if (!layer) return;
+        layer.elements = (layer.elements || []).filter((entry) => !ids.has(entry.id));
+      });
+      updateMapTimestamp(state.map);
+    });
+    // Persists that same removal to the server right away — see this
+    // function's own header comment for why a move can't leave it as an
+    // ordinary batched, Save-button-pending edit the way a plain Delete
+    // does.
+    void autoSaveRemovedMarkerElements(idsByLayer);
+    setSelection(null);
+    const destName = elements.moveMarkerMapSelect?.selectedOptions?.[0]?.textContent || "the destination map";
+    status.show(`Moved ${entries.length} marker${entries.length === 1 ? "" : "s"} to ${destName}.`, {
+      type: "success",
+      timeout: 2500,
+    });
+    window.bootstrap?.Modal?.getInstance(elements.moveMarkerModal)?.hide();
+    moveMarkerModalEntries = [];
   });
 }
 

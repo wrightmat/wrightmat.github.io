@@ -16,5 +16,20 @@
   ],
   "featureTiers": {
     "feat.summoned-companion": "major"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      }
+    ],
+    "subclasses": []
   }
 }

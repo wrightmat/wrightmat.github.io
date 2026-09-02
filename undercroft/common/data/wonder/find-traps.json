@@ -18,5 +18,30 @@
     "feat.detection": {
       "detects": "traps"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

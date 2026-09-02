@@ -29,5 +29,29 @@
   },
   "featureTiers": {
     "feat.damage": "tier-2"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

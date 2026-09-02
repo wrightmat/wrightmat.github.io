@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-skykin-gale-force",
+  "name": "Gale Force",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to conjure a gust of wind that carries you or an ally up to Very Far range. Additionally, you can always control the speed at which you fall.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to conjure a gust of wind that carries you or an ally up to Very Far range. Additionally, you can always control the speed at which you fall."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

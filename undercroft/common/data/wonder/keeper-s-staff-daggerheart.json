@@ -1,0 +1,29 @@
+{
+  "index": "keeper-s-staff",
+  "name": "Keeper's Staff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Knowledge",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 4,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Reliable",
+      "description": "+1 to attack rolls"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reliable"
+  ]
+}

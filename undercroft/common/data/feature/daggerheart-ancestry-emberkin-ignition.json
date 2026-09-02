@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-emberkin-ignition",
+  "name": "Ignition",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to wreathe your primary weapon in flame until the end of the scene. While ablaze, it gives off a bright light and grants a 1d6 bonus to damage rolls against targets within Melee range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to wreathe your primary weapon in flame until the end of the scene. While ablaze, it gives off a bright light and grants a 1d6 bonus to damage rolls against targets within Melee range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

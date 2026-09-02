@@ -1,0 +1,26 @@
+{
+  "name": "Choice of Effect",
+  "systemIds": [
+    "sys.dnd5e",
+    "sys.dnd5e2014",
+    "sys.daggerheart"
+  ],
+  "description": "Its user deliberately picks which of several named effects to produce, every time it's used — never determined by a die roll or the GM.",
+  "mechanics": {
+    "type": "active",
+    "text": "On activation, the user selects one effect from this Effect's own named list rather than rolling or having one assigned. Where the individual effects are worth naming, this record's own featureParams.options carries them as a real list ([{name, text}, ...]), the same shape feat.random-effect's own options already use — reused here rather than reinvented, since the underlying data shape is identical between the two; only WHO decides the outcome differs. featureParams.optionCount is the fallback/residual count when naming every option individually isn't worth the effort. Deliberately a SEPARATE Feature from feat.random-effect, not a shared/renamed one, despite the identical options shape: guaranteed access to your pick of several effects is strictly more valuable than the same effects gated behind a die roll, so the two carry different budgetCost values on purpose."
+  },
+  "budgetCost": 7,
+  "tags": {
+    "categories": [
+      "spell",
+      "item"
+    ],
+    "propertyHints": [
+      "utility"
+    ]
+  },
+  "synergizesWith": [],
+  "dependsOn": [],
+  "conflictsWith": []
+}

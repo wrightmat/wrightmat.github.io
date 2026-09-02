@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-homing-compasses-feature",
+  "name": "feat.daggerheart-items-homing-compasses-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "These two compasses point toward each other no matter how far apart they are.",
+  "mechanics": {
+    "type": "passive",
+    "text": "These two compasses point toward each other no matter how far apart they are."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

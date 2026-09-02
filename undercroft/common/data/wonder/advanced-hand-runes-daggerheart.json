@@ -1,0 +1,22 @@
+{
+  "index": "advanced-hand-runes",
+  "name": "Advanced Hand Runes",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Instinct",
+    "range": "Very Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 6,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

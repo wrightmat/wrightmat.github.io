@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-second-wind",
+  "name": "Second Wind",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, when you succeed on an attack against an adversary, you can clear 3 Stress or a Hit Point. On a success with Hope, you also clear 3 Stress or a Hit Point on an ally within Close range of you.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per rest, when you succeed on an attack against an adversary, you can clear 3 Stress or a Hit Point. On a success with Hope, you also clear 3 Stress or a Hit Point on an ally within Close range of you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Splendor",
+  "level": 3,
+  "recallCost": 2
+}

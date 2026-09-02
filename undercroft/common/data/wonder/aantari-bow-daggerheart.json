@@ -1,0 +1,29 @@
+{
+  "index": "aantari-bow",
+  "name": "Aantari Bow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 11,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Reliable",
+      "description": "+1 to attack rolls"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reliable"
+  ]
+}

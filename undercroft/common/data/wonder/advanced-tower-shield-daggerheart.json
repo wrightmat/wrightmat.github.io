@@ -1,0 +1,29 @@
+{
+  "index": "advanced-tower-shield",
+  "name": "Advanced Tower Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Barrier",
+      "description": "+4 to Armor Score; -1 to Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-advanced-tower-shield-barrier"
+  ]
+}

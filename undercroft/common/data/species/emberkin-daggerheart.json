@@ -1,0 +1,24 @@
+{
+  "index": "emberkin",
+  "name": "Emberkin",
+  "description": [
+    "Emberkin are descended from fire elementals. They are humanoids whose bodies are a combination of flesh and fire."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "features": [
+    {
+      "name": "Fireproof",
+      "description": "You are immune to damage from magical or mundane flame."
+    },
+    {
+      "name": "Ignition",
+      "description": "Mark a Stress to wreathe your primary weapon in flame until the end of the scene. While ablaze, it gives off a bright light and grants a 1d6 bonus to damage rolls against targets within Melee range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-emberkin-fireproof",
+    "feat.daggerheart-ancestry-emberkin-ignition"
+  ]
+}

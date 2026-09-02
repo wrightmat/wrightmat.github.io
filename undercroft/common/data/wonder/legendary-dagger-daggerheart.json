@@ -1,0 +1,22 @@
+{
+  "index": "legendary-dagger",
+  "name": "Legendary Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 10,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

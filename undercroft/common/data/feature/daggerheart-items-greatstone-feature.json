@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-greatstone-feature",
+  "name": "feat.daggerheart-items-greatstone-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can attach this stone to a weapon that doesn't already have a feature. The weapon gains the following feature: Powerful: On a successful attack, roll an additional damage die and discard the lowest result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can attach this stone to a weapon that doesn't already have a feature. The weapon gains the following feature: Powerful: On a successful attack, roll an additional damage die and discard the lowest result."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

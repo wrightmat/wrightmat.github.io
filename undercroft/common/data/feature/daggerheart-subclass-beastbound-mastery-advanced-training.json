@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-beastbound-mastery-advanced-training",
+  "name": "Mastery: Advanced Training",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Choose two additional level-up options for your companion.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose two additional level-up options for your companion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

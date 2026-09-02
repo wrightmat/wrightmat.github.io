@@ -1,0 +1,29 @@
+{
+  "index": "advanced-halberd",
+  "name": "Advanced Halberd",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Very Close",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 8,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Cumbersome",
+      "description": "-1 to Finesse"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-cumbersome"
+  ]
+}

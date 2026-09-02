@@ -11,12 +11,41 @@
   "properties": {
     "form": "spell"
   },
-  "featureIds": [
-    "feat.random-effect"
-  ],
-  "featureParams": {
-    "feat.random-effect": {
-      "optionCount": 8
-    }
+  "featureIds": [],
+  "featureParams": {},
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

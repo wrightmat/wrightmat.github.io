@@ -1,0 +1,29 @@
+{
+  "index": "advanced-small-dagger",
+  "name": "Advanced Small Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Paired",
+      "description": "+4 to primary weapon damage to targets within Melee range"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-paired"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-i-am-your-shield",
+  "name": "I Am Your Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an ally within Very Close range would take damage, you can mark a Stress to stand in the way and make yourself the target of the attack instead. When you take damage from this attack, you can mark any number of Armor Slots.",
+  "mechanics": {
+    "type": "active",
+    "text": "When an ally within Very Close range would take damage, you can mark a Stress to stand in the way and make yourself the target of the attack instead. When you take damage from this attack, you can mark any number of Armor Slots."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 1,
+  "recallCost": 1
+}

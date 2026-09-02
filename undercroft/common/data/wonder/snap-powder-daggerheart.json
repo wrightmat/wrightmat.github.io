@@ -1,0 +1,19 @@
+{
+  "index": "snap-powder",
+  "name": "Snap Powder",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Mark a Stress and clear a HP."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-snap-powder-feature"
+  ]
+}

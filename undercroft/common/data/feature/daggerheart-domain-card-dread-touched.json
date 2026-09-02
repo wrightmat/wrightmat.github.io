@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-dread-touched",
+  "name": "Dread-Touched",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When 4 or more of the domain cards in your loadout are from the Dread domain, gain the following benefits:\n\n- When you succeed with Fear, you can mark 2 Stress to prevent the GM from gaining a Fear.\n- Once per rest, when making an action roll, you can add a +1 bonus to the roll for each Fear token the GM has stored.",
+  "mechanics": {
+    "type": "active",
+    "text": "When 4 or more of the domain cards in your loadout are from the Dread domain, gain the following benefits:\n\n- When you succeed with Fear, you can mark 2 Stress to prevent the GM from gaining a Fear.\n- Once per rest, when making an action roll, you can add a +1 bonus to the roll for each Fear token the GM has stored."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Dread",
+  "level": 7,
+  "recallCost": 2
+}

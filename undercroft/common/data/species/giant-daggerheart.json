@@ -29,5 +29,20 @@
       "Almora"
     ],
     "lastNames": []
-  }
+  },
+  "index": "giant",
+  "features": [
+    {
+      "name": "Endurance",
+      "description": "Gain an additional Hit Point slot at character creation."
+    },
+    {
+      "name": "Reach",
+      "description": "Treat any weapon, ability, spell, or other feature that has a Melee range as though it has a Very Close range instead."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-giant-endurance",
+    "feat.daggerheart-ancestry-giant-reach"
+  ]
 }

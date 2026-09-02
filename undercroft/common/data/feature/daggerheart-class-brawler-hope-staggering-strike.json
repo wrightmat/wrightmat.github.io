@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-brawler-hope-staggering-strike",
+  "name": "Staggering Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope when you succeed on an attack to temporarily Stagger your target and force them to mark a Stress. While Staggered, they have disadvantage on attack rolls.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend 3 Hope when you succeed on an attack to temporarily Stagger your target and force them to mark a Stress. While Staggered, they have disadvantage on attack rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

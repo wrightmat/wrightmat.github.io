@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-lead-by-example",
+  "name": "Lead by Example",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you deal damage to an adversary, you can mark a Stress and describe how you encourage your allies. The next PC to make an attack against that adversary can clear a Stress or gain a Hope.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you deal damage to an adversary, you can mark a Stress and describe how you encourage your allies. The next PC to make an attack against that adversary can clear a Stress or gain a Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 9,
+  "recallCost": 3
+}

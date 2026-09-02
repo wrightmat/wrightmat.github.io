@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-minor-health-potion-feature",
+  "name": "feat.daggerheart-consumables-minor-health-potion-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Clear 1d4 HP.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Clear 1d4 HP."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

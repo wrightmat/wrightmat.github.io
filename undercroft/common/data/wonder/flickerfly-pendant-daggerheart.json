@@ -1,0 +1,19 @@
+{
+  "index": "flickerfly-pendant",
+  "name": "Flickerfly Pendant",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "While you carry this pendant, your weapons with a melee range that deal physical damage have a gossamer sheen and can attack targets within Very Close range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-flickerfly-pendant-feature"
+  ]
+}

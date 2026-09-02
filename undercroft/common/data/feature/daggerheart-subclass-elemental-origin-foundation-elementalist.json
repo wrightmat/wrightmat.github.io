@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-elemental-origin-foundation-elementalist",
+  "name": "Foundation: Elementalist",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Choose one of the following elements at character creation: Air, Earth, Fire, Lightning, or Water. You can shape this element into harmless effects. Additionally, spend a Hope and describe how your control over this element helps an action roll you're about to make, then either gain a +2 bonus to the roll or a +3 bonus to the roll's damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose one of the following elements at character creation: Air, Earth, Fire, Lightning, or Water. You can shape this element into harmless effects. Additionally, spend a Hope and describe how your control over this element helps an action roll you're about to make, then either gain a +2 bonus to the roll or a +3 bonus to the roll's damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

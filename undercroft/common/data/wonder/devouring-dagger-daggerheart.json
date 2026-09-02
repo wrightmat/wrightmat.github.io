@@ -1,0 +1,29 @@
+{
+  "index": "devouring-dagger",
+  "name": "Devouring Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 4,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Scary",
+      "description": "On a successful attack, the target must mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-scary"
+  ]
+}

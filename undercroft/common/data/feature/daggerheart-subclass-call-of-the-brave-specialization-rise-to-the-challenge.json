@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-call-of-the-brave-specialization-rise-to-the-challenge",
+  "name": "Specialization: Rise to the Challenge",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You are vigilant in the face of mounting danger. While you have 2 or fewer Hit Points unmarked, you can roll a d20 as your Hope Die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You are vigilant in the face of mounting danger. While you have 2 or fewer Hit Points unmarked, you can roll a d20 as your Hope Die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

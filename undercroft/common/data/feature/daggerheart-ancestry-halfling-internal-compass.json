@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-halfling-internal-compass",
+  "name": "Internal Compass",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you roll a 1 on your Hope Die, you can reroll it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll a 1 on your Hope Die, you can reroll it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-skykin-eye-of-the-storm",
+  "name": "Eye of the Storm",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 2 Hope to grant a +1 bonus to either your or an ally's Evasion until you next take Severe damage or you use Eye of the Storm again.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend 2 Hope to grant a +1 bonus to either your or an ally's Evasion until you next take Severe damage or you use Eye of the Storm again."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

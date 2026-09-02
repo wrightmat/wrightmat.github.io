@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-infernis-dread-visage",
+  "name": "Dread Visage",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on rolls to intimidate hostile creatures.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on rolls to intimidate hostile creatures."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

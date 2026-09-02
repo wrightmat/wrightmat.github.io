@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-divine-wielder-foundation-spirit-weapon",
+  "name": "Foundation: Spirit Weapon",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you have an equipped weapon with a range of Melee or Very Close, it can fly from your hand to attack an adversary within Close range and then return to you. You can mark a Stress to target an additional adversary within range with the same attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you have an equipped weapon with a range of Melee or Very Close, it can fly from your hand to attack an adversary within Close range and then return to you. You can mark a Stress to target an additional adversary within range with the same attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

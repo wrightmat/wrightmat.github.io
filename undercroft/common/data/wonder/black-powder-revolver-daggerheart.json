@@ -1,0 +1,29 @@
+{
+  "index": "black-powder-revolver",
+  "name": "Black Powder Revolver",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 8,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Reloading",
+      "description": "After you make an attack, roll a d6. On a result of 1, you must mark a Stress to reload this weapon before you can fire it again."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reloading"
+  ]
+}

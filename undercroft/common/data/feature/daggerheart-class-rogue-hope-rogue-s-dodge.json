@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-rogue-hope-rogue-s-dodge",
+  "name": "Rogue's Dodge",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope to gain a +2 bonus to your Evasion until the next time an attack succeeds against you. Otherwise, this bonus lasts until your next rest.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend 3 Hope to gain a +2 bonus to your Evasion until the next time an attack succeeds against you. Otherwise, this bonus lasts until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

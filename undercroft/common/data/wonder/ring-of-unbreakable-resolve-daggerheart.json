@@ -1,0 +1,19 @@
+{
+  "index": "ring-of-unbreakable-resolve",
+  "name": "Ring of Unbreakable Resolve",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per session, when the GM spends a Fear, you can spend 4 Hope to cancel the effects of that spent Fear."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-ring-of-unbreakable-resolve-feature"
+  ]
+}

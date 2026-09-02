@@ -1,0 +1,23 @@
+{
+  "index": "elundrian-chain-armor",
+  "name": "Elundrian Chain Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 2
+  },
+  "baseMajorThreshold": 9,
+  "baseSevereThreshold": 21,
+  "baseScore": 4,
+  "features": [
+    {
+      "name": "Warded",
+      "description": "You reduce incoming magic damage by your Armor Score before applying it to your damage thresholds."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-elundrian-chain-armor-warded"
+  ]
+}

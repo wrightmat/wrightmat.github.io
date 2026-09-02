@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-juggernaut-foundation-overwhelm",
+  "name": "Foundation: Overwhelm",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, you can spend a Hope to force the target to mark a Stress or to throw them within Close range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, you can spend a Hope to force the target to mark a Stress or to throw them within Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,29 @@
+{
+  "index": "advanced-broadsword",
+  "name": "Advanced Broadsword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Reliable",
+      "description": "+1 to attack rolls"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reliable"
+  ]
+}

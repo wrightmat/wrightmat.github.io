@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-copycat-feature",
+  "name": "feat.daggerheart-domain-card-copycat-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, this card can mimic the features of another domain card of level 8 or lower in another player's loadout. Spend Hope equal to half the card's level to gain access to the feature. It lasts until your next rest or they place the card in their vault.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per long rest, this card can mimic the features of another domain card of level 8 or lower in another player's loadout. Spend Hope equal to half the card's level to gain access to the feature. It lasts until your next rest or they place the card in their vault."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

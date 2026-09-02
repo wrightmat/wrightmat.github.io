@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-warlock-warlock-patron",
+  "name": "Warlock Patron",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have committed yourself to a patron (god, demon, fae, or other supernatural entity) in exchange for power. Write their name above. Then choose their spheres of influence, at GM discretion (Nature & Mischief, Love & War, Knowledge & Shadow, etc.), record them below, and set their values to +2. Anytime you increase your tier, these spheres of influence gain a permanent +1 bonus. Before making an action roll that relates to one of your patron's spheres of influence, you can spend a Favor to call on them and add its value to the roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have committed yourself to a patron (god, demon, fae, or other supernatural entity) in exchange for power. Write their name above. Then choose their spheres of influence, at GM discretion (Nature & Mischief, Love & War, Knowledge & Shadow, etc.), record them below, and set their values to +2. Anytime you increase your tier, these spheres of influence gain a permanent +1 bonus. Before making an action roll that relates to one of your patron's spheres of influence, you can spend a Favor to call on them and add its value to the roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

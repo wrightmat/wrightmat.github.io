@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-blade-touched",
+  "name": "Blade-Touched",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When 4 or more of the domain cards in your loadout are from the Blade domain, gain the following benefits:\n\n- +2 bonus to your attack rolls\n- +4 bonus to your Severe damage threshold",
+  "mechanics": {
+    "type": "active",
+    "text": "When 4 or more of the domain cards in your loadout are from the Blade domain, gain the following benefits:\n\n- +2 bonus to your attack rolls\n- +4 bonus to your Severe damage threshold"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 7,
+  "recallCost": 1
+}

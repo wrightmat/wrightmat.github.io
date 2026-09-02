@@ -1,0 +1,29 @@
+{
+  "index": "scepter-of-elias",
+  "name": "Scepter of Elias",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Presence",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 3,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Invigorating",
+      "description": "On a successful attack, roll a d4. On a result of 4 clear a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-scepter-of-elias-invigorating"
+  ]
+}

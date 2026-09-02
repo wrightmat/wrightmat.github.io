@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-rosewild-armor-hopeful",
+  "name": "Hopeful",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you would spend a Hope, you can mark an Armor Slot instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you would spend a Hope, you can mark an Armor Slot instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

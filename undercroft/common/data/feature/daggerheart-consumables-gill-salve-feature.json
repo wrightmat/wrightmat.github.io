@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-gill-salve-feature",
+  "name": "feat.daggerheart-consumables-gill-salve-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can apply this salve to your neck to breathe underwater for a number of minutes equal to your level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can apply this salve to your neck to breathe underwater for a number of minutes equal to your level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

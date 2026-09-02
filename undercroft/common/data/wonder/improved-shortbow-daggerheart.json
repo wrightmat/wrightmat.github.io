@@ -1,0 +1,22 @@
+{
+  "index": "improved-shortbow",
+  "name": "Improved Shortbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Agility",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

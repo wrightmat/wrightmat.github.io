@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-knuckle-claws-doubled-up",
+  "name": "Doubled Up",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make an attack with your primary weapon, you can deal damage to another target within Melee range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you make an attack with your primary weapon, you can deal damage to another target within Melee range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

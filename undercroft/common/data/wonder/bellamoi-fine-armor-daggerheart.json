@@ -1,0 +1,23 @@
+{
+  "index": "bellamoi-fine-armor",
+  "name": "Bellamoi Fine Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 11,
+  "baseSevereThreshold": 27,
+  "baseScore": 5,
+  "features": [
+    {
+      "name": "Gilded",
+      "description": "+1 to Presence"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-bellamoi-fine-armor-gilded"
+  ]
+}

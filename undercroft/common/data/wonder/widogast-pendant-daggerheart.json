@@ -1,0 +1,29 @@
+{
+  "index": "widogast-pendant",
+  "name": "Widogast Pendant",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 3,
+    "trait": "Knowledge",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 5,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Timebending",
+      "description": "You choose the target of your attack after making your attack roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-widogast-pendant-timebending"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-never-upstaged",
+  "name": "Never Upstaged",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you mark 1 or more Hit Points from an attack, you can mark a Stress to place a number of tokens equal to the number of Hit Points you marked on this card. On your next successful attack, gain a +5 bonus to your damage roll for each token on this card, then clear all tokens.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you mark 1 or more Hit Points from an attack, you can mark a Stress to place a number of tokens equal to the number of Hit Points you marked on this card. On your next successful attack, gain a +5 bonus to your damage roll for each token on this card, then clear all tokens."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Grace",
+  "level": 6,
+  "recallCost": 2
+}

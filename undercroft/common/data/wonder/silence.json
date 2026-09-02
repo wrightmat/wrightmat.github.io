@@ -21,5 +21,34 @@
     "feat.damage-modification": {
       "damageType": "thunder"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-hedge-mastery-circle-of-power",
+  "name": "Mastery: Circle of Power",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, mark a circle on the ground around you up to Very Close range and place a number of tokens equal to your Spellcast Trait on this card. Each time you or any ally within the circle makes an action roll or is hit with an attack, remove a token. This spell lasts until the last token is removed or you step out of the circle. While within this circle, you and any allies:\n\n- Gain a +4 bonus to your damage thresholds.\n- Gain a +2 bonus to your attack rolls.\n- Gain a +1 bonus to your Evasion.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per rest, mark a circle on the ground around you up to Very Close range and place a number of tokens equal to your Spellcast Trait on this card. Each time you or any ally within the circle makes an action roll or is hit with an attack, remove a token. This spell lasts until the last token is removed or you step out of the circle. While within this circle, you and any allies:\n\n- Gain a +4 bonus to your damage thresholds.\n- Gain a +2 bonus to your attack rolls.\n- Gain a +1 bonus to your Evasion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,19 @@
+{
+  "index": "manacles",
+  "name": "Manacles",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "This pair of locking cuffs comes with a key."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-manacles-feature"
+  ]
+}

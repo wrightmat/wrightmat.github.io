@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-katari-retracting-claws",
+  "name": "Retracting Claws",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make an Agility Roll to scratch a target within Melee range. On a success, they become temporarily Vulnerable.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Make an Agility Roll to scratch a target within Melee range. On a success, they become temporarily Vulnerable."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,19 @@
+{
+  "index": "dripfang-poison",
+  "name": "Dripfang Poison",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "A creature who consumes this poison takes 8d10 direct magic damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-dripfang-poison-feature"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "index": "channelstone",
+  "name": "Channelstone",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can use this stone to take a spell or grimoire from your vault, use it once, and return it to your vault."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-channelstone-feature"
+  ]
+}

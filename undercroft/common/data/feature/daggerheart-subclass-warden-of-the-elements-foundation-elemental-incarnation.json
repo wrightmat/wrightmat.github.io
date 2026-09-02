@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-warden-of-the-elements-foundation-elemental-incarnation",
+  "name": "Foundation: Elemental Incarnation",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to Channel one of the following elements until you take Severe damage or until your next rest:\n\n- Fire: When an adversary within Melee range deals damage to you, they take 1d10 magic damage.\n- Earth: Gain a bonus to your damage thresholds equal to your Proficiency.\n- Water: When you deal damage to an adversary within Melee range, all other adversaries within Very Close range must mark a Stress.\n- Air: You can hover, gaining advantage on Agility Rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to Channel one of the following elements until you take Severe damage or until your next rest:\n\n- Fire: When an adversary within Melee range deals damage to you, they take 1d10 magic damage.\n- Earth: Gain a bonus to your damage thresholds equal to your Proficiency.\n- Water: When you deal damage to an adversary within Melee range, all other adversaries within Very Close range must mark a Stress.\n- Air: You can hover, gaining advantage on Agility Rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,23 @@
+{
+  "index": "bladefare-armor",
+  "name": "Bladefare Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 16,
+  "baseSevereThreshold": 39,
+  "baseScore": 6,
+  "features": [
+    {
+      "name": "Physical",
+      "description": "You can't mark an Armor Slot to reduce magic damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-bladefare-armor-physical"
+  ]
+}

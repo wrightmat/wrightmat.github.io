@@ -25,5 +25,35 @@
     "feat.temporary-hit-points": {
       "dice": "2d6"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

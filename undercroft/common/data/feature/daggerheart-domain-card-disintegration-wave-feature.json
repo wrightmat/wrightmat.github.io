@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-disintegration-wave-feature",
+  "name": "feat.daggerheart-domain-card-disintegration-wave-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll (18). Once per long rest on a success, the GM tells you which adversaries within Far range have a Difficulty of 18 or lower. Mark a Stress for each one you wish to hit with this spell. They are killed and can't come back to life by any means.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll (18). Once per long rest on a success, the GM tells you which adversaries within Far range have a Difficulty of 18 or lower. Mark a Stress for each one you wish to hit with this spell. They are killed and can't come back to life by any means."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

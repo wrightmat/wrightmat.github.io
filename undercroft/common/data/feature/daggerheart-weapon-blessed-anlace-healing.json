@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-blessed-anlace-healing",
+  "name": "Healing",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During downtime, automatically clear a Hit Point.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During downtime, automatically clear a Hit Point."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-dunamis-silkchain-timeslowing",
+  "name": "Timeslowing",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark an Armor Slot to roll a d4 and add its result as a bonus to your Evasion against an incoming attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark an Armor Slot to roll a d4 and add its result as a bonus to your Evasion against an incoming attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

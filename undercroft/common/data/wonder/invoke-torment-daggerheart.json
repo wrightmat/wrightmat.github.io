@@ -1,0 +1,22 @@
+{
+  "index": "invoke-torment",
+  "name": "Invoke Torment",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 10,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Targets with all of their Stress marked take double damage from your attacks.\n\nAdditionally, when you defeat a creature with all of its Stress marked, you clear a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-invoke-torment-feature"
+  ]
+}

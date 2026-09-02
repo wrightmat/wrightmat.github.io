@@ -21,5 +21,15 @@
     "feat.damage-modification": {
       "damageType": "all"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

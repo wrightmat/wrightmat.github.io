@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-glyph-of-nightfall-feature",
+  "name": "feat.daggerheart-domain-card-glyph-of-nightfall-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll against a target within Very Close range. On a success, spend a Hope to conjure a dark glyph upon their body that exposes their weak points, temporarily reducing the target's Difficulty by a value equal to your Knowledge (minimum 1).",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll against a target within Very Close range. On a success, spend a Hope to conjure a dark glyph upon their body that exposes their weak points, temporarily reducing the target's Difficulty by a value equal to your Knowledge (minimum 1)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

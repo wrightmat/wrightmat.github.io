@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-bone-touched",
+  "name": "Bone-Touched",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When 4 or more of the domain cards in your loadout are from the Bone domain, gain the following benefits:\n\n- +1 bonus to Agility\n- Once per rest, you can spend 3 Hope to cause an attack that succeeded against you to fail instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "When 4 or more of the domain cards in your loadout are from the Bone domain, gain the following benefits:\n\n- +1 bonus to Agility\n- Once per rest, you can spend 3 Hope to cause an attack that succeeded against you to fail instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 7,
+  "recallCost": 2
+}

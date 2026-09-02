@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-mythic-dust-feature",
+  "name": "feat.daggerheart-consumables-mythic-dust-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can apply this dust to a weapon that deals magic damage to add a d12 to your next damage roll with that weapon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can apply this dust to a weapon that deals magic damage to add a d12 to your next damage roll with that weapon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

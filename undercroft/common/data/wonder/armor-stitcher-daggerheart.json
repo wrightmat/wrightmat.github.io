@@ -1,0 +1,19 @@
+{
+  "index": "armor-stitcher",
+  "name": "Armor Stitcher",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can use this stitcher to spend any number of Hope and clear that many Armor Slots."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-armor-stitcher-feature"
+  ]
+}

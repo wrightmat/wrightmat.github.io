@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-alistair-s-torch-feature",
+  "name": "feat.daggerheart-items-alistair-s-torch-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can light this magic torch at will. The flame's light fills a much larger space than it should, enough to illuminate a cave bright as day.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can light this magic torch at will. The flame's light fills a much larger space than it should, enough to illuminate a cave bright as day."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -21,5 +21,20 @@
     "feat.damage-modification": {
       "damageType": "one"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "fiend",
+        "name": "Fiend"
+      }
+    ]
   }
 }

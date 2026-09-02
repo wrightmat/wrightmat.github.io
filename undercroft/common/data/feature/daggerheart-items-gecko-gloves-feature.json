@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-gecko-gloves-feature",
+  "name": "feat.daggerheart-items-gecko-gloves-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can climb up vertical surfaces and across ceilings.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can climb up vertical surfaces and across ceilings."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

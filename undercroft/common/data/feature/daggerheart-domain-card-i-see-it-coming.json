@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-i-see-it-coming",
+  "name": "I See It Coming",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you're targeted by an attack made from beyond Melee range, you can mark a Stress to roll a d4 and gain a bonus to your Evasion equal to the result against the attack.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you're targeted by an attack made from beyond Melee range, you can mark a Stress to roll a d4 and gain a bonus to your Evasion equal to the result against the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 1,
+  "recallCost": 1
+}

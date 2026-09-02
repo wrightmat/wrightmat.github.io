@@ -32,5 +32,20 @@
   },
   "featureTiers": {
     "feat.healing": "tier-3"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

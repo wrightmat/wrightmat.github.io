@@ -1,0 +1,29 @@
+{
+  "index": "improved-returning-blade",
+  "name": "Improved Returning Blade",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Finesse",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 3,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Returning",
+      "description": "When this weapon is thrown within its range, it appears in your hand immediately after the attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-returning"
+  ]
+}

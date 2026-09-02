@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-inspirational-words",
+  "name": "Inspirational Words",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your speech is imbued with power. After a long rest, place a number of tokens on this card equal to your Presence. When you speak with an ally, you can spend a token from this card to give them one benefit from the following options:\n\n- Your ally clears a Stress.\n- Your ally clears a Hit Point.\n- Your ally gains a Hope.\n\nWhen you take a long rest, clear all unspent tokens.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your speech is imbued with power. After a long rest, place a number of tokens on this card equal to your Presence. When you speak with an ally, you can spend a token from this card to give them one benefit from the following options:\n\n- Your ally clears a Stress.\n- Your ally clears a Hit Point.\n- Your ally gains a Hope.\n\nWhen you take a long rest, clear all unspent tokens."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Grace",
+  "level": 1,
+  "recallCost": 1
+}

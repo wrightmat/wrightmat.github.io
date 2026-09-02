@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-cruel-precision",
+  "name": "Cruel Precision",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make a successful attack with a weapon, gain a bonus to your damage roll equal to either your Finesse or Agility.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you make a successful attack with a weapon, gain a bonus to your damage roll equal to either your Finesse or Agility."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 7,
+  "recallCost": 1
+}

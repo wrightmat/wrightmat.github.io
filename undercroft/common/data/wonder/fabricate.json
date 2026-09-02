@@ -18,5 +18,15 @@
     "feat.resource-production": {
       "resourceText": "a crafted object made from raw materials on hand"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

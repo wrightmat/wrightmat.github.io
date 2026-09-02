@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-community-orderborne-dedicated",
+  "name": "Dedicated",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Record three sayings or values your upbringing instilled in you. Once per rest, when you describe how you're embodying one of these principles through your current action, you can roll a d20 as your Hope Die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Record three sayings or values your upbringing instilled in you. Once per rest, when you describe how you're embodying one of these principles through your current action, you can roll a d20 as your Hope Die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

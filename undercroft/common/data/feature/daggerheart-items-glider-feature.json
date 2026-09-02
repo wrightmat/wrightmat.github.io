@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-glider-feature",
+  "name": "feat.daggerheart-items-glider-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While falling, you can mark a Stress to deploy this small parachute and glide safely to the ground.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While falling, you can mark a Stress to deploy this small parachute and glide safely to the ground."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

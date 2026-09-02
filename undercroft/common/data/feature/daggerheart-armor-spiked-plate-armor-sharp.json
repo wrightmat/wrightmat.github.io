@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-spiked-plate-armor-sharp",
+  "name": "Sharp",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack against a target within Melee range, add a d4 to the damage roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack against a target within Melee range, add a d4 to the damage roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-wrathful-mastery-divine-ire",
+  "name": "Mastery: Divine Ire",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, when you take damage, you can spend any number of Favor to target that many adversaries within Close range. Each target must mark a Hit Point.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per rest, when you take damage, you can spend any number of Favor to target that many adversaries within Close range. Each target must mark a Hit Point."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

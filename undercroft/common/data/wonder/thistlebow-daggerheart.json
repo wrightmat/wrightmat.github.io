@@ -1,0 +1,29 @@
+{
+  "index": "thistlebow",
+  "name": "Thistlebow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Instinct",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 13,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Reliable",
+      "description": "+1 to attack rolls"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-reliable"
+  ]
+}

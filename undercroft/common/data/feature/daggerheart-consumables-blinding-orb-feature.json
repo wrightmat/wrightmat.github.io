@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-blinding-orb-feature",
+  "name": "feat.daggerheart-consumables-blinding-orb-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can activate this orb to create a flash of bright light. All targets within Close range become Vulnerable until they mark HP.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can activate this orb to create a flash of bright light. All targets within Close range become Vulnerable until they mark HP."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

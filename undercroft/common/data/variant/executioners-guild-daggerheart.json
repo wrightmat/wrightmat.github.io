@@ -1,0 +1,49 @@
+{
+  "index": "executioners-guild",
+  "name": "Executioners Guild",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "assassin-daggerheart",
+  "class": "Assassin",
+  "domains": [
+    "Blade",
+    "Midnight"
+  ],
+  "spellcastTrait": "Agility",
+  "features": [
+    {
+      "name": "Foundation: First Strike",
+      "description": "The first time in a scene you succeed on an attack roll, double the damage of the attack."
+    },
+    {
+      "name": "Foundation: Ambush",
+      "description": "Your Marked for Death feature uses d6s instead of d4s."
+    },
+    {
+      "name": "Specialization: Death Strike",
+      "description": "When you deal Severe damage to a creature, you can mark a Stress to make them mark an additional Hit Point."
+    },
+    {
+      "name": "Specialization: Scorpion's Poise",
+      "description": "You gain a +2 bonus to your Evasion against any attacks made by a creature Marked for Death."
+    },
+    {
+      "name": "Mastery: True Strike",
+      "description": "Once per long rest, when you fail an attack roll, you can spend a Hope to make it a success instead."
+    },
+    {
+      "name": "Mastery: Backstab",
+      "description": "Your Marked for Death feature uses d8s instead of d6s."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-executioners-guild-foundation-first-strike",
+    "feat.daggerheart-subclass-executioners-guild-foundation-ambush",
+    "feat.daggerheart-subclass-executioners-guild-specialization-death-strike",
+    "feat.daggerheart-subclass-executioners-guild-specialization-scorpion-s-poise",
+    "feat.daggerheart-subclass-executioners-guild-mastery-true-strike",
+    "feat.daggerheart-subclass-executioners-guild-mastery-backstab"
+  ]
+}

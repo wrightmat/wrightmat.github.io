@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-assassin-get-in-get-out",
+  "name": "Get In & Get Out",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend a Hope to ask the GM for either a quick or inconspicuous way into or out of a building or structure you can see. The next roll you make that capitalizes on this information has advantage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend a Hope to ask the GM for either a quick or inconspicuous way into or out of a building or structure you can see. The next roll you make that capitalizes on this information has advantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

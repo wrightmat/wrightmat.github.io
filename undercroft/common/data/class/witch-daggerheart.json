@@ -1,0 +1,38 @@
+{
+  "index": "witch",
+  "name": "Witch",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Magical practitioners who commune with the forces of nature and entities from realms beyond. Witches call forth their power through craft, rituals, incantations, herbs, stones, candles, and other tools to enact their will and conjure powerful spells.",
+  "domains": [
+    "Dread",
+    "Sage"
+  ],
+  "evasion": 10,
+  "hp": 6,
+  "classItems": [
+    "A handcrafted besom",
+    "A pouch of animal bones you found in the wild"
+  ],
+  "hopeFeature": {
+    "name": "Witch's Charm",
+    "description": "When you or an ally within Far range rolls a failure on an action roll, you can spend 3 Hope to change it into a success with Fear instead."
+  },
+  "hopeFeatureId": "feat.daggerheart-class-witch-hope-witch-s-charm",
+  "features": [
+    {
+      "name": "Hex",
+      "description": "When a creature causes you or an ally within Close range to mark any number of Hit Points, you can mark a Stress to Hex them. Action and damage rolls against a Hexed creature gain a bonus equal to your tier. This condition lasts until the GM spends a number of Fear equal to your Spellcast trait to remove it or you Hex another creature. Otherwise, remove it when the scene ends."
+    },
+    {
+      "name": "Commune",
+      "description": "Once per long rest, during a moment of calm, you can commune with an ancestor, deity, nature spirit, or otherworldly being. Ask them a question, then roll a number of d6s equal to your Spellcast trait. Choose one value from the rolled results and reference the chart below for the effect:\n\n- 1-3: You taste a flavor, smell a scent, or feel a sensation relevant to the answer.\n- 4-5: You hear sounds or see a vision relevant to the answer.\n- 6: You psychically experience a scene relevant to the answer as if you were there."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-class-witch-hex",
+    "feat.daggerheart-class-witch-commune"
+  ],
+  "subclasses": []
+}

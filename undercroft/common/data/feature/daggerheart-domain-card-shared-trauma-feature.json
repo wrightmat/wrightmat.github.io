@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-shared-trauma-feature",
+  "name": "feat.daggerheart-domain-card-shared-trauma-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can transfer suffering from one creature to another. Once per rest, mark any number of Hit Points on a willing creature within Melee range to clear an equal number of Hit Points on another willing creature within Melee range. You can choose yourself in place of either creature.",
+  "mechanics": {
+    "type": "active",
+    "text": "You can transfer suffering from one creature to another. Once per rest, mark any number of Hit Points on a willing creature within Melee range to clear an equal number of Hit Points on another willing creature within Melee range. You can choose yourself in place of either creature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

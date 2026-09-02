@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-sword-of-light-flame-hot",
+  "name": "Hot",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This weapon cuts through solid material.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This weapon cuts through solid material."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

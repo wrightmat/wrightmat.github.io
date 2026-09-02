@@ -1,0 +1,29 @@
+{
+  "index": "primer-shard",
+  "name": "Primer Shard",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Instinct",
+    "range": "Very Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D4",
+    "modifier": 0,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Locked On",
+      "description": "On a successful attack, your next attack against the same target automatically succeeds."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-primer-shard-locked-on"
+  ]
+}

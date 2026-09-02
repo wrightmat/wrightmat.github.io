@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-on-the-brink",
+  "name": "On the Brink",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you have 2 or fewer Hit Points unmarked, you don't take Minor damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you have 2 or fewer Hit Points unmarked, you don't take Minor damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 9,
+  "recallCost": 1
+}

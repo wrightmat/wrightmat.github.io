@@ -29,5 +29,20 @@
       "Tovin"
     ],
     "lastNames": []
-  }
+  },
+  "index": "goblin",
+  "features": [
+    {
+      "name": "Surefooted",
+      "description": "You ignore disadvantage on Agility Rolls."
+    },
+    {
+      "name": "Danger Sense",
+      "description": "Once per rest, mark a Stress to force an adversary to reroll an attack against you or an ally within Very Close range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-goblin-surefooted",
+    "feat.daggerheart-ancestry-goblin-danger-sense"
+  ]
 }

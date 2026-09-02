@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-corrector-sprite-feature",
+  "name": "feat.daggerheart-items-corrector-sprite-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "This tiny sprite sits in the curve of your ear canal and whispers helpful advice during combat. Once per short rest, you can gain advantage on an attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "This tiny sprite sits in the curve of your ear canal and whispers helpful advice during combat. Once per short rest, you can gain advantage on an attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

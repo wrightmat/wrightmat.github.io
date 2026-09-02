@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-wrangle",
+  "name": "Wrangle",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make an Agility Roll against all targets within Close range. Spend a Hope to move targets you succeed against, and any willing allies within Close range, to another point within Close range.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make an Agility Roll against all targets within Close range. Spend a Hope to move targets you succeed against, and any willing allies within Close range, to another point within Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 8,
+  "recallCost": 1
+}

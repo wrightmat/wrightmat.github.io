@@ -1,0 +1,19 @@
+{
+  "index": "enlighten-potion",
+  "name": "Enlighten Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You gain a +1 bonus to your next Knowledge Roll."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-enlighten-potion-feature"
+  ]
+}

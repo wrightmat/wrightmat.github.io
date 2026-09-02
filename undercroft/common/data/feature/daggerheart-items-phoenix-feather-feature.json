@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-phoenix-feather-feature",
+  "name": "feat.daggerheart-items-phoenix-feather-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "If you have at least one Phoenix Feather on you when you fall unconscious, you gain a +1 bonus to the roll you make to determine whether you gain a scar.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If you have at least one Phoenix Feather on you when you fall unconscious, you gain a +1 bonus to the roll you make to determine whether you gain a scar."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

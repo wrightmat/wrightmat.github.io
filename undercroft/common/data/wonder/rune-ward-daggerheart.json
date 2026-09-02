@@ -1,0 +1,22 @@
+{
+  "index": "rune-ward",
+  "name": "Rune Ward",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Arcana",
+    "level": 1,
+    "recallCost": 0
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You have a deeply personal trinket that can be infused with protective magic and held as a ward by you or an ally. Describe what it is and why it's important to you. The ward's holder can spend a Hope to reduce incoming damage by 1d8.\n\nIf the Ward Die result is 8, the ward's power ends after it reduces damage this turn. It can be recharged for free on your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-rune-ward-feature"
+  ]
+}

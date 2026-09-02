@@ -1,0 +1,22 @@
+{
+  "index": "blighting-strike",
+  "name": "Blighting Strike",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 1,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against a target within Far range. On a success, the target takes d6+1 magic damage using your Proficiency and the next time the target deals damage to an ally, it is reduced by half. If you succeed with Fear, the target instead takes d10+1 magic damage using your Proficiency."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-blighting-strike-feature"
+  ]
+}

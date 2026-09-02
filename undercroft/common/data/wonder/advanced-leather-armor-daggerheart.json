@@ -1,0 +1,16 @@
+{
+  "index": "advanced-leather-armor",
+  "name": "Advanced Leather Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 11,
+  "baseSevereThreshold": 27,
+  "baseScore": 5,
+  "features": [],
+  "featureIds": []
+}

@@ -1,0 +1,22 @@
+{
+  "index": "legendary-shortbow",
+  "name": "Legendary Shortbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Agility",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 12,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

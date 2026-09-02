@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-moon-mastery-lunar-phases",
+  "name": "Mastery: Lunar Phases",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your spirit ebbs and flows like the phases of the moon. At the beginning of each session, roll a d4 and gain the matching effect until the end of the session:\n\n- 1: New - You can always spend a Hope to reduce Minor damage to None.\n- 2: Waxing - Gain a +2 bonus to your damage rolls.\n- 3: Full - Gain a +2 bonus to your damage thresholds.\n- 4: Waning - Gain a +1 bonus to your Evasion.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your spirit ebbs and flows like the phases of the moon. At the beginning of each session, roll a d4 and gain the matching effect until the end of the session:\n\n- 1: New - You can always spend a Hope to reduce Minor damage to None.\n- 2: Waxing - Gain a +2 bonus to your damage rolls.\n- 3: Full - Gain a +2 bonus to your damage thresholds.\n- 4: Waning - Gain a +1 bonus to your Evasion."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

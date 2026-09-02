@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-widogast-pendant-timebending",
+  "name": "Timebending",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You choose the target of your attack after making your attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You choose the target of your attack after making your attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

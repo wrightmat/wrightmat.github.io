@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-endless-mastery-draining-bane",
+  "name": "Mastery: Draining Bane",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an adversary attacks you or an ally within Very Close range, you can spend 2 Favor to temporarily Drain them. When you do, they must mark a Stress and you can clear a Stress. A Drained creature uses a d12 instead of a d20 for attack rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When an adversary attacks you or an ally within Very Close range, you can spend 2 Favor to temporarily Drain them. When you do, they must mark a Stress and you can clear a Stress. A Drained creature uses a d12 instead of a d20 for attack rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

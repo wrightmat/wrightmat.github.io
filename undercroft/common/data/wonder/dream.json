@@ -30,5 +30,30 @@
   },
   "featureTiers": {
     "feat.damage": "tier-4"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

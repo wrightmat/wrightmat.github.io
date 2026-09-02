@@ -1,0 +1,23 @@
+{
+  "index": "runetan-floating-armor",
+  "name": "Runetan Floating Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 2
+  },
+  "baseMajorThreshold": 9,
+  "baseSevereThreshold": 20,
+  "baseScore": 4,
+  "features": [
+    {
+      "name": "Shifting",
+      "description": "When you are targeted for an attack, you can mark an Armor Slot to give the attack roll against you disadvantage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-runetan-floating-armor-shifting"
+  ]
+}

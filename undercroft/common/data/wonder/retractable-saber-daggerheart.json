@@ -1,0 +1,29 @@
+{
+  "index": "retractable-saber",
+  "name": "Retractable Saber",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D10",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Retractable",
+      "description": "The blade can be hidden in the hilt to avoid detection."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-retractable-saber-retractable"
+  ]
+}

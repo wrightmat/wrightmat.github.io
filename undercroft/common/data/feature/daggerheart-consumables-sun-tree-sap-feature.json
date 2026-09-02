@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-sun-tree-sap-feature",
+  "name": "feat.daggerheart-consumables-sun-tree-sap-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Consume this sap to roll a d6. On a result of )–6, clear 2 HP. On a result of 2–(, clear ' Stress. On a result of/1, see through the veil of death and return changed, gaining one scar.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Consume this sap to roll a d6. On a result of )–6, clear 2 HP. On a result of 2–(, clear ' Stress. On a result of/1, see through the veil of death and return changed, gaining one scar."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

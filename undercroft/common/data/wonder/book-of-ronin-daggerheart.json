@@ -1,0 +1,30 @@
+{
+  "index": "book-of-ronin",
+  "name": "Book of Ronin",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Codex",
+    "level": 9,
+    "recallCost": 4
+  },
+  "featureIds": [
+    "feat.choice-of-effect"
+  ],
+  "featureParams": {
+    "feat.choice-of-effect": {
+      "options": [
+        {
+          "name": "Transform",
+          "text": "Make a Spellcast Roll (15). On a success, transform into an inanimate object no larger than twice your normal size. You can remain in this shape until you take damage."
+        },
+        {
+          "name": "Eternal Enervation",
+          "text": "Once per long rest, make a Spellcast Roll against a target within Close range. On a success, they become permanently Vulnerable. They can't clear this condition by any means."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "index": "advanced-dagger",
+  "name": "Advanced Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

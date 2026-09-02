@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-faun-kick",
+  "name": "Kick",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you succeed on an attack against a target within Melee range, you can mark a Stress to kick yourself off them, dealing an extra 2d6 damage and knocking back either yourself or the target to Very Close range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you succeed on an attack against a target within Melee range, you can mark a Stress to kick yourself off them, dealing an extra 2d6 damage and knocking back either yourself or the target to Very Close range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

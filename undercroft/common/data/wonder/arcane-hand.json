@@ -14,7 +14,7 @@
   "featureIds": [
     "feat.damage",
     "feat.forced-movement",
-    "feat.random-effect"
+    "feat.choice-of-effect"
   ],
   "featureParams": {
     "feat.damage": {
@@ -30,11 +30,21 @@
     "feat.forced-movement": {
       "distance": "5 feet plus 5x spellcasting ability modifier"
     },
-    "feat.random-effect": {
+    "feat.choice-of-effect": {
       "optionCount": 4
     }
   },
   "featureTiers": {
     "feat.damage": "tier-4"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

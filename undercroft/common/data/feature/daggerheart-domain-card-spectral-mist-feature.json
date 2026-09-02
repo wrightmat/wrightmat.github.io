@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-spectral-mist-feature",
+  "name": "feat.daggerheart-domain-card-spectral-mist-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to summon an eerie mist that turns you and any targets within Close range momentarily incorporeal. While a creature is incorporeal, they can move through solid objects and are immune to physical damage. A creature becomes corporeal again after they pass through a solid object or make an action roll. Otherwise, this effect drops at the end of the scene.",
+  "mechanics": {
+    "type": "active",
+    "text": "Mark a Stress to summon an eerie mist that turns you and any targets within Close range momentarily incorporeal. While a creature is incorporeal, they can move through solid objects and are immune to physical damage. A creature becomes corporeal again after they pass through a solid object or make an action roll. Otherwise, this effect drops at the end of the scene."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

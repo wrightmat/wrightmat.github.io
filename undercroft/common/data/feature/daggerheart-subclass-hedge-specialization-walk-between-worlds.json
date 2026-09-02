@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-hedge-specialization-walk-between-worlds",
+  "name": "Specialization: Walk Between Worlds",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll (13) to step beyond the veil of death and converse with any nearby spirits. Place a number of tokens equal to your Spellcast trait on this card and remove one each time a spirit answers a question. You return to the mortal realm when the last token is removed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Make a Spellcast Roll (13) to step beyond the veil of death and converse with any nearby spirits. Place a number of tokens equal to your Spellcast trait on this card and remove one each time a spirit answers a question. You return to the mortal realm when the last token is removed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-stalwart-mastery-loyal-protector",
+  "name": "Mastery: Loyal Protector",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an ally within Close range has 2 or fewer Hit Points and would take damage, you can mark a Stress to sprint to their side and take the damage instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When an ally within Close range has 2 or fewer Hit Points and would take damage, you can mark a Stress to sprint to their side and take the damage instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

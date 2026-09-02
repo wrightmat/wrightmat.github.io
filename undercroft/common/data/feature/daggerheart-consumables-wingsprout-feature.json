@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-wingsprout-feature",
+  "name": "feat.daggerheart-consumables-wingsprout-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You gain magic wings that allow you to fly for a number of minutes equal to your level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain magic wings that allow you to fly for a number of minutes equal to your level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

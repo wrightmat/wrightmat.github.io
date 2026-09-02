@@ -18,5 +18,25 @@
     "feat.detection": {
       "detects": "intruders entering the warded area"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

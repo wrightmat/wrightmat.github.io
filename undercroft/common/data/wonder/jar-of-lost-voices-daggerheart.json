@@ -1,0 +1,19 @@
+{
+  "index": "jar-of-lost-voices",
+  "name": "Jar of Lost Voices",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can open this jar to release a deafening echo of voices for a number of minutes equal to your Instinct. Creatures within Far range unprepared for the sound take 6d8 magic damage."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-jar-of-lost-voices-feature"
+  ]
+}

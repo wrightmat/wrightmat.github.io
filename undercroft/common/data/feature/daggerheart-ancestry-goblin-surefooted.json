@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-goblin-surefooted",
+  "name": "Surefooted",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You ignore disadvantage on Agility Rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You ignore disadvantage on Agility Rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

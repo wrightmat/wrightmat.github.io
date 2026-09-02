@@ -1,0 +1,22 @@
+{
+  "index": "wall-of-hunger",
+  "name": "Wall of Hunger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 7,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Succeed ona Spelleast Roll (13) to create a visible wall of writhing, necrotic energy ina line between two points within Far range that lasts until you mark a Hit Point or cast this spell again. Any creatures inside the wall when it appears or who try to pass through the wall must mark 2 Stress, then make a Reaction Roll (16). Ona failure, they are temporarily Restrained by the wall."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-wall-of-hunger-feature"
+  ]
+}

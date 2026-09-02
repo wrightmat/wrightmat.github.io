@@ -1,0 +1,18 @@
+{
+  "index": "frostborne",
+  "name": "Frostborne",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Being part of a frostborne community means you come from a place of snow and ice.",
+  "personalities": [],
+  "features": [
+    {
+      "name": "Hardy",
+      "description": "Once per rest, you can Help an Ally traverse difficult terrain without spending a Hope."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-community-frostborne-hardy"
+  ]
+}

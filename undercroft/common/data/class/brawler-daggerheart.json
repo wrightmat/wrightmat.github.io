@@ -1,0 +1,38 @@
+{
+  "index": "brawler",
+  "name": "Brawler",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Experts in unarmed combat, brawlers hone their bodies into lethal weapons using impressive physical prowess. Whether they learned in a structured school environment or picked up their skills one fight at a time, the process is always rigorous, with brawlers developing their body and mind to work as one.",
+  "domains": [
+    "Bone",
+    "Valor"
+  ],
+  "evasion": 10,
+  "hp": 6,
+  "classItems": [
+    "Hand wraps from a mentor",
+    "A book about your secret hobby"
+  ],
+  "hopeFeature": {
+    "name": "Staggering Strike",
+    "description": "Spend 3 Hope when you succeed on an attack to temporarily Stagger your target and force them to mark a Stress. While Staggered, they have disadvantage on attack rolls."
+  },
+  "hopeFeatureId": "feat.daggerheart-class-brawler-hope-staggering-strike",
+  "features": [
+    {
+      "name": "I Am the Weapon",
+      "description": "While you don't have any equipped weapons:\n\n- You gain a +1 bonus to Evasion.\n- Your unarmed strikes are considered a Melee weapon, use the trait of your choice, and deal d8+d6 phy damage using your Proficiency."
+    },
+    {
+      "name": "Combo Strikes",
+      "description": "After making a damage roll with a Melee weapon but before dealing that damage to the target, mark a Stress to start a combo strike. When you do, roll your Combo Die and note its value. Then, roll your Combo Die again. If the value of the second roll is equal to or greater than your first roll, continue rolling until the latest Combo Die's roll is less than the roll that preceeded it. Total all rolled values and add that amount to your weapon's damage. These values cannot be adjusted by features that affect damage dice.\n\nYour Combo Die starts as a d4. When you level up, once per tier you may use one of your advancement options to increase your Combo Die instead."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-class-brawler-i-am-the-weapon",
+    "feat.daggerheart-class-brawler-combo-strikes"
+  ],
+  "subclasses": []
+}

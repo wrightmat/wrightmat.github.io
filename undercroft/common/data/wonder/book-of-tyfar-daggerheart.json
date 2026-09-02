@@ -1,0 +1,34 @@
+{
+  "index": "book-of-tyfar",
+  "name": "Book of Tyfar",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Codex",
+    "level": 1,
+    "recallCost": 2
+  },
+  "featureIds": [
+    "feat.choice-of-effect"
+  ],
+  "featureParams": {
+    "feat.choice-of-effect": {
+      "options": [
+        {
+          "name": "Wild Flame",
+          "text": "Make a Spellcast Roll against up to three adversaries within Melee range. Targets you succeed against take 2d6 magic damage and must mark a Stress as flames erupt from your hand."
+        },
+        {
+          "name": "Magic Hand",
+          "text": "You conjure a magical hand with the same size and strength as your own within Far range."
+        },
+        {
+          "name": "Mysterious Mist",
+          "text": "Make a Spellcast Roll (13) to cast a temporary thick fog that gathers in a stationary area within Very Close range. The fog heavily obscures this area and everything in it."
+        }
+      ]
+    }
+  }
+}

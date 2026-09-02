@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-runetan-floating-armor-shifting",
+  "name": "Shifting",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you are targeted for an attack, you can mark an Armor Slot to give the attack roll against you disadvantage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you are targeted for an attack, you can mark an Armor Slot to give the attack roll against you disadvantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

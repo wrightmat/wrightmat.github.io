@@ -1,0 +1,23 @@
+{
+  "index": "advanced-full-plate-armor",
+  "name": "Advanced Full Plate Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 3
+  },
+  "baseMajorThreshold": 15,
+  "baseSevereThreshold": 35,
+  "baseScore": 6,
+  "features": [
+    {
+      "name": "Very Heavy",
+      "description": "-2 to Evasion; -1 to Agility"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-feature-very-heavy"
+  ]
+}

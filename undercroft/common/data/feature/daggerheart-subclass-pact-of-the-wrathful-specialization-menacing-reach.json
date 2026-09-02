@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-wrathful-specialization-menacing-reach",
+  "name": "Specialization: Menacing Reach",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you imbue your weapon with your Patron's fury, you can mark an additional Stress to increase its range by one step (Melee to Very Close, Very Close to Close, etc.).",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you imbue your weapon with your Patron's fury, you can mark an additional Stress to increase its range by one step (Melee to Very Close, Very Close to Close, etc.)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

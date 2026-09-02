@@ -21,5 +21,35 @@
     "feat.damage-modification": {
       "damageType": "nonmagical bludgeoning, piercing, and slashing"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      },
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "land",
+        "name": "Land"
+      }
+    ]
   }
 }

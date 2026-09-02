@@ -33,5 +33,30 @@
   },
   "featureTiers": {
     "feat.damage": "tier-1"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      },
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": []
   }
 }

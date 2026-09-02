@@ -1,0 +1,19 @@
+{
+  "index": "bolster-relic",
+  "name": "Bolster Relic",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You gain a +1 bonus to your Strength. You can only carry one relic."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-bolster-relic-feature"
+  ]
+}

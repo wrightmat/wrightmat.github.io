@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-wayfinder-mastery-apex-predator",
+  "name": "Mastery: Apex Predator",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Before you make an attack roll against your Focus, you can spend a Hope. On a successful attack, you remove a Fear from the GM's Fear pool.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Before you make an attack roll against your Focus, you can spend a Hope. On a successful attack, you remove a Fear from the GM's Fear pool."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

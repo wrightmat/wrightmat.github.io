@@ -1,0 +1,34 @@
+{
+  "index": "book-of-illiat",
+  "name": "Book of Illiat",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Codex",
+    "level": 1,
+    "recallCost": 2
+  },
+  "featureIds": [
+    "feat.choice-of-effect"
+  ],
+  "featureParams": {
+    "feat.choice-of-effect": {
+      "options": [
+        {
+          "name": "Slumber",
+          "text": "Make a Spellcast Roll against a target within Very Close range. On a success, they're Asleep until they take damage or the GM spends a Fear on their turn to clear this condition."
+        },
+        {
+          "name": "Arcane Barrage",
+          "text": "Once per rest, spend any number of Hope and shoot magical projectiles that strike a target of your choice within Close range. Roll a number of d6s equal to the Hope spent and deal that much magic damage to the target."
+        },
+        {
+          "name": "Telepathy",
+          "text": "Spend a Hope to open a line of mental communication with one target you can see. This connection lasts until your next rest or you cast Telepathy again."
+        }
+      ]
+    }
+  }
+}

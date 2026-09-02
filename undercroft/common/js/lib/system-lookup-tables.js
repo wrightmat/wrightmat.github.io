@@ -1,3 +1,5 @@
+import { fieldByKey } from "./bindings.js";
+
 // Reshapes a D&D 5e System record's `fields` (authored/edited in Loom) into
 // the exact object/array shapes the DDB-import pipeline used to get from the
 // static common/js/lib/lookup-tables.js — so mapping-custom-functions.js's
@@ -18,10 +20,6 @@
 // carries an `id` (copied from the System's own `sourceId` convention,
 // established by the pre-existing `alignments` field) so its existing
 // `entry.id === key` match keeps working unmodified.
-
-function fieldByKey(fields, key) {
-  return Array.isArray(fields) ? fields.find((entry) => entry.key === key) : null;
-}
 
 function valuesOf(fields, key) {
   const field = fieldByKey(fields, key);
@@ -172,5 +170,11 @@ export function deriveLookupTables(systemPayload) {
       name: String(entry.name || "").toLowerCase(),
       shortName: entry.shortName,
     })),
+    // Passed straight through (not reshaped — createMappingCustomFunctions'
+    // own evaluateDerivedFormula reads the reserved-key shape directly,
+    // {role, formula}, same as every other consumer of this field) so
+    // getProficiencyBonusRaw resolves via the System's own authored
+    // formula instead of a hardcoded one — see derived-formulas.js.
+    derivedFormulas: Array.isArray(fieldByKey(fields, "derivedFormulas")?.values) ? fieldByKey(fields, "derivedFormulas").values : [],
   };
 }

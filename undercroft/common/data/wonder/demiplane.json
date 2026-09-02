@@ -13,5 +13,20 @@
   },
   "featureIds": [
     "feat.planar-portal"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
+  }
 }

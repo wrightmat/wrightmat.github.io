@@ -8,12 +8,6 @@
   ],
   "url": "https://www.dndbeyond.com/equipment/514-holy-symbol",
   "mapping": "ddb-item",
-  "featureIds": [
-    "feat.random-effect"
-  ],
-  "featureParams": {
-    "feat.random-effect": {
-      "optionCount": 3
-    }
-  }
+  "featureIds": [],
+  "featureParams": {}
 }

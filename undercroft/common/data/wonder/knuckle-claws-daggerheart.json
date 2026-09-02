@@ -1,0 +1,29 @@
+{
+  "index": "knuckle-claws",
+  "name": "Knuckle Claws",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 4,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 8,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Doubled Up",
+      "description": "When you make an attack with your primary weapon, you can deal damage to another target within Melee range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-knuckle-claws-doubled-up"
+  ]
+}

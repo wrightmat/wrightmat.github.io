@@ -29,5 +29,20 @@
       "Doldra"
     ],
     "lastNames": []
-  }
+  },
+  "index": "galapa",
+  "features": [
+    {
+      "name": "Shell",
+      "description": "Gain a bonus to your damage thresholds equal to your Proficiency."
+    },
+    {
+      "name": "Retract",
+      "description": "Mark a Stress to retract into your shell. While in your shell, you have resistance to physical damage, you have disadvantage on action rolls, and you can't move."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-galapa-shell",
+    "feat.daggerheart-ancestry-galapa-retract"
+  ]
 }

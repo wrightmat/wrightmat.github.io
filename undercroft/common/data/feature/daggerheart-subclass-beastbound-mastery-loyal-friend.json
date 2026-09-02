@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-beastbound-mastery-loyal-friend",
+  "name": "Mastery: Loyal Friend",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, when the damage from an attack would mark your companion's last Stress or your last Hit Point and you're within Close range of each other, you or your companion can rush to the other's side and take that damage instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, when the damage from an attack would mark your companion's last Stress or your last Hit Point and you're within Close range of each other, you or your companion can rush to the other's side and take that damage instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

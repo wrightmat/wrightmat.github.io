@@ -13,5 +13,29 @@
   },
   "featureIds": [
     "feat.revives-dead"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "life",
+        "name": "Life"
+      }
+    ]
+  }
 }

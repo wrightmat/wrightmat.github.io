@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-vampire-fangs",
+  "name": "Fangs",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Strength Roll to bite a target within Melee range, dealing d8 physical damage using your Proficiency.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Make a Strength Roll to bite a target within Melee range, dealing d8 physical damage using your Proficiency."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

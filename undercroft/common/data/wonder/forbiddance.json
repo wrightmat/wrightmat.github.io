@@ -31,5 +31,15 @@
   },
   "featureTiers": {
     "feat.damage": "tier-4"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": []
   }
 }

@@ -1,0 +1,22 @@
+{
+  "index": "mace",
+  "name": "Mace",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 1,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 1,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

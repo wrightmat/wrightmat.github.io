@@ -1,0 +1,29 @@
+{
+  "index": "bloodstaff",
+  "name": "Bloodstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Instinct",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D20",
+    "modifier": 7,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Painful",
+      "description": "Each time you make a successful attack, you must mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-painful"
+  ]
+}

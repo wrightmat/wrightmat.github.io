@@ -1,0 +1,29 @@
+{
+  "index": "advanced-round-shield",
+  "name": "Advanced Round Shield",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D4",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Protective",
+      "description": "+3 to Armor Score"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-advanced-round-shield-protective"
+  ]
+}

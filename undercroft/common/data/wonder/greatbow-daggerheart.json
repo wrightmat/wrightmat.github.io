@@ -1,0 +1,29 @@
+{
+  "index": "greatbow",
+  "name": "Greatbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Strength",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 6,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Powerful",
+      "description": "On a successful attack, roll an additional damage die and discard the lowest result."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-powerful"
+  ]
+}

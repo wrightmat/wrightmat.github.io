@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-encore-feature",
+  "name": "feat.daggerheart-domain-card-encore-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an ally within Close range deals damage to an adversary, you can make a Spellcast Roll against that same target. On a success, you deal the same damage to the target that your ally dealt. If your Spellcast Roll succeeds with Fear, place this card in your vault.",
+  "mechanics": {
+    "type": "active",
+    "text": "When an ally within Close range deals damage to an adversary, you can make a Spellcast Roll against that same target. On a success, you deal the same damage to the target that your ally dealt. If your Spellcast Roll succeeds with Fear, place this card in your vault."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

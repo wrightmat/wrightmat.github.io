@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-vampire-feed",
+  "name": "Feed",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful Fangs attack against a living creature, you can mark a Stress to Feed. Place a number of tokens on this card equal to the number of Hit Points your target marks. You can hold up to 5 tokens at a time. Spend a token before an action roll to make your Fear Die a d20 instead. When you take a Long Rest, remove a token. If there are no tokens on this card, all your action and reaction rolls are made with disadvantage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful Fangs attack against a living creature, you can mark a Stress to Feed. Place a number of tokens on this card equal to the number of Hit Points your target marks. You can hold up to 5 tokens at a time. Spend a token before an action roll to make your Fear Die a d20 instead. When you take a Long Rest, remove a token. If there are no tokens on this card, all your action and reaction rolls are made with disadvantage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

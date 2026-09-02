@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-endless-charisma",
+  "name": "Endless Charisma",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "After you make an action roll to persuade, lie, or garner favor, you can spend a Hope to reroll the Hope or Fear Die.",
+  "mechanics": {
+    "type": "active",
+    "text": "After you make an action roll to persuade, lie, or garner favor, you can spend a Hope to reroll the Hope or Fear Die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Grace",
+  "level": 7,
+  "recallCost": 1
+}

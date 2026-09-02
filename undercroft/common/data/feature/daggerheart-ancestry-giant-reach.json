@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-giant-reach",
+  "name": "Reach",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Treat any weapon, ability, spell, or other feature that has a Melee range as though it has a Very Close range instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Treat any weapon, ability, spell, or other feature that has a Melee range as though it has a Very Close range instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

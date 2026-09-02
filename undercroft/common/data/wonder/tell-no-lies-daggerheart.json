@@ -1,0 +1,22 @@
+{
+  "index": "tell-no-lies",
+  "name": "Tell No Lies",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Grace",
+    "level": 2,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against a target within Very Close range. On a success, they can't lie to you while they remain within Close range, but they are not compelled to speak. If you ask them a question and they refuse to answer, they must mark a Stress and the effect ends. The target is typically unaware this spell has been cast on them until it causes them to utter the truth."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-tell-no-lies-feature"
+  ]
+}

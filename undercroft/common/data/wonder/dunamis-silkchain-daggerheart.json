@@ -1,0 +1,23 @@
+{
+  "index": "dunamis-silkchain",
+  "name": "Dunamis Silkchain",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 13,
+  "baseSevereThreshold": 36,
+  "baseScore": 7,
+  "features": [
+    {
+      "name": "Timeslowing",
+      "description": "Mark an Armor Slot to roll a d4 and add its result as a bonus to your Evasion against an incoming attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-dunamis-silkchain-timeslowing"
+  ]
+}

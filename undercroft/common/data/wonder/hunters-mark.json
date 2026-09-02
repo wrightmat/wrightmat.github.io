@@ -19,5 +19,15 @@
       "damageDice": "1d6",
       "damageType": "force"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      }
+    ],
+    "subclasses": []
   }
 }

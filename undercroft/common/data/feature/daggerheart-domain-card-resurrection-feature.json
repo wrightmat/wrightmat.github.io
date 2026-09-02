@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-resurrection-feature",
+  "name": "feat.daggerheart-domain-card-resurrection-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll (20). On a success, restore one creature who has been dead no longer than 100 years to full strength. Then roll a d6. On a result of 5 or lower, place this card in your vault permanently.\n\nOn a failure, you can't cast Resurrection again for a week.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll (20). On a success, restore one creature who has been dead no longer than 100 years to full strength. Then roll a d6. On a result of 5 or lower, place this card in your vault permanently.\n\nOn a failure, you can't cast Resurrection again for a week."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

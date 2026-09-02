@@ -1,0 +1,34 @@
+{
+  "index": "book-of-sitil",
+  "name": "Book of Sitil",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Codex",
+    "level": 2,
+    "recallCost": 2
+  },
+  "featureIds": [
+    "feat.choice-of-effect"
+  ],
+  "featureParams": {
+    "feat.choice-of-effect": {
+      "options": [
+        {
+          "name": "Adjust Appearance",
+          "text": "You magically shift your appearance and clothing to avoid recognition."
+        },
+        {
+          "name": "Parallela",
+          "text": "Spend 2 Hope to cast this spell on yourself or an ally within Close range. The next time the target makes an attack, they can hit an additional target within range that their attack roll would succeed against. You can only hold this spell on one creature at a time."
+        },
+        {
+          "name": "Illusion",
+          "text": "Make a Spellcast Roll (14). On a success, create a temporary visual illusion no larger than you within Close range that lasts for as long as you look at it. It holds up to scrutiny until an observer is within Melee range."
+        }
+      ]
+    }
+  }
+}

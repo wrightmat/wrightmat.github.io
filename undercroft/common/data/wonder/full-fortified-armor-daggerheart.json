@@ -1,0 +1,23 @@
+{
+  "index": "full-fortified-armor",
+  "name": "Full Fortified Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 15,
+  "baseSevereThreshold": 40,
+  "baseScore": 4,
+  "features": [
+    {
+      "name": "Fortified",
+      "description": "When you mark an Armor Slot, you reduce the severity of an attack by two thresholds instead of one."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-full-fortified-armor-fortified"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "index": "vial-of-darksmoke",
+  "name": "Vial of Darksmoke",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When an adversary attacks you, use this vial and roll a number of d6s equal to your Agility. Add the highest result to your Evasion against the attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-vial-of-darksmoke-feature"
+  ]
+}

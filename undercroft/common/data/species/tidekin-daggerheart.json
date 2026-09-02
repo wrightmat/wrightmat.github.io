@@ -1,0 +1,24 @@
+{
+  "index": "tidekin",
+  "name": "Tidekin",
+  "description": [
+    "Tidekin are descended from water elementals. They are humanoids whose bodies are a combination of flesh and water."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "features": [
+    {
+      "name": "Amphibious",
+      "description": "You can breathe and move naturally underwater."
+    },
+    {
+      "name": "Lifespring",
+      "description": "Once per rest, when you have access to a small amount of water, you can mark 2 Stress to heal a Hit Point on yourself or an ally."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-feature-amphibious",
+    "feat.daggerheart-ancestry-tidekin-lifespring"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-whirlwind",
+  "name": "Whirlwind",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make a successful attack against a target within Very Close range, you can spend a Hope to use the attack against all other targets within Very Close range. All additional adversaries you succeed against with this ability take half damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you make a successful attack against a target within Very Close range, you can spend a Hope to use the attack against all other targets within Very Close range. All additional adversaries you succeed against with this ability take half damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 1,
+  "recallCost": 0
+}

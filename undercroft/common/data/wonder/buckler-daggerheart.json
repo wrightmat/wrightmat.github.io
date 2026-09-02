@@ -1,0 +1,29 @@
+{
+  "index": "buckler",
+  "name": "Buckler",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Secondary",
+    "tier": 3,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D4",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Deflecting",
+      "description": "When you are attacked, you can mark an Armor Slot to gain a bonus to your Evasion equal to your available Armor Slots against the attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-buckler-deflecting"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "index": "advanced-crossbow",
+  "name": "Advanced Crossbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

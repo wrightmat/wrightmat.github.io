@@ -39,5 +39,20 @@
   },
   "featureTiers": {
     "feat.damage": "tier-2"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-buckler-deflecting",
+  "name": "Deflecting",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you are attacked, you can mark an Armor Slot to gain a bonus to your Evasion equal to your available Armor Slots against the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you are attacked, you can mark an Armor Slot to gain a bonus to your Evasion equal to your available Armor Slots against the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

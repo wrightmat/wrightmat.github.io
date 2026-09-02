@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-wizard-hope-not-this-time",
+  "name": "Not This Time",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend 3 Hope to force an adversary within Far range to reroll an attack or damage roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spend 3 Hope to force an adversary within Far range to reroll an attack or damage roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

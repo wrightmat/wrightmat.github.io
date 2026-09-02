@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-legendary-round-shield-protective",
+  "name": "Protective",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "+4 to Armor Score",
+  "mechanics": {
+    "type": "passive",
+    "text": "+4 to Armor Score"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

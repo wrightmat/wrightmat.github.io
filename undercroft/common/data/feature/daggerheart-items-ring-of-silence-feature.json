@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-ring-of-silence-feature",
+  "name": "feat.daggerheart-items-ring-of-silence-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Spend a Hope to activate this ring. Your footsteps are silent until your next rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Spend a Hope to activate this ring. Your footsteps are silent until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

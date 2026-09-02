@@ -23,5 +23,15 @@
   },
   "featureTiers": {
     "feat.impose-condition": "minor"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

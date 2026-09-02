@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-body-basher",
+  "name": "Body Basher",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You use the full force of your body in a fight. On a successful attack using a weapon with a Melee range, gain a bonus to your damage roll equal to your Strength.",
+  "mechanics": {
+    "type": "active",
+    "text": "You use the full force of your body in a fight. On a successful attack using a weapon with a Melee range, gain a bonus to your damage roll equal to your Strength."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 2,
+  "recallCost": 1
+}

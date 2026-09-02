@@ -1,0 +1,23 @@
+{
+  "index": "chainmail-armor",
+  "name": "Chainmail Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 1
+  },
+  "baseMajorThreshold": 7,
+  "baseSevereThreshold": 15,
+  "baseScore": 4,
+  "features": [
+    {
+      "name": "Heavy",
+      "description": "-1 to Evasion"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-equipment-feature-heavy"
+  ]
+}

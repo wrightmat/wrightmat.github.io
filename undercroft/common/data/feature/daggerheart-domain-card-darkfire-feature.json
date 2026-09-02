@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-darkfire-feature",
+  "name": "feat.daggerheart-domain-card-darkfire-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll against all adversaries within Close range. You can spend a Hope for any you succeed against, and they must make a Reaction Roll (14). Ona failure, they take d8+6 magic damage using your Proficiency as they are engulfed in dark fire. On a success, they take half damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll against all adversaries within Close range. You can spend a Hope for any you succeed against, and they must make a Reaction Roll (14). Ona failure, they take d8+6 magic damage using your Proficiency as they are engulfed in dark fire. On a success, they take half damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-rapid-riposte",
+  "name": "Rapid Riposte",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an attack made against you from within Melee range fails, you can mark a Stress and seize the opportunity to deal the weapon damage of one of your active weapons to the attacker.",
+  "mechanics": {
+    "type": "active",
+    "text": "When an attack made against you from within Melee range fails, you can mark a Stress and seize the opportunity to deal the weapon damage of one of your active weapons to the attacker."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 6,
+  "recallCost": 0
+}

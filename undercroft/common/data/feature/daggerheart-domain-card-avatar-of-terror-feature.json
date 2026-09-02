@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-avatar-of-terror-feature",
+  "name": "feat.daggerheart-domain-card-avatar-of-terror-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to transform into a creature fueled by fear. While in this form, your damage rolls gain a +1d6 bonus for each Fear the GM has. Additionally, gain a Hope when the GM uses a Fear feature on an adversary within Close range.\n\nYou must spend a Hope to make an action roll while in this form. Otherwise, you drop out of this form.",
+  "mechanics": {
+    "type": "active",
+    "text": "Mark a Stress to transform into a creature fueled by fear. While in this form, your damage rolls gain a +1d6 bonus for each Fear the GM has. Additionally, gain a Hope when the GM uses a Fear feature on an adversary within Close range.\n\nYou must spend a Hope to make an action roll while in this form. Otherwise, you drop out of this form."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

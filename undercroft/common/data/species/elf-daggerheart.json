@@ -38,5 +38,20 @@
       "Wintersong",
       "Farwatcher"
     ]
-  }
+  },
+  "index": "elf",
+  "features": [
+    {
+      "name": "Quick Reactions",
+      "description": "Mark a Stress to gain advantage on a reaction roll."
+    },
+    {
+      "name": "Celestial Trance",
+      "description": "During a rest, you can drop into a trance to choose an additional downtime move."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-elf-quick-reactions",
+    "feat.daggerheart-ancestry-elf-celestial-trance"
+  ]
 }

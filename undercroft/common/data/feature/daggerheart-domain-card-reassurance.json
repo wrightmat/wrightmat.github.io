@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-reassurance",
+  "name": "Reassurance",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, after an ally attempts an action roll but before the consequences take place, you can offer assistance or words of support. When you do, your ally can reroll their dice.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per rest, after an ally attempts an action roll but before the consequences take place, you can offer assistance or words of support. When you do, your ally can reroll their dice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Splendor",
+  "level": 1,
+  "recallCost": 0
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-cumbersome",
+  "name": "Cumbersome",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "-1 to Finesse",
+  "mechanics": {
+    "type": "passive",
+    "text": "-1 to Finesse"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

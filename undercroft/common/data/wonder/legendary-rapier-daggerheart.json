@@ -1,0 +1,29 @@
+{
+  "index": "legendary-rapier",
+  "name": "Legendary Rapier",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 9,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Quick",
+      "description": "When you make an attack, you can mark a Stress to target another creature within range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-quick"
+  ]
+}

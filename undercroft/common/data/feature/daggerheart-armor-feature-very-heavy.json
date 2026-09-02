@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-feature-very-heavy",
+  "name": "Very Heavy",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "-2 to Evasion; -1 to Agility",
+  "mechanics": {
+    "type": "passive",
+    "text": "-2 to Evasion; -1 to Agility"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

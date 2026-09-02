@@ -1,0 +1,22 @@
+{
+  "index": "hallowed-axe",
+  "name": "Hallowed Axe",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 1,
+    "trait": "Strength",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 1,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

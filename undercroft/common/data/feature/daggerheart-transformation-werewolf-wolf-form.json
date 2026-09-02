@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-transformation-werewolf-wolf-form",
+  "name": "Wolf Form",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you mark one or more Hit Points, you can also mark a Stress to enter your Wolf Form. While in this form, gain a d10 Wolf Die that you add to all attack and damage rolls. When you would gain a Hope while in Wolf Form, you mark a Stress instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you mark one or more Hit Points, you can also mark a Stress to enter your Wolf Form. While in this form, gain a d10 Wolf Die that you add to all attack and damage rolls. When you would gain a Hope while in Wolf Form, you mark a Stress instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

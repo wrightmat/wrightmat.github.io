@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-armorer",
+  "name": "Armorer",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "While you're wearing armor, gain a +1 bonus to your Armor Score.\n\nDuring a rest, when you choose to repair your armor as a downtime move, your allies also clear an Armor Slot.",
+  "mechanics": {
+    "type": "active",
+    "text": "While you're wearing armor, gain a +1 bonus to your Armor Score.\n\nDuring a rest, when you choose to repair your armor as a downtime move, your allies also clear an Armor Slot."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 5,
+  "recallCost": 1
+}

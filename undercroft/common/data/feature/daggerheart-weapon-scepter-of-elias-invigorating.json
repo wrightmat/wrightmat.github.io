@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-scepter-of-elias-invigorating",
+  "name": "Invigorating",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, roll a d4. On a result of 4 clear a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, roll a d4. On a result of 4 clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

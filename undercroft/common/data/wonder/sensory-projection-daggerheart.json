@@ -1,0 +1,22 @@
+{
+  "index": "sensory-projection",
+  "name": "Sensory Projection",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Arcana",
+    "level": 9,
+    "recallCost": 0
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per rest, make a Spellcast Roll (15). On a success, drop into a vision that lets you clearly see and hear any place you have been before as though you are standing there in this moment. You can move freely in this vision and are not constrained by the physics or impediments of a physical body. This spell cannot be detected by mundane or magical means. You drop out of this vision upon taking damage or casting another spell."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-sensory-projection-feature"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-stardrop-feature",
+  "name": "feat.daggerheart-consumables-stardrop-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can use this stardrop to summon a hailstorm of comets that deals 8d20 physical damage to all targets within Very Far range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can use this stardrop to summon a hailstorm of comets that deals 8d20 physical damage to all targets within Very Far range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

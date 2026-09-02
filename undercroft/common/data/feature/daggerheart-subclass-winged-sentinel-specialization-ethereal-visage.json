@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-winged-sentinel-specialization-ethereal-visage",
+  "name": "Specialization: Ethereal Visage",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Your supernatural visage strikes awe and fear. While flying, you have advantage on Presence Rolls. When you succeed with Hope on a Presence Roll, you can remove a Fear from the GM's Fear pool instead of gaining Hope.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your supernatural visage strikes awe and fear. While flying, you have advantage on Presence Rolls. When you succeed with Hope on a Presence Roll, you can remove a Fear from the GM's Fear pool instead of gaining Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

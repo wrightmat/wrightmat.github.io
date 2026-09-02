@@ -1,0 +1,29 @@
+{
+  "index": "flickerfly-blade",
+  "name": "Flickerfly Blade",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Agility",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 5,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Sharpwing",
+      "description": "Gain a bonus to your damage rolls equal to your Agility."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-flickerfly-blade-sharpwing"
+  ]
+}

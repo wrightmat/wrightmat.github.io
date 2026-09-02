@@ -18,5 +18,28 @@
     "feat.grants-advantage": {
       "rollType": "wisdom saving throws and death saving throws"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "life",
+        "name": "Life"
+      },
+      {
+        "index": "devotion",
+        "name": "Devotion"
+      }
+    ]
   }
 }

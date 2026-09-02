@@ -1,0 +1,22 @@
+{
+  "index": "advanced-spear",
+  "name": "Advanced Spear",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Finesse",
+    "range": "Very Close",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 9,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

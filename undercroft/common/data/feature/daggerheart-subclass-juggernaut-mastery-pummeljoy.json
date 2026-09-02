@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-juggernaut-mastery-pummeljoy",
+  "name": "Mastery: Pummeljoy",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you critically succeed on a weapon attack in Melee range, you gain an additional Hope, clear an additional Stress, and gain a +1 bonus to your Proficiency for the attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you critically succeed on a weapon attack in Melee range, you gain an additional Hope, clear an additional Stress, and gain a +1 bonus to your Proficiency for the attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -13,5 +13,20 @@
   },
   "featureIds": [
     "feat.invisibility"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "bard",
+        "name": "Bard"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
+  }
 }

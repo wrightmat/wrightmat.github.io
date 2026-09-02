@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-executioners-guild-specialization-scorpion-s-poise",
+  "name": "Specialization: Scorpion's Poise",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You gain a +2 bonus to your Evasion against any attacks made by a creature Marked for Death.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain a +2 bonus to your Evasion against any attacks made by a creature Marked for Death."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-specter-of-the-dark-feature",
+  "name": "feat.daggerheart-domain-card-specter-of-the-dark-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to become Spectral until you make an action roll targeting another creature. While Spectral, you're immune to physical damage and can float and pass through solid objects. Other creatures can still see you while you're in this form.",
+  "mechanics": {
+    "type": "active",
+    "text": "Mark a Stress to become Spectral until you make an action roll targeting another creature. While Spectral, you're immune to physical damage and can float and pass through solid objects. Other creatures can still see you while you're in this form."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

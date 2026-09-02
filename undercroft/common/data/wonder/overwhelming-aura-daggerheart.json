@@ -1,0 +1,22 @@
+{
+  "index": "overwhelming-aura",
+  "name": "Overwhelming Aura",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Splendor",
+    "level": 9,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll (15) to magically empower your aura. On a success, spend 2 Hope to make your Presence equal to your Spellcast trait until your next long rest.\n\nWhile this spell is active, an adversary must mark a Stress when they target you with an attack."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-overwhelming-aura-feature"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-simiah-natural-climber",
+  "name": "Natural Climber",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You have advantage on Agility Rolls that involve balancing and climbing.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have advantage on Agility Rolls that involve balancing and climbing."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

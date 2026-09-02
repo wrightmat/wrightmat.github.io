@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-gore-and-glory",
+  "name": "Gore and Glory",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you critically succeed on a weapon attack, gain an additional Hope or clear an additional Stress.\n\nAdditionally, when you deal enough damage to defeat an enemy, gain a Hope or clear a Stress.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you critically succeed on a weapon attack, gain an additional Hope or clear an additional Stress.\n\nAdditionally, when you deal enough damage to defeat an enemy, gain a Hope or clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 9,
+  "recallCost": 2
+}

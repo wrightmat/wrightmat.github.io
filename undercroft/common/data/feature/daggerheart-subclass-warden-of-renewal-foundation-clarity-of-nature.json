@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-warden-of-renewal-foundation-clarity-of-nature",
+  "name": "Foundation: Clarity of Nature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, you can create a space of natural serenity within Close range. When you spend a few minutes resting within the space, clear Stress equal to your Instinct, distributed as you choose between you and your allies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, you can create a space of natural serenity within Close range. When you spend a few minutes resting within the space, clear Stress equal to your Instinct, distributed as you choose between you and your allies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

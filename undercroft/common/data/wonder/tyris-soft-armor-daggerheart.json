@@ -1,0 +1,23 @@
+{
+  "index": "tyris-soft-armor",
+  "name": "Tyris Soft Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 2
+  },
+  "baseMajorThreshold": 8,
+  "baseSevereThreshold": 18,
+  "baseScore": 5,
+  "features": [
+    {
+      "name": "Quiet",
+      "description": "You gain a +2 bonus to rolls you make to move silently."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-tyris-soft-armor-quiet"
+  ]
+}

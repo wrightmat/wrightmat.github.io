@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-bag-of-ficklesand-feature",
+  "name": "feat.daggerheart-items-bag-of-ficklesand-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can convince this small bag of sand to be much heavier or lighter with a successful Presence Roll (10). Additionally, on a successful Finesse Roll (10), you can blow a bit of sand into a target's face to make them temporarily Vulnerable.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can convince this small bag of sand to be much heavier or lighter with a successful Presence Roll (10). Additionally, on a successful Finesse Roll (10), you can blow a bit of sand into a target's face to make them temporarily Vulnerable."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

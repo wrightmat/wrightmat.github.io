@@ -16,5 +16,20 @@
   ],
   "featureTiers": {
     "feat.summoned-companion": "moderate"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

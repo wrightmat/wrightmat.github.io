@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-emberkin-fireproof",
+  "name": "Fireproof",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You are immune to damage from magical or mundane flame.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You are immune to damage from magical or mundane flame."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-endless-specialization-draining-invocation",
+  "name": "Specialization: Draining Invocation",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an adversary attacks you or an ally within Very Close range, you can spend a Favor to make them use a d12 instead of a d20 for the attack roll. Additionally, the adversary must mark a Stress, and you can clear a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When an adversary attacks you or an ally within Very Close range, you can spend a Favor to make them use a d12 instead of a d20 for the attack roll. Additionally, the adversary must mark a Stress, and you can clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

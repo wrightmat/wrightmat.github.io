@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-warden-of-renewal-specialization-regenerative-reach",
+  "name": "Specialization: Regenerative Reach",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can target creatures within Very Close range with your “Regeneration” feature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can target creatures within Very Close range with your “Regeneration” feature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

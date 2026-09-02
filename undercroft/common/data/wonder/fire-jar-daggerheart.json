@@ -1,0 +1,19 @@
+{
+  "index": "fire-jar",
+  "name": "Fire Jar",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can pour out the strange liquid contents of this jar to instantly produce fire. The contents regenerate when you take a long rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-fire-jar-feature"
+  ]
+}

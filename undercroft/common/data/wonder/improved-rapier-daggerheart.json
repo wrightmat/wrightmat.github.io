@@ -1,0 +1,29 @@
+{
+  "index": "improved-rapier",
+  "name": "Improved Rapier",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Presence",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 3,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Quick",
+      "description": "When you make an attack, you can mark a Stress to target another creature within range."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-quick"
+  ]
+}

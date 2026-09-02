@@ -50,7 +50,7 @@ import { createColorPickerField } from "../../../common/js/lib/color-picker.js";
 import { renderTextContent, resolveImageUrl, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
 import { collectSystemFields, categorizeFieldType } from "../../../common/js/lib/system-schema.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { createLookupFn } from "../../../common/js/lib/bindings.js";
+import { createLookupFn, createLookupFieldFn } from "../../../common/js/lib/bindings.js";
 import {
   createBindingFormulaInput as createSharedBindingFormulaInput,
   notifyBindingFieldsReady,
@@ -614,7 +614,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       // Matches the palette's own text (workbench/index.html) exactly —
       // one canonical description per type, not two independently-written
       // strings that drift apart (see createTypeSummaryHeader's own note).
-      description: "Text, number, select, radio, checkbox",
+      description: "Text, number, select, radio, checkbox, button",
       defaults: {
         name: "Input Field",
         variant: "text",
@@ -622,8 +622,43 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         options: ["Option A", "Option B"],
         rows: 3,
         sourceBinding: "",
-        roller: "",
         labelPosition: "top",
+        // Button variant only, below — a bare Label (resolveFieldLabel's
+        // own name fallback included) reads fine for most buttons, but a
+        // small icon-only roll button (see the Roller-field migration)
+        // needs a face with no text at all. iconClass/url/formula are the
+        // EXACT SAME field names (and the exact same picker controls,
+        // createIconFieldControl/createImageUrlControl,
+        // workbench-template-view.js) the real Icon/Image components use —
+        // not a Button-specific lookalike, so a formula or an "@" binding
+        // authored into either one resolves exactly like it does on those
+        // components (see renderInputContent's own button branch,
+        // component-renderers.js). Precedence when a GM sets more than
+        // one face option: iconClass, then url, then the label text, then
+        // a bare "Button" fallback.
+        iconClass: "",
+        url: "",
+        // Free CSS-value text, same convention/field names as Image's and
+        // Toggle's own width/height (component-renderers.js reads these
+        // identically — applied as inline styles only when set, blank
+        // leaves the button's own natural Bootstrap sizing untouched).
+        width: "",
+        height: "",
+        // "rollDice" is the most common case by far (see the Roller-field
+        // migration this ships alongside) — a fresh Button defaults to
+        // something immediately useful rather than an inert no-op.
+        action: {
+          type: "rollDice",
+          expression: "",
+          macroRef: "",
+          binding: "",
+          lookupBinding: "",
+          matchField: "",
+          matchValue: "",
+          targetField: "",
+          mode: "delta",
+          amount: "-1",
+        },
       },
       supportsBinding: true,
       supportsFormula: true,
@@ -689,6 +724,20 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         // who genuinely wants a visual separator between rows (a longer,
         // denser list) can still turn it back on per-Repeater.
         itemDivider: false,
+        // Confirmed real bug this fixes: a Repeater has always displayed
+        // items in whatever order the bound array happens to be stored in
+        // — fine for most lists (Inventory/Features are added in the order
+        // a player wants them), but a computed list (a multiclass
+        // character's own limitedUses spell-slot pools, populated as level
+        // thresholds are crossed — not necessarily 1,2,3,4 in that order)
+        // can end up genuinely out of order with no way to fix it short of
+        // hand-editing the character record. `sortBinding` — a bare field
+        // name within each item (never an "@" path — always item-relative,
+        // there's nothing else it could mean), same "table" column-key
+        // convention resolveCollectionColumns already establishes — blank
+        // means "no sort, show stored order" (today's unchanged default).
+        sortBinding: "",
+        sortDirection: "asc",
       },
       supportsBinding: true,
       supportsFormula: false,
@@ -1178,14 +1227,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
   function getComponentBindingLabel(component) {
     return getBindingEditorValue(component);
-  }
-
-  function getComponentRollerLabel(component) {
-    if (!component || typeof component.roller !== "string") {
-      return "";
-    }
-    const trimmed = component.roller.trim();
-    return trimmed || "";
   }
 
   function getDefinition(component) {
@@ -3023,10 +3064,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       component.statesBinding = component.statesBinding != null ? String(component.statesBinding) : "";
     }
     component.statesBinding = component.statesBinding.trim();
-    if (typeof component.roller !== "string") {
-      component.roller = "";
-    }
-    component.roller = component.roller.trim();
     component.collapsible = Boolean(component.collapsible);
     if (definition.supportsLabelPosition) {
       const basePosition =
@@ -3105,19 +3142,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         actions.insertBefore(bindingPill, iconElement);
       } else {
         actions.appendChild(bindingPill);
-      }
-    }
-
-    const rollerLabel = getComponentRollerLabel(component);
-    if (rollerLabel) {
-      const rollerPill = document.createElement("span");
-      rollerPill.className = "template-roller-pill badge text-bg-secondary";
-      rollerPill.textContent = `🎲 ${rollerLabel}`;
-      const insertBefore = bindingPill && actions.contains(bindingPill) ? bindingPill : iconElement;
-      if (insertBefore && actions.contains(insertBefore)) {
-        actions.insertBefore(rollerPill, insertBefore);
-      } else {
-        actions.appendChild(rollerPill);
       }
     }
 
@@ -3718,6 +3742,14 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
   function renderInputPreview(component, itemContext = null) {
     return renderInputContent(component, {
+      // Same shape renderImagePreview/renderIconPreview already use —
+      // Button's Icon/Image fields ARE those exact fields (iconClass/url/
+      // formula), so their "@path"/"=formula" preview resolution needs to
+      // match exactly, not a Button-specific approximation.
+      resolveBindableString(raw) {
+        return resolvePreviewBindingValue(raw);
+      },
+      evaluateFormula: evaluatePreviewFormula,
       resolveValue(comp, fallback) {
         return fallback;
       },
@@ -3759,6 +3791,13 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         container.appendChild(createPreviewEmptyState());
         return container;
       },
+      // Always inert — same "canvas preview shouldn't invite a click that
+      // silently does nothing real" convention renderTogglePreview's own
+      // editable:()=>false already documents for exactly this reason. A
+      // Button preview stays clickable-looking (editable() above only
+      // reflects readOnly, same as every other variant) but a click here
+      // genuinely does nothing, unlike Play/Edit's real executor.
+      runButtonAction() {},
     });
   }
 
@@ -5260,13 +5299,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     restoreInspectorFocus(focusSnapshot);
   }
 
-  function componentSupportsRoller(component) {
-    if (!component || typeof component !== "object") {
-      return false;
-    }
-    return component.type === "input" && (component.variant || "text") === "number";
-  }
-
   function componentSupportsLabelPosition(component) {
     if (!component || typeof component !== "object") {
       return false;
@@ -5293,32 +5325,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         { rerenderCanvas: true, rerenderInspector: true }
       );
     }, { forceSingleRow: true });
-  }
-
-  function createRollerInputControl(component) {
-    return createBindingFormulaInput(component, {
-      labelText: "Roller",
-      placeholder: "1d20 + @abilities.strength",
-      bindingKey: "roller",
-      formulaKey: null,
-      supportsBinding: true,
-      supportsFormula: false,
-      allowedFieldCategories: ["number"],
-      helperText: "Roll20 dice expression. Supports @field references.",
-    });
-  }
-
-  function appendRollerControl(list, component) {
-    if (!Array.isArray(list)) {
-      return;
-    }
-    if (!componentSupportsRoller(component)) {
-      return;
-    }
-    const control = createRollerInputControl(component);
-    if (control) {
-      list.push(control);
-    }
   }
 
   // Only two field concepts exist across this whole inspector (see
@@ -5386,10 +5392,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   function createDataControls(component, definition = {}) {
     const supportsBinding = definition.supportsBinding !== false;
     const supportsFormula = definition.supportsFormula !== false;
-    if (
-      !component ||
-      (!supportsBinding && !supportsFormula && component.type !== "toggle" && !componentSupportsRoller(component))
-    ) {
+    if (!component || (!supportsBinding && !supportsFormula && component.type !== "toggle")) {
       return [];
     }
     if (component.type === "input") {
@@ -5410,7 +5413,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         }),
         createCandidateBindingInput(component),
       ];
-      appendRollerControl(controls, component);
       return controls;
     }
     if (component.type === "select-group") {
@@ -5437,7 +5439,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
           allowedFieldCategories: component.multiple ? ["array", "object"] : ["string", "number"],
         })
       );
-      appendRollerControl(controls, component);
       return controls;
     }
     if (component.type === "toggle") {
@@ -5462,7 +5463,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
           allowedFieldCategories: ["string", "number"],
         }),
       ];
-      appendRollerControl(controls, component);
       return controls;
     }
     const controls = [];
@@ -5475,7 +5475,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         })
       );
     }
-    appendRollerControl(controls, component);
     return controls;
   }
 
@@ -6178,7 +6177,18 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // uses, just resolved against the template's own sample data
   // (state.systemPreviewData) instead of a live character record.
   function previewFormulaOptions() {
-    return { functions: { lookup: createLookupFn(state.systemPreviewData || {}, state.systemDefinition?.fields) } };
+    return {
+      functions: {
+        lookup: createLookupFn(state.systemPreviewData || {}, state.systemDefinition?.fields),
+        // Same top-level-always convention as the live view's own
+        // evaluateFormulaWithLookup (workbench-character-view.js) — moot
+        // here in practice (the canvas never previews real per-item data,
+        // see this function's own comment above), but keeps `lookupField`
+        // available so a formula using it doesn't throw "not defined" while
+        // authoring, same reasoning `lookup` itself is registered here for.
+        lookupField: createLookupFieldFn(state.systemPreviewData || {}),
+      },
+    };
   }
 
   function evaluatePreviewFormula(formula) {
@@ -6687,6 +6697,13 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     const group = createButtonCheckGroup({
       ariaLabel: labelText,
       name,
+      // Forwarded straight to createButtonCheckGroup's own `wrap` param
+      // (ui-components.js) — its real single-row/wrapping driver, not the
+      // `forceSingleRow` config key some callers here still pass (dead —
+      // never read by this function at all; left alone at those call
+      // sites rather than renamed everywhere, since they're all still
+      // correctly single-row via this same param's own `false` default).
+      wrap: Boolean(config.wrap),
       options: options.map((option, index) => ({
         id: toId([component.uid, labelText, option.value, index]),
         value: option.value,
@@ -6694,6 +6711,17 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         text: option.label ?? option.value,
       })),
     });
+    // A fixed column count, when given — flex-wrap alone (the `wrap:true`
+    // case above) breaks onto a new row wherever the CONTAINER'S width
+    // happens to run out, which for 7 Type options landed as 5+2 in the
+    // inspector's own actual width, not the even 4+3 a 7-item group reads
+    // best as. CSS Grid with a fixed track count wraps predictably
+    // regardless of container width, so this overrides the flex/wrap
+    // styling entirely rather than fighting it with a min-width guess.
+    if (Number.isFinite(config.columns) && config.columns > 0) {
+      group.style.display = "grid";
+      group.style.gridTemplateColumns = `repeat(${config.columns}, 1fr)`;
+    }
     group.querySelectorAll("input").forEach((input, index) => {
       const option = options[index];
       input.checked = option.value === currentValue;
@@ -6778,6 +6806,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       { value: "select", icon: "tabler:list-details", label: "Select" },
       { value: "radio", icon: "tabler:circle-dot", label: "Radio" },
       { value: "checkbox", icon: "tabler:checkbox", label: "Checkbox" },
+      { value: "button", icon: "tabler:click", label: "Button" },
     ];
     controls.push(
       createRadioButtonGroup(
@@ -6799,11 +6828,27 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
               ) {
                 draft.options = ["Option A", "Option B"];
               }
+              // A Button that's never clickable outside Edit mode is
+              // useless for its whole reason to exist — unlike a data
+              // field (locked-by-default is the safer call there), a
+              // fresh Button defaults to Play-clickable so switching a
+              // field to Button "just works" without a second trip to
+              // the Behavior section to also flip Editable in Play.
+              // Only seeded once, switching TO Button — never overrides
+              // an author who already explicitly turned it off.
+              if (value === "button" && draft.editableInPlay !== true && draft.editableInPlay !== false) {
+                draft.editableInPlay = true;
+              }
             },
             { rerenderCanvas: true, rerenderInspector: true }
           );
         },
-        { forceSingleRow: true, hideLabel: true }
+        // 7 options no longer fit one row legibly — columns:4 forces an
+        // even 4-then-3 grid (Text/Text area/Number/Select, then Radio/
+        // Checkbox/Button) regardless of the inspector's own actual
+        // width, rather than flex-wrap's own width-dependent break point
+        // (5+2 in practice at this panel's real size).
+        { wrap: true, hideLabel: true, columns: 4 }
       )
     );
     controls.push(
@@ -6821,6 +6866,158 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
             draft.rows = next;
           }, { rerenderCanvas: true });
         }, { min: 2, max: 12 })
+      );
+    }
+    if ((component.variant || "text") === "button") {
+      controls.push(...createButtonInspectorControls(component));
+    }
+    return controls;
+  }
+
+  // A Button's own face (label already has its own field, handled
+  // generically like every other component's — nothing new needed for
+  // it) plus its Action — see component.action's own shape,
+  // COMPONENT_DEFINITIONS.input.defaults. Icon/Image are optional and
+  // mutually meaningful even with a blank Label (a small icon-only roll
+  // button, the Roller-field migration's own case) — renderInputContent's
+  // own precedence (component-renderers.js) is icon, then image, then
+  // Label text, then a bare "Button" fallback. Both reuse the SAME picker
+  // controls the real Icon/Image components use (createIconFieldControl/
+  // createImageUrlControl, defined above) — called PLAIN, no options, the
+  // exact same call the Icon/Image components' own inspectors make (same
+  // pattern/shape picker button and all), not a narrowed-down copy. Both
+  // write/read the exact same fields (iconClass/url/formula) those
+  // components use, so a formula or "@" binding authored here needs the
+  // exact same resolution on the render side too — see
+  // renderInputContent's own button branch (component-renderers.js).
+  function createButtonInspectorControls(component) {
+    // labelText overrides only — Button shows both fields side by side, so
+    // "Binding / Text" (the standalone Icon/Image components' own default,
+    // fine when each only has ONE such field) reads ambiguous here; the
+    // control itself (formula/binding modes, pattern/shape picker, fieldKey)
+    // is still the exact same call every other option defaults to.
+    const controls = [
+      createIconFieldControl(component, { labelText: "Icon" }),
+      createImageUrlControl(component, { labelText: "Image" }),
+    ];
+    // Same single-row, half-width-each layout Toggle's own Width/Height
+    // pair already uses (createFieldRow, columns:2) — not two full-width
+    // stacked fields.
+    controls.push(
+      createFieldRow(
+        [
+          createTextInput(component, "Width", component.width || "", (value) => {
+            const next = value.trim();
+            updateComponent(component.uid, (draft) => {
+              draft.width = next;
+            }, { rerenderCanvas: true });
+          }, { placeholder: "Fits its content" }),
+          createTextInput(component, "Height", component.height || "", (value) => {
+            const next = value.trim();
+            updateComponent(component.uid, (draft) => {
+              draft.height = next;
+            }, { rerenderCanvas: true });
+          }, { placeholder: "2rem" }),
+        ],
+        { columns: 2 }
+      )
+    );
+    const action = component.action && typeof component.action === "object" ? component.action : {};
+    const actionType = action.type === "runMacro" || action.type === "adjustField" ? action.type : "rollDice";
+    controls.push(
+      createRadioButtonGroup(
+        component,
+        "Action",
+        [
+          { value: "rollDice", icon: "tabler:dice-5", label: "Roll Dice" },
+          { value: "runMacro", icon: "tabler:wand", label: "Run a Macro" },
+          { value: "adjustField", icon: "tabler:adjustments", label: "Adjust a Field" },
+        ],
+        actionType,
+        (value) => {
+          updateComponent(component.uid, (draft) => {
+            draft.action = { ...(draft.action || {}), type: value };
+          }, { rerenderCanvas: true, rerenderInspector: true });
+        },
+        { wrap: true }
+      )
+    );
+    const updateAction = (patch) => {
+      updateComponent(component.uid, (draft) => {
+        draft.action = { ...(draft.action || {}), ...patch };
+      }, { rerenderCanvas: true });
+    };
+    if (actionType === "rollDice") {
+      controls.push(
+        createTextInput(component, "Expression", action.expression || "", (value) => {
+          updateAction({ expression: value });
+        }, { placeholder: "1d20 + @abilities.strength.modifier" })
+      );
+    } else if (actionType === "runMacro") {
+      controls.push(
+        createTextInput(component, "Macro Name", action.macroRef || "", (value) => {
+          updateAction({ macroRef: value });
+        }, { placeholder: "Haunted Forest" })
+      );
+    } else {
+      const hasLookup = Boolean((action.lookupBinding || "").trim());
+      controls.push(
+        createTextInput(component, "Binding", action.binding || "", (value) => {
+          updateAction({ binding: value });
+        }, { placeholder: "@available" })
+      );
+      controls.push(
+        createSwitchField("Look up an entry first", hasLookup, (checked) => {
+          updateComponent(
+            component.uid,
+            (draft) => {
+              draft.action = { ...(draft.action || {}), lookupBinding: checked ? draft.action?.lookupBinding || "@" : "" };
+            },
+            { rerenderCanvas: true, rerenderInspector: true }
+          );
+        })
+      );
+      if (hasLookup) {
+        controls.push(
+          createTextInput(component, "Source Binding", action.lookupBinding || "", (value) => {
+            updateAction({ lookupBinding: value });
+          }, { placeholder: "@limitedUses" })
+        );
+        controls.push(
+          createTextInput(component, "Match Field", action.matchField || "", (value) => {
+            updateAction({ matchField: value });
+          }, { placeholder: "level" })
+        );
+        controls.push(
+          createTextInput(component, "Match Value", action.matchValue || "", (value) => {
+            updateAction({ matchValue: value });
+          }, { placeholder: "@level" })
+        );
+        controls.push(
+          createTextInput(component, "Target Field", action.targetField || "", (value) => {
+            updateAction({ targetField: value });
+          }, { placeholder: "available" })
+        );
+      }
+      controls.push(
+        createRadioButtonGroup(
+          component,
+          "Mode",
+          [
+            { value: "delta", icon: "tabler:plus-minus", label: "Adjust" },
+            { value: "set", icon: "tabler:equal", label: "Set" },
+          ],
+          action.mode === "set" ? "set" : "delta",
+          (value) => {
+            updateAction({ mode: value });
+          },
+          { hideLabel: false }
+        )
+      );
+      controls.push(
+        createTextInput(component, "Amount", action.amount ?? "-1", (value) => {
+          updateAction({ amount: value });
+        }, { placeholder: "-1" })
       );
     }
     return controls;
@@ -6930,6 +7127,51 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     });
   }
 
+  // Blank (default) shows items in whatever order the bound array is
+  // actually stored in, unchanged from before this existed. `sortBinding`
+  // is a bare field name within each item — never an "@" path, there's
+  // nothing else it could mean (see the defaults' own comment) — resolved
+  // and applied purely at render time (renderRepeaterComponent,
+  // workbench-character-view.js); it also self-heals the STORED order to
+  // match once, the first time it finds them different, so index-based
+  // writes (setRepeaterItemValue, Remove) stay correct without needing
+  // their own separate original-vs-sorted index bookkeeping. Meaningless
+  // on a grouped Repeater's own OUTER level (component.groupByBinding —
+  // Spells' level groups are already appended in level order by
+  // renderGenericAddControls' own grouped branch) — offered unconditionally
+  // anyway, same as every other field here, rather than guessing which
+  // repeaters would want it.
+  function createRepeaterSortControls(component) {
+    return [
+      createFieldRow(
+        [
+          createTextInput(component, "Sort by field", component.sortBinding || "", (value) => {
+            const next = value.trim();
+            updateComponent(component.uid, (draft) => {
+              draft.sortBinding = next;
+            }, { rerenderCanvas: true });
+          }, { placeholder: "e.g. level" }),
+          createRadioButtonGroup(
+            component,
+            "Direction",
+            [
+              { value: "asc", label: "Ascending" },
+              { value: "desc", label: "Descending" },
+            ],
+            component.sortDirection === "desc" ? "desc" : "asc",
+            (value) => {
+              updateComponent(component.uid, (draft) => {
+                draft.sortDirection = value;
+              }, { rerenderCanvas: true });
+            },
+            { forceSingleRow: true, hideLabel: true }
+          ),
+        ],
+        { columns: 2 }
+      ),
+    ];
+  }
+
   // A Repeater's own Add picker never sources from the Repeater component
   // itself — it's discovered generically from whichever cell(s) INSIDE its
   // item template carry their own Source/Options (see hasConfiguredSource/
@@ -7037,6 +7279,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       controls.push(createRepeaterAllowCustomAddToggle(component));
     }
     controls.push(createRepeaterAllowRemoveToggle(component));
+    controls.push(...createRepeaterSortControls(component));
     if (component.allowAdd) {
       controls.push(...createRepeaterSourceControls(component));
     }
@@ -7137,50 +7380,63 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // ctx.resolveBindableString/ctx.evaluateFormula in component-renderers.js
   // — Image previously had no binding OR formula support at all here, a
   // real functional gap, not just a naming one).
-  function createImageUrlControl(component) {
+  // The Image component's own URL field — shared by renderImageInspector
+  // below AND Button's own Image field (createButtonInspectorControls),
+  // same reasoning as createIconFieldControl just above: one picker/preview
+  // implementation, not a second hand-typed copy. fieldKey ("url" for
+  // Image, "image" for Button — the two components' own field names)
+  // decides which draft property gets written; showPatternPicker/
+  // supportsFormula are both off for Button — a small inline face image
+  // doesn't need the full pattern/shape library, and component.formula
+  // already means something else for every other Input variant (its own
+  // bound display value).
+  function createImageUrlControl(component, { fieldKey = "url", showPatternPicker = true, supportsFormula = true, labelText = "Binding / Text" } = {}) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column";
-    const id = toId([component.uid, "Image URL", "input"]);
+    const id = toId([component.uid, labelText, "input"]);
     const label = document.createElement("label");
     label.className = "form-label fw-semibold text-body-secondary";
     label.setAttribute("for", id);
-    label.textContent = "Binding / Text";
+    label.textContent = labelText;
     const row = document.createElement("div");
     row.className = "d-flex gap-1";
     const input = document.createElement("input");
     input.className = "form-control";
     input.type = "text";
     input.id = id;
-    input.placeholder = "https://..., @portrait.url, or =formula";
-    input.value = component.formula ? `=${component.formula}` : resolveImageUrl(component);
+    input.placeholder = supportsFormula ? "https://..., @portrait.url, or =formula" : "https://... or @portrait.url";
+    input.value = supportsFormula && component.formula ? `=${component.formula}` : fieldKey === "url" ? resolveImageUrl(component) : component[fieldKey] || "";
     const feedback = createFieldPreviewFeedback();
     feedback.update(input.value);
     input.addEventListener("input", () => {
       const trimmed = input.value.trim();
       updateComponent(component.uid, (draft) => {
-        if (trimmed.startsWith("=")) {
+        if (supportsFormula && trimmed.startsWith("=")) {
           draft.formula = trimmed.slice(1).trim();
-          draft.url = "";
+          draft[fieldKey] = "";
         } else {
-          draft.url = input.value;
-          draft.formula = "";
+          draft[fieldKey] = input.value;
+          if (supportsFormula) draft.formula = "";
         }
       }, { rerenderCanvas: true });
       feedback.update(input.value);
     });
-    const patternButton = document.createElement("button");
-    patternButton.type = "button";
-    patternButton.className = "btn btn-outline-secondary";
-    patternButton.setAttribute("data-bs-toggle", "tooltip");
-    patternButton.setAttribute("data-bs-title", "Insert a pattern or shape");
-    patternButton.setAttribute("aria-label", "Insert a pattern or shape");
-    const icon = document.createElement("span");
-    icon.className = "iconify";
-    icon.dataset.icon = "tabler:brush";
-    icon.setAttribute("aria-hidden", "true");
-    patternButton.appendChild(icon);
-    patternButton.addEventListener("click", () => openPatternPicker(component, input));
-    row.append(input, patternButton);
+    row.append(input);
+    if (showPatternPicker) {
+      const patternButton = document.createElement("button");
+      patternButton.type = "button";
+      patternButton.className = "btn btn-outline-secondary";
+      patternButton.setAttribute("data-bs-toggle", "tooltip");
+      patternButton.setAttribute("data-bs-title", "Insert a pattern or shape");
+      patternButton.setAttribute("aria-label", "Insert a pattern or shape");
+      const icon = document.createElement("span");
+      icon.className = "iconify";
+      icon.dataset.icon = "tabler:brush";
+      icon.setAttribute("aria-hidden", "true");
+      patternButton.appendChild(icon);
+      patternButton.addEventListener("click", () => openPatternPicker(component, input));
+      row.append(patternButton);
+    }
     wrapper.append(label, row, feedback.element);
     return wrapper;
   }
@@ -7641,30 +7897,25 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     }
   }
 
-  // Icon field row: a live glyph-preview swatch + a searchable text input
-  // (common/js/lib/icon-picker.js's attachIconAutocomplete, the same
-  // ddb-icons.css/Bootstrap Icons search Press's own Icon field uses) —
-  // typing "@some.path" directly into this same field is how a bound icon
-  // is authored (see the icon registry entry's own comment), so there's no
-  // separate generic Binding control below it the way most other types have.
-  function renderIconInspector(component) {
-    const controls = [];
+  // The Icon component's own field row: a live glyph-preview swatch + a
+  // searchable text input (common/js/lib/icon-picker.js's
+  // attachIconAutocomplete, the same ddb-icons.css/Bootstrap Icons search
+  // Press's own Icon field uses) — shared by renderIconInspector below AND
+  // Button's own Icon field (createButtonInspectorControls), rather than a
+  // second, narrower hand-typed copy, so an author gets the exact same
+  // picker/preview/validation wherever an iconClass gets authored.
+  // supportsFormula:false (Button's own call) drops the "=formula" mode
+  // entirely — component.formula already means something else for every
+  // OTHER Input variant (its own bound display value), so a Button's icon
+  // field never touches it, only the plain iconClass literal/binding.
+  function createIconFieldControl(component, { labelText = "Binding / Text", supportsFormula = true } = {}) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column";
-    const id = toId([component.uid, "Icon", "input"]);
+    const id = toId([component.uid, labelText, "input"]);
     const label = document.createElement("label");
     label.className = "form-label fw-semibold text-body-secondary";
     label.setAttribute("for", id);
-    // "Binding / Text" — not "Icon" — matching every other component's
-    // data-population field name exactly (see
-    // project_binding_text_vs_source memory): typing "@some.path" directly
-    // into this same field is how a bound icon is authored, same
-    // literal-or-binding convention as Text's own field. "=formula" is a
-    // third mode on the same field (component.formula, the same generic
-    // key Text/Input use) rather than a second input — takes priority over
-    // iconClass when set, for a computed icon class (e.g. ="ddb-"+@type)
-    // that a single bound @path can't express.
-    label.textContent = "Binding / Text";
+    label.textContent = labelText;
     const row = document.createElement("div");
     row.className = "input-group";
     // Two nested spans, matching Press's own markup exactly (press/index.html's
@@ -7684,8 +7935,8 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     input.className = "form-control";
     input.type = "text";
     input.id = id;
-    input.placeholder = "ddb-fire, bi-star, @some.path, or =formula";
-    input.value = component.formula ? `=${component.formula}` : component.iconClass || "";
+    input.placeholder = supportsFormula ? "ddb-fire, bi-star, @some.path, or =formula" : "ddb-fire, bi-star, or @some.path";
+    input.value = supportsFormula && component.formula ? `=${component.formula}` : component.iconClass || "";
     const feedback = createFieldPreviewFeedback();
 
     const refreshPreview = () => {
@@ -7697,7 +7948,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       // this little preview and the canvas agree on what a bound/computed
       // icon will actually look like.
       let resolved = input.value;
-      if (trimmed.startsWith("=")) {
+      if (supportsFormula && trimmed.startsWith("=")) {
         resolved = evaluatePreviewFormula(trimmed.slice(1).trim());
       } else if (trimmed.startsWith("@")) {
         resolved = resolvePreviewBindingValue(trimmed);
@@ -7718,12 +7969,12 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     const commit = (value) => {
       const trimmed = value.trim();
       updateComponent(component.uid, (draft) => {
-        if (trimmed.startsWith("=")) {
+        if (supportsFormula && trimmed.startsWith("=")) {
           draft.formula = trimmed.slice(1).trim();
           draft.iconClass = "";
         } else {
           draft.iconClass = value;
-          draft.formula = "";
+          if (supportsFormula) draft.formula = "";
         }
       }, { rerenderCanvas: true });
       refreshPreview();
@@ -7743,8 +7994,20 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         commit(value);
       },
     });
-    controls.push(wrapper);
+    return wrapper;
+  }
 
+  // "Binding / Text" — not "Icon" — matching every other component's
+  // data-population field name exactly (see project_binding_text_vs_source
+  // memory): typing "@some.path" directly into this same field is how a
+  // bound icon is authored, same literal-or-binding convention as Text's
+  // own field. "=formula" is a third mode on the same field
+  // (component.formula, the same generic key Text/Input use) rather than a
+  // second input — takes priority over iconClass when set, for a computed
+  // icon class (e.g. ="ddb-"+@type) that a single bound @path can't
+  // express.
+  function renderIconInspector(component) {
+    const controls = [createIconFieldControl(component)];
     controls.push(
       createTextInput(component, "Aria label", component.ariaLabel || "", (value) => {
         updateComponent(component.uid, (draft) => {
@@ -8356,10 +8619,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       }
       merged.sourceBinding = merged.sourceBinding.trim();
     }
-    if (typeof merged.roller !== "string") {
-      merged.roller = "";
-    }
-    merged.roller = merged.roller.trim();
     if (isZoneContainer(merged)) {
       const zones = merged.zones && typeof merged.zones === "object" ? merged.zones : {};
       Object.keys(zones).forEach((key) => {

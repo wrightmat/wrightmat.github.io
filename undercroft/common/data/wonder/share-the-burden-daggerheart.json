@@ -1,0 +1,22 @@
+{
+  "index": "share-the-burden",
+  "name": "Share the Burden",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Grace",
+    "level": 6,
+    "recallCost": 0
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per rest, take on the Stress from a willing creature within Melee range. The target describes what intimate knowledge or emotions telepathically leak from their mind in this moment between you. Transfer any number of their marked Stress to you, then gain a Hope for each Stress transferred."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-share-the-burden-feature"
+  ]
+}

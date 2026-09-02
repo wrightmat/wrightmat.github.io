@@ -1,0 +1,19 @@
+{
+  "index": "bonding-honey",
+  "name": "Bonding Honey",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "This honey can be used to glue two objects together permanently."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-bonding-honey-feature"
+  ]
+}

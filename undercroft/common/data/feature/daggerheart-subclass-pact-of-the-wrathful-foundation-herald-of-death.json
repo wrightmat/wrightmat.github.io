@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-wrathful-foundation-herald-of-death",
+  "name": "Foundation: Herald of Death",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you fail an attack roll, you can spend a Favor to reroll it. If it fails again, mark a Stress and take the new result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you fail an attack roll, you can spend a Favor to reroll it. If it fails again, mark a Stress and take the new result."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

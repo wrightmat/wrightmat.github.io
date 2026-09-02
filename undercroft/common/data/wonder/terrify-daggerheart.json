@@ -1,0 +1,22 @@
+{
+  "index": "terrify",
+  "name": "Terrify",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 3,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against a target within Far range. On a success, the target marks 1d4 Stress and you can choose to make the target run one range away from you (Close to Far, Far to Very Far, etc). On a success with Fear, the target becomes temporarily Vulnerable."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-terrify-feature"
+  ]
+}

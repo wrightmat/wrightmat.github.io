@@ -1,0 +1,50 @@
+{
+  "index": "school-of-knowledge",
+  "name": "School of Knowledge",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "parentKind": "class",
+  "parentId": "wizard-daggerheart",
+  "class": "Wizard",
+  "description": "Play the School of Knowledge if you want a keen understanding of the world around you.",
+  "domains": [
+    "Codex",
+    "Splendor"
+  ],
+  "spellcastTrait": "Knowledge",
+  "features": [
+    {
+      "name": "Foundation: Prepared",
+      "description": "Take an additional domain card of your level or lower from a domain you have access to."
+    },
+    {
+      "name": "Foundation: Adept",
+      "description": "When you Utilize an Experience, you can mark a Stress instead of spending a Hope. If you do, double your Experience modifier for that roll."
+    },
+    {
+      "name": "Specialization: Accomplished",
+      "description": "Take an additional domain card of your level or lower from a domain you have access to."
+    },
+    {
+      "name": "Specialization: Perfect Recall",
+      "description": "Once per rest, when you recall a domain card in your vault, you can reduce its Recall Cost by 1."
+    },
+    {
+      "name": "Mastery: Brilliant",
+      "description": "Take an additional domain card of your level or lower from a domain you have access to."
+    },
+    {
+      "name": "Mastery: Honed Expertise",
+      "description": "When you use an Experience, roll a d6. On a result of 5 or higher, you can use it without spending Hope."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-subclass-school-of-knowledge-foundation-prepared",
+    "feat.daggerheart-subclass-school-of-knowledge-foundation-adept",
+    "feat.daggerheart-subclass-school-of-knowledge-specialization-accomplished",
+    "feat.daggerheart-subclass-school-of-knowledge-specialization-perfect-recall",
+    "feat.daggerheart-subclass-school-of-knowledge-mastery-brilliant",
+    "feat.daggerheart-subclass-school-of-knowledge-mastery-honed-expertise"
+  ]
+}

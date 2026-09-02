@@ -1,0 +1,168 @@
+{
+  "name": "Marlowe Fairwind",
+  "title": "Marlowe Fairwind",
+  "template": "tpl.daggerheart.character",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "data": {
+    "name": "Marlowe Fairwind"
+  },
+  "state": {
+    "timers": {},
+    "log": []
+  },
+  "identity": {
+    "name": "Marlowe Fairwind",
+    "pronouns": "she/her",
+    "level": 1,
+    "classes": [
+      {
+        "name": "Sorcerer",
+        "level": 1,
+        "refKind": "class",
+        "refId": "sorcerer-daggerheart",
+        "subclass": {
+          "name": "Primal Origin",
+          "refKind": "variant",
+          "refId": "primal-origin-daggerheart"
+        }
+      }
+    ],
+    "race": {
+      "name": "Elf",
+      "refKind": "species",
+      "refId": "elf-daggerheart"
+    },
+    "background": {
+      "name": "Loreborne",
+      "refKind": "background",
+      "refId": "loreborne-daggerheart"
+    }
+  },
+  "stats": {
+    "abilities": {
+      "agility": 0,
+      "strength": -1,
+      "finesse": 1,
+      "instinct": 2,
+      "presence": 1,
+      "knowledge": 0
+    },
+    "proficiencyBonus": 1,
+    "skills": [],
+    "hp": {
+      "max": 6,
+      "current": 1
+    },
+    "evasion": 10,
+    "savingThrows": [
+      {
+        "id": 1,
+        "name": "agility",
+        "friendlyName": "Agility",
+        "shortName": "Agility",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 2,
+        "name": "strength",
+        "friendlyName": "Strength",
+        "shortName": "Strength",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 3,
+        "name": "finesse",
+        "friendlyName": "Finesse",
+        "shortName": "Finesse",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 4,
+        "name": "instinct",
+        "friendlyName": "Instinct",
+        "shortName": "Instinct",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 5,
+        "name": "presence",
+        "friendlyName": "Presence",
+        "shortName": "Presence",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      },
+      {
+        "id": 6,
+        "name": "knowledge",
+        "friendlyName": "Knowledge",
+        "shortName": "Knowledge",
+        "value": 0,
+        "proficiency": 0,
+        "advantage": false,
+        "disadvantage": false
+      }
+    ],
+    "speed": {
+      "walk": 0,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 0
+    },
+    "experiences": [
+      {
+        "modifier": 2,
+        "name": "Royale Mage"
+      },
+      {
+        "modifier": 2,
+        "name": "Not On My Watch"
+      }
+    ],
+    "armorScore": 3,
+    "thresholds": {
+      "major": 7,
+      "severe": 14
+    },
+    "domainCards": [
+      {
+        "name": "Unleash Chaos",
+        "refKind": "wonder",
+        "refId": "unleash-chaos-daggerheart",
+        "level": 1,
+        "inLoadout": true
+      },
+      {
+        "name": "Rain of Blades",
+        "refKind": "wonder",
+        "refId": "rain-of-blades-daggerheart",
+        "level": 1,
+        "inLoadout": true
+      }
+    ]
+  },
+  "featureIds": [],
+  "currencies": {},
+  "inventory": [],
+  "proficiencies": {},
+  "pendingChoices": [],
+  "limitedUses": [],
+  "primaryWeapon": "Dualstaff",
+  "armor": "Leather"
+}

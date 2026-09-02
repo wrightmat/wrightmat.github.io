@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-armor-feature-flexible",
+  "name": "Flexible",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "+1 to Evasion",
+  "mechanics": {
+    "type": "passive",
+    "text": "+1 to Evasion"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

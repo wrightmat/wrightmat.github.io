@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-troubadour-foundation-gifted-performer",
+  "name": "Foundation: Gifted Performer",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Describe how you perform for others. You can play each song once per long rest:\n\n- Relaxing Song: You and all allies within Close range clear a Hit Point.\n- Epic Song: Make a target within Close range temporarily Vulnerable.\n- Heartbreaking Song: You and all allies within Close range gain a Hope.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Describe how you perform for others. You can play each song once per long rest:\n\n- Relaxing Song: You and all allies within Close range clear a Hit Point.\n- Epic Song: Make a target within Close range temporarily Vulnerable.\n- Heartbreaking Song: You and all allies within Close range gain a Hope."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

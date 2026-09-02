@@ -1,0 +1,22 @@
+{
+  "index": "damnation",
+  "name": "Damnation",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 9,
+    "recallCost": 2
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Make a Spellcast Roll against a target within Far range. On a success, mark any number of Stress to roll an equal number of d20s, dealing magic damage equal to the total result. If the target is defeated as a result of this attack, all adversaries within Far range of the target mark a Stress."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-damnation-feature"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-damnation-feature",
+  "name": "feat.daggerheart-domain-card-damnation-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll against a target within Far range. On a success, mark any number of Stress to roll an equal number of d20s, dealing magic damage equal to the total result. If the target is defeated as a result of this attack, all adversaries within Far range of the target mark a Stress.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll against a target within Far range. On a success, mark any number of Stress to roll an equal number of d20s, dealing magic damage equal to the total result. If the target is defeated as a result of this attack, all adversaries within Far range of the target mark a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

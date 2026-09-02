@@ -13,5 +13,25 @@
   },
   "featureIds": [
     "feat.prevent-death"
-  ]
+  ],
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "life",
+        "name": "Life"
+      }
+    ]
+  }
 }

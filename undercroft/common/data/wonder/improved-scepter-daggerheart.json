@@ -1,0 +1,29 @@
+{
+  "index": "improved-scepter",
+  "name": "Improved Scepter",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Presence",
+    "range": "Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 3,
+    "type": "Magical"
+  },
+  "features": [
+    {
+      "name": "Versatile",
+      "description": "This weapon can also be used with these statistics—Presence, Melee, d8+3."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-improved-scepter-versatile"
+  ]
+}

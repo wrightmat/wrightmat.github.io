@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-reckless",
+  "name": "Reckless",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to gain advantage on an attack.",
+  "mechanics": {
+    "type": "active",
+    "text": "Mark a Stress to gain advantage on an attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 2,
+  "recallCost": 1
+}

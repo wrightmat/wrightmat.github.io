@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-wordsmith-foundation-heart-of-a-poet",
+  "name": "Foundation: Heart of a Poet",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "After you make an action roll to impress, persuade, or offend someone, you can spend a Hope to add a d4 to the roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "After you make an action roll to impress, persuade, or offend someone, you can spend a Hope to add a d4 to the roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

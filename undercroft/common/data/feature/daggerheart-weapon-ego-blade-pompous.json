@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-ego-blade-pompous",
+  "name": "Pompous",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You must have a Presence of 0 or lower to use this weapon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You must have a Presence of 0 or lower to use this weapon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

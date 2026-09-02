@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-faerie-wings",
+  "name": "Wings",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can fly. While flying, you can mark a Stress after an adversary makes an attack against you to gain a +2 bonus to your Evasion against that attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can fly. While flying, you can mark a Stress after an adversary makes an attack against you to gain a +2 bonus to your Evasion against that attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

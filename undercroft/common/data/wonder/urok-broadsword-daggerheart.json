@@ -1,0 +1,29 @@
+{
+  "index": "urok-broadsword",
+  "name": "Urok Broadsword",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 3,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Deadly",
+      "description": "When you deal Severe damage, the target must mark an additional HP."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-urok-broadsword-deadly"
+  ]
+}

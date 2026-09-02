@@ -11,12 +11,21 @@
   "properties": {
     "form": "spell"
   },
-  "featureIds": [
-    "feat.random-effect"
-  ],
-  "featureParams": {
-    "feat.random-effect": {
-      "optionCount": 5
-    }
+  "featureIds": [],
+  "featureParams": {},
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "sorcerer",
+        "name": "Sorcerer"
+      },
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": []
   }
 }

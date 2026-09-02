@@ -1,0 +1,22 @@
+{
+  "index": "eldritch-flesh",
+  "name": "Eldritch Flesh",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 8,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You embody the darkness you have dallied with. When this card is in your loadout:\n\n- Gain a +1 bonus to your damage thresholds for each Stress you have marked.\n- When you roll with Fear, you can spend 2 Hope to clear an Armor Slot."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-eldritch-flesh-feature"
+  ]
+}

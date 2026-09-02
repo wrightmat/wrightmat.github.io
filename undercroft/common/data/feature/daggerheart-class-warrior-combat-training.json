@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-warrior-combat-training",
+  "name": "Combat Training",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You ignore burden when equipping weapons. When you deal physical damage, you gain a bonus to your damage roll equal to your level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You ignore burden when equipping weapons. When you deal physical damage, you gain a bonus to your damage roll equal to your level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

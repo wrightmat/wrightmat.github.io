@@ -1,0 +1,22 @@
+{
+  "index": "improved-dagger",
+  "name": "Improved Dagger",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 2,
+    "trait": "Finesse",
+    "range": "Melee",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 4,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

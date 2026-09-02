@@ -1,0 +1,23 @@
+{
+  "index": "legendary-full-plate-armor",
+  "name": "Legendary Full Plate Armor",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "armor",
+    "tier": 4
+  },
+  "baseMajorThreshold": 17,
+  "baseSevereThreshold": 44,
+  "baseScore": 7,
+  "features": [
+    {
+      "name": "Very Heavy",
+      "description": "-2 to Evasion; -1 to Agility"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-armor-feature-very-heavy"
+  ]
+}

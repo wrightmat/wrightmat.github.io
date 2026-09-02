@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-martial-artist-mastery-limit-breaker",
+  "name": "Mastery: Limit Breaker",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per rest, you can perform an unbelievable feat such as running across water, leaping between distant rooftops, or scaling the side of a building without needing to roll. When you do, gain a Hope and clear a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per rest, you can perform an unbelievable feat such as running across water, leaping between distant rooftops, or scaling the side of a building without needing to roll. When you do, gain a Hope and clear a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

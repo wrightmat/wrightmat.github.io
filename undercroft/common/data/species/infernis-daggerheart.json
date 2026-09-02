@@ -29,5 +29,20 @@
       "Solvane"
     ],
     "lastNames": []
-  }
+  },
+  "index": "infernis",
+  "features": [
+    {
+      "name": "Fearless",
+      "description": "When you roll with Fear, you can mark 2 Stress to change it into a roll with Hope instead."
+    },
+    {
+      "name": "Dread Visage",
+      "description": "You have advantage on rolls to intimidate hostile creatures."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-infernis-fearless",
+    "feat.daggerheart-ancestry-infernis-dread-visage"
+  ]
 }

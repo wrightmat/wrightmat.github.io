@@ -1,0 +1,19 @@
+{
+  "index": "homing-compasses",
+  "name": "Homing Compasses",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "These two compasses point toward each other no matter how far apart they are."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-homing-compasses-feature"
+  ]
+}

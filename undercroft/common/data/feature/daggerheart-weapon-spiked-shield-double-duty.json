@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-spiked-shield-double-duty",
+  "name": "Double Duty",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "+1 to Armor Score; +1 to primary weapon damage within Melee range",
+  "mechanics": {
+    "type": "passive",
+    "text": "+1 to Armor Score; +1 to primary weapon damage within Melee range"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -19,5 +19,15 @@
       "speedType": "flying",
       "distance": 300
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": []
   }
 }

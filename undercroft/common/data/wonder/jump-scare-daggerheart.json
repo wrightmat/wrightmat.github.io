@@ -1,0 +1,22 @@
+{
+  "index": "jump-scare",
+  "name": "Jump Scare",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 6,
+    "recallCost": 0
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When you deal magic damage to a target, you can marka Stress to immediately teleport into Melee range of them. When you do, they become Vulnerable until they mark one or more Hit Points."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-jump-scare-feature"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "index": "empty-chest",
+  "name": "Empty Chest",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "This magical chest appears empty. When you speak a specific trigger word or action and open the chest, you can see the items stored within it."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-empty-chest-feature"
+  ]
+}

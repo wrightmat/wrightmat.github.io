@@ -1,0 +1,19 @@
+{
+  "index": "death-tea",
+  "name": "Death Tea",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "After you drink this tea, you instantly kill your target when you critically succeed on an attack. If you don't critically succeed on an attack before your next long rest, you die."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-death-tea-feature"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "index": "infinite-bag",
+  "name": "Infinite Bag",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "When you store items in this bag, they are kept in a pocket dimension that never runs out of space. You can retrieve an item at any time."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-infinite-bag-feature"
+  ]
+}

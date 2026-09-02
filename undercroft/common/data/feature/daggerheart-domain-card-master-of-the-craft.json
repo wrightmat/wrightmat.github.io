@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-master-of-the-craft",
+  "name": "Master of the Craft",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a permanent +2 bonus to two of your Experiences or a permanent +3 bonus to one of your Experiences. Then place this card in your vault permanently.",
+  "mechanics": {
+    "type": "active",
+    "text": "Gain a permanent +2 bonus to two of your Experiences or a permanent +3 bonus to one of your Experiences. Then place this card in your vault permanently."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Grace",
+  "level": 9,
+  "recallCost": 0
+}

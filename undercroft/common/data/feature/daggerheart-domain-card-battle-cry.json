@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-battle-cry",
+  "name": "Battle Cry",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, while you're charging into danger, you can muster a rousing call that inspires your allies. All allies who can hear you each clear a Stress and gain a Hope. Additionally, your allies gain advantage on attack rolls until you or an ally rolls a failure with Fear.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once per long rest, while you're charging into danger, you can muster a rousing call that inspires your allies. All allies who can hear you each clear a Stress and gain a Hope. Additionally, your allies gain advantage on attack rolls until you or an ally rolls a failure with Fear."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Blade",
+  "level": 8,
+  "recallCost": 2
+}

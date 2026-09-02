@@ -1,0 +1,22 @@
+{
+  "index": "crossbow",
+  "name": "Crossbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 1,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 1,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

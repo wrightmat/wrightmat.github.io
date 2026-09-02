@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-winged-sentinel-foundation-wings-of-light",
+  "name": "Foundation: Wings of Light",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can fly. While flying, you can do the following:\n\n- Mark a Stress to pick up and carry another willing creature approximately your size or smaller.\n- Spend a Hope to deal an extra 1d8 damage on a successful attack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can fly. While flying, you can do the following:\n\n- Mark a Stress to pick up and carry another willing creature approximately your size or smaller.\n- Spend a Hope to deal an extra 1d8 damage on a successful attack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

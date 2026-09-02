@@ -1,0 +1,19 @@
+{
+  "index": "phoenix-feather",
+  "name": "Phoenix Feather",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "If you have at least one Phoenix Feather on you when you fall unconscious, you gain a +1 bonus to the roll you make to determine whether you gain a scar."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-phoenix-feather-feature"
+  ]
+}

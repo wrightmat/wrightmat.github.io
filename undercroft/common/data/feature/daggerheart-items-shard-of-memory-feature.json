@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-items-shard-of-memory-feature",
+  "name": "feat.daggerheart-items-shard-of-memory-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Once per long rest, you can spend 2 Hope to recall a domain card from your vault instead of paying its Recall Cost.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per long rest, you can spend 2 Hope to recall a domain card from your vault instead of paying its Recall Cost."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

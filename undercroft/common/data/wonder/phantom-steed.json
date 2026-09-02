@@ -16,5 +16,20 @@
   ],
   "featureTiers": {
     "feat.summoned-companion": "minor"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "wizard",
+        "name": "Wizard"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      }
+    ]
   }
 }

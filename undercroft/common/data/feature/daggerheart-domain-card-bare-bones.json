@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-bare-bones",
+  "name": "Bare Bones",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you choose not to equip armor, you have a base Armor Score of 3 + your Strength and use the following as your base damage thresholds:\n\n- Tier 1: 9/19\n- Tier 2: 11/24\n- Tier 3: 13/31\n- Tier 4: 15/38",
+  "mechanics": {
+    "type": "active",
+    "text": "When you choose not to equip armor, you have a base Armor Score of 3 + your Strength and use the following as your base damage thresholds:\n\n- Tier 1: 9/19\n- Tier 2: 11/24\n- Tier 3: 13/31\n- Tier 4: 15/38"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 1,
+  "recallCost": 0
+}

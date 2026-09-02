@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-poisoners-guild-mastery-venomancer",
+  "name": "Mastery: Venomancer",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You also know these poisons:\n\n- Blight Seed: The target gains a permanent -3 penalty to their damage thresholds. This can only affect them once.\n- Fear Leaf: This attack gains a damage bonus equal to the result of your Fear Die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You also know these poisons:\n\n- Blight Seed: The target gains a permanent -3 penalty to their damage thresholds. This can only affect them once.\n- Fear Leaf: This attack gains a damage bonus equal to the result of your Fear Die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

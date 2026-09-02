@@ -1,0 +1,29 @@
+{
+  "index": "spiked-bow",
+  "name": "Spiked Bow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Agility",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 7,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Versatile",
+      "description": "This weapon can also be used with these statistics—Agility, Melee, d10+5."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-spiked-bow-versatile"
+  ]
+}

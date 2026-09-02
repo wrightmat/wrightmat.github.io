@@ -38,5 +38,15 @@
   },
   "featureTiers": {
     "feat.damage": "tier-2"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "warlock",
+        "name": "Warlock"
+      }
+    ],
+    "subclasses": []
   }
 }

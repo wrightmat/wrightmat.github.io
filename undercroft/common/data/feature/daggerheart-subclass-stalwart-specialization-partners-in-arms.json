@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-stalwart-specialization-partners-in-arms",
+  "name": "Specialization: Partners-in-Arms",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When an ally within Very Close range takes damage, you can mark an Armor Slot to reduce the severity by one threshold.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When an ally within Very Close range takes damage, you can mark an Armor Slot to reduce the severity by one threshold."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

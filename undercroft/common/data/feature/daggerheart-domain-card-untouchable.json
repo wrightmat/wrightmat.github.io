@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-untouchable",
+  "name": "Untouchable",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Gain a bonus to your Evasion equal to half your Agility.",
+  "mechanics": {
+    "type": "active",
+    "text": "Gain a bonus to your Evasion equal to half your Agility."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Bone",
+  "level": 1,
+  "recallCost": 1
+}

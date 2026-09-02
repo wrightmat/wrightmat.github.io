@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-call-of-the-slayer-specialization-weapon-specialist",
+  "name": "Specialization: Weapon Specialist",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can wield multiple weapons with dangerous ease. When you succeed on an attack, you can spend a Hope to add one of the damage dice from your secondary weapon to the damage roll. Additionally, once per long rest when you roll your Slayer Dice, reroll any 1s.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can wield multiple weapons with dangerous ease. When you succeed on an attack, you can spend a Hope to add one of the damage dice from your secondary weapon to the damage roll. Additionally, once per long rest when you roll your Slayer Dice, reroll any 1s."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

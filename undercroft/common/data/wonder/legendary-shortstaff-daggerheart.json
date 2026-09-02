@@ -1,0 +1,22 @@
+{
+  "index": "legendary-shortstaff",
+  "name": "Legendary Shortstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 4,
+    "trait": "Instinct",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 10,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

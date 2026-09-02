@@ -1,0 +1,30 @@
+{
+  "index": "book-of-homet",
+  "name": "Book of Homet",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Codex",
+    "level": 7,
+    "recallCost": 0
+  },
+  "featureIds": [
+    "feat.choice-of-effect"
+  ],
+  "featureParams": {
+    "feat.choice-of-effect": {
+      "options": [
+        {
+          "name": "Pass Through",
+          "text": "Make a Spellcast Roll (13). Once per rest on a success, you and all creatures touching you can pass through a wall or door within Close range. The effect ends once everyone is on the other side."
+        },
+        {
+          "name": "Plane Gate",
+          "text": "Make a Spellcast Roll (14). Once per long rest on a success, open a gateway to a location in another dimension or plane of existence you've been to before. This gateway lasts until your next rest."
+        }
+      ]
+    }
+  }
+}

@@ -30,5 +30,20 @@
   },
   "featureTiers": {
     "feat.healing": "tier-2"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      },
+      {
+        "refKind": "class",
+        "refId": "ranger",
+        "name": "Ranger"
+      }
+    ],
+    "subclasses": []
   }
 }

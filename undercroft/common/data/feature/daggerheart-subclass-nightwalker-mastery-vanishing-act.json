@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-nightwalker-mastery-vanishing-act",
+  "name": "Mastery: Vanishing Act",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to become Cloaked at any time. When Cloaked from this feature, you automatically clear the Restrained condition if you have it. You remain Cloaked in this way until you roll with Fear or until your next rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to become Cloaked at any time. When Cloaked from this feature, you automatically clear the Restrained condition if you have it. You remain Cloaked in this way until you roll with Fear or until your next rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

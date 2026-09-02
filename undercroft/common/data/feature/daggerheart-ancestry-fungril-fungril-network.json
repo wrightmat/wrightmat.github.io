@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-ancestry-fungril-fungril-network",
+  "name": "Fungril Network",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make an Instinct Roll (12) to use your mycelial array to speak with others of your ancestry. On a success, you can communicate across any distance.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Make an Instinct Roll (12) to use your mycelial array to speak with others of your ancestry. On a success, you can communicate across any distance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

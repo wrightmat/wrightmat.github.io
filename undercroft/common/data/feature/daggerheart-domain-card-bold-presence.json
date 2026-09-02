@@ -1,0 +1,27 @@
+{
+  "id": "feat.daggerheart-domain-card-bold-presence",
+  "name": "Bold Presence",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you make a Presence Roll, you can spend a Hope to add your Strength to the roll.\n\nAdditionally, once per rest when you would gain a condition, you can describe how your bold presence aids you in the situation and avoid gaining the condition.",
+  "mechanics": {
+    "type": "active",
+    "text": "When you make a Presence Roll, you can spend a Hope to add your Strength to the roll.\n\nAdditionally, once per rest when you would gain a condition, you can describe how your bold presence aids you in the situation and avoid gaining the condition."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "domain": "Valor",
+  "level": 2,
+  "recallCost": 0
+}

@@ -1,0 +1,19 @@
+{
+  "index": "health-potion",
+  "name": "Health Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Clear 1d4+1 HP."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-health-potion-feature"
+  ]
+}

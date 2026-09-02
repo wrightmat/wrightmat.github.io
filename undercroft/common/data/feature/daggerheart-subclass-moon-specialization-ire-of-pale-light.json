@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-moon-specialization-ire-of-pale-light",
+  "name": "Specialization: Ire of Pale Light",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When a Hexed creature within Far range fails an attack roll, they must mark a Stress.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When a Hexed creature within Far range fails an attack roll, they must mark a Stress."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-dark-whispers-feature",
+  "name": "feat.daggerheart-domain-card-dark-whispers-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can speak into the mind of any person with whom you've made physical contact. Once you've opened a channel with them, they can speak back into your mind. Additionally, you can mark a Stress to make a Spellcast Roll against them. On a success, you can ask the GM one of the following questions and receive an answer:\n\n- Where are they?\n- What are they doing?\n- What are they afraid of?\n- What do they cherish most in the world?",
+  "mechanics": {
+    "type": "active",
+    "text": "You can speak into the mind of any person with whom you've made physical contact. Once you've opened a channel with them, they can speak back into your mind. Additionally, you can mark a Stress to make a Spellcast Roll against them. On a success, you can ask the GM one of the following questions and receive an answer:\n\n- Where are they?\n- What are they doing?\n- What are they afraid of?\n- What do they cherish most in the world?"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

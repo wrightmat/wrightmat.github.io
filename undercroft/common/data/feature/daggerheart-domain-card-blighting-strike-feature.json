@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-blighting-strike-feature",
+  "name": "feat.daggerheart-domain-card-blighting-strike-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Make a Spellcast Roll against a target within Far range. On a success, the target takes d6+1 magic damage using your Proficiency and the next time the target deals damage to an ally, it is reduced by half. If you succeed with Fear, the target instead takes d10+1 magic damage using your Proficiency.",
+  "mechanics": {
+    "type": "active",
+    "text": "Make a Spellcast Roll against a target within Far range. On a success, the target takes d6+1 magic damage using your Proficiency and the next time the target deals damage to an ally, it is reduced by half. If you succeed with Fear, the target instead takes d10+1 magic damage using your Proficiency."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

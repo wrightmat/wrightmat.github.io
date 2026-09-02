@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-hammer-of-wrath-devastating",
+  "name": "Devastating",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Before you make an attack roll, you can mark a Stress to use a d20 as your damage die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Before you make an attack roll, you can mark a Stress to use a d20 as your damage die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-wrathful-foundation-favored-weapon",
+  "name": "Foundation: Favored Weapon",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to imbue your weapon with your Patron's fury until you deal Severe damage. On a successful imbued weapon attack, you can spend any number of Favor to gain a +1d6 damage bonus for each Favor spent.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to imbue your weapon with your Patron's fury until you deal Severe damage. On a successful imbued weapon attack, you can spend any number of Favor to gain a +1d6 damage bonus for each Favor spent."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

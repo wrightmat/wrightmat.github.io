@@ -35,5 +35,15 @@
   },
   "featureTiers": {
     "feat.damage": "tier-2"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "paladin",
+        "name": "Paladin"
+      }
+    ],
+    "subclasses": []
   }
 }

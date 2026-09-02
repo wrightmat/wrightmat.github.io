@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-martial-artist-foundation-focus",
+  "name": "Foundation: Focus",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "During a rest, roll a number of d6s equal to your Instinct and place a number of Focus tokens equal to the highest value rolled on this card. Spend a Focus to shift into a stance until you take Severe damage, the scene ends, you mark your last Hit Point, or you shift into another stance.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During a rest, roll a number of d6s equal to your Instinct and place a number of Focus tokens equal to the highest value rolled on this card. Spend a Focus to shift into a stance until you take Severe damage, the scene ends, you mark your last Hit Point, or you shift into another stance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

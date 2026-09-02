@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-feature-hooked",
+  "name": "Hooked",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, you can pull the target into Melee range.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, you can pull the target into Melee range."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

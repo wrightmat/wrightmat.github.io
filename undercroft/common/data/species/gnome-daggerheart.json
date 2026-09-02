@@ -1,0 +1,24 @@
+{
+  "index": "gnome",
+  "name": "Gnome",
+  "description": [
+    "Gnomes are small humanoids most easily recognized by their dense musculature, long arms, and large facial features."
+  ],
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "features": [
+    {
+      "name": "Nimble Fingers",
+      "description": "When you make a Finesse Roll, you can spend 2 Hope to reroll your Hope Die."
+    },
+    {
+      "name": "True Sight",
+      "description": "You have advantage on rolls to see through illusions."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-gnome-nimble-fingers",
+    "feat.daggerheart-ancestry-gnome-true-sight"
+  ]
+}

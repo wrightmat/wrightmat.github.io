@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-hedge-specialization-enhanced-hex",
+  "name": "Specialization: Enhanced Hex",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Attacks you make against Hexed creatures gain a damage bonus equal to your Proficiency.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Attacks you make against Hexed creatures gain a damage bonus equal to your Proficiency."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

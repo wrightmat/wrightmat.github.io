@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-wrathful-mastery-fearsome-attack",
+  "name": "Mastery: Fearsome Attack",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can always spend a Favor to reroll any number of your damage dice. You can continue spending Favor to reroll the same dice as many times as you'd like.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can always spend a Favor to reroll any number of your damage dice. You can continue spending Favor to reroll the same dice as many times as you'd like."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

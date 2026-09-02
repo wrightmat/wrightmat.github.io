@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-domain-card-thought-delver-feature",
+  "name": "feat.daggerheart-domain-card-thought-delver-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "You can peek into the minds of others. Spend a Hope to read the vague surface thoughts of a target within Far range. Make a Spellcast Roll against the target to delve for deeper, more hidden thoughts.\n\nOn a roll with Fear, the target might, at the GM's discretion, become aware that you're reading their thoughts.",
+  "mechanics": {
+    "type": "active",
+    "text": "You can peek into the minds of others. Spend a Hope to read the vague surface thoughts of a target within Far range. Make a Spellcast Roll against the target to delve for deeper, more hidden thoughts.\n\nOn a roll with Fear, the target might, at the GM's discretion, become aware that you're reading their thoughts."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

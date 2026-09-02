@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-class-warrior-attack-of-opportunity",
+  "name": "Attack of Opportunity",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "If an adversary within Melee range attempts to leave that range, make a reaction roll using a trait of your choice against their Difficulty. Choose one effect on a success, or two if you critically succeed:\n\n- They can't move from where they are.\n- You deal damage to them equal to your primary weapon's damage.\n- You move with them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If an adversary within Melee range attempts to leave that range, make a reaction roll using a trait of your choice against their Difficulty. Choose one effect on a success, or two if you critically succeed:\n\n- They can't move from where they are.\n- You deal damage to them equal to your primary weapon's damage.\n- You move with them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

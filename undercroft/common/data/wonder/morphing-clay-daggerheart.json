@@ -1,0 +1,19 @@
+{
+  "index": "morphing-clay",
+  "name": "Morphing Clay",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You can spend a Hope to use this clay, altering your face enough to make you unrecognizable until your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-morphing-clay-feature"
+  ]
+}

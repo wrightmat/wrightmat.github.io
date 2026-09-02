@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-juggernaut-specialization-eye-for-an-eye",
+  "name": "Specialization: Eye for an Eye",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When you mark more than one Hit Point from an attack in Melee range, the attacker must make a Reaction Roll (13). On a failure, once per rest, they immediately mark the same number of Hit Points in return.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you mark more than one Hit Point from an attack in Melee range, the attacker must make a Reaction Roll (13). On a failure, once per rest, they immediately mark the same number of Hit Points in return."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

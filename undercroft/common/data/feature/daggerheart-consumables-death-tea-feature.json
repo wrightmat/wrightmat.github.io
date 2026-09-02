@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-consumables-death-tea-feature",
+  "name": "feat.daggerheart-consumables-death-tea-feature",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "After you drink this tea, you instantly kill your target when you critically succeed on an attack. If you don't critically succeed on an attack before your next long rest, you die.",
+  "mechanics": {
+    "type": "passive",
+    "text": "After you drink this tea, you instantly kill your target when you critically succeed on an attack. If you don't critically succeed on an attack before your next long rest, you die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

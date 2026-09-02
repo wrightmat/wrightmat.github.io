@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-weapon-meridian-cutlass-dueling",
+  "name": "Dueling",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "When there are no other creatures within Close range of the target, gain advantage on your attack roll against them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When there are no other creatures within Close range of the target, gain advantage on your attack roll against them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

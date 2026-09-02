@@ -538,6 +538,14 @@
       "maximum": 12
     },
     {
+      "type": "number",
+      "key": "armorSlotsMarked",
+      "label": "Armor Slots Marked",
+      "minimum": 0,
+      "maximum": 12,
+      "default": 0
+    },
+    {
       "type": "object",
       "key": "thresholds",
       "label": "Damage Thresholds",
@@ -873,6 +881,511 @@
     },
     {
       "type": "array",
+      "key": "secondaryWeapons",
+      "label": "Secondary Weapon",
+      "values": [
+        {
+          "name": "Shortsword",
+          "description": "Agility • Melee • d8 physical • One-Handed — Paired",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Round Shield",
+          "description": "Strength • Melee • d4 physical • One-Handed — Protective",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Protective"
+        },
+        {
+          "name": "Tower Shield",
+          "description": "Strength • Melee • d6 physical • One-Handed — Barrier",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Barrier"
+        },
+        {
+          "name": "Small Dagger",
+          "description": "Finesse • Melee • d8 physical • One-Handed — Paired",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Whip",
+          "description": "Presence • Very Close • d6 physical • One-Handed — Startling",
+          "trait": "Presence",
+          "range": "Very Close",
+          "damage": "d6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Startling"
+        },
+        {
+          "name": "Grappler",
+          "description": "Finesse • Close • d6 physical • One-Handed — Hooked",
+          "trait": "Finesse",
+          "range": "Close",
+          "damage": "d6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Hooked"
+        },
+        {
+          "name": "Hand Crossbow",
+          "description": "Finesse • Far • d6+1 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Far",
+          "damage": "d6+1",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Improved Shortsword",
+          "description": "Agility • Melee • d8+2 physical • One-Handed — Paired",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d8+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Improved Round Shield",
+          "description": "Strength • Melee • d4+2 physical • One-Handed — Protective",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d4+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Protective"
+        },
+        {
+          "name": "Improved Tower Shield",
+          "description": "Strength • Melee • d6+2 physical • One-Handed — Barrier",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d6+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Barrier"
+        },
+        {
+          "name": "Improved Small Dagger",
+          "description": "Finesse • Melee • d8+2 physical • One-Handed — Paired",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d8+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Improved Whip",
+          "description": "Presence • Very Close • d6+2 physical • One-Handed — Startling",
+          "trait": "Presence",
+          "range": "Very Close",
+          "damage": "d6+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Startling"
+        },
+        {
+          "name": "Improved Grappler",
+          "description": "Finesse • Close • d6+2 physical • One-Handed — Hooked",
+          "trait": "Finesse",
+          "range": "Close",
+          "damage": "d6+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Hooked"
+        },
+        {
+          "name": "Improved Hand Crossbow",
+          "description": "Finesse • Far • d6+3 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Far",
+          "damage": "d6+3",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Spiked Shield",
+          "description": "Strength • Melee • d6+2 physical • One-Handed — Double Duty",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d6+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Double Duty"
+        },
+        {
+          "name": "Parrying Dagger",
+          "description": "Finesse • Melee • d6+2 physical • One-Handed — Parry",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d6+2",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Parry"
+        },
+        {
+          "name": "Returning Axe",
+          "description": "Agility • Close • d6+4 physical • One-Handed — Returning",
+          "trait": "Agility",
+          "range": "Close",
+          "damage": "d6+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Returning"
+        },
+        {
+          "name": "Advanced Shortsword",
+          "description": "Agility • Melee • d8+4 physical • One-Handed — Paired",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d8+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Advanced Round Shield",
+          "description": "Strength • Melee • d4+4 physical • One-Handed — Protective",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d4+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Protective"
+        },
+        {
+          "name": "Advanced Tower Shield",
+          "description": "Strength • Melee • d6+4 physical • One-Handed — Barrier",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d6+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Barrier"
+        },
+        {
+          "name": "Advanced Small Dagger",
+          "description": "Finesse • Melee • d8+4 physical • One-Handed — Paired",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d8+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Advanced Whip",
+          "description": "Presence • Very Close • d6+4 physical • One-Handed — Startling",
+          "trait": "Presence",
+          "range": "Very Close",
+          "damage": "d6+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Startling"
+        },
+        {
+          "name": "Advanced Grappler",
+          "description": "Finesse • Close • d6+4 physical • One-Handed — Hooked",
+          "trait": "Finesse",
+          "range": "Close",
+          "damage": "d6+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Hooked"
+        },
+        {
+          "name": "Advanced Hand Crossbow",
+          "description": "Finesse • Far • d6+5 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Far",
+          "damage": "d6+5",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Buckler",
+          "description": "Agility • Melee • d4+4 physical • One-Handed — Deflecting",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d4+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Deflecting"
+        },
+        {
+          "name": "Powered Gauntlet",
+          "description": "Knowledge • Close • d6+4 physical • One-Handed — Charged",
+          "trait": "Knowledge",
+          "range": "Close",
+          "damage": "d6+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Charged"
+        },
+        {
+          "name": "Hand Sling",
+          "description": "Finesse • Very Far • d6+4 physical • One-Handed — Versatile",
+          "trait": "Finesse",
+          "range": "Very Far",
+          "damage": "d6+4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Versatile"
+        },
+        {
+          "name": "Legendary Shortsword",
+          "description": "Agility • Melee • d8+6 physical • One-Handed — Paired",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d8+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Legendary Round Shield",
+          "description": "Strength • Melee • d4+6 physical • One-Handed — Protective",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d4+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Protective"
+        },
+        {
+          "name": "Legendary Tower Shield",
+          "description": "Strength • Melee • d6+6 physical • One-Handed — Barrier",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d6+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Barrier"
+        },
+        {
+          "name": "Legendary Small Dagger",
+          "description": "Finesse • Melee • d8+6 physical • One-Handed — Paired",
+          "trait": "Finesse",
+          "range": "Melee",
+          "damage": "d8+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Paired"
+        },
+        {
+          "name": "Legendary Whip",
+          "description": "Presence • Very Close • d6+6 physical • One-Handed — Startling",
+          "trait": "Presence",
+          "range": "Very Close",
+          "damage": "d6+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Startling"
+        },
+        {
+          "name": "Legendary Grappler",
+          "description": "Finesse • Close • d6+6 physical • One-Handed — Hooked",
+          "trait": "Finesse",
+          "range": "Close",
+          "damage": "d6+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Hooked"
+        },
+        {
+          "name": "Legendary Hand Crossbow",
+          "description": "Finesse • Far • d6+7 physical • One-Handed",
+          "trait": "Finesse",
+          "range": "Far",
+          "damage": "d6+7",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": ""
+        },
+        {
+          "name": "Braveshield",
+          "description": "Agility • Melee • d4+6 physical • One-Handed — Sheltering",
+          "trait": "Agility",
+          "range": "Melee",
+          "damage": "d4+6",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Sheltering"
+        },
+        {
+          "name": "Knuckle Claws",
+          "description": "Strength • Melee • d6+8 physical • One-Handed — Doubled Up",
+          "trait": "Strength",
+          "range": "Melee",
+          "damage": "d6+8",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Doubled Up"
+        },
+        {
+          "name": "Primer Shard",
+          "description": "Instinct • Very Close • d4 physical • One-Handed — Locked On",
+          "trait": "Instinct",
+          "range": "Very Close",
+          "damage": "d4",
+          "damageType": "Physical",
+          "burden": "One-Handed",
+          "feature": "Locked On"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "buildSteps",
+      "label": "Build Wizard Steps",
+      "values": [
+        {
+          "step": "class",
+          "label": "Class",
+          "kind": "class"
+        },
+        {
+          "step": "subclass",
+          "atCreation": true,
+          "label": "Subclass",
+          "kind": "variant",
+          "parentKind": "class"
+        },
+        {
+          "step": "heritage",
+          "label": "Heritage",
+          "picks": [
+            {
+              "kind": "species",
+              "label": "Ancestry"
+            },
+            {
+              "kind": "background",
+              "label": "Community"
+            }
+          ],
+          "allowMixedAncestry": true
+        },
+        {
+          "step": "abilities",
+          "label": "Traits",
+          "methods": [
+            {
+              "name": "array",
+              "values": [
+                {
+                  "name": "+2",
+                  "value": 2
+                },
+                {
+                  "name": "+1",
+                  "value": 1
+                },
+                {
+                  "name": "+1",
+                  "value": 1
+                },
+                {
+                  "name": "+0",
+                  "value": 0
+                },
+                {
+                  "name": "+0",
+                  "value": 0
+                },
+                {
+                  "name": "-1",
+                  "value": -1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "step": "input",
+          "label": "Experiences",
+          "targetArrayPath": "@stats.experiences",
+          "itemKey": "name",
+          "itemDefaults": {
+            "modifier": 2
+          },
+          "inputs": [
+            {
+              "label": "Experience 1",
+              "placeholder": "e.g. Silver-Tongued"
+            },
+            {
+              "label": "Experience 2",
+              "placeholder": "e.g. Quick Reflexes"
+            }
+          ]
+        },
+        {
+          "step": "details",
+          "label": "Details"
+        },
+        {
+          "step": "review",
+          "label": "Review"
+        },
+        {
+          "step": "choices",
+          "label": "Finish Choices",
+          "equipmentChoices": [
+            {
+              "name": "Primary Weapon",
+              "sourceField": "primaryWeapons",
+              "targetPath": "@primaryWeapon",
+              "choose": 1
+            },
+            {
+              "name": "Secondary Weapon",
+              "sourceField": "secondaryWeapons",
+              "targetPath": "@secondaryWeapon",
+              "choose": 1,
+              "desc": "Skip if your Primary Weapon is Two-Handed.",
+              "optional": true
+            },
+            {
+              "name": "Armor",
+              "sourceField": "armorTypes",
+              "targetPath": "@armor",
+              "choose": 1,
+              "statBindings": [
+                { "sourcePath": "baseScore", "targetBinding": "@stats.armorScore" },
+                { "sourcePath": "baseMajor", "targetBinding": "@stats.thresholds.major", "formula": "@base+@level" },
+                { "sourcePath": "baseSevere", "targetBinding": "@stats.thresholds.severe", "formula": "@base+@level" }
+              ]
+            }
+          ],
+          "startingDomainCards": 2
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "armorTypes",
       "label": "Armor",
       "values": [
@@ -1175,6 +1688,69 @@
     },
     {
       "type": "array",
+      "key": "rules",
+      "label": "Rules Reference",
+      "values": [
+        {
+          "name": "Action Rolls",
+          "description": "Any move where success would be trivial or failure would be boring automatically succeeds, but any move that's difficult to accomplish or risky to attempt triggers an action roll.\n\nAll action rolls require a pair of d12s called Duality Dice. These are two visually distinct twelve-sided dice, with one die representing Hope and the other representing Fear.\n\nTo make an action roll, you roll the Duality Dice, sum the results, apply any relevant modifiers, and compare the total to a Difficulty number to determine the outcome:\n\n- Success with Hope - total ≥ Difficulty and Hope Die > Fear Die: you succeed and gain a Hope.\n- Success with Fear - total ≥ Difficulty and Fear Die > Hope Die: you succeed with a cost or complication and the GM gains a Fear.\n- Failure with Hope - total < Difficulty and Hope Die > Fear Die: you fail with a minor consequence and gain a Hope; the spotlight goes to the GM.\n- Failure with Fear - total < Difficulty and Hope Die > Fear Die: you fail with a major consequence and the GM gains a Fear; the spotlight goes to the GM.\n- Critical Success - the Duality Dice show matching results: you automatically succeed with a bonus, gain a Hope, and clear a Stress (and deal critical damage if it was an attack roll). A Critical Success counts as a roll “with Hope.”\n\nAfter resolving the action roll, the table works together to weave the outcome into the narrative and play continues."
+        },
+        {
+          "name": "Reaction Rolls",
+          "description": "A reaction roll is made in response to an attack or a hazard, representing a character's attempt to avoid or withstand an imminent effect.\n\nReaction rolls work like action rolls, except they don't generate Hope or Fear, don't trigger additional GM moves, and other characters can't aid you with Help an Ally.\n\nIf you critically succeed on a reaction roll, you don't clear a Stress or gain a Hope, but you do ignore any effects that would have impacted you on a success, such as taking damage or marking Stress."
+        },
+        {
+          "name": "Group Action Rolls",
+          "description": "When multiple PCs take action together, the party chooses one PC to lead the action. Each other player then describes how their character collaborates on the task. The leader makes an action roll as usual, while the other players make reaction rolls using whichever traits they and the GM decide fit best.\n\nThe lead character gains a +1 bonus to their lead action roll for each of these reaction rolls that succeeded and a −1 penalty for each that failed."
+        },
+        {
+          "name": "Tag Team Rolls",
+          "description": "Each player can, once per session, initiate a Tag Team Roll between their character and another PC by spending 3 Hope. The players describe how they combine their actions in a unique and exciting way. Both players make separate action rolls; before resolving the rolls, choose one set of results to apply to both actions. On a roll with Hope all PCs involved gain a Hope; on a roll with Fear the GM gains a Fear token for each PC involved.\n\nOn a successful Tag Team attack roll, both players roll damage and add the totals together; treat the damage as if it came from a single source (choose which damage type applies if they differ). A Tag Team Roll counts as one action roll for countdowns or features that track action rolls, and although each player may only initiate one per session, a PC can participate in multiple Tag Team Rolls."
+        },
+        {
+          "name": "Advantage & Disadvantage",
+          "description": "Some features and effects let you roll with advantage or disadvantage on an action or reaction roll:\n\n- Advantage represents an opportunity that you seize to increase your chances of success. When you roll with advantage, you roll a d6 advantage die with your dice pool and add its result to your total.\n- Disadvantage represents an additional difficulty, hardship, or challenge you face. When you roll with disadvantage, you roll a d6 disadvantage die with your dice pool and subtract its result from your total.\n\nAdvantage or disadvantage can be granted or imposed by mechanical triggers or at the GM's discretion. When a PC aids you with Help an Ally, they roll their own advantage die and you add it to your total.\n\nAdvantage and disadvantage dice cancel each other, one-for-one, so you never roll both at the same time. If you have advantage or disadvantage from sources that don't add dice to your pool (such as another player's Help an Ally), their effects stack with your results."
+        },
+        {
+          "name": "Help an Ally",
+          "description": "When you Help an Ally who is making an action roll, describe how you do so and roll an advantage die. Multiple players can spend Hope to help the same acting player, but that player only adds the highest result to their final total."
+        },
+        {
+          "name": "Activate a Hope Feature",
+          "description": "A Hope Feature is any effect that allows (or requires) you to spend a specified amount of Hope to activate it. Class Hope features are class-specific features, detailed on your character sheet, that cost 3 Hope to activate.\n\nNote: When using a Hope Feature, if you rolled with Hope for that action, the Hope you gain from that roll can be spent on that feature (or toward it, if it requires multiple Hope)."
+        },
+        {
+          "name": "Attack Rolls",
+          "description": "When a PC uses a weapon to harm an adversary, they make an attack roll. The player chooses an equipped weapon, then rolls the Duality Dice and applies the weapon's attack modifier, any modifiers from features, items, or conditions, and any advantage or disadvantage dice to the total. On a success, the attack hits and you roll damage using your Proficiency and the weapon's damage dice. On a failure, the attack misses."
+        },
+        {
+          "name": "Damage Rolls",
+          "description": "After a successful attack or damaging spell, you roll damage dice equal to your Proficiency using the weapon or feature's listed damage dice. Add any flat modifiers listed on the weapon or feature, as well as bonuses from critical success or other effects. When you deal critical damage, double the total result of your damage dice before adding modifiers."
+        },
+        {
+          "name": "Spellcast Rolls",
+          "description": "Spellcast Rolls are trait rolls that require you to use your Spellcast trait, which is determined by your subclass.\n\nSpellcast Rolls are only made when a character uses a feature that requires one. A successful Spellcast Roll activates the effect as described by the feature.\n\nNotes\n\n- A Spellcast Roll that can damage a target is also considered an attack roll.\n- The text of a spell tells you when its effect ends; the GM can spend a Fear to end a temporary effect. If a spell doesn't specify, it ends when you choose or at a natural story moment.\n- You can cast and maintain more than one spell at the same time."
+        },
+        {
+          "name": "Evasion",
+          "description": "Evasion represents a character's ability to avoid attacks and other unwanted effects. Any roll made against a PC has a Difficulty equal to the target's Evasion. A PC's base Evasion is determined by their class, but can be modified by domain cards, equipment, conditions, and other effects.\n\nNote: attacks rolled against adversaries use the target's Difficulty instead of Evasion."
+        },
+        {
+          "name": "Conditions - Restrained & Vulnerable",
+          "description": "RESTRAINED - Restrained characters can't move, but you can still take actions from their current position.\n\nVULNERABLE - When a creature is Vulnerable, all rolls targeting them have advantage.\n\nUnless otherwise noted, the same condition can't be applied more than once to the same target."
+        },
+        {
+          "name": "Range Bands",
+          "description": "- Close - Everything within roughly a stone's throw.\n- Very Close - Within arm's reach—Melee attacks can always reach.\n- Far - Everything within shouting distance but beyond a stone's throw.\n- Very Far - Anything beyond communication distance."
+        },
+        {
+          "name": "Cover",
+          "description": "Physical obstructions, allies, and terrain can protect you from harm. There are three types of cover:\n\n- Light Cover - +1 to Evasion against ranged attacks.\n- Full Cover - +2 to Evasion against ranged attacks.\n- Total Cover - cannot be targeted by ranged attacks until you move or the cover is removed."
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "tier",
       "label": "Tier",
       "values": [
@@ -1182,45 +1758,41 @@
           "name": "Tier 1",
           "shortName": "1",
           "sourceId": 1,
-          "armorClass": 11,
-          "attackBonus": 1,
-          "hp": 5,
-          "majorThreshold": 7,
-          "severeThreshold": 12,
-          "targetBudget": 4
+          "levels": [
+            1,
+            1
+          ],
+          "achievementLevel": null
         },
         {
           "name": "Tier 2",
           "shortName": "2",
           "sourceId": 2,
-          "armorClass": 14,
-          "attackBonus": 2,
-          "hp": 7,
-          "majorThreshold": 10,
-          "severeThreshold": 20,
-          "targetBudget": 8
+          "levels": [
+            2,
+            4
+          ],
+          "achievementLevel": 2
         },
         {
           "name": "Tier 3",
           "shortName": "3",
           "sourceId": 3,
-          "armorClass": 17,
-          "attackBonus": 3,
-          "hp": 9,
-          "majorThreshold": 20,
-          "severeThreshold": 32,
-          "targetBudget": 12
+          "levels": [
+            5,
+            7
+          ],
+          "achievementLevel": 5
         },
         {
           "name": "Tier 4",
           "shortName": "4",
           "sourceId": 4,
-          "armorClass": 20,
-          "attackBonus": 4,
-          "hp": 11,
-          "majorThreshold": 25,
-          "severeThreshold": 45,
-          "targetBudget": 16
+          "levels": [
+            8,
+            10
+          ],
+          "achievementLevel": 8
         }
       ]
     },
@@ -1285,6 +1857,167 @@
             "bLabel": "Roll with Fear",
             "tieLabel": "Critical Success"
           }
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "levelUpBindings",
+      "label": "Level Up Bindings",
+      "values": [
+        {
+          "name": "Class Features by Level",
+          "role": "featureLevels",
+          "kind": "class",
+          "path": "features"
+        },
+        {
+          "name": "Subclass Features by Level",
+          "role": "featureLevels",
+          "kind": "variant",
+          "path": "features"
+        },
+        {
+          "name": "Class Starting Hit Points",
+          "role": "resourceGrowth",
+          "kind": "class",
+          "path": "hp",
+          "resourceRole": "resource",
+          "startFull": false
+        },
+        {
+          "name": "Class Starting Evasion",
+          "role": "resourceGrowth",
+          "kind": "class",
+          "path": "evasion",
+          "resourceRole": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "advancementOptions",
+      "label": "Advancement Options",
+      "values": [
+        {
+          "id": "traitIncrease",
+          "label": "Gain a +1 bonus to two unmarked traits and mark them",
+          "effectType": "traitIncrease",
+          "slots": 1,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "hpSlot",
+          "label": "Permanently add 1 Hit Point slot",
+          "effectType": "hpSlot",
+          "slots": 2,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "stressSlot",
+          "label": "Permanently add 1 Stress slot",
+          "effectType": "stressSlot",
+          "slots": 2,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "experienceIncrease",
+          "label": "Gain a permanent +1 bonus to two Experiences",
+          "effectType": "experienceIncrease",
+          "slots": 2,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "domainCardAccess",
+          "label": "Choose an additional domain card",
+          "effectType": "domainCardAccess",
+          "slots": 3,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "evasionIncrease",
+          "label": "Gain a permanent +1 bonus to Evasion",
+          "effectType": "evasionIncrease",
+          "slots": 1,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "subclassUpgrade",
+          "label": "Take an upgraded subclass card",
+          "effectType": "subclassUpgrade",
+          "slots": 2,
+          "cost": 1,
+          "minTier": 1
+        },
+        {
+          "id": "proficiencyIncrease",
+          "label": "Increase Proficiency by 1",
+          "effectType": "proficiencyIncrease",
+          "slots": 3,
+          "cost": 2,
+          "minTier": 1
+        },
+        {
+          "id": "multiclass",
+          "label": "Multiclass — choose an additional class",
+          "effectType": "multiclass",
+          "slots": 1,
+          "cost": 2,
+          "minTier": 3
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "tierAchievements",
+      "label": "Tier Achievements",
+      "values": [
+        {
+          "level": 2,
+          "grantsExperience": true,
+          "grantsProficiency": true,
+          "clearsTraitMarks": false
+        },
+        {
+          "level": 5,
+          "grantsExperience": true,
+          "grantsProficiency": true,
+          "clearsTraitMarks": true
+        },
+        {
+          "level": 8,
+          "grantsExperience": true,
+          "grantsProficiency": true,
+          "clearsTraitMarks": true
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "derivedFormulas",
+      "label": "Derived Formulas",
+      "values": [
+        {
+          "role": "proficiencyBonusForLevel",
+          "formula": "1"
+        },
+        {
+          "role": "damageDiceCount",
+          "formula": "@stats.proficiencyBonus"
+        },
+        {
+          "role": "unarmoredMajorThreshold",
+          "formula": "@level"
+        },
+        {
+          "role": "unarmoredSevereThreshold",
+          "formula": "@level*2"
         }
       ]
     }

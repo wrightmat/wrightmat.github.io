@@ -29,5 +29,20 @@
       "Brix"
     ],
     "lastNames": []
-  }
+  },
+  "index": "katari",
+  "features": [
+    {
+      "name": "Feline Instincts",
+      "description": "When you make an Agility Roll, you can spend 2 Hope to reroll your Hope Die."
+    },
+    {
+      "name": "Retracting Claws",
+      "description": "Make an Agility Roll to scratch a target within Melee range. On a success, they become temporarily Vulnerable."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-katari-feline-instincts",
+    "feat.daggerheart-ancestry-katari-retracting-claws"
+  ]
 }

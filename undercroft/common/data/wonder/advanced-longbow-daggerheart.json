@@ -1,0 +1,29 @@
+{
+  "index": "advanced-longbow",
+  "name": "Advanced Longbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 3,
+    "trait": "Agility",
+    "range": "Very Far",
+    "burden": "Two-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 9,
+    "type": "Physical"
+  },
+  "features": [
+    {
+      "name": "Cumbersome",
+      "description": "-1 to Finesse"
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-weapon-feature-cumbersome"
+  ]
+}

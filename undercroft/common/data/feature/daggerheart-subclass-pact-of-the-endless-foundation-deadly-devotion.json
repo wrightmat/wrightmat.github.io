@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-endless-foundation-deadly-devotion",
+  "name": "Foundation: Deadly Devotion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "On a successful attack, you can spend a Favor to gain a +1 bonus to your Evasion until you mark a Hit Point or take a rest.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack, you can spend a Favor to gain a +1 bonus to your Evasion until you mark a Hit Point or take a rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

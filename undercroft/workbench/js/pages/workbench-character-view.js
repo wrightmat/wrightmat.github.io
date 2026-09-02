@@ -25,9 +25,15 @@ import { applyComponentStyles, applyTextFormatting } from "../lib/component-styl
 import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding, createLookupFn, findRoleBoundField, findBindingByRole } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField, findBindingByRole, fieldByKey } from "../../../common/js/lib/bindings.js";
+// Same resolver Board's own macro-button cards and Journal's inline
+// `` `macro:Name` `` chips already use (name-or-id, case-insensitive,
+// its own "No macro named ..." error toast) — a Button's own "Run a
+// Macro" action reuses this directly rather than a second, narrower
+// dataManager.get+runMacro combo. See runButtonComponentAction below.
+import { runMacroReference } from "../../../repository/js/lib/journal-macro.js";
 import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
-import { hitPointsPerLevelAverage, proficiencyBonusForLevel, abilityModifier } from "../../../common/js/lib/dnd-rules.js";
+import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.js";
 import { loadAbilityFieldDefs, loadArrayFieldValues } from "../../../common/js/lib/generator-kit.js";
 import {
   findLevelUpBinding,
@@ -107,6 +113,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   function sessionUser() {
     return dataManager.session?.user || null;
+  }
+
+  // A System payload's only real top-level keys are title/version/fields —
+  // every reserved-key field (derivedFormulas, buildSteps, dice,
+  // combatBindings, ...) lives as an ENTRY inside that `fields` array, never
+  // as a flat top-level property of the payload itself. Reading
+  // `systemDefinition?.derivedFormulas` (or any other reserved key)
+  // directly is always undefined, regardless of what the System actually
+  // declares — this reads it correctly (via fieldByKey, bindings.js).
+  function systemFieldValues(systemDefinition, key) {
+    const values = fieldByKey(systemDefinition?.fields, key)?.values;
+    return Array.isArray(values) ? values : [];
   }
 
   const state = {
@@ -307,8 +325,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!normalized || typeof normalized !== "string" || !normalized.startsWith("@")) {
       return null;
     }
+    // "classes[0].name" -> "classes.0.name" before splitting — same fix as
+    // dotted-path.js's own resolveDottedPath (see its comment), needed here
+    // too since getValueAtContext/setValueAtContext walk these segments the
+    // same plain property-access way.
     const segments = normalized
       .slice(1)
+      .replace(/\[(\d+)\]/g, ".$1")
       .split(".")
       .map((segment) => segment.trim())
       .filter(Boolean);
@@ -544,6 +567,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     createCompactField({ type: "select", id: "import-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-import-character-template", name: "template", required: true })
   );
   mountField("build-character-name", createCompactField({ type: "text", id: "build-character-name", label: "Character Name", dataAttr: "data-build-character-name", name: "name", required: true, placeholder: "e.g. Elandra" }));
+  // Generic, not Daggerheart-specific — any System's own character could
+  // have pronouns (sys.daggerheart.json already declares a `pronouns`
+  // field; nothing stops another System from doing the same). Confirmed
+  // real gap: no wizard field existed for this at all, anywhere.
+  mountField("build-character-pronouns", createCompactField({ type: "text", id: "build-character-pronouns", label: "Pronouns", dataAttr: "data-build-character-pronouns", name: "pronouns", placeholder: "e.g. she/her" }));
   mountField(
     "build-character-template",
     createCompactField({ type: "select", id: "build-character-template", label: "Template", controlClass: "form-select", dataAttr: "data-build-character-template", name: "template", required: true })
@@ -569,13 +597,23 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizard: document.querySelector("[data-build-wizard]"),
     buildStepLabel: document.querySelector("[data-build-step-label]"),
     buildCharacterName: document.querySelector("[data-build-character-name]"),
+    buildCharacterPronouns: document.querySelector("[data-build-character-pronouns]"),
     buildCharacterTemplate: document.querySelector("[data-build-character-template]"),
+    buildUnsupportedMessage: document.querySelector("[data-build-unsupported-message]"),
     buildCharacterImage: document.querySelector("[data-build-character-image]"),
     buildSpeciesMount: document.querySelector("[data-build-species-mount]"),
     buildClassMount: document.querySelector("[data-build-class-mount]"),
     buildSubclassMount: document.querySelector("[data-build-subclass-mount]"),
     buildBackgroundMount: document.querySelector("[data-build-background-mount]"),
+    buildMixedAncestryCheckbox: document.querySelector("[data-build-mixed-ancestry]"),
+    buildMixedAncestryStep: document.querySelector("[data-build-mixed-ancestry-step]"),
+    buildSecondSpeciesStep: document.querySelector("[data-build-second-species-step]"),
+    buildHeritageSecondPickLabel: document.querySelector("[data-build-heritage-second-pick-label]"),
+    buildSecondSpeciesMount: document.querySelector("[data-build-second-species-mount]"),
+    buildHeritageSpeciesMount: document.querySelector("[data-build-heritage-species-mount]"),
+    buildHeritageBackgroundMount: document.querySelector("[data-build-heritage-background-mount]"),
     buildAbilitiesMount: document.querySelector("[data-build-abilities-mount]"),
+    buildInputMount: document.querySelector("[data-build-input-mount]"),
     buildReviewMount: document.querySelector("[data-build-review-mount]"),
     buildResolveMount: document.querySelector("[data-build-resolve-mount]"),
     buildBackButton: document.querySelector("[data-build-back]"),
@@ -737,6 +775,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     elements.levelUpConfirmButton?.addEventListener("click", () => {
       if (levelUpStage === "resolve") {
         levelUpModalInstance?.hide();
+        return;
+      }
+      if (advancementMenuState) {
+        void applyAdvancementMenu();
         return;
       }
       void applyLevelUp();
@@ -1013,16 +1055,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       elements.buildNextButton.addEventListener("click", () => {
         const step = getActiveBuildSteps().steps[buildWizardState.step];
         if (step === "choices") {
-          // Only NOW — the wizard's own last step, everything resolved or
-          // deliberately left for later — do we tell the user this is
-          // finished. The character record itself was created earlier (on
-          // Review), but that was a background technical step, never
-          // surfaced as its own "done" moment.
-          const finishedName = (elements.buildCharacterName?.value || "").trim();
-          if (finishedName) {
-            status.show(`Created ${finishedName}`, { type: "success", timeout: 2400 });
-          }
-          newCharacterModalInstance?.hide();
+          void finishBuildChoicesStep();
         } else if (step === "review") {
           void submitBuildWizard();
         } else {
@@ -1035,13 +1068,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     if (elements.buildCharacterTemplate) {
       elements.buildCharacterTemplate.addEventListener("change", () => {
-        buildWizardState.abilityDefs = [];
-        // Species/Class/Background are System-filtered — switching
-        // Templates mid-wizard means a different (or no) System, so the
-        // previously rendered lists (and whatever was picked from them)
-        // can no longer be trusted.
-        void refreshBuildLibraryPickers();
-        updateBuildNextState();
+        void applyBuildTemplateSelection();
       });
     }
     document.querySelectorAll("[data-build-ability-method]").forEach((button) => {
@@ -1051,6 +1078,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         renderBuildAbilitiesStep();
         updateBuildNextState();
       });
+    });
+    elements.buildMixedAncestryCheckbox?.addEventListener("change", () => {
+      buildWizardState.mixedAncestry = Boolean(elements.buildMixedAncestryCheckbox.checked);
+      if (!buildWizardState.mixedAncestry) {
+        buildWizardState.secondSpeciesId = "";
+        buildWizardState.secondSpeciesName = "";
+      }
+      setElementVisible(elements.buildSecondSpeciesStep, buildWizardState.mixedAncestry);
+      updateBuildNextState();
     });
 
     if (elements.importCharacterMapping) {
@@ -1856,7 +1892,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       try {
         const variantEntries = await fetchKindEntriesWithIds(dataManager, "variant");
         subclassChoiceOptions = variantEntries
-          .filter((entry) => entry.entity?.parentKind === "class" && entry.entity?.parentId === classRecord.index)
+          .filter((entry) => entry.entity?.parentKind === "class" && entry.entity?.parentId === cls.refId)
           .map((entry) => ({ id: entry.id, label: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }));
       } catch (error) {
         console.error("Character editor: unable to fetch subclass options for Level Up", error);
@@ -1895,9 +1931,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let resourceBinding = null;
     if (growthBinding?.path) {
       const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
-      growth = hitPointsPerLevelAverage(hitDieSides);
+      const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
+      growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
       if (growth && growthBinding.abilityBinding) {
-        growth += abilityModifier(resolveBinding(growthBinding.abilityBinding, state.draft));
+        const score = resolveBinding(growthBinding.abilityBinding, state.draft);
+        growth += evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
       }
       resourceBinding = findBindingByRole(getCombatBindings(), growthBinding.resourceRole);
     }
@@ -1916,7 +1954,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       featureEntityById,
       growth,
       resourceBinding,
-      newProficiencyBonus: proficiencyBonusForLevel(totalLevel),
+      newProficiencyBonus: evaluateDerivedFormula(systemFieldValues(state.systemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: totalLevel }) || 0,
       subclassChoiceOptions,
       featChoiceOptions,
       deferredFeatureId,
@@ -2051,6 +2089,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     setLevelUpModalStage("confirm");
     levelUpPreviewState = null;
+    advancementMenuState = null;
     if (elements.levelUpModalBody) {
       elements.levelUpModalBody.textContent = "Loading…";
     }
@@ -2075,6 +2114,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
       return;
     }
+    // A System declaring `advancementOptions` (Daggerheart's own fixed
+    // "spend 2 picks from a menu" progression) has no per-level lookup
+    // table to drive computeLevelUpPreview off at all — routed to a
+    // genuinely separate engine instead of trying to force D&D's own
+    // per-level-table model to fit. The two never coexist for one System.
+    if (usesAdvancementMenu()) {
+      await openAdvancementMenuModalForClass(cls, classRecord);
+      return;
+    }
     const allClasses = Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : [cls];
     const preview = await computeLevelUpPreview(cls, classRecord, allClasses);
     levelUpPreviewState = { cls, preview };
@@ -2082,6 +2130,361 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       elements.levelUpConfirmButton.disabled = false;
     }
     renderLevelUpModalConfirm(preview);
+  }
+
+  // --- Advancement-Menu Level Up (Daggerheart-style Systems) --------------
+  // For a System that declares `advancementOptions`+`tierAchievements`
+  // (Part B of the Daggerheart plan) instead of a per-level class features
+  // table — a fixed menu of reusable advancement options with slot/cost
+  // tracking, not a lookup. `state.draft.stats.advancementsTaken` (a new
+  // array, `{optionId, level}` per mark) is this System's own equivalent
+  // of D&D's `featureIds` — how repeatable options (HP slot, Domain card
+  // access, ...) remember how many times they've already been taken across
+  // this character's whole life, capped by each option's own `slots`.
+  function usesAdvancementMenu() {
+    return systemFieldValues(state.systemDefinition, "advancementOptions").length > 0;
+  }
+
+  // Which of the System's own `tier` entries (Part B: `{tier, levels:[min,
+  // max], achievementLevel}`) a level falls inside — drives both which
+  // advancement options are eligible (`minTier`) and which tier
+  // achievement (if any) fires automatically this level-up.
+  function tierForLevel(level) {
+    const tiers = systemFieldValues(state.systemDefinition, "tier");
+    const match = tiers.find((entry) => Array.isArray(entry.levels) && level >= entry.levels[0] && level <= entry.levels[1]);
+    return match ? Number(match.sourceId) || 1 : 1;
+  }
+
+  let advancementMenuState = null;
+
+  // Pure — mirrors computeLevelUpPreview's own "no state.draft mutation"
+  // contract, just for the menu shape instead of a fixed feature/growth set.
+  function computeAdvancementMenuPreview(cls) {
+    const nextLevel = (Number(cls.level) || 0) + 1;
+    const tierAchievements = systemFieldValues(state.systemDefinition, "tierAchievements");
+    const tierAchievement = tierAchievements.find((entry) => Number(entry.level) === nextLevel) || null;
+    const allOptions = systemFieldValues(state.systemDefinition, "advancementOptions");
+    const taken = Array.isArray(state.draft?.stats?.advancementsTaken) ? state.draft.stats.advancementsTaken : [];
+    const currentTier = tierForLevel(nextLevel);
+    const options = allOptions
+      .filter((opt) => currentTier >= (Number(opt.minTier) || 1))
+      .map((opt) => {
+        const takenCount = taken.filter((entry) => entry.optionId === opt.id).length;
+        return { ...opt, remainingSlots: Math.max(0, (Number(opt.slots) || 1) - takenCount) };
+      })
+      .filter((opt) => opt.remainingSlots > 0);
+    return { cls, nextLevel, tierAchievement, options };
+  }
+
+  // Checkbox menu capped at exactly 2 points (a cost:2 option consumes
+  // both) — same modal chrome renderLevelUpModalConfirm already uses
+  // (elements.levelUpModalBody/levelUpConfirmButton), different body.
+  function renderAdvancementMenuConfirm(preview) {
+    const body = elements.levelUpModalBody;
+    if (!body) return;
+    body.innerHTML = "";
+    const intro = document.createElement("p");
+    intro.className = "mb-2";
+    intro.textContent = `Level ${Number(preview.cls.level) || 0} → ${preview.nextLevel}`;
+    body.appendChild(intro);
+    if (preview.tierAchievement) {
+      const parts = [];
+      if (preview.tierAchievement.grantsExperience) parts.push("gain a new Experience at +2");
+      if (preview.tierAchievement.grantsProficiency) parts.push("Proficiency +1");
+      if (preview.tierAchievement.clearsTraitMarks) parts.push("clear all marked Traits");
+      const achievementNote = document.createElement("div");
+      achievementNote.className = "alert alert-info py-2 px-3 small mb-3";
+      achievementNote.textContent = `Tier achievement: ${parts.join(", ")}.`;
+      body.appendChild(achievementNote);
+    }
+    const menuIntro = document.createElement("p");
+    menuIntro.className = "mb-2 small text-body-secondary";
+    menuIntro.textContent = "Choose advancements totaling exactly 2 points. A damage threshold increase and a new domain card are always granted too.";
+    body.appendChild(menuIntro);
+    const budgetLabel = document.createElement("div");
+    budgetLabel.className = "fw-semibold small mb-2";
+    body.appendChild(budgetLabel);
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-2";
+    body.appendChild(list);
+    const selections = new Map();
+    const checkboxes = [];
+    const updateBudget = () => {
+      const spent = Array.from(selections.values()).reduce((sum, opt) => sum + (Number(opt.cost) || 1), 0);
+      budgetLabel.textContent = `${spent} / 2 points selected`;
+      if (elements.levelUpConfirmButton) {
+        elements.levelUpConfirmButton.disabled = spent !== 2;
+      }
+      checkboxes.forEach(({ opt, input }) => {
+        if (!selections.has(opt.id)) {
+          input.disabled = spent + (Number(opt.cost) || 1) > 2;
+        }
+      });
+    };
+    preview.options.forEach((opt) => {
+      const row = document.createElement("div");
+      row.className = "form-check";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.className = "form-check-input";
+      input.id = `advancement-option-${opt.id}`;
+      const label = document.createElement("label");
+      label.className = "form-check-label";
+      label.htmlFor = input.id;
+      const costNote = Number(opt.cost) === 2 ? " (costs 2 points)" : "";
+      const slotsNote = Number(opt.slots) > 1 ? ` (${opt.remainingSlots} of ${opt.slots} remaining)` : "";
+      label.textContent = `${opt.label}${costNote}${slotsNote}`;
+      input.addEventListener("change", () => {
+        if (input.checked) selections.set(opt.id, opt);
+        else selections.delete(opt.id);
+        updateBudget();
+      });
+      row.appendChild(input);
+      row.appendChild(label);
+      list.appendChild(row);
+      checkboxes.push({ opt, input });
+    });
+    updateBudget();
+    advancementMenuState = { cls: preview.cls, nextLevel: preview.nextLevel, tierAchievement: preview.tierAchievement, selections, classRecord: advancementMenuState?.classRecord };
+  }
+
+  async function openAdvancementMenuModalForClass(cls, classRecord) {
+    setLevelUpModalStage("confirm");
+    advancementMenuState = null;
+    if (elements.levelUpConfirmButton) {
+      elements.levelUpConfirmButton.disabled = true;
+    }
+    if (window.bootstrap && typeof window.bootstrap.Modal === "function") {
+      levelUpModalInstance = window.bootstrap.Modal.getOrCreateInstance(elements.levelUpModalEl);
+      levelUpModalInstance.show();
+    }
+    const preview = computeAdvancementMenuPreview(cls);
+    renderAdvancementMenuConfirm(preview);
+    if (advancementMenuState) {
+      advancementMenuState.classRecord = classRecord;
+    }
+  }
+
+  // A fixed, small, closed vocabulary of effect types (see this feature's
+  // own plan) — same "add a case for a new one" convention
+  // resolveDynamicGrantOptions (level-up-bindings.js) already documents,
+  // not a generic plugin system. Domain-card-access/subclass-upgrade defer
+  // to a pendingChoice (same mechanism ordinary Level Up already uses for
+  // player-directed picks) with real, fetched options rather than a guess.
+  // `alreadyOwnedIds` excludes any card the character already has (id
+  // matched against state.draft.stats.domainCards' own `refId`) — a
+  // player can't pick the same card twice across two separate grants
+  // (creation + a later Advancement-Menu pick, or two Advancement-Menu
+  // picks). Nothing to exclude at creation time (nothing owned yet), so
+  // callers there can omit it.
+  async function fetchDomainCardOptions(classRecord, nextLevel, alreadyOwnedIds = []) {
+    const domains = new Set((Array.isArray(classRecord?.domains) ? classRecord.domains : []).map((d) => String(d).toLowerCase()));
+    if (!domains.size) return [];
+    const owned = new Set(alreadyOwnedIds);
+    // Domain cards split across TWO kinds (Part A of this feature's own
+    // plan): Spell/Grimoire type cards are `wonder` records
+    // (`properties.form:"domain-card"`), Ability type cards are `feature`
+    // records (`domain`/`level`/`recallCost` as plain top-level fields,
+    // no `properties` wrapper). Confirmed real gap this fixes: only
+    // querying `wonder` here left every Ability-type card (roughly half
+    // of all domain cards) permanently unreachable from Level Up, with
+    // nothing surfacing the omission — every one of them showed up as
+    // "orphaned" (created, never referenced) in a review pass.
+    let wonders = [];
+    let features = [];
+    try {
+      [wonders, features] = await Promise.all([fetchKindEntriesWithIds(dataManager, "wonder"), fetchKindEntriesWithIds(dataManager, "feature")]);
+    } catch (error) {
+      console.warn("Character editor: unable to fetch domain cards for advancement", error);
+      return [];
+    }
+    const spellAndGrimoireCards = wonders
+      .filter((entry) => entry?.entity?.properties?.form === "domain-card")
+      .filter((entry) => domains.has(String(entry.entity.properties?.domain || "").toLowerCase()))
+      .filter((entry) => Number(entry.entity.properties?.level) <= nextLevel)
+      .filter((entry) => !owned.has(entry.id))
+      .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id, level: Number(entry.entity.properties?.level) || 0, refKind: "wonder" }));
+    const abilityCards = features
+      .filter((entry) => entry?.entity?.domain != null)
+      .filter((entry) => domains.has(String(entry.entity.domain || "").toLowerCase()))
+      .filter((entry) => Number(entry.entity.level) <= nextLevel)
+      .filter((entry) => !owned.has(entry.id))
+      .map((entry) => ({ id: entry.id, name: entry.entity.name || entry.id, level: Number(entry.entity.level) || 0, refKind: "feature" }));
+    return [...spellAndGrimoireCards, ...abilityCards];
+  }
+
+  function pushAdvancementPendingChoice(newlyPending, { id, label }, type, desc, options, choose = 1) {
+    if (!Array.isArray(state.draft.pendingChoices)) {
+      state.draft.pendingChoices = [];
+    }
+    const pending = {
+      id: `advancement-${id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      sourceKind: "advancement",
+      sourceId: id,
+      sourceName: label,
+      type,
+      desc,
+      choose,
+      options: options || [],
+    };
+    state.draft.pendingChoices.push(pending);
+    newlyPending.push(pending);
+  }
+
+  async function applyAdvancementMenu() {
+    if (!advancementMenuState || !state.draft) return;
+    const { cls, nextLevel, tierAchievement, selections, classRecord } = advancementMenuState;
+    if (!state.draft.stats || typeof state.draft.stats !== "object") {
+      state.draft.stats = {};
+    }
+    if (!Array.isArray(state.draft.stats.advancementsTaken)) {
+      state.draft.stats.advancementsTaken = [];
+    }
+    const newlyPending = [];
+
+    // Step one: tier achievements (automatic).
+    if (tierAchievement) {
+      if (tierAchievement.grantsExperience) {
+        if (!Array.isArray(state.draft.stats.experiences)) state.draft.stats.experiences = [];
+        state.draft.stats.experiences.push({ name: "", modifier: 2 });
+      }
+      if (tierAchievement.grantsProficiency) {
+        // stats.proficiencyBonus, not a separate "proficiency" field —
+        // the SAME suite-wide canonical key creation-time seeding and
+        // skill/save value calculations already use (see the Combat
+        // stat-block convention memory: proficiencyBonus is one of the
+        // fixed cross-kind stats.* names, identical for every System).
+        state.draft.stats.proficiencyBonus = (Number(state.draft.stats.proficiencyBonus) || 0) + 1;
+      }
+      if (tierAchievement.clearsTraitMarks) {
+        state.draft.stats.traitMarks = [];
+      }
+    }
+
+    // Step two: the player's own 2 selected advancement picks.
+    const ownedDomainCardIds = (Array.isArray(state.draft.stats.domainCards) ? state.draft.stats.domainCards : []).map((card) => card.refId);
+    const domainCardOptions = await fetchDomainCardOptions(classRecord, nextLevel, ownedDomainCardIds);
+    for (const opt of selections.values()) {
+      state.draft.stats.advancementsTaken.push({ optionId: opt.id, level: nextLevel });
+      switch (opt.effectType) {
+        case "hpSlot": {
+          const hpBinding = (getCombatBindings() || []).find((entry) => String(entry.name || "").toLowerCase().includes("hit point"));
+          if (hpBinding?.maxPath) {
+            const maxSegs = resolveBindingPath(hpBinding.maxPath);
+            if (maxSegs) setValueAtPath(maxSegs, (Number(getValueAtPath(maxSegs)) || 0) + 1);
+          }
+          break;
+        }
+        case "stressSlot": {
+          const stressBinding = (getCombatBindings() || []).find((entry) => String(entry.name || "").toLowerCase().includes("stress"));
+          if (stressBinding?.maxPath) {
+            const maxSegs = resolveBindingPath(stressBinding.maxPath);
+            if (maxSegs) setValueAtPath(maxSegs, (Number(getValueAtPath(maxSegs)) || 0) + 1);
+          }
+          break;
+        }
+        case "evasionIncrease": {
+          const evasionBinding = findBindingByRole(getCombatBindings(), "value");
+          if (evasionBinding?.binding) {
+            const segs = resolveBindingPath(evasionBinding.binding);
+            if (segs) setValueAtPath(segs, (Number(getValueAtPath(segs)) || 0) + 1);
+          }
+          break;
+        }
+        case "proficiencyIncrease": {
+          state.draft.stats.proficiencyBonus = (Number(state.draft.stats.proficiencyBonus) || 0) + 1;
+          break;
+        }
+        case "experienceIncrease": {
+          const experienceOptions = (Array.isArray(state.draft.stats.experiences) ? state.draft.stats.experiences : []).map((entry, index) => ({
+            id: String(index),
+            name: entry.name || `Experience ${index + 1}`,
+          }));
+          pushAdvancementPendingChoice(newlyPending, opt, "experienceIncrease", "Choose two Experiences to increase by +1.", experienceOptions, 2);
+          break;
+        }
+        case "traitIncrease": {
+          const traitFields = Array.isArray(state.systemDefinition?.fields)
+            ? state.systemDefinition.fields.find((entry) => entry.key === "traits")?.children || []
+            : [];
+          const traitOptions = traitFields.map((child) => ({ id: String(child.key || "").split(".").pop(), name: child.label || child.key }));
+          pushAdvancementPendingChoice(newlyPending, opt, "traitIncrease", "Choose two Traits to increase by +1 and mark.", traitOptions, 2);
+          break;
+        }
+        case "domainCardAccess":
+          pushAdvancementPendingChoice(newlyPending, opt, "domainCardAccess", "Choose an additional domain card at or below your level.", domainCardOptions);
+          break;
+        case "subclassUpgrade": {
+          // Real rule has no CHOICE here — always "take the next card"
+          // (Specialization if only Foundation is owned, Mastery
+          // otherwise), so this applies directly rather than deferring to
+          // a pendingChoice with nothing to actually pick between. Grants
+          // the matching tier's own features (not just the tier counter —
+          // confirmed real gap: a bare counter with nothing actually
+          // added to featureIds would leave the upgrade invisible on the
+          // character). Same "Foundation:"/"Specialization:"/"Mastery:"
+          // name-prefix convention buildCharacterFromWizard's own
+          // Foundation grant already reads (this migration's own
+          // convention — subclasses have no numeric per-level table at
+          // all).
+          const nextTier = Math.min(3, (Number(state.draft.stats.subclassTier) || 1) + 1);
+          state.draft.stats.subclassTier = nextTier;
+          const tierPrefix = ["Foundation", "Foundation", "Specialization", "Mastery"][nextTier];
+          const subclassRefId = cls?.subclass?.refId;
+          if (tierPrefix && subclassRefId) {
+            try {
+              const variantResult = await dataManager.get("variant", subclassRefId, { preferLocal: false });
+              const variantRecord = variantResult?.payload;
+              const tierIndexes = (Array.isArray(variantRecord?.features) ? variantRecord.features : [])
+                .map((entry, index) => ({ entry, index }))
+                .filter(({ entry }) => new RegExp(`^${tierPrefix}:`).test(entry?.name || ""));
+              const tierFeatureIds = tierIndexes.map(({ index }) => variantRecord.featureIds[index]).filter(Boolean);
+              if (!Array.isArray(state.draft.featureIds)) state.draft.featureIds = [];
+              tierFeatureIds.forEach((fid) => {
+                if (!state.draft.featureIds.includes(fid)) state.draft.featureIds.push(fid);
+              });
+            } catch (error) {
+              console.warn("Character editor: unable to fetch subclass record for subclassUpgrade", error);
+            }
+          }
+          break;
+        }
+        case "multiclass":
+          pushAdvancementPendingChoice(newlyPending, opt, "multiclass", "Choose an additional class and one of its domains.", [{ id: "open", name: "Open Add a Class" }]);
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Step three: damage thresholds +1 (both), unconditional.
+    if (state.draft.stats.thresholds && typeof state.draft.stats.thresholds === "object") {
+      state.draft.stats.thresholds.major = (Number(state.draft.stats.thresholds.major) || 0) + 1;
+      state.draft.stats.thresholds.severe = (Number(state.draft.stats.thresholds.severe) || 0) + 1;
+    }
+
+    // Step four: the guaranteed new domain card every level grants —
+    // separate from (and in addition to) a "domainCardAccess" advancement
+    // pick, which is an EXTRA card beyond this one.
+    pushAdvancementPendingChoice(
+      newlyPending,
+      { id: "level-card", label: "New Domain Card" },
+      "domainCardAccess",
+      "Acquire a new domain card at or below your level and add it to your loadout or vault.",
+      domainCardOptions
+    );
+
+    cls.level = nextLevel;
+
+    renderCanvas();
+    renderPreview();
+    await persistDraft({ silent: false });
+    syncCharacterActions();
+    expandCharacterPropertiesSection();
+    status.show(`Leveled up ${cls.name || "this class"} to level ${nextLevel}.`, { type: "success", timeout: 2400 });
+
+    setLevelUpModalStage("resolve");
+    renderLevelUpModalResolve(newlyPending);
   }
 
   // --- Add a Class (multiclass, Phase 5) ----------------------------------
@@ -2221,9 +2624,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
     if (growthBinding?.path) {
       const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
-      let growth = hitPointsPerLevelAverage(hitDieSides);
+      const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
+      let growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
       if (growth && growthBinding.abilityBinding) {
-        growth += abilityModifier(resolveBinding(growthBinding.abilityBinding, state.draft));
+        const score = resolveBinding(growthBinding.abilityBinding, state.draft);
+        growth += evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
       }
       const resourceBinding = findBindingByRole(getCombatBindings(), growthBinding.resourceRole);
       if (growth && resourceBinding) {
@@ -2241,7 +2646,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!state.draft.stats || typeof state.draft.stats !== "object") {
       state.draft.stats = {};
     }
-    state.draft.stats.proficiencyBonus = proficiencyBonusForLevel(state.draft.identity.level);
+    state.draft.stats.proficiencyBonus =
+      evaluateDerivedFormula(systemFieldValues(state.systemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: state.draft.identity.level }) || 0;
 
     // Saving-throw proficiency — only a character's very FIRST class ever
     // grants it (real 5e rule); this mirrors buildCharacterFromWizard's own
@@ -2251,12 +2657,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const systemId = state.template?.schema || "";
       const abilityDefs = await loadAbilityFieldDefs(dataManager, systemId);
       const abilities = state.draft.stats.abilities && typeof state.draft.stats.abilities === "object" ? state.draft.stats.abilities : {};
+      // Field name from the System's own "savingThrowGrants" levelUpBindings
+      // role, never a literal "saving_throws".
+      const savingThrowGrantsPath = findLevelUpBinding(getLevelUpBindings(), "savingThrowGrants", "class")?.path;
       const classSaveIndexes = new Set(
-        (Array.isArray(classRecord?.saving_throws) ? classRecord.saving_throws : []).map((entry) => String(entry?.index || "").toLowerCase())
+        (savingThrowGrantsPath && Array.isArray(classRecord?.[savingThrowGrantsPath]) ? classRecord[savingThrowGrantsPath] : []).map((entry) =>
+          String(entry?.index || "").toLowerCase()
+        )
       );
       state.draft.stats.savingThrows = abilityDefs.map((def, index) => {
         const isProficient = classSaveIndexes.has(String(def.label || "").toLowerCase());
-        const modifier = abilityModifier(abilities[def.key] ?? 10);
+        const modifier = evaluateDerivedFormula(systemFieldValues(state.systemDefinition, "derivedFormulas"), "abilityModifier", { score: abilities[def.key] ?? 10 }) || 0;
         return {
           id: index + 1,
           name: def.key,
@@ -2292,8 +2703,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         newlyPending.push(pending);
       });
     };
-    pushChoice(resolveChoiceList(classRecord.proficiency_choices).filter((entry) => entry.options.length), classRecord.name || "Class");
-    const equipmentChoice = resolveEquipmentChoice((classRecord.starting_equipment_options || [])[0]);
+    // Field NAME comes from the System's own levelUpBindings role (never a
+    // literal "proficiency_choices"/"starting_equipment_options" — those
+    // are D&D-specific; Daggerheart's own levelUpBindings declares neither
+    // role at all, so both binding lookups come back null and this whole
+    // block simply no-ops for it, same graceful degradation every other
+    // optional System field already follows).
+    const proficiencyChoicesPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "class")?.path;
+    const equipmentChoicesPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "class")?.path;
+    if (proficiencyChoicesPath) {
+      pushChoice(resolveChoiceList(classRecord[proficiencyChoicesPath]).filter((entry) => entry.options.length), classRecord.name || "Class");
+    }
+    const equipmentChoice = equipmentChoicesPath ? resolveEquipmentChoice((classRecord[equipmentChoicesPath] || [])[0]) : null;
     if (equipmentChoice) {
       pushChoice([{ ...equipmentChoice, type: "equipmentChoice" }], classRecord.name || "Class");
     }
@@ -2532,6 +2953,84 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       picks.forEach((pick) => applyProficiencyGrant(pick?.raw?.name || pick?.label, state.draft));
     } else if (choice.type === "equipmentChoice") {
       picks.forEach((pick) => applyEquipmentBundle(pick?.raw?.bundle, state.draft));
+    } else if (choice.type === "traitIncrease") {
+      // pick.raw is the plain {id, name} option built above — id is the
+      // trait's own field-key segment ("agility"), matching
+      // stats.traits.<key> exactly.
+      const traits = state.draft.stats.traits && typeof state.draft.stats.traits === "object" ? state.draft.stats.traits : (state.draft.stats.traits = {});
+      picks.forEach((pick) => {
+        const key = pick?.raw?.id;
+        if (!key) return;
+        traits[key] = (Number(traits[key]) || 0) + 1;
+      });
+      if (!Array.isArray(state.draft.stats.traitMarks)) state.draft.stats.traitMarks = [];
+      picks.forEach((pick) => {
+        if (pick?.raw?.id && !state.draft.stats.traitMarks.includes(pick.raw.id)) {
+          state.draft.stats.traitMarks.push(pick.raw.id);
+        }
+      });
+    } else if (choice.type === "experienceIncrease") {
+      const experiences = Array.isArray(state.draft.stats.experiences) ? state.draft.stats.experiences : [];
+      picks.forEach((pick) => {
+        const index = Number(pick?.raw?.id);
+        if (Number.isFinite(index) && experiences[index]) {
+          experiences[index].modifier = (Number(experiences[index].modifier) || 0) + 1;
+        }
+      });
+    } else if (choice.type === "domainCardAccess") {
+      if (!Array.isArray(state.draft.stats.domainCards)) state.draft.stats.domainCards = [];
+      picks.forEach((pick) => {
+        const cardId = pick?.raw?.id;
+        const cardName = pick?.raw?.name || pick?.label;
+        const cardLevel = Number(pick?.raw?.level) || 0;
+        // "wonder" for Spell/Grimoire cards, "feature" for Ability cards —
+        // whichever kind fetchDomainCardOptions actually found this pick
+        // in, never assumed.
+        const cardRefKind = pick?.raw?.refKind || "wonder";
+        if (cardId && !state.draft.stats.domainCards.some((entry) => entry.refId === cardId)) {
+          state.draft.stats.domainCards.push({ name: cardName || "", refKind: cardRefKind, refId: cardId, level: cardLevel, inLoadout: true });
+        }
+      });
+    } else if (choice.type === "fieldChoice") {
+      // Generic "write the pick's own name to a plain character field
+      // path" — Daggerheart's own creation-time weapon/armor picks (see
+      // buildCharacterFromWizard's own creationEquipmentChoices block),
+      // but reusable by any future System's own simple pick-a-value-write-
+      // it-here need. `choice.targetPath` is the plain "@..." binding the
+      // pick's own name gets written to (only the first pick when
+      // `choose` is 1, which is the only case this is used for today).
+      const targetPathSegs = resolveBindingPath(choice.targetPath);
+      const pick = picks[0];
+      if (targetPathSegs && pick) {
+        setValueAtContext(state.draft, targetPathSegs, pick.raw?.name || pick.label || "");
+      }
+      // Optional per-choice `statBindings` (see buildCharacterFromWizard's
+      // own creationEquipmentChoices block) — copies other fields off the
+      // SAME picked option's `raw` (Armor's own baseScore/baseMajor/
+      // baseSevere, say) onto other character bindings, each through an
+      // optional formula evaluated with {base, level} context so a
+      // threshold can add the character's own level. Never a hardcoded
+      // Armor-specific write — absent statBindings (every other fieldChoice
+      // today) is a no-op, same graceful-degradation shape every other
+      // optional System-declared list in this file already follows.
+      if (pick && Array.isArray(choice.statBindings)) {
+        const level = Number(state.draft?.identity?.level) || 1;
+        choice.statBindings.forEach((binding) => {
+          const base = pick.raw?.[binding?.sourcePath];
+          if (base === undefined) return;
+          const value = binding.formula ? evaluateFormula(binding.formula, { base, level }, {}) : base;
+          const path = resolveBindingPath(binding?.targetBinding);
+          if (path && value !== null && value !== undefined) {
+            setValueAtContext(state.draft, path, value);
+          }
+        });
+      }
+    } else if (choice.type === "multiclass") {
+      // No real pick to apply here — the option list is a single "open the
+      // picker" placeholder (Add a Class already IS the real multiclass
+      // picker: class + domain + subclass foundation card). Resolving this
+      // choice just launches that existing flow instead of duplicating it.
+      void openAddClassModal();
     } else if (choice.type === "subclassChoice") {
       // Filterable-picker picks carry {id, label, raw: choiceOption} — the
       // choice's own option object ({id, label, description, raw: variant
@@ -2605,6 +3104,31 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     status.show("Choice resolved.", { type: "success", timeout: 1800 });
   }
 
+  // A choice a System marked `optional` (see the "choices" buildStep's own
+  // equipmentChoices entries — Daggerheart's Secondary Weapon is skipped
+  // whenever the Primary Weapon is Two-Handed) can sit pending forever
+  // otherwise, with no way to say "not applicable to me." Just removes it —
+  // no data write, nothing to apply — never for a choice missing that flag
+  // (renderPendingChoiceRow/renderFilterableChoiceRow only ever show the
+  // Skip button when `choice.optional` is true in the first place, but this
+  // guards the write path itself too, not just the button's visibility).
+  async function dismissPendingChoice(choice) {
+    if (!state.draft || !choice?.optional) {
+      return;
+    }
+    const pendingChoices = getPendingChoices();
+    const index = pendingChoices.findIndex((entry) => entry.id === choice.id);
+    if (index === -1) {
+      return;
+    }
+    state.draft.pendingChoices = pendingChoices.filter((_, i) => i !== index);
+    renderCanvas();
+    renderPreview();
+    await persistDraft({ silent: false });
+    syncCharacterActions();
+    status.show("Choice skipped.", { type: "info", timeout: 1800 });
+  }
+
   // Dispatches purely on choice.type — abilityScoreBonus/
   // abilityScoreImprovement are genuinely bespoke (not a flat pick-N-of-M),
   // so they get their own renderer; subclassChoice/featChoice share a
@@ -2673,15 +3197,42 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     function updateConfirmState() {
       confirmButton.disabled = fields.some((field) => !field.getSelected()) || hasDuplicatePicks();
     }
-    confirmButton.addEventListener("click", () => {
+    // Single source of truth for "confirm this row" — the button's own click
+    // handler AND the Build Wizard's Finish button (which auto-confirms every
+    // row that's already fully filled in, rather than silently discarding
+    // picks a user made but never individually clicked Confirm for — see
+    // that button's own comment) both call this same function. Returns
+    // whether it actually resolved, so a bulk caller knows which rows it
+    // skipped (incomplete/duplicate picks stay pending, same as today).
+    async function tryConfirm() {
       const picks = fields.map((field) => field.getSelected());
       if (picks.some((pick) => !pick) || hasDuplicatePicks()) {
-        return;
+        return false;
       }
-      void resolvePendingChoice(choice, picks).then(() => onResolved?.());
+      await resolvePendingChoice(choice, picks);
+      onResolved?.();
+      return true;
+    }
+    confirmButton.addEventListener("click", () => {
+      void tryConfirm();
     });
     controlsRow.appendChild(confirmButton);
+    // Only when the System's own declaration marked this choice skippable
+    // (Daggerheart's Secondary Weapon: "Skip if your Primary Weapon is
+    // Two-Handed.") — everything else stays required, with no way to
+    // dismiss it, same as before.
+    if (choice.optional) {
+      const skipButton = document.createElement("button");
+      skipButton.type = "button";
+      skipButton.className = "btn btn-sm btn-outline-secondary";
+      skipButton.textContent = "Skip";
+      skipButton.addEventListener("click", () => {
+        void dismissPendingChoice(choice).then(() => onResolved?.());
+      });
+      controlsRow.appendChild(skipButton);
+    }
     row.appendChild(controlsRow);
+    row._tryConfirm = tryConfirm;
     return row;
   }
 
@@ -2925,14 +3476,34 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       },
     });
     row.appendChild(picker.element);
-    confirmButton.addEventListener("click", () => {
+    // Same tryConfirm/row._tryConfirm convention as the generic pendingChoice
+    // row above — lets the Build Wizard's Finish button auto-confirm this
+    // row too if it's already fully filled in.
+    async function tryConfirm() {
       if (!selected) {
-        return;
+        return false;
       }
       const pick = { id: selected.id, label: selected.name, raw: selected.raw };
-      void resolvePendingChoice(choice, [pick]).then(() => onResolved?.());
+      await resolvePendingChoice(choice, [pick]);
+      onResolved?.();
+      return true;
+    }
+    confirmButton.addEventListener("click", () => {
+      void tryConfirm();
     });
     row.appendChild(confirmButton);
+    // Same optional/Skip convention as the generic pendingChoice row above.
+    if (choice.optional) {
+      const skipButton = document.createElement("button");
+      skipButton.type = "button";
+      skipButton.className = "btn btn-sm btn-outline-secondary align-self-start ms-2";
+      skipButton.textContent = "Skip";
+      skipButton.addEventListener("click", () => {
+        void dismissPendingChoice(choice).then(() => onResolved?.());
+      });
+      row.appendChild(skipButton);
+    }
+    row._tryConfirm = tryConfirm;
     return row;
   }
 
@@ -5468,6 +6039,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     };
     return renderInputContent(component, {
       dataManager,
+      // Same shape renderImageComponent's own ctx already uses — Button's
+      // Icon/Image fields resolve their own "@path"/"=formula" modes
+      // exactly like the real Icon/Image components do (iconClass/url/
+      // formula ARE those exact fields, see COMPONENT_DEFINITIONS.input.
+      // defaults), so this needs the identical resolution, not a
+      // Button-specific approximation.
+      resolveBindableString(raw) {
+        if (itemContext) {
+          return resolveItemContextValue(itemContext, raw);
+        }
+        const path = resolveBindingPath(raw);
+        return path ? getValueAtContext(getBindingContext(), path) : undefined;
+      },
+      evaluateFormula(formula) {
+        return resolveContextFormula(formula, itemContext);
+      },
       resolveValue(comp, fallback) {
         if (itemContext) {
           const resolved = resolveItemContextValue(itemContext, comp.binding);
@@ -5519,20 +6106,29 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       decorate(el, comp, meta) {
         assignBindingMetadata(el, comp, meta);
       },
+      // Play/Edit's real executor — see runButtonComponentAction's own
+      // header comment. The Template editor's own preview (renderInputPreview,
+      // workbench-template-view.js) passes an inert no-op here instead.
+      runButtonAction(comp) {
+        void runButtonComponentAction(comp, itemContext);
+      },
       // Number fields authored "Editable in Play" (HP, AC, ...) get +/-
       // stepper buttons instead of the plain input — they're adjusted
       // repeatedly and quickly mid-combat, and a spinner is faster/more
       // reliable than selecting and retyping a value each time, in both
-      // Play and Edit view. A `roller` takes priority over this:
-      // Initiative is both Play-editable (combat-tracker.js needs a
-      // generic path to its modifier for the "Roll Initiative" toolbar
-      // button) and a rollable field on the sheet — for the sheet itself,
-      // rolling is the more useful action than nudging the value by 1, so
-      // the roll button wins for any component that has both.
+      // Play and Edit view. Confirmed real bug this fixes: the `!itemContext`
+      // guard unconditionally suppressed the spinner for every Repeater-item
+      // Number field, even one authored "Editable in Play" (a per-row live
+      // counter — e.g. a limitedUses row's own "available" pool) — item-aware
+      // now (isRepeaterItemNodeEditableInPlay, same item-context companion
+      // isRepeaterItemNodeVisible/isRepeaterItemNodeLocked already use)
+      // instead of just dropping the feature when nested.
       wrapControl(input, comp, { labelText, editable }) {
         const variant = (comp.variant || "text").toLowerCase();
-        const hasRoller = typeof comp.roller === "string" && comp.roller.trim().length > 0;
-        if (!itemContext && editable && variant === "number" && !hasRoller && isComponentEditableInPlay(comp)) {
+        const editableInPlay = itemContext
+          ? isRepeaterItemNodeEditableInPlay(comp, itemContext.item)
+          : isComponentEditableInPlay(comp);
+        if (editable && variant === "number" && editableInPlay) {
           const step = Number(comp.step) || 1;
           const applyDelta = (delta) => {
             const current = Number(input.value) || 0;
@@ -6561,6 +7157,66 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     });
   }
 
+  // Recursively collects every `refId` off an object anywhere in `root`
+  // whose own `refKind === kind` — the suite's ordinary ref shape
+  // (identity.classes[].subclass, and now a spell's own stats.classes,
+  // both {refKind, refId, ...}), read generically rather than via a
+  // hardcoded path per kind. Shared by restrictByCharacterKind below to
+  // resolve BOTH sides of a match (what the character holds, what a
+  // candidate entity relates to) with the same one function.
+  function collectRefIdsForKind(root, kind) {
+    const found = new Set();
+    const visit = (node) => {
+      if (Array.isArray(node)) {
+        node.forEach(visit);
+        return;
+      }
+      if (node && typeof node === "object") {
+        if (node.refKind === kind && node.refId) found.add(node.refId);
+        Object.values(node).forEach(visit);
+      }
+    };
+    visit(root);
+    return found;
+  }
+
+  // Registered as a real formula function alongside libraryEntries
+  // (below) — composes with it rather than folding into it, since the
+  // two have genuinely different contracts: libraryEntries is a pure
+  // literal filter (same kind/path/value in, same entries out, no
+  // matter which character is open); this one cross-references its
+  // input against the LIVE character, which libraryEntries deliberately
+  // never touches. A Source formula chains them as ordinary nested
+  // calls — "=restrictByCharacterKind(libraryEntries('wonder',
+  // 'properties.form', 'spell'), 'class')" — which the formula engine
+  // supports natively (evaluateFormula compiles to a real
+  // `new Function`, so nested calls with literal arguments are just
+  // valid JS; only embedding an "@" binding inside a quoted argument
+  // breaks, since "@"-substitution is a blind whole-string regex that
+  // runs before any call is parsed — irrelevant here, `kind` is always
+  // a plain literal like `libraryEntries`'s own `kind` argument).
+  //
+  // Fails OPEN in both directions, never hiding content over a data
+  // gap: if the character holds none of `kind` yet (e.g. Build wizard
+  // before Class is picked), every entry passes unfiltered; if a given
+  // entry has no refKind-tagged relation to `kind` at all (not yet
+  // backfilled, or hand-authored content that never got it), THAT
+  // entry passes too. Only entries that DO carry `kind` refs, for a
+  // character that DOES hold some, get actually restricted.
+  function restrictByCharacterKind(entries, kind) {
+    if (!Array.isArray(entries) || !kind) return entries;
+    const heldIds = collectRefIdsForKind(state.draft, kind);
+    if (!heldIds.size) return entries;
+    return entries.filter((entry) => {
+      const candidateIds = collectRefIdsForKind(entry?.entity, kind);
+      if (!candidateIds.size) return true;
+      for (const id of candidateIds) {
+        if (heldIds.has(id)) return true;
+      }
+      return false;
+    });
+  }
+
   // Lightweight pre-check for the one thing resolveRepeaterAddCandidates
   // can't get by just evaluating the formula: whether the picker should
   // show "Loading…" instead of "Nothing available" while a Library kind's
@@ -6703,13 +7359,31 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       dropdown.classList.remove("d-none");
     };
     const MAX_MATCHES = 25;
-    const updateMatches = () => {
-      selected = null;
-      onChange?.(null);
+    // Recomputes the VISIBLE dropdown list only — no side effect on the
+    // current selection. Used by setOptions below (a programmatic options
+    // refresh, e.g. a sibling field's own pick changing what this field
+    // can still offer) — NOT the same event as the user actually clearing
+    // their own input. Confirmed real bug when these were conflated (one
+    // `updateMatches` doing both): a multi-field caller like a "choose 2"
+    // pendingChoice (renderPendingChoiceRow's refreshFieldOptions) calls
+    // setOptions on every field whenever ANY field changes; if setOptions
+    // unconditionally cleared the selection and fired onChange(null), that
+    // onChange triggered ANOTHER refreshFieldOptions → setOptions round on
+    // every field, including the one whose dropdown was still open from
+    // the user's own click — recursing synchronously until the stack
+    // overflowed, wiping out the just-made selection in the process (so
+    // neither the pick nor the sibling-field filtering ever actually
+    // took effect).
+    const refreshMatches = () => {
       const query = input.value.trim().toLowerCase();
       matches = (query ? options.filter((option) => option.label.toLowerCase().includes(query)) : options).slice(0, MAX_MATCHES);
       activeIndex = -1;
       renderMatches();
+    };
+    const updateMatches = () => {
+      selected = null;
+      onChange?.(null);
+      refreshMatches();
     };
 
     input.addEventListener("input", updateMatches);
@@ -6768,8 +7442,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           input.value = "";
           onChange?.(null);
         }
+        // refreshMatches, NOT updateMatches — a programmatic options
+        // refresh must never clear an existing, still-valid selection or
+        // re-fire onChange on its own (see refreshMatches' own comment for
+        // the infinite-recursion this caused when conflated).
         if (!dropdown.classList.contains("d-none")) {
-          updateMatches();
+          refreshMatches();
         }
       },
     };
@@ -7093,7 +7771,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const value = itemContext
       ? resolveItemContextValue(itemContext, component.binding)
       : resolveComponentValue(component);
-    const items =
+    let items =
       Array.isArray(value) && isIdStorageRepeater(component)
         ? expandIdStorageItems(component, value)
         : Array.isArray(value)
@@ -7101,6 +7779,44 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           : value && typeof value === "object"
             ? expandObjectBindingToRepeaterItems(value, component)
             : [];
+    // Sort (component.sortBinding — a bare field name within each item,
+    // see COMPONENT_DEFINITIONS.repeater's own comment,
+    // workbench-template-view.js). Numeric-aware compare (a plain
+    // localeCompare would sort "10" before "2") — both values coerce to a
+    // real number, or falls back to string compare, same "numeric when it
+    // looks numeric" convention Array.sort's { numeric: true } option
+    // already uses below. Self-heals the STORED order to match once, the
+    // first time it's found different, rather than sorting purely for
+    // display every render — index-based writes just below
+    // (setRepeaterItemValue, Remove) key off THIS array's own position,
+    // so making storage match display keeps those correct without any
+    // separate original-vs-sorted index bookkeeping. Skipped when there's
+    // nowhere real to persist to (Template editor canvas preview has no
+    // live binding) or the viewer doesn't own this data
+    // (isGroupBindingBlocked) — the sorted array is still used for THIS
+    // render either way, it just doesn't get written back.
+    if (component.sortBinding && items.length > 1) {
+      const sortField = component.sortBinding;
+      const direction = component.sortDirection === "desc" ? -1 : 1;
+      const sortValueOf = (entry) => (entry && typeof entry === "object" ? entry[sortField] : undefined);
+      const sorted = [...items].sort((a, b) => {
+        const av = sortValueOf(a);
+        const bv = sortValueOf(b);
+        const an = Number(av);
+        const bn = Number(bv);
+        if (av !== "" && bv !== "" && av != null && bv != null && Number.isFinite(an) && Number.isFinite(bn)) {
+          return (an - bn) * direction;
+        }
+        return String(av ?? "").localeCompare(String(bv ?? ""), undefined, { sensitivity: "base", numeric: true }) * direction;
+      });
+      if (sorted.some((entry, index) => entry !== items[index])) {
+        items = sorted;
+        const groupBinding = itemContext ? itemContext.repeaterComponent?.binding : component?.binding;
+        if (component.binding && !isGroupBindingBlocked(groupBinding)) {
+          writeRepeaterItems(component, itemContext, sorted);
+        }
+      }
+    }
     // Add and Remove are two separate authored toggles (createRepeaterAllowAddToggle/
     // createRepeaterAllowRemoveToggle, workbench-template-view.js) — off by
     // default, since most Repeaters (ability scores, skills, a fixed
@@ -7113,15 +7829,28 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Adding/removing a whole row is this Repeater's OWN top-level binding
     // (component.binding, e.g. "@group.partyInventory"), unlike a single
     // cell's item-relative one — same group-permission reasoning as
-    // isRepeaterCellEditable, checked directly against component.binding
-    // here instead since there's no itemContext at this level.
+    // isRepeaterCellEditable. Confirmed real bug this fixes: this used to
+    // check component.binding directly on the premise that "there's no
+    // itemContext at this level" — false for a NESTED Repeater (Spells'
+    // inner per-level list, itemContext set, its own binding a plain
+    // item-relative "@spells", never "@group.*") — meaning
+    // isGroupBindingBlocked could never trip for it even when the OUTER
+    // Repeater's own top-level binding genuinely was group-owned, showing
+    // Add/Remove to a viewer who shouldn't have them. Not a data-integrity
+    // risk on its own (the actual write still re-checks group permission
+    // server-side via updateGroupBinding), but a real misleading affordance
+    // — same itemContext.repeaterComponent?.binding fallback
+    // isRepeaterCellEditable already uses for this exact case.
     // Add/Remove only ever show in Edit mode — unlike per-field "Editable in
     // Play" (isComponentEditableInPlay, an explicit per-component opt-in for
     // a handful of live-session values like HP/AC/Conditions), structurally
     // adding or removing a whole row is a sheet-editing action, not a
     // play-time one, and never opts into Play mode regardless of what else
     // is authored on the component.
-    const canManageBase = Boolean(component.binding) && !isGroupBindingBlocked(component?.binding) && state.mode === "edit";
+    const canManageBase =
+      Boolean(component.binding) &&
+      !isGroupBindingBlocked(itemContext ? itemContext.repeaterComponent?.binding : component?.binding) &&
+      state.mode === "edit";
     // A grouped repeater's (component.groupByBinding set — Spells) own
     // "items" are whole GROUPS, not individual picks — a generic per-row
     // Remove there would delete every spell at a level in one click, not
@@ -7407,6 +8136,136 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
+  // A Button's own click executor — component.action's three verbs, each
+  // reusing a real, already-established mechanism rather than a new one
+  // (see this feature's own plan for why): rollDice goes through the same
+  // handleComponentRoll the old Roller field's own overlay button already
+  // called (Initiative's push-to-encounter special case keeps working
+  // unchanged, keyed off component.binding exactly as before); runMacro
+  // goes straight into runMacroReference (repository/js/lib/journal-macro.js),
+  // the same resolver Board's own macro-button cards use; adjustField is
+  // the one genuinely new capability (nothing else in the suite mutates a
+  // specific character's own bound data this way).
+  //
+  // Wrapped in one try/catch surfacing status.show(...) on failure — a
+  // click is an explicit user action expecting a visible effect, unlike a
+  // passive Visibility/color formula's silent console.warn
+  // (resolveContextFormula's own catch, reused above for the two fields
+  // that ARE genuine formulas — matchValue/amount — but not for the
+  // action's own resolution/dispatch here).
+  async function runButtonComponentAction(component, itemContext) {
+    const action = component?.action;
+    if (!action || typeof action !== "object") {
+      return;
+    }
+    try {
+      if (action.type === "rollDice") {
+        const expression = typeof action.expression === "string" ? action.expression.trim() : "";
+        if (!expression) {
+          return;
+        }
+        // Same "read the live value off whichever field this button is
+        // tied to" targetValue behavior createRollOverlayButton's own
+        // click handler already had — component.binding is reused, not a
+        // new field, so a migrated Roller usage (which carries the
+        // original Input's own binding, see the migration script) keeps
+        // resolving a System Move match / Initiative push exactly as
+        // before.
+        const rawValue = itemContext
+          ? resolveItemContextValue(itemContext, component.binding)
+          : getBindingValue(component?.binding);
+        const numericValue = Number(rawValue);
+        const targetValue = Number.isFinite(numericValue) ? numericValue : undefined;
+        const label = (component.label || component.name || "Roll").trim() || "Roll";
+        await handleComponentRoll(expression, label, component, targetValue);
+        return;
+      }
+      if (action.type === "runMacro") {
+        const macroRef = typeof action.macroRef === "string" ? action.macroRef.trim() : "";
+        if (!macroRef) {
+          return;
+        }
+        await runMacroReference(macroRef, {
+          dataManager,
+          groupContext: state.groupContext ? { groupId: state.groupContext.groupId } : null,
+          status,
+        });
+        return;
+      }
+      if (action.type === "adjustField") {
+        const amountRaw = resolveContextFormula(action.amount, itemContext);
+        const amount = Number(amountRaw);
+        const delta = Number.isFinite(amount) ? amount : 0;
+        // mode:"delta" floors at 0 — a deliberately minimal, generic
+        // safety rail (a decremented resource counter going negative
+        // reads as broken on any bound display, regardless of what the
+        // resource is). mode:"set" applies the resolved amount exactly
+        // as given, no clamping, for anyone who wants full control.
+        const resolveNext = (current) =>
+          action.mode === "set" ? delta : Math.max(0, (Number.isFinite(current) ? current : 0) + delta);
+
+        const lookupBinding = typeof action.lookupBinding === "string" ? action.lookupBinding.trim() : "";
+        if (lookupBinding) {
+          // Always top-level — the entire point of "look up an entry
+          // first" is reaching OUTSIDE this button's own item context
+          // into a different top-level array (e.g. a Spells-row button
+          // adjusting @limitedUses, a sibling Repeater entirely).
+          const arrayPath = resolveBindingPath(lookupBinding);
+          if (!arrayPath) {
+            throw new Error("No source array configured.");
+          }
+          const array = getValueAtContext(getBindingContext(), arrayPath);
+          if (!Array.isArray(array)) {
+            throw new Error("Source binding isn't a list.");
+          }
+          const matchField = typeof action.matchField === "string" ? action.matchField.trim() : "";
+          const matchValue = resolveContextFormula(action.matchValue, itemContext);
+          const foundIndex = array.findIndex((entry) => String(entry?.[matchField]) === String(matchValue));
+          if (foundIndex === -1) {
+            throw new Error("No matching entry found.");
+          }
+          const targetField = typeof action.targetField === "string" ? action.targetField.trim() : "";
+          if (!targetField) {
+            throw new Error("No target field configured.");
+          }
+          const fullPath = [...arrayPath, String(foundIndex), targetField];
+          const next = resolveNext(Number(getValueAtPath(fullPath)));
+          applyBindingValue(fullPath, next, {});
+          return;
+        }
+
+        const binding = typeof action.binding === "string" ? action.binding.trim() : "";
+        if (!binding) {
+          throw new Error("No field configured.");
+        }
+        const raw = binding.startsWith("@") ? binding : `@${binding}`;
+        // Resolved/written exactly like an ordinary Input's own binding —
+        // item-relative via setRepeaterItemValue when inside a Repeater
+        // item, else the top-level applyBindingValue/resolveBindingPath
+        // path (same group.* routing setRepeaterItemValue itself already
+        // special-cases).
+        if (itemContext) {
+          const current = Number(resolveItemContextValue(itemContext, raw));
+          setRepeaterItemValue(itemContext.repeaterComponent, itemContext.index, raw, resolveNext(current));
+          return;
+        }
+        const path = resolveBindingPath(raw);
+        if (!path) {
+          throw new Error("No field configured.");
+        }
+        if (path[0] === "group") {
+          const current = Number(getValueAtContext(getBindingContext(), path));
+          updateGroupBinding(path.slice(1), resolveNext(current));
+          return;
+        }
+        const current = Number(getValueAtPath(path));
+        applyBindingValue(path, resolveNext(current), {});
+      }
+    } catch (error) {
+      status.show(`Unable to run this action: ${error.message}`, { type: "error", timeout: 4000 });
+    }
+  }
+
   // url — like Icon's iconClass, itself the binding-or-literal string, plus
   // a separate `formula` field for the "=" case (see createImageUrlControl,
   // workbench-template-view.js) — checked first, same precedence
@@ -7673,6 +8532,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       functions: {
         ...(options.functions || {}),
         lookup: createLookupFn(context, state.systemDefinition?.fields),
+        // Always the top-level record, never `context` (which is the
+        // current Repeater item when this formula lives on an item-template
+        // node) — see createLookupFieldFn's own comment: a lookup table
+        // (limitedUses, inventory, ...) lives outside any one row, same
+        // "always top-level" convention runButtonComponentAction's own
+        // action.lookupBinding already established for the write side.
+        lookupField: createLookupFieldFn(getBindingContext()),
         // Registered here (not just for Repeater Add sources) so ANY
         // formula field in the suite — Visible, Editable in Play, a
         // Select's own Source/Options — can search a Library kind the same
@@ -7680,6 +8546,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         // "Source-bound Add pickers" section for libraryEntries' own
         // definition.
         libraryEntries,
+        restrictByCharacterKind,
       },
     });
   }
@@ -7853,7 +8720,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // component opt-in doesn't have that problem — nothing changes for a
       // Toggle unless someone deliberately turns it on.
       editable(comp) {
-        if (componentHasFormula(comp) || isComponentLocked(comp)) {
+        // Item-aware when nested (isRepeaterItemNodeLocked, same fix
+        // isRepeaterCellEditable's own Input/Track/Select Group path just
+        // got) — isComponentLocked alone always evaluates readOnlyFormula
+        // against the top-level draft, wrong for a Toggle living inside a
+        // Repeater item.
+        if (componentHasFormula(comp) || (itemContext ? isRepeaterItemNodeLocked(comp, itemContext.item) : isComponentLocked(comp))) {
           return false;
         }
         // Same "@group.*" permission gate as isEditable/isRepeaterCellEditable
@@ -8006,10 +8878,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (normalizedBinding) {
       clone.binding = normalizedBinding;
     }
-    if (typeof clone.roller !== "string") {
-      clone.roller = "";
-    }
-    clone.roller = clone.roller.trim();
     if (typeof clone.collapsible === "string") {
       clone.collapsible = clone.collapsible.toLowerCase() === "true";
     } else {
@@ -8400,6 +9268,32 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return Boolean(node.editableInPlay);
   }
 
+  // Same idea again — "Locked" (component.readOnly/readOnlyFormula/
+  // readOnlyBinding), evaluated against the current item instead of the
+  // top-level draft. Confirmed real gap this closes: isComponentLocked
+  // (below) always evaluates readOnlyFormula against getBindingContext(),
+  // so a Locked formula on a Repeater item-template node (a Cast button's
+  // own "@level" or similar) silently resolved against the wrong record —
+  // there was no item-aware counterpart at all, unlike Visible/Editable in
+  // Play above.
+  function isRepeaterItemNodeLocked(node, item) {
+    if (!node) return false;
+    const formula = typeof node.readOnlyFormula === "string" ? node.readOnlyFormula.trim() : "";
+    if (formula) {
+      try {
+        return Boolean(evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {}));
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate item locked formula", error);
+        return false;
+      }
+    }
+    const binding = typeof node.readOnlyBinding === "string" ? node.readOnlyBinding.trim() : "";
+    if (binding) {
+      return Boolean(resolveRepeaterItemValue(item, binding));
+    }
+    return Boolean(node.readOnly);
+  }
+
   // Shared by every item-template node type that supports real editing
   // (Input, Track, Select Group) — same "@group.*" permission gate as
   // isEditable's own, just checked against the ENCLOSING Repeater's own
@@ -8414,7 +9308,26 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!itemContext) {
       return isEditable(comp);
     }
-    if (!comp.binding) {
+    // A Button doesn't read/write comp.binding the way every OTHER
+    // interactive item-template node does (Input/Toggle/Track all use it
+    // as their own bound value's path) — its action.binding/lookupBinding
+    // fields (runButtonComponentAction) are what actually matter, and an
+    // action can legitimately need neither (a lookup-based adjustField,
+    // a runMacro/rollDice with no associated field at all). Confirmed
+    // real bug this fixes: a Repeater-item Button with no top-level
+    // binding set (the normal case) was unconditionally non-editable
+    // here, in EVERY mode, regardless of Editable in Play — clicking it
+    // did nothing at all.
+    const isButton = comp?.type === "input" && comp?.variant === "button";
+    if (!comp.binding && !isButton) {
+      return false;
+    }
+    // Same "Locked always wins, in both modes" precedence isEditable's own
+    // isComponentLocked check has — confirmed real gap this closes: no
+    // item-template node here (Input/Track/Select Group, Button included)
+    // ever consulted Locked at all, so a Cast button's own Locked formula
+    // had zero effect regardless of what it evaluated to.
+    if (isRepeaterItemNodeLocked(comp, itemContext.item)) {
       return false;
     }
     if (isGroupBindingBlocked(itemContext.repeaterComponent?.binding)) {
@@ -8539,18 +9452,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   function resolveComponentValue(component, fallback = undefined) {
     const componentUid = component?.uid || null;
-    const manualRolls = new Set();
-    if (typeof component?.roller === "string") {
-      const trimmedRoller = component.roller.trim();
-      if (trimmedRoller) {
-        manualRolls.add(trimmedRoller);
-      }
-    }
     const applyRollDirectives = (extra) => {
       if (!componentUid) {
         return;
       }
-      const combined = new Set(manualRolls);
+      const combined = new Set();
       if (extra) {
         const values = extra instanceof Set ? Array.from(extra) : Array.isArray(extra) ? extra : [extra];
         values.forEach((value) => {
@@ -9029,46 +9935,113 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // INSIDE the wizard — those all become ordinary pendingChoices entries,
   // resolved via the exact same Character Properties UI Level Up already
   // built, once the character actually exists.
-  // "choices" (last) is a real, counted step — reached only after Create
+  // "choices" is a real, counted step — reached only after Create
   // Character on Review actually creates the record (pendingChoices need a
-  // real character id to resolve against), never via ordinary Back/Next —
-  // but it still occupies a real slot in the numbered sequence
-  // (goToBuildStep clamps ordinary navigation to the active steps' own
-  // length - 2; submitBuildWizard is the only path that ever reaches it)
-  // so the user sees "Step N of N," never a step that materializes out of
-  // nowhere. See getActiveBuildSteps below for the "subclass" step, which
-  // is conditionally spliced into this same base sequence.
-  const BUILD_STEPS_BASE = ["identity", "species", "class", "background", "abilities", "details", "review", "choices"];
-  const BUILD_STEP_LABELS_BASE = ["Name & Template", "Species", "Class", "Background", "Ability Scores", "Details", "Review", "Finish Choices"];
-  const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8];
-  const POINT_BUY_COST = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
-  const POINT_BUY_BUDGET = 27;
+  // real character id to resolve against), never via ordinary Back/Next
+  // (goToBuildStep clamps ordinary navigation to stop right before
+  // wherever "choices" actually sits — see its own comment) — but it
+  // still occupies a real slot in the sequence so the user sees "Step N
+  // of N," never a step that materializes out of nowhere. Its own
+  // POSITION is exactly wherever the System's own `buildSteps` array puts
+  // it — a declared entry like any other, not a JS-reordered wrapper
+  // around it. See getActiveBuildSteps. "required" is the one deliberate
+  // exception — not in buildSteps at all, see that function's own comment
+  // on why. Deliberately NOT called "identity": a future System's own
+  // buildSteps might legitimately want a real, declared step BY that name
+  // (e.g. a whole screen of free-form identity/backstory fields) — this
+  // step's own id shouldn't squat on a name a System could otherwise use.
+  // The single fixed, non-System label for this landing step —
+  // deliberately the only hardcoded label anywhere in this wizard. Every
+  // other step's label is 100% System-declared data (see
+  // getActiveBuildSteps); this one can't be, for a structural reason, not
+  // a content reason: reading a System-declared position/label for THIS
+  // step would require already knowing which System is active, which is
+  // exactly what THIS step's own Template picker is how the user chooses
+  // in the first place. No System could ever meaningfully customize it —
+  // it holds ONLY what's genuinely required to create ANY valid Workbench
+  // character regardless of System (Name, Template — never an optional
+  // field like Pronouns, which lives on Details instead, since not every
+  // System wants to ask for it), never game content — and if a System's
+  // own JSON declared a "required" entry anyway, it
+  // could never actually be read at the one moment it would need to be —
+  // so it's excluded from buildSteps entirely rather than silently
+  // ignored if authored.
+  const REQUIRED_STEP_LABEL = "Name & Template";
 
-  // A "subclass" step is spliced in right after "class" whenever the
-  // SELECTED class's own data says it grants its subclass choice at level
-  // 1 (getSubclassGrantLevel — the SAME System-agnostic helper Level Up
-  // uses to detect this at any level, not a Build-wizard-only copy). Every
-  // class record in THIS repo currently grants it at level 3 (never
-  // reachable at creation), but nothing here may assume that — a 2014-
-  // ruleset class, or another System entirely, can and does grant it at
-  // level 1. Recomputed fresh every time step-navigation logic runs (never
-  // cached across a re-pick), so switching to a different class mid-wizard
-  // correctly grows/shrinks the sequence.
+  // One entry of the System's own declared `buildSteps` — the SOLE source
+  // for everything a step needs, not just its label: a "libraryPick"-style
+  // step (species/class/subclass/background) carries its own `kind` (which
+  // Library kind it fetches — no longer assumed identical to the step id)
+  // and, for subclass, `parentKind` + optional `atCreation`; "heritage"
+  // carries its own `picks` (the kinds it combines, each with its own
+  // caption `label`) and `allowMixedAncestry`; "abilities" carries its own
+  // `methods` (what used to be the separate `abilityAssignmentMethods`
+  // field); "choices" carries its own `equipmentChoices`/
+  // `startingDomainCards`; "input" is fully generic — `inputs[]` (each its
+  // own `label`/`placeholder`) plus `targetArrayPath`/`itemKey`/
+  // `itemDefaults` for where the typed values get pushed (Daggerheart's
+  // own Experiences use this, but nothing about the step is
+  // Experiences-specific — a future System's own free-text-inputs step
+  // reuses it unchanged; see renderBuildInputStep). Nothing about a step
+  // lives anywhere else — a future System's own buildSteps entry is the
+  // complete spec for that step, full stop, so a fully new step
+  // configuration never needs a JS change to support, only new data.
+  // `systemDefinition` defaults to the wizard's own live pick, but
+  // buildCharacterFromWizard resolves a separately-fetched `buildSystemDefinition`
+  // for the actual creation (see that function's own comment on why) — same
+  // lookup, explicit override for that one caller.
+  function getBuildStepEntry(step, systemDefinition = buildWizardState.systemDefinition) {
+    return systemFieldValues(systemDefinition, "buildSteps").find((entry) => entry?.step === step) || null;
+  }
+
+  // "required" is always the first step, unconditionally — see
+  // REQUIRED_STEP_LABEL's own comment for why it's excluded from
+  // buildSteps rather than declared there. Every OTHER step (including
+  // details/review/choices) is exactly the System's own declared
+  // `buildSteps`, in exactly that array's own order — never a hardcoded
+  // JS array, never steps stripped out and re-inserted at a fixed
+  // position. The only runtime FILTER on top of that declared order is
+  // "subclass," since whether a SPECIFIC selected class actually grants
+  // it at creation is genuinely per-class data (getSubclassGrantLevel),
+  // not something a System-wide list can express — everything else here
+  // just renders whatever the System asked for, in the order it asked
+  // for it. A System with no `buildSteps` declared has no content steps
+  // at all beyond the required step itself (see buildWizardSupported,
+  // which blocks the wizard entirely for exactly this case rather than
+  // guessing a sequence). Every OTHER label comes straight from the
+  // declared entry — no per-step-id JS branching, no fabricated English
+  // text; the bare step id is the absolute last resort for a step with no
+  // `label` authored at all.
   function getActiveBuildSteps() {
-    if (!buildWizardState.needsSubclassStep) {
-      return { steps: BUILD_STEPS_BASE, labels: BUILD_STEP_LABELS_BASE };
-    }
-    const classIndex = BUILD_STEPS_BASE.indexOf("class");
-    return {
-      steps: [...BUILD_STEPS_BASE.slice(0, classIndex + 1), "subclass", ...BUILD_STEPS_BASE.slice(classIndex + 1)],
-      labels: [...BUILD_STEP_LABELS_BASE.slice(0, classIndex + 1), "Subclass", ...BUILD_STEP_LABELS_BASE.slice(classIndex + 1)],
-    };
+    const declaredSteps = systemFieldValues(buildWizardState.systemDefinition, "buildSteps");
+    const stepEntryById = new Map(declaredSteps.filter((entry) => entry?.step).map((entry) => [entry.step, entry]));
+    const contentSteps = declaredSteps
+      .map((entry) => entry?.step)
+      .filter((step) => step && (step !== "subclass" || buildWizardState.needsSubclassStep));
+    const steps = ["required", ...contentSteps];
+    const labels = [REQUIRED_STEP_LABEL, ...contentSteps.map((step) => stepEntryById.get(step)?.label || step)];
+    return { steps, labels };
   }
 
   const buildWizardState = {
     step: 0,
+    // The System definition for whichever Template is picked IN THE
+    // WIZARD — deliberately NOT the same as state.systemDefinition (that's
+    // whatever character is currently open behind the modal). Populated by
+    // fetchSystemDefinition (a plain cached fetch, no rendering side
+    // effects) instead of updateSystemContext, so switching Templates
+    // mid-wizard never repaints the character sheet sitting behind the
+    // modal with the wrong System's fields.
+    systemDefinition: null,
     speciesId: "",
     speciesName: "",
+    // Mixed Ancestry (Heritage step only, daggerheart.org's own real rule:
+    // "take the top ancestry feature from one ancestry and the bottom
+    // ancestry feature from another") — a SECOND, optional species pick
+    // blended with the first, never required.
+    mixedAncestry: false,
+    secondSpeciesId: "",
+    secondSpeciesName: "",
     classId: "",
     className: "",
     classRecord: null,
@@ -9081,12 +10054,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     abilityScores: {},
     abilityDefs: [],
     rolledScores: [],
+    // One entry per input the System's own "input" buildStep declares
+    // (its own `inputs[]`, by index) — the player TYPES a real value for
+    // each, never a blank placeholder seeded silently onto the character.
+    // Fully generic — not specific to Experiences or any one concept; see
+    // renderBuildInputStep/buildCharacterFromWizard.
+    inputValues: [],
   };
 
   async function activateBuildMode() {
     buildWizardState.step = 0;
+    buildWizardState.systemDefinition = null;
     buildWizardState.speciesId = "";
     buildWizardState.speciesName = "";
+    buildWizardState.mixedAncestry = false;
+    buildWizardState.secondSpeciesId = "";
+    buildWizardState.secondSpeciesName = "";
     buildWizardState.classId = "";
     buildWizardState.className = "";
     buildWizardState.classRecord = null;
@@ -9099,8 +10082,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.abilityScores = {};
     buildWizardState.abilityDefs = [];
     buildWizardState.rolledScores = [];
+    buildWizardState.inputValues = [];
     if (elements.buildCharacterName) {
       elements.buildCharacterName.value = "";
+    }
+    if (elements.buildCharacterPronouns) {
+      elements.buildCharacterPronouns.value = "";
     }
     if (elements.buildCharacterImage) {
       elements.buildCharacterImage.value = "";
@@ -9111,7 +10098,29 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       elements.buildCharacterTemplate.value = defaultTemplate;
     }
     goToBuildStep(0);
+    await applyBuildTemplateSelection();
+  }
+
+  // The single place the wizard's own picked Template turns into a System
+  // definition — fires on initial activation AND every time the Template
+  // select changes. Populates buildWizardState.systemDefinition (a plain
+  // cached fetch, never state.systemDefinition/updateSystemContext — see
+  // the field's own comment on buildWizardState for why) and re-derives
+  // every piece of step chrome (labels, step sequence, allowed ability
+  // methods) that depends on it, since none of that can be computed until
+  // the System is actually known.
+  async function applyBuildTemplateSelection() {
+    const templateId = elements.buildCharacterTemplate?.value || "";
+    const systemId = templateCatalog.get(templateId)?.schema || "";
+    buildWizardState.systemDefinition = await fetchSystemDefinition(systemId);
+    buildWizardState.abilityDefs = [];
+    // Species/Class/Background are System-filtered — switching Templates
+    // mid-wizard means a different (or no) System, so the previously
+    // rendered lists (and whatever was picked from them) can no longer be
+    // trusted.
     await refreshBuildLibraryPickers();
+    applyBuildStepChrome(buildWizardState.step);
+    updateBuildNextState();
   }
 
   // Re-renders all three Library-kind steps against whichever Template is
@@ -9123,6 +10132,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   async function refreshBuildLibraryPickers() {
     buildWizardState.speciesId = "";
     buildWizardState.speciesName = "";
+    buildWizardState.mixedAncestry = false;
+    buildWizardState.secondSpeciesId = "";
+    buildWizardState.secondSpeciesName = "";
     buildWizardState.classId = "";
     buildWizardState.className = "";
     buildWizardState.classRecord = null;
@@ -9131,17 +10143,48 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.subclassName = "";
     buildWizardState.backgroundId = "";
     buildWizardState.backgroundName = "";
+    if (elements.buildMixedAncestryCheckbox) {
+      elements.buildMixedAncestryCheckbox.checked = false;
+    }
+    setElementVisible(elements.buildSecondSpeciesStep, false);
+    // Heritage-step Systems render their 2 kind picks into the heritage
+    // panel's OWN mounts instead of the standalone species/background
+    // steps' mounts (those steps aren't in the active sequence at all
+    // then — see getActiveBuildSteps) — picking one or the other, never
+    // both, avoids fetching every Species/Background record twice. Every
+    // kind fetched below comes from the relevant step's own declared
+    // `kind` (species/class/background) or `picks[].kind` (heritage) —
+    // never a literal kind string assumed to match the step id.
+    const heritageEntry = getBuildStepEntry("heritage");
+    const speciesKind = heritageEntry ? heritageEntry.picks?.[0]?.kind : getBuildStepEntry("species")?.kind;
+    const backgroundKind = heritageEntry ? heritageEntry.picks?.[1]?.kind : getBuildStepEntry("background")?.kind;
+    const classKind = getBuildStepEntry("class")?.kind;
+    const speciesMount = heritageEntry ? elements.buildHeritageSpeciesMount : elements.buildSpeciesMount;
+    const backgroundMount = heritageEntry ? elements.buildHeritageBackgroundMount : elements.buildBackgroundMount;
+    setElementVisible(elements.buildMixedAncestryStep, Boolean(heritageEntry?.allowMixedAncestry));
     await Promise.all([
-      renderBuildLibraryPicker(elements.buildSpeciesMount, "species", (option) => {
+      renderBuildLibraryPicker(speciesMount, speciesKind, (option) => {
         buildWizardState.speciesId = option?.id || "";
         buildWizardState.speciesName = option?.label || "";
         updateBuildNextState();
       }),
-      renderBuildLibraryPicker(elements.buildClassMount, "class", (option) => {
+      renderBuildLibraryPicker(elements.buildClassMount, classKind, (option) => {
         buildWizardState.classId = option?.id || "";
         buildWizardState.className = option?.label || "";
         buildWizardState.classRecord = option?.raw || null;
-        buildWizardState.needsSubclassStep = getSubclassGrantLevel(option?.raw) === 1;
+        // Only possible at all if the System's own buildSteps actually
+        // declares a "subclass" step — a System that doesn't want one
+        // structurally never offers it, regardless of what a class's own
+        // data might otherwise imply. That entry's own `atCreation` flag
+        // (Daggerheart: always) is checked FIRST, short-circuiting before
+        // ever calling getSubclassGrantLevel — which looks for a
+        // "{ClassName} Subclass"-named feature D&D's classes carry and
+        // Daggerheart's don't, by design — so an atCreation:true System
+        // never triggers that function's own console.warn for a gap that
+        // isn't actually a gap.
+        const subclassStepEntry = getBuildStepEntry("subclass");
+        buildWizardState.needsSubclassStep =
+          Boolean(subclassStepEntry) && (Boolean(subclassStepEntry.atCreation) || getSubclassGrantLevel(option?.raw) === 1);
         buildWizardState.subclassId = "";
         buildWizardState.subclassName = "";
         if (buildWizardState.needsSubclassStep) {
@@ -9149,9 +10192,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         }
         updateBuildNextState();
       }),
-      renderBuildLibraryPicker(elements.buildBackgroundMount, "background", (option) => {
+      renderBuildLibraryPicker(backgroundMount, backgroundKind, (option) => {
         buildWizardState.backgroundId = option?.id || "";
         buildWizardState.backgroundName = option?.label || "";
+        updateBuildNextState();
+      }),
+      renderBuildLibraryPicker(elements.buildSecondSpeciesMount, speciesKind, (option) => {
+        buildWizardState.secondSpeciesId = option?.id || "";
+        buildWizardState.secondSpeciesName = option?.label || "";
         updateBuildNextState();
       }),
     ]);
@@ -9159,24 +10207,28 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   }
 
   // Subclass options depend on whichever class was just picked (Variant
-  // records filtered to parentKind:"class" && parentId === the class's own
-  // index) — only rendered when needsSubclassStep is true (this System/
-  // class grants its subclass choice at creation, level 1).
+  // records filtered to the subclass step's own declared `parentKind` &&
+  // parentId === the class's own real Library id — NOT its DDB-import
+  // "index" slug, which a same-named class in a different System can
+  // coincidentally share) — only rendered when needsSubclassStep is true
+  // (buildSteps declares a "subclass" step AND this class actually grants
+  // it at creation).
   async function renderBuildSubclassPicker() {
     const mount = elements.buildSubclassMount;
     if (!mount || !buildWizardState.classRecord) {
       return;
     }
     mount.textContent = "Loading…";
+    const subclassStepEntry = getBuildStepEntry("subclass");
     let entries = [];
     try {
-      entries = await fetchKindEntriesWithIds(dataManager, "variant");
+      entries = await fetchKindEntriesWithIds(dataManager, subclassStepEntry?.kind);
     } catch (error) {
       mount.textContent = "Unable to load subclass options.";
       return;
     }
     const options = entries
-      .filter((entry) => entry.entity?.parentKind === "class" && entry.entity?.parentId === buildWizardState.classRecord.index)
+      .filter((entry) => entry.entity?.parentKind === subclassStepEntry?.parentKind && entry.entity?.parentId === buildWizardState.classId)
       .map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }))
       .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
     mount.innerHTML = "";
@@ -9248,8 +10300,33 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     steps.forEach((step, i) => {
       document.querySelector(`[data-build-step="${step}"]`)?.classList.toggle("d-none", i !== index);
     });
-    if (elements.buildStepLabel) {
+    // Before a Template is picked there's no System, so getActiveBuildSteps
+    // can only ever return the 4 unconditional chrome steps — a "Step 1 of
+    // 4" count that's honest about the DOM but meaningless to the user
+    // (nothing has actually been declared yet). Hidden entirely rather
+    // than shown with a misleading number until a real System is loaded.
+    const hasSystem = Boolean(buildWizardState.systemDefinition);
+    setElementVisible(elements.buildStepLabel, hasSystem, "inline");
+    if (elements.buildStepLabel && hasSystem) {
       elements.buildStepLabel.textContent = `Step ${index + 1} of ${steps.length}: ${labels[index]}`;
+    }
+    // In-panel captions echo the SAME declared label the step header above
+    // already shows — set alongside it so they can never drift out of
+    // sync with each other. Standalone Library-pick steps reuse that
+    // step's own `label` directly; the Heritage step is a composite (2
+    // kinds picked in ONE step, so it has no single step-label to reuse)
+    // and instead reads its own declared `picks[].label`.
+    document.querySelectorAll("[data-build-step-caption]").forEach((el) => {
+      el.textContent = getBuildStepEntry(el.dataset.buildStepCaption)?.label || el.dataset.buildStepCaption;
+    });
+    const heritagePicks = getBuildStepEntry("heritage")?.picks;
+    document.querySelectorAll("[data-build-heritage-pick-label]").forEach((el) => {
+      const pickIndex = Number(el.dataset.buildHeritagePickLabel);
+      el.textContent = heritagePicks?.[pickIndex]?.label || "";
+    });
+    if (elements.buildHeritageSecondPickLabel) {
+      const primaryLabel = heritagePicks?.[0]?.label;
+      elements.buildHeritageSecondPickLabel.textContent = primaryLabel ? `Second ${primaryLabel}` : "";
     }
     const step = steps[index];
     elements.buildBackButton?.classList.toggle("d-none", index === 0 || step === "choices");
@@ -9258,13 +10335,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
-  // Ordinary Back/Next navigation — clamped BEFORE "choices" (the active
-  // sequence's own last index), since that step only exists once Create
-  // Character has actually run; submitBuildWizard is the sole path that
-  // ever shows it.
+  // Ordinary Back/Next navigation — clamped to stop right before wherever
+  // "choices" actually sits in the System's own declared order (found by
+  // id, never assumed to be the last index), since that step only exists
+  // once Create Character has actually run; submitBuildWizard is the sole
+  // path that ever shows it. A System that doesn't declare a "choices"
+  // step at all has nothing to clamp before — ordinary navigation then
+  // runs all the way to the sequence's own real last step.
   function goToBuildStep(index) {
     const { steps } = getActiveBuildSteps();
-    const lastNavStep = steps.length - 2;
+    const choicesIndex = steps.indexOf("choices");
+    const lastNavStep = choicesIndex === -1 ? steps.length - 1 : choicesIndex - 1;
     const clamped = Math.max(0, Math.min(index, lastNavStep));
     buildWizardState.step = clamped;
     applyBuildStepChrome(clamped);
@@ -9274,20 +10355,44 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (steps[clamped] === "abilities") {
       void ensureBuildAbilityDefs();
     }
+    if (steps[clamped] === "input") {
+      renderBuildInputStep();
+    }
     if (steps[clamped] === "review") {
       renderBuildReview();
     }
     updateBuildNextState();
   }
 
+  // Only meaningful once a Template's own System is actually loaded — the
+  // Build Wizard's own content-step sequence (species/class/subclass/
+  // background/heritage/abilities — see getActiveBuildSteps) is entirely
+  // driven by the System's own declared `buildSteps`; a System that hasn't
+  // declared any has nothing for the wizard to run at all, full stop. This
+  // is deliberately a SINGLE top-level "has this System been set up for
+  // Build Character" signal, not narrowed to any one step's own data (an
+  // incomplete "abilities" step `methods` only blocks the Abilities step
+  // itself — see renderBuildAbilitiesStep's own inline message — not the
+  // whole wizard). `true` while no System is loaded yet (nothing to judge)
+  // so this never blocks the ordinary "haven't picked a Template yet"
+  // state on step 1.
+  function buildWizardSupported() {
+    return !buildWizardState.systemDefinition || systemFieldValues(buildWizardState.systemDefinition, "buildSteps").length > 0;
+  }
+
   function updateBuildNextState() {
     if (!elements.buildNextButton) {
+      return;
+    }
+    setElementVisible(elements.buildUnsupportedMessage, !buildWizardSupported(), "block");
+    if (!buildWizardSupported()) {
+      elements.buildNextButton.disabled = true;
       return;
     }
     const { steps } = getActiveBuildSteps();
     const step = steps[buildWizardState.step];
     let valid = true;
-    if (step === "identity") {
+    if (step === "required") {
       valid = Boolean((elements.buildCharacterName?.value || "").trim()) && Boolean(elements.buildCharacterTemplate?.value);
     } else if (step === "species") {
       valid = Boolean(buildWizardState.speciesId);
@@ -9297,8 +10402,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       valid = Boolean(buildWizardState.subclassId);
     } else if (step === "background") {
       valid = Boolean(buildWizardState.backgroundId);
+    } else if (step === "heritage") {
+      valid = Boolean(buildWizardState.speciesId) && Boolean(buildWizardState.backgroundId) && (!buildWizardState.mixedAncestry || Boolean(buildWizardState.secondSpeciesId));
     } else if (step === "abilities") {
       valid = isBuildAbilitiesComplete();
+    } else if (step === "input") {
+      const inputDefs = getBuildStepEntry("input")?.inputs;
+      valid =
+        Array.isArray(inputDefs) &&
+        inputDefs.length > 0 &&
+        inputDefs.every((_, index) => Boolean((buildWizardState.inputValues[index] || "").trim()));
     }
     elements.buildNextButton.disabled = !valid;
   }
@@ -9316,14 +10429,81 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return buildWizardState.abilityDefs.length > 0 && buildWizardState.abilityDefs.every((def) => buildWizardState.abilityScores[def.key] != null);
   }
 
+  // A method's own mechanics (a point-buy cost curve/budget, a roll
+  // formula/count, a fixed value array) are System data on the "abilities"
+  // buildStep's own `methods` entry — never a JS constant, never a
+  // hardcoded "every System gets these 3 D&D methods" default, and never a
+  // second SEPARATE reserved field off on its own (folded directly into
+  // the step that actually needs it, same as everything else buildSteps
+  // carries). A System that declares nothing here has NO usable
+  // ability-assignment method, full stop — surfaced as
+  // renderBuildAbilitiesStep's own inline message on that one step (not a
+  // whole-wizard block; see buildWizardSupported, which gates on the
+  // System's declared buildSteps instead).
+  function getBuildAbilityMethodConfig(methodName) {
+    const declared = getBuildStepEntry("abilities")?.methods;
+    const entry = Array.isArray(declared) ? declared.find((e) => (e?.name || e) === methodName) : null;
+    return entry && typeof entry === "object" ? entry : null;
+  }
+
+  // A declared method only counts as usable once ITS OWN required config is
+  // present — a System can declare "pointBuy" by name and still leave it
+  // non-functional if it forgot min/max/budget/costs; that's a System
+  // authoring gap to surface (buildWizardSupported), not something to
+  // paper over with a fallback value from nowhere.
+  function isBuildAbilityMethodUsable(methodName, config) {
+    if (methodName === "array") {
+      return Array.isArray(config?.values) && config.values.length > 0;
+    }
+    if (methodName === "pointBuy") {
+      return Number.isFinite(config?.min) && Number.isFinite(config?.max) && Number.isFinite(config?.budget) && config?.costs && typeof config.costs === "object";
+    }
+    if (methodName === "roll") {
+      return typeof config?.formula === "string" && config.formula.trim().length > 0 && Number.isFinite(config?.count);
+    }
+    // An unrecognized method name has no built-in renderer to fall back
+    // to either — same "not usable" verdict, not a silent no-op pick.
+    return false;
+  }
+
+  // Every method the System DECLARES and FULLY CONFIGURES — the wizard
+  // never invents a method the System didn't ask for, and never renders
+  // one it can't actually run.
+  function allowedBuildAbilityMethods() {
+    const declared = getBuildStepEntry("abilities")?.methods;
+    return (Array.isArray(declared) ? declared : [])
+      .map((entry) => entry?.name || entry)
+      .filter((name) => isBuildAbilityMethodUsable(name, getBuildAbilityMethodConfig(name)));
+  }
+
   function renderBuildAbilitiesStep() {
     const mount = elements.buildAbilitiesMount;
     if (!mount) {
       return;
     }
     mount.innerHTML = "";
+    const allowedMethods = allowedBuildAbilityMethods();
     document.querySelectorAll("[data-build-ability-method]").forEach((button) => {
-      const active = button.dataset.buildAbilityMethod === buildWizardState.abilityMethod;
+      setElementVisible(button, false);
+    });
+    if (!allowedMethods.length) {
+      // Nothing to render, on purpose — no D&D-shaped stand-in. The
+      // "abilities" buildStep hasn't declared a usable `methods` entry at
+      // all — this is a narrower, single-step gap (buildWizardSupported
+      // only blocks the whole wizard when buildSteps itself is undeclared,
+      // not for a gap on one specific step).
+      mount.textContent = "This System hasn't declared how ability scores are assigned yet.";
+      return;
+    }
+    if (!allowedMethods.includes(buildWizardState.abilityMethod)) {
+      buildWizardState.abilityMethod = allowedMethods[0];
+      buildWizardState.abilityScores = {};
+    }
+    document.querySelectorAll("[data-build-ability-method]").forEach((button) => {
+      const method = button.dataset.buildAbilityMethod;
+      const allowed = allowedMethods.includes(method);
+      setElementVisible(button, allowed);
+      const active = allowed && method === buildWizardState.abilityMethod;
       button.classList.toggle("btn-primary", active);
       button.classList.toggle("btn-outline-secondary", !active);
     });
@@ -9337,8 +10517,24 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } else if (buildWizardState.abilityMethod === "roll") {
       renderRollAbilities(mount, defs);
     } else {
-      renderValueAssignmentAbilities(mount, defs, STANDARD_ARRAY);
+      // "array" — its own `values`, same as pointBuy/roll carry their own
+      // config directly on their own entry (already confirmed non-empty
+      // by isBuildAbilityMethodUsable).
+      const declaredArray = getBuildAbilityMethodConfig("array")?.values || [];
+      const values = declaredArray.map((entry) => Number(entry.value ?? entry));
+      renderValueAssignmentAbilities(mount, defs, values);
     }
+  }
+
+  // A value set that dips below zero (Daggerheart's own +2/+1/+1/0/0/-1)
+  // is a signed MODIFIER range, where a "+" on the positive entries reads
+  // as meaningful; a value set that never goes negative (D&D's own 8-15
+  // Standard Array, or any point-buy score) is a raw SCORE, where a "+"
+  // would be wrong ("+15 Strength" isn't a thing). Driven entirely by the
+  // actual declared numbers, never a per-System special case.
+  function formatSignedNumber(value, values) {
+    const hasNegative = values.some((entry) => Number(entry) < 0);
+    return hasNegative && value > 0 ? `+${value}` : String(value);
   }
 
   // Shared by Array (a fixed standard array) and Roll (6 freshly rolled
@@ -9353,7 +10549,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       row.className = "d-flex align-items-center gap-2";
       const label = document.createElement("label");
       label.className = "fw-semibold";
-      label.style.width = "4rem";
+      // min-width (not a hard width) — aligns short names while never
+      // clipping the longest full ability/trait name a System declares
+      // (e.g. "Intelligence"/"Constitution"), now that full names are
+      // preferred over abbreviations everywhere (generator-kit.js).
+      label.style.minWidth = "8rem";
       label.textContent = def.label;
       const select = document.createElement("select");
       select.className = "form-select form-select-sm";
@@ -9394,7 +10594,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           }
           const option = document.createElement("option");
           option.value = String(slotIndex);
-          option.textContent = String(value);
+          option.textContent = formatSignedNumber(value, values);
           select.appendChild(option);
         });
         select.value = currentSlot != null ? String(currentSlot) : "";
@@ -9419,11 +10619,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   }
 
   function renderPointBuyAbilities(mount, defs) {
+    const { min, max, budget, costs } = getBuildAbilityMethodConfig("pointBuy");
+    const costOf = (score) => Number(costs?.[score] ?? 0);
     const wrap = document.createElement("div");
     wrap.className = "d-flex flex-column gap-2";
     defs.forEach((def) => {
       if (buildWizardState.abilityScores[def.key] == null) {
-        buildWizardState.abilityScores[def.key] = 8;
+        buildWizardState.abilityScores[def.key] = min;
       }
     });
     const remainingLabel = document.createElement("div");
@@ -9434,7 +10636,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       row.className = "d-flex align-items-center gap-2";
       const label = document.createElement("label");
       label.className = "fw-semibold";
-      label.style.width = "4rem";
+      // min-width (not a hard width) — aligns short names while never
+      // clipping the longest full ability/trait name a System declares
+      // (e.g. "Intelligence"/"Constitution"), now that full names are
+      // preferred over abbreviations everywhere (generator-kit.js).
+      label.style.minWidth = "8rem";
       label.textContent = def.label;
       const minusButton = document.createElement("button");
       minusButton.type = "button";
@@ -9449,42 +10655,43 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       plusButton.textContent = "+";
       row.append(label, minusButton, valueSpan, plusButton);
       wrap.appendChild(row);
-      const spent = () =>
-        defs.reduce((total, entry) => total + (POINT_BUY_COST[buildWizardState.abilityScores[entry.key]] ?? 0), 0);
+      const spent = () => defs.reduce((total, entry) => total + costOf(buildWizardState.abilityScores[entry.key]), 0);
       const refreshRow = () => {
         const score = buildWizardState.abilityScores[def.key];
-        valueSpan.textContent = String(score);
-        minusButton.disabled = score <= 8;
-        const nextCost = POINT_BUY_COST[score + 1];
-        plusButton.disabled = score >= 15 || nextCost === undefined || spent() - POINT_BUY_COST[score] + nextCost > POINT_BUY_BUDGET;
-        remainingLabel.textContent = `Points remaining: ${POINT_BUY_BUDGET - spent()}`;
+        valueSpan.textContent = formatSignedNumber(score, [min, max]);
+        minusButton.disabled = score <= min;
+        const nextCost = costs?.[score + 1];
+        plusButton.disabled = score >= max || nextCost === undefined || spent() - costOf(score) + Number(nextCost) > budget;
+        remainingLabel.textContent = `Points remaining: ${budget - spent()}`;
       };
       minusButton.addEventListener("click", () => {
-        buildWizardState.abilityScores[def.key] = Math.max(8, buildWizardState.abilityScores[def.key] - 1);
+        buildWizardState.abilityScores[def.key] = Math.max(min, buildWizardState.abilityScores[def.key] - 1);
         refreshRow();
         updateBuildNextState();
       });
       plusButton.addEventListener("click", () => {
-        buildWizardState.abilityScores[def.key] = Math.min(15, buildWizardState.abilityScores[def.key] + 1);
+        buildWizardState.abilityScores[def.key] = Math.min(max, buildWizardState.abilityScores[def.key] + 1);
         refreshRow();
         updateBuildNextState();
       });
       refreshRow();
     });
     mount.appendChild(wrap);
-    remainingLabel.textContent = `Points remaining: ${POINT_BUY_BUDGET - defs.reduce((total, entry) => total + (POINT_BUY_COST[buildWizardState.abilityScores[entry.key]] ?? 0), 0)}`;
+    remainingLabel.textContent = `Points remaining: ${budget - defs.reduce((total, entry) => total + costOf(buildWizardState.abilityScores[entry.key]), 0)}`;
   }
 
   function renderRollAbilities(mount, defs) {
+    const { formula, count, label } = getBuildAbilityMethodConfig("roll");
+    const rollLabel = label || formula;
     const wrap = document.createElement("div");
     wrap.className = "d-flex flex-column gap-2";
     const rollButton = document.createElement("button");
     rollButton.type = "button";
     rollButton.className = "btn btn-outline-primary btn-sm align-self-start";
-    rollButton.textContent = buildWizardState.rolledScores.length ? "Reroll (4d6, drop lowest)" : "Roll scores (4d6, drop lowest)";
+    rollButton.textContent = buildWizardState.rolledScores.length ? `Reroll (${rollLabel})` : `Roll scores (${rollLabel})`;
     rollButton.addEventListener("click", () => {
       try {
-        buildWizardState.rolledScores = Array.from({ length: 6 }, () => rollDiceExpression("4d6d1").total);
+        buildWizardState.rolledScores = Array.from({ length: Number(count) }, () => rollDiceExpression(formula).total);
       } catch (error) {
         console.warn("Character editor: unable to roll ability scores", error);
         return;
@@ -9503,6 +10710,51 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
+  // Fully generic — one free-text input per entry in the "input" buildStep's
+  // own declared `inputs[]` (each carrying its OWN label/placeholder), never
+  // a fixed count or fixed labels baked into this file. Not specific to
+  // Experiences or any one concept: a future System's own "type a few
+  // labeled things" step (whatever it turns out to be) reuses this exact
+  // function, unchanged, purely by declaring its own `inputs[]`. Values
+  // live in buildWizardState.inputValues by index, read back directly in
+  // buildCharacterFromWizard (which resolves `targetArrayPath`/`itemKey`/
+  // `itemDefaults` the same generic way) — no pendingChoice involved,
+  // since typing a value isn't a pick-from-options choice.
+  function renderBuildInputStep() {
+    const mount = elements.buildInputMount;
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    const inputDefs = getBuildStepEntry("input")?.inputs;
+    if (!Array.isArray(inputDefs) || !inputDefs.length) {
+      mount.textContent = "This System hasn't declared any inputs for this step.";
+      return;
+    }
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    inputDefs.forEach((def, index) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2";
+      const label = document.createElement("label");
+      label.className = "fw-semibold";
+      label.style.minWidth = "8rem";
+      label.textContent = def?.label || `Input ${index + 1}`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "form-control form-control-sm";
+      input.placeholder = def?.placeholder || "";
+      input.value = buildWizardState.inputValues[index] || "";
+      input.addEventListener("input", () => {
+        buildWizardState.inputValues[index] = input.value;
+        updateBuildNextState();
+      });
+      row.append(label, input);
+      wrap.appendChild(row);
+    });
+    mount.appendChild(wrap);
+  }
+
   function renderBuildReview() {
     const mount = elements.buildReviewMount;
     if (!mount) {
@@ -9510,15 +10762,45 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     mount.innerHTML = "";
     const imageUrl = (elements.buildCharacterImage?.value || "").trim();
-    const lines = [
-      `Name: ${(elements.buildCharacterName?.value || "").trim() || "—"}`,
-      `Species: ${buildWizardState.speciesName || "—"}`,
-      `Class: ${buildWizardState.className || "—"}`,
-      ...(buildWizardState.needsSubclassStep ? [`Subclass: ${buildWizardState.subclassName || "—"}`] : []),
-      `Background: ${buildWizardState.backgroundName || "—"}`,
-      ...buildWizardState.abilityDefs.map((def) => `${def.label}: ${buildWizardState.abilityScores[def.key] ?? "—"}`),
-      `Image URL: ${imageUrl || "—"}`,
-    ];
+    const pronouns = (elements.buildCharacterPronouns?.value || "").trim();
+    // Walks the ACTUAL active step sequence (getActiveBuildSteps — the
+    // System's own declared buildSteps, already filtered for whether this
+    // class grants a subclass) rather than a fixed 4-line D&D-shaped
+    // summary — a System using a "heritage" step gets ITS OWN 2 picks
+    // summarized (from that step's own declared `picks[].label`), not
+    // "Species"/"Background" lines that don't correspond to any step it
+    // actually has.
+    const { steps: activeSteps } = getActiveBuildSteps();
+    const lines = [`Name: ${(elements.buildCharacterName?.value || "").trim() || "—"}`, ...(pronouns ? [`Pronouns: ${pronouns}`] : [])];
+    activeSteps.forEach((step) => {
+      const entry = getBuildStepEntry(step);
+      if (step === "species") {
+        lines.push(`${entry?.label || step}: ${buildWizardState.speciesName || "—"}`);
+      } else if (step === "class") {
+        lines.push(`${entry?.label || step}: ${buildWizardState.className || "—"}`);
+      } else if (step === "subclass") {
+        lines.push(`${entry?.label || step}: ${buildWizardState.subclassName || "—"}`);
+      } else if (step === "background") {
+        lines.push(`${entry?.label || step}: ${buildWizardState.backgroundName || "—"}`);
+      } else if (step === "heritage") {
+        const picks = Array.isArray(entry?.picks) ? entry.picks : [];
+        lines.push(`${picks[0]?.label || "heritage"}: ${buildWizardState.speciesName || "—"}`);
+        if (buildWizardState.mixedAncestry) {
+          lines.push(`Mixed with: ${buildWizardState.secondSpeciesName || "—"}`);
+        }
+        lines.push(`${picks[1]?.label || "heritage"}: ${buildWizardState.backgroundName || "—"}`);
+      } else if (step === "abilities") {
+        buildWizardState.abilityDefs.forEach((def) => {
+          const score = buildWizardState.abilityScores[def.key];
+          lines.push(`${def.label}: ${score == null ? "—" : formatSignedNumber(score, Object.values(buildWizardState.abilityScores))}`);
+        });
+      } else if (step === "input") {
+        (Array.isArray(entry?.inputs) ? entry.inputs : []).forEach((def, index) => {
+          lines.push(`${def?.label || `Input ${index + 1}`}: ${buildWizardState.inputValues[index] || "—"}`);
+        });
+      }
+    });
+    lines.push(`Image URL: ${imageUrl || "—"}`);
     const list = document.createElement("ul");
     list.className = "d-flex flex-column gap-1 small mb-0 ps-3";
     lines.forEach((text) => {
@@ -9561,10 +10843,61 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!Array.isArray(pendingChoices)) {
       return;
     }
-    const choicesIndex = getActiveBuildSteps().steps.length - 1;
+    const { steps } = getActiveBuildSteps();
+    const choicesIndex = steps.indexOf("choices");
     buildWizardState.step = choicesIndex;
     applyBuildStepChrome(choicesIndex);
     renderBuildResolvePanel(pendingChoices);
+  }
+
+  // Finish used to just close the modal, silently leaving anything the user
+  // had picked-but-not-individually-clicked-Confirm-for stuck in pending
+  // choices — a confirmed real bug, not just a UX nicety: a user reasonably
+  // expects "fill everything in on the last step, then click Finish" to
+  // work the same as every other step's Next button, which always applies
+  // the current step before moving on. Auto-confirms every still-present
+  // row whose own tryConfirm() reports it was actually ready (fully
+  // selected, no duplicates) — a row left blank/partial is untouched and
+  // stays pending, same as clicking Finish today already documents
+  // ("close and finish them later from Character Properties").
+  async function finishBuildChoicesStep() {
+    if (elements.buildNextButton) {
+      elements.buildNextButton.disabled = true;
+    }
+    try {
+      // Sequential, not Promise.all — each resolution mutates the SAME
+      // state.draft then persists it; running them concurrently risks two
+      // overlapping saves landing out of order and one silently clobbering
+      // the other's just-applied pick.
+      const rows = Array.from(elements.buildResolveMount?.querySelectorAll("[data-build-resolve-list] > *") || []);
+      for (const row of rows) {
+        if (typeof row._tryConfirm === "function") {
+          await row._tryConfirm();
+        }
+      }
+    } catch (error) {
+      console.warn("Character editor: unable to auto-confirm remaining Build Wizard choices", error);
+    } finally {
+      if (elements.buildNextButton) {
+        elements.buildNextButton.disabled = false;
+      }
+    }
+    // Only NOW — the wizard's own last step, everything resolved or
+    // deliberately left for later — do we tell the user this is finished.
+    // The character record itself was created earlier (on Review), but
+    // that was a background technical step, never surfaced as its own
+    // "done" moment.
+    const finishedName = (elements.buildCharacterName?.value || "").trim();
+    if (finishedName) {
+      status.show(`Created ${finishedName}`, { type: "success", timeout: 2400 });
+    }
+    // Bootstrap sets aria-hidden on the modal as it hides — blur first so
+    // that never lands on an element (this button) that still has focus
+    // (a real console-flagged a11y violation otherwise, not just noise).
+    if (document.activeElement instanceof HTMLElement && elements.buildResolveMount?.closest(".modal")?.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+    newCharacterModalInstance?.hide();
   }
 
   function renderBuildResolvePanel(pendingChoices) {
@@ -9582,6 +10915,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (pendingChoices.length) {
       const list = document.createElement("div");
       list.className = "d-flex flex-column gap-2";
+      // Finish reads this back (see the buildNextButton "choices" handler)
+      // to auto-confirm every row already fully filled in — its children
+      // are exactly the row elements below, each carrying its own
+      // `._tryConfirm` (see renderPendingChoiceRow/renderFilterableChoiceRow).
+      list.setAttribute("data-build-resolve-list", "");
       pendingChoices.forEach((choice) => {
         const row = renderPendingChoiceRow(choice, {
           onResolved: () => {
@@ -9643,18 +10981,33 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let classRecord = null;
     let backgroundRecord = null;
     let subclassRecord = null;
+    let secondSpeciesRecord = null;
     const pickedSubclassId = buildWizardState.needsSubclassStep ? buildWizardState.subclassId : "";
+    const wantsSecondSpecies = buildWizardState.mixedAncestry && Boolean(buildWizardState.secondSpeciesId);
+    // Kinds come from the relevant buildStep's own declared `kind` (or
+    // heritage's own `picks[].kind`) — buildWizardState.systemDefinition
+    // is safe to read directly here (unlike derivedFormulas etc. further
+    // below, which deliberately re-fetch — see initialSchema/
+    // buildSystemDefinition's own comment): this function only ever runs
+    // for the Template the wizard is actively building against.
+    const heritageStepEntry = getBuildStepEntry("heritage");
+    const speciesKind = heritageStepEntry ? heritageStepEntry.picks?.[0]?.kind : getBuildStepEntry("species")?.kind;
+    const classKind = getBuildStepEntry("class")?.kind;
+    const backgroundKind = heritageStepEntry ? heritageStepEntry.picks?.[1]?.kind : getBuildStepEntry("background")?.kind;
+    const subclassKind = getBuildStepEntry("subclass")?.kind;
     try {
-      const [speciesResult, classResult, backgroundResult, subclassResult] = await Promise.all([
-        buildWizardState.speciesId ? dataManager.get("species", buildWizardState.speciesId, { preferLocal: false }) : null,
-        dataManager.get("class", buildWizardState.classId, { preferLocal: false }),
-        buildWizardState.backgroundId ? dataManager.get("background", buildWizardState.backgroundId, { preferLocal: false }) : null,
-        pickedSubclassId ? dataManager.get("variant", pickedSubclassId, { preferLocal: false }) : null,
+      const [speciesResult, classResult, backgroundResult, subclassResult, secondSpeciesResult] = await Promise.all([
+        buildWizardState.speciesId ? dataManager.get(speciesKind, buildWizardState.speciesId, { preferLocal: false }) : null,
+        dataManager.get(classKind, buildWizardState.classId, { preferLocal: false }),
+        buildWizardState.backgroundId ? dataManager.get(backgroundKind, buildWizardState.backgroundId, { preferLocal: false }) : null,
+        pickedSubclassId ? dataManager.get(subclassKind, pickedSubclassId, { preferLocal: false }) : null,
+        wantsSecondSpecies ? dataManager.get(speciesKind, buildWizardState.secondSpeciesId, { preferLocal: false }) : null,
       ]);
       speciesRecord = speciesResult?.payload || null;
       classRecord = classResult?.payload || null;
       backgroundRecord = backgroundResult?.payload || null;
       subclassRecord = subclassResult?.payload || null;
+      secondSpeciesRecord = secondSpeciesResult?.payload || null;
     } catch (error) {
       console.error("Character editor: unable to fetch Build Character source records", error);
     }
@@ -9666,9 +11019,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const initialSchema = state.template?.schema || templateMetadata?.schema || "";
     const abilities = {};
     buildWizardState.abilityDefs.forEach((def) => {
-      abilities[def.key] = Number(buildWizardState.abilityScores[def.key]) || 10;
+      // `!= null`, NOT `||` — a genuinely unset score defaults to 10 (D&D's
+      // own average ability score), but `0` is a real, valid assigned value
+      // (Daggerheart's Standard Array always has two "+0" trait entries) and
+      // must round-trip as 0, not silently fall back to 10.
+      const rawScore = buildWizardState.abilityScores[def.key];
+      abilities[def.key] = rawScore != null ? Number(rawScore) : 10;
     });
     const imageUrl = (elements.buildCharacterImage?.value || "").trim();
+    const pronouns = (elements.buildCharacterPronouns?.value || "").trim();
     const draft = {
       id,
       name,
@@ -9680,38 +11039,54 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       ...(imageUrl ? { image: imageUrl } : {}),
       identity: {
         name,
+        ...(pronouns ? { pronouns } : {}),
         level: 1,
         classes: [
           {
             name: buildWizardState.className || classRecord.name || "",
             level: 1,
-            refKind: "class",
+            refKind: classKind,
             refId: buildWizardState.classId,
             ...(buildWizardState.needsSubclassStep && buildWizardState.subclassId
-              ? { subclass: { name: buildWizardState.subclassName || "", refKind: "variant", refId: buildWizardState.subclassId } }
+              ? { subclass: { name: buildWizardState.subclassName || "", refKind: subclassKind, refId: buildWizardState.subclassId } }
               : {}),
           },
         ],
         ...(buildWizardState.speciesId
-          ? { race: { name: buildWizardState.speciesName || speciesRecord?.name || "", refKind: "species", refId: buildWizardState.speciesId } }
+          ? {
+              race: {
+                name: secondSpeciesRecord
+                  ? `${buildWizardState.speciesName || speciesRecord?.name || ""}/${buildWizardState.secondSpeciesName || secondSpeciesRecord.name || ""} (Mixed Ancestry)`
+                  : buildWizardState.speciesName || speciesRecord?.name || "",
+                refKind: speciesKind,
+                refId: buildWizardState.speciesId,
+              },
+            }
           : {}),
         ...(buildWizardState.backgroundId
           ? {
               background: {
                 name: buildWizardState.backgroundName || backgroundRecord?.name || "",
-                refKind: "background",
+                refKind: backgroundKind,
                 refId: buildWizardState.backgroundId,
               },
             }
           : {}),
       },
-      stats: { abilities, proficiencyBonus: proficiencyBonusForLevel(1) },
+      stats: { abilities, proficiencyBonus: 0 },
       featureIds: [],
       currencies: {},
       inventory: [],
       proficiencies: {},
       pendingChoices: [],
     };
+
+    // Building a character for `initialSchema`, which isn't necessarily the
+    // System currently loaded as state.systemDefinition (that's whatever
+    // record is CURRENTLY open, if any) — fetched once, reused for every
+    // derivedFormulas lookup below.
+    const buildSystemDefinition = await fetchSystemDefinition(initialSchema);
+    draft.stats.proficiencyBonus = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: 1 }) || 0;
 
     // Seeds a real stats.skills[] from the System's own "skills" array field
     // (loadArrayFieldValues — the same generic array-field reader
@@ -9731,51 +11106,78 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         name: String(entry.name || "").toLowerCase().replace(/\s+/g, "-"),
         friendlyName: entry.name || "",
         ability: abilityDef?.label || abilityKey.slice(0, 3).toUpperCase(),
-        value: abilityModifier(abilities[abilityKey] ?? 10),
+        value: evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: abilities[abilityKey] ?? 10 }) || 0,
         proficiency: 0,
         advantage: false,
         disadvantage: false,
       };
     });
 
-    // Starting HP — level-1 SRD rule (max die, not the average-growth
-    // formula Level Up uses for every level after this one). Written
-    // whenever the System's own combatBindings resource exists, even if
-    // the Class record's own hit-die field turns out to be missing (a
-    // content gap, not something to silently swallow) — a freshly built
-    // character always ends up with a real, visible HP block rather than
-    // no `stats.hitPoints` key at all.
-    const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
-    const resourceBinding = growthBinding ? findBindingByRole(getCombatBindings(), growthBinding.resourceRole) : null;
-    if (growthBinding?.path && resourceBinding) {
-      const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
-      if (!hitDieSides) {
-        console.warn(`Character editor: class "${classRecord.name}" has no ${growthBinding.path} — starting HP will be understated.`);
+    // Starting resource/value grants — level-1 SRD rule for HP (max die,
+    // not the average-growth formula Level Up uses for every level after
+    // this one), generalized to loop over EVERY class-kind "resourceGrowth"
+    // binding (not just the first) since a System can declare more than
+    // one — Daggerheart's own Evasion is exactly this same shape (a flat
+    // class-record number written straight onto its own combatBindings
+    // entry, no ability modifier), not a HP-specific mechanism. Reads off
+    // `buildSystemDefinition` directly (NOT getLevelUpBindings()/
+    // getCombatBindings(), which read whatever System happens to be open
+    // in state.systemDefinition right now — not necessarily the one being
+    // built, per this function's own buildSystemDefinition fetch above).
+    const buildFields = Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : [];
+    const growthBindings = (buildFields.find((entry) => entry?.key === "levelUpBindings")?.values || []).filter(
+      (entry) => entry?.role === "resourceGrowth" && entry?.kind === "class"
+    );
+    const buildCombatBindings = findRoleBoundField(buildFields)?.values;
+    growthBindings.forEach((growthBinding) => {
+      const resourceBinding = findBindingByRole(buildCombatBindings, growthBinding.resourceRole);
+      if (!growthBinding.path || !resourceBinding) return;
+      const baseValue = Number(classRecord[growthBinding.path]) || 0;
+      if (!baseValue) {
+        console.warn(`Character editor: class "${classRecord.name}" has no ${growthBinding.path} — starting ${resourceBinding.name} will be understated.`);
       }
-      let maxHp = hitDieSides;
+      let total = baseValue;
       if (growthBinding.abilityBinding) {
-        maxHp += abilityModifier(resolveBinding(growthBinding.abilityBinding, draft));
+        const score = resolveBinding(growthBinding.abilityBinding, draft);
+        total += evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score }) || 0;
       }
       const maxPathSegs = resolveBindingPath(resourceBinding.maxPath);
       const currentPathSegs = resolveBindingPath(resourceBinding.binding);
-      if (maxPathSegs) setValueAtContext(draft, maxPathSegs, maxHp);
-      if (currentPathSegs) setValueAtContext(draft, currentPathSegs, maxHp);
-    }
+      if (maxPathSegs) setValueAtContext(draft, maxPathSegs, total);
+      // `startFull` (declared on the resourceGrowth entry itself, default
+      // true) — a "count down from max" resource (D&D's HP: you start at
+      // full and take damage down toward 0) seeds current = max same as
+      // before; a "count up from empty" one (Daggerheart's HP: unmarked
+      // boxes fill in as you take damage, 0 marked = full health) must NOT
+      // — writing current here would make a fresh character start already
+      // half the way to death. Only meaningful when there's a real
+      // current/max split (a flat "value"-role binding like Evasion has no
+      // maxPathSegs at all, so it always falls through and seeds current
+      // regardless, which is correct for it either way).
+      if (currentPathSegs && (growthBinding.startFull !== false || !maxPathSegs)) {
+        setValueAtContext(draft, currentPathSegs, total);
+      }
+    });
 
     // Saving Throws — same shape as stats.skills[], sourced from the
     // wizard's own ability defs rather than the System's separate "saves"
     // field (whose labels are full sentences like "Strength Saving Throw",
-    // not display-ready). Class grants a fixed 2-save proficiency via its
-    // own `saving_throws` field (a real 5e-data convention, `index` is the
-    // lowercase 3-letter ability abbreviation) — a hard grant, not a choice.
+    // not display-ready). Class grants a fixed 2-save proficiency via
+    // whatever field the System's own "savingThrowGrants" levelUpBindings
+    // role names (never a literal "saving_throws") — a hard grant, not a
+    // choice.
+    const buildLevelUpBindings = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).find(
+      (entry) => entry?.key === "levelUpBindings"
+    )?.values;
+    const savingThrowGrantsPath = findLevelUpBinding(buildLevelUpBindings, "savingThrowGrants", "class")?.path;
     const classSaveIndexes = new Set(
-      (Array.isArray(classRecord?.saving_throws) ? classRecord.saving_throws : []).map((entry) =>
+      (savingThrowGrantsPath && Array.isArray(classRecord?.[savingThrowGrantsPath]) ? classRecord[savingThrowGrantsPath] : []).map((entry) =>
         String(entry?.index || "").toLowerCase()
       )
     );
     draft.stats.savingThrows = buildWizardState.abilityDefs.map((def, index) => {
       const isProficient = classSaveIndexes.has(String(def.label || "").toLowerCase());
-      const modifier = abilityModifier(abilities[def.key] ?? 10);
+      const modifier = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: abilities[def.key] ?? 10 }) || 0;
       return {
         id: index + 1,
         name: def.key,
@@ -9795,22 +11197,33 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // `abilityBinding` (author-configurable, not assumed) — Armor Class
     // also adds its own `base` (10 for a System using the standard 5e
     // "unarmored" default) before equipment ever raises it.
-    const combatBindings = getCombatBindings();
-    const initiativeBinding = findBindingByRole(combatBindings, "modifier");
+    const initiativeBinding = findBindingByRole(buildCombatBindings, "modifier");
     if (initiativeBinding?.abilityBinding) {
       const initiativePathSegs = resolveBindingPath(initiativeBinding.binding);
       if (initiativePathSegs) {
-        setValueAtContext(draft, initiativePathSegs, abilityModifier(resolveBinding(initiativeBinding.abilityBinding, draft)));
+        const score = resolveBinding(initiativeBinding.abilityBinding, draft);
+        setValueAtContext(draft, initiativePathSegs, evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score }) || 0);
       }
     }
-    const armorClassBinding = findBindingByRole(combatBindings, "value");
-    if (armorClassBinding) {
+    // role:"value" is ambiguous when a System declares more than one such
+    // binding (Daggerheart: Evasion AND Armor Score, per
+    // bindings.js' own findBindingByRole comment) — findBindingByRole
+    // always resolves to the FIRST one, which for Daggerheart is Evasion,
+    // not Armor Class/Score. Guarding on `base` being a real number scopes
+    // this block to what it actually means (an ability-modified "X + base"
+    // stat, D&D's Armor Class) rather than clobbering whichever "value"
+    // binding happens to be declared first with an unrelated System's own
+    // starting-value logic — Daggerheart's own Armor Score is seeded
+    // entirely by its Armor equipment choice's own statBindings instead
+    // (see the "choices" step's resolvePendingChoice handling).
+    const armorClassBinding = findBindingByRole(buildCombatBindings, "value");
+    if (armorClassBinding && typeof armorClassBinding.base === "number") {
       const acPathSegs = resolveBindingPath(armorClassBinding.binding);
       if (acPathSegs) {
         const acAbilityMod = armorClassBinding.abilityBinding
-          ? abilityModifier(resolveBinding(armorClassBinding.abilityBinding, draft))
+          ? evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: resolveBinding(armorClassBinding.abilityBinding, draft) }) || 0
           : 0;
-        setValueAtContext(draft, acPathSegs, (Number(armorClassBinding.base) || 0) + acAbilityMod);
+        setValueAtContext(draft, acPathSegs, armorClassBinding.base + acAbilityMod);
       }
     }
 
@@ -9833,7 +11246,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // already-linked origin feat.
     const classFeatures = Array.isArray(classRecord.features) ? classRecord.features : [];
     const classFeatureIds = Array.isArray(classRecord.featureIds) ? classRecord.featureIds : [];
-    const speciesFeatureIds = Array.isArray(speciesRecord?.featureIds) ? speciesRecord.featureIds : [];
+    // Mixed Ancestry (Daggerheart's own rule): take the top (first-listed)
+    // ancestry feature from the primary species and the bottom
+    // (second-listed) ancestry feature from the second species, instead of
+    // either species' own full featureIds list.
+    const speciesFeatureIds = secondSpeciesRecord
+      ? [speciesRecord?.featureIds?.[0], secondSpeciesRecord.featureIds?.[1]].filter(Boolean)
+      : Array.isArray(speciesRecord?.featureIds) ? speciesRecord.featureIds : [];
     const subclassFeatureIds = Array.isArray(subclassRecord?.featureIds) ? subclassRecord.featureIds : [];
     const allCandidateIds = [
       ...new Set([
@@ -9851,10 +11270,41 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       level: null,
     }));
     const grantedFromSpecies = matchFeaturesAtLevel(speciesFeaturesAsClassShape, speciesFeatureIds, featureNameById, null, []);
-    const grantedFromClass = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, 1, grantedFromSpecies);
-    const grantedFromSubclass = subclassRecord
-      ? grantSubclassFeaturesAtLevel(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass])
-      : [];
+    // targetLevel:null (grant every entry, same as Species above) when
+    // this class's own features[] has no `level` field on ANY entry at
+    // all — confirmed real gap this fixes: Daggerheart's own class
+    // records (this session's migration) have no per-level class-feature
+    // table at all (every class feature is just "part of the class," no
+    // D&D-style level gate) — matchFeaturesAtLevel's own exact-match
+    // (`Number(entry.level) !== 1`) silently discarded ALL of them at
+    // creation, since `Number(undefined)` is NaN, never `1`. A System
+    // whose classFeatures genuinely ARE level-tagged (D&D) is unaffected
+    // — this only changes behavior when literally none of them have one.
+    const classFeaturesAreLevelTagged = classFeatures.some((entry) => Number.isFinite(Number(entry?.level)));
+    const grantedFromClass = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, classFeaturesAreLevelTagged ? 1 : null, grantedFromSpecies);
+    // Same class of gap as classFeatures above, but Daggerheart's own
+    // subclass features carry tier ("Foundation:"/"Specialization:"/
+    // "Mastery:") as a NAME PREFIX (this session's own migration script's
+    // convention — subclasses genuinely have no numeric per-level table at
+    // all, unlike D&D's), not a `level` field grantSubclassFeaturesAtLevel
+    // could match on either way. Scoped to the Build wizard specifically
+    // (not level-up-bindings.js's own shared matchFeaturesAtLevel) since
+    // this prefix convention is local to how this repo's own Daggerheart
+    // content was imported, not a concept the generic utility should know
+    // about. At CREATION only the Foundation tier is granted — Specialization/
+    // Mastery come later via the subclassUpgrade advancement.
+    const subclassIsTierPrefixed = Array.isArray(subclassRecord?.features) && subclassRecord.features.some((entry) => /^(Foundation|Specialization|Mastery):/.test(entry?.name || ""));
+    let grantedFromSubclass = [];
+    if (subclassRecord && subclassIsTierPrefixed) {
+      const foundationIndexes = subclassRecord.features
+        .map((entry, index) => ({ entry, index }))
+        .filter(({ entry }) => /^Foundation:/.test(entry?.name || ""));
+      const foundationFeatures = foundationIndexes.map(({ entry }) => ({ name: entry.name, level: null }));
+      const foundationFeatureIds = foundationIndexes.map(({ index }) => subclassRecord.featureIds[index]);
+      grantedFromSubclass = matchFeaturesAtLevel(foundationFeatures, foundationFeatureIds, featureNameById, null, [...grantedFromSpecies, ...grantedFromClass]);
+    } else if (subclassRecord) {
+      grantedFromSubclass = grantSubclassFeaturesAtLevel(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass]);
+    }
     const grantedFeatureIds = [...grantedFromSpecies, ...grantedFromClass, ...grantedFromSubclass];
     if (backgroundRecord?.feat?.refKind === "feature" && backgroundRecord.feat.refId) {
       grantedFeatureIds.push(backgroundRecord.feat.refId);
@@ -9868,8 +11318,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // function Level Up/Add a Class share.
     await refreshCharacterSpellSlots(draft);
 
-    // Background's own flat, hard-granted proficiencies (unconditional).
-    (Array.isArray(backgroundRecord?.proficiencies) ? backgroundRecord.proficiencies : []).forEach((entry) => {
+    // Background's own flat, hard-granted proficiencies (unconditional) —
+    // field name from the System's own "proficiencyGrants" levelUpBindings
+    // role, never a literal "proficiencies".
+    const proficiencyGrantsPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyGrants", "background")?.path;
+    const grantedProficiencies = proficiencyGrantsPath && Array.isArray(backgroundRecord?.[proficiencyGrantsPath]) ? backgroundRecord[proficiencyGrantsPath] : [];
+    grantedProficiencies.forEach((entry) => {
       applyProficiencyGrant(entry?.name, draft);
     });
     // Recomputes every now-proficient skill's own `value` to include the
@@ -9880,7 +11334,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (skill.proficiency >= 2) {
         const abilityDef = buildWizardState.abilityDefs.find((def) => def.label === skill.ability);
         const score = abilityDef ? abilities[abilityDef.key] : undefined;
-        skill.value = abilityModifier(score ?? 10) + draft.stats.proficiencyBonus * (skill.proficiency === 3 ? 2 : 1);
+        const abilityMod = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: score ?? 10 }) || 0;
+        skill.value = abilityMod + draft.stats.proficiencyBonus * (skill.proficiency === 3 ? 2 : 1);
       }
     });
 
@@ -9900,22 +11355,36 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         });
       });
     };
-    pushChoice(
-      { kind: "class", id: buildWizardState.classId, name: classRecord.name || "Class" },
-      resolveChoiceList(classRecord.proficiency_choices).filter((entry) => entry.options.length),
-      "proficiencies"
-    );
-    if (backgroundRecord) {
+    // Field NAMES come from the System's own levelUpBindings roles, never
+    // literal "proficiency_choices"/"starting_equipment_options"/
+    // "equipment_options" — Daggerheart's own levelUpBindings declares
+    // none of these roles at all, so every lookup below comes back null
+    // and this whole block no-ops for it, same graceful degradation every
+    // other optional System field already follows.
+    const classProficiencyPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "class")?.path;
+    const backgroundProficiencyPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "background")?.path;
+    const classEquipmentPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "class")?.path;
+    const backgroundEquipmentPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "background")?.path;
+    if (classProficiencyPath) {
       pushChoice(
-        { kind: "background", id: buildWizardState.backgroundId, name: backgroundRecord.name || "Background" },
-        resolveChoiceList(backgroundRecord.proficiency_choices).filter((entry) => entry.options.length),
+        { kind: "class", id: buildWizardState.classId, name: classRecord.name || "Class" },
+        resolveChoiceList(classRecord[classProficiencyPath]).filter((entry) => entry.options.length),
         "proficiencies"
       );
-      const classEquipment = resolveEquipmentChoice((classRecord.starting_equipment_options || [])[0]);
+    }
+    if (backgroundRecord) {
+      if (backgroundProficiencyPath) {
+        pushChoice(
+          { kind: "background", id: buildWizardState.backgroundId, name: backgroundRecord.name || "Background" },
+          resolveChoiceList(backgroundRecord[backgroundProficiencyPath]).filter((entry) => entry.options.length),
+          "proficiencies"
+        );
+      }
+      const classEquipment = classEquipmentPath ? resolveEquipmentChoice((classRecord[classEquipmentPath] || [])[0]) : null;
       if (classEquipment) {
         pushChoice({ kind: "class", id: buildWizardState.classId, name: classRecord.name || "Class" }, [{ ...classEquipment, type: "equipmentChoice" }], "inventory");
       }
-      const backgroundEquipment = resolveEquipmentChoice((backgroundRecord.equipment_options || [])[0]);
+      const backgroundEquipment = backgroundEquipmentPath ? resolveEquipmentChoice((backgroundRecord[backgroundEquipmentPath] || [])[0]) : null;
       if (backgroundEquipment) {
         pushChoice(
           { kind: "background", id: buildWizardState.backgroundId, name: backgroundRecord.name || "Background" },
@@ -9930,7 +11399,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // shape at all.
       const candidates = Array.isArray(backgroundRecord.ability_scores) ? backgroundRecord.ability_scores : [];
       if (candidates.length) {
-        const abilityByShortName = new Map(buildWizardState.abilityDefs.map((def) => [def.label.toUpperCase(), def]));
+        const abilityByShortName = new Map(
+          buildWizardState.abilityDefs.filter((def) => def.shortName).map((def) => [def.shortName.toUpperCase(), def])
+        );
         const options = candidates
           .map((entry) => abilityByShortName.get((entry?.name || "").toUpperCase()))
           .filter(Boolean)
@@ -9956,7 +11427,100 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
       pushChoice({ kind: "feature", id: featureId, name: featureRecord.name || featureId }, resolveGrantChoices(featureRecord.grants, draft), "");
     });
+
+    // Creation-time equipment picks — generic, NOT D&D's own
+    // equipmentChoices levelUpBindings role (that's a per-class option
+    // LIST on the class record itself; Daggerheart's own weapon/armor
+    // choices are fixed, System-wide tables with no per-class variation
+    // at all, a genuinely different shape). A System declares these on its
+    // own "choices" buildSteps entry (`equipmentChoices`) — absent for
+    // every System until this feature (D&D included), so this is purely
+    // additive. Resolved via a generic pendingChoice type ("fieldChoice" —
+    // write the pick's own name straight to a character field path)
+    // rather than forcing these through equipmentChoice's own
+    // bundle-application shape, which assumes 5e-API-shaped data this
+    // isn't.
+    const choicesStepEntry = getBuildStepEntry("choices", buildSystemDefinition);
+    const creationEquipmentChoices = Array.isArray(choicesStepEntry?.equipmentChoices) ? choicesStepEntry.equipmentChoices : [];
+    creationEquipmentChoices.forEach((entry) => {
+      const sourceValues = systemFieldValues(buildSystemDefinition, entry.sourceField);
+      // Keeps every field the System's own source entry carries (not just
+      // id/name) — statBindings below reads them back off the resolved
+      // pick's own `raw` (the same option object, per resolvePendingChoice's
+      // established `pick.raw` convention) to compute things like Armor
+      // Score/Damage Thresholds from whichever fields a System's own
+      // equipmentChoices entry declares, never a hardcoded field name.
+      const options = sourceValues.map((value) => ({ ...value, id: value.name, name: value.name }));
+      if (!options.length) return;
+      pendingChoices.push({
+        id: `creation-equipment-${entry.sourceField}-${Date.now()}`,
+        sourceKind: "system",
+        sourceId: entry.sourceField,
+        sourceName: entry.name || entry.sourceField,
+        type: "fieldChoice",
+        desc: entry.desc || `Choose your ${entry.name || entry.sourceField}.`,
+        choose: Number(entry.choose) || 1,
+        options,
+        targetPath: entry.targetPath,
+        statBindings: Array.isArray(entry.statBindings) ? entry.statBindings : [],
+        // Whether this System's own equipmentChoices entry declared itself
+        // skippable (Daggerheart's Secondary Weapon: "Skip if your Primary
+        // Weapon is Two-Handed.") — never guessed from `choose`/whether
+        // options exist, always the System's own explicit say-so. Absent
+        // (false) for every other choice, which stays required exactly as
+        // before this existed.
+        optional: Boolean(entry.optional),
+      });
+    });
+
+    // Creation-time domain cards — reuses the EXACT SAME fetch/resolve
+    // pipeline the Advancement-Menu Level Up engine already built
+    // (fetchDomainCardOptions/the "domainCardAccess" pendingChoice type),
+    // just for however many the "choices" step's own declared
+    // startingDomainCards says (Daggerheart: 2) rather than the 1 a
+    // level-up's own domainCardAccess advancement grants. Absent (0) for a
+    // System that doesn't declare it (D&D) — never guessed from whether
+    // the class happens to have a `domains` list.
+    const startingDomainCardCount = Number(choicesStepEntry?.startingDomainCards) || 0;
+    if (startingDomainCardCount > 0) {
+      const domainCardOptions = await fetchDomainCardOptions(classRecord, 1);
+      if (domainCardOptions.length) {
+        pendingChoices.push({
+          id: `creation-domain-cards-${Date.now()}`,
+          sourceKind: "class",
+          sourceId: buildWizardState.classId,
+          sourceName: classRecord.name || "Class",
+          type: "domainCardAccess",
+          desc: `Choose ${startingDomainCardCount} domain card(s) at level 1 from your class's own domains.`,
+          choose: startingDomainCardCount,
+          options: domainCardOptions,
+        });
+      }
+    }
     draft.pendingChoices = pendingChoices;
+
+    // Generic "input" step resolution — writes each TYPED value (never a
+    // blank placeholder) to targetArrayPath/itemKey, merging itemDefaults
+    // onto the same pushed object (Daggerheart: 2 Experience names, each
+    // getting a flat +2 modifier — see sys.daggerheart.json's own "input"
+    // buildStep entry). Not specific to Experiences or any one concept —
+    // a future System's own "input" step (whatever it turns out to hold)
+    // resolves through this exact same code, unchanged.
+    const inputStepEntry = getBuildStepEntry("input", buildSystemDefinition);
+    if (inputStepEntry && Array.isArray(inputStepEntry.inputs) && inputStepEntry.targetArrayPath) {
+      const targetSegs = resolveBindingPath(inputStepEntry.targetArrayPath);
+      if (targetSegs) {
+        const existing = getValueAtContext(draft, targetSegs);
+        const targetArray = Array.isArray(existing) ? existing : [];
+        const itemDefaults = inputStepEntry.itemDefaults && typeof inputStepEntry.itemDefaults === "object" ? inputStepEntry.itemDefaults : {};
+        inputStepEntry.inputs.forEach((def, index) => {
+          const typedValue = (buildWizardState.inputValues[index] || "").trim();
+          if (!typedValue) return;
+          targetArray.push({ ...itemDefaults, [inputStepEntry.itemKey || "value"]: typedValue });
+        });
+        setValueAtContext(draft, targetSegs, targetArray);
+      }
+    }
 
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);

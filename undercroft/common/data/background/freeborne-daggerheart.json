@@ -1,0 +1,18 @@
+{
+  "index": "freeborne",
+  "name": "Freeborne",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Being part of a freeborne community means you're from a collective that lived under tyrannical rule and is now liberated.",
+  "personalities": [],
+  "features": [
+    {
+      "name": "Unbound",
+      "description": "Once per session, when you make an action roll with Fear, you can change it to a roll with Hope instead."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-community-freeborne-unbound"
+  ]
+}

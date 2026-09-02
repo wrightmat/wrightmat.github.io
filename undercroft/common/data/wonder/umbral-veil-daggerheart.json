@@ -1,0 +1,22 @@
+{
+  "index": "umbral-veil",
+  "name": "Umbral Veil",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "domain-card",
+    "domain": "Dread",
+    "level": 1,
+    "recallCost": 1
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "Once per rest, when you roll with Fear, you can spend any number of Hope to place an equal number of tokens on this card, encasing yourself in a shadowy energy. After an attack roll is made against you, you can spend any number of tokens to give the attack roll a -1 penalty per token. On your next rest, remove all tokens from this card."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-domain-card-umbral-veil-feature"
+  ]
+}

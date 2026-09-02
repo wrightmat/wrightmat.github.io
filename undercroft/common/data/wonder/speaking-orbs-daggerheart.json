@@ -1,0 +1,19 @@
+{
+  "index": "speaking-orbs",
+  "name": "Speaking Orbs",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "item"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "This pair of orbs allows any creatures holding them to communicate with each other across any distance."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-items-speaking-orbs-feature"
+  ]
+}

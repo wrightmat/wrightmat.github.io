@@ -1,0 +1,22 @@
+{
+  "index": "legendary-crossbow",
+  "name": "Legendary Crossbow",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Physical)",
+    "tier": 4,
+    "trait": "Finesse",
+    "range": "Far",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D6",
+    "modifier": 10,
+    "type": "Physical"
+  },
+  "features": [],
+  "featureIds": []
+}

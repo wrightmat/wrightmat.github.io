@@ -38,5 +38,20 @@
       "Brambleton",
       "Meadowsweet"
     ]
-  }
+  },
+  "index": "halfling",
+  "features": [
+    {
+      "name": "Luckbringer",
+      "description": "At the start of each session, everyone in your party gains a Hope."
+    },
+    {
+      "name": "Internal Compass",
+      "description": "When you roll a 1 on your Hope Die, you can reroll it."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-ancestry-halfling-luckbringer",
+    "feat.daggerheart-ancestry-halfling-internal-compass"
+  ]
 }

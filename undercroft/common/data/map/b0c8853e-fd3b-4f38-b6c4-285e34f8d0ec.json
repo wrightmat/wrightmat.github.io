@@ -26,14 +26,14 @@
   },
   "view": {
     "mode": "cartesian",
-    "zoom": 1.8299098166360643,
+    "zoom": 1,
     "center": {
       "lat": 0,
       "lng": 0
     },
     "pan": {
-      "x": -480,
-      "y": -337
+      "x": 0,
+      "y": 0
     }
   },
   "layers": [
@@ -72,25 +72,6 @@
       },
       "elements": [
         {
-          "id": "141b5aba-29e6-45ae-8b65-3dce88d01e58",
-          "kind": "marker",
-          "refKind": "character",
-          "refId": "octavian-hoff",
-          "label": "Octavian Hoff",
-          "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
-          "outlineColor": "#3f59d9",
-          "position": {
-            "x": -529,
-            "y": -375
-          },
-          "sizeCells": 1,
-          "opacity": 1,
-          "overlayIcons": [],
-          "visionRangeBinding": "",
-          "visionRangeFormula": "",
-          "visionRangeText": "0"
-        },
-        {
           "id": "de9b755b-3ca7-496a-a489-4655ffdc01ce",
           "kind": "marker",
           "refKind": "monster",
@@ -124,28 +105,6 @@
           "position": {
             "x": -144,
             "y": -144
-          },
-          "sizeCells": 1,
-          "heightCells": 0,
-          "opacity": 1,
-          "overlayIcons": [],
-          "visionRangeBinding": "",
-          "visionRangeFormula": "",
-          "visionRangeText": "0",
-          "linkedCombatantId": ""
-        },
-        {
-          "id": "e17a6606-0f72-4757-ad27-893226231bc1",
-          "kind": "marker",
-          "refKind": "npc",
-          "refId": "npc_9c3597b6-cd8a-4e62-973b-b00ae9a1b30e",
-          "refAnchor": null,
-          "label": "Belimmar",
-          "image": "",
-          "outlineColor": "#3f59d9",
-          "position": {
-            "x": -529,
-            "y": -182
           },
           "sizeCells": 1,
           "heightCells": 0,
@@ -196,6 +155,58 @@
           "position": {
             "x": -182,
             "y": -182
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
+        },
+        {
+          "id": "d24d5b08-6e01-47f6-b438-2baa49fae7f3",
+          "kind": "marker",
+          "refKind": "npc",
+          "refId": "npc_9c3597b6-cd8a-4e62-973b-b00ae9a1b30e",
+          "refAnchor": null,
+          "label": "Belimmar",
+          "image": "",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
+          "position": {
+            "x": -529,
+            "y": -221
+          },
+          "sizeCells": 1,
+          "heightCells": 0,
+          "opacity": 1,
+          "overlayIcons": [],
+          "visionRangeBinding": "",
+          "visionRangeFormula": "",
+          "visionRangeText": "0",
+          "linkedCombatantId": "",
+          "contents": [],
+          "claimTarget": "character"
+        },
+        {
+          "id": "c3b13fac-cca3-4036-9561-b6efc48975b7",
+          "kind": "marker",
+          "refKind": "character",
+          "refId": "octavian-hoff",
+          "refAnchor": null,
+          "label": "Octavian Hoff",
+          "image": "https://www.dndbeyond.com/avatars/44651/45/1581111423-133639844.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
+          "outlineColor": "#3f59d9",
+          "showOutline": true,
+          "shape": "circle",
+          "position": {
+            "x": -606,
+            "y": -298
           },
           "sizeCells": 1,
           "heightCells": 0,
@@ -261,7 +272,7 @@
     "unit": "ft"
   },
   "createdAt": "2026-08-07T09:47:00.878Z",
-  "updatedAt": "2026-08-21T00:18:56.127Z",
+  "updatedAt": "2026-09-01T18:25:16.275Z",
   "initialView": {
     "zoom": 1,
     "pan": {

@@ -1,0 +1,22 @@
+{
+  "index": "improved-shortstaff",
+  "name": "Improved Shortstaff",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "weapon",
+    "type": "Primary (Magic)",
+    "tier": 2,
+    "trait": "Instinct",
+    "range": "Close",
+    "burden": "One-Handed"
+  },
+  "damage": {
+    "dice": "D8",
+    "modifier": 4,
+    "type": "Magical"
+  },
+  "features": [],
+  "featureIds": []
+}

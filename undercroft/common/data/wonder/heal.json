@@ -29,5 +29,20 @@
   },
   "featureTiers": {
     "feat.healing": "tier-4"
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      },
+      {
+        "refKind": "class",
+        "refId": "druid",
+        "name": "Druid"
+      }
+    ],
+    "subclasses": []
   }
 }

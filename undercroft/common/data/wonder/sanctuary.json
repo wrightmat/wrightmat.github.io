@@ -18,5 +18,24 @@
     "feat.intercede": {
       "saveAbility": "wisdom"
     }
+  },
+  "stats": {
+    "classes": [
+      {
+        "refKind": "class",
+        "refId": "cleric",
+        "name": "Cleric"
+      }
+    ],
+    "subclasses": [
+      {
+        "index": "lore",
+        "name": "Lore"
+      },
+      {
+        "index": "devotion",
+        "name": "Devotion"
+      }
+    ]
   }
 }

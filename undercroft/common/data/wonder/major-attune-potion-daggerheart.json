@@ -1,0 +1,19 @@
+{
+  "index": "major-attune-potion",
+  "name": "Major Attune Potion",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "properties": {
+    "form": "consumable"
+  },
+  "features": [
+    {
+      "name": "",
+      "description": "You gain a +1 bonus to your Instinct until your next rest."
+    }
+  ],
+  "featureIds": [
+    "feat.daggerheart-consumables-major-attune-potion-feature"
+  ]
+}

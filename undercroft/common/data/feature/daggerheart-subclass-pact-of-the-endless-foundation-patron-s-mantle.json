@@ -1,0 +1,24 @@
+{
+  "id": "feat.daggerheart-subclass-pact-of-the-endless-foundation-patron-s-mantle",
+  "name": "Foundation: Patron's Mantle",
+  "systemIds": [
+    "sys.daggerheart"
+  ],
+  "description": "Mark a Stress to cloak yourself in a terrifying aspect of your Patron that lasts until you take Severe damage or the scene ends:\n\n- When you would mark an Armor Slot, you can spend 2 Favor instead.\n- You gain a bonus equal to your tier on action rolls to intimidate a target.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Mark a Stress to cloak yourself in a terrifying aspect of your Patron that lasts until you take Severe damage or the scene ends:\n\n- When you would mark an Armor Slot, you can spend 2 Favor instead.\n- You gain a bonus equal to your tier on action rolls to intimidate a target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "daggerheart"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
