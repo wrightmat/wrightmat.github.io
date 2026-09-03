@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-assassins-emberdeath",
+  "name": "Emberdeath",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Take 3 stress to destroy a victim's spirit and body at the moment you kill them (electroplasmic disintegration).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Take 3 stress to destroy a victim's spirit and body at the moment you kill them (electroplasmic disintegration)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

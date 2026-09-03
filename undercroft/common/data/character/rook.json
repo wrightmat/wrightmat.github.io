@@ -7,9 +7,6 @@
   "name": "Rook",
   "alias": "The Quiet Knife",
   "look": "Sharp coat, tired eyes, a scar across one eyebrow.",
-  "heritage": "Skovlan",
-  "background": "Underworld",
-  "playbook": "Cutter",
   "vice": "Stupor",
   "vicePurveyor": "The Leaky Barrel, a dockside den run by old man Fenn",
   "actions": {
@@ -68,13 +65,6 @@
       "carried": false
     }
   ],
-  "specialAbilitiesPurchased": {
-    "cutter": [
-      "Bodyguard",
-      "Battleborn"
-    ],
-    "hound": []
-  },
   "xp": {
     "playbook": 2,
     "insight": 0,
@@ -94,5 +84,31 @@
       "relationship": "Rival",
       "notes": "Undercuts every deal Rook tries to make."
     }
+  ],
+  "identity": {
+    "name": "Rook",
+    "level": 1,
+    "classes": [
+      {
+        "name": "Cutter",
+        "level": 1,
+        "refKind": "class",
+        "refId": "cutter-bitd"
+      }
+    ],
+    "race": {
+      "name": "Skovlander",
+      "refKind": "species",
+      "refId": "skovlander"
+    },
+    "background": {
+      "name": "Underworld",
+      "refKind": "background",
+      "refId": "underworld-bitd"
+    }
+  },
+  "featureIds": [
+    "feat.bitd-playbook-cutter-bodyguard",
+    "feat.bitd-playbook-cutter-battleborn"
   ]
 }

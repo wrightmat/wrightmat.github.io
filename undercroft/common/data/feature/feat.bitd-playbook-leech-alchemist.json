@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-leech-alchemist",
+  "name": "Alchemist",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you invent or craft a creation with alchemical features, take +1 result level to your roll. You begin with one special formula already known.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you invent or craft a creation with alchemical features, take +1 result level to your roll. You begin with one special formula already known."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Artist",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Creates visual or performance art, whether celebrated or starving for it.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 20,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "history",
+    "persuade",
+    "psychology",
+    "spotHidden",
+    "languageOther",
+    "creditRating"
+  ]
+}

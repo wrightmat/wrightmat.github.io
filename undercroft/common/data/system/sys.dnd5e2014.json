@@ -4724,7 +4724,8 @@
               "max": 1,
               "label": "Critical Failure"
             }
-          ]
+          ],
+          "shortName": "d20Test"
         }
       ]
     },

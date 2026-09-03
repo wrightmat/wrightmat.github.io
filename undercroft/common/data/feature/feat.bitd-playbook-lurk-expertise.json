@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-expertise",
+  "name": "Expertise",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Choose one of your action ratings. When you lead a group action using that action, you can suffer only 1 stress at most regardless of the number of failed rolls.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose one of your action ratings. When you lead a group action using that action, you can suffer only 1 stress at most regardless of the number of failed rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

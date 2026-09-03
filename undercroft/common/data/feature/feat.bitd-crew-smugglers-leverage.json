@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-smugglers-leverage",
+  "name": "Leverage",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Your crew supplies contraband for other factions. Your success is good for them. Whenever you gain rep, gain +1 rep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your crew supplies contraband for other factions. Your success is good for them. Whenever you gain rep, gain +1 rep."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

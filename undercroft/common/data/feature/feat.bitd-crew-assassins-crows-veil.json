@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-assassins-crows-veil",
+  "name": "Crow's Veil",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You don't take extra heat when killing is involved on a score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You don't take extra heat when killing is involved on a score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

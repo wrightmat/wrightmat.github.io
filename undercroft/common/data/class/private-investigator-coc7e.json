@@ -1,0 +1,23 @@
+{
+  "name": "Private Investigator",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Investigates for hire, outside official channels.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 30,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "disguise",
+    "law",
+    "libraryUse",
+    "charm",
+    "fastTalk",
+    "intimidate",
+    "persuade",
+    "psychology",
+    "spotHidden",
+    "creditRating"
+  ]
+}

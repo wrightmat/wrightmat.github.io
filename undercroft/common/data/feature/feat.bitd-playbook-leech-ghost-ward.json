@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-leech-ghost-ward",
+  "name": "Ghost Ward",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You know how to Wreck an area with arcane substances and methods so it is either anathema or enticing to spirits (your choice).",
+  "mechanics": {
+    "type": "passive",
+    "text": "You know how to Wreck an area with arcane substances and methods so it is either anathema or enticing to spirits (your choice)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

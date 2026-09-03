@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-leech-venomous",
+  "name": "Venomous",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Choose a drug or poison (from your bandolier stock) to which you have become immune. You can push yourself to secrete it through your skin or saliva or exhale it as a vapor.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose a drug or poison (from your bandolier stock) to which you have become immune. You can push yourself to secrete it through your skin or saliva or exhale it as a vapor."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

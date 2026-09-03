@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-hawkers-the-good-stuff",
+  "name": "The Good Stuff",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Your merchandise is exquisite. The product quality is equal to your Tier+2. When you deal with a crew or faction, the GM will tell you who among them is hooked on your product (one, a few, many, or all).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your merchandise is exquisite. The product quality is equal to your Tier+2. When you deal with a crew or faction, the GM will tell you who among them is hooked on your product (one, a few, many, or all)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

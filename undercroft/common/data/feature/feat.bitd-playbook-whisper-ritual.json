@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-whisper-ritual",
+  "name": "Ritual",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You can Study an occult ritual (or create a new one) to summon a supernatural effect or being. You know the arcane methods to perform ritual sorcery. You begin with one ritual already learned.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can Study an occult ritual (or create a new one) to summon a supernatural effect or being. You know the arcane methods to perform ritual sorcery. You begin with one ritual already learned."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

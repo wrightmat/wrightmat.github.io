@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-hound-scout",
+  "name": "Scout",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you gather info to locate a target, you get +1 effect. When you hide in a prepared position or use camouflage, you get +1d to rolls to avoid detection.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you gather info to locate a target, you get +1 effect. When you hide in a prepared position or use camouflage, you get +1d to rolls to avoid detection."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

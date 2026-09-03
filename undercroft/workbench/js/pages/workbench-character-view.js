@@ -34,7 +34,7 @@ import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField
 import { runMacroReference } from "../../../repository/js/lib/journal-macro.js";
 import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.js";
-import { loadAbilityFieldDefs, loadArrayFieldValues } from "../../../common/js/lib/generator-kit.js";
+import { loadAbilityFieldDefs, loadArrayFieldValues, guessAbilityFieldKey } from "../../../common/js/lib/generator-kit.js";
 import {
   findLevelUpBinding,
   resolveGrantChoices,
@@ -51,7 +51,7 @@ import {
   mergeLimitedUses,
 } from "../../../common/js/lib/level-up-bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
-import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, rollSystemMove, extractSystemSymbolDice, rollSymbolPoolExpression } from "../../../common/js/lib/widgets/dice-roll.js";
+import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, extractSystemSymbolDice, rollSymbolPoolExpression } from "../../../common/js/lib/widgets/dice-roll.js";
 import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
 import {
   promoteEmbeddedFeatures,
@@ -614,6 +614,31 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildHeritageBackgroundMount: document.querySelector("[data-build-heritage-background-mount]"),
     buildAbilitiesMount: document.querySelector("[data-build-abilities-mount]"),
     buildInputMount: document.querySelector("[data-build-input-mount]"),
+    // One mount per pointAllocation USAGE (step id), not per step TYPE —
+    // same "each usage gets its own static panel" convention listPick's
+    // own mounts below already follow. Blades in the Dark's own Actions
+    // step lives here as "actions"; Call of Cthulhu's Occupation Skills
+    // and Personal Interest steps are two independent budgets sharing the
+    // same underlying mechanism, each needing its own panel/mount too.
+    buildPointAllocationMounts: {
+      actionDots: document.querySelector("[data-build-point-allocation-mount='actionDots']"),
+      occupationSkills: document.querySelector("[data-build-point-allocation-mount='occupationSkills']"),
+      personalInterest: document.querySelector("[data-build-point-allocation-mount='personalInterest']"),
+    },
+    // One mount per listPick USAGE (step id), not per step TYPE — a
+    // wizard can declare more than one listPick step (Special Ability,
+    // Friend & Rival, ...), each needing its own panel/mount, same as
+    // every other reusable step type in this file gets its own static
+    // panel per literal step id it's actually used under.
+    buildListPickMounts: {
+      specialAbility: document.querySelector("[data-build-listpick-mount='specialAbility']"),
+      friendRival: document.querySelector("[data-build-listpick-mount='friendRival']"),
+      crewUpgrades: document.querySelector("[data-build-listpick-mount='crewUpgrades']"),
+      favoriteContact: document.querySelector("[data-build-listpick-mount='favoriteContact']"),
+      vice: document.querySelector("[data-build-listpick-mount='vice']"),
+      reputation: document.querySelector("[data-build-listpick-mount='reputation']"),
+      favoredOperation: document.querySelector("[data-build-listpick-mount='favoredOperation']"),
+    },
     buildReviewMount: document.querySelector("[data-build-review-mount]"),
     buildResolveMount: document.querySelector("[data-build-resolve-mount]"),
     buildBackButton: document.querySelector("[data-build-back]"),
@@ -1554,16 +1579,25 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       .filter((entry) => entry.id)
       .map((entry) => ({ value: entry.id, label: entry.title || entry.id }))
       .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+    // Each select keeps its OWN current selection independently (captured
+    // before populateSelect wipes it) rather than both sharing the single
+    // `selectedValue` argument — this fires mid-build whenever a template
+    // gets registered for the first time (registerTemplateRecord), and
+    // that call only ever knows about the New Character modal's own
+    // selection, not the Build modal's. Without this, an in-progress Build
+    // wizard's Template select silently goes blank underneath the user.
+    const newCharacterSelected = selectedValue || elements.newCharacterTemplate.value || "";
     populateSelect(elements.newCharacterTemplate, options, { placeholder: "Select template" });
-    if (selectedValue) {
-      elements.newCharacterTemplate.value = selectedValue;
+    if (newCharacterSelected) {
+      elements.newCharacterTemplate.value = newCharacterSelected;
     }
     // Build mode's own Template select — same option list, same modal, so
     // it shares this refresh rather than a second near-identical function.
     if (elements.buildCharacterTemplate) {
+      const buildSelected = elements.buildCharacterTemplate.value || selectedValue || "";
       populateSelect(elements.buildCharacterTemplate, options, { placeholder: "Select template" });
-      if (selectedValue) {
-        elements.buildCharacterTemplate.value = selectedValue;
+      if (buildSelected) {
+        elements.buildCharacterTemplate.value = buildSelected;
       }
     }
   }
@@ -3621,21 +3655,28 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // own comment for why that's safe with the overlay path.
   // `targetValue` (optional) is a number the caller already read off a
   // bound field (a component's own current value — see
-  // createRollOverlayButton below) — when the rolled expression happens to
-  // match a System-defined Move by its own `expression` string (CoC's d100
-  // roll-under Move, "d100"), the roll is evaluated through rollSystemMove
-  // instead of a plain rollExpression so that Move's `target*` bands (see
-  // dice-roll.js's matchesRangeBand) get a real value to compare against —
-  // e.g. a Skill's roll button passes that skill's own percentage, and the
-  // roll comes back labeled Regular/Hard/Extreme Success or Fumble instead
-  // of just a bare total. `label` overrides the Move's own generic name for
-  // both the roll and verdict toasts (see rollSystemMove's own comment) so
-  // a Dexterity roll reads "Dexterity: 45" / "Dexterity: Regular Success",
-  // not the Move's own "Skill / Characteristic Check" name repeated on
-  // every field. No matching Move (most expressions, most Systems) or no
-  // targetValue (the standalone Dice Roller widget has no field to read)
-  // falls straight back through to the existing plain-roll path unchanged.
-  async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined } = {}) {
+  // createRollOverlayButton below) — used by a matched Move's own `target*`
+  // bands (dice-roll.js's matchesRangeBand) to grade the roll, e.g. a
+  // Skill's roll button passes that skill's own percentage, and the roll
+  // comes back labeled Regular/Hard/Extreme Success or Fumble instead of
+  // just a bare total.
+  //
+  // rollExpression ITSELF now recognizes both a real dice expression and a
+  // System Roll's own shortName (see its own comment) — this function just
+  // hands it the right `rolls` list for the caller's own scope, no branching
+  // of its own. `rollKey` truthy (a template button's own typed text) scopes
+  // the lookup to THIS CHARACTER's own System Moves (state.systemDefinition,
+  // set from the character's own template schema) — never activeSystemRolls,
+  // which is campaign-priority (the active Group's own System wins over the
+  // character's, see refreshDiceAndMoveButtons' own comment) and would
+  // silently show a Daggerheart/D&D/etc. Move's bands on a CoC field
+  // whenever some other campaign happened to be active. A caller with no
+  // `rollKey` (the freehand-typed box, or a Moves-panel button inserting its
+  // own shortName then rolling — see renderMoveButtons) instead checks the
+  // WHOLE typed/inserted text against activeSystemRolls — the same list
+  // already rendered as that panel's own buttons, so what's typeable there
+  // always matches what's clickable.
+  async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined, rollKey = "" } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
     if (!trimmed) {
       status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
@@ -3646,24 +3687,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       syncQuickDiceButtons();
     }
     openToolsPane();
-    const move =
-      typeof targetValue === "number" ? activeSystemRolls.find((entry) => entry.expression === trimmed) : null;
-    const rolled = move
-      ? await rollSystemMove(move, {
-          status,
-          dataManager,
-          dice: activeQuickDice,
-          context: getBindingContext(),
-          targetValue,
-          label: label || move.label,
-        })
-      : await rollExpression(trimmed, {
-          status,
-          label,
-          dataManager,
-          dice: activeQuickDice,
-          context: getBindingContext(),
-        });
+    const rolls = rollKey ? extractSystemRolls(state.systemDefinition) : activeSystemRolls;
+    const rolled = await rollExpression(trimmed, {
+      status,
+      // "" would win over a Move's own default label (rollSystemMove's
+      // `label = move.label` only kicks in for a genuinely omitted
+      // argument, not an explicit empty string) — undefined lets that
+      // default apply exactly like it always has.
+      label: label || undefined,
+      dataManager,
+      dice: activeQuickDice,
+      context: getBindingContext(),
+      rolls,
+      targetValue,
+    });
     if (!rolled || rolled.isTable) {
       return rolled;
     }
@@ -3734,12 +3771,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return findBindingByRole(combatBindings, "modifier");
   }
 
-  async function handleComponentRoll(expression, label, component, targetValue) {
+  async function handleComponentRoll(expression, label, component, targetValue, rollKey = "") {
     if (!expression) {
       return;
     }
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
-    const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue });
+    const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue, rollKey });
     const initiativeBinding = findInitiativeCombatBinding();
     if (result && initiativeBinding && component?.binding === initiativeBinding.binding) {
       void pushInitiativeToActiveEncounter(result.total);
@@ -3957,34 +3994,25 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-title", move.expression);
       }
-      button.addEventListener("click", () => void executeSystemMove(move));
+      // One-click, same as before — but now by inserting this Move's own
+      // shortName into the expression box and rolling THAT, the exact same
+      // path a user typing the shortName by hand and hitting Roll goes
+      // through, rather than calling rollSystemMove directly. Quick-dice
+      // buttons stay insert-only (see renderDiceQuickButtons) since they're
+      // for stacking multiple dice into one expression before rolling; a
+      // Move button is a single, complete, ready-to-roll expression on its
+      // own, so there's nothing to stack it with.
+      button.addEventListener("click", () => {
+        if (elements.diceExpression) {
+          elements.diceExpression.value = move.shortName;
+          syncQuickDiceButtons();
+        }
+        void executeDiceRoll(move.shortName, { updateInput: false });
+      });
       moveButtons.set(index, button);
       elements.diceMovesRow.appendChild(button);
     });
     refreshTooltips(elements.diceMovesRow);
-  }
-
-  // Rolls a System-defined Move (Section 1.3/4) and posts it to the Game
-  // Log exactly like executeDiceRoll's own plain rolls do — recordGameLogRoll
-  // gains an optional `verdict` string here (see game-log.js's own
-  // describeEntry) so anyone else watching the log sees "Partial Success",
-  // not just the raw total.
-  async function executeSystemMove(move) {
-    openToolsPane();
-    const rolled = await rollSystemMove(move, {
-      status,
-      dataManager,
-      dice: activeQuickDice,
-      context: getBindingContext(),
-    });
-    if (!rolled || rolled.isTable) {
-      return;
-    }
-    recordGameLogRoll(rolled.result, {
-      expression: move.expression,
-      label: move.label,
-      verdict: rolled.verdict?.label || undefined,
-    });
   }
 
   // (Re)builds the quick-dice buttons from activeQuickDice — called once by
@@ -5578,6 +5606,27 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       dataManager.removeLocal("characters", id);
     } catch (storageError) {
       console.warn("Character editor: unable to clear local cache for", id, storageError);
+    }
+
+    // The catalog entry (and this dropdown's own <option>) only ever came
+    // from a real server-side library_items row — removeCharacterRecord
+    // below clears it from THIS PAGE's in-memory characterCatalog, but a
+    // second confirmed real gap: any later full catalog refresh (e.g. a
+    // reload) re-fetches that same still-present row and the entry comes
+    // right back, even though loading it 404s every time. Scoped strictly
+    // to isMissingCharacter (never isTemplateFailure, and never "builtin" —
+    // see markBuiltinMissing above, a different, non-deletable case): only
+    // fires when the CHARACTER record itself is confirmed gone (a real
+    // 404/410 from the server, or an equivalent fetch failure), never for a
+    // character that loaded fine but whose Template hiccuped. Best-effort
+    // and fire-and-forget — this function's own synchronous return value
+    // (used immediately by the caller to choose the toast message) must
+    // never wait on it, and a failure here is no worse than the stale
+    // catalog row this was already living with.
+    if (isMissingCharacter && source !== "builtin") {
+      dataManager.delete("characters", id, { mode: "auto" }).catch((cleanupError) => {
+        console.warn("Character editor: unable to clean up orphaned catalog entry for", id, cleanupError);
+      });
     }
 
     removeCharacterRecord(id);
@@ -7463,7 +7512,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // situation. Clicking a row both selects it (single-select, exactly one
   // active at a time) and renders its own description below — one action,
   // not a separate preview-then-confirm step.
-  function createFilterableListPicker({ options, onSelect, emptyMessage = "Nothing available" }) {
+  function createFilterableListPicker({ options, onSelect, emptyMessage = "Nothing available", initialSelectedId = null }) {
     const wrap = document.createElement("div");
     wrap.className = "d-flex flex-column gap-2";
     const filterInput = document.createElement("input");
@@ -7483,10 +7532,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     details.className = "border rounded-3 p-2 small text-body-secondary";
     details.style.maxHeight = "8rem";
     details.style.overflowY = "auto";
-    details.textContent = "Select an option to see its description.";
+    // A caller that already has a selection (renderSearchableListPicks
+    // re-creates this picker from scratch on every pick, see its own
+    // comment) hands it back in as `initialSelectedId` so the picker
+    // doesn't visibly forget what's picked the instant it re-renders.
+    const initialOption = initialSelectedId ? options.find((option) => option.id === initialSelectedId) : null;
+    details.innerHTML = initialOption ? initialOption.description || "No description available." : "";
+    if (!initialOption) {
+      details.textContent = "Select an option to see its description.";
+    }
     wrap.append(filterInput, list, details);
 
-    let selectedId = null;
+    let selectedId = initialSelectedId || null;
 
     function renderList() {
       const query = filterInput.value.trim().toLowerCase();
@@ -8160,6 +8217,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     try {
       if (action.type === "rollDice") {
+        // One authored field, either shape — `action.expression` is passed
+        // straight through as both the text to roll and the rollKey (see
+        // executeDiceRoll/rollExpression, which try it as a System Move's
+        // own shortName against this character's own System first, and
+        // only roll it literally as plain dice notation when that comes up
+        // empty). Nothing here needs to know which shape it got.
         const expression = typeof action.expression === "string" ? action.expression.trim() : "";
         if (!expression) {
           return;
@@ -8177,7 +8240,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         const numericValue = Number(rawValue);
         const targetValue = Number.isFinite(numericValue) ? numericValue : undefined;
         const label = (component.label || component.name || "Roll").trim() || "Roll";
-        await handleComponentRoll(expression, label, component, targetValue);
+        await handleComponentRoll(expression, label, component, targetValue, expression);
         return;
       }
       if (action.type === "runMacro") {
@@ -9990,8 +10053,33 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // buildCharacterFromWizard resolves a separately-fetched `buildSystemDefinition`
   // for the actual creation (see that function's own comment on why) — same
   // lookup, explicit override for that one caller.
+  // `buildSteps`'s own raw value is normally an array (one wizard per
+  // System, the overwhelmingly common case — every existing System keeps
+  // working with zero changes). A System with more than one creatable
+  // Template sharing it (Blades in the Dark: a Character sheet AND a Crew
+  // sheet, both `schema: "sys.bitd"`) needs a DIFFERENT wizard per
+  // Template, so `buildSteps` may instead be a plain object keyed by
+  // Template id, each value the array for that Template's own wizard —
+  // resolved here, against whichever Template is actually selected on the
+  // wizard's own landing step, before anything else ever reads it. Not
+  // routed through systemFieldValues (which always coerces a non-array to
+  // `[]`, correctly, for every OTHER reserved-key field) — this is the one
+  // and only place `buildSteps`'s own dual shape is understood.
+  function getDeclaredBuildSteps(systemDefinition) {
+    const raw = fieldByKey(systemDefinition?.fields, "buildSteps")?.values;
+    if (Array.isArray(raw)) {
+      return raw;
+    }
+    if (raw && typeof raw === "object") {
+      const templateId = elements.buildCharacterTemplate?.value || "";
+      const forTemplate = raw[templateId];
+      return Array.isArray(forTemplate) ? forTemplate : [];
+    }
+    return [];
+  }
+
   function getBuildStepEntry(step, systemDefinition = buildWizardState.systemDefinition) {
-    return systemFieldValues(systemDefinition, "buildSteps").find((entry) => entry?.step === step) || null;
+    return getDeclaredBuildSteps(systemDefinition).find((entry) => entry?.step === step) || null;
   }
 
   // "required" is always the first step, unconditionally — see
@@ -10013,7 +10101,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // text; the bare step id is the absolute last resort for a step with no
   // `label` authored at all.
   function getActiveBuildSteps() {
-    const declaredSteps = systemFieldValues(buildWizardState.systemDefinition, "buildSteps");
+    const declaredSteps = getDeclaredBuildSteps(buildWizardState.systemDefinition);
     const stepEntryById = new Map(declaredSteps.filter((entry) => entry?.step).map((entry) => [entry.step, entry]));
     const contentSteps = declaredSteps
       .map((entry) => entry?.step)
@@ -10060,6 +10148,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Fully generic — not specific to Experiences or any one concept; see
     // renderBuildInputStep/buildCharacterFromWizard.
     inputValues: [],
+    // "pointAllocation" steps — one entry per step id (a wizard can
+    // declare more than one, e.g. Call of Cthulhu's own Occupation Skills
+    // AND Personal Interest, each an independent budget), each
+    // `{ [itemShortKey]: extraValuePlaced }`. Never includes a step's own
+    // `prefill` value (Blades in the Dark's own class-granted
+    // primary/secondary action dots) — that's read fresh from
+    // buildWizardState.classRecord each render, never copied in here, so
+    // switching class mid-step always recomputes the right floor instead
+    // of carrying a stale one.
+    pointAllocations: {},
+    // "listPick" steps — one entry per step id, each `{ [slotIndex]: pickedRawValue }`.
+    // Keyed by step id (not a flat single value) since a wizard can declare
+    // more than one listPick step (Special Ability, Friend & Rival, ...).
+    listPicks: {},
   };
 
   async function activateBuildMode() {
@@ -10083,6 +10185,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.abilityDefs = [];
     buildWizardState.rolledScores = [];
     buildWizardState.inputValues = [];
+    buildWizardState.pointAllocations = {};
+    buildWizardState.listPicks = {};
     if (elements.buildCharacterName) {
       elements.buildCharacterName.value = "";
     }
@@ -10158,7 +10262,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const heritageEntry = getBuildStepEntry("heritage");
     const speciesKind = heritageEntry ? heritageEntry.picks?.[0]?.kind : getBuildStepEntry("species")?.kind;
     const backgroundKind = heritageEntry ? heritageEntry.picks?.[1]?.kind : getBuildStepEntry("background")?.kind;
-    const classKind = getBuildStepEntry("class")?.kind;
+    const classStepEntry = getBuildStepEntry("class");
+    const classKind = classStepEntry?.kind;
     const speciesMount = heritageEntry ? elements.buildHeritageSpeciesMount : elements.buildSpeciesMount;
     const backgroundMount = heritageEntry ? elements.buildHeritageBackgroundMount : elements.buildBackgroundMount;
     setElementVisible(elements.buildMixedAncestryStep, Boolean(heritageEntry?.allowMixedAncestry));
@@ -10191,7 +10296,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           void renderBuildSubclassPicker();
         }
         updateBuildNextState();
-      }),
+      }, classStepEntry?.matchField, classStepEntry?.matchValue),
       renderBuildLibraryPicker(backgroundMount, backgroundKind, (option) => {
         buildWizardState.backgroundId = option?.id || "";
         buildWizardState.backgroundName = option?.label || "";
@@ -10255,7 +10360,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // authoring gap, not a deliberate "universal" marker anywhere else in
   // this suite) is left visible rather than hidden, matching the rest of
   // this suite's own "absence restricts nothing" convention.
-  async function renderBuildLibraryPicker(mount, kind, onPick) {
+  async function renderBuildLibraryPicker(mount, kind, onPick, matchField, matchValue) {
     if (!mount) {
       return;
     }
@@ -10269,12 +10374,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const templateId = elements.buildCharacterTemplate?.value || "";
     const systemId = templateCatalog.get(templateId)?.schema || "";
-    const filteredEntries = systemId
-      ? entries.filter((entry) => {
-          const systemIds = entry.entity?.systemIds;
-          return !Array.isArray(systemIds) || !systemIds.length || systemIds.includes(systemId);
-        })
-      : entries;
+    const filteredEntries = entries
+      .filter((entry) => {
+        if (!systemId) return true;
+        const systemIds = entry.entity?.systemIds;
+        return !Array.isArray(systemIds) || !systemIds.length || systemIds.includes(systemId);
+      })
+      // Fully generic, data-declared discriminator — the step itself says
+      // which field to check and what value qualifies (Blades in the
+      // Dark's own Crew Type step: matchField "form", matchValue "crew",
+      // scoping the SAME "class" kind down to just its own records without
+      // this wizard ever knowing the word "form" means anything). Absent
+      // on every other step (including Character Playbook's own "class"
+      // step), so no filtering change for them at all.
+      .filter((entry) => !matchField || !matchValue || entry.entity?.[matchField] === matchValue);
     mount.innerHTML = "";
     const options = filteredEntries
       .map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }))
@@ -10358,6 +10471,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (steps[clamped] === "input") {
       renderBuildInputStep();
     }
+    if (getBuildStepEntry(steps[clamped])?.type === "pointAllocation") {
+      renderBuildPointAllocationStep(steps[clamped]);
+    }
+    if (getBuildStepEntry(steps[clamped])?.type === "listPick") {
+      renderBuildListPickStep(steps[clamped]);
+    }
     if (steps[clamped] === "review") {
       renderBuildReview();
     }
@@ -10377,7 +10496,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // so this never blocks the ordinary "haven't picked a Template yet"
   // state on step 1.
   function buildWizardSupported() {
-    return !buildWizardState.systemDefinition || systemFieldValues(buildWizardState.systemDefinition, "buildSteps").length > 0;
+    return !buildWizardState.systemDefinition || getDeclaredBuildSteps(buildWizardState.systemDefinition).length > 0;
   }
 
   function updateBuildNextState() {
@@ -10411,7 +10530,19 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       valid =
         Array.isArray(inputDefs) &&
         inputDefs.length > 0 &&
-        inputDefs.every((_, index) => Boolean((buildWizardState.inputValues[index] || "").trim()));
+        inputDefs.every((def, index) => def?.optional || Boolean((buildWizardState.inputValues[index] || "").trim()));
+    } else {
+      const stepEntry = getBuildStepEntry(step);
+      if (stepEntry?.type === "pointAllocation") {
+        const budget = resolvePointAllocationBudget(stepEntry);
+        const allocations = buildWizardState.pointAllocations[step] || {};
+        const spent = Object.values(allocations).reduce((total, value) => total + (Number(value) || 0), 0);
+        valid = budget > 0 && spent === budget;
+      } else if (stepEntry?.type === "listPick") {
+        const picks = Array.isArray(stepEntry.picks) && stepEntry.picks.length ? stepEntry.picks : [{}];
+        const selections = buildWizardState.listPicks[step] || {};
+        valid = picks.every((_, slotIndex) => Boolean(selections[slotIndex]));
+      }
     }
     elements.buildNextButton.disabled = !valid;
   }
@@ -10459,7 +10590,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       return Number.isFinite(config?.min) && Number.isFinite(config?.max) && Number.isFinite(config?.budget) && config?.costs && typeof config.costs === "object";
     }
     if (methodName === "roll") {
-      return typeof config?.formula === "string" && config.formula.trim().length > 0 && Number.isFinite(config?.count);
+      // Either the shared-formula/count shape (D&D 5e's own "roll 6
+      // scores, assign them where you like") or a per-ability `formulas`
+      // map (Call of Cthulhu's own STR/CON/DEX/APP/POW = 3D6×5 vs
+      // SIZ/INT/EDU = (2D6+6)×5 — each ability rolls its OWN designated
+      // formula directly into itself, no shared pool/count/assignment
+      // step at all) — see renderPerAbilityRollAbilities.
+      const hasSharedFormula = typeof config?.formula === "string" && config.formula.trim().length > 0 && Number.isFinite(config?.count);
+      const hasPerAbilityFormulas = config?.formulas && typeof config.formulas === "object" && Object.keys(config.formulas).length > 0;
+      return hasSharedFormula || hasPerAbilityFormulas;
     }
     // An unrecognized method name has no built-in renderer to fall back
     // to either — same "not usable" verdict, not a silent no-op pick.
@@ -10680,8 +10819,71 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     remainingLabel.textContent = `Points remaining: ${budget - defs.reduce((total, entry) => total + costOf(buildWizardState.abilityScores[entry.key]), 0)}`;
   }
 
+  // A "roll" method whose own config declares a `formulas` map (one
+  // formula per ability KEY, not one shared formula for every ability —
+  // Call of Cthulhu's own STR/CON/DEX/APP/POW = 3D6×5 vs SIZ/INT/EDU =
+  // (2D6+6)×5) rolls each ability DIRECTLY into itself, one row with its
+  // own Roll/Reroll button — genuinely different from the shared-formula
+  // case below (D&D 5e's own "roll 6 scores, assign them where you
+  // like"), which needs a separate assignment step since the rolled
+  // values there are interchangeable; here they aren't — each formula IS
+  // the ability it's for, so there's nothing to assign.
+  function renderPerAbilityRollAbilities(mount, defs, config) {
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    const rollOne = (key) => {
+      const formula = config.formulas[key] || config.formula;
+      if (!formula) return;
+      try {
+        buildWizardState.abilityScores[key] = rollDiceExpression(formula).total;
+      } catch (error) {
+        console.warn("Character editor: unable to roll ability score", key, error);
+      }
+    };
+    const rollAllButton = document.createElement("button");
+    rollAllButton.type = "button";
+    rollAllButton.className = "btn btn-outline-primary btn-sm align-self-start mb-2";
+    rollAllButton.textContent = defs.some((def) => buildWizardState.abilityScores[def.key] != null) ? "Reroll All" : "Roll All";
+    rollAllButton.addEventListener("click", () => {
+      defs.forEach((def) => rollOne(def.key));
+      renderBuildAbilitiesStep();
+      updateBuildNextState();
+    });
+    wrap.appendChild(rollAllButton);
+    defs.forEach((def) => {
+      const row = document.createElement("div");
+      row.className = "d-flex align-items-center gap-2";
+      const label = document.createElement("label");
+      label.className = "fw-semibold";
+      label.style.minWidth = "8rem";
+      label.textContent = def.label;
+      const valueSpan = document.createElement("span");
+      valueSpan.className = "text-center";
+      valueSpan.style.minWidth = "2rem";
+      valueSpan.textContent = buildWizardState.abilityScores[def.key] ?? "—";
+      const rollButton = document.createElement("button");
+      rollButton.type = "button";
+      rollButton.className = "btn btn-sm btn-outline-secondary";
+      rollButton.textContent = buildWizardState.abilityScores[def.key] != null ? "Reroll" : "Roll";
+      rollButton.addEventListener("click", () => {
+        rollOne(def.key);
+        valueSpan.textContent = buildWizardState.abilityScores[def.key];
+        rollButton.textContent = "Reroll";
+        updateBuildNextState();
+      });
+      row.append(label, valueSpan, rollButton);
+      wrap.appendChild(row);
+    });
+    mount.appendChild(wrap);
+  }
+
   function renderRollAbilities(mount, defs) {
-    const { formula, count, label } = getBuildAbilityMethodConfig("roll");
+    const config = getBuildAbilityMethodConfig("roll");
+    if (config?.formulas && typeof config.formulas === "object" && Object.keys(config.formulas).length) {
+      renderPerAbilityRollAbilities(mount, defs, config);
+      return;
+    }
+    const { formula, count, label } = config;
     const rollLabel = label || formula;
     const wrap = document.createElement("div");
     wrap.className = "d-flex flex-column gap-2";
@@ -10739,7 +10941,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const label = document.createElement("label");
       label.className = "fw-semibold";
       label.style.minWidth = "8rem";
-      label.textContent = def?.label || `Input ${index + 1}`;
+      label.textContent = (def?.label || `Input ${index + 1}`) + (def?.optional ? " (optional)" : "");
       const input = document.createElement("input");
       input.type = "text";
       input.className = "form-control form-control-sm";
@@ -10753,6 +10955,476 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       wrap.appendChild(row);
     });
     mount.appendChild(wrap);
+  }
+
+  // A pointAllocation step's own `scopeSource` (same {from:"class"|
+  // "system", field} convention listPick's own `source` already
+  // established) names WHICH leaves of the target field the budget may be
+  // spent on, by their own short key — absent means "every leaf," same as
+  // Blades in the Dark's own Actions step always meant (no scoping
+  // concept existed before Call of Cthulhu's Occupation Skills needed
+  // one). Returns a Set of short keys, or null when nothing is declared.
+  function resolvePointAllocationScope(stepEntry) {
+    const scope = stepEntry?.scopeSource;
+    if (!scope?.field) return null;
+    const raw =
+      scope.from === "class"
+        ? buildWizardState.classRecord?.[scope.field]
+        : scope.from === "system"
+          ? systemFieldValues(buildWizardState.systemDefinition, scope.field)
+          : null;
+    if (!Array.isArray(raw)) return null;
+    return new Set(raw.map((value) => (typeof value === "string" ? value : value?.key || value?.name)).filter(Boolean));
+  }
+
+  // The step's own `targetPath` names a reserved System field to allocate
+  // across — that field may be a TWO-level object (an attribute group,
+  // each holding its own leaf actions — Blades in the Dark's own
+  // "actions" field) or a flat single-level object (a plain list of
+  // numeric leaves — Call of Cthulhu's own "skills" field); either shape
+  // resolves to the same {key,label,items} groups shape, a flat field
+  // wrapped in one implicit unlabeled group, so the renderer below never
+  // needs to know which shape it got. Further narrowed by the step's own
+  // `scopeSource` (a named subset) or `exclude` (an id list) when
+  // declared — never both on the same step.
+  function getPointAllocationGroups(stepEntry, systemDefinition = buildWizardState.systemDefinition) {
+    const targetField = fieldByKey(systemDefinition?.fields, stepEntry?.targetPath);
+    const children = Array.isArray(targetField?.children) ? targetField.children : [];
+    const isGrouped = children.some((child) => Array.isArray(child?.children) && child.children.length);
+    const rawGroups = isGrouped
+      ? children.map((group) => ({ key: group?.key || "", label: group?.label || group?.key || "", leaves: Array.isArray(group?.children) ? group.children : [] }))
+      : [{ key: "", label: "", leaves: children }];
+    const scopeNames = resolvePointAllocationScope(stepEntry);
+    const exclude = Array.isArray(stepEntry?.exclude) ? stepEntry.exclude : null;
+    return rawGroups
+      .map((group) => ({
+        key: group.key,
+        label: group.label,
+        items: group.leaves
+          .map((leaf) => {
+            const fullKey = String(leaf?.key || "");
+            // A leaf's own declared `maximum` (Call of Cthulhu's skills:
+            // every one capped at 99) is an implicit PER-ITEM ceiling,
+            // independent of the step's own `maxRating` — the two compose
+            // (whichever is lower wins) rather than either overriding the
+            // other, so a step can still add a tighter cap of its own
+            // (Blades in the Dark's own maxRating: 2) on a field whose
+            // leaves have no maximum declared at all.
+            const declaredMax = Number(leaf?.maximum);
+            // A leaf's own declared `basePercentage` (Call of Cthulhu's
+            // skills: Climb starts at 20% before a single point is spent)
+            // is an implicit FLOOR every allocation builds on top of —
+            // generic to any field whose own children declare one, not a
+            // second bespoke Call-of-Cthulhu-only mechanism alongside
+            // `prefill`'s class-record floor; the two simply add together
+            // (see resolvePointAllocationPrefill).
+            const declaredBase = Number(leaf?.basePercentage);
+            return {
+              key: fullKey,
+              shortKey: fullKey.split(".").pop(),
+              label: leaf?.label || fullKey,
+              description: leaf?.description || "",
+              maximum: Number.isFinite(declaredMax) ? declaredMax : Infinity,
+              basePercentage: Number.isFinite(declaredBase) ? declaredBase : 0,
+            };
+          })
+          .filter((item) => !scopeNames || scopeNames.has(item.shortKey))
+          .filter((item) => !exclude || !exclude.includes(item.key)),
+      }))
+      .filter((group) => group.items.length);
+  }
+
+  // How much a step's own budget is, before anything is spent — a literal
+  // `budget` (Blades in the Dark's fixed 4 dots), or a `budgetFormula`
+  // evaluated against the character's own live data (Call of Cthulhu's
+  // `@characteristics.education * 4`), through the exact same formula
+  // engine derivedFormulas already uses. Never both on the same step.
+  function resolvePointAllocationBudget(stepEntry) {
+    // `budgetSource` (same {from:"class", field} shape `scopeSource`/
+    // `prefill.source` already use) reads the formula STRING off the
+    // picked class/occupation record itself, rather than a single literal
+    // formula fixed on the step — Call of Cthulhu's own occupations don't
+    // all use the same skill-point formula (most are EDU×4, but several
+    // physical/combat occupations use EDU×2 + an alternate characteristic
+    // ×2 instead), so the formula has to travel WITH the picked
+    // Occupation, not live once on the step the way BitD's fixed 4-dot
+    // budget does.
+    const sourcedFormula =
+      stepEntry?.budgetSource?.from === "class" ? buildWizardState.classRecord?.[stepEntry.budgetSource.field] : null;
+    const formula = typeof sourcedFormula === "string" && sourcedFormula.trim() ? sourcedFormula : stepEntry?.budgetFormula;
+    if (typeof formula === "string" && formula.trim()) {
+      try {
+        // getBindingContext() alone is whatever character was PREVIOUSLY
+        // loaded (or nothing) — a budget formula referencing an ability
+        // score generated earlier in THIS SAME wizard (Call of Cthulhu's
+        // own EDU×4) needs buildWizardState.abilityScores merged in too,
+        // since those scores don't land in the real draft until creation
+        // actually runs (buildCharacterFromWizard, at the very end).
+        // Exposed at the CONTEXT ROOT (bare "@education", matching every
+        // other buildStep formula's own bare-key convention — BitD's own
+        // derivedFormulas reference bare "@hunt", never a nested path)
+        // rather than trying to reconstruct whatever nested shape the
+        // System's own ability field happens to use.
+        const context = { ...getBindingContext(), ...buildWizardState.abilityScores };
+        const result = evaluateFormulaWithLookup(formula, context, { rollDice: rollDiceExpression });
+        const numeric = Number(result);
+        return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : 0;
+      } catch (error) {
+        console.warn("Character editor: unable to evaluate pointAllocation budget formula", error);
+        return 0;
+      }
+    }
+    return Number(stepEntry?.budget) || 0;
+  }
+
+  // How much an item starts at BEFORE the player spends anything — two
+  // independent sources, added together: the item's own field-level
+  // `basePercentage` (Call of Cthulhu's skills: Climb starts at 20%,
+  // read straight off the leaf System/generator-kit.js already resolved
+  // — see getPointAllocationGroups), and the step's own `prefill` block
+  // (Blades in the Dark's class-granted primary (2 dots) / secondary (1
+  // dot) action, read fresh off buildWizardState.classRecord every call,
+  // never cached, so switching class mid-step always recomputes the
+  // right floor). Either, both, or neither may apply to a given item —
+  // Call of Cthulhu declares no `prefill` at all (nothing class-granted),
+  // Blades in the Dark's own actions have no `basePercentage` (that key
+  // simply never appears on that field), so each System only ever
+  // contributes through the one channel that actually applies to it.
+  function resolvePointAllocationPrefill(stepEntry, item) {
+    const base = Number(item?.basePercentage) || 0;
+    const prefill = stepEntry?.prefill;
+    if (!prefill) return base;
+    const record = prefill.source === "class" ? buildWizardState.classRecord : null;
+    if (!record) return base;
+    if (prefill.primaryField && record[prefill.primaryField] === item?.shortKey) return base + (Number(prefill.primaryValue) || 0);
+    if (prefill.secondaryField && record[prefill.secondaryField] === item?.shortKey) return base + (Number(prefill.secondaryValue) || 0);
+    return base;
+  }
+
+  // Spend a step's own budget (literal or formula-derived) across its own
+  // target items (every leaf of one field, or a scoped/excluded subset),
+  // respecting an optional flat per-item ceiling (`maxRating`) on top of
+  // whatever that item's own `prefill` already grants — same budgeted
+  // +/-button shape renderPointBuyAbilities already established. Genuinely
+  // generic: Blades in the Dark's own Actions step (4 dots, every leaf of
+  // "actions", capped at 2, class-prefilled) and Call of Cthulhu's own
+  // Occupation Skills (EDU×4 points, a class-scoped subset of "skills", no
+  // cap, no prefill) both render through this one function, unchanged.
+  function renderBuildPointAllocationStep(stepId) {
+    const mount = elements.buildPointAllocationMounts?.[stepId];
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    const stepEntry = getBuildStepEntry(stepId);
+    const budget = resolvePointAllocationBudget(stepEntry);
+    const maxRating = Number(stepEntry?.maxRating) || Infinity;
+    const groups = getPointAllocationGroups(stepEntry);
+    if (!budget || !groups.length) {
+      mount.textContent = "This System hasn't declared how this is assigned yet.";
+      return;
+    }
+    if (!buildWizardState.pointAllocations[stepId]) {
+      buildWizardState.pointAllocations[stepId] = {};
+    }
+    const allocations = buildWizardState.pointAllocations[stepId];
+    const unitLabel = stepEntry?.unitLabel || "points";
+    const spent = () => Object.values(allocations).reduce((total, value) => total + (Number(value) || 0), 0);
+    const remainingLabel = document.createElement("div");
+    remainingLabel.className = "fw-semibold small mb-2";
+    mount.appendChild(remainingLabel);
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-3";
+    groups.forEach((group) => {
+      const groupWrap = document.createElement("div");
+      if (group.label) {
+        const groupLabel = document.createElement("div");
+        groupLabel.className = "fw-semibold small text-body-secondary";
+        groupLabel.textContent = group.label;
+        groupWrap.appendChild(groupLabel);
+      }
+      // Long unscoped lists (Call of Cthulhu's own Personal Interest step:
+      // every skill, ~45 rows) are hard to scan/scroll as one long single
+      // column — flows into two CSS columns once a group has enough items
+      // to actually benefit (short groups, BitD's own 3-4-item attribute
+      // groups or a curated Occupation Skills list, stay single-column;
+      // splitting THOSE into two would just leave one column half-empty).
+      // Multi-column (not a grid) so it reads top-to-bottom then wraps —
+      // the natural reading order for an alphabetical list — rather than
+      // a grid's own left-to-right row order.
+      if (group.items.length > 10) {
+        groupWrap.style.columnCount = "2";
+        groupWrap.style.columnGap = "1.5rem";
+      }
+      group.items.forEach((item) => {
+        // Computed once per row (not inside refreshRow) — it's static for
+        // this step/item pair, and setTotal below needs the exact same
+        // value refreshRow uses to stay in sync.
+        const preFilled = resolvePointAllocationPrefill(stepEntry, item);
+        const ceiling = () => Math.min(maxRating, item.maximum);
+        const row = document.createElement("div");
+        row.className = "d-flex align-items-center gap-2";
+        // Multi-column layout splits BLOCK children across columns by
+        // default — without this, one row's own label/input/buttons could
+        // get torn across the column break.
+        row.style.breakInside = "avoid";
+        row.style.marginBottom = "0.5rem";
+        const label = document.createElement("label");
+        label.className = "fw-semibold text-truncate";
+        // A FIXED width (not just a floor) so every row's controls land in
+        // the same column regardless of how long that row's own label is
+        // — confirmed real bug this fixes: a long label (Call of
+        // Cthulhu's own "Firearms (Rifle/Shotgun)"/"Operate Heavy
+        // Machinery") grew past the old minWidth-only column, visibly
+        // shoving that one row's +/− buttons out of alignment with every
+        // other row's. text-truncate + the fixed width together mean an
+        // even longer future label degrades to an ellipsis instead of
+        // repeating the same misalignment.
+        label.style.width = "13rem";
+        label.style.flex = "0 0 13rem";
+        label.title = item.label;
+        label.textContent = item.label;
+        const minusButton = document.createElement("button");
+        minusButton.type = "button";
+        minusButton.className = "btn btn-sm btn-outline-secondary flex-shrink-0";
+        minusButton.textContent = "−";
+        // Direct-entry, not just +/-1 — confirmed real pain point: Call of
+        // Cthulhu's own skill budgets run into the hundreds, and clicking
+        // a +1 button that many times per skill is unusable. Typing a
+        // value still respects every existing constraint (can't go below
+        // this item's own pre-filled floor, can't exceed its own ceiling,
+        // can't exceed the step's overall remaining budget) — see setTotal
+        // below, the single source of truth both this and the +/- buttons
+        // route through.
+        const valueInput = document.createElement("input");
+        valueInput.type = "number";
+        valueInput.className = "form-control form-control-sm text-center flex-shrink-0";
+        valueInput.style.width = "4.5rem";
+        const plusButton = document.createElement("button");
+        plusButton.type = "button";
+        plusButton.className = "btn btn-sm btn-outline-secondary flex-shrink-0";
+        plusButton.textContent = "+";
+        row.append(label, minusButton, valueInput, plusButton);
+        groupWrap.appendChild(row);
+        // Single source of truth for "set this item's own TOTAL to X" —
+        // clamped to [preFilled, min(step maxRating, item's own declared
+        // maximum, whatever's actually affordable against the remaining
+        // budget)]. `+preFilled` in the affordability calc: this item's
+        // OWN current extra is still part of `spent()` at the moment this
+        // runs, so it has to be added back before comparing against the
+        // requested total, or every row would look like it has less
+        // budget available than it actually does.
+        const setTotal = (rawTotal) => {
+          const currentExtra = Number(allocations[item.shortKey]) || 0;
+          const affordableCeiling = preFilled + (budget - spent() + currentExtra);
+          const requested = Math.round(Number(rawTotal));
+          const clampedTotal = Number.isFinite(requested)
+            ? Math.max(preFilled, Math.min(ceiling(), affordableCeiling, requested))
+            : preFilled;
+          allocations[item.shortKey] = clampedTotal - preFilled;
+          groups.forEach((g) => g.items.forEach((i) => i._refresh?.()));
+          updateBuildNextState();
+        };
+        const refreshRow = () => {
+          const extra = Number(allocations[item.shortKey]) || 0;
+          const total = preFilled + extra;
+          valueInput.value = String(total);
+          minusButton.disabled = extra <= 0;
+          plusButton.disabled = total >= ceiling() || spent() >= budget;
+          remainingLabel.textContent = `${budget - spent()} ${unitLabel} remaining`;
+        };
+        minusButton.addEventListener("click", () => setTotal(preFilled + (Number(allocations[item.shortKey]) || 0) - 1));
+        plusButton.addEventListener("click", () => setTotal(preFilled + (Number(allocations[item.shortKey]) || 0) + 1));
+        valueInput.addEventListener("change", () => setTotal(valueInput.value));
+        item._refresh = refreshRow;
+        refreshRow();
+      });
+      wrap.appendChild(groupWrap);
+    });
+    mount.appendChild(wrap);
+    remainingLabel.textContent = `${budget - spent()} ${unitLabel} remaining`;
+  }
+
+  // Fully generic "choose N mutually-exclusive items from a curated list"
+  // step — see the plan's own C4/C5 design: NOT feature-specific or
+  // NPC-specific, reused for both. `source.from` is "class" (read the
+  // field off whichever class-kind record the wizard's own most recent
+  // `class`-type step resolved) or "system" (a System-level reserved
+  // field, matching `choices`' own `equipmentChoices.sourceField`
+  // convention). `source` may also be an array of `{from, field}` entries
+  // whose candidate lists are unioned.
+  //
+  // `idField` (optional, "class"-sourced only) — when the human-readable
+  // display list and the real value to write aren't the same field (e.g.
+  // a Playbook's own `features[]` display objects vs. its PARALLEL
+  // `featureIds[]` array of real Library ids, the SAME by-index pairing
+  // Daggerheart's own class/species feature grants already use), each
+  // option's real value comes from `idField`'s own array at the SAME
+  // index the display value came from, not from `source.field` itself.
+  function resolveListPickSource(source, idField) {
+    const sources = Array.isArray(source) ? source : [source].filter(Boolean);
+    const seen = new Set();
+    const options = [];
+    sources.forEach((entry) => {
+      let raw;
+      let idList;
+      if (entry?.from === "class") {
+        raw = buildWizardState.classRecord?.[entry.field];
+        idList = idField ? buildWizardState.classRecord?.[idField] : null;
+      } else if (entry?.from === "system") {
+        raw = systemFieldValues(buildWizardState.systemDefinition, entry.field);
+      }
+      (Array.isArray(raw) ? raw : []).forEach((value, index) => {
+        const baseLabel = typeof value === "string" ? value : value?.name;
+        if (!baseLabel) return;
+        // A candidate carrying its own `descriptor` (Blades in the Dark's
+        // own Friend/Rival NPCs and Favorite Contacts: "Marlane" + "a
+        // pugilist") folds it into the label right here — a generic
+        // name+descriptor shape, not specific to NPCs — so both the picker
+        // itself and whatever gets written downstream (see the listPick
+        // apply block's own `rawValue`, which now prefers this label over
+        // the bare raw.name) show "Marlane, a pugilist" consistently.
+        const label = typeof value === "object" && value?.descriptor ? `${baseLabel}, ${value.descriptor}` : baseLabel;
+        if (seen.has(label)) return;
+        seen.add(label);
+        const id = Array.isArray(idList) ? idList[index] : undefined;
+        options.push({ label, raw: value, id });
+      });
+    });
+    return options;
+  }
+
+  function renderBuildListPickStep(stepId) {
+    const mount = elements.buildListPickMounts?.[stepId];
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    const stepEntry = getBuildStepEntry(stepId);
+    const options = resolveListPickSource(stepEntry?.source, stepEntry?.idField);
+    const picks = Array.isArray(stepEntry?.picks) && stepEntry.picks.length ? stepEntry.picks : [{}];
+    if (!options.length) {
+      mount.textContent = "This System hasn't declared any options for this step yet.";
+      return;
+    }
+    if (!buildWizardState.listPicks[stepId]) {
+      buildWizardState.listPicks[stepId] = {};
+    }
+    const selections = buildWizardState.listPicks[stepId];
+    const wrap = document.createElement("div");
+    wrap.className = "d-flex flex-column gap-2";
+    if (stepEntry?.searchable) {
+      renderSearchableListPicks(wrap, options, picks, selections);
+    } else {
+      renderSelectListPicks(wrap, options, picks, selections);
+    }
+    mount.appendChild(wrap);
+  }
+
+  // Ordinary mutually-exclusive <select> picks — Friend & Rival, Vice,
+  // Reputation, Crew Upgrades, Favorite Contact, Preferred Operation: every
+  // listPick step whose own candidates carry no real description worth a
+  // full picker panel for (a bare name, or a one-line descriptor).
+  function renderSelectListPicks(wrap, options, picks, selections) {
+    const selects = [];
+    function refreshAll() {
+      selects.forEach((select, slotIndex) => {
+        const otherLabels = new Set(
+          selects.map((_, i) => i).filter((i) => i !== slotIndex).map((i) => selections[i]?.label).filter(Boolean)
+        );
+        const current = select.value;
+        select.innerHTML = "";
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = "—";
+        select.appendChild(blank);
+        options
+          .filter((option) => !otherLabels.has(option.label))
+          .forEach((option) => {
+            const el = document.createElement("option");
+            el.value = option.label;
+            el.textContent = option.label;
+            select.appendChild(el);
+          });
+        select.value = options.some((option) => option.label === current) && !otherLabels.has(current) ? current : "";
+      });
+    }
+    picks.forEach((pick, slotIndex) => {
+      const row = document.createElement("div");
+      row.className = "d-flex flex-column gap-1";
+      if (pick?.label) {
+        const label = document.createElement("label");
+        label.className = "form-label small text-body-secondary fw-semibold mb-0";
+        label.textContent = pick.label;
+        row.appendChild(label);
+      }
+      const select = document.createElement("select");
+      select.className = "form-select form-select-sm";
+      select.addEventListener("change", () => {
+        const picked = options.find((option) => option.label === select.value) || null;
+        if (picked) {
+          selections[slotIndex] = picked;
+        } else {
+          delete selections[slotIndex];
+        }
+        refreshAll();
+        updateBuildNextState();
+      });
+      row.appendChild(select);
+      wrap.appendChild(row);
+      selects.push(select);
+    });
+    refreshAll();
+  }
+
+  // Same filterable, description-showing picker the Playbook/Heritage/
+  // Background steps already use (createFilterableListPicker) — for a
+  // listPick step whose own `searchable: true` says its candidates carry
+  // real description text worth reading before picking (Special Ability:
+  // full ability rules text pulled straight from the selected Playbook/
+  // Crew Type's own `features[]` entries via resolveNotes, same as any
+  // other Library-reference description). Re-renders the whole set of
+  // pickers on every pick (options are ability-list-sized, never worth a
+  // more surgical in-place update) so mutual exclusion across pick slots
+  // works exactly like the <select> version above.
+  function renderSearchableListPicks(wrap, options, picks, selections) {
+    function renderAll() {
+      wrap.innerHTML = "";
+      picks.forEach((pick, slotIndex) => {
+        const row = document.createElement("div");
+        row.className = "d-flex flex-column gap-1";
+        if (pick?.label) {
+          const label = document.createElement("label");
+          label.className = "form-label small text-body-secondary fw-semibold mb-0";
+          label.textContent = pick.label;
+          row.appendChild(label);
+        }
+        const otherLabels = new Set(
+          picks.map((_, i) => i).filter((i) => i !== slotIndex).map((i) => selections[i]?.label).filter(Boolean)
+        );
+        const pickerOptions = options
+          .filter((option) => !otherLabels.has(option.label))
+          .map((option) => ({
+            id: option.id || option.label,
+            name: option.label,
+            description: resolveNotes(option.raw),
+            raw: option.raw,
+          }));
+        const picker = createFilterableListPicker({
+          options: pickerOptions,
+          emptyMessage: "Nothing available.",
+          initialSelectedId: selections[slotIndex]?.id ?? null,
+          onSelect: (option) => {
+            selections[slotIndex] = { label: option.name, raw: option.raw, id: option.id };
+            renderAll();
+            updateBuildNextState();
+          },
+        });
+        row.appendChild(picker.element);
+        wrap.appendChild(row);
+      });
+    }
+    renderAll();
   }
 
   function renderBuildReview() {
@@ -10797,6 +11469,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       } else if (step === "input") {
         (Array.isArray(entry?.inputs) ? entry.inputs : []).forEach((def, index) => {
           lines.push(`${def?.label || `Input ${index + 1}`}: ${buildWizardState.inputValues[index] || "—"}`);
+        });
+      } else if (entry?.type === "pointAllocation") {
+        const allocations = buildWizardState.pointAllocations[step] || {};
+        getPointAllocationGroups(entry).forEach((group) => {
+          group.items.forEach((item) => {
+            const total = resolvePointAllocationPrefill(entry, item) + (Number(allocations[item.shortKey]) || 0);
+            if (total > 0) {
+              lines.push(`${item.label}: ${total}`);
+            }
+          });
+        });
+      } else if (entry?.type === "listPick") {
+        const picks = Array.isArray(entry.picks) && entry.picks.length ? entry.picks : [{}];
+        const selections = buildWizardState.listPicks[step] || {};
+        picks.forEach((pick, slotIndex) => {
+          lines.push(`${pick?.label || entry?.label || step}: ${selections[slotIndex]?.label || "—"}`);
         });
       }
     });
@@ -10845,6 +11533,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const { steps } = getActiveBuildSteps();
     const choicesIndex = steps.indexOf("choices");
+    // A System whose own buildSteps never declare a "choices" step (Blades
+    // in the Dark: no post-creation equipment gating, nothing ever to
+    // resolve here) has no step for the wizard to route to —
+    // applyBuildStepChrome(-1) would hide every step panel and leave the
+    // modal stuck open on an empty, unlabeled step with no way to close
+    // it. Finish immediately instead, exactly like clicking Finish on an
+    // ordinary already-empty resolve panel would.
+    if (choicesIndex === -1) {
+      await finishBuildChoicesStep();
+      return;
+    }
     buildWizardState.step = choicesIndex;
     applyBuildStepChrome(choicesIndex);
     renderBuildResolvePanel(pendingChoices);
@@ -11026,6 +11725,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const rawScore = buildWizardState.abilityScores[def.key];
       abilities[def.key] = rawScore != null ? Number(rawScore) : 10;
     });
+    // The SAME auto-detection loadAbilityFieldDefs itself already used to
+    // find this System's own ability/stat-block field (see its own
+    // comment — sys.dnd5e's "abilities", sys.coc7e's "characteristics")
+    // — confirmed real bug this fixes: the rolled/assigned scores were
+    // always written to `stats.abilities` regardless of what the System
+    // actually calls that field, so a System naming it anything else
+    // (Call of Cthulhu's own "characteristics") had its scores silently
+    // land somewhere the template never binds to.
+    const abilityFieldKey = guessAbilityFieldKey(buildWizardState.systemDefinition?.fields) || "abilities";
     const imageUrl = (elements.buildCharacterImage?.value || "").trim();
     const pronouns = (elements.buildCharacterPronouns?.value || "").trim();
     const draft = {
@@ -11073,7 +11781,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
             }
           : {}),
       },
-      stats: { abilities, proficiencyBonus: 0 },
+      // D&D/Daggerheart's own historical convention nests scores under
+      // `stats.abilities` — kept exactly as-is, zero behavior change,
+      // when the detected key literally IS "abilities". Any OTHER
+      // detected key (Call of Cthulhu's own "characteristics") is a
+      // TOP-LEVEL reserved field on the System, matching every other
+      // buildStep target path in this whole file (skills, actions, vice,
+      // ... — none of those get an implicit "stats." wrapper either), so
+      // it's placed there instead — the `stats.abilities` nesting was
+      // D&D-sheet-shape baggage, never a rule every System should inherit.
+      stats: { ...(abilityFieldKey === "abilities" ? { abilities } : {}) },
+      ...(abilityFieldKey !== "abilities" ? { [abilityFieldKey]: abilities } : {}),
       featureIds: [],
       currencies: {},
       inventory: [],
@@ -11086,7 +11804,84 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // record is CURRENTLY open, if any) — fetched once, reused for every
     // derivedFormulas lookup below.
     const buildSystemDefinition = await fetchSystemDefinition(initialSchema);
-    draft.stats.proficiencyBonus = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: 1 }) || 0;
+    // Only a System that actually declares a "proficiencyBonusForLevel"
+    // derivedFormulas role (D&D 5e, Daggerheart) gets a stats.
+    // proficiencyBonus written at all — a System with no such role (Call
+    // of Cthulhu, Blades in the Dark) has no matching template binding
+    // for it, so writing a bare "0" here would just be D&D-sheet-shape
+    // cruft with nothing to read it.
+    const hasProficiencyBonusRole = systemFieldValues(buildSystemDefinition, "derivedFormulas").some((entry) => entry?.role === "proficiencyBonusForLevel");
+    if (hasProficiencyBonusRole) {
+      draft.stats.proficiencyBonus = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: 1 }) || 0;
+    }
+
+    // Generic "compute starting resource pools from this character's own
+    // stat-block scores, once, at creation" pass — any System declaring
+    // the matching derivedFormulas roles gets these written; a System
+    // with none of these roles (Blades in the Dark, D&D) sees no writes
+    // at all here. Call of Cthulhu's own Hit Points/Magic Points/Sanity/
+    // Move Rate are the motivating case, but nothing below is CoC-
+    // specific — roles and target paths are read from the System's own
+    // derivedFormulas entries, never hardcoded. `derivedContext` uses
+    // bare keys (strength, constitution, ...), matching every other
+    // formula context this file already builds the same way.
+    const derivedFormulaEntries = systemFieldValues(buildSystemDefinition, "derivedFormulas");
+    const RESOURCE_POOL_ROLES = [
+      { role: "hitPoints", maxPath: "@stats.hitPoints.max", currentPath: "@stats.hitPoints.current" },
+      { role: "magicPoints", maxPath: "@stats.magicPoints.max", currentPath: "@stats.magicPoints.current" },
+      { role: "sanityStart", maxPath: "@stats.sanity.max", currentPath: "@stats.sanity.current" },
+    ];
+    RESOURCE_POOL_ROLES.forEach(({ role, maxPath, currentPath }) => {
+      const value = Number(evaluateDerivedFormula(derivedFormulaEntries, role, abilities));
+      if (!Number.isFinite(value)) return;
+      const maxSegs = resolveBindingPath(maxPath);
+      if (maxSegs) setValueAtContext(draft, maxSegs, value);
+      const currentSegs = resolveBindingPath(currentPath);
+      if (currentSegs) setValueAtContext(draft, currentSegs, value);
+    });
+    const moveRateValue = Number(evaluateDerivedFormula(derivedFormulaEntries, "moveRate", abilities));
+    if (Number.isFinite(moveRateValue)) {
+      const segs = resolveBindingPath("@stats.moveRate");
+      if (segs) setValueAtContext(draft, segs, moveRateValue);
+    }
+
+    // Any top-level System field carrying its own `rollFormula` (Call of
+    // Cthulhu's own Luck: rolled once at creation, 3D6×5 — never part of
+    // the "abilities" step's own array/roll methods, since Luck is
+    // ALWAYS separately rolled even under the quickstart point-array
+    // method) gets rolled here and written to its own path — generic to
+    // any System declaring this on any field, not a Luck-specific hook.
+    (buildSystemDefinition?.fields || []).forEach((field) => {
+      if (typeof field?.rollFormula !== "string" || !field.rollFormula.trim()) return;
+      try {
+        const rolled = rollDiceExpression(field.rollFormula).total;
+        const segs = resolveBindingPath(`@${field.key}`);
+        if (segs && Number.isFinite(rolled)) setValueAtContext(draft, segs, rolled);
+      } catch (error) {
+        console.warn("Character editor: unable to roll", field.key, error);
+      }
+    });
+
+    // A range-lookup table (Call of Cthulhu's own Damage Bonus/Build:
+    // STR+SIZ against a breakpoint table) — generic to any System
+    // declaring `sumFields` (which two stat-block leaves to add together)
+    // on an array field whose own entries carry {min,max,...}. Every
+    // OTHER property the matched row carries (Call of Cthulhu's own
+    // damageBonus/build) is written to its own `stats.<propertyName>`
+    // path — the table's own row shape decides what gets written, not a
+    // hardcoded pair of field names.
+    (buildSystemDefinition?.fields || [])
+      .filter((field) => Array.isArray(field?.sumFields) && field.sumFields.length === 2 && Array.isArray(field?.values))
+      .forEach((field) => {
+        const sum = field.sumFields.reduce((total, key) => total + (Number(abilities[key]) || 0), 0);
+        const row = field.values.find((entry) => sum >= Number(entry?.min) && sum <= Number(entry?.max));
+        if (!row) return;
+        Object.keys(row).forEach((key) => {
+          if (key === "name" || key === "min" || key === "max") return;
+          const segs = resolveBindingPath(`@stats.${key}`);
+          if (segs) setValueAtContext(draft, segs, row[key]);
+        });
+      });
 
     // Seeds a real stats.skills[] from the System's own "skills" array field
     // (loadArrayFieldValues — the same generic array-field reader
@@ -11165,30 +11960,36 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // not display-ready). Class grants a fixed 2-save proficiency via
     // whatever field the System's own "savingThrowGrants" levelUpBindings
     // role names (never a literal "saving_throws") — a hard grant, not a
-    // choice.
-    const buildLevelUpBindings = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).find(
-      (entry) => entry?.key === "levelUpBindings"
-    )?.values;
-    const savingThrowGrantsPath = findLevelUpBinding(buildLevelUpBindings, "savingThrowGrants", "class")?.path;
-    const classSaveIndexes = new Set(
-      (savingThrowGrantsPath && Array.isArray(classRecord?.[savingThrowGrantsPath]) ? classRecord[savingThrowGrantsPath] : []).map((entry) =>
-        String(entry?.index || "").toLowerCase()
-      )
-    );
-    draft.stats.savingThrows = buildWizardState.abilityDefs.map((def, index) => {
-      const isProficient = classSaveIndexes.has(String(def.label || "").toLowerCase());
-      const modifier = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: abilities[def.key] ?? 10 }) || 0;
-      return {
-        id: index + 1,
-        name: def.key,
-        friendlyName: def.key.charAt(0).toUpperCase() + def.key.slice(1),
-        shortName: def.label || def.key.slice(0, 3).toUpperCase(),
-        value: modifier + (isProficient ? draft.stats.proficiencyBonus : 0),
-        proficiency: isProficient ? 2 : 0,
-        advantage: false,
-        disadvantage: false,
-      };
-    });
+    // choice. Only built when the System actually declares a "saves"
+    // field at all (D&D 5e) — a System with no such concept (Call of
+    // Cthulhu, Blades in the Dark, Daggerheart) has nothing to bind
+    // these entries to.
+    const hasSavesField = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).some((entry) => entry?.key === "saves");
+    if (hasSavesField) {
+      const buildLevelUpBindings = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).find(
+        (entry) => entry?.key === "levelUpBindings"
+      )?.values;
+      const savingThrowGrantsPath = findLevelUpBinding(buildLevelUpBindings, "savingThrowGrants", "class")?.path;
+      const classSaveIndexes = new Set(
+        (savingThrowGrantsPath && Array.isArray(classRecord?.[savingThrowGrantsPath]) ? classRecord[savingThrowGrantsPath] : []).map((entry) =>
+          String(entry?.index || "").toLowerCase()
+        )
+      );
+      draft.stats.savingThrows = buildWizardState.abilityDefs.map((def, index) => {
+        const isProficient = classSaveIndexes.has(String(def.label || "").toLowerCase());
+        const modifier = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: abilities[def.key] ?? 10 }) || 0;
+        return {
+          id: index + 1,
+          name: def.key,
+          friendlyName: def.key.charAt(0).toUpperCase() + def.key.slice(1),
+          shortName: def.label || def.key.slice(0, 3).toUpperCase(),
+          value: modifier + (isProficient ? Number(draft.stats.proficiencyBonus) || 0 : 0),
+          proficiency: isProficient ? 2 : 0,
+          advantage: false,
+          disadvantage: false,
+        };
+      });
+    }
 
     // Initiative and Armor Class — resolved via the SAME combatBindings
     // role lookup Combat Tracker/character-sheet.js already use (role
@@ -11281,7 +12082,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // whose classFeatures genuinely ARE level-tagged (D&D) is unaffected
     // — this only changes behavior when literally none of them have one.
     const classFeaturesAreLevelTagged = classFeatures.some((entry) => Number.isFinite(Number(entry?.level)));
-    const grantedFromClass = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, classFeaturesAreLevelTagged ? 1 : null, grantedFromSpecies);
+    // A System whose own listPick step already resolves ONE pick from the
+    // class's own feature list into @featureIds (Blades in the Dark's
+    // Special Ability step: "choose 1 of 8") must NOT also have this
+    // blanket auto-grant hand it every untagged feature — the two are
+    // mutually exclusive resolutions of the same field. Detected generically
+    // (any System, not just BitD): a declared listPick step sourcing from
+    // "class" field "features"/"featureIds" and targeting "@featureIds".
+    const classFeaturesHandledByListPick = getDeclaredBuildSteps(buildSystemDefinition).some((entry) => {
+      if (entry?.type !== "listPick") return false;
+      const sources = Array.isArray(entry.source) ? entry.source : [entry.source];
+      const sourcesClassFeatures = sources.some((src) => src?.from === "class" && (src?.field === "features" || src?.field === "featureIds"));
+      return sourcesClassFeatures && (entry.targetPath === "@featureIds" || entry.targetArrayPath === "@featureIds");
+    });
+    const grantedFromClass = classFeaturesHandledByListPick
+      ? []
+      : matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, classFeaturesAreLevelTagged ? 1 : null, grantedFromSpecies);
     // Same class of gap as classFeatures above, but Daggerheart's own
     // subclass features carry tier ("Foundation:"/"Specialization:"/
     // "Mastery:") as a NAME PREFIX (this session's own migration script's
@@ -11507,18 +12323,155 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // a future System's own "input" step (whatever it turns out to hold)
     // resolves through this exact same code, unchanged.
     const inputStepEntry = getBuildStepEntry("input", buildSystemDefinition);
-    if (inputStepEntry && Array.isArray(inputStepEntry.inputs) && inputStepEntry.targetArrayPath) {
-      const targetSegs = resolveBindingPath(inputStepEntry.targetArrayPath);
-      if (targetSegs) {
-        const existing = getValueAtContext(draft, targetSegs);
-        const targetArray = Array.isArray(existing) ? existing : [];
-        const itemDefaults = inputStepEntry.itemDefaults && typeof inputStepEntry.itemDefaults === "object" ? inputStepEntry.itemDefaults : {};
+    if (inputStepEntry && Array.isArray(inputStepEntry.inputs)) {
+      // `targetPaths[]` (parallel to `inputs[]`) — each typed value writes
+      // DIRECTLY to its own scalar field (Blades in the Dark's own Alias/
+      // Look/Vice Purveyor detail — three independent character fields,
+      // not array items). Alternative to `targetArrayPath` (Daggerheart's
+      // own Experiences — several typed values collected into ONE array),
+      // never both on the same step; whichever the System declares is the
+      // only one read.
+      if (Array.isArray(inputStepEntry.targetPaths)) {
         inputStepEntry.inputs.forEach((def, index) => {
           const typedValue = (buildWizardState.inputValues[index] || "").trim();
-          if (!typedValue) return;
-          targetArray.push({ ...itemDefaults, [inputStepEntry.itemKey || "value"]: typedValue });
+          const path = inputStepEntry.targetPaths[index];
+          if (!typedValue || !path) return;
+          const segs = resolveBindingPath(path);
+          if (segs) {
+            setValueAtContext(draft, segs, typedValue);
+          }
         });
-        setValueAtContext(draft, targetSegs, targetArray);
+      } else if (inputStepEntry.targetArrayPath) {
+        const targetSegs = resolveBindingPath(inputStepEntry.targetArrayPath);
+        if (targetSegs) {
+          const existing = getValueAtContext(draft, targetSegs);
+          const targetArray = Array.isArray(existing) ? existing : [];
+          const itemDefaults = inputStepEntry.itemDefaults && typeof inputStepEntry.itemDefaults === "object" ? inputStepEntry.itemDefaults : {};
+          inputStepEntry.inputs.forEach((def, index) => {
+            const typedValue = (buildWizardState.inputValues[index] || "").trim();
+            if (!typedValue) return;
+            targetArray.push({ ...itemDefaults, [inputStepEntry.itemKey || "value"]: typedValue });
+          });
+          setValueAtContext(draft, targetSegs, targetArray);
+        }
+      }
+    }
+
+    // Generic "pointAllocation" step resolution — every declared
+    // pointAllocation step (Blades in the Dark's own Actions; Call of
+    // Cthulhu's own Occupation Skills AND Personal Interest, two
+    // INDEPENDENT budgets that both spend on the SAME "skills" field) adds
+    // its own contribution to each item's own binding path, never simply
+    // overwrites it — confirmed real bug this fixes: a skill scoped by
+    // both steps (e.g. Appraise, reachable from Occupation Skills AND
+    // unscoped Personal Interest) had Personal Interest's own write
+    // silently erase whatever Occupation Skills had already placed there,
+    // since both steps used to write their own "total" unconditionally.
+    // Two passes: (1) each DISTINCT target field's own leaves get their
+    // `basePercentage` (Call of Cthulhu's skills: Climb starts at 20%)
+    // seeded exactly ONCE regardless of how many steps share that field,
+    // never once per step (that would double-count it); (2) every step's
+    // own class-`prefill` (if any) plus whatever the player actually
+    // placed is ADDED on top of whatever a prior step already wrote.
+    const pointAllocationSteps = getDeclaredBuildSteps(buildSystemDefinition).filter((entry) => entry?.type === "pointAllocation");
+    const seededTargetPaths = new Set();
+    pointAllocationSteps.forEach((entry) => {
+      if (!entry?.targetPath || seededTargetPaths.has(entry.targetPath)) return;
+      seededTargetPaths.add(entry.targetPath);
+      getPointAllocationGroups({ targetPath: entry.targetPath }, buildSystemDefinition).forEach((group) => {
+        group.items.forEach((item) => {
+          if (!item.basePercentage) return;
+          const segs = resolveBindingPath(`@${item.key}`);
+          if (segs) setValueAtContext(draft, segs, item.basePercentage);
+        });
+      });
+    });
+    pointAllocationSteps.forEach((entry) => {
+      const allocations = buildWizardState.pointAllocations[entry.step] || {};
+      getPointAllocationGroups(entry, buildSystemDefinition).forEach((group) => {
+        group.items.forEach((item) => {
+          // Base already seeded above (once, for the whole field) — only
+          // this step's own class-prefill (if any) and the player's own
+          // placed points get added here, never the base a second time.
+          const classPrefillOnly = resolvePointAllocationPrefill(entry, { ...item, basePercentage: 0 });
+          const addition = classPrefillOnly + (Number(allocations[item.shortKey]) || 0);
+          if (!addition) return;
+          const segs = resolveBindingPath(`@${item.key}`);
+          if (!segs) return;
+          const existing = Number(getValueAtContext(draft, segs)) || 0;
+          setValueAtContext(draft, segs, existing + addition);
+        });
+      });
+    });
+
+    // Generic "listPick" step resolution — every declared listPick step
+    // (Special Ability, Friend & Rival, Crew Upgrades, Favorite Contact,
+    // ...) resolves through this exact same code, keyed by whichever step
+    // ids this System's own buildSteps actually declares — never assumed
+    // to be exactly these four. Same targetPath/targetArrayPath/itemKey/
+    // itemDefaults convention the "input" step above already established.
+    getDeclaredBuildSteps(buildSystemDefinition)
+      .filter((entry) => entry?.type === "listPick")
+      .forEach((entry) => {
+        const picks = Array.isArray(entry.picks) && entry.picks.length ? entry.picks : [{}];
+        const selections = buildWizardState.listPicks[entry.step] || {};
+        const pickedValues = picks
+          .map((pickDef, slotIndex) => ({ pickDef, selection: selections[slotIndex] }))
+          .filter(({ selection }) => selection);
+        if (!pickedValues.length) return;
+        if (entry.targetArrayPath) {
+          const targetSegs = resolveBindingPath(entry.targetArrayPath);
+          if (!targetSegs) return;
+          const existing = getValueAtContext(draft, targetSegs);
+          const targetArray = Array.isArray(existing) ? existing : [];
+          pickedValues.forEach(({ pickDef, selection }) => {
+            // `label` (not `raw?.name`) is the fallback once `id` is absent
+            // — for a name+descriptor source (Friend & Rival, Favorite
+            // Contact) it's already the combined "Marlane, a pugilist" text
+            // (see resolveListPickSource), which is what should actually
+            // land in the record; raw.name alone would silently drop the
+            // descriptor a System declared for exactly this reason.
+            const rawValue = selection.id ?? selection.label ?? selection.raw?.name;
+            if (entry.itemKey) {
+              targetArray.push({ ...(entry.itemDefaults || {}), ...(pickDef?.itemDefaults || {}), [entry.itemKey]: rawValue });
+            } else {
+              targetArray.push(rawValue);
+            }
+          });
+          setValueAtContext(draft, targetSegs, targetArray);
+        } else if (entry.targetPath) {
+          const targetSegs = resolveBindingPath(entry.targetPath);
+          const rawValue = pickedValues[0].selection.id ?? pickedValues[0].selection.label ?? pickedValues[0].selection.raw?.name;
+          if (targetSegs) {
+            setValueAtContext(draft, targetSegs, rawValue);
+          }
+        }
+      });
+
+    // A class-kind record's own `startingUpgrades` (fixed, no player
+    // choice — Blades in the Dark's Crew Type sheet auto-grants 2) reuses
+    // whichever listPick step already resolves a PICKED upgrade from this
+    // same record's own `typeUpgrades` list, so the target array/item
+    // shape stays data-driven rather than a hardcoded path — any System
+    // could declare this same "some upgrades fixed, some chosen" shape.
+    if (Array.isArray(classRecord.startingUpgrades) && classRecord.startingUpgrades.length) {
+      const upgradesStepEntry = getDeclaredBuildSteps(buildSystemDefinition).find((entry) => {
+        if (entry?.type !== "listPick" || !entry.targetArrayPath) return false;
+        const sources = Array.isArray(entry.source) ? entry.source : [entry.source];
+        return sources.some((src) => src?.from === "class" && src?.field === "typeUpgrades");
+      });
+      if (upgradesStepEntry) {
+        const targetSegs = resolveBindingPath(upgradesStepEntry.targetArrayPath);
+        if (targetSegs) {
+          const existing = getValueAtContext(draft, targetSegs);
+          const targetArray = Array.isArray(existing) ? existing : [];
+          classRecord.startingUpgrades.forEach((name) => {
+            targetArray.push(
+              upgradesStepEntry.itemKey ? { ...(upgradesStepEntry.itemDefaults || {}), [upgradesStepEntry.itemKey]: name } : name
+            );
+          });
+          setValueAtContext(draft, targetSegs, targetArray);
+        }
       }
     }
 

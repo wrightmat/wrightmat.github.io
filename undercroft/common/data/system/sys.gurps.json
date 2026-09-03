@@ -1168,7 +1168,8 @@
               "targetMinFraction": 0,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "Check"
         }
       ]
     }

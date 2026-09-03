@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-shadows-ghost-echoes",
+  "name": "Ghost Echoes",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "From weird experience or occult ritual, all crew members gain the ability to see and interact with the ghostly structures, streets, and objects within the echo of Duskvol that exists in the ghost field.",
+  "mechanics": {
+    "type": "passive",
+    "text": "From weird experience or occult ritual, all crew members gain the ability to see and interact with the ghostly structures, streets, and objects within the echo of Duskvol that exists in the ghost field."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

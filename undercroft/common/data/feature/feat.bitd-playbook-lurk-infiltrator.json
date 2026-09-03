@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-infiltrator",
+  "name": "Infiltrator",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You are not affected by quality or Tier when you bypass security measures.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You are not affected by quality or Tier when you bypass security measures."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

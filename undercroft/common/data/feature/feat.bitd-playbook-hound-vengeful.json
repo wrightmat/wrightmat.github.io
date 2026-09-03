@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-hound-vengeful",
+  "name": "Vengeful",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You gain an additional xp trigger: You got payback against someone who harmed you or someone you care about. If your crew helped you get payback, also mark crew xp.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain an additional xp trigger: You got payback against someone who harmed you or someone you care about. If your crew helped you get payback, also mark crew xp."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

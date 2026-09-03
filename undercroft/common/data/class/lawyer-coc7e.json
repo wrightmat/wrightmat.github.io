@@ -1,0 +1,19 @@
+{
+  "name": "Lawyer",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Practices law, whether in a courtroom or a back-room negotiation.",
+  "creditRatingMin": 30,
+  "creditRatingMax": 80,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "accounting",
+    "law",
+    "libraryUse",
+    "persuade",
+    "psychology",
+    "languageOther",
+    "creditRating"
+  ]
+}

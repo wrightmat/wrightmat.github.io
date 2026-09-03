@@ -1,0 +1,20 @@
+{
+  "name": "Clergyman",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Serves a religious congregation and its spiritual needs.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 60,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "accounting",
+    "history",
+    "libraryUse",
+    "listen",
+    "languageOther",
+    "persuade",
+    "psychology",
+    "creditRating"
+  ]
+}

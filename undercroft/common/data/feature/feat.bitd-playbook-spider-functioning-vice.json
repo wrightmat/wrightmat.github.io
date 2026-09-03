@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-spider-functioning-vice",
+  "name": "Functioning Vice",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you indulge your vice, you may adjust the dice outcome by 1 or 2 (up or down). An ally who joins in your vice may do the same.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you indulge your vice, you may adjust the dice outcome by 1 or 2 (up or down). An ally who joins in your vice may do the same."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

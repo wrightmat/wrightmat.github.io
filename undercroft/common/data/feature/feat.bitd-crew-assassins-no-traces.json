@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-assassins-no-traces",
+  "name": "No Traces",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you keep an operation quiet or make it look like an accident, you get half the rep value of the target (round up) instead of zero. When you end downtime with zero heat, take +1 rep.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you keep an operation quiet or make it look like an accident, you get half the rep value of the target (round up) instead of zero. When you end downtime with zero heat, take +1 rep."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

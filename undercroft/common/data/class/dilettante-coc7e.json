@@ -1,0 +1,22 @@
+{
+  "name": "Dilettante",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Independently wealthy, free to pursue any interest that catches their eye.",
+  "creditRatingMin": 60,
+  "creditRatingMax": 99,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "firearmsHandgun",
+    "firearmsRifleShotgun",
+    "languageOther",
+    "ride",
+    "charm",
+    "fastTalk",
+    "intimidate",
+    "persuade",
+    "creditRating"
+  ]
+}

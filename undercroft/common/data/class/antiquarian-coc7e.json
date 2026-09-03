@@ -1,0 +1,24 @@
+{
+  "name": "Antiquarian",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Deals in rare books, art, and artifacts of historical value.",
+  "creditRatingMin": 30,
+  "creditRatingMax": 70,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "appraise",
+    "artCraft",
+    "history",
+    "libraryUse",
+    "languageOther",
+    "charm",
+    "fastTalk",
+    "intimidate",
+    "persuade",
+    "spotHidden",
+    "occult",
+    "creditRating"
+  ]
+}

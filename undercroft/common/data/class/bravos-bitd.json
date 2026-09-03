@@ -1,0 +1,111 @@
+{
+  "index": "bravos",
+  "name": "Bravos",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "form": "crew",
+  "description": "Thugs, duelists, and mercenaries selling muscle and violence.",
+  "startingUpgrades": [
+    "Prowess Training",
+    "Thugs cohort"
+  ],
+  "favoredOperations": [
+    "Battle",
+    "Extortion",
+    "Sabotage",
+    "Smash & Grab"
+  ],
+  "contacts": [
+    {
+      "name": "Meg",
+      "descriptor": "a pit-fighter"
+    },
+    {
+      "name": "Conway",
+      "descriptor": "a bluecoat"
+    },
+    {
+      "name": "Keller",
+      "descriptor": "a blacksmith"
+    },
+    {
+      "name": "Tomas",
+      "descriptor": "a physicker"
+    },
+    {
+      "name": "Walker",
+      "descriptor": "a ward boss"
+    },
+    {
+      "name": "Lutes",
+      "descriptor": "a tavern owner"
+    }
+  ],
+  "typeUpgrades": [
+    {
+      "name": "Bravos Rigging",
+      "description": "You get 2 free load in two of the equipment categories (weapons, implements, supplies, gear, documents, and tools)."
+    },
+    {
+      "name": "Ironhook Contacts",
+      "description": "Your Tier is effectively +1 higher in prison."
+    },
+    {
+      "name": "Elite Rovers",
+      "description": "Your Rovers cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Elite Thugs",
+      "description": "Your Thugs cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Hardened",
+      "description": "Each PC gets +1 trauma box. Costs three upgrades to unlock, not just one."
+    }
+  ],
+  "features": [
+    {
+      "name": "Dangerous",
+      "description": "Each PC may add +1 action rating to Hunt, Skirmish, or Wreck (up to a max rating of 3)."
+    },
+    {
+      "name": "Blood Brothers",
+      "description": "Your cohorts get +1d for teamwork rolls when fighting alongside you. All of your cohorts get the Thugs type for free (or an extra type, if already Thugs)."
+    },
+    {
+      "name": "Door Kickers",
+      "description": "When you use an assault plan, take +1d to the engagement roll."
+    },
+    {
+      "name": "Fiends",
+      "description": "Fear is as good as respect. You may count each wanted level as if it were turf."
+    },
+    {
+      "name": "Forged in the Fire",
+      "description": "Each PC has been toughened by cruel experience. You get +1d to resistance rolls."
+    },
+    {
+      "name": "Patron",
+      "description": "When you advance your Tier, it costs half the coin it normally would. Who is your patron? Why do they help you?"
+    },
+    {
+      "name": "War Dogs",
+      "description": "When you're at war (-3 faction status), your crew does not suffer -1 hold and PCs still get two downtime activities, instead of just one."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-crew-bravos-dangerous",
+    "feat.bitd-crew-bravos-blood-brothers",
+    "feat.bitd-crew-bravos-door-kickers",
+    "feat.bitd-crew-bravos-fiends",
+    "feat.bitd-crew-bravos-forged-in-the-fire",
+    "feat.bitd-crew-bravos-patron",
+    "feat.bitd-crew-bravos-war-dogs",
+    "feat.bitd-veteran"
+  ]
+}

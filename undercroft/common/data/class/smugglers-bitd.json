@@ -1,0 +1,133 @@
+{
+  "index": "smugglers",
+  "name": "Smugglers",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "form": "crew",
+  "description": "Runners who move contraband cargo through the city and beyond.",
+  "startingUpgrades": [
+    "Vehicle",
+    "Prowess Training"
+  ],
+  "favoredOperations": [
+    "Arcane/Weird",
+    "Arms",
+    "Contraband",
+    "Passengers"
+  ],
+  "contacts": [
+    {
+      "name": "Elynn",
+      "descriptor": "a dock worker"
+    },
+    {
+      "name": "Rolan",
+      "descriptor": "a drug dealer"
+    },
+    {
+      "name": "Sera",
+      "descriptor": "an arms dealer"
+    },
+    {
+      "name": "Nyelle",
+      "descriptor": "a spirit trafficker"
+    },
+    {
+      "name": "Decker",
+      "descriptor": "an anarchist"
+    },
+    {
+      "name": "Esme",
+      "descriptor": "a tavern owner"
+    }
+  ],
+  "typeUpgrades": [
+    {
+      "name": "Smuggler's Rigging",
+      "description": "Two carried items are perfectly concealed."
+    },
+    {
+      "name": "Camouflage",
+      "description": "Your vehicles are perfectly concealed when at rest."
+    },
+    {
+      "name": "Elite Rovers",
+      "description": "Your Rovers cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Barge",
+      "description": "+1 mobility for your lair."
+    },
+    {
+      "name": "Steady",
+      "description": "Each PC gets +1 stress box. Costs three upgrades to unlock, not just one."
+    }
+  ],
+  "features": [
+    {
+      "name": "Like Part of the Family",
+      "description": "Create one of your vehicles as a cohort (use the vehicle edges and flaws). Its quality is equal to your Tier +1."
+    },
+    {
+      "name": "All Hands",
+      "description": "During downtime, one of your cohorts may perform a downtime activity for the crew to acquire an asset, reduce heat, or work on a long-term project."
+    },
+    {
+      "name": "Ghost Passage",
+      "description": "From harsh experience or occult ritual, all crew members become immune to possession by spirits, but may choose to \"carry\" a second ghost as a passenger within their body."
+    },
+    {
+      "name": "Just Passing Through",
+      "description": "During downtime, take -1 heat. When your heat is 4 or less, you get +1d to deceive people when you pass yourselves off as ordinary citizens."
+    },
+    {
+      "name": "Leverage",
+      "description": "Your crew supplies contraband for other factions. Your success is good for them. Whenever you gain rep, gain +1 rep."
+    },
+    {
+      "name": "Reavers",
+      "description": "When you go into conflict aboard a vehicle, you gain +1 effect for vehicle damage and speed. Your vehicle gains armor."
+    },
+    {
+      "name": "Renegades",
+      "description": "Each PC may add +1 action rating to Finesse, Prowl, or Skirmish (up to a max rating of 3)."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-crew-smugglers-like-part-of-the-family",
+    "feat.bitd-crew-smugglers-all-hands",
+    "feat.bitd-crew-smugglers-ghost-passage",
+    "feat.bitd-crew-smugglers-just-passing-through",
+    "feat.bitd-crew-smugglers-leverage",
+    "feat.bitd-crew-smugglers-reavers",
+    "feat.bitd-crew-smugglers-renegades",
+    "feat.bitd-veteran"
+  ],
+  "vehicleEdges": [
+    {
+      "name": "Nimble"
+    },
+    {
+      "name": "Simple"
+    },
+    {
+      "name": "Sturdy"
+    }
+  ],
+  "vehicleFlaws": [
+    {
+      "name": "Costly"
+    },
+    {
+      "name": "Distinct"
+    },
+    {
+      "name": "Finicky"
+    }
+  ]
+}

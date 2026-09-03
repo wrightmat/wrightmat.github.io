@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-spider-weaving-the-web",
+  "name": "Weaving the Web",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You gain +1d to Consort when you gather information on a target for a score. You get +1d to the engagement roll for that operation.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain +1d to Consort when you gather information on a target for a score. You get +1d to the engagement roll for that operation."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

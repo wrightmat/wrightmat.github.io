@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-ghost-veil",
+  "name": "Ghost Veil",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You may shift partially into the ghost field, becoming shadowy and insubstantial for a few moments. Take 2 stress when you shift, plus 1 stress for each extra feature: it lasts for a few minutes rather than moments -- you are invisible rather than shadowy -- you may float through the air like a ghost.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You may shift partially into the ghost field, becoming shadowy and insubstantial for a few moments. Take 2 stress when you shift, plus 1 stress for each extra feature: it lasts for a few minutes rather than moments -- you are invisible rather than shadowy -- you may float through the air like a ghost."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

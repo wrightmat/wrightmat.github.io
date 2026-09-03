@@ -189,7 +189,14 @@ export async function rollExpression(
   expression,
   {
     status,
-    label = "",
+    // No `= ""` default — an omitted label has to stay `undefined` all the
+    // way through to rollSystemMove below (its own `label = move.label`
+    // default only kicks in for a genuinely undefined argument, not an
+    // explicit empty string), so a Moves-panel roll with no override still
+    // shows the Move's own name instead of a blank one. Every other use of
+    // `label` here is a truthy check (`label ? ... : ""`), so `undefined`
+    // behaves identically to the old `""` default everywhere else.
+    label,
     dataManager,
     groupContext = null,
     broadcast = false,
@@ -204,9 +211,50 @@ export async function rollExpression(
     recipientIds = undefined,
     dice = [],
     context = {},
+    // false only from rollSystemMove below, which wants ONE combined
+    // "roll + verdict" toast instead of this plain-roll toast immediately
+    // followed by a second one — the roll itself (and any broadcast) still
+    // happens identically either way, just without announcing it here.
+    announce = true,
+    // System Moves (extractSystemRolls' own shape) this roll can resolve
+    // against — a caller passes whichever list is right for its own scope
+    // (a character's own System for a field-bound button, the campaign-
+    // priority activeSystemRolls for the free-typed box/Moves panel — see
+    // workbench-character-view.js's executeDiceRoll). Optional and empty
+    // by default, so every existing caller with no Moves concept at all
+    // (Forge's tables.js, the Dashboard Character widget) sees zero
+    // behavior change.
+    rolls = [],
+    // Threaded straight to a matched Move's own band grading — see
+    // matchesRangeBand's own comment for what this enables.
+    targetValue = undefined,
   } = {}
 ) {
   const trimmed = String(expression || "").trim();
+  // A Move reference (by shortName, NEVER by comparing expression text —
+  // see findRollByShortName's own comment for two real, pre-existing
+  // Systems that already prove why) resolves through rollSystemMove
+  // instead — this is what makes THIS function itself understand both "a
+  // real dice expression" and "a System Roll's own shortName" the exact
+  // same way a table reference is already recognized above the plain-roll
+  // path below, so every caller (a template button, the free-typed Dice
+  // Roller box, a Moves-panel button inserting its own shortName) just
+  // calls rollExpression once and gets a Move's bands/compare graded for
+  // free when the text resolves to one, with no branching of its own.
+  const move = findRollByShortName(rolls, trimmed);
+  if (move) {
+    return rollSystemMove(move, {
+      status,
+      label,
+      dataManager,
+      groupContext,
+      broadcast,
+      recipientIds,
+      dice,
+      context,
+      targetValue,
+    });
+  }
   const tableRef = parseTableReferenceExpression(trimmed);
   if (tableRef) {
     if (!dataManager) {
@@ -237,8 +285,10 @@ export async function rollExpression(
   }
   try {
     const result = (await tryOverlayRoll(trimmed, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
-    const prefix = label ? `${label}: ` : "";
-    status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
+    if (announce) {
+      const prefix = label ? `${label}: ` : "";
+      status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
+    }
     // Logs whenever EITHER broadcast is on OR explicit recipientIds were
     // given — a Private roll has to log (self-only) even from a call site
     // (a plain expression roll) whose own `broadcast` default has never
@@ -581,28 +631,52 @@ export function incrementDieInExpression(die, expression = "") {
 // A System's own named Rolls/Moves (Section 1.3) — same convention as dice
 // (extractSystemDice above): an ordinary Enum-mode Array property with the
 // reserved key "rolls", not a new property type or a dedicated Loom UI.
-// Unlike a die's id, a Move is never typed into an expression box, only
-// clicked as a button — so its value's `name` can just be a normal,
-// human-readable label ("Action Roll", "Duality Roll") with no
-// identifier-safety compromise the way a die's shared id/label had to
-// accept. `expression`/`resultMode`/`bands`/`compare` live in that value's
-// Extra properties (JSON), same home dice's sides/color/faceMap already
-// use for one-off per-value metadata.
+// A Move is IDENTIFIED by its `shortName` (Loom's own standard short-token
+// column, VALUE_COLUMNS in property-schema-editor.js — the same field
+// characteristics/traits already use for "STR"/"AGI") — never by `expression`.
+// Two Systems' worth of real, pre-existing proof of why: Apocalypse World has
+// two DIFFERENT Moves that both roll "2d6+@stats.hard"-shaped expressions,
+// and B/X D&D has an Attack Roll and a Saving Throw that are BOTH bare
+// "d20" — expression equality can't tell those apart, only a stable
+// reference can. `name` stays a free-text display label (what a button
+// SHOWS); `shortName` is what a caller (a button's own `rollKey`, or the
+// Dice Roller box when a user types the token directly) look this Move up
+// BY. `expression`/`resultMode`/`bands`/`compare` live in that value's Extra
+// properties (JSON), same home dice's sides/color/faceMap already use for
+// one-off per-value metadata.
 export function extractSystemRolls(systemDefinition) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   const rollsField = fields.find((field) => field?.type === "array" && field.key === "rolls");
   const values = Array.isArray(rollsField?.values) ? rollsField.values : [];
   return values
     .filter(
-      (value) => value && typeof value.name === "string" && value.name && typeof value.expression === "string" && value.expression
+      (value) =>
+        value &&
+        typeof value.name === "string" &&
+        value.name &&
+        typeof value.shortName === "string" &&
+        value.shortName &&
+        typeof value.expression === "string" &&
+        value.expression
     )
     .map((value) => ({
       label: value.name,
+      shortName: value.shortName,
       expression: value.expression,
       resultMode: value.resultMode === "compare" ? "compare" : "band",
       bands: Array.isArray(value.bands) ? value.bands : [],
       compare: value.compare && typeof value.compare === "object" ? value.compare : null,
     }));
+}
+
+// Case-insensitive, exact-token match — a shortName is a short, typed
+// reference (like a named die's own id), not a search/substring match.
+export function findRollByShortName(rolls, shortName) {
+  const needle = typeof shortName === "string" ? shortName.trim().toLowerCase() : "";
+  if (!needle || !Array.isArray(rolls)) {
+    return null;
+  }
+  return rolls.find((entry) => typeof entry.shortName === "string" && entry.shortName.toLowerCase() === needle) || null;
 }
 
 // A tally band (`{ tally: { gte|lte|eq } }`) matches against the tally
@@ -644,6 +718,11 @@ function matchesTallyBand(count, tallySpec) {
 //   expressed as a fraction of the target (rounded down, matching the 7E
 //   rulebook's own rounding), e.g. `targetMaxFraction: 0.5` for a Hard
 //   success (roll <= half the skill).
+// - `targetExceeds` (boolean): the roll must be STRICTLY GREATER than the
+//   raw target value, no fraction involved — a "roll over" check (Call of
+//   Cthulhu's own optional Luck-regain rule: roll d100, succeed only if the
+//   total is higher than your current Luck) rather than the "roll under a
+//   fraction of it" shape every other target* key assumes.
 // Any band using a `target*` key simply doesn't match when no `targetValue`
 // was passed (a context-free roll — the standalone Dice Roller widget, or
 // a Move fired from the Moves panel with no associated field) — the same
@@ -659,7 +738,8 @@ function matchesRangeBand(total, band, targetValue) {
     typeof band.targetBelow === "number" ||
     typeof band.targetAtLeast === "number" ||
     typeof band.targetMaxFraction === "number" ||
-    typeof band.targetMinFraction === "number";
+    typeof band.targetMinFraction === "number" ||
+    band.targetExceeds === true;
   if (usesTarget) {
     if (typeof targetValue !== "number") return false;
     if (typeof band.targetBelow === "number" && !(targetValue < band.targetBelow)) return false;
@@ -670,6 +750,7 @@ function matchesRangeBand(total, band, targetValue) {
     if (typeof band.targetMinFraction === "number" && !(total >= Math.floor(targetValue * band.targetMinFraction))) {
       return false;
     }
+    if (band.targetExceeds === true && !(total > targetValue)) return false;
   }
   return true;
 }
@@ -794,14 +875,25 @@ export async function rollSystemMove(
   // own label ("Dexterity"), so both toasts read "Dexterity: 45" /
   // "Dexterity: Regular Success" instead of repeating the Move's generic
   // name on every single roll.
-  const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label });
+  // announce: false — this call's own plain-roll toast is skipped so the
+  // single combined "roll + verdict" toast below is the only one shown,
+  // instead of that toast immediately followed by a second one.
+  const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label, announce: false });
   if (!rolled || rolled.isTable) {
     return rolled;
   }
   const verdict = evaluateMoveVerdict(move, rolled.result, targetValue);
-  if (verdict?.label) {
-    rollOptions.status?.show(`${label}: ${verdict.label}`, { type: "info", timeout: 2600 });
-  }
+  const prefix = label ? `${label}: ` : "";
+  const verdictSuffix = verdict?.label ? ` — ${verdict.label}` : "";
+  // The RESOLVED notation (e.g. "2d6 kh1 t>=6"), not move.expression's own
+  // unsubstituted "@actions.insight.hunt d6 kh1 t>=6" — the toast should
+  // read what was actually rolled, matching rollExpression's own inner
+  // (now-silenced) toast text exactly.
+  const notation = rolled.result?.notation || move.expression;
+  rollOptions.status?.show(`${prefix}${notation} → ${rolled.total}${verdictSuffix}`, {
+    type: "success",
+    timeout: 2600,
+  });
   const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
   if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
     void dataManager

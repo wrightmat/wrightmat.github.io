@@ -1,0 +1,18 @@
+{
+  "name": "Student",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Enrolled at a school, college, or university, still finding their path.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 20,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "languageOther",
+    "libraryUse",
+    "listen",
+    "persuade",
+    "spotHidden",
+    "creditRating"
+  ]
+}

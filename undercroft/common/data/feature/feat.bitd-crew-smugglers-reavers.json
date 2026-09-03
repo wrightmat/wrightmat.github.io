@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-smugglers-reavers",
+  "name": "Reavers",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you go into conflict aboard a vehicle, you gain +1 effect for vehicle damage and speed. Your vehicle gains armor.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you go into conflict aboard a vehicle, you gain +1 effect for vehicle damage and speed. Your vehicle gains armor."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

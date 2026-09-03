@@ -1,0 +1,102 @@
+{
+  "index": "cutter",
+  "name": "Cutter",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "A dangerous & intimidating fighter. XP trigger: You addressed a challenge with violence or coercion.",
+  "primaryAction": "skirmish",
+  "secondaryAction": "command",
+  "npcs": [
+    {
+      "name": "Marlane",
+      "descriptor": "a pugilist"
+    },
+    {
+      "name": "Chael",
+      "descriptor": "a vicious thug"
+    },
+    {
+      "name": "Mercy",
+      "descriptor": "a cold killer"
+    },
+    {
+      "name": "Grace",
+      "descriptor": "an extortionist"
+    },
+    {
+      "name": "Sawtooth",
+      "descriptor": "a physicker"
+    }
+  ],
+  "items": [
+    {
+      "name": "Fine hand weapon"
+    },
+    {
+      "name": "Fine heavy weapon"
+    },
+    {
+      "name": "Scary weapon or tool"
+    },
+    {
+      "name": "Manacles & chain"
+    },
+    {
+      "name": "Rage essence vial"
+    },
+    {
+      "name": "Spiritbane charm"
+    }
+  ],
+  "features": [
+    {
+      "name": "Battleborn",
+      "description": "You may expend your special armor to reduce harm from an attack in combat or to push yourself during a fight."
+    },
+    {
+      "name": "Bodyguard",
+      "description": "When you protect a teammate, take +1d to your resistance roll. When you gather info to anticipate possible threats in the current situation, you get +1 effect."
+    },
+    {
+      "name": "Ghost Fighter",
+      "description": "You may imbue your hands, melee weapons, or tools with spirit energy. You gain potency in combat vs. the supernatural. You may grapple with spirits to restrain and capture them."
+    },
+    {
+      "name": "Leader",
+      "description": "When you Command a cohort in combat, they continue to fight when they would otherwise break (they're not taken out when they suffer level 3 harm). They gain +1 effect and 1 armor."
+    },
+    {
+      "name": "Mule",
+      "description": "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8."
+    },
+    {
+      "name": "Not to Be Trifled With",
+      "description": "You can push yourself to do one of the following: perform a feat of physical force that verges on the superhuman -- engage a small gang on equal footing in close combat."
+    },
+    {
+      "name": "Savage",
+      "description": "When you unleash physical violence, it's especially frightening. When you Command a frightened target, take +1d."
+    },
+    {
+      "name": "Vigorous",
+      "description": "You recover from harm faster. Permanently fill in one of your healing clock segments. Take +1d to healing treatment rolls."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-playbook-cutter-battleborn",
+    "feat.bitd-playbook-cutter-bodyguard",
+    "feat.bitd-playbook-cutter-ghost-fighter",
+    "feat.bitd-playbook-cutter-leader",
+    "feat.bitd-playbook-cutter-mule",
+    "feat.bitd-playbook-cutter-not-to-be-trifled-with",
+    "feat.bitd-playbook-cutter-savage",
+    "feat.bitd-playbook-cutter-vigorous",
+    "feat.bitd-veteran"
+  ],
+  "form": "character"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-hawkers-silver-tongues",
+  "name": "Silver Tongues",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Each PC may add +1 action rating to Command, Consort, or Sway (up to a max rating of 3).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each PC may add +1 action rating to Command, Consort, or Sway (up to a max rating of 3)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

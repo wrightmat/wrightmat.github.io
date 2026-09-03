@@ -1,0 +1,20 @@
+{
+  "name": "Professor",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Teaches and researches at a college or university.",
+  "creditRatingMin": 20,
+  "creditRatingMax": 70,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "libraryUse",
+    "languageOther",
+    "languageOwn",
+    "psychology",
+    "science",
+    "history",
+    "occult",
+    "creditRating"
+  ]
+}

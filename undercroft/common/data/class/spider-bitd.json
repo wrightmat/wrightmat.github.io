@@ -1,0 +1,102 @@
+{
+  "index": "spider",
+  "name": "Spider",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "A devious mastermind. XP trigger: You addressed a challenge with calculation or conspiracy.",
+  "primaryAction": "consort",
+  "secondaryAction": "study",
+  "npcs": [
+    {
+      "name": "Salia",
+      "descriptor": "an information broker"
+    },
+    {
+      "name": "Augus",
+      "descriptor": "a master architect"
+    },
+    {
+      "name": "Jennah",
+      "descriptor": "a servant"
+    },
+    {
+      "name": "Riven",
+      "descriptor": "a chemist"
+    },
+    {
+      "name": "Jeren",
+      "descriptor": "a bluecoat archivist"
+    }
+  ],
+  "items": [
+    {
+      "name": "Fine cover identity"
+    },
+    {
+      "name": "Fine bottle of whiskey"
+    },
+    {
+      "name": "Blueprints"
+    },
+    {
+      "name": "Vial of slumber essence"
+    },
+    {
+      "name": "Concealed palm pistol"
+    },
+    {
+      "name": "Spiritbane charm"
+    }
+  ],
+  "features": [
+    {
+      "name": "Foresight",
+      "description": "Two times per score you can assist a teammate without paying stress. Tell us how you prepared for this."
+    },
+    {
+      "name": "Calculating",
+      "description": "Due to your careful planning, during downtime, you may give yourself or another crew member +1 downtime action."
+    },
+    {
+      "name": "Connected",
+      "description": "During downtime, you get +1 result level when you acquire an asset or reduce heat."
+    },
+    {
+      "name": "Functioning Vice",
+      "description": "When you indulge your vice, you may adjust the dice outcome by 1 or 2 (up or down). An ally who joins in your vice may do the same."
+    },
+    {
+      "name": "Ghost Contract",
+      "description": "When you shake on a deal, you and your partner -- human or otherwise -- both bear a mark of your oath. If either breaks the contract, they take level 3 harm, \"Cursed.\""
+    },
+    {
+      "name": "Jail Bird",
+      "description": "When incarcerated, your wanted level counts as 1 less, your Tier as 1 more, and you gain +1 faction status with a faction you help on the inside (in addition to your incarceration roll)."
+    },
+    {
+      "name": "Mastermind",
+      "description": "You may expend your special armor to protect a teammate, or to push yourself when you gather information or work on a long-term project."
+    },
+    {
+      "name": "Weaving the Web",
+      "description": "You gain +1d to Consort when you gather information on a target for a score. You get +1d to the engagement roll for that operation."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-playbook-spider-foresight",
+    "feat.bitd-playbook-spider-calculating",
+    "feat.bitd-playbook-spider-connected",
+    "feat.bitd-playbook-spider-functioning-vice",
+    "feat.bitd-playbook-spider-ghost-contract",
+    "feat.bitd-playbook-spider-jail-bird",
+    "feat.bitd-playbook-spider-mastermind",
+    "feat.bitd-playbook-spider-weaving-the-web",
+    "feat.bitd-veteran"
+  ],
+  "form": "character"
+}

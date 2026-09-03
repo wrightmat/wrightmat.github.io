@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-smugglers-just-passing-through",
+  "name": "Just Passing Through",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "During downtime, take -1 heat. When your heat is 4 or less, you get +1d to deceive people when you pass yourselves off as ordinary citizens.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During downtime, take -1 heat. When your heat is 4 or less, you get +1d to deceive people when you pass yourselves off as ordinary citizens."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

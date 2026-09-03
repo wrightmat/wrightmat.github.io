@@ -519,7 +519,8 @@
           "expression": "4d3-8",
           "resultMode": "band",
           "description": "Roll 4dF (here: 4d3-8, mathematically identical to four Fate dice — see the Dice field's own note) and add the result to the relevant skill's Ladder rating. Compare the total to the GM-set Difficulty (or an opponent's own roll): beating it by 3 or more is a Success with Style, meeting or beating it is a Success, falling short is a Failure. Unlike CoC/GURPS's roll-under Systems, Fate has no fixed band here — the target is an external, scene-specific Difficulty, not a value stored on the character — so no bands are declared below; this Move exists purely to make 4dF itself one click away from the Moves panel.",
-          "bands": []
+          "bands": [],
+          "shortName": "Fate"
         }
       ]
     }

@@ -883,7 +883,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "3d6",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1071,7 +1071,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "3d6",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1259,7 +1259,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "3d6",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1447,7 +1447,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "3d6",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1695,7 +1695,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "3d6",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1881,7 +1881,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "3d6",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2850,7 +2850,7 @@
                               "iconClass": "bi-dice-5",
                               "action": {
                                 "type": "rollDice",
-                                "expression": "3d6",
+                                "expression": "Check",
                                 "macroRef": "",
                                 "binding": "",
                                 "lookupBinding": "",

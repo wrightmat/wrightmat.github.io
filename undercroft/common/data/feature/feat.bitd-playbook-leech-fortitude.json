@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-leech-fortitude",
+  "name": "Fortitude",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You may expend your special armor to resist a consequence of fatigue, weakness, or chemical effects, or to push yourself when working with technical skill or handling alchemicals.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You may expend your special armor to resist a consequence of fatigue, weakness, or chemical effects, or to push yourself when working with technical skill or handling alchemicals."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

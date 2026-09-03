@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-reflexes",
+  "name": "Reflexes",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When there's a question about who acts first, the answer is you (two characters with Reflexes act simultaneously).",
+  "mechanics": {
+    "type": "passive",
+    "text": "When there's a question about who acts first, the answer is you (two characters with Reflexes act simultaneously)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

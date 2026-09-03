@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-cult-bound-in-darkness",
+  "name": "Bound in Darkness",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You may perform teamwork with any cult member, regardless of distance. Take 1 stress to have a whispered message heard by every cultist.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You may perform teamwork with any cult member, regardless of distance. Take 1 stress to have a whispered message heard by every cultist."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

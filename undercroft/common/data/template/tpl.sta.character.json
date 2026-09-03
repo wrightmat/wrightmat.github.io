@@ -1645,7 +1645,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "2d20t<=@targetNumber",
+                          "expression": "Task",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",

@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-slide-mesmerism",
+  "name": "Mesmerism",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you Sway someone, you may cause them to forget that it's happened until they next interact with you.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you Sway someone, you may cause them to forget that it's happened until they next interact with you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

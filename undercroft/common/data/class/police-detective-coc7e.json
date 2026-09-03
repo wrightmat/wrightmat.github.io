@@ -1,0 +1,24 @@
+{
+  "name": "Police Detective",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Investigates crime as a sworn officer of the law.",
+  "creditRatingMin": 20,
+  "creditRatingMax": 50,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "disguise",
+    "firearmsHandgun",
+    "firearmsRifleShotgun",
+    "law",
+    "listen",
+    "charm",
+    "fastTalk",
+    "intimidate",
+    "persuade",
+    "psychology",
+    "spotHidden",
+    "creditRating"
+  ]
+}

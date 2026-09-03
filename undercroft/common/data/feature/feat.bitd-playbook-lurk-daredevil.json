@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-daredevil",
+  "name": "Daredevil",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you roll a desperate action, you get +1d to your roll if you also take -1d to any resistance rolls against consequences from your action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll a desperate action, you get +1d to your roll if you also take -1d to any resistance rolls against consequences from your action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,102 @@
+{
+  "index": "slide",
+  "name": "Slide",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "A subtle manipulator and spy. XP trigger: You addressed a challenge with deception or influence.",
+  "primaryAction": "sway",
+  "secondaryAction": "consort",
+  "npcs": [
+    {
+      "name": "Bryl",
+      "descriptor": "a drug dealer"
+    },
+    {
+      "name": "Bazso Baz",
+      "descriptor": "a gang leader"
+    },
+    {
+      "name": "Klyra",
+      "descriptor": "a tavern owner"
+    },
+    {
+      "name": "Nyryx",
+      "descriptor": "a prostitute"
+    },
+    {
+      "name": "Harker",
+      "descriptor": "a jail-bird"
+    }
+  ],
+  "items": [
+    {
+      "name": "Fine clothes & jewelry"
+    },
+    {
+      "name": "Fine disguise kit"
+    },
+    {
+      "name": "Fine loaded dice/trick cards"
+    },
+    {
+      "name": "Trance powder"
+    },
+    {
+      "name": "A cane-sword"
+    },
+    {
+      "name": "Spiritbane charm"
+    }
+  ],
+  "features": [
+    {
+      "name": "Rook's Gambit",
+      "description": "Take 2 stress to roll your best action rating while performing a different action. Say how you adapt your skill to this use."
+    },
+    {
+      "name": "Cloak & Dagger",
+      "description": "When you use a disguise or other form of covert misdirection, you get +1d to rolls to confuse or deflect suspicion. When you throw off your disguise, the resulting surprise gives you the initiative in the situation."
+    },
+    {
+      "name": "Ghost Voice",
+      "description": "You know the secret method to interact with a ghost or demon as if it was a normal human, regardless of how wild or feral it appears. You gain potency when communicating with the supernatural."
+    },
+    {
+      "name": "Like Looking into a Mirror",
+      "description": "You can always tell when someone is lying to you."
+    },
+    {
+      "name": "A Little Something on the Side",
+      "description": "At the end of each downtime phase, you earn +2 stash."
+    },
+    {
+      "name": "Mesmerism",
+      "description": "When you Sway someone, you may cause them to forget that it's happened until they next interact with you."
+    },
+    {
+      "name": "Subterfuge",
+      "description": "You may expend your special armor to resist a consequence from suspicion or persuasion, or to push yourself for subterfuge."
+    },
+    {
+      "name": "Trust in Me",
+      "description": "You get +1d vs. a target with whom you have an intimate relationship."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-playbook-slide-rooks-gambit",
+    "feat.bitd-playbook-slide-cloak-dagger",
+    "feat.bitd-playbook-slide-ghost-voice",
+    "feat.bitd-playbook-slide-like-looking-into-a-mirror",
+    "feat.bitd-playbook-slide-a-little-something-on-the-side",
+    "feat.bitd-playbook-slide-mesmerism",
+    "feat.bitd-playbook-slide-subterfuge",
+    "feat.bitd-playbook-slide-trust-in-me",
+    "feat.bitd-veteran"
+  ],
+  "form": "character"
+}

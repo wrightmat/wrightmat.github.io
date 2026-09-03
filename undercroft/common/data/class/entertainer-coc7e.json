@@ -1,0 +1,19 @@
+{
+  "name": "Entertainer",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Performs for a living, on stage or in more disreputable venues.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 60,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "disguise",
+    "fightingBrawl",
+    "listen",
+    "psychology",
+    "persuade",
+    "creditRating"
+  ]
+}

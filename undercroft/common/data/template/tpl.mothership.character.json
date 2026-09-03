@@ -715,7 +715,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -903,7 +903,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1091,7 +1091,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1279,7 +1279,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1529,7 +1529,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1717,7 +1717,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1905,7 +1905,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d100",
+                          "expression": "Check",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2377,7 +2377,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "2d10+@stress.current",
+                          "expression": "Panic",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2780,7 +2780,7 @@
                               "iconClass": "bi-dice-5",
                               "action": {
                                 "type": "rollDice",
-                                "expression": "d100",
+                                "expression": "Check",
                                 "macroRef": "",
                                 "binding": "",
                                 "lookupBinding": "",

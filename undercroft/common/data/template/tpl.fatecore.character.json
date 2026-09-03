@@ -1155,7 +1155,7 @@
                               "iconClass": "bi-dice-5",
                               "action": {
                                 "type": "rollDice",
-                                "expression": "4d3-8",
+                                "expression": "Fate",
                                 "macroRef": "",
                                 "binding": "",
                                 "lookupBinding": "",

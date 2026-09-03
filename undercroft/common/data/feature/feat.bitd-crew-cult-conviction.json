@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-cult-conviction",
+  "name": "Conviction",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Each PC gains an extra vice: Worship. When you indulge this vice (with sacrifice), you avoid overindulgence, and your deity assists you with one action roll until your next indulgence.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each PC gains an extra vice: Worship. When you indulge this vice (with sacrifice), you avoid overindulgence, and your deity assists you with one action roll until your next indulgence."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

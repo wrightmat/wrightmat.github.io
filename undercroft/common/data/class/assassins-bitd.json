@@ -1,0 +1,111 @@
+{
+  "index": "assassins",
+  "name": "Assassins",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "form": "crew",
+  "description": "Ghosts and killers who murder for coin or cause.",
+  "startingUpgrades": [
+    "Insight Training",
+    "Prowess Training"
+  ],
+  "favoredOperations": [
+    "Accident",
+    "Disappearance",
+    "Murder",
+    "Ransom"
+  ],
+  "contacts": [
+    {
+      "name": "Trev",
+      "descriptor": "a gang boss"
+    },
+    {
+      "name": "Lydra",
+      "descriptor": "a deal broker"
+    },
+    {
+      "name": "Irimina",
+      "descriptor": "a vicious noble"
+    },
+    {
+      "name": "Karlos",
+      "descriptor": "a bounty hunter"
+    },
+    {
+      "name": "Exeter",
+      "descriptor": "a spirit warden"
+    },
+    {
+      "name": "Sevoy",
+      "descriptor": "a merchant lord"
+    }
+  ],
+  "typeUpgrades": [
+    {
+      "name": "Assassin Rigging",
+      "description": "You get 2 free load in two of the equipment categories (weapons, implements, supplies, gear, documents, and tools)."
+    },
+    {
+      "name": "Ironhook Contacts",
+      "description": "Your Tier is effectively +1 higher in prison."
+    },
+    {
+      "name": "Elite Skulks",
+      "description": "Your Skulks cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Elite Thugs",
+      "description": "Your Thugs cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Hardened",
+      "description": "Each PC gets +1 trauma box. Costs three upgrades to unlock, not just one."
+    }
+  ],
+  "features": [
+    {
+      "name": "Deadly",
+      "description": "Each PC may add +1 action rating to Hunt, Prowl, or Skirmish (up to a max rating of 3)."
+    },
+    {
+      "name": "Crow's Veil",
+      "description": "You don't take extra heat when killing is involved on a score."
+    },
+    {
+      "name": "Emberdeath",
+      "description": "Take 3 stress to destroy a victim's spirit and body at the moment you kill them (electroplasmic disintegration)."
+    },
+    {
+      "name": "No Traces",
+      "description": "When you keep an operation quiet or make it look like an accident, you get half the rep value of the target (round up) instead of zero. When you end downtime with zero heat, take +1 rep."
+    },
+    {
+      "name": "Patron",
+      "description": "When you advance your Tier, it costs half the coin it normally would. Who is your patron? Why do they help you?"
+    },
+    {
+      "name": "Predators",
+      "description": "When you use a stealth or deception plan to commit murder, take +1d to the engagement roll."
+    },
+    {
+      "name": "Vipers",
+      "description": "Take +1 result level when acquiring or crafting poisons. You are immune to your own poisons when you employ them."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-crew-assassins-deadly",
+    "feat.bitd-crew-assassins-crows-veil",
+    "feat.bitd-crew-assassins-emberdeath",
+    "feat.bitd-crew-assassins-no-traces",
+    "feat.bitd-crew-assassins-patron",
+    "feat.bitd-crew-assassins-predators",
+    "feat.bitd-crew-assassins-vipers",
+    "feat.bitd-veteran"
+  ]
+}

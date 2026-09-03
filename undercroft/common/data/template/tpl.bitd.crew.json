@@ -47,7 +47,7 @@
             "label": "Crew Playbook",
             "name": "Crew Playbook",
             "variant": "select",
-            "binding": "@crewPlaybook",
+            "binding": "@identity.classes[0].name",
             "sourceBinding": "@crewPlaybooks"
           }
         ],
@@ -169,7 +169,7 @@
             "name": "Upgrade",
             "variant": "select",
             "binding": "@name",
-            "sourceBinding": "@crewUpgrades"
+            "sourceBinding": "@generalCrewUpgrades"
           }
         ],
         "item-1": [
@@ -204,6 +204,43 @@
             "label": "Purchased",
             "name": "Purchased",
             "text": "Purchased"
+          }
+        ]
+      },
+      "allowAdd": true,
+      "allowRemove": true
+    },
+    {
+      "uid": "bitd-75",
+      "type": "repeater",
+      "id": "bitd-76",
+      "label": "Special Abilities",
+      "name": "Special Abilities",
+      "binding": "@featureIds",
+      "columns": 1,
+      "showHeader": false,
+      "itemStorage": "id",
+      "zones": {
+        "item-0": [
+          {
+            "uid": "bitd-77",
+            "type": "text",
+            "id": "bitd-78",
+            "label": "Ability",
+            "name": "Ability",
+            "binding": "@name",
+            "richText": false,
+            "sourceFormula": "=libraryEntries('feature', 'systemIds', 'sys.bitd')"
+          },
+          {
+            "uid": "bitd-79",
+            "type": "text",
+            "id": "bitd-80",
+            "label": "Description",
+            "name": "Description",
+            "binding": "@description",
+            "richText": true,
+            "sourceFormula": ""
           }
         ]
       },
@@ -319,6 +356,83 @@
             "label": "Expertise / Notes",
             "name": "Expertise / Notes",
             "text": "Expertise / Notes"
+          }
+        ]
+      },
+      "allowAdd": true,
+      "allowRemove": true
+    },
+    {
+      "uid": "bitd-61",
+      "type": "repeater",
+      "id": "bitd-62",
+      "label": "Contacts",
+      "name": "Contacts",
+      "binding": "@contacts",
+      "columns": 3,
+      "showHeader": true,
+      "zones": {
+        "item-0": [
+          {
+            "uid": "bitd-63",
+            "type": "input",
+            "id": "bitd-64",
+            "label": "",
+            "name": "",
+            "variant": "text",
+            "binding": "@name"
+          }
+        ],
+        "item-1": [
+          {
+            "uid": "bitd-65",
+            "type": "input",
+            "id": "bitd-66",
+            "label": "",
+            "name": "",
+            "variant": "text",
+            "binding": "@relationship"
+          }
+        ],
+        "item-2": [
+          {
+            "uid": "bitd-67",
+            "type": "input",
+            "id": "bitd-68",
+            "label": "",
+            "name": "",
+            "variant": "text",
+            "binding": "@notes"
+          }
+        ],
+        "header-0": [
+          {
+            "uid": "bitd-69",
+            "type": "text",
+            "id": "bitd-70",
+            "label": "Name",
+            "name": "Name",
+            "text": "Name"
+          }
+        ],
+        "header-1": [
+          {
+            "uid": "bitd-71",
+            "type": "text",
+            "id": "bitd-72",
+            "label": "Relationship",
+            "name": "Relationship",
+            "text": "Relationship"
+          }
+        ],
+        "header-2": [
+          {
+            "uid": "bitd-73",
+            "type": "text",
+            "id": "bitd-74",
+            "label": "Notes",
+            "name": "Notes",
+            "text": "Notes"
           }
         ]
       },

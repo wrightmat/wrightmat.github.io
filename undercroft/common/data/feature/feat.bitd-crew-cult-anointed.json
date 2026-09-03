@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-cult-anointed",
+  "name": "Anointed",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You gain +1d to resistance rolls against supernatural threats. You get +1d to healing rolls when you have supernatural harm.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain +1d to resistance rolls against supernatural threats. You get +1d to healing rolls when you have supernatural harm."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

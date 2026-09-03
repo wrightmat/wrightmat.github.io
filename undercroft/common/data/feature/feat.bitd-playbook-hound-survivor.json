@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-hound-survivor",
+  "name": "Survivor",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "From hard won experience or occult ritual, you are immune to the poisonous miasma of the deathlands and are able to subsist on the strange flora and fauna there. You get +1 stress box.",
+  "mechanics": {
+    "type": "passive",
+    "text": "From hard won experience or occult ritual, you are immune to the poisonous miasma of the deathlands and are able to subsist on the strange flora and fauna there. You get +1 stress box."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

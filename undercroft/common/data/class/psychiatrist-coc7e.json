@@ -1,0 +1,19 @@
+{
+  "name": "Psychiatrist",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Treats mental and nervous conditions, some more mundane than others.",
+  "creditRatingMin": 30,
+  "creditRatingMax": 80,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "languageOther",
+    "medicine",
+    "persuade",
+    "psychoanalysis",
+    "psychology",
+    "science",
+    "creditRating"
+  ]
+}

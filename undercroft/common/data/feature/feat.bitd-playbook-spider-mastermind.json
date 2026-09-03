@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-spider-mastermind",
+  "name": "Mastermind",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You may expend your special armor to protect a teammate, or to push yourself when you gather information or work on a long-term project.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You may expend your special armor to protect a teammate, or to push yourself when you gather information or work on a long-term project."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

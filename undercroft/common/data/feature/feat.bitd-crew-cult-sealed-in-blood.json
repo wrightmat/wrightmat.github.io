@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-cult-sealed-in-blood",
+  "name": "Sealed in Blood",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you perform a human sacrifice, take -3 stress cost for any ritual you perform.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you perform a human sacrifice, take -3 stress cost for any ritual you perform."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

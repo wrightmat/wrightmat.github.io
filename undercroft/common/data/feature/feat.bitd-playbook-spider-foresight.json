@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-spider-foresight",
+  "name": "Foresight",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Two times per score you can assist a teammate without paying stress. Tell us how you prepared for this.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Two times per score you can assist a teammate without paying stress. Tell us how you prepared for this."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

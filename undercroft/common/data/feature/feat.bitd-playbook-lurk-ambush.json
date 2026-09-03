@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-ambush",
+  "name": "Ambush",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you attack from hiding or spring a trap, you get +1d.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you attack from hiding or spring a trap, you get +1d."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-spider-calculating",
+  "name": "Calculating",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Due to your careful planning, during downtime, you may give yourself or another crew member +1 downtime action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Due to your careful planning, during downtime, you may give yourself or another crew member +1 downtime action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

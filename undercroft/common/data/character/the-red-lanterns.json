@@ -5,7 +5,6 @@
   ],
   "data": {},
   "name": "The Red Lanterns",
-  "crewPlaybook": "Shadows",
   "reputation": [
     "Subtle",
     "Bold"
@@ -40,5 +39,17 @@
       "type": "Gang",
       "notes": "Skulking, Vicious — street toughs loyal to the crew."
     }
-  ]
+  ],
+  "identity": {
+    "name": "The Red Lanterns",
+    "level": 1,
+    "classes": [
+      {
+        "name": "Shadows",
+        "level": 1,
+        "refKind": "class",
+        "refId": "shadows-bitd"
+      }
+    ]
+  }
 }

@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-smugglers-like-part-of-the-family",
+  "name": "Like Part of the Family",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Create one of your vehicles as a cohort (use the vehicle edges and flaws). Its quality is equal to your Tier +1.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Create one of your vehicles as a cohort (use the vehicle edges and flaws). Its quality is equal to your Tier +1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
