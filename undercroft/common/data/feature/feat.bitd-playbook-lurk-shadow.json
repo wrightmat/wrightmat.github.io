@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-lurk-shadow",
+  "name": "Shadow",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You may expend your special armor to resist a consequence from detection or security measures, or to push yourself for a feat of athletics or stealth.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You may expend your special armor to resist a consequence from detection or security measures, or to push yourself for a feat of athletics or stealth."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

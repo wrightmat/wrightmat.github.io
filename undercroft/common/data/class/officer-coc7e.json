@@ -1,0 +1,20 @@
+{
+  "name": "Officer",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Commands or serves within a military organization.",
+  "creditRatingMin": 20,
+  "creditRatingMax": 70,
+  "occupationSkillsFormula": "@education * 2 + @strength * 2",
+  "occupationSkills": [
+    "firearmsHandgun",
+    "firearmsRifleShotgun",
+    "firstAid",
+    "law",
+    "persuade",
+    "psychology",
+    "spotHidden",
+    "creditRating"
+  ]
+}

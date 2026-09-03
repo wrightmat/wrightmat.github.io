@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-shadows-synchronized",
+  "name": "Synchronized",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you perform a group action, you may count multiple 6s from different rolls as a critical success.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you perform a group action, you may count multiple 6s from different rolls as a critical success."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

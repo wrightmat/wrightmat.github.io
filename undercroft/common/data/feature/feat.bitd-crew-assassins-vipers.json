@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-assassins-vipers",
+  "name": "Vipers",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Take +1 result level when acquiring or crafting poisons. You are immune to your own poisons when you employ them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Take +1 result level when acquiring or crafting poisons. You are immune to your own poisons when you employ them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

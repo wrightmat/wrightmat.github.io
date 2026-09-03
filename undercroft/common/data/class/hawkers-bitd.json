@@ -1,0 +1,111 @@
+{
+  "index": "hawkers",
+  "name": "Hawkers",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "form": "crew",
+  "description": "Smugglers and dealers of vice and contraband.",
+  "startingUpgrades": [
+    "Secure Lair",
+    "Resolve Training"
+  ],
+  "favoredOperations": [
+    "Sale",
+    "Supply",
+    "Show of Force",
+    "Socialize"
+  ],
+  "contacts": [
+    {
+      "name": "Rolan Wott",
+      "descriptor": "a magistrate"
+    },
+    {
+      "name": "Laroze",
+      "descriptor": "a bluecoat"
+    },
+    {
+      "name": "Lydra",
+      "descriptor": "a deal broker"
+    },
+    {
+      "name": "Hoxley",
+      "descriptor": "a smuggler"
+    },
+    {
+      "name": "Anya",
+      "descriptor": "a dilettante"
+    },
+    {
+      "name": "Marlo",
+      "descriptor": "a gang boss"
+    }
+  ],
+  "typeUpgrades": [
+    {
+      "name": "Hawker's Rigging",
+      "description": "One carried item is concealed and has no load."
+    },
+    {
+      "name": "Ironhook Contacts",
+      "description": "Your Tier is effectively +1 higher in prison."
+    },
+    {
+      "name": "Elite Rooks",
+      "description": "Your Rooks cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Elite Thugs",
+      "description": "Your Thugs cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Composed",
+      "description": "Each PC gets +1 stress box. Costs three upgrades to unlock, not just one."
+    }
+  ],
+  "features": [
+    {
+      "name": "Silver Tongues",
+      "description": "Each PC may add +1 action rating to Command, Consort, or Sway (up to a max rating of 3)."
+    },
+    {
+      "name": "Accord",
+      "description": "Sometimes friends are as good as territory. You may count up to three +3 faction statuses you hold as if they are turf."
+    },
+    {
+      "name": "The Good Stuff",
+      "description": "Your merchandise is exquisite. The product quality is equal to your Tier+2. When you deal with a crew or faction, the GM will tell you who among them is hooked on your product (one, a few, many, or all)."
+    },
+    {
+      "name": "Ghost Market",
+      "description": "Through arcane ritual or hard-won experience, you have discovered how to prepare your product for sale to ghosts and/or demons. They do not pay in coin. What do they pay with?"
+    },
+    {
+      "name": "High Society",
+      "description": "It's all about who you know. Take -1 heat during downtime and +1d to gather info about the city's elite."
+    },
+    {
+      "name": "Hooked",
+      "description": "Your gang members use your product. Add the savage, unreliable, or wild flaw to your gangs to give them +1 quality."
+    },
+    {
+      "name": "Patron",
+      "description": "When you advance your Tier, it costs half the coin it normally would. Who is your patron? Why do they help you?"
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-crew-hawkers-silver-tongues",
+    "feat.bitd-crew-hawkers-accord",
+    "feat.bitd-crew-hawkers-the-good-stuff",
+    "feat.bitd-crew-hawkers-ghost-market",
+    "feat.bitd-crew-hawkers-high-society",
+    "feat.bitd-crew-hawkers-hooked",
+    "feat.bitd-crew-hawkers-patron",
+    "feat.bitd-veteran"
+  ]
+}

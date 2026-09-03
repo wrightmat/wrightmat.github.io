@@ -1,0 +1,111 @@
+{
+  "index": "shadows",
+  "name": "Shadows",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "form": "crew",
+  "description": "Thieves and infiltrators who take what they want unseen.",
+  "startingUpgrades": [
+    "Hidden Lair",
+    "Prowess Training"
+  ],
+  "favoredOperations": [
+    "Burglary",
+    "Espionage",
+    "Robbery",
+    "Sabotage"
+  ],
+  "contacts": [
+    {
+      "name": "Dowler",
+      "descriptor": "an explorer"
+    },
+    {
+      "name": "Laroze",
+      "descriptor": "a bluecoat"
+    },
+    {
+      "name": "Amancio",
+      "descriptor": "a deal broker"
+    },
+    {
+      "name": "Fitz",
+      "descriptor": "a collector"
+    },
+    {
+      "name": "Adelaide Phroaig",
+      "descriptor": "a noble"
+    },
+    {
+      "name": "Rigney",
+      "descriptor": "a tavern owner"
+    }
+  ],
+  "typeUpgrades": [
+    {
+      "name": "Thief Rigging",
+      "description": "You get 2 free load of tools or gear."
+    },
+    {
+      "name": "Underground Maps & Passkeys",
+      "description": "You have easy passage through the underground canals, tunnels, and basements of the city."
+    },
+    {
+      "name": "Elite Rooks",
+      "description": "Your Rooks cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Elite Skulks",
+      "description": "Your Skulks cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Steady",
+      "description": "Each PC gets +1 stress box. Costs three upgrades to unlock, not just one."
+    }
+  ],
+  "features": [
+    {
+      "name": "Everyone Steals",
+      "description": "Each PC may add +1 action rating to Prowl, Finesse, or Tinker (up to a max rating of 3)."
+    },
+    {
+      "name": "Ghost Echoes",
+      "description": "From weird experience or occult ritual, all crew members gain the ability to see and interact with the ghostly structures, streets, and objects within the echo of Duskvol that exists in the ghost field."
+    },
+    {
+      "name": "Pack Rats",
+      "description": "Your lair is a jumble of stolen items. When you roll to acquire an asset, take +1d."
+    },
+    {
+      "name": "Patron",
+      "description": "When you advance your Tier, it costs half the coin it normally would. Who is your patron? Why do they help you?"
+    },
+    {
+      "name": "Second Story",
+      "description": "When you execute a clandestine infiltration, you get +1d to the engagement roll."
+    },
+    {
+      "name": "Slippery",
+      "description": "When you roll entanglements, roll twice and keep the one you want. When you reduce heat on the crew, take +1d."
+    },
+    {
+      "name": "Synchronized",
+      "description": "When you perform a group action, you may count multiple 6s from different rolls as a critical success."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-crew-shadows-everyone-steals",
+    "feat.bitd-crew-shadows-ghost-echoes",
+    "feat.bitd-crew-shadows-pack-rats",
+    "feat.bitd-crew-shadows-patron",
+    "feat.bitd-crew-shadows-second-story",
+    "feat.bitd-crew-shadows-slippery",
+    "feat.bitd-crew-shadows-synchronized",
+    "feat.bitd-veteran"
+  ]
+}

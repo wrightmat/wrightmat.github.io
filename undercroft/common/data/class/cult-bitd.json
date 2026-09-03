@@ -1,0 +1,137 @@
+{
+  "index": "cult",
+  "name": "Cult",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "form": "crew",
+  "description": "Zealots devoted to a strange and secret power.",
+  "startingUpgrades": [
+    "Resolve Training",
+    "Adepts cohort"
+  ],
+  "favoredOperations": [
+    "Acquisition",
+    "Augury",
+    "Consecration",
+    "Sacrifice"
+  ],
+  "contacts": [
+    {
+      "name": "Gagan",
+      "descriptor": "an academic"
+    },
+    {
+      "name": "Adikin",
+      "descriptor": "an occultist"
+    },
+    {
+      "name": "Hutchins",
+      "descriptor": "an antiquarian"
+    },
+    {
+      "name": "Moriya",
+      "descriptor": "a spirit trafficker"
+    },
+    {
+      "name": "Mateas Kline",
+      "descriptor": "a noble"
+    },
+    {
+      "name": "Bennett",
+      "descriptor": "an astronomer"
+    }
+  ],
+  "typeUpgrades": [
+    {
+      "name": "Cult Rigging",
+      "description": "You get 2 free load in two of the equipment categories (weapons, implements, supplies, gear, documents, and tools)."
+    },
+    {
+      "name": "Ritual Sanctum",
+      "description": "Your lair includes a sanctum for performing rituals."
+    },
+    {
+      "name": "Elite Adepts",
+      "description": "Your Adepts cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Elite Thugs",
+      "description": "Your Thugs cohorts get +1d to quality rolls for related actions."
+    },
+    {
+      "name": "Ordained",
+      "description": "Each PC gets +1 trauma box. Costs three upgrades to unlock, not just one."
+    }
+  ],
+  "features": [
+    {
+      "name": "Chosen",
+      "description": "Each PC may add +1 action rating to Attune, Study, or Sway (up to a max rating of 3)."
+    },
+    {
+      "name": "Anointed",
+      "description": "You gain +1d to resistance rolls against supernatural threats. You get +1d to healing rolls when you have supernatural harm."
+    },
+    {
+      "name": "Bound in Darkness",
+      "description": "You may perform teamwork with any cult member, regardless of distance. Take 1 stress to have a whispered message heard by every cultist."
+    },
+    {
+      "name": "Conviction",
+      "description": "Each PC gains an extra vice: Worship. When you indulge this vice (with sacrifice), you avoid overindulgence, and your deity assists you with one action roll until your next indulgence."
+    },
+    {
+      "name": "Glory Incarnate",
+      "description": "Your deity sometimes manifests physically."
+    },
+    {
+      "name": "Sealed in Blood",
+      "description": "When you perform a human sacrifice, take -3 stress cost for any ritual you perform."
+    },
+    {
+      "name": "Zealotry",
+      "description": "Your cohorts get +1d vs. enemies of the faith, and will undertake any service you ask of them."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-crew-cult-chosen",
+    "feat.bitd-crew-cult-anointed",
+    "feat.bitd-crew-cult-bound-in-darkness",
+    "feat.bitd-crew-cult-conviction",
+    "feat.bitd-crew-cult-glory-incarnate",
+    "feat.bitd-crew-cult-sealed-in-blood",
+    "feat.bitd-crew-cult-zealotry",
+    "feat.bitd-veteran"
+  ],
+  "deityTraits": [
+    {
+      "name": "Alluring"
+    },
+    {
+      "name": "Cruel"
+    },
+    {
+      "name": "Ferocious"
+    },
+    {
+      "name": "Monstrous"
+    },
+    {
+      "name": "Radiant"
+    },
+    {
+      "name": "Sinister"
+    },
+    {
+      "name": "Serene"
+    },
+    {
+      "name": "Transcendent"
+    }
+  ]
+}

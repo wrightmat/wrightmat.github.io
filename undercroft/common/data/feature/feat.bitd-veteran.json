@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-veteran",
+  "name": "Veteran",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Choose a special ability from another source.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose a special ability from another source."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

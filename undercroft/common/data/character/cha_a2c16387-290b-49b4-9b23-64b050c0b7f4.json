@@ -1,0 +1,85 @@
+{
+  "name": "Test Again",
+  "title": "Test Again",
+  "template": "tpl.bitd.character",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "data": {
+    "name": "Test Again"
+  },
+  "state": {
+    "timers": {},
+    "log": []
+  },
+  "identity": {
+    "name": "Test Again",
+    "level": 1,
+    "classes": [
+      {
+        "name": "Cutter",
+        "level": 1,
+        "refKind": "class",
+        "refId": "cutter-bitd"
+      }
+    ],
+    "race": {
+      "name": "Akorosian",
+      "refKind": "species",
+      "refId": "akorosian"
+    },
+    "background": {
+      "name": "Academic",
+      "refKind": "background",
+      "refId": "academic-bitd"
+    }
+  },
+  "stats": {
+    "abilities": {},
+    "proficiencyBonus": 0,
+    "skills": [],
+    "savingThrows": [],
+    "speed": {
+      "walk": 0,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 0
+    }
+  },
+  "featureIds": [
+    "feat.bitd-playbook-cutter-battleborn"
+  ],
+  "currencies": {},
+  "inventory": [],
+  "proficiencies": {},
+  "pendingChoices": [],
+  "limitedUses": [],
+  "look": "test",
+  "vicePurveyor": "test",
+  "actions": {
+    "insight": {
+      "hunt": 1,
+      "study": 1,
+      "survey": 1,
+      "tinker": 1
+    },
+    "prowess": {
+      "skirmish": 2
+    },
+    "resolve": {
+      "command": 1
+    }
+  },
+  "contacts": [
+    {
+      "relationship": "Friend",
+      "name": "Marlane, a pugilist"
+    },
+    {
+      "relationship": "Rival",
+      "name": "Chael, a vicious thug"
+    }
+  ],
+  "vice": "Faith"
+}

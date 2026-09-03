@@ -501,7 +501,8 @@
               },
               "label": "0 Successes — Failure"
             }
-          ]
+          ],
+          "shortName": "Task"
         }
       ]
     }

@@ -1,0 +1,8 @@
+{
+  "index": "trade",
+  "name": "Trade",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "A guild apprenticeship, a family shop, or a merchant caravan -- you learned a craft or a ledger, and you can still spot a fair price, and a lie, from across a room."
+}

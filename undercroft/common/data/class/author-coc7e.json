@@ -1,0 +1,21 @@
+{
+  "name": "Author",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Writes fiction or nonfiction for a living, or tries to.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 20,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "history",
+    "libraryUse",
+    "naturalWorld",
+    "occult",
+    "languageOther",
+    "languageOwn",
+    "psychology",
+    "creditRating"
+  ]
+}

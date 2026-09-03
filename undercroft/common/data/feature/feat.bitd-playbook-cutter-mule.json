@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-cutter-mule",
+  "name": "Mule",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

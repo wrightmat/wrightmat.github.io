@@ -1960,7 +1960,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20",
+                          "expression": "Save",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2146,7 +2146,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20",
+                          "expression": "Save",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2332,7 +2332,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20",
+                          "expression": "Save",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2518,7 +2518,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20",
+                          "expression": "Save",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2704,7 +2704,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20",
+                          "expression": "Save",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",

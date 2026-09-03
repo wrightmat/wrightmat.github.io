@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-cutter-savage",
+  "name": "Savage",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you unleash physical violence, it's especially frightening. When you Command a frightened target, take +1d.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you unleash physical violence, it's especially frightening. When you Command a frightened target, take +1d."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

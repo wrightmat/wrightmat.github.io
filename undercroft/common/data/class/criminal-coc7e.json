@@ -1,0 +1,21 @@
+{
+  "name": "Criminal",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Makes a living on the wrong side of the law.",
+  "creditRatingMin": 5,
+  "creditRatingMax": 65,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "disguise",
+    "fightingBrawl",
+    "firearmsHandgun",
+    "firearmsRifleShotgun",
+    "locksmith",
+    "stealth",
+    "psychology",
+    "spotHidden",
+    "creditRating"
+  ]
+}

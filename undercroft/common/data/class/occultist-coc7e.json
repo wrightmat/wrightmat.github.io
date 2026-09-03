@@ -1,0 +1,19 @@
+{
+  "name": "Occultist",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Studies esoteric and forbidden lore, often skirting real danger to do it.",
+  "creditRatingMin": 10,
+  "creditRatingMax": 50,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "anthropology",
+    "history",
+    "libraryUse",
+    "occult",
+    "languageOther",
+    "persuade",
+    "creditRating"
+  ]
+}

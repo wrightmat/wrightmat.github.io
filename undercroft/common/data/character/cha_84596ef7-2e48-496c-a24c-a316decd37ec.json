@@ -1,0 +1,114 @@
+{
+  "name": "test",
+  "title": "test",
+  "template": "tpl.coc7e.investigator",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "data": {
+    "name": "test"
+  },
+  "state": {
+    "timers": {},
+    "log": []
+  },
+  "identity": {
+    "name": "test",
+    "level": 1,
+    "classes": [
+      {
+        "name": "Antiquarian",
+        "level": 1,
+        "refKind": "class",
+        "refId": "antiquarian-coc7e"
+      }
+    ]
+  },
+  "stats": {
+    "hitPoints": {
+      "current": 10,
+      "max": 10
+    },
+    "magicPoints": {
+      "current": 14,
+      "max": 14
+    },
+    "sanity": {
+      "current": 70,
+      "max": 70
+    },
+    "moveRate": 8,
+    "damageBonus": "0",
+    "build": 0
+  },
+  "featureIds": [],
+  "currencies": {},
+  "inventory": [],
+  "proficiencies": {},
+  "pendingChoices": [],
+  "limitedUses": [],
+  "skills": {
+    "accounting": 99,
+    "anthropology": 26,
+    "appraise": 26,
+    "archaeology": 1,
+    "artCraft": 25,
+    "charm": 15,
+    "climb": 20,
+    "disguise": 5,
+    "driveAuto": 20,
+    "elecRepair": 10,
+    "fastTalk": 55,
+    "fightingBrawl": 25,
+    "firearmsHandgun": 20,
+    "firearmsRifleShotgun": 25,
+    "firstAid": 30,
+    "history": 55,
+    "intimidate": 15,
+    "jump": 20,
+    "languageOther": 82,
+    "law": 5,
+    "libraryUse": 20,
+    "listen": 20,
+    "locksmith": 1,
+    "mechanicalRepair": 10,
+    "medicine": 1,
+    "naturalWorld": 10,
+    "navigate": 10,
+    "occult": 5,
+    "operateHeavyMachinery": 1,
+    "persuade": 10,
+    "pilot": 1,
+    "psychology": 10,
+    "psychoanalysis": 1,
+    "ride": 5,
+    "science": 1,
+    "sleightOfHand": 10,
+    "spotHidden": 25,
+    "stealth": 20,
+    "survival": 10,
+    "swim": 20,
+    "throw": 20,
+    "track": 10,
+    "creditRating": 99
+  },
+  "characteristics": {
+    "strength": 40,
+    "constitution": 50,
+    "size": 50,
+    "dexterity": 50,
+    "appearance": 60,
+    "intelligence": 60,
+    "power": 70,
+    "education": 80
+  },
+  "luck": 50,
+  "background": {
+    "description": "test",
+    "ideology": "test",
+    "significantPeople": "test",
+    "meaningfulLocations": "test",
+    "treasuredPossessions": "test",
+    "traits": "test"
+  }
+}

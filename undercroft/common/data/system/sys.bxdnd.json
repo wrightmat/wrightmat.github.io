@@ -810,7 +810,8 @@
           "expression": "d20",
           "resultMode": "band",
           "description": "Roll d20. Compare to your THAC0 minus the target's Armor Class (remember: AC is DESCENDING here — a lower or negative AC is harder to hit, and effectively adds to the number needed rather than subtracting) — meeting or beating that number hits. This isn't a fixed target the roller's own targetValue mechanism can read off one field (it depends on BOTH your THAC0 and the target's own AC, worked out at the table each time), so no bands are declared below — this Move exists purely to make a d20 attack roll one click away from the Moves panel.",
-          "bands": []
+          "bands": [],
+          "shortName": "Attack"
         },
         {
           "name": "Saving Throw (d20 Roll Under)",
@@ -826,7 +827,8 @@
               "targetMinFraction": 0,
               "label": "Save Fails"
             }
-          ]
+          ],
+          "shortName": "Save"
         }
       ]
     }

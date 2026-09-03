@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-hawkers-patron",
+  "name": "Patron",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you advance your Tier, it costs half the coin it normally would. Who is your patron? Why do they help you?",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you advance your Tier, it costs half the coin it normally would. Who is your patron? Why do they help you?"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

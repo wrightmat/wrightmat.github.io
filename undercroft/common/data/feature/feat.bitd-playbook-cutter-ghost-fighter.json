@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-cutter-ghost-fighter",
+  "name": "Ghost Fighter",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You may imbue your hands, melee weapons, or tools with spirit energy. You gain potency in combat vs. the supernatural. You may grapple with spirits to restrain and capture them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You may imbue your hands, melee weapons, or tools with spirit energy. You gain potency in combat vs. the supernatural. You may grapple with spirits to restrain and capture them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

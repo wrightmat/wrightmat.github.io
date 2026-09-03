@@ -4,12 +4,32 @@
   "systemId": "sys.daggerheart",
   "settingId": null,
   "templateId": null,
+  "campaignDayIndex": null,
+  "campaignMinutesOfDay": null,
   "properties": [
     {
       "type": "array",
       "key": "inventory",
       "label": "Inventory",
       "public": true
+    },
+    {
+      "type": "array",
+      "key": "activeDecks",
+      "label": "Active Decks",
+      "public": true,
+      "item": {
+        "type": "object",
+        "label": "Deck",
+        "displayField": "activeDecks[].deckName",
+        "children": [
+          {
+            "type": "string",
+            "key": "activeDecks[].deckName",
+            "label": "Deck"
+          }
+        ]
+      }
     }
   ],
   "propertyValues": {}

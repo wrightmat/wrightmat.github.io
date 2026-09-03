@@ -493,6 +493,67 @@
               <div class="d-none d-flex flex-column gap-3" data-build-step="input">
                 <div data-build-input-mount></div>
               </div>
+              <!-- Generic "spend a budget (literal or formula-derived)
+                   across a target field's own items, optionally scoped to
+                   a named subset, optionally capped per item" step (type:
+                   "pointAllocation") — see renderBuildPointAllocationStep.
+                   One static panel per literal step id actually used,
+                   same "each usage gets its own panel" convention every
+                   other reusable step type here follows. Blades in the
+                   Dark's own Actions step (4 dots, every action, capped at
+                   2) and Call of Cthulhu's own Occupation Skills/Personal
+                   Interest steps (formula-derived point budgets, scoped or
+                   excluded skill subsets, no cap) all render through this
+                   one panel shape. -->
+              <div class="d-none d-flex flex-column gap-3" data-build-step="actionDots">
+                <label class="form-label fw-semibold" data-build-step-caption="actionDots">Actions</label>
+                <div data-build-point-allocation-mount="actionDots"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="occupationSkills">
+                <label class="form-label fw-semibold" data-build-step-caption="occupationSkills">Occupation Skills</label>
+                <div data-build-point-allocation-mount="occupationSkills"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="personalInterest">
+                <label class="form-label fw-semibold" data-build-step-caption="personalInterest">Personal Interest</label>
+                <div data-build-point-allocation-mount="personalInterest"></div>
+              </div>
+              <!-- Generic "choose N mutually-exclusive items from a
+                   curated list" step (type: "listPick") — one static panel
+                   per literal step id actually used by a System's own
+                   buildSteps (same "each reusable step type gets its own
+                   panel per usage" convention "input"/"abilities" already
+                   follow), all rendered by the SAME renderBuildListPickStep
+                   function. Blades in the Dark uses these four; a future
+                   System's own additional listPick usage needs one more
+                   panel added here, same as any other step type would. -->
+              <div class="d-none d-flex flex-column gap-3" data-build-step="specialAbility">
+                <label class="form-label fw-semibold" data-build-step-caption="specialAbility">Special Ability</label>
+                <div data-build-listpick-mount="specialAbility"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="friendRival">
+                <label class="form-label fw-semibold" data-build-step-caption="friendRival">Friend &amp; Rival</label>
+                <div data-build-listpick-mount="friendRival"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="crewUpgrades">
+                <label class="form-label fw-semibold" data-build-step-caption="crewUpgrades">Upgrades</label>
+                <div data-build-listpick-mount="crewUpgrades"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="favoriteContact">
+                <label class="form-label fw-semibold" data-build-step-caption="favoriteContact">Favorite Contact</label>
+                <div data-build-listpick-mount="favoriteContact"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="vice">
+                <label class="form-label fw-semibold" data-build-step-caption="vice">Vice</label>
+                <div data-build-listpick-mount="vice"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="reputation">
+                <label class="form-label fw-semibold" data-build-step-caption="reputation">Reputation</label>
+                <div data-build-listpick-mount="reputation"></div>
+              </div>
+              <div class="d-none d-flex flex-column gap-3" data-build-step="favoredOperation">
+                <label class="form-label fw-semibold" data-build-step-caption="favoredOperation">Preferred Operation</label>
+                <div data-build-listpick-mount="favoredOperation"></div>
+              </div>
               <div class="d-none d-flex flex-column gap-3" data-build-step="details">
                 <p class="text-body-secondary small mb-0">Optional — you can always change these later.</p>
                 <div data-field-mount="build-character-pronouns"></div>

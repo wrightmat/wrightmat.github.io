@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-slide-a-little-something-on-the-side",
+  "name": "A Little Something on the Side",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "At the end of each downtime phase, you earn +2 stash.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the end of each downtime phase, you earn +2 stash."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

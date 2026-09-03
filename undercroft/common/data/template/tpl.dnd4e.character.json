@@ -2072,7 +2072,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20+@currentAttackBonus",
+                          "expression": "Attack",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2258,7 +2258,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20+@currentAttackBonus",
+                          "expression": "Attack",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2444,7 +2444,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20+@currentAttackBonus",
+                          "expression": "Attack",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2630,7 +2630,7 @@
                         "iconClass": "bi-dice-5",
                         "action": {
                           "type": "rollDice",
-                          "expression": "d20+@currentAttackBonus",
+                          "expression": "Attack",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",

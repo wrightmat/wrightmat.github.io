@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-hawkers-high-society",
+  "name": "High Society",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "It's all about who you know. Take -1 heat during downtime and +1d to gather info about the city's elite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "It's all about who you know. Take -1 heat during downtime and +1d to gather info about the city's elite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

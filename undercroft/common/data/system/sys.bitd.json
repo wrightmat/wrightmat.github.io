@@ -24,22 +24,22 @@
       "label": "Heritage",
       "values": [
         {
-          "name": "Akoros"
+          "name": "Akorosian"
         },
         {
-          "name": "Iruvia"
+          "name": "Iruvian"
         },
         {
-          "name": "Severos"
+          "name": "Severosi"
         },
         {
-          "name": "Skovlan"
+          "name": "Skovlander"
         },
         {
-          "name": "Tycheros"
+          "name": "Tycherosi"
         },
         {
-          "name": "Dagger Isles"
+          "name": "Dagger Islander"
         }
       ]
     },
@@ -260,6 +260,7 @@
               "type": "number",
               "key": "actions.insight.hunt",
               "label": "Hunt",
+              "description": "You carefully track a target.",
               "minimum": 0,
               "maximum": 4
             },
@@ -267,6 +268,7 @@
               "type": "number",
               "key": "actions.insight.study",
               "label": "Study",
+              "description": "You scrutinize details and interpret evidence.",
               "minimum": 0,
               "maximum": 4
             },
@@ -274,6 +276,7 @@
               "type": "number",
               "key": "actions.insight.survey",
               "label": "Survey",
+              "description": "You observe the situation and anticipate outcomes.",
               "minimum": 0,
               "maximum": 4
             },
@@ -281,6 +284,7 @@
               "type": "number",
               "key": "actions.insight.tinker",
               "label": "Tinker",
+              "description": "You fiddle with devices and mechanisms.",
               "minimum": 0,
               "maximum": 4
             }
@@ -295,6 +299,7 @@
               "type": "number",
               "key": "actions.prowess.finesse",
               "label": "Finesse",
+              "description": "You employ dextrous manipulation or subtle misdirection.",
               "minimum": 0,
               "maximum": 4
             },
@@ -302,6 +307,7 @@
               "type": "number",
               "key": "actions.prowess.prowl",
               "label": "Prowl",
+              "description": "You traverse skillfully and quietly.",
               "minimum": 0,
               "maximum": 4
             },
@@ -309,6 +315,7 @@
               "type": "number",
               "key": "actions.prowess.skirmish",
               "label": "Skirmish",
+              "description": "You entangle a target in close combat so they can't easily escape.",
               "minimum": 0,
               "maximum": 4
             },
@@ -316,6 +323,7 @@
               "type": "number",
               "key": "actions.prowess.wreck",
               "label": "Wreck",
+              "description": "You unleash savage force.",
               "minimum": 0,
               "maximum": 4
             }
@@ -330,6 +338,7 @@
               "type": "number",
               "key": "actions.resolve.attune",
               "label": "Attune",
+              "description": "You open your mind to arcane power.",
               "minimum": 0,
               "maximum": 4
             },
@@ -337,6 +346,7 @@
               "type": "number",
               "key": "actions.resolve.command",
               "label": "Command",
+              "description": "You compel swift obedience.",
               "minimum": 0,
               "maximum": 4
             },
@@ -344,6 +354,7 @@
               "type": "number",
               "key": "actions.resolve.consort",
               "label": "Consort",
+              "description": "You socialize with friends and contacts.",
               "minimum": 0,
               "maximum": 4
             },
@@ -351,6 +362,7 @@
               "type": "number",
               "key": "actions.resolve.sway",
               "label": "Sway",
+              "description": "You influence with guile, charm, or argument.",
               "minimum": 0,
               "maximum": 4
             }
@@ -436,15 +448,15 @@
       "values": [
         {
           "name": "Lesser",
-          "effect": "-1d to affected actions"
+          "effect": "Reduced Effect"
         },
         {
           "name": "Moderate",
-          "effect": "-1d to affected actions, need help to remove"
+          "effect": "-1d to affected actions"
         },
         {
           "name": "Severe",
-          "effect": "Incapacitated until treated"
+          "effect": "Need Help — incapacitated until treated"
         }
       ]
     },
@@ -610,73 +622,107 @@
       "label": "Crew Reputation",
       "values": [
         {
-          "name": "Bloody"
+          "name": "Ambitious"
         },
         {
-          "name": "Bold"
+          "name": "Brutal"
         },
         {
-          "name": "Cunning"
-        },
-        {
-          "name": "Discreet"
+          "name": "Daring"
         },
         {
           "name": "Honorable"
         },
         {
-          "name": "Innovative"
+          "name": "Professional"
         },
         {
-          "name": "Ruthless"
+          "name": "Savvy"
         },
         {
           "name": "Subtle"
         },
         {
-          "name": "Superstitious"
-        },
-        {
-          "name": "Zealous"
+          "name": "Strange"
         }
       ]
     },
     {
       "type": "array",
-      "key": "crewUpgrades",
-      "label": "Crew Upgrade",
+      "key": "generalCrewUpgrades",
+      "label": "General Crew Upgrade",
       "values": [
         {
+          "name": "Carriage House",
+          "description": "A carriage, draft animals, and a stable. A second upgrade adds armor and larger, swifter steeds."
+        },
+        {
+          "name": "Boat House",
+          "description": "A boat, a dock, and a small shack for boating supplies. A second upgrade adds armor and more cargo capacity."
+        },
+        {
+          "name": "Hidden Lair",
+          "description": "Your lair's location is disguised. If discovered, spend 2 downtime activities and coin equal to your Tier to relocate and hide it again."
+        },
+        {
+          "name": "Quarters",
+          "description": "Your lair includes living quarters for the crew. Without this, each PC sleeps elsewhere and is vulnerable when they do."
+        },
+        {
           "name": "Secure Lair",
-          "description": "Your lair is difficult to break into."
-        },
-        {
-          "name": "Quality Weapons",
-          "description": "Your crew is well-armed with quality gear."
-        },
-        {
-          "name": "Spy Network",
-          "description": "You have eyes and ears throughout the city."
-        },
-        {
-          "name": "Vehicle",
-          "description": "A boat, carriage, or other means of transport."
-        },
-        {
-          "name": "Torturer's Tools",
-          "description": "Equipment for extracting information or vengeance."
-        },
-        {
-          "name": "Forgery Den",
-          "description": "Facilities for producing fake documents or goods."
+          "description": "Your lair has locks, alarms, and traps. A second upgrade adds arcane defenses that work against spirits."
         },
         {
           "name": "Vault",
-          "description": "A secure place to stash coin and valuables."
+          "description": "A secure vault, increasing coin storage to 8. A second upgrade increases capacity to 16."
         },
         {
-          "name": "Vices",
-          "description": "Facilities to indulge a specific vice for clients."
+          "name": "Workshop",
+          "description": "A workshop for tinkering and alchemy, plus a small library — accomplish long-term projects without leaving your lair."
+        },
+        {
+          "name": "Mastery",
+          "description": "Access to master-level training. Advance PCs' action ratings to 4 (capped at 3 otherwise). Costs four upgrade boxes to unlock."
+        },
+        {
+          "name": "Quality: Documents",
+          "description": "Improves the quality rating of all PCs' Documents."
+        },
+        {
+          "name": "Quality: Gear",
+          "description": "Improves the quality rating of all PCs' Burglary Gear and Climbing Gear."
+        },
+        {
+          "name": "Quality: Implements",
+          "description": "Improves the quality rating of all PCs' Arcane Implements."
+        },
+        {
+          "name": "Quality: Supplies",
+          "description": "Improves the quality rating of all PCs' Subterfuge Supplies."
+        },
+        {
+          "name": "Quality: Tools",
+          "description": "Improves the quality rating of all PCs' Demolition Tools and Tinkering Tools."
+        },
+        {
+          "name": "Quality: Weapons",
+          "description": "Improves the quality rating of all PCs' Weapons."
+        },
+        {
+          "name": "Training: Insight",
+          "description": "Earn 2 xp (instead of 1) when you train Insight during downtime."
+        },
+        {
+          "name": "Training: Prowess",
+          "description": "Earn 2 xp (instead of 1) when you train Prowess during downtime."
+        },
+        {
+          "name": "Training: Resolve",
+          "description": "Earn 2 xp (instead of 1) when you train Resolve during downtime."
+        },
+        {
+          "name": "Training: Personal",
+          "description": "Earn 2 xp (instead of 1) when you train your Playbook xp track during downtime."
         }
       ]
     },
@@ -920,6 +966,168 @@
       "label": "Rolls",
       "values": [
         {
+          "name": "Hunt (Insight)",
+          "expression": "@actions.insight.hunt d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Hunt"
+        },
+        {
+          "name": "Study (Insight)",
+          "expression": "@actions.insight.study d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Study"
+        },
+        {
+          "name": "Survey (Insight)",
+          "expression": "@actions.insight.survey d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Survey"
+        },
+        {
+          "name": "Tinker (Insight)",
+          "expression": "@actions.insight.tinker d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Tinker"
+        },
+        {
+          "name": "Finesse (Prowess)",
+          "expression": "@actions.prowess.finesse d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Finesse"
+        },
+        {
+          "name": "Prowl (Prowess)",
+          "expression": "@actions.prowess.prowl d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Prowl"
+        },
+        {
           "name": "Skirmish (Prowess)",
           "expression": "@actions.prowess.skirmish d6 kh1 t>=6",
           "resultMode": "band",
@@ -943,9 +1151,389 @@
               "min": 6,
               "label": "Full Success"
             }
-          ]
+          ],
+          "shortName": "Skirmish"
+        },
+        {
+          "name": "Wreck (Prowess)",
+          "expression": "@actions.prowess.wreck d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Wreck"
+        },
+        {
+          "name": "Attune (Resolve)",
+          "expression": "@actions.resolve.attune d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Attune"
+        },
+        {
+          "name": "Command (Resolve)",
+          "expression": "@actions.resolve.command d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Command"
+        },
+        {
+          "name": "Consort (Resolve)",
+          "expression": "@actions.resolve.consort d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Consort"
+        },
+        {
+          "name": "Sway (Resolve)",
+          "expression": "@actions.resolve.sway d6 kh1 t>=6",
+          "resultMode": "band",
+          "bands": [
+            {
+              "tally": {
+                "gte": 2
+              },
+              "label": "Critical Success"
+            },
+            {
+              "max": 3,
+              "label": "Miss (Consequence)"
+            },
+            {
+              "min": 4,
+              "max": 5,
+              "label": "Partial Success"
+            },
+            {
+              "min": 6,
+              "label": "Full Success"
+            }
+          ],
+          "shortName": "Sway"
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "derivedFormulas",
+      "label": "Derived Formulas",
+      "values": [
+        {
+          "role": "attributeRatingInsight",
+          "formula": "if(@hunt>=1,1,0)+if(@study>=1,1,0)+if(@survey>=1,1,0)+if(@tinker>=1,1,0)"
+        },
+        {
+          "role": "attributeRatingProwess",
+          "formula": "if(@finesse>=1,1,0)+if(@prowl>=1,1,0)+if(@skirmish>=1,1,0)+if(@wreck>=1,1,0)"
+        },
+        {
+          "role": "attributeRatingResolve",
+          "formula": "if(@attune>=1,1,0)+if(@command>=1,1,0)+if(@consort>=1,1,0)+if(@sway>=1,1,0)"
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "buildSteps",
+      "label": "Build Steps",
+      "values": {
+        "tpl.bitd.character": [
+          {
+            "step": "class",
+            "label": "Playbook",
+            "kind": "class",
+            "matchField": "form",
+            "matchValue": "character"
+          },
+          {
+            "step": "species",
+            "label": "Heritage",
+            "kind": "species"
+          },
+          {
+            "step": "background",
+            "label": "Background",
+            "kind": "background"
+          },
+          {
+            "step": "actionDots",
+            "type": "pointAllocation",
+            "label": "Actions",
+            "budget": 4,
+            "targetPath": "actions",
+            "maxRating": 2,
+            "unitLabel": "dots",
+            "prefill": {
+              "source": "class",
+              "primaryField": "primaryAction",
+              "secondaryField": "secondaryAction",
+              "primaryValue": 2,
+              "secondaryValue": 1
+            },
+            "desc": "Your playbook has already placed three dots. Put one more dot in an action that reflects your heritage, one in an action that reflects your background, and two more anywhere you please — no action may start higher than 2."
+          },
+          {
+            "step": "specialAbility",
+            "type": "listPick",
+            "label": "Special Ability",
+            "desc": "Choose one special ability for your playbook. If you can't decide, the first one listed is a good default.",
+            "source": {
+              "from": "class",
+              "field": "features"
+            },
+            "idField": "featureIds",
+            "targetArrayPath": "@featureIds",
+            "searchable": true,
+            "picks": [
+              {}
+            ]
+          },
+          {
+            "step": "friendRival",
+            "type": "listPick",
+            "label": "Friend & Rival",
+            "desc": "Choose one close friend and one rival from your playbook's own list of NPCs.",
+            "source": {
+              "from": "class",
+              "field": "npcs"
+            },
+            "targetArrayPath": "@contacts",
+            "itemKey": "name",
+            "picks": [
+              {
+                "label": "Close Friend",
+                "itemDefaults": {
+                  "relationship": "Friend"
+                }
+              },
+              {
+                "label": "Rival",
+                "itemDefaults": {
+                  "relationship": "Rival"
+                }
+              }
+            ]
+          },
+          {
+            "step": "vice",
+            "type": "listPick",
+            "label": "Vice",
+            "source": {
+              "from": "system",
+              "field": "vices"
+            },
+            "targetPath": "@vice",
+            "picks": [
+              {}
+            ]
+          },
+          {
+            "step": "input",
+            "label": "Alias & Look",
+            "inputs": [
+              {
+                "label": "Alias",
+                "placeholder": "Optional street name or nickname",
+                "optional": true
+              },
+              {
+                "label": "Look",
+                "placeholder": "A few evocative words"
+              },
+              {
+                "label": "Vice Purveyor",
+                "placeholder": "Name & location"
+              }
+            ],
+            "targetPaths": [
+              "@alias",
+              "@look",
+              "@vicePurveyor"
+            ]
+          },
+          {
+            "step": "details",
+            "label": "Details"
+          },
+          {
+            "step": "review",
+            "label": "Review"
+          }
+        ],
+        "tpl.bitd.crew": [
+          {
+            "step": "class",
+            "label": "Crew Type",
+            "kind": "class",
+            "matchField": "form",
+            "matchValue": "crew"
+          },
+          {
+            "step": "reputation",
+            "type": "listPick",
+            "label": "Reputation",
+            "source": {
+              "from": "system",
+              "field": "crewReputationTags"
+            },
+            "targetArrayPath": "@reputation",
+            "picks": [
+              {}
+            ]
+          },
+          {
+            "step": "favoredOperation",
+            "type": "listPick",
+            "label": "Preferred Operation",
+            "desc": "Choose the type of operation your hunting grounds are best suited for.",
+            "source": {
+              "from": "class",
+              "field": "favoredOperations"
+            },
+            "targetPath": "@preferredOperation",
+            "picks": [
+              {}
+            ]
+          },
+          {
+            "step": "specialAbility",
+            "type": "listPick",
+            "label": "Special Ability",
+            "desc": "Choose one special ability for your crew. If you can't decide, the first one listed is a good default.",
+            "source": {
+              "from": "class",
+              "field": "features"
+            },
+            "idField": "featureIds",
+            "targetArrayPath": "@featureIds",
+            "searchable": true,
+            "picks": [
+              {}
+            ]
+          },
+          {
+            "step": "crewUpgrades",
+            "type": "listPick",
+            "label": "Upgrades",
+            "desc": "Your crew type has already granted two starting upgrades. Choose two more, from either the general upgrade list or your crew type's own.",
+            "source": [
+              {
+                "from": "system",
+                "field": "generalCrewUpgrades"
+              },
+              {
+                "from": "class",
+                "field": "typeUpgrades"
+              }
+            ],
+            "targetArrayPath": "@upgrades",
+            "itemKey": "name",
+            "itemDefaults": {
+              "purchased": true
+            },
+            "picks": [
+              {},
+              {}
+            ]
+          },
+          {
+            "step": "favoriteContact",
+            "type": "listPick",
+            "label": "Favorite Contact",
+            "source": {
+              "from": "class",
+              "field": "contacts"
+            },
+            "targetArrayPath": "@contacts",
+            "itemKey": "name",
+            "picks": [
+              {}
+            ]
+          },
+          {
+            "step": "review",
+            "label": "Review"
+          }
+        ]
+      }
     }
   ],
   "preview": {
@@ -1026,20 +1614,20 @@
     "crewPlaybook": "Shadows",
     "reputation": [
       "Subtle",
-      "Bold"
+      "Daring"
     ],
-    "tier": 1,
+    "tier": 0,
     "heat": 4,
     "wanted": 1,
     "crewCoin": 6,
-    "vault": 20,
+    "vault": 4,
     "upgrades": [
       {
         "name": "Secure Lair",
         "purchased": true
       },
       {
-        "name": "Spy Network",
+        "name": "Hidden Lair",
         "purchased": false
       }
     ],

@@ -1,0 +1,143 @@
+{
+  "index": "leech",
+  "name": "Leech",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "A saboteur and technician. XP trigger: You addressed a challenge with technical skill or mayhem.",
+  "primaryAction": "tinker",
+  "secondaryAction": "skirmish",
+  "npcs": [
+    {
+      "name": "Stazia",
+      "descriptor": "an apothecary"
+    },
+    {
+      "name": "Veldren",
+      "descriptor": "a psychonaut"
+    },
+    {
+      "name": "Eckerd",
+      "descriptor": "a corpse thief"
+    },
+    {
+      "name": "Jul",
+      "descriptor": "a blood dealer"
+    },
+    {
+      "name": "Malista",
+      "descriptor": "a priestess"
+    }
+  ],
+  "items": [
+    {
+      "name": "Fine tinkering tools"
+    },
+    {
+      "name": "Fine wrecking tools"
+    },
+    {
+      "name": "Blowgun & darts, syringes"
+    },
+    {
+      "name": "Bandolier (3 uses)"
+    },
+    {
+      "name": "Bandolier (3 uses)"
+    },
+    {
+      "name": "Gadgets"
+    }
+  ],
+  "features": [
+    {
+      "name": "Alchemist",
+      "description": "When you invent or craft a creation with alchemical features, take +1 result level to your roll. You begin with one special formula already known."
+    },
+    {
+      "name": "Analyst",
+      "description": "During downtime, you get two ticks to distribute among any long term project clocks that involve investigation or learning a new formula or design plan."
+    },
+    {
+      "name": "Artificer",
+      "description": "When you invent or craft a creation with spark-craft features, take +1 result level to your roll. You begin with one special design already known."
+    },
+    {
+      "name": "Fortitude",
+      "description": "You may expend your special armor to resist a consequence of fatigue, weakness, or chemical effects, or to push yourself when working with technical skill or handling alchemicals."
+    },
+    {
+      "name": "Ghost Ward",
+      "description": "You know how to Wreck an area with arcane substances and methods so it is either anathema or enticing to spirits (your choice)."
+    },
+    {
+      "name": "Physicker",
+      "description": "You can Tinker with bones, blood, and bodily humours to treat wounds or stabilize the dying. You may study a malady or corpse. Everyone in your crew gets +1d to their healing treatment rolls."
+    },
+    {
+      "name": "Saboteur",
+      "description": "When you Wreck, the work is much quieter than it should be and the damage is hidden from casual inspection."
+    },
+    {
+      "name": "Venomous",
+      "description": "Choose a drug or poison (from your bandolier stock) to which you have become immune. You can push yourself to secrete it through your skin or saliva or exhale it as a vapor."
+    },
+    {
+      "name": "Veteran",
+      "description": "Choose a special ability from another source."
+    }
+  ],
+  "featureIds": [
+    "feat.bitd-playbook-leech-alchemist",
+    "feat.bitd-playbook-leech-analyst",
+    "feat.bitd-playbook-leech-artificer",
+    "feat.bitd-playbook-leech-fortitude",
+    "feat.bitd-playbook-leech-ghost-ward",
+    "feat.bitd-playbook-leech-physicker",
+    "feat.bitd-playbook-leech-saboteur",
+    "feat.bitd-playbook-leech-venomous",
+    "feat.bitd-veteran"
+  ],
+  "alchemicals": [
+    {
+      "name": "Alcahest"
+    },
+    {
+      "name": "Binding Oil"
+    },
+    {
+      "name": "Drift Oil"
+    },
+    {
+      "name": "Drown Powder"
+    },
+    {
+      "name": "Eyeblind Poison"
+    },
+    {
+      "name": "Fire Oil"
+    },
+    {
+      "name": "Grenade"
+    },
+    {
+      "name": "Quicksilver"
+    },
+    {
+      "name": "Skullfire Poison"
+    },
+    {
+      "name": "Smoke Bomb"
+    },
+    {
+      "name": "Spark"
+    },
+    {
+      "name": "Standstill Poison"
+    },
+    {
+      "name": "Trance Powder"
+    }
+  ],
+  "form": "character"
+}

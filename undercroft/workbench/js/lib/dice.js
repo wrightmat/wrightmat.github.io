@@ -988,7 +988,12 @@ export function rollDiceExpression(expression, { context = {}, random = Math.ran
   }
   return {
     total: ast.value,
-    notation: trimmed,
+    // The RESOLVED expression (any "@path" already substituted with its
+    // live value, e.g. "2d6 kh1 t>=6" not "@actions.insight.hunt d6 kh1
+    // t>=6") — this is what every caller displays (toast, Game Log, table
+    // roll breakdown) as "what was actually rolled," and `trimmed` here
+    // silently echoed back the unsubstituted template instead.
+    notation: substituted,
     detailHtml: buildDetailHtml(ast),
     detailText: buildDetailText(ast),
     dice: collectDiceDetails(ast),

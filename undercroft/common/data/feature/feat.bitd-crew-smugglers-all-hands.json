@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-smugglers-all-hands",
+  "name": "All Hands",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "During downtime, one of your cohorts may perform a downtime activity for the crew to acquire an asset, reduce heat, or work on a long-term project.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During downtime, one of your cohorts may perform a downtime activity for the crew to acquire an asset, reduce heat, or work on a long-term project."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

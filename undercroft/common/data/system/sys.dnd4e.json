@@ -1234,7 +1234,8 @@
               "targetMinFraction": 0,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Attack"
         }
       ]
     }

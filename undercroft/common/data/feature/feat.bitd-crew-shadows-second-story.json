@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-shadows-second-story",
+  "name": "Second Story",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you execute a clandestine infiltration, you get +1d to the engagement roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you execute a clandestine infiltration, you get +1d to the engagement roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

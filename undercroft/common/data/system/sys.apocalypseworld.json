@@ -347,7 +347,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Act"
         },
         {
           "name": "Go Aggro",
@@ -368,7 +369,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Aggro"
         },
         {
           "name": "Seduce or Manipulate",
@@ -389,7 +391,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Seduce"
         },
         {
           "name": "Read a Charged Situation",
@@ -410,7 +413,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Situation"
         },
         {
           "name": "Read a Person",
@@ -431,7 +435,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Person"
         },
         {
           "name": "Open Your Brain",
@@ -452,7 +457,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Brain"
         },
         {
           "name": "Seize by Force",
@@ -473,7 +479,8 @@
               "max": 6,
               "label": "Miss"
             }
-          ]
+          ],
+          "shortName": "Seize"
         }
       ]
     }

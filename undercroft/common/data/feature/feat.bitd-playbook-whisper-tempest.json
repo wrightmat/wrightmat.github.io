@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-whisper-tempest",
+  "name": "Tempest",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You can push yourself to do one of the following: unleash a stroke of lightning as a weapon -- summon a storm in your immediate vicinity (torrential rain, roaring winds, heavy fog, chilling frost/snow, etc.).",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can push yourself to do one of the following: unleash a stroke of lightning as a weapon -- summon a storm in your immediate vicinity (torrential rain, roaring winds, heavy fog, chilling frost/snow, etc.)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -700,7 +700,8 @@
               "targetMinFraction": 0,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "Check"
         },
         {
           "name": "Panic Check (2d10 + Stress)",
@@ -751,7 +752,8 @@
               "min": 22,
               "label": "Total Collapse — the worst outcome; GM's call, likely permanent"
             }
-          ]
+          ],
+          "shortName": "Panic"
         }
       ]
     }

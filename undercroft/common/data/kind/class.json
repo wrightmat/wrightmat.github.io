@@ -4,5 +4,6 @@
   "plural": "Classes",
   "icon": "tabler:sword",
   "readTier": "free",
-  "writeTier": "creator"
+  "writeTier": "creator",
+  "metadataFields": ["systemIds", "form"]
 }

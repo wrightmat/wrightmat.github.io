@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-cult-zealotry",
+  "name": "Zealotry",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Your cohorts get +1d vs. enemies of the faith, and will undertake any service you ask of them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your cohorts get +1d vs. enemies of the faith, and will undertake any service you ask of them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-hound-tough-as-nails",
+  "name": "Tough as Nails",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Penalties from harm are one level less severe (though level 4 harm is still fatal).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Penalties from harm are one level less severe (though level 4 harm is still fatal)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

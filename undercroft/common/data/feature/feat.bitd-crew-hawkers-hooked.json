@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-hawkers-hooked",
+  "name": "Hooked",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "Your gang members use your product. Add the savage, unreliable, or wild flaw to your gangs to give them +1 quality.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your gang members use your product. Add the savage, unreliable, or wild flaw to your gangs to give them +1 quality."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

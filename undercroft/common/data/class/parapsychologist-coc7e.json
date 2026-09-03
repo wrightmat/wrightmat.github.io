@@ -1,0 +1,19 @@
+{
+  "name": "Parapsychologist",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Studies psychic phenomena with (dubious) scientific rigor.",
+  "creditRatingMin": 10,
+  "creditRatingMax": 50,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "anthropology",
+    "history",
+    "libraryUse",
+    "occult",
+    "psychology",
+    "languageOther",
+    "creditRating"
+  ]
+}

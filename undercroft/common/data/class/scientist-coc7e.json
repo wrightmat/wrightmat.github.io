@@ -1,0 +1,18 @@
+{
+  "name": "Scientist",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Conducts research and experimentation in a chosen field.",
+  "creditRatingMin": 30,
+  "creditRatingMax": 70,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "languageOther",
+    "libraryUse",
+    "operateHeavyMachinery",
+    "science",
+    "spotHidden",
+    "creditRating"
+  ]
+}

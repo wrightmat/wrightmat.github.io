@@ -1,0 +1,19 @@
+{
+  "name": "Drifter",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Has no fixed home or steady trade, surviving hand to mouth.",
+  "creditRatingMin": 0,
+  "creditRatingMax": 5,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "climb",
+    "jump",
+    "listen",
+    "navigate",
+    "stealth",
+    "survival",
+    "creditRating"
+  ]
+}

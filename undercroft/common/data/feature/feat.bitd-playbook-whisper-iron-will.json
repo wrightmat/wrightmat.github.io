@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-whisper-iron-will",
+  "name": "Iron Will",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You're immune to the terror that some supernatural entities inflict on sight. Take +1d to resistance rolls with Resolve.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You're immune to the terror that some supernatural entities inflict on sight. Take +1d to resistance rolls with Resolve."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

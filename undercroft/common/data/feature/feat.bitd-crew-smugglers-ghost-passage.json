@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-smugglers-ghost-passage",
+  "name": "Ghost Passage",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "From harsh experience or occult ritual, all crew members become immune to possession by spirits, but may choose to \"carry\" a second ghost as a passenger within their body.",
+  "mechanics": {
+    "type": "passive",
+    "text": "From harsh experience or occult ritual, all crew members become immune to possession by spirits, but may choose to \"carry\" a second ghost as a passenger within their body."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

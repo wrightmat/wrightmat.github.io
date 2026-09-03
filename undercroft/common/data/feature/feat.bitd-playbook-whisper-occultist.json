@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-whisper-occultist",
+  "name": "Occultist",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You know the secret ways to Consort with ancient powers, forgotten gods or demons. Once you've consorted with one, you get +1d to command cultists who worship it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You know the secret ways to Consort with ancient powers, forgotten gods or demons. Once you've consorted with one, you get +1d to command cultists who worship it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

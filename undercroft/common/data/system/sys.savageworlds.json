@@ -738,7 +738,8 @@
               "max": 3,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "d4Trait"
         },
         {
           "name": "Trait Roll (d6, Wild Die)",
@@ -769,7 +770,8 @@
               "max": 3,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "d6Trait"
         },
         {
           "name": "Trait Roll (d8, Wild Die)",
@@ -800,7 +802,8 @@
               "max": 3,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "d8Trait"
         },
         {
           "name": "Trait Roll (d10, Wild Die)",
@@ -831,7 +834,8 @@
               "max": 3,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "d10Trait"
         },
         {
           "name": "Trait Roll (d12, Wild Die)",
@@ -862,7 +866,8 @@
               "max": 3,
               "label": "Failure"
             }
-          ]
+          ],
+          "shortName": "d12Trait"
         }
       ]
     }

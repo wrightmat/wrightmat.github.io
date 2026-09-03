@@ -1,0 +1,22 @@
+{
+  "name": "Journalist",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Investigates and reports the news, often courting danger to get the story.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 30,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "history",
+    "libraryUse",
+    "languageOwn",
+    "charm",
+    "fastTalk",
+    "intimidate",
+    "persuade",
+    "psychology",
+    "creditRating"
+  ]
+}

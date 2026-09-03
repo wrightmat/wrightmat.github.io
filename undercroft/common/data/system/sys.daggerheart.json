@@ -1374,9 +1374,20 @@
               "targetPath": "@armor",
               "choose": 1,
               "statBindings": [
-                { "sourcePath": "baseScore", "targetBinding": "@stats.armorScore" },
-                { "sourcePath": "baseMajor", "targetBinding": "@stats.thresholds.major", "formula": "@base+@level" },
-                { "sourcePath": "baseSevere", "targetBinding": "@stats.thresholds.severe", "formula": "@base+@level" }
+                {
+                  "sourcePath": "baseScore",
+                  "targetBinding": "@stats.armorScore"
+                },
+                {
+                  "sourcePath": "baseMajor",
+                  "targetBinding": "@stats.thresholds.major",
+                  "formula": "@base+@level"
+                },
+                {
+                  "sourcePath": "baseSevere",
+                  "targetBinding": "@stats.thresholds.severe",
+                  "formula": "@base+@level"
+                }
               ]
             }
           ],
@@ -1856,7 +1867,8 @@
             "aLabel": "Roll with Hope",
             "bLabel": "Roll with Fear",
             "tieLabel": "Critical Success"
-          }
+          },
+          "shortName": "Duality"
         }
       ]
     },

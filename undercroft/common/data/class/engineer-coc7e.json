@@ -1,0 +1,19 @@
+{
+  "name": "Engineer",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Designs and builds machines, structures, or systems.",
+  "creditRatingMin": 30,
+  "creditRatingMax": 70,
+  "occupationSkillsFormula": "@education * 2 + @strength * 2",
+  "occupationSkills": [
+    "artCraft",
+    "driveAuto",
+    "libraryUse",
+    "mechanicalRepair",
+    "operateHeavyMachinery",
+    "science",
+    "creditRating"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Photographer",
+  "systemIds": [
+    "sys.coc7e"
+  ],
+  "description": "Documents people, places, and events through a camera lens.",
+  "creditRatingMin": 9,
+  "creditRatingMax": 30,
+  "occupationSkillsFormula": "@education * 4",
+  "occupationSkills": [
+    "artCraft",
+    "persuade",
+    "psychology",
+    "science",
+    "spotHidden",
+    "stealth",
+    "creditRating"
+  ]
+}

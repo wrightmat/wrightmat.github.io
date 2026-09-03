@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-playbook-slide-ghost-voice",
+  "name": "Ghost Voice",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "You know the secret method to interact with a ghost or demon as if it was a normal human, regardless of how wild or feral it appears. You gain potency when communicating with the supernatural.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You know the secret method to interact with a ghost or demon as if it was a normal human, regardless of how wild or feral it appears. You gain potency when communicating with the supernatural."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

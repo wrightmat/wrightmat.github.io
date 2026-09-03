@@ -1,0 +1,24 @@
+{
+  "id": "feat.bitd-crew-bravos-war-dogs",
+  "name": "War Dogs",
+  "systemIds": [
+    "sys.bitd"
+  ],
+  "description": "When you're at war (-3 faction status), your crew does not suffer -1 hold and PCs still get two downtime activities, instead of just one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you're at war (-3 faction status), your crew does not suffer -1 hold and PCs still get two downtime activities, instead of just one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "bitd"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
