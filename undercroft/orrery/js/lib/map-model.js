@@ -1,12 +1,8 @@
-// getPresetById/getPresetDefaultValues only ever get CALLED from
+// getPresetById/getPresetDefaultValues only get called from
 // createVectorShapeElement below, never at module load — safe to import
-// here despite this file otherwise being pure/DOM-free, since the
-// registry's own draw()/run() functions (the only DOM-touching part of
-// that module) are never invoked from this file.
+// here despite this file otherwise being pure/DOM-free.
 import { getPresetById, getPresetDefaultValues } from "../../../common/js/lib/shape-effect-library.js";
 
-// Exported — app.js's own Duplicate Map action needs a fresh id for the
-// clone, same scheme every other id in this model already uses.
 export const randomId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -25,61 +21,46 @@ export function createLayerSettings(type) {
         cellSize: 50,
         lineColor: "#0f172a",
         // Fog of War — see map-viewer.js's resolveRevealedCells/
-        // createFogOverlay for how these drive rendering. fogOpacity is
-        // what a real non-owner viewer sees over a hidden cell; fogPreviewOpacity
-        // is the much-lighter authoring aid the map's own owner/GM sees
-        // instead (createGridLayerElement's ownerPreview branch) so fog
-        // stays visible while editing without actually hiding the map.
-        // Both configurable independently since "opaque enough a player
-        // can't cheat" and "visible enough a GM can actually see it while
-        // working" are different, unrelated targets.
+        // createFogOverlay. fogOpacity is what a real non-owner viewer sees
+        // over a hidden cell; fogPreviewOpacity is the lighter authoring aid
+        // the map's owner/GM sees instead, configurable independently since
+        // "opaque enough a player can't cheat" and "visible enough a GM can
+        // work" are different targets.
         fogOfWar: false,
         revealGroupId: "",
         fogOpacity: 0.92,
         fogPreviewOpacity: 0.6,
-        // When on, resolveRevealedCells (map-viewer.js) additionally reveals
-        // cells within line-of-sight of any character-linked marker that has
-        // a nonzero resolved Vision Range (see createMarkerElement's own
-        // visionRangeBinding/visionRangeFormula/visionRangeText) — unioned
-        // with the manual reveal-Group cells above, wall-aware. Off by
-        // default: a map's fog can stay purely manual, same as it always
-        // has, unless the GM opts into auto-reveal. Light-based reveal has
-        // no equivalent toggle — a placed Light element always contributes
-        // to the reveal union whenever fogOfWar itself is on, since a
-        // light's whole purpose is to reveal; there'd be nothing left for it
-        // to do with this off.
+        // When on, resolveRevealedCells additionally reveals cells within
+        // line-of-sight of any character-linked marker with a nonzero
+        // resolved Vision Range, unioned with the manual reveal-Group cells,
+        // wall-aware. Off by default so fog can stay purely manual unless
+        // the GM opts in. A placed Light always contributes to the reveal
+        // union whenever fogOfWar is on — there's no equivalent toggle for it.
         autoRevealFromVision: false,
       };
     case "raster":
-      // No default width/height — same "native size unless overridden"
-      // reasoning as the base map image's own settings just above
-      // (createBaseMapSettings), for the same reason: an arbitrary
-      // hardcoded default force-stretched/skewed every raster image that
-      // wasn't exactly that size.
+      // No default width/height, same "native unless overridden" reasoning
+      // as the base map image's own settings — an arbitrary hardcoded
+      // default would force-stretch/skew any image not exactly that size.
       return {
         src: "",
         width: null,
         height: null,
       };
     case "marker":
-      // No default icon — "pin" isn't a real ddb-*/bi-* token (createMarkerDot's
-      // own getIconTokens lookup just silently found nothing for it), so
-      // every new marker layer rendered as a plain colored dot anyway; blank
-      // makes that the actual, honest default instead of a fake-looking
-      // configured icon that never did anything.
+      // No default icon — "pin" isn't a real ddb-*/bi-* token, so a new
+      // marker layer already rendered as a plain colored dot regardless;
+      // blank makes that the honest default instead of a fake-looking one.
       return {
         icon: "",
         size: 24,
         color: "#0ea5e9",
-        // Outline — every marker already draws a ring (border) around its
-        // dot/portrait; these just make its color/width configurable
-        // instead of a fixed, uneditable CSS default (2px, theme body-bg).
+        // Every marker already draws a ring around its dot/portrait; these
+        // make its color/width configurable instead of a fixed CSS default.
         outlineColor: "#0f172a",
         outlineWidth: 2,
-        // Label — off by default (a dense map with every marker's name
-        // permanently visible gets cluttered fast); explicit values here
-        // rather than left unset, same "no invisible defaults" rule the
-        // rest of this settings object already follows.
+        // Off by default — a dense map with every marker's name permanently
+        // visible gets cluttered fast.
         showLabels: false,
         labelPosition: "below",
         labelSize: 12,
@@ -104,12 +85,9 @@ export function createBaseMapSettings() {
       maxZoom: 19,
       initialZoom: 2,
     },
-    // Deliberately no default width/height (unlike canvas's own explicit
-    // dimensions below, which have nothing else to size against) — an
-    // uploaded image renders at its own native size unless the GM
-    // explicitly overrides one/both (see base-maps.js's own
-    // applyImageDimensions), rather than always being force-stretched to
-    // whatever a stale hardcoded default happened to be.
+    // No default width/height (unlike canvas's own explicit dimensions,
+    // which have nothing else to size against) — an uploaded image renders
+    // at its native size unless the GM explicitly overrides one/both.
     image: {
       src: "data/sample-map.svg",
       width: null,
@@ -147,13 +125,11 @@ export function createLayer({ type = "vector", name } = {}) {
     type: safeType,
     name: name || `${safeType.charAt(0).toUpperCase()}${safeType.slice(1)} Layer`,
     visible: true,
-    // Independent of `visible` — a locked layer stays fully rendered, just
-    // click/drag-through (map-viewer.js's own renderMapLayers ANDs every
+    // Independent of `visible` — a locked layer stays fully rendered but
+    // click/drag-through (map-viewer.js's renderMapLayers ANDs every
     // interactivity gate with `!layer.locked`), so a large hit target (a
-    // full-map Weather effect being the motivating case) can no longer
-    // steal clicks aimed at whatever's underneath it without also having to
-    // hide it. Selecting the layer itself (to flip this back off) is never
-    // blocked by its own lock — only clicking its CONTENTS on the map is.
+    // full-map Weather effect) can't steal clicks without also hiding it.
+    // Selecting the layer itself is never blocked by its own lock.
     locked: false,
     opacity: safeType === "grid" ? 0.35 : 1,
     position: { x: 0, y: 0 },
@@ -174,47 +150,11 @@ export function createGridCell({ key, coord, gridType = "square" } = {}) {
   };
 }
 
-// A single placed pin on a marker layer. `refKind`/`refId` optionally point at
-// a real Library entity (any kind — location, npc, monster, ...); `label`
-// stands alone if there's no reference yet, or defaults to the entity's own
-// name once one is picked. Mirrors Sanctum's Assets/Needs reference shape
-// ({ kind, refId, label }) but keyed refKind/refId to avoid colliding with
-// this element's own `kind: "marker"` discriminator (the same convention
-// createGridCell's `kind: "cell"` already establishes for layer elements).
-// `image`, when set, supersedes the marker layer's own default icon/color
-// dot for THIS marker only (see map-viewer.js's createMarkerDot) — either
-// picked/typed directly, or auto-copied once from the referenced record's
-// own `image` field the moment refKind/refId is picked (see
-// orrery/js/app.js's renderMarkerElementSelectionEditor), same "copy once at
-// pick-time, stays user-editable after" precedent `label` already follows
-// just below. `sizeCells` is a multiplier on the map's own grid cell size
-// (createMarkerDot), not raw pixels — same "the number means the same
-// thing the ruler already shows" reasoning a shape's own sizeCells follows
-// — 1 is a normal one-square token, 2 a Large creature's 2x2 footprint, etc.
-// `outlineColor`, when set, supersedes the marker LAYER's own outline
-// color default for THIS marker only (same override relationship `image`
-// already has with the layer's icon/color) — blank means "use the layer's
-// own outline," not "no outline." Auto-copied once from the signed-in
-// user's own Favorite Color account setting the moment a Library entity is
-// linked (same copy-once-at-pick-time precedent as `image`/`label`), not
-// re-applied on every render.
-// Vision range — the same "Binding / Formula / Text" shape every other
-// bindable field in this suite uses (see common/js/lib/binding-field.js's
-// own createBindingFormulaInput, and undercroft/common/docs/code-
-// conventions.md's Component Inspector standards): visionRangeFormula wins
-// if set, else visionRangeBinding (an "@dotted.path" into the linked
-// Character's own record — there is no cross-system standard field for
-// this, e.g. Darkvision, so it's always "whatever numeric field the GM
-// picks from that Character's own System," never a hardcoded name), else
-// the literal visionRangeText — see map-viewer.js's
-// resolveMarkerVisionRangeCells for the actual resolution order. Starts in
-// literal-Text mode ("0" = off) so a brand-new marker's Vision Range field
-// is immediately usable with no Binding setup required first, exactly like
-// a new Text component starts at a plain literal value in Workbench.
-// Meaningful only when refKind==="character" and Fog of War's own
-// autoRevealFromVision is on, but harmlessly inert otherwise — same "no
-// error/hidden state for an inapplicable field" precedent a wall's own
-// doorState follows on a plain (non-door) wall.
+// A single placed pin on a marker layer. `refKind`/`refId` optionally point
+// at a real Library entity; `label` stands alone with no reference, or
+// defaults to the entity's own name once one is picked. Mirrors Sanctum's
+// Assets/Needs reference shape but keyed refKind/refId to avoid colliding
+// with this element's own `kind: "marker"` discriminator.
 export function createMarkerElement({
   refKind = "", refId = "", refAnchor = null, label = "", image = "", outlineColor = "", showOutline = true, shape = "circle", position, sizeCells = 1, heightCells = 0, opacity = 1,
   visionRangeBinding = "", visionRangeFormula = "", visionRangeText = "0", linkedCombatantId = "",
@@ -225,119 +165,87 @@ export function createMarkerElement({
     kind: "marker",
     refKind,
     refId,
-    // Meaningful only when refKind === "journal" — `null` (the default)
-    // means the whole page, same as Handout's own contentRef.anchor;
-    // `{type: "heading"|"quest", value}` narrows it to one heading's own
-    // section or one quest's own callout, matching the exact same
-    // reference-target granularity common/js/lib/widgets/handout.js's own
-    // picker offers for a journal-kind selection — see
-    // orrery/js/app.js's own renderMarkerElementSelectionEditor for where
-    // it's populated/read.
+    // Meaningful only when refKind === "journal" — null means the whole
+    // page (like Handout's own contentRef.anchor); {type: "heading"|"quest",
+    // value} narrows to one heading or quest callout.
     refAnchor,
     label,
+    // Supersedes the marker layer's own default icon/color dot for THIS
+    // marker only — either picked/typed directly, or auto-copied once from
+    // the referenced record's own `image` field at pick-time (see app.js's
+    // renderMarkerElementSelectionEditor), staying user-editable after.
     image,
+    // Supersedes the marker LAYER's own outline color for THIS marker only;
+    // blank means "use the layer's own outline," not "no outline." Auto-
+    // copied once from the signed-in user's Favorite Color the moment a
+    // Library entity is linked, not re-applied on every render.
     outlineColor,
-    // Whether the marker's own outline ring (createMarkerDot's border +
-    // its always-on box-shadow ring) renders at all — a per-marker override
-    // like outlineColor itself, but a bool rather than a color, so it needs
-    // its own explicit, concrete default rather than an empty-string
-    // "unset" sentinel: `true` (outline shown) so every marker created
-    // before this field existed keeps rendering exactly as it always has.
-    // An object token that needs a clean, borderless edge-to-edge fill
-    // (a chest, say) is the one case a GM turns this off.
+    // `true` (shown) so every marker created before this field existed keeps
+    // rendering as it always has. Turned off for a token needing a clean,
+    // borderless edge-to-edge fill (a chest, say).
     showOutline: showOutline !== false,
-    // "circle" (the real, concrete default) keeps every marker placed
-    // before this field existed rendering exactly as it always has —
-    // "square" fills the marker's own cell edge-to-edge with sharp
-    // corners instead, for tokens (a chest, a crate) whose art shouldn't
-    // get clipped into a circle. Independent of showOutline: a square
-    // token can still have a border, and a circular one can still go
-    // borderless — the two answer different questions (what shape the
-    // clip is vs. whether a ring draws around it).
+    // "circle" keeps pre-existing markers rendering unchanged; "square"
+    // fills the marker's cell edge-to-edge for tokens whose art shouldn't
+    // get clipped into a circle. Independent of showOutline.
     shape: shape === "square" ? "square" : "circle",
     position: position || { x: 0, y: 0 },
+    // Multiplier on the map's own grid cell size, not raw pixels — 1 is a
+    // normal one-square token, 2 a Large creature's 2x2 footprint.
     sizeCells: Number.isFinite(sizeCells) && sizeCells > 0 ? sizeCells : 1,
-    // Off-the-ground offset, same grid-cell unit convention as sizeCells (so
-    // it respects the map's own Measurement scale/unit) — positive is flying
-    // above the surface, negative is burrowing/submerged below it.
-    // map-viewer.js's own createMarkerDot gives the two directions distinct
-    // visual treatments (a shadow for flying, a dashed outline for
-    // burrowing) rather than one style with a sign flip, since a token
-    // floating above the map and one obscured beneath it don't read the
-    // same way. 0 (on the ground) is the real, concrete default.
+    // Off-the-ground offset, same grid-cell unit as sizeCells — positive is
+    // flying above the surface, negative burrowing/submerged below it.
+    // createMarkerDot gives the two directions distinct visual treatments
+    // (shadow vs. dashed outline) rather than one style with a sign flip.
     heightCells: Number.isFinite(heightCells) ? heightCells : 0,
-    // Per-marker, not per-layer — a token fading in/out (an unconscious or
-    // hidden creature, say) is a property of that ONE placed marker, not
-    // every marker on the layer, same "override, not a layer-wide setting"
-    // relationship outlineColor already has. 1 (fully opaque) is the real,
-    // concrete default — never left unset (createFieldRow's own opacity
-    // sliders throughout this file all follow the same "no invisible
-    // defaults" rule).
+    // Per-marker, not per-layer — a token fading in/out (unconscious,
+    // hidden) is a property of that ONE placed marker.
     opacity: Number.isFinite(opacity) ? Math.min(1, Math.max(0, opacity)) : 1,
-    // Small status/condition badges (poisoned, prone, concentrating, ...) —
-    // a marker can carry several at once, the normal case in actual play
-    // (a creature is often more than one condition simultaneously), each
-    // its own createMarkerOverlayIcon entry (icon token + a badge color).
-    // Purely visual, map-viewer.js's own createMarkerDot renders them; no
-    // mechanical effect on vision/movement the way a wall/door's own state
-    // has. Manually authored only — a linked Character/Monster/NPC's own
-    // LIVE conditions are resolved separately, at render time, from its own
-    // record (Character) or its active-Encounter combatant (Monster/NPC),
-    // never written in here; see map-viewer.js's condition-icon resolver.
+    // Small status/condition badges — a marker can carry several at once
+    // (the normal case in play), each its own createMarkerOverlayIcon
+    // entry. Purely visual; a linked Character/Monster/NPC's own LIVE
+    // conditions are resolved separately at render time from its own
+    // record or active-Encounter combatant, never written in here.
     overlayIcons: [],
+    // Binding/Formula/Text resolution order for Vision Range (see
+    // map-viewer.js's resolveMarkerVisionRangeCells): formula wins if set,
+    // else an "@dotted.path" binding into the linked Character's record (no
+    // cross-system standard field for this, e.g. Darkvision — always
+    // whatever the GM picks), else the literal text. Starts in literal-Text
+    // mode ("0" = off) so a new marker is usable with no Binding setup.
+    // Meaningful only when refKind==="character" and Fog's own
+    // autoRevealFromVision is on; harmlessly inert otherwise.
     visionRangeBinding,
     visionRangeFormula,
     visionRangeText,
     // Only meaningful for refKind "monster"/"npc" — disambiguates WHICH
-    // combatant instance in the campaign's active Encounter this marker
-    // represents, needed only when more than one combatant currently shares
-    // this marker's own refId (e.g. three Goblins in one fight sharing one
-    // Monster record — Monster/NPC records are deliberately reusable
-    // templates, never mutated per-instance, so there's no "this one's"
-    // conditions to read off the record itself). Blank, or a combatant id
-    // that no longer exists in whichever Encounter is CURRENTLY active
-    // (last fight's id — self-heals automatically, no manual cleanup
-    // needed), falls back to "exactly one refId match, if there is one."
+    // combatant instance in the active Encounter this marker represents,
+    // needed when more than one combatant shares this refId (e.g. three
+    // Goblins sharing one Monster record — records are reusable templates,
+    // never mutated per-instance). A stale/blank id falls back to "exactly
+    // one refId match, if there is one" — self-heals with no manual cleanup.
     linkedCombatantId,
-    // Any marker can carry loot — a plain token, an NPC, a Monster, a
-    // Wonder-referencing marker — same "layer a capability onto any marker"
-    // relationship Light/Shape's own attachedMarkerId already has, rather
-    // than a separate "Container" marker type. Each entry is its own
-    // createMarkerContentEntry record (same small-sub-record-with-its-own-id
-    // shape overlayIcons already establishes) so one can be removed/claimed
-    // independently of the others. `contents.length === 0` IS "this
-    // container is empty" — no separate boolean, same "no redundant fields"
-    // convention a wall's own doorState already follows.
+    // Any marker can carry loot — same "layer a capability onto any marker"
+    // relationship Light/Shape's own attachedMarkerId has, rather than a
+    // separate "Container" marker type. `contents.length === 0` IS "empty,"
+    // no separate boolean.
     contents,
-    // Which pool a player claiming FROM THIS container's contents lands
-    // in — "character" (the clicking player's own Character inventory) or
-    // "party" (the campaign Group's own shared Party Inventory property).
-    // A per-container GM choice, not a suite-wide setting — a chest a GM
-    // wants split among whoever gets there first vs. a supply crate meant
-    // for the whole party's shared pool are both real, different cases.
+    // Which pool a player claiming from this container's contents lands in
+    // — "character" (their own inventory) or "party" (the campaign Group's
+    // shared Party Inventory). A per-container GM choice.
     claimTarget: claimTarget === "party" ? "party" : "character",
   };
 }
 
-// One item, currency amount, or a reference to a Vault Wonder record
-// sitting inside a marker's own `contents` — createMarkerElement's own
-// header comment has the full reasoning. An "item"/"wonder" entry is
-// deliberately shaped to match a Character's own `inventory` entry
-// ({name, quantity, notes, weight?}) almost exactly, since claiming one is
-// close to a direct copy into that array; `refId` (only meaningful for
-// kind: "wonder") is what lets a claimed entry also stamp refKind/refId
-// onto the new inventory row, the same "reference back to source"
-// convention markers already use.
-//
-// A "currency" entry instead claims into a Character's own `currencies`
-// object (never the shared Party Inventory — see marker-contents.js's own
-// claimMarkerContentEntry for why currency has no "party pool" concept in
-// this suite), keyed by `denomination` — the active campaign's own System
-// `currency` field's `shortName` (e.g. "gp"), resolved and picked at
-// authoring time (orrery/js/app.js's own Contents editor) against real
-// System data, never a hardcoded denomination vocabulary; `name` for a
-// currency entry is that denomination's own display name ("Gold"), not a
-// GM-typed item name.
+// One item, currency amount, or Vault Wonder reference inside a marker's
+// `contents`. An "item"/"wonder" entry mirrors a Character's own
+// `inventory` entry ({name, quantity, notes, weight?}) almost exactly,
+// since claiming one is close to a direct copy into that array; `refId`
+// (wonder only) lets a claimed entry stamp refKind/refId onto the new row.
+// A "currency" entry claims into a Character's `currencies` object instead
+// (never the shared Party Inventory — see marker-contents.js's
+// claimMarkerContentEntry), keyed by `denomination` — the active System's
+// own `currency` field shortName (e.g. "gp"), resolved at authoring time
+// against real System data, never a hardcoded vocabulary.
 export function createMarkerContentEntry({ kind = "item", name = "", quantity = 1, notes = "", weight, refId = "", denomination = "" } = {}) {
   const safeKind = kind === "wonder" ? "wonder" : kind === "currency" ? "currency" : "item";
   return {
@@ -352,13 +260,9 @@ export function createMarkerContentEntry({ kind = "item", name = "", quantity = 
   };
 }
 
-// One condition/status badge on a marker (createMarkerElement's own
-// overlayIcons array) — same small-sub-record-with-its-own-id shape
-// createGridCell/createGroup already establish for this file's other
-// nested records, so each entry can be individually removed by id. `color`
-// is the badge's own background (a dark neutral default reads fine against
-// most token art without needing per-condition color-coding, but the GM
-// can still color-code if they want — e.g. red for damage-over-time).
+// One condition/status badge on a marker. `color` is the badge's own
+// background — a dark neutral default reads fine against most token art,
+// but a GM can color-code (e.g. red for damage-over-time).
 export function createMarkerOverlayIcon({ icon = "", color = "#1e293b", label = "" } = {}) {
   return {
     id: randomId(),
@@ -368,15 +272,11 @@ export function createMarkerOverlayIcon({ icon = "", color = "#1e293b", label = 
   };
 }
 
-// One freehand-drawn stroke on a vector layer. `points` is an array of
-// positions in the SAME shape a marker element's own `.position` uses
-// ({x,y} for image/canvas, {lat,lng} for tile — see map-viewer.js's
-// markerPositionToLocalPixel), so a drawn path pans/zooms exactly like a
-// placed marker does, point by point. Stroke/fill/width default to the
-// layer's own settings at draw time (layer.settings.strokeColor/fillColor/
-// strokeWidth) but are captured per-path here rather than always read live
-// off the layer, so changing the layer's default color later doesn't
-// retroactively repaint every already-drawn stroke.
+// One freehand-drawn stroke on a vector layer. `points` uses the same
+// position shape a marker's own `.position` uses ({x,y} or {lat,lng}), so a
+// path pans/zooms exactly like a placed marker. Stroke/fill/width default
+// to the layer's own settings at draw time but are captured per-path here,
+// so changing the layer's default later doesn't repaint already-drawn strokes.
 export function createVectorPathElement({ points = [], strokeColor, fillColor, strokeWidth } = {}) {
   return {
     id: randomId(),
@@ -388,43 +288,22 @@ export function createVectorPathElement({ points = [], strokeColor, fillColor, s
   };
 }
 
-// A placed Shape or Effect (Circle/Square/Cone/Line, or an animated
-// particle preset like Burst/Beam/Cone Blast/Pulse — common/js/lib/
-// shape-effect-library.js's own SHAPE_EFFECT_PRESETS is the single source
-// of truth for which presets exist and what each one's colorSlots/params
-// are). Lives in the SAME layer.elements array a drawn path does, on a
-// vector layer, so it inherits that layer's own general select/delete
-// editor machinery, rather than a parallel data shape only some of that
-// machinery understands. There's only ONE placement path — a
-// `kind: "particles"` preset with `loop: false` isn't a different,
-// temporary kind of object; it's an ordinary saved element that plays its
-// animation once per placement/re-trigger instead of continuously. Nothing
-// here is ever created-and-discarded.
+// A placed Shape or Effect (Circle/Square/Cone/Line, or an animated preset
+// like Burst/Beam/Cone Blast/Pulse — shape-effect-library.js's
+// SHAPE_EFFECT_PRESETS is the source of truth). Lives in the SAME
+// layer.elements array a drawn path does, on a vector layer, so it inherits
+// that layer's select/delete editor machinery. Only one placement path — a
+// `kind: "particles"` preset with `loop: false` is an ordinary saved
+// element that plays once per placement/re-trigger, not a temporary object.
 //
-// `sizeCells`/`widthCells` are in GRID CELLS, not raw pixels — the same unit
-// the Measure tool already converts through (getGridCellSize +
-// state.map.measurement.scale/unit, see app.js's formatDistance) — so an
-// element's rendered size stays correct across zoom and across image/canvas
-// vs. tile base maps with no new coordinate math, and the number a GM types
-// means the same thing the ruler already shows them.
-// `opacity`/`snapToGrid` both always land on the element with a real,
-// concrete value at creation time (0.5 / true) — never left unset for a
-// "falls back to some default at render time" branch to paper over later,
-// same "no invisible defaults" rule this whole file follows throughout.
-// `values` replaces the old fixed strokeColor/fillColor pair — one flat
-// object holding whatever the chosen preset's own colorSlots/params keys
-// resolve to (getPresetDefaultValues on creation, e.g. `{fill: "#93c5fd",
-// stroke: "#0f172a"}` for Circle or `{color: "#ff6600"}` for Burst — same
-// "one flat values object, colorSlot and param keys mixed together, no
-// artificial split between them" shape pattern-library.js's own
-// getPresetDefaultValues already establishes), or the caller's own
-// explicit values (e.g. when duplicating an existing element). Editable
-// afterward via the picker modal (Part 3).
-// `attachedMarkerId` — identical field/semantics to createLightElement's
-// own below (map-viewer.js's shared resolveElementOrigin resolves either
-// kind's live position the same way). `label`/`loop` are only meaningful
-// for `kind: "particles"` presets — an empty label/loop:true on a geometry
-// shape is simply never read by anything.
+// `sizeCells`/`widthCells` are grid cells, not raw pixels — same unit the
+// Measure tool converts through, so size stays correct across zoom and
+// across image/canvas vs. tile base maps. `values` replaces the old fixed
+// strokeColor/fillColor pair — one flat object holding whatever the chosen
+// preset's colorSlots/params resolve to (getPresetDefaultValues on
+// creation). `attachedMarkerId` mirrors createLightElement's own field
+// (map-viewer.js's resolveElementOrigin resolves either kind's live
+// position the same way). `label`/`loop` only matter for particle presets.
 export function createVectorShapeElement({
   presetId,
   origin,
@@ -460,22 +339,16 @@ export function createVectorShapeElement({
   };
 }
 
-// A wall OR a door — same element kind, distinguished by wallType, rather
-// than two parallel kinds duplicating the same vision/movement-blocking
-// logic (see map-viewer.js's resolveBlockingSegments, which treats a closed
-// door exactly like a wall and an open one as no obstruction at all). Lives
-// in the SAME layer.elements array a path/shape does, on a vector layer —
-// same reasoning createVectorShapeElement's own header comment already
-// gives for shapes: it inherits that layer's own stroke color/width
-// settings and the general select/delete editor machinery, no parallel data
-// shape needed. `points` is an arbitrary-length polyline in the SAME
-// position shape a path's own points use ({x,y}/{lat,lng}) — deliberately
-// NOT grid-cell-based (unlike a shape's sizeCells) since walls trace real
-// map geometry at any angle/length, not measured distances. A door is
-// authored as a simple 2-point segment; wallType==="wall" ignores
-// doorState/secret/locked entirely but still stores real, harmless
-// defaults for them rather than leaving them unset — same "no invisible
-// defaults" rule this file already follows throughout.
+// A wall OR a door — one element kind, distinguished by wallType, rather
+// than two kinds duplicating the same vision/movement-blocking logic (see
+// map-viewer.js's resolveBlockingSegments, which treats a closed door like
+// a wall and an open one as no obstruction). Lives in the same vector layer
+// elements array as a path/shape, for the same editor-reuse reason.
+// `points` is an arbitrary-length polyline in the same position shape a
+// path uses — deliberately NOT grid-cell-based, since walls trace real map
+// geometry at any angle/length. A door is a simple 2-point segment;
+// wallType==="wall" ignores doorState/secret/locked but still stores
+// harmless defaults for them.
 export const WALL_TYPES = ["wall", "door"];
 
 export function createWallElement({
@@ -491,34 +364,25 @@ export function createWallElement({
     secret: Boolean(secret),
     locked: Boolean(locked),
     // Heavier than a plain path's own 2px default — reads as structural
-    // even before any door-specific styling is layered on top.
+    // even before door-specific styling layers on top.
     strokeColor: strokeColor || "#0f172a",
     strokeWidth: strokeWidth || 3,
-    // Defaults ON (unlike a shape's own snapToGrid, which also defaults on
-    // but for a softer reason) — a wall blocks both light and fog, and fog
-    // is only ever square-grid-cell granular anyway, so an off-grid wall
-    // buys no real precision while making it harder to keep straight/
-    // aligned with neighboring walls. setupWallTool's own placement gesture
-    // snaps each vertex through this same flag (reusing
-    // snapShapeOriginToGrid — genuinely generic, not shape-specific,
-    // despite the name); toggleable per-wall afterward via the inspector
-    // for the rare case an off-grid angle is actually wanted.
+    // Defaults ON — a wall blocks both light and fog, and fog is only ever
+    // square-grid-cell granular anyway, so an off-grid wall buys no real
+    // precision while making it harder to keep aligned with neighbors.
+    // Toggleable per-wall for the rare off-grid-angle case.
     snapToGrid: snapToGrid !== false,
   };
 }
 
-// A freestanding OR token-attached placed light — same element kind either
-// way, distinguished by attachedMarkerId. Freestanding: `origin` is the
-// light's own authored position, exactly like a shape's own origin.
-// Attached: origin is still stored (last-known position, a graceful
-// fallback if the host marker is later deleted so the light doesn't
-// vanish/error, just stops moving) but map-viewer.js's resolveLightOrigin
-// resolves the light's LIVE position from that marker instead every render
-// — e.g. a torch a player's character is carrying. rangeCells is grid
-// cells, same unit convention as a shape's own sizeCells. A light always
-// both glows AND reveals fog within its own wall-aware line-of-sight (see
-// resolveRevealedCells/renderLightElement) — there's no separate "cosmetic
-// only" mode, matching the user's own confirmed "dynamic lighting" scope.
+// A freestanding OR token-attached placed light — one element kind,
+// distinguished by attachedMarkerId. Freestanding: `origin` is the light's
+// authored position. Attached: origin is still stored (a graceful fallback
+// if the host marker is later deleted) but resolveLightOrigin resolves the
+// LIVE position from that marker each render instead — e.g. a torch a
+// character carries. rangeCells is grid cells, same convention as a
+// shape's sizeCells. A light always both glows AND reveals fog within its
+// own wall-aware line-of-sight — no separate "cosmetic only" mode.
 export function createLightElement({
   origin, attachedMarkerId = "", rangeCells = 4, color = "#fbbf24", opacity = 0.5,
 } = {}) {
@@ -528,11 +392,8 @@ export function createLightElement({
     origin: origin || { x: 0, y: 0 },
     attachedMarkerId,
     rangeCells: Number.isFinite(rangeCells) && rangeCells > 0 ? rangeCells : 4,
-    // A warm amber/yellow (Tailwind's amber-400) — the default "torch"
-    // color, not a themed accent blue. Never falls back to the containing
-    // vector layer's own fillColor default (which IS blue,
-    // createLayerSettings("vector")'s own #93c5fd) — that's a shape-fill
-    // convention, not a sensible light-source default.
+    // A warm amber (Tailwind's amber-400) — the default "torch" color, never
+    // the containing vector layer's own blue fillColor default.
     color: color || "#fbbf24",
     opacity: Number.isFinite(opacity) ? opacity : 0.5,
   };
@@ -547,14 +408,11 @@ export function createGroup({ name } = {}) {
   };
 }
 
-// A View's own visibility fields are both DENY-lists (empty = nothing hidden), not
-// allow-lists — deliberately, so a brand new layer/marker/path/shape/wall/light is
-// visible everywhere by default with zero per-View bookkeeping, and so a freshly
-// auto-created View (see app.js's toggleElementHiddenFromPlayers) can never
-// accidentally hide something nobody actually unchecked. `groupIds` (the old
-// "Visible Groups" concept) is gone entirely — it was written by the View editor's
-// own UI but never read by the actual visibility computation (computeHiddenIds,
-// map-viewer.js), a confirmed dead field, not a design this replaces.
+// A View's visibility fields are DENY-lists (empty = nothing hidden), not
+// allow-lists — so a brand new layer/marker/path/shape/wall/light is
+// visible everywhere by default with zero per-View bookkeeping, and a
+// freshly auto-created View (app.js's toggleElementHiddenFromPlayers) can
+// never accidentally hide something nobody unchecked.
 export function createView({ name, description, hiddenLayerIds = [], hiddenElementIds = [], tiers = [], autoManaged = false } = {}) {
   return {
     id: randomId(),
@@ -563,10 +421,9 @@ export function createView({ name, description, hiddenLayerIds = [], hiddenEleme
     hiddenLayerIds: Array.isArray(hiddenLayerIds) ? hiddenLayerIds.filter(Boolean) : [],
     hiddenElementIds: Array.isArray(hiddenElementIds) ? hiddenElementIds.filter(Boolean) : [],
     tiers: Array.isArray(tiers) ? tiers.filter(Boolean) : [],
-    // True only for the one View toggleElementHiddenFromPlayers manages for itself
-    // (app.js) — lets that convenience toggle always find/reuse its own View by a
-    // stable marker rather than guessing off name/tiers, which a GM might also
-    // legitimately choose for a hand-authored View.
+    // True only for the one View toggleElementHiddenFromPlayers manages for
+    // itself — lets that convenience toggle reuse its own View by a stable
+    // marker rather than guessing off name/tiers.
     autoManaged: Boolean(autoManaged),
     settings: {},
   };
@@ -584,29 +441,20 @@ export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" }
       properties: {},
     },
     view: getDefaultView(type),
-    // The view a map ALWAYS opens to (see resolveInitialView below and
-    // app.js's own applyMapSnapshot), independent of `view` above — that
-    // one keeps live-syncing with wherever the camera actually is during
-    // an editing session (pan/zoom/Reset all write through it), so it's
-    // NOT a stable "start here" value on its own; a map reopened later
-    // would otherwise just resume wherever a previous session's camera
-    // happened to be left. Deliberately DOES default to real values (zoom
-    // 1, pan {0,0}), unlike measurement's own "stays unset until
-    // configured" convention just below — these specific numbers are meant
-    // to be the out-of-the-box default the GM sees, not an unset "don't
-    // use this yet" case the way an unconfigured scale is.
+    // The view a map ALWAYS opens to (see resolveInitialView), independent
+    // of `view` above — that one keeps live-syncing with the camera during
+    // an editing session, so it's not a stable "start here" value on its
+    // own. Defaults to real values (zoom 1, pan {0,0}) as the out-of-the-box
+    // default, unlike measurement's own deliberately-unset convention below.
     initialView: { zoom: 1, pan: { x: 0, y: 0 } },
     layers: [createLayer({ type: "grid", name: "Primary Grid Layer" })],
     groups: [],
     views: [],
     properties: {},
-    // Deliberately no default scale/unit (unlike the rest of this model,
-    // which mostly ships opinionated defaults) — the Measure tool reads
-    // this and stays disabled until the GM sets both, rather than silently
-    // measuring against an invented number nobody configured. One value for
-    // the whole map (not per-grid-layer) since a map's grid squares always
-    // represent the same real-world distance regardless of which layer
-    // happens to be selected.
+    // No default scale/unit — the Measure tool stays disabled until the GM
+    // sets both, rather than silently measuring against an invented number.
+    // One value for the whole map, since grid squares always represent the
+    // same real-world distance regardless of which layer is selected.
     measurement: { scale: null, unit: "" },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -614,13 +462,10 @@ export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" }
 }
 
 // Resolves the ACTUAL view a map should open at — getDefaultView(type)'s
-// own per-type baseline (mode/center included, for tile maps' own geo
-// mode), with the map's own configured Initial Zoom/Position applied on
-// top. Tolerant of a map saved before this field existed (no `initialView`
-// at all, or a partial one) — falls back to the type's own default
-// zoom/pan exactly as before this feature existed, so opening an older
-// saved map doesn't suddenly jump to a different starting view than it
-// always has.
+// per-type baseline with the map's configured Initial Zoom/Position applied
+// on top. Tolerant of a map saved before this field existed (no
+// `initialView`, or a partial one) — falls back to the type's own default
+// so an older saved map doesn't jump to a different starting view.
 export function resolveInitialView(map) {
   const defaultView = getDefaultView(map.baseMap?.type);
   const initialView = map.initialView || {};

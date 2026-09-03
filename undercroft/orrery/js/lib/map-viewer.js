@@ -1,21 +1,15 @@
 // The shared map-rendering core for a BaseMapManager-driven map — used by
-// Orrery's own authoring surface (orrery/js/app.js) AND the Dashboard's
-// read-only Map widget (common/js/lib/widgets/map.js), so there's exactly
-// one implementation of every layer type's rendering, the tiered-visibility
-// filter, the marker coordinate math, and the pixel-drag mechanics — not two
-// copies that could drift apart. Whatever layers a map has (grid, raster,
-// vector, marker), both consumers render through the same functions, so
-// they always look the same.
+// Orrery's own authoring surface AND the Dashboard's read-only Map widget
+// (common/js/lib/widgets/map.js), so there's exactly one implementation of
+// every layer type's rendering, the tiered-visibility filter, the marker
+// coordinate math, and the pixel-drag mechanics, not two copies that could drift.
 //
-// Everything caller-specific stays out of this module and is expressed as
-// callbacks instead: Orrery's undo-stack recording, property-inspector
-// selection, grid-cell click-selection semantics (ctrl/shift range select),
-// "click empty space to place a new marker," and whole-layer drag are all
-// authoring-only concerns with no meaning for a read-only viewer — none of
-// them are called at all when a caller (the Dashboard widget) doesn't supply
-// the corresponding callback, which is also exactly why passing no
-// `selection`/`activeGroup` here is enough to get a plain, non-interactive
-// render with zero special-casing on the caller's part.
+// Everything caller-specific stays out of this module as callbacks instead:
+// undo-stack recording, inspector selection, click-selection semantics,
+// "click empty space to place a marker," whole-layer drag — all authoring-
+// only concerns that simply never fire when a caller (the Dashboard widget)
+// doesn't supply the callback, which is why omitting `selection`/
+// `activeGroup` is enough to get a plain, non-interactive render.
 
 import { getIconTokens } from "../../../common/js/lib/icon-picker.js";
 import { resolveBinding } from "../../../common/js/lib/bindings.js";
@@ -27,12 +21,10 @@ import { getDefaultView as getTypeDefaultView, createMarkerOverlayIcon } from ".
 import { getPresetById } from "../../../common/js/lib/shape-effect-library.js";
 
 // A referenced marker's own "open the real thing" link — shared by both
-// restricted-viewer consumers (the Dashboard's Map widget, Orrery's own
-// view-mode render path) so a marker's link-out button always resolves the
-// exact same way regardless of which one is showing it. Only ever needs the
-// id already sitting on the marker itself (refId) plus, for a journal
-// reference, whichever specific heading/quest anchor is selected (refAnchor)
-// — never a fetch of the full referenced record.
+// restricted-viewer consumers (the Dashboard widget, Orrery's view-mode
+// path) so it always resolves the same way. Only needs refId plus, for a
+// journal reference, the selected heading/quest anchor (refAnchor) — never
+// a fetch of the full referenced record.
 export function resolveMarkerLinkTarget(markerElement) {
   if (!markerElement?.refKind || !markerElement?.refId) return null;
   const extraParams =
@@ -44,16 +36,13 @@ export function resolveMarkerLinkTarget(markerElement) {
   return { url, toolLabel: kindToolLabel(markerElement.refKind) };
 }
 
-// Returns null when nothing should be filtered (hasFullAccess) — the map's own
+// Returns null when nothing should be filtered (hasFullAccess) — the map's
 // owner/admin always sees everything. Otherwise `{ layers: Set, elements: Set }`,
-// the union of hiddenLayerIds/hiddenElementIds across every View whose `tiers` is
-// empty (applies to everyone) or includes viewerTier. View.hiddenLayerIds/
-// hiddenElementIds are DENY-lists, not allow-lists — a map with no authored Views
-// at all, or Views that don't happen to hide anything, naturally yields two empty
-// Sets ("nothing hidden") with no special-casing needed; that's also why a
-// freshly auto-created View (app.js's toggleElementHiddenFromPlayers) can never
-// accidentally hide something nobody actually unchecked, unlike the old allow-list
-// shape this replaced (an empty layerIds there meant "show nothing at all").
+// the union of hiddenLayerIds/hiddenElementIds across every View whose `tiers`
+// is empty (applies to everyone) or includes viewerTier. Both are DENY-lists,
+// not allow-lists — a map with no authored Views naturally yields two empty
+// Sets ("nothing hidden"), and a freshly auto-created View can never
+// accidentally hide something nobody unchecked.
 export function computeHiddenIds(map, viewerTier, hasFullAccess) {
   if (hasFullAccess) return null;
   const applicableViews = (map.views || []).filter((view) => !view.tiers?.length || view.tiers.includes(viewerTier));
@@ -71,34 +60,24 @@ export function isTileBaseMap(map) {
 }
 
 // Image/canvas base maps live inside PanZoomController's own CSS
-// `scale(zoom)` transform (see pan-zoom.js's applyTransform) — everything
-// under it (grid, markers, vector shapes) is positioned in PRE-scale
-// content-space pixels, and the ambient transform handles making that look
-// right at the current zoom for free... for RENDERING. Any code that goes
-// the other direction — converting a raw event.clientX/clientY (a POST-
-// scale, real screen pixel) back into content-space, e.g. "where did the
-// user click" or "how far did the pointer move during a drag" — has to
-// divide by the current zoom first, or it's off by exactly that factor
-// (confirmed as the actual cause of "a new marker/shape appears offset
-// from the cursor" and "dragging doesn't track the cursor" once zoom
-// drifts from the default 1 — which it does the instant a GM zooms in to
-// see a newly native-sized image better). Tile maps need no such division —
-// Leaflet's own layerPoint space already accounts for zoom internally
-// (mouseEventToLayerPoint/latLngToLayerPoint), which is why their own call
-// sites below don't call this at all.
+// `scale(zoom)` transform — everything under it is positioned in PRE-scale
+// content-space pixels, which the ambient transform renders correctly for
+// free. But converting a raw event.clientX/clientY (a POST-scale real
+// screen pixel) back into content-space — "where did the user click" —
+// has to divide by the current zoom first, or it's off by that factor once
+// zoom drifts from 1. Tile maps need no such division — Leaflet's own
+// layerPoint space already accounts for zoom internally, which is why
+// their call sites below never call this.
 function getNonTileZoom(baseMapManager) {
   return baseMapManager?.getView?.()?.zoom || 1;
 }
 
 // A marker's stored position shape depends on the base map it was placed on
-// (lat/lng for tile, flat x/y for image/canvas — see markerPositionToLocalPixel
-// below) — a marker placed before the map's base map type was later changed
-// carries the OLD shape, which markerPositionToLocalPixel can't project at
-// all and would otherwise silently fall back to a meaningless (0, 0), i.e. a
-// phantom dot wherever Leaflet's current pixel origin happens to be. Skipping
-// it here (both Orrery and the Dashboard widget render through this same
-// function) means a stale marker just doesn't render, instead of appearing
-// as an extra, wrongly-placed one.
+// (lat/lng for tile, flat x/y for image/canvas). A marker placed before the
+// map's base map type later changed carries the OLD shape, which
+// markerPositionToLocalPixel can't project and would otherwise fall back to
+// a meaningless (0,0) phantom dot — skipped here so a stale marker just
+// doesn't render, instead of appearing wrongly-placed.
 function hasValidMarkerPosition(map, position) {
   if (isTileBaseMap(map)) {
     return Number.isFinite(position?.lat) && Number.isFinite(position?.lng);
@@ -106,12 +85,10 @@ function hasValidMarkerPosition(map, position) {
   return Number.isFinite(position?.x) && Number.isFinite(position?.y);
 }
 
-// Layer position is a whole-layer pan offset applied on top of each marker
-// element's own coordinate. Tile maps don't use this: every marker carries
-// a real {lat, lng}, so a separate manual "drag the whole layer" pixel
-// offset has no coherent meaning there. The `* 1` layer-position-scale
-// factor mirrors orrery/js/app.js's own getLayerPositionScale, currently a
-// stub for a not-yet-implemented per-layer scale feature.
+// Layer position is a whole-layer pan offset on top of each marker's own
+// coordinate. Tile maps don't use this — every marker carries a real
+// {lat, lng}, so a manual "drag the whole layer" offset has no coherent
+// meaning there.
 export function getMarkerLayerOffset(map, layer) {
   if (isTileBaseMap(map)) {
     return { x: 0, y: 0 };
@@ -125,18 +102,14 @@ export function getMarkerLayerOffset(map, layer) {
 //
 // Tile maps re-derive the pixel position fresh on every render via
 // Leaflet's own layerPoint projection: a flat pixel offset only looks right
-// at the zoom level it was placed at, since Leaflet resets its internal
-// pixel origin on zoom rather than just visually rescaling existing
-// content. layerPoint is the same coordinate space Leaflet's own overlays
-// use internally, which is why it stays correctly anchored — relative to
-// the map's pixel origin, not the live pan offset (the enclosing Leaflet
-// pane's own transform, which the overlay host already lives inside,
-// supplies the pan, exactly like every built-in Leaflet layer).
+// at the zoom it was placed at, since Leaflet resets its internal pixel
+// origin on zoom rather than rescaling existing content. layerPoint stays
+// correctly anchored to the map's pixel origin; the enclosing Leaflet
+// pane's own transform supplies the pan, like any built-in Leaflet layer.
 //
-// Image/canvas maps keep the original flat {x, y} model: their overlay
-// lives inside the same CSS-transformed element PanZoomController pans and
-// scales, so a plain local pixel coordinate already tracks pan/zoom for
-// free, with no projection reset to worry about.
+// Image/canvas maps keep the flat {x, y} model: their overlay lives inside
+// the same CSS-transformed element PanZoomController pans/scales, so a
+// local pixel coordinate already tracks pan/zoom for free.
 export function markerPositionToLocalPixel(baseMapManager, map, position) {
   if (isTileBaseMap(map)) {
     const leafletMap = baseMapManager.getMap();
@@ -169,15 +142,12 @@ export function getMarkerElementPixelPosition(baseMapManager, map, layer, marker
   return { x: offset.x + local.x, y: offset.y + local.y };
 }
 
-// Converts a raw pointer event into a map-space position (the same {x,y}/
-// {lat,lng} shape a marker element's own `position` uses) — the same
-// tile-vs-flat branching createMarkerLayerElement's own onEmptyClick already
-// does (Leaflet's mouseEventToLayerPoint for a tile map, a plain
-// container-relative rect subtraction for image/canvas), extracted here so
-// a layer-independent caller (Orrery's click-to-ping tool) can reuse it
-// without a marker layer's own container/offset in the picture at all —
-// `referenceContainer` is just baseMapManager's own overlay container, not
-// any one layer's.
+// Converts a raw pointer event into a map-space position (a marker
+// element's own `position` shape) — the same tile-vs-flat branching
+// createMarkerLayerElement's onEmptyClick does, extracted so a
+// layer-independent caller (Orrery's click-to-ping tool) can reuse it.
+// `referenceContainer` is baseMapManager's own overlay container, not any
+// one layer's.
 export function resolveClickPosition(baseMapManager, map, event, referenceContainer) {
   let localPixel;
   if (isTileBaseMap(map)) {
@@ -193,37 +163,29 @@ export function resolveClickPosition(baseMapManager, map, event, referenceContai
   return localPixelToMarkerPosition(baseMapManager, map, localPixel);
 }
 
-// Drag operates in plain screen-pixel deltas for TILE maps (correct as-is —
-// you're never crossing a zoom-driven projection reset mid-drag, and
-// Leaflet's own layerPoint space, which startPixel/dotEl's left/top are
-// already in, is defined as 1 unit per CSS pixel at the current zoom, so a
-// raw mouse delta already IS a layerPoint delta) but needs dividing by the
-// current zoom for image/canvas maps first — dotEl lives inside
-// PanZoomController's own scale(zoom) transform, so its left/top are
-// CONTENT-space pixels, and a raw (post-scale) screen-pixel mouse delta
-// applied there directly overshoots by exactly the zoom factor (see
-// getNonTileZoom's own comment). Converts the final pixel position back
-// into the marker's real stored representation (lat/lng or x/y) once the
-// gesture ends. `onDragEnd(nextPosition)` only fires if the gesture
-// actually moved the marker — a plain click-no-drag is a no-op here
-// (callers that also want "select on click" pass `onDragStart`, called
-// unconditionally before tracking begins).
+// Drag operates in plain screen-pixel deltas for TILE maps (Leaflet's
+// layerPoint space is 1 unit per CSS pixel at the current zoom, so a raw
+// mouse delta already IS a layerPoint delta) but divides by zoom first for
+// image/canvas maps — dotEl lives inside PanZoomController's scale(zoom)
+// transform, so its left/top are content-space pixels, and a raw
+// post-scale mouse delta applied there overshoots by the zoom factor.
+// Converts the final pixel back to the marker's stored representation
+// (lat/lng or x/y) once the gesture ends. `onDragEnd(nextPosition)` only
+// fires if the gesture actually moved the marker — a plain click is a
+// no-op (callers wanting "select on click" pass `onDragStart` instead,
+// called unconditionally before tracking begins).
 //
-// `isMoveBlocked(fromPixel, toPixel)`, if supplied, is checked on EVERY
-// pointermove (not just at gesture end) — if the segment from the marker's
-// last unblocked position to the proposed next one crosses a blocking wall/
-// closed-door, that frame's move is simply skipped (dotEl stays at
-// lastPixel), producing a natural "stops at the wall" feel without full
-// vector-sliding geometry. Only ever passed by the Dashboard widget's own
-// player-token drag path (map.js's own resolveMarkerMoveBlocked) — Orrery's
-// own free-drag authoring surface never passes this, a GM must be able to
-// drag any token through walls while setting up a scene.
+// `isMoveBlocked(fromPixel, toPixel)`, if supplied, is checked on every
+// pointermove — if the segment crosses a blocking wall/closed-door, that
+// frame's move is skipped (dotEl stays at lastPixel), giving a natural
+// "stops at the wall" feel without vector-sliding geometry. Only the
+// Dashboard widget's player-token drag passes this; Orrery's own free-drag
+// authoring surface never does — a GM must drag tokens through walls
+// while setting up a scene.
 function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl, { onDragEnd, isMoveBlocked, onClick } = {}) {
-  // Best-effort — see renderShapeElement's own matching try/catch for why
-  // (some browsers throw InvalidStateError capturing in certain DOM
-  // positions); the window-level pointermove/pointerup listeners below
-  // track the gesture regardless, capture is just a "stay locked to this
-  // element" nicety on top.
+  // Best-effort — some browsers throw InvalidStateError capturing in
+  // certain DOM positions; the window-level listeners below track the
+  // gesture regardless, capture is just a "stay locked" nicety on top.
   try {
     dotEl.setPointerCapture(event.pointerId);
   } catch (error) {
@@ -261,12 +223,10 @@ function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl
       const nextPosition = localPixelToMarkerPosition(baseMapManager, map, localPixel);
       onDragEnd?.(nextPosition);
     } else {
-      // The pointer never actually moved — a plain click/tap, not a drag.
-      // Distinct from onDragEnd (never fires for a no-op gesture, per this
-      // function's own header comment) so a caller can tell "select/edit
-      // this marker" apart from "the marker just got moved." Passes dotEl
-      // through so a caller (a click-to-edit popover) can anchor its own UI
-      // to the actual on-screen marker, not just know which one was clicked.
+      // The pointer never moved — a plain click/tap, not a drag. Distinct
+      // from onDragEnd so a caller can tell "select this marker" apart from
+      // "it moved." Passes dotEl so a click-to-edit popover can anchor to
+      // the actual on-screen marker.
       onClick?.(dotEl);
     }
   };
@@ -274,12 +234,11 @@ function beginMarkerDrag(event, baseMapManager, map, layer, markerElement, dotEl
   window.addEventListener("pointerup", onUp);
 }
 
-// A transient, self-removing ping dot — appended by the caller into
-// baseMapManager's own overlay container (not a specific layer's, pings are
-// layer-independent) at the given map-space position, and automatically
-// detached after its fade-out animation (orrery/css/styles.css's own
-// `.orrery-ping` keyframes) finishes. `label`, if given, renders as a small
-// "who pinged" caption next to the dot.
+// A transient, self-removing ping dot — appended into baseMapManager's own
+// overlay container (pings are layer-independent) at the given map-space
+// position, detached automatically after its fade-out animation
+// (orrery/css/styles.css's `.orrery-ping` keyframes) finishes. `label`, if
+// given, renders as a small "who pinged" caption.
 export function createPingMarker(baseMapManager, map, position, label = "") {
   const pixel = markerPositionToLocalPixel(baseMapManager, map, position);
   const dot = document.createElement("div");
@@ -314,99 +273,62 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   dot.dataset.elementId = markerElement.id;
   // Sized to the map's own primary grid cell — a token fills its whole
   // square, the standard VTT convention — rather than a fixed pixel size
-  // that had no relationship to the grid at all (confirmed as the actual
-  // cause of a marker looking "smaller than a square, off to one side":
-  // a small fixed-size dot centered correctly on a much bigger cell just
-  // looks adrift relative to the cell's own edges). Falls back to the
-  // layer's own Size setting only when there's no grid layer to size
-  // against at all.
+  // unrelated to the grid. Falls back to the layer's own Size setting only
+  // when there's no grid layer to size against.
   //
   // Deliberately NOT filtered on the grid layer's own visibility — Visible
-  // is a display toggle for the grid LINES, not a statement that the grid
-  // stops being the map's real scale/cell size while hidden. Confirmed as
-  // a real bug before this: markers (and AoE shapes, see
-  // resolveShapePixelsPerCell below) visibly changed size the instant the
-  // GM hid the grid layer, even though nothing about the map's actual
-  // scale changed.
+  // toggles the grid LINES, not the map's real scale/cell size, so markers
+  // (and AoE shapes, see resolveShapePixelsPerCell below) must stay the
+  // same size whether or not the GM has the grid layer hidden.
   const gridLayer = (map.layers || []).find((entry) => entry.type === "grid");
   const cellSize = gridLayer ? getGridCellSize(baseMapManager, map, gridLayer) : layer.settings?.size || 24;
-  // sizeCells is a per-marker multiplier on top of the grid's own cell size
-  // (createMarkerElement) — 1 (a normal one-square token) by default, so
-  // this is a no-op for every marker placed before the field existed.
+  // sizeCells is a per-marker multiplier on the grid's own cell size — 1
+  // (one-square token) by default, a no-op for markers predating this field.
   const sizeCells = Number.isFinite(markerElement.sizeCells) && markerElement.sizeCells > 0 ? markerElement.sizeCells : 1;
   const size = cellSize * sizeCells;
   dot.style.width = `${size}px`;
   dot.style.height = `${size}px`;
-  // Centering (top/left 50% + translate(-50%,-50%)) already comes from the
-  // .orrery-layer-marker-overlay CSS rule — dot.style.left/top below just
-  // overrides that 50%/50% anchor with this element's own pixel position;
-  // the transform still applies on top, so the dot's center (not its
-  // top-left corner) lands on that pixel.
+  // Centering comes from the .orrery-layer-marker-overlay CSS rule;
+  // dot.style.left/top below overrides its 50%/50% anchor with this
+  // element's own pixel position, so the dot's center lands on that pixel.
   const ringColor = layer.settings?.color || "#0ea5e9";
-  // "square" (createMarkerElement's own comment) fills the cell edge-to-
-  // edge with sharp corners instead of the circular clip every marker used
-  // to be stuck with — applied to `dot` itself (its border + the CSS
-  // class's own border-radius: 999px) and to `face` below (the actual
-  // image/color fill), so an object token's art isn't cropped into a
-  // circle it was never drawn for.
+  // "square" (createMarkerElement) fills the cell edge-to-edge with sharp
+  // corners instead of the circular clip — applied to both `dot` (border +
+  // the CSS class's border-radius: 999px) and `face` below, so an object
+  // token's art isn't cropped into a circle it was never drawn for.
   const isSquare = markerElement.shape === "square";
   dot.style.borderRadius = isSquare ? "0" : "999px";
-  // Outline — was a fixed, uneditable CSS default (2px, theme body-bg,
-  // image markers only) before; now applies to every marker (plain dot
-  // included) and reads from the layer's own configured settings, always
-  // present with a real value (createLayerSettings' own "no invisible
-  // defaults" rule) so this never falls back to something unconfigured.
-  // markerElement.outlineColor, when set, overrides the layer default for
-  // THIS marker only (createMarkerElement's own comment — e.g. auto-copied
-  // from a linked user's Favorite Color).
-  // showOutline (createMarkerElement's own comment) defaults to true, so
-  // this only ever changes anything once a GM explicitly turns a
-  // container's outline off — most commonly an object token (a chest, say)
-  // that needs a clean, borderless edge-to-edge fill. Turning it off also
-  // has to zero the CSS class's own always-on 1px box-shadow ring
-  // (.orrery-layer-marker-overlay), not just the border — border alone
-  // being 0 still left that ring visible, since nothing else ever
-  // overrides it.
+  // Outline reads from the layer's configured settings (always a real
+  // value, never unconfigured); markerElement.outlineColor overrides it
+  // for THIS marker only. showOutline defaults to true — turning it off
+  // (an object token needing a clean edge-to-edge fill) must also zero the
+  // CSS class's always-on box-shadow ring, not just the border, or the
+  // ring stays visible with nothing overriding it.
   if (markerElement.showOutline === false) {
     dot.style.borderWidth = "0px";
-    // The .is-selected CSS rule's own 3px selection ring is also a
-    // box-shadow — an inline style always wins over a class selector
-    // regardless of specificity, so clearing this unconditionally would
-    // silently swallow the selection highlight too, leaving a GM unable to
-    // tell a borderless token is selected. Reproduce that rule's own value
-    // inline when selected; otherwise there's truly nothing left to show.
+    // The .is-selected rule's own selection ring is also a box-shadow — an
+    // inline style always wins over a class selector, so clearing this
+    // unconditionally would swallow the selection highlight too.
+    // Reproduce that ring's value inline when selected instead.
     dot.style.boxShadow = options.selected ? "0 0 0 3px rgba(14, 165, 233, 0.9)" : "none";
   } else {
     dot.style.borderColor = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
     dot.style.borderWidth = `${Number.isFinite(layer.settings?.outlineWidth) ? layer.settings.outlineWidth : 2}px`;
   }
-  // Per-marker only (no layer-wide equivalent, unlike outline color/width) —
-  // see createMarkerElement's own comment. Falls back to 1 only for a
-  // marker saved before this field existed; every marker placed since
-  // always stamps a real number here.
+  // Per-marker only, no layer-wide equivalent — falls back to 1 only for a
+  // marker saved before this field existed.
   dot.style.opacity = String(Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1);
-  // Off-the-ground visual cue (createMarkerElement's own heightCells) —
-  // positive (flying) gets an offset blurred shadow only, negative
-  // (burrowing/submerged) gets a dashed outline only; a token floating
-  // above the map and one obscured beneath it don't read the same way, so
-  // this deliberately isn't one style with a sign flip.
+  // Off-the-ground visual cue — positive (flying) gets a blurred shadow,
+  // negative (burrowing) gets a dashed outline; a floating token and one
+  // obscured beneath the map don't read the same way, so this isn't one
+  // style with a sign flip.
   //
-  // The shadow needs to sit BEHIND the token's own fill (portrait image or
-  // flat color) — but that fill can't just be `dot`'s own background the
-  // way it used to be: a box's own background is ALWAYS the bottom-most
-  // paint layer within it, beneath every one of its children, including a
-  // negative-z-index one (confirmed real bug from the first attempt at
-  // this: a z-index trick on the shadow child never actually sank it below
-  // dot's own background, since nothing painted BY a child can ever go
-  // below the background of the box it's a child of — that's true
-  // regardless of z-index). So the fill itself now lives on `face`, a
-  // separate child appended AFTER the shadow — two plain same-stacking-
-  // level children paint in tree order, so face's fill correctly lands on
-  // top of the shadow, and the shadow's own portion that pokes out past
-  // face's edge reads as sitting behind the token, exactly as intended.
-  // `dot` itself keeps only its border/opacity/position — a thin outline
-  // ring is a negligible one-pixel-scale case of the same "child paints
-  // over the ring" effect, not the visibly "darkened token" bug this fixes.
+  // The shadow must sit BEHIND the token's own fill, but a box's own
+  // background is always the bottom-most paint layer beneath every child
+  // regardless of z-index — so the fill lives on `face`, a separate child
+  // appended AFTER the shadow; same-stacking-level children paint in tree
+  // order, so face correctly lands on top and the shadow's overflow reads
+  // as sitting behind the token.
   const heightCells = Number.isFinite(markerElement.heightCells) ? markerElement.heightCells : 0;
   if (heightCells > 0) {
     const shadowSize = size * 1.05;
@@ -427,27 +349,22 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
     dot.style.borderStyle = "dashed";
   }
   // Per-marker image supersedes the layer's flat color/icon dot entirely —
-  // see map-model.js's createMarkerElement for how `image` gets set (manual
-  // pick, or auto-inherited once from a referenced Library record). A real
-  // <img>, not a background-image div, specifically so Square shape can
-  // size off the browser's own intrinsic width/height (max-width/
-  // max-height + width/height:auto, no JS preloading needed) instead of a
-  // fixed square box — a non-square image (a wide chest icon, say) used to
-  // get its longer axis silently cropped off by background-size:cover
-  // forcing it to fill a square regardless of its own real proportions.
+  // see map-model.js's createMarkerElement for how `image` gets set. A
+  // real <img>, not a background-image div, so Square shape can size off
+  // the browser's own intrinsic width/height instead of a fixed square box
+  // — background-size:cover would otherwise crop a non-square image's
+  // longer axis to force it to fill a square.
   let face;
   if (markerElement.image) {
     face = document.createElement("img");
     face.className = "orrery-marker-face";
     face.src = markerElement.image;
     face.alt = "";
-    // Browsers make <img> natively draggable by default — confirmed real
-    // bug this fixes: a non-draggable marker's own click listener (below)
-    // only calls preventDefault() on the "click" event itself, too late to
-    // stop the browser from treating an ordinary mouse click's few pixels
-    // of jitter as the START of a native HTML5 image-drag gesture instead;
-    // once that native drag takes over, the browser never fires "click" at
-    // all, so the listener silently never ran. The draggable marker path
+    // Browsers make <img> natively draggable by default — a non-draggable
+    // marker's own click listener only calls preventDefault() on "click",
+    // too late to stop a few pixels of mouse jitter starting a native
+    // HTML5 image-drag instead, which then never fires "click" at all. The
+    // draggable marker path
     // never hit this (its own pointerdown already calls preventDefault
     // before any native drag could start), which is exactly why only
     // non-draggable, image-having markers (a treasure pile, say) went
@@ -501,32 +418,22 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   }
   dot.appendChild(face);
   const draggable = options.draggable !== false;
-  // Clickable (pointer-events on at all) whenever it's either draggable OR
-  // has a plain-click handler to fire — NOT draggable alone. Confirmed real
-  // bug this fixes: pointer-events was "none" for every non-draggable
-  // marker, which silently ate clicks (and the events never even reached
-  // the listener wired further down) on anything a viewer couldn't drag —
-  // most GM-placed containers/NPCs/monsters, for any restricted viewer.
+  // Clickable whenever draggable OR a plain-click handler exists — not
+  // draggable alone, or pointer-events would silently eat clicks (never
+  // reaching the listener below) on anything a restricted viewer can't drag.
   const clickable = draggable || Boolean(options.onClick);
   dot.style.pointerEvents = clickable ? "auto" : "none";
   dot.style.cursor = clickable ? "pointer" : "default";
   const pixelPosition = getMarkerElementPixelPosition(baseMapManager, map, layer, markerElement);
   dot.style.left = `${pixelPosition.x}px`;
   dot.style.top = `${pixelPosition.y}px`;
-  // Live Marker Resource Bar (see resolveMarkerResourceBar's own header
-  // comment) — resolved OUTSIDE this function and passed in via options,
-  // the same "options.resolveConditionIcons"-shaped contract every other
-  // per-marker live-data lookup in this file already uses.
-  // `resourceBarHeight` is computed here (not just inline on the element
-  // below) so the label block right after can stack itself further out
-  // when both render "above" the same marker, instead of the two
-  // overlapping. Sized off `cellSize` (the grid's own single-cell size),
-  // NOT `size` (cellSize * sizeCells) — confirmed real ask: a bigger
-  // monster's own multi-cell token shouldn't get a proportionally bigger
-  // bar, unlike every other per-marker overlay in this function (labels,
-  // condition badges), which deliberately DOES scale with the token's own
-  // footprint. Still scales with zoom, same as everything else here, since
-  // cellSize itself is a content-space pixel value.
+  // Live Marker Resource Bar — resolved outside this function, passed via
+  // options, same live-data-lookup contract as options.resolveConditionIcons.
+  // `resourceBarHeight` is computed here so the label block below can stack
+  // further out when both render "above" the same marker. Sized off
+  // `cellSize` (one grid cell), NOT `size` (cellSize * sizeCells) — a
+  // bigger monster's multi-cell token shouldn't get a proportionally
+  // bigger bar, unlike labels/badges which deliberately do scale with footprint.
   const resourceBar = options.resolveResourceBar ? options.resolveResourceBar(markerElement) : null;
   const resourceBarHeight = Math.max(4, Math.round(cellSize * 0.14));
   if (resourceBar && typeof resourceBar.max === "number" && resourceBar.max > 0) {
@@ -551,11 +458,9 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
   if (markerElement.label) {
     dot.title = markerElement.label;
     if (layer.settings?.showLabels) {
-      // A child of `dot`, so it rides along with the SAME content-space/
-      // ambient-scale positioning `dot` itself already uses (see this
-      // function's own opening comment) — labelSize means "content-space
-      // pixels," growing/shrinking with zoom exactly like the marker's own
-      // size does, not a fixed on-screen size.
+      // A child of `dot`, riding along with its content-space/ambient-scale
+      // positioning — labelSize means content-space pixels, growing/
+      // shrinking with zoom like the marker's own size, not fixed on-screen.
       const label = document.createElement("span");
       const labelPosition = layer.settings.labelPosition === "above" || layer.settings.labelPosition === "over" ? layer.settings.labelPosition : "below";
       label.className = `orrery-marker-label orrery-marker-label--${labelPosition}`;
@@ -573,28 +478,17 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       dot.appendChild(label);
     }
   }
-  // Condition/status badges — see map-model.js's own createMarkerOverlayIcon.
-  // A row along the marker's own bottom edge (see .orrery-marker-overlay-icons'
-  // own CSS), sized off the SAME `size` this marker's own dot already
-  // computed above, so badges scale with the token/grid cell size instead
-  // of staying a fixed on-screen size regardless of zoom. Manually-authored
-  // overlayIcons and auto-resolved condition icons (options.conditionIcons —
-  // see resolveMarkerConditionIcons's own header comment) render through
-  // this SAME row, concatenated, not merged into markerElement's own stored
-  // array — a GM removing a condition badge here would just reappear on the
-  // next render if it were "deleted" from a stored copy; only removing the
-  // actual condition (Combat Tracker, the character-vitals widget, ...)
-  // should make it go away.
-  // A synthetic badge (never stored — same "resolved fresh at render time"
-  // treatment condition icons already get, just below) so a container still
-  // holding unclaimed loot reads at a glance, through the exact same row
-  // every other badge already renders through, rather than a second
-  // parallel visual mechanism. Gone the instant contents.length hits 0 —
-  // see map-model.js's own createMarkerElement header comment for why
-  // that's the only "empty" signal this needs. GM-only (options.isGMViewer —
-  // see renderMapLayers' own isPrivilegedMarkerViewer) — this is a GM
-  // bookkeeping cue ("did anyone loot this yet"), not something that should
-  // tip players off to a hidden container's contents before they click it.
+  // Condition/status badges (map-model.js's createMarkerOverlayIcon) — a row
+  // along the marker's bottom edge, sized off the same `size` as the dot.
+  // Manually-authored overlayIcons and auto-resolved condition icons
+  // (options.conditionIcons) render through this same row, concatenated,
+  // not merged into markerElement's own stored array — removing a
+  // condition badge here would just reappear next render unless the actual
+  // condition (Combat Tracker, character-vitals widget) is removed.
+  // A synthetic, never-stored badge so a container still holding unclaimed
+  // loot reads at a glance through this same row. Gone once contents.length
+  // hits 0. GM-only — a bookkeeping cue, not something that should tip
+  // players off to a hidden container's contents before they click it.
   const contentsBadge = options.isGMViewer && markerElement.contents?.length
     ? [{ icon: "tabler:package", color: "#92400e", label: "Contains unclaimed loot" }]
     : [];
@@ -617,24 +511,15 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
         const ddbToken = iconTokens.find((token) => token.startsWith("ddb-"));
         icon.style.fontSize = `${badgeSize * 0.65}px`;
         if (entry.isCondition && ddbToken) {
-          // Condition icons (resolveMarkerConditionIcons, tagged
-          // isCondition) are genuinely two-tone source art — e.g. Charmed's
-          // "C" is a WHITE path layered over a dark one, both fully opaque
-          // in the source SVG. The shared ddb-icons.css rule renders every
-          // ddb-* icon as a single-color CSS mask (`background-color:
-          // currentColor` clipped by the SVG's own alpha channel) so any
-          // ONE icon can be recolored via `color` — but a mask only sees
-          // alpha, not RGB, so it can't tell the white detail path apart
-          // from the dark one; both are 100% opaque, so they collapse into
-          // one undifferentiated silhouette (confirmed real bug: the "C"
-          // vanished entirely, leaving what looked like a plain icon with
-          // no interior detail). Overriding mask off and painting the
-          // icon's own --ddb-icon SVG as a real, multi-color
-          // background-image instead preserves that detail exactly as
-          // authored — done ONLY here (auto-resolved condition badges),
-          // not for ddb-* icons generally, since a GM's own manually-picked
-          // overlay badge (most of which ARE single-tone, meant to be
-          // recolored via `color`) should keep working exactly as before.
+          // Condition icons are genuinely two-tone source art (e.g.
+          // Charmed's "C" is a white path over a dark one, both fully
+          // opaque) — the shared ddb-icons.css mask only sees alpha, not
+          // RGB, so it can't distinguish the two and collapses them into
+          // one silhouette. Painting the icon's --ddb-icon SVG as a real
+          // multi-color background-image instead preserves the detail —
+          // done only here (auto-resolved condition badges), since a GM's
+          // manually-picked overlay badge is usually single-tone and meant
+          // to be recolored via `color`.
           icon.className = ddbToken;
           icon.style.mask = "none";
           icon.style.webkitMask = "none";
@@ -642,52 +527,32 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
           icon.style.backgroundImage = "var(--ddb-icon)";
           icon.style.backgroundSize = "contain";
           icon.style.backgroundRepeat = "no-repeat";
-          // Explicit pixel width/height (not the shared ddb-icons.css rule's
-          // own font-size-driven `width:1em;height:1em`) — this is a real
-          // box `background-size:contain` sizes INTO, not an indirect
-          // em-relative one, so it's not fighting rounding from
-          // icon.style.fontSize above. 0.86 rather than that block's own
-          // 0.65 — these source SVGs already have some breathing room
-          // baked into their own viewBox, so 0.65 read as visibly not
-          // filling the circle; the inscribed-square-in-a-circle ceiling is
-          // ~0.71 of the diameter, and this art doesn't reach its own
-          // viewBox corners, so 0.86 still clears the circular border.
+          // Explicit pixel width/height, not the shared rule's em-relative
+          // `1em` — this is a real box background-size:contain sizes into.
+          // 0.86 not 0.65 — these SVGs have breathing room in their own
+          // viewBox, so 0.65 didn't fill the circle; ~0.71 of the diameter
+          // is the inscribed-square ceiling, and this art stays inside it.
           icon.style.width = `${badgeSize * 0.86}px`;
           icon.style.height = `${badgeSize * 0.86}px`;
           icon.style.backgroundPosition = "center";
-          // These source SVGs use a SQUARE viewBox (e.g. Blinded's is
-          // `0 0 20 20`) matching this now-square icon box exactly, so
-          // `contain` sizes the image to fill the box in BOTH dimensions
-          // with zero letterboxed slack — `background-position` has
-          // nothing left to redistribute and is a complete no-op here
-          // (confirmed: nudging it earlier did nothing, and the leftward
-          // lean only looked WORSE once the box grew, since a fixed-size
-          // element offset would look roughly the same either way — this
-          // scales with icon size, which only happens if it's the SVG's
-          // own artwork sitting off-center within its own viewBox, not a
-          // layout/flex-centering issue). A small rightward `transform`
-          // instead shifts the rendered image directly, independent of
-          // background-size math, and scales with badgeSize so it stays
-          // proportionally right as the marker/grid cell size changes.
+          // These SVGs use a square viewBox matching this square icon box,
+          // so `contain` fills both dimensions with no letterboxed slack —
+          // background-position is a no-op here. A small rightward
+          // `transform` shifts the image directly instead, scaling with
+          // badgeSize to correct the art's own off-center viewBox content.
           icon.style.transform = `translateX(${badgeSize * 0.06}px)`;
         } else {
           icon.className = bootstrapToken ? `bi ${bootstrapToken}` : iconTokens.join(" ");
         }
         badge.appendChild(icon);
       } else if (entry.isCondition && entry.label) {
-        // A free-text tag with no matching System Condition icon
-        // (resolveMarkerConditionIcons' own toIcons — tags are deliberately
-        // open-ended, not limited to the authored Condition list) — falls
-        // back to the tag's own text instead of leaving the badge blank, so
-        // an arbitrary GM-typed tag still shows SOMETHING on the map. This
-        // badge grows to fit that text (up to a cap, ellipsized past it —
-        // the full tag is still always available via the badge's own hover
-        // title, set above from this same entry.label) rather than staying
-        // the fixed circle the icon badges use — there's no way to fit
-        // "Frightened" legibly into a badgeSize-wide circle. Black text on
-        // white (entry.color is set to white specifically for this case in
-        // resolveMarkerConditionIcons) to read as the same visual family as
-        // the authored condition icons' own white badges.
+        // A free-text tag with no matching System Condition icon (tags are
+        // deliberately open-ended) — falls back to the tag's own text so an
+        // arbitrary GM-typed tag still shows something. Grows to fit the
+        // text (ellipsized past a cap; the full tag is on the badge's hover
+        // title) instead of staying the fixed icon-badge circle. Black text
+        // on white (set in resolveMarkerConditionIcons) to read as the same
+        // family as the authored condition icons' own white badges.
         const textMaxWidth = Math.max(60, badgeSize * 5);
         badge.style.width = "auto";
         badge.style.maxWidth = `${textMaxWidth}px`;
@@ -709,14 +574,10 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
     });
     dot.appendChild(badgeRow);
   }
-  // GM-only informational cue (never set for a restricted viewer — that
-  // marker isn't in the DOM at all when it's actually hidden from them, see
-  // createMarkerLayerElement's own guard) — a dimmed dot plus a small
-  // "eye-off" corner badge, so a GM can tell at a glance which tokens are
-  // currently hidden from players without opening each one's own inspector.
-  // Reuses the same corner-badge shape the overlay-icon row above already
-  // establishes rather than inventing a second visual language; placed at
-  // the opposite (top) edge so the two never collide when a marker has both.
+  // GM-only cue (never set for a restricted viewer — a truly hidden marker
+  // isn't in the DOM at all) — a dimmed dot plus a small "eye-off" corner
+  // badge, so a GM sees at a glance which tokens are hidden from players.
+  // Placed at the top edge so it never collides with the height badge below.
   if (options.hiddenFromPlayers) {
     dot.style.opacity = String((Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1) * 0.5);
     const hiddenBadge = document.createElement("span");
@@ -742,11 +603,10 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
     hiddenBadge.appendChild(hiddenIcon);
     dot.appendChild(hiddenBadge);
   }
-  // World-state cue, unlike "hidden from players" just above — shown to
-  // EVERY viewer, not just full-access, since a flying/burrowing creature
-  // should visibly read that way to players too, not only the GM. Same
-  // corner-badge construction, opposite corner (top-left) so the two never
-  // collide on a marker that's both flown/buried and hidden.
+  // World-state cue, unlike "hidden from players" above — shown to EVERY
+  // viewer, since a flying/burrowing creature should read that way to
+  // players too. Opposite corner (top-left) so it never collides with the
+  // hidden badge on a marker that's both.
   if (heightCells !== 0) {
     const heightBadge = document.createElement("span");
     heightBadge.className = "orrery-marker-height-badge";
@@ -786,13 +646,9 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
       }
       event.preventDefault();
       event.stopPropagation();
-      // Ctrl/Cmd/Shift-click toggles this marker's multi-select membership
-      // instead of the ordinary single-select-and-maybe-drag flow below —
-      // checked here, before onDragStart/beginMarkerDrag ever run, so a
-      // modifier-held click never starts a drag (Orrery's own
-      // toggleMarkerMultiSelect calls setSelection directly, which is safe
-      // to do immediately since no drag gesture is in flight to have its
-      // dot element swapped out from under it).
+      // Ctrl/Cmd/Shift-click toggles multi-select instead of the ordinary
+      // select-and-maybe-drag flow below — checked before beginMarkerDrag
+      // ever runs, so a modifier-held click never starts a drag.
       if ((event.ctrlKey || event.metaKey || event.shiftKey) && options.onMultiSelectToggle) {
         options.onMultiSelectToggle(dot);
         return;
@@ -806,32 +662,22 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
     });
   } else if (options.onClick) {
     // Not draggable, but still worth a plain click — a link-out button or a
-    // Contents claim popover, say. Confirmed real bug this fixes (twice
-    // over): a non-draggable marker got NO listener at all here originally
-    // (pointer-events was "none" below, before that first fix), and a
-    // plain native "click" listener — the first attempt at this branch —
-    // turned out unreliable too: it requires pointerdown AND pointerup to
-    // land on the SAME element, and with no pointer capture, a completely
-    // ordinary human click's own few pixels of hand jitter is enough to
-    // land pointerup on a neighboring element instead (confirmed via
-    // debug logging — pointerdown reached this dot, pointerup never did),
-    // silently killing the click with zero error. beginMarkerDrag's own
-    // draggable path never had this problem because it captures the
-    // pointer on pointerdown, which redirects every subsequent move/up
-    // event back to this element regardless of where the cursor visually
-    // drifts. This does the same capture, just without any actual
-    // movement/redrag logic on top, since this marker never repositions.
+    // Contents claim popover. A plain native "click" listener is unreliable
+    // here: it requires pointerdown AND pointerup on the SAME element, and
+    // with no pointer capture, ordinary hand jitter can land pointerup on a
+    // neighboring element, silently killing the click. Pointer capture
+    // (same technique beginMarkerDrag uses) redirects every subsequent
+    // move/up event back to this element regardless of cursor drift, with
+    // no actual movement/redrag logic since this marker never repositions.
     dot.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) {
         return;
       }
       event.preventDefault();
       event.stopPropagation();
-      // Same modifier-key multi-select toggle as the draggable branch
-      // above — never actually reached by Orrery's own restricted-viewer/
-      // widget callers today (neither passes onMultiSelectToggle), kept
-      // here so a non-draggable marker behaves identically if that ever
-      // changes.
+      // Same modifier-key multi-select toggle as the draggable branch —
+      // not reached by current callers (neither passes onMultiSelectToggle),
+      // kept for parity if that ever changes.
       if ((event.ctrlKey || event.metaKey || event.shiftKey) && options.onMultiSelectToggle) {
         options.onMultiSelectToggle(dot);
         return;
@@ -865,20 +711,14 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
 // Marker layers render a full-size, absolutely-positioned container (not a
 // single centered dot) so each placed pin can carry its own position.
 // - `isInteractive` + `onEmptyClick(position, event)`: clicking empty space
-//   inside the container (Orrery-only — the widget never passes this)
-//   reports the click's map-space position, already converted from screen
-//   pixels the same way every marker's own position is.
+//   (Orrery-only) reports the click's map-space position.
 // - `isMarkerDraggable(markerElement)`: per-marker draggability — the
-//   widget passes one that's only true for its own claimed character's
-//   marker. Orrery omits this and instead defaults every marker's own
-//   click-to-select/drag to `isInteractive` (i.e. only when this layer is
-//   the one currently selected) — same "select the layer from the left
-//   pane list first, then its individual placed things become clickable on
-//   the map" convention grid cells and drawn vector paths already follow.
-//   Confirmed as a real bug before this: every marker was always clickable
-//   regardless of layer selection, which meant tools that click the map for
-//   an unrelated reason (Measure) kept accidentally selecting markers
-//   underneath the cursor instead.
+//   widget passes one true only for its own claimed character's marker.
+//   Orrery omits this and defaults every marker's click-to-select/drag to
+//   `isInteractive` (only when this layer is selected) — same "select the
+//   layer first, then its contents become clickable" convention grid cells
+//   and vector paths follow, so a click-driven tool (Measure) doesn't
+//   accidentally select markers underneath the cursor regardless of layer.
 export function createMarkerLayerElement(baseMapManager, map, layer, options = {}) {
   const container = document.createElement("div");
   container.className = "orrery-layer-marker-container";
@@ -896,21 +736,18 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
       let localPixel;
       if (isTileBaseMap(map)) {
         // mouseEventToLayerPoint handles the container-relative math itself
-        // (robust regardless of how deeply nested this container is inside
-        // Leaflet's own panned panes) and returns coordinates already in the
-        // same layerPoint space every marker position uses.
+        // and returns coordinates already in the layerPoint space every
+        // marker position uses.
         const leafletMap = baseMapManager.getMap();
         if (!leafletMap) return;
         const layerPoint = leafletMap.mouseEventToLayerPoint(event);
         localPixel = { x: layerPoint.x, y: layerPoint.y };
       } else {
-        // container.getBoundingClientRect() is POST-scale (real screen
-        // pixels at the current zoom); offset is content-space (raw
-        // layer.position, un-scaled) — dividing the screen-relative part by
-        // zoom BEFORE subtracting offset keeps both terms in the same
-        // units. Confirmed as the actual cause of a newly-placed marker
-        // landing down-and-right of the actual click the instant zoom
-        // drifted from the default 1 (see getNonTileZoom's own comment).
+        // getBoundingClientRect() is POST-scale (real screen pixels);
+        // offset is content-space (raw, un-scaled) — dividing the
+        // screen-relative part by zoom BEFORE subtracting offset keeps both
+        // terms in the same units, or a newly-placed marker lands
+        // down-and-right of the actual click once zoom drifts from 1.
         const rect = container.getBoundingClientRect();
         const offset = getMarkerLayerOffset(map, layer);
         const zoom = getNonTileZoom(baseMapManager);
@@ -919,17 +756,13 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
       options.onEmptyClick?.(localPixelToMarkerPosition(baseMapManager, map, localPixel), event);
     });
   }
-  // Each .orrery-layer-item wrapper (createLayerWrapper) sets its own
-  // `transform`, which — regardless of z-index — makes it a stacking
-  // context root on its own (any transformed element is), so paint order
-  // BETWEEN markers on this one layer is decided purely by DOM append
-  // order; there's no z-index that could reach across layers anyway.
-  // Draggable markers are appended LAST (on top) here, after every
-  // non-draggable one, regardless of their own order in layer.elements —
-  // confirmed real bug this fixes: once a non-draggable marker (a treasure
-  // container, say — createMarkerDot's own `clickable` fix) became a real
-  // pointer-events:auto hit target instead of pass-through, whichever
-  // marker happened to sit later in `layer.elements` silently WON every
+  // Each .orrery-layer-item wrapper's own `transform` makes it a stacking
+  // context root regardless of z-index, so paint order between markers on
+  // one layer is decided purely by DOM append order. Draggable markers are
+  // appended LAST (on top), after every non-draggable one, regardless of
+  // their order in layer.elements — otherwise once a non-draggable marker
+  // (a treasure container) became a real pointer-events:auto hit target,
+  // whichever marker happened to sit later in `layer.elements` silently WON every
   // click/drag at any pixel the two overlapped — which, in practice, is
   // exactly where a player parks their own character token to claim a
   // treasure pile. Depending on array order that read as either "clicking
@@ -1014,32 +847,24 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
 // that's a plain constant — see getGridBackgroundPosition's own comment for
 // why a percentage-based oversize (the previous approach) actively broke
 // alignment: `left: -100%` resolves against the container's LAYOUT size,
-// which is NOT the same number `getBoundingClientRect()` reports once any
-// CSS scale transform is applied (i.e. any zoom level other than exactly
-// 1) — confirmed as the actual cause of the grid staying misaligned/jumpy
-// even after correcting for it with that (zoom-variable) measurement. A
-// fixed pixel constant sidesteps needing to measure the container's real
-// size at all: as long as the SAME constant is used both to size/shift this
-// div and to correct backgroundPosition, they exactly cancel by
-// construction, for every base map type, at every zoom level. The div's own
-// width/height still grow from that fixed-pixel origin via `calc(100% +
-// 2*extent)`, so it always fully covers the container regardless of the
-// container's own size — 4000px only needs to be a comfortable PAN margin
-// beyond that, same "oversized enough to survive pan" reasoning as the fog
-// overlay's own EXTENT=20000 (createFogOverlay).
+// which is NOT what `getBoundingClientRect()` reports once any CSS scale
+// transform applies (any zoom other than 1) — a fixed pixel constant
+// sidesteps measuring the container's real size at all, since using the
+// SAME constant to size/shift this div and to correct backgroundPosition
+// makes them cancel by construction, at every zoom level. The div's own
+// width/height still grow from that origin via `calc(100% + 2*extent)`, so
+// it always covers the container — 4000px is a comfortable pan margin
+// beyond that, same reasoning as the fog overlay's own EXTENT=20000.
 const GRID_OVERLAY_EXTENT = 4000;
 
-// A FIXED per-type reference zoom (map-model.js's own getDefaultView, e.g.
-// zoom 2 for every tile map) — deliberately NOT baseMapManager.getDefaultView()
-// (a same-named but different thing: that one returns whatever view object
-// was last passed to setBaseMap, which since Initial Zoom/Position existed
-// is the map's own configured Initial Zoom, defaulting to 1). Grid cell/
-// marker sizing needs a STABLE reference point that never moves just
-// because a GM tweaks their map's Initial Zoom — confirmed as the actual
-// cause of a real regression: cellSize's zoom formula below is exponential
-// (2^(viewZoom-baseZoom)), so baseZoom silently shifting from 2 to 1 after
-// Initial Zoom shipped doubled every marker/grid cell's rendered size at
-// every zoom level, compounding worse the further a GM zoomed in.
+// A FIXED per-type reference zoom (map-model.js's getDefaultView, e.g. zoom
+// 2 for tile maps) — deliberately NOT baseMapManager.getDefaultView() (a
+// same-named but different thing: whatever view was last passed to
+// setBaseMap, i.e. the map's configured Initial Zoom). Grid cell/marker
+// sizing needs a STABLE reference point that never moves when a GM tweaks
+// Initial Zoom — cellSize's zoom formula below is exponential
+// (2^(viewZoom-baseZoom)), so a shifting baseZoom would double every
+// marker/grid cell's size at every zoom level.
 function getBaseZoom(map) {
   return getTypeDefaultView(map?.baseMap?.type)?.zoom ?? 1;
 }
@@ -1058,13 +883,10 @@ export function getGridLayoutScale(baseMapManager, map) {
 }
 
 // Exported for app.js's own snapMarkerPositionToGrid — getGridCoordFromPoint
-// (below) expects its `point` argument already in this same "hit-test"
-// scale (screen-pixel-equivalent for non-tile maps, since it internally
-// divides by this factor to get back to content-space before applying cell
-// math), not plain content-space — a caller starting from a content-space
-// point (markerPositionToLocalPixel/getGridOffset are both zoom-independent
-// for non-tile maps) has to multiply by this same factor first, or the
-// function's own internal division effectively double-divides by zoom.
+// below expects its `point` already in this "hit-test" scale (it internally
+// divides by this factor to get back to content-space), not plain
+// content-space — a caller starting from a content-space point has to
+// multiply by this factor first, or the internal division double-divides by zoom.
 export function getGridHitTestScale(baseMapManager, map) {
   return isTileBaseMap(map) ? 1 : getGridZoomScale(baseMapManager, map);
 }
@@ -1081,17 +903,12 @@ export function getGridOffset(baseMapManager, map, layer) {
   };
 }
 
-// createGridLayerElement's own grid div is shifted by GRID_OVERLAY_EXTENT
-// pixels up/left of the container's real corner (see that constant's own
-// comment) so the tiled background survives panning without a visible edge.
-// That shift means the div's own local origin — what `background-position`
-// is actually relative to — sits GRID_OVERLAY_EXTENT pixels away from the
-// container's true top-left corner, not AT it. `getGridOffset` alone never
-// accounts for that, so `background-position: offset.x` would visually
-// anchor GRID_OVERLAY_EXTENT pixels off from where offset.x actually means.
-// Adding the same fixed constant back cancels that shift exactly, so offset
-// {0,0} anchors at the container's real corner — for every base map type,
-// at every zoom level, with no per-cellSize residual at all.
+// createGridLayerElement's own grid div is shifted GRID_OVERLAY_EXTENT
+// pixels up/left of the container's real corner so the tiled background
+// survives panning without a visible edge — meaning the div's own local
+// origin (what `background-position` is relative to) sits that far from
+// the container's true corner. `getGridOffset` alone doesn't account for
+// that; adding the same constant back cancels the shift exactly.
 export function getGridBackgroundPosition(baseMapManager, map, layer) {
   const offset = getGridOffset(baseMapManager, map, layer);
   return {
@@ -1271,21 +1088,13 @@ function buildHexGridBackground(size, lineColor) {
   return { image: `url("data:image/svg+xml,${encoded}")`, width: tileWidth, height: tileHeight };
 }
 
-// Appended as a CHILD of createGridLayerElement's own `grid` div, which is
-// itself shifted GRID_OVERLAY_EXTENT pixels up/left of the container's true
-// corner (see that constant's own comment) — this overlay's `inset:0` (CSS)
-// fills THAT shifted box exactly, so a highlight positioned with the plain,
-// uncompensated getGridOffset (container-relative) lands GRID_OVERLAY_EXTENT
-// pixels away from the grid cell it's supposed to sit on, not on top of it.
-// getGridBackgroundPosition already computes exactly this same correction
-// for the grid lines' own background-position — reused here rather than a
-// second copy of the same "+ GRID_OVERLAY_EXTENT" arithmetic. Confirmed as
-// a real, previously-unnoticed bug: with cell highlights invisible/off-
-// screen (they still exist, just GRID_OVERLAY_EXTENT away), selecting cells
-// still worked at the data level, so it went uncaught until Fog of War's
-// own reveal holes (same bug, same appended-to-`grid` mistake, see
-// createFogOverlay below) made the missing highlight impossible to miss —
-// a fogged cell that's supposedly revealed staying visibly grey.
+// Appended as a CHILD of createGridLayerElement's own `grid` div, itself
+// shifted GRID_OVERLAY_EXTENT pixels up/left of the container's true corner
+// — this overlay's `inset:0` fills that shifted box exactly, so a highlight
+// positioned with the plain, uncompensated getGridOffset lands
+// GRID_OVERLAY_EXTENT pixels off the cell it's supposed to sit on.
+// getGridBackgroundPosition already computes this same correction for the
+// grid lines — reused here rather than a second copy of the arithmetic.
 function createGridSelectionOverlay(baseMapManager, map, layer, selectedCells, options = {}) {
   const overlay = document.createElement("div");
   overlay.className = "orrery-layer-grid-selection";
@@ -1339,18 +1148,13 @@ export function segmentsIntersect(p1, p2, p3, p4) {
 }
 
 // Gathers every closed wall/door segment on the map, in true-container-space
-// local pixels (the SAME coordinate space markerPositionToLocalPixel +
-// getMarkerLayerOffset already produces for paths/shapes/markers — NOT the
-// grid div's own EXTENT-shifted space, see getGridBackgroundPosition's own
-// comment for that distinction). An open door contributes zero segments —
-// it's simply not a wall while open, not a special case downstream callers
-// need to know about. Deliberately NOT filtered by layer.visible — a hidden
-// "Walls" layer still blocks vision/movement, matching the existing
-// precedent that hiding grid LINES doesn't mean the grid stops being the
-// map's real scale reference (findPrimaryGridLayer/resolveShapePixelsPerCell
-// both ignore visibility for the same reason). Gathered once per caller
-// (vision computation, light-clipping, movement-blocking all call this once
-// and reuse the returned array) — never recomputed per-cell/per-frame.
+// local pixels (the same space markerPositionToLocalPixel +
+// getMarkerLayerOffset produce for paths/shapes/markers — NOT the grid
+// div's own EXTENT-shifted space). An open door contributes zero segments —
+// simply not a wall while open. Deliberately NOT filtered by layer.visible
+// — a hidden "Walls" layer still blocks vision/movement, same as hiding
+// grid lines doesn't stop the grid being the map's scale reference. Called
+// once per caller and reused, never recomputed per-cell/per-frame.
 export function resolveBlockingSegments(baseMapManager, map) {
   const segments = [];
   (map.layers || []).forEach((layer) => {
@@ -1374,34 +1178,22 @@ export function resolveBlockingSegments(baseMapManager, map) {
 // Which grid cells (on `layer`) are unobstructed and within `rangeCells` of
 // `origin` — the vision-source resolution both character auto-reveal and
 // light-reveal/light-clipping ultimately call. `origin` and
-// `blockingSegments` must already be in the SAME true-container-space local
-// pixels resolveBlockingSegments' own points use.
+// `blockingSegments` must already be in the same true-container-space
+// local pixels resolveBlockingSegments' points use.
 //
 // Cell-CENTER-only ray testing (one ray per candidate cell), not full
-// shadowcasting/visibility-polygon construction — a deliberate simplicity
-// tradeoff: fog is already cell-granular (a binary revealed/not per cell,
-// not sub-cell precise), so this doesn't introduce a new class of
-// imprecision, just extends the existing one. Accepted caveat: a wall that
-// clips a cell's own corner without crossing the line to that cell's
-// CENTER can leave that one cell's classification "wrong" by this
-// algorithm's own definition — worst case, one row of cells immediately
-// adjacent to a wall. A cheap upgrade path if that ever proves visible in
-// play: sample 5 points per cell (center + 4 inset corners), "visible if
-// any sample is unobstructed" — not built now, not needed unless it's
-// actually a problem.
+// shadowcasting — a deliberate simplicity tradeoff: fog is already
+// cell-granular, so this doesn't introduce a new class of imprecision.
+// Accepted caveat: a wall clipping a cell's corner without crossing the
+// line to its center can leave that one cell misclassified, worst case one
+// row adjacent to a wall. Upgrade path if that ever matters: sample 5
+// points per cell instead of 1 — not built until actually needed.
 //
-// Coordinate math verified directly against this codebase's OWN existing
-// working pattern for the exact same "true-container-space point <->
-// this-grid-layer's-own-cell-math-space" conversion — see app.js's own
-// snapMarkerPositionToGrid, the one other place in this file's ecosystem
-// that does this conversion. getGridOffset (NOT getGridBackgroundPosition —
-// that adds the grid DIV's own GRID_OVERLAY_EXTENT shift, which only
-// applies inside that div's own child coordinate space, not here) is
-// subtracted before calling getGridCoordFromPoint (which itself expects its
-// point pre-scaled by getGridHitTestScale — see that function's own
-// comment), and added back to each candidate cell's own pixel rect before
-// computing its center, or the whole thing silently breaks the moment a GM
-// manually drags this grid layer's own position away from {0,0}.
+// getGridOffset (NOT getGridBackgroundPosition, whose EXTENT shift only
+// applies inside the grid div's own child space) is subtracted before
+// calling getGridCoordFromPoint (pre-scaled by getGridHitTestScale), and
+// added back to each candidate cell's pixel rect before computing its
+// center — or this breaks the moment a GM drags the grid layer off {0,0}.
 export function resolveVisibleCells(baseMapManager, map, layer, { origin, rangeCells, blockingSegments } = {}) {
   if (!origin || !Number.isFinite(rangeCells) || rangeCells <= 0) return [];
   const cellSizePx = getGridCellSize(baseMapManager, map, layer);
@@ -1444,24 +1236,17 @@ export function resolveVisibleCells(baseMapManager, map, layer, { origin, rangeC
   return results;
 }
 
-// Relocated from app.js (was module-private, reading a closed-over
-// `state.map`) so the Dashboard widget's own player-driven marker drag
-// (map.js) snaps to the grid exactly the same way Orrery's own authoring
-// drag always has — confirmed real bug: the widget saved a token's raw
-// drop position with no snapping at all, a visibly different (and, per this
-// suite's own top-priority parity rule, wrong) feel from Orrery's. Same
-// "convert to true container-relative content-space, find the cell, convert
-// back" logic as resolveVisibleCells above, unchanged except `map` is now a
-// parameter instead of a closure.
+// Relocated from app.js (was module-private) so the Dashboard widget's own
+// player-driven marker drag (map.js) snaps to the grid exactly the way
+// Orrery's authoring drag always has — the widget used to save a token's
+// raw drop position with no snapping, a parity gap with Orrery's feel.
+// Same "convert to true container-relative content-space, find the cell,
+// convert back" logic as resolveVisibleCells above, `map` now a parameter.
 //
-// `position` (and therefore markerPositionToLocalPixel(position)) is
-// relative to the MARKER layer's own pan offset, not the container's true
-// corner (see getMarkerElementPixelPosition's own "offset.x + local.x" —
-// the marker layer's offset gets added back at RENDER time, meaning
-// whatever's stored here has to exclude it). The grid math below works in
-// true container-relative space (matching getGridOffset's own meaning), so
-// the marker layer's own offset has to be added back in before doing that
-// math, and subtracted back out before returning.
+// `position` is relative to the MARKER layer's own pan offset, not the
+// container's true corner (that offset gets added back at RENDER time), so
+// it has to be added back in before the grid math below (which works in
+// true container-relative space) and subtracted back out before returning.
 export function snapMarkerPositionToGrid(baseMapManager, map, position, markerLayer) {
   // Not filtered on visibility — hiding the grid's lines isn't a statement
   // that it stops being the map's real cell size/scale (see
@@ -1474,14 +1259,12 @@ export function snapMarkerPositionToGrid(baseMapManager, map, position, markerLa
   const localPixel = markerPositionToLocalPixel(baseMapManager, map, position);
   const containerRelative = { x: localPixel.x + markerOffset.x, y: localPixel.y + markerOffset.y };
   const gridOffset = getGridOffset(baseMapManager, map, gridLayer);
-  // containerRelative and gridOffset are both pure content-space
-  // (zoom-independent for non-tile maps), but getGridCoordFromPoint expects
-  // its point in the "hit-test" scale (see getGridHitTestScale's own
-  // comment) — multiplying by that same factor first is what makes its
-  // internal /hitScale step round-trip back to the right cell instead of
-  // double-dividing by zoom. getGridCellPixelRect's own OUTPUT needs no such
-  // adjustment — its cellSize is already content-space for non-tile maps
-  // (getGridLayoutScale is a flat 1 there), same as `rect`/`gridOffset`.
+  // containerRelative and gridOffset are both pure content-space, but
+  // getGridCoordFromPoint expects its point in "hit-test" scale —
+  // multiplying by that factor first makes its internal /hitScale step
+  // round-trip to the right cell instead of double-dividing by zoom.
+  // getGridCellPixelRect's OUTPUT needs no such adjustment — its cellSize
+  // is already content-space for non-tile maps.
   const hitScale = getGridHitTestScale(baseMapManager, map);
   const relativePoint = { x: (containerRelative.x - gridOffset.x) * hitScale, y: (containerRelative.y - gridOffset.y) * hitScale };
   const coord = getGridCoordFromPoint(baseMapManager, map, gridLayer, relativePoint);
@@ -1492,73 +1275,54 @@ export function snapMarkerPositionToGrid(baseMapManager, map, position, markerLa
 }
 
 // Builds the interaction option set for a viewer WITHOUT full map access —
-// used identically by the Dashboard's Map widget (common/js/lib/widgets/
-// map.js, which is ALWAYS this restricted view — a player's dashboard never
-// gets full authoring) and by Orrery's own app.js (for a non-owner,
-// non-admin viewer reaching Orrery directly — see that file's own
-// currentUserHasFullMapAccess). ONE implementation, not two independently-
-// written copies that could (and did) drift apart — confirmed real
-// complaint: dragging felt "totally different" between the widget and
-// Orrery specifically because map.js used to carry its own bespoke copy of
-// this exact policy instead of sharing Orrery's.
+// used identically by the Dashboard's Map widget (always this restricted
+// view) and by Orrery's own app.js (for a non-owner/non-admin viewer
+// reaching Orrery directly). ONE implementation, not two independently-
+// written copies that could drift — dragging used to feel "totally
+// different" between the widget and Orrery when map.js carried its own
+// bespoke copy of this policy.
 //
-// Only builds POLICY — what's draggable (a character-linked marker this
-// viewer owns or has edit access to, via characterOwnershipCatalog/
-// allowsDelete), what's wall-blocked, grid-snapping on drop, and the
-// locked-door check — never persistence. The two callers genuinely differ
-// there (the widget relays through a campaign groupId's live-sync; Orrery's
-// own view doesn't), so `onMarkerMoved(layer, markerElement,
-// snappedPosition)`/`onDoorToggled(layer, elementId)` only fire once this
-// policy has already approved the action — the caller's own job from there
-// is just to persist it (both already use the SAME map-live-sync.js
-// persistMarkerMove/persistElementUpdate under the hood) and refresh its
-// own view. `characterOwnershipCatalog` is a caller-refreshed
-// Map<characterId, {ownerId, ownerUsername, permissions}> (ownership.js's
-// refreshOwnershipCatalog) — this module never fetches anything itself, per
-// this file's own "everything caller-specific is a callback" philosophy.
+// Only builds POLICY — what's draggable, what's wall-blocked, grid-snapping
+// on drop, the locked-door check — never persistence. The two callers
+// differ there (the widget relays through a campaign groupId's live-sync;
+// Orrery's view doesn't), so `onMarkerMoved`/`onDoorToggled` only fire once
+// this policy approves the action; the caller's own job is to persist it
+// (both already use map-live-sync.js's persistMarkerMove/persistElementUpdate)
+// and refresh its view. `characterOwnershipCatalog` is a caller-refreshed
+// Map<characterId, {ownerId, ownerUsername, permissions}> — this module
+// never fetches anything itself.
 export function buildRestrictedMapOptions({
   dataManager,
   baseMapManager,
   map,
   characterOwnershipCatalog,
   getCharacterPayload,
-  // (marker) => overlayIcon[] — see resolveMarkerConditionIcons's own
-  // header comment. Just passed through to renderMapLayers/createMarkerDot
-  // like getCharacterPayload just above; this function never calls it
-  // itself.
+  // (marker) => overlayIcon[] — passed through to renderMapLayers/
+  // createMarkerDot; this function never calls it itself.
   resolveConditionIcons,
-  // (marker) => {current,max,label}|null — see resolveMarkerResourceBar's
-  // own header comment. Same passthrough-only treatment as
-  // resolveConditionIcons just above; the restricted map widget
-  // (common/js/lib/widgets/map.js) builds this itself (its own active-
-  // encounter cache + orrery-settings preference lookup) and hands it in
-  // here.
+  // (marker) => {current,max,label}|null — same passthrough treatment; the
+  // restricted map widget builds this itself (active-encounter cache +
+  // orrery-settings preference lookup) and hands it in.
   resolveResourceBar,
   status,
   onMarkerMoved,
   onDoorToggled,
   // (layer, markerElement) => void — fired for a plain click (no movement)
-  // on a marker this viewer is actually allowed to drag (same
-  // isMarkerDraggable gate below, checked here too so a marker the viewer
-  // doesn't control silently does nothing on click, same as it already does
-  // today). Lets a restricted viewer open an icon/color editor for their own
-  // token the same way they can already move it, without granting anything
-  // for a marker that isn't theirs.
+  // on a marker this viewer is allowed to drag (same isMarkerDraggable gate,
+  // checked here too so a marker the viewer doesn't control does nothing on
+  // click). Lets a restricted viewer open an icon/color editor for their own
+  // token, without granting anything for a marker that isn't theirs.
   onMarkerClicked,
   // (isDragging: boolean) => void — fired at marker-drag start/end. Lets
-  // the caller's own remote poll (watchMapForChanges) skip an incoming
-  // update while a drag is in progress, instead of applying it mid-gesture
-  // and rebuilding the marker layer's DOM out from under the pointer-
-  // capture driving that gesture. Confirmed real bug this fixes: a
-  // restricted viewer's drag would "pop" straight to the final position
-  // with no visible tracking during the gesture — because a poll landing
-  // mid-drag (the map's 10-20s poll interval easily overlaps an unhurried
-  // drag) tore out and rebuilt the very dot element being dragged; only its
-  // FINAL, post-poll position ever painted. Orrery's own full-access drag
-  // never hits this because a GM must already have `state.selection` set
-  // (the Marker Layer selected) to drag at all, and that same state already
-  // makes app.js's own poll guard skip incoming updates — a restricted
-  // viewer has no selection concept at all, so it needed its own signal.
+  // the caller's remote poll (watchMapForChanges) skip an incoming update
+  // mid-drag instead of rebuilding the marker layer's DOM out from under
+  // the pointer-capture driving the gesture — otherwise a drag "pops"
+  // straight to its final position with no visible tracking, since a poll
+  // landing mid-drag (the 10-20s interval easily overlaps one) tears out
+  // and rebuilds the dot being dragged. Orrery's own full-access drag never
+  // hits this (its own poll guard already skips updates while a layer is
+  // selected); a restricted viewer has no selection concept, so it needs
+  // its own signal.
   onDragStateChange,
   // () => boolean — true if the current viewer is this MAP's own owner/admin
   // (map.js's own isMapOwnerOrAdmin, which already backs canManageDrawing
@@ -1639,11 +1403,9 @@ export function buildRestrictedMapOptions({
     },
     onDoorClick,
     // Never passed for a full-access viewer — the GM must be able to freely
-    // drag any token through walls while setting up a scene. Only a
-    // restricted viewer's own-token drag is ever blocked. `blockingSegments`
-    // is computed once above (per renderMapLayers pass this options object
-    // backs), not recomputed on every pointermove — a confirmed real
-    // perf bug before this was fixed once, here, for both callers at once.
+    // drag any token through walls. Only a restricted viewer's own-token
+    // drag is blocked. `blockingSegments` is computed once above, not
+    // recomputed on every pointermove.
     resolveMarkerMoveBlocked: (layer, markerElement, fromPixel, toPixel) =>
       blockingSegments.some((segment) => segmentsIntersect(fromPixel, toPixel, segment.a, segment.b)),
     getCharacterPayload,
@@ -1654,15 +1416,12 @@ export function buildRestrictedMapOptions({
 }
 
 // A marker's own Vision Range — the same Binding/Formula/Text precedence
-// every other bindable field in this suite uses (common/js/lib/binding-
-// field.js's own createBindingFormulaInput; see createMarkerElement's own
-// header comment for why this is a Binding, not a hardcoded field name —
-// there's no cross-system standard "Darkvision" field). `getCharacterPayload`
-// is a SYNCHRONOUS, caller-supplied, cache-backed lookup (marker.refId) ->
-// payload|undefined — this module never fetches anything itself (see this
-// file's own top-of-file "everything caller-specific is a callback"
-// philosophy); Orrery's own app.js and the Dashboard's map.js widget each
-// keep their own small fetch-and-cache pair backing this parameter.
+// every bindable field in this suite uses (there's no cross-system standard
+// "Darkvision" field, hence a Binding rather than a hardcoded name).
+// `getCharacterPayload` is a SYNCHRONOUS, caller-supplied, cache-backed
+// lookup (marker.refId) -> payload|undefined — this module never fetches
+// anything itself; Orrery's app.js and the Dashboard's map.js widget each
+// keep their own fetch-and-cache pair backing this parameter.
 export function resolveMarkerVisionRangeCells(marker, getCharacterPayload) {
   const payload = typeof getCharacterPayload === "function" ? getCharacterPayload(marker.refId) : undefined;
   if (payload) {
@@ -1687,32 +1446,21 @@ export function resolveMarkerVisionRangeCells(marker, getCharacterPayload) {
   return Number.isFinite(literal) ? Math.max(0, literal) : 0;
 }
 
-// A marker's own CURRENT condition icons — same "everything caller-specific
-// is a callback, this module never fetches anything itself" shape
-// resolveMarkerVisionRangeCells just above uses, and for the same reason:
-// Orrery's own app.js and the Dashboard's map.js widget each keep their own
-// independent fetch-and-cache instances (character payload/System fields,
-// the active Encounter), but the actual RESOLUTION ALGORITHM lives here
-// once, shared, so the two can't quietly drift apart the way
-// buildRestrictedMapOptions' own marker-drag policy once did before it was
-// extracted here for the same reason.
+// A marker's own CURRENT condition icons — same "caller-specific fetch,
+// shared resolution algorithm" shape as resolveMarkerVisionRangeCells, so
+// Orrery and the Dashboard widget's independent fetch-and-cache instances
+// can't drift apart on how a condition resolves.
 //
-// A Character-linked marker resolves its conditions straight off its own
-// cached payload, through the System's `tags`-role binding — the value
-// carried there IS the character's current conditions, no combat-instance
-// ambiguity possible (a Character is never more than one combatant at
-// once). A Monster/NPC-linked marker has no such record of its own to read
-// (see map-model.js's own linkedCombatantId comment for why) — it resolves
-// from `getActiveEncounter()`'s own combatants instead, matched by
-// refKind+refId, disambiguated by `marker.linkedCombatantId` when more than
-// one combatant shares that refId. Either path finishes the same way:
-// each resolved condition id maps to an icon/color via `getSystemConditions
-// (systemId).iconMap` (see orrery/app.js's buildSystemConditions for how
-// that's derived — a Condition value's own "Extra Properties," same
-// generic per-value catch-all resolveMonsterSizeCells already reads
-// `sizeValue` through). Returns createMarkerOverlayIcon-shaped entries so
-// createMarkerDot's existing badge-row rendering can treat these
-// identically to a marker's own manually-authored overlayIcons.
+// A Character-linked marker resolves conditions straight off its cached
+// payload via the System's `tags`-role binding (no combat-instance
+// ambiguity — a Character is never more than one combatant). A Monster/NPC
+// marker has no such record of its own — it resolves from
+// `getActiveEncounter()`'s combatants, matched by refKind+refId,
+// disambiguated by `marker.linkedCombatantId` when more than one combatant
+// shares a refId. Either path maps each condition id to an icon/color via
+// `getSystemConditions(systemId).iconMap`. Returns createMarkerOverlayIcon-
+// shaped entries so createMarkerDot's badge row treats these identically
+// to a marker's manually-authored overlayIcons.
 export function resolveMarkerConditionIcons(
   marker,
   { getCharacterPayload, getCharacterSystemId, getSystemConditions, getActiveEncounter } = {}
@@ -1720,34 +1468,22 @@ export function resolveMarkerConditionIcons(
   const toIcons = (conditionIds, systemConditions) =>
     conditionIds.map((conditionId) => {
       const entry = systemConditions.iconMap.get(conditionId);
-      // isCondition marks this entry for createMarkerDot's own badge
-      // renderer — see that function's own comment on why a two-tone
-      // ddb-* condition icon (e.g. Charmed's "C") needs different
-      // treatment than an ordinary single-color manually-picked
-      // overlayIcon, without changing createMarkerOverlayIcon's own
-      // shared shape/contract.
+      // isCondition marks this entry for createMarkerDot's badge renderer —
+      // a two-tone ddb-* condition icon needs different treatment than an
+      // ordinary single-color manually-picked overlayIcon.
       if (entry) {
         return { ...createMarkerOverlayIcon({ icon: entry.icon, color: entry.color, label: conditionId }), isCondition: true };
       }
-      // Tags are deliberately free-text, not limited to the System's own
-      // Condition vocabulary (a GM can type anything into Combat Tracker's
-      // Add Tag input) — a tag with no matching icon/color previously just
-      // vanished here entirely (createMarkerOverlayIcon never even got
-      // called). Every tag now gets SOME badge; createMarkerDot's own badge
-      // renderer falls back to the tag's own text (truncated with an
-      // ellipsis past a length limit) whenever `icon` is blank, rather than
-      // silently dropping anything outside the authored Condition list.
-      // White background here (not createMarkerOverlayIcon's own "#1e293b"
-      // default) to match the authored condition icons' own white badge —
-      // same look, just text instead of art.
+      // Tags are free-text, not limited to the System's own Condition
+      // vocabulary — every tag now gets SOME badge; createMarkerDot falls
+      // back to the tag's own text (ellipsized) whenever `icon` is blank,
+      // rather than silently dropping anything outside the authored list.
+      // White background (not the "#1e293b" default) to match the
+      // authored condition icons' own white badge.
       return { ...createMarkerOverlayIcon({ icon: "", color: "#ffffff", label: conditionId }), isCondition: true };
     });
-  // A tag whose own value appears in the same combatant/character's
-  // hiddenTags list (see buildTagInputRow's own visibility toggle, tag-
-  // editor.js) is intentionally GM-only reference — filtered out here,
-  // before toIcons ever runs, so it never reaches a marker's badge row at
-  // all, the same way a fully-unknown condition id would just never have
-  // been in the list to begin with.
+  // A tag in the same combatant/character's hiddenTags list is intentionally
+  // GM-only reference — filtered out before toIcons ever runs.
   const visibleTags = (tags, hiddenTags) =>
     Array.isArray(hiddenTags) && hiddenTags.length ? tags.filter((tag) => !hiddenTags.includes(tag)) : tags;
   if (marker.refKind === "character" && marker.refId) {
@@ -1772,12 +1508,8 @@ export function resolveMarkerConditionIcons(
 
 // The active Encounter's own combatant entry this marker currently
 // represents — refKind+refId matched, disambiguated by
-// marker.linkedCombatantId when more than one combatant shares that
-// refId/refKind pair (see map-model.js's own linkedCombatantId comment).
-// Used by resolveMarkerConditionIcons' own Monster/NPC path above (its only
-// remaining caller — "hidden from players" no longer needs a resolver like
-// this at all, now that Combat Tracker writes through to the Map's own View
-// data directly instead of keeping an independent combatant.hidden flag).
+// marker.linkedCombatantId when more than one combatant shares that pair.
+// Used only by resolveMarkerConditionIcons' Monster/NPC path.
 function resolveMarkerLinkedCombatant(marker, encounter) {
   if (!encounter || !marker.refId) return null;
   const matches = (encounter.combatants || []).filter(
@@ -1791,29 +1523,18 @@ function resolveMarkerLinkedCombatant(marker, encounter) {
 }
 
 // A marker's own Marker Resource Bar data — same resolveMarkerLinkedCombatant
-// lookup resolveMarkerConditionIcons' Monster/NPC branch already uses, but
-// here unconditionally, for ANY refKind (including "character") rather than
-// only Monster/NPC — the GM's own explicit choice for this feature was that
-// the bar always reflects Combat Tracker's own live combatant.hp/maxHp (or
-// combatant.resources, for a non-primary resource — see preferredResourceName
-// below), never a Character record's own hitPoints field read directly,
-// since those two are only ever kept in sync THROUGH an active encounter
-// (writeThroughToCharacter/refreshCombatantFromCharacter) — reading the
-// combatant is simplest and correct for every refKind uniformly. Returns
-// null whenever there's nothing to show: no active encounter, marker isn't
-// a current combatant, or (rare) a System with no resolvable max at all —
-// callers treat null as "render no bar," not a zeroed-out one.
+// lookup as resolveMarkerConditionIcons' Monster/NPC branch, but
+// unconditionally, for ANY refKind — the bar always reflects Combat
+// Tracker's own live combatant.hp/maxHp, never a Character record's
+// hitPoints read directly, since the two are only kept in sync THROUGH an
+// active encounter. Returns null when there's nothing to show: no active
+// encounter, marker isn't a current combatant, or no resolvable max.
 //
-// `preferredResourceName` is Orrery's own per-System "which resource backs
-// the Marker Resource Bar" setting (see orrery-settings' barResourceName) —
-// when it names something other than the combatant's PRIMARY resource
-// (combatant.hpResourceName), this looks for a matching entry in the
-// combatant's own `resources` array (see resolveCombatantStats' own
-// secondary-resource comment in combat-bindings.js) instead. A combatant
-// with no matching secondary resource (e.g. this System has no such
-// resource, or this specific combatant's payload never resolved one) falls
-// straight through to the primary hp/maxHp — a missing preference match
-// degrades to the sane default rather than showing nothing.
+// `preferredResourceName` is Orrery's per-System "which resource backs the
+// bar" setting — when it names something other than the combatant's
+// PRIMARY resource, this looks for a matching entry in
+// combatant.resources instead, falling through to primary hp/maxHp if no
+// match exists.
 export function resolveMarkerResourceBar(marker, encounter, preferredResourceName) {
   if (!encounter?.systemId) return null;
   const combatant = resolveMarkerLinkedCombatant(marker, encounter);
@@ -1831,43 +1552,26 @@ export function resolveMarkerResourceBar(marker, encounter, preferredResourceNam
 // A light's EFFECTIVE position — its own stored `origin` for a freestanding
 // light, or (when `attachedMarkerId` is set) the live position of whichever
 // marker it's attached to, resolved fresh every call so a token-carried
-// torch tracks its host as it's dragged with zero extra sync/persistence
-// work (the marker's own position is already kept in sync by the ordinary
-// map poll/live-sync — this just reads it). Falls back to the light's own
-// last-known stored `origin` if the attached marker can't be found (e.g. it
-// was deleted) — a dangling attachment degrades to "stopped moving," never
-// an error/vanished light. Used by BOTH resolveRevealedCells' own
-// light-reveal loop and renderLightElement's own glow positioning, so a
-// light's visible glow and its actual fog-reveal contribution can never
-// independently drift apart.
+// torch tracks its host with zero extra sync work. Falls back to the
+// light's own last-known `origin` if the attached marker can't be found — a
+// dangling attachment degrades to "stopped moving," never an error. Used by
+// both resolveRevealedCells' light-reveal loop and renderLightElement's
+// glow positioning, so a light's visible glow and its fog-reveal
+// contribution can never independently drift apart.
 //
-// `containingLayer` (the light's own vector layer, for the freestanding
-// branch's own manual-position offset) is a caller-supplied parameter
-// rather than independently searched for — every real caller already has
-// it in scope (resolveRevealedCells' own light loop is iterating vector
-// layers; renderLightElement already receives `layer`), and a caller
-// building a THROWAWAY preview element not yet actually in `layer.elements`
-// (setupLightTool's own live placement preview) still needs the correct
-// offset — a self-search by element id would come up empty for exactly that
-// element and silently fall back to {0,0}, offsetting the live preview from
-// where the committed light will actually land on any layer with a
-// nonzero manual position.
-// Shared by any vector element with an attachedMarkerId — a shape/effect
-// gets the same "follow a token" capability Lights already have, via this
-// same-shaped function as resolveLightOrigin just below (identical
-// signature/contract: resolves all the way to a LOCAL PIXEL position,
-// offset already included). Originally this returned just the raw
-// map-space position and left offset-adding to each caller — confirmed
-// real bug: that meant an ATTACHED shape/effect's own containing layer's
-// offset got added instead of the attached MARKER's own layer's offset (the
-// two are only ever the same layer by coincidence), so a shape attached to
-// a token on a layer that had ever been manually repositioned rendered at
-// the wrong spot instead of on the token — potentially far enough off to
-// look like it had simply vanished. Matching resolveLightOrigin's own
-// already-correct per-branch offset selection fixes this the same way. A
-// dangling attachedMarkerId (the marker was deleted) falls back to the
-// element's own last-known origin rather than erroring, same graceful
-// degradation resolveLightOrigin already established.
+// `containingLayer` is caller-supplied rather than independently searched
+// for — a THROWAWAY preview element not yet in `layer.elements`
+// (setupLightTool's live placement preview) still needs the correct
+// offset, which a self-search by element id would miss.
+//
+// Shared by any vector element with an attachedMarkerId (a shape/effect
+// gets the same "follow a token" capability as Lights) via this
+// same-shaped function as resolveLightOrigin below — resolves all the way
+// to a LOCAL PIXEL position with offset already included. An ATTACHED
+// element must use the attached MARKER's own layer offset, not its
+// containing layer's — the two are only the same layer by coincidence, so
+// using the wrong one renders a shape attached to a token on a manually-
+// repositioned layer at the wrong spot, potentially looking vanished.
 export function resolveElementOrigin(baseMapManager, map, containingLayer, element) {
   if (element.attachedMarkerId) {
     for (const layer of map.layers || []) {
@@ -1901,23 +1605,16 @@ export function resolveLightOrigin(baseMapManager, map, containingLayer, light) 
 }
 
 // Resolves a fog-of-war-enabled grid layer's revealed cells — the UNION of
-// up to three independent sources, null when fog isn't enabled at all (no
-// filtering):
-//   1. Manual — the configured revealGroupId Group's own members, reusing
-//      the exact same Group membership/cell-rect machinery Groups already
-//      use for their own highlight overlay (getGroupCellsForLayer). Always
-//      present, unchanged from before walls/vision existed.
+// up to three independent sources, null when fog isn't enabled:
+//   1. Manual — the configured revealGroupId Group's own members
+//      (getGroupCellsForLayer), unchanged from before walls/vision existed.
 //   2. Character auto-reveal — gated by layer.settings.autoRevealFromVision;
-//      every character-linked marker (any marker layer, anywhere on the
-//      map) with a nonzero resolveMarkerVisionRangeCells contributes its
-//      own wall-aware visible-cell set.
-//   3. Lights — unconditional whenever fogOfWar is on (no separate toggle —
-//      a placed Light's whole purpose is to reveal); every `kind:"light"`
-//      element on any vector layer contributes its own wall-aware
-//      visible-cell set, resolved from its live position (resolveLightOrigin
-//      — tracks an attached marker if any).
-// `getCharacterPayload` (see this file's own resolveMarkerVisionRangeCells)
-// is threaded straight through from the caller — this function never
+//      every character-linked marker with a nonzero
+//      resolveMarkerVisionRangeCells contributes its own wall-aware set.
+//   3. Lights — unconditional whenever fogOfWar is on (no separate toggle);
+//      every `kind:"light"` element contributes its own wall-aware
+//      visible-cell set from its live position (resolveLightOrigin).
+// `getCharacterPayload` is threaded straight through — this function never
 // fetches anything itself.
 function resolveRevealedCells(baseMapManager, map, layer, { getCharacterPayload } = {}) {
   if (!layer.settings?.fogOfWar) {
@@ -1928,16 +1625,11 @@ function resolveRevealedCells(baseMapManager, map, layer, { getCharacterPayload 
   const byKey = new Map(manualCells.map((cell) => [cell.key, cell]));
 
   // The manual reveal-Group cells above are the ORIGINAL, pre-vision-engine
-  // behavior — guaranteed to keep working (fog toggles on, shows/hides
-  // exactly what the GM painted) even if something in the newer wall/vision
-  // code throws for a data shape it didn't anticipate (a malformed wall's
-  // points, an unusual base map/zoom combination, ...). Without this, an
-  // exception anywhere in the auto-reveal/light loops below would propagate
-  // out of resolveRevealedCells entirely, aborting the whole grid layer's
-  // render (including createFogOverlay never being called at all) — the fog
-  // overlay simply not appearing, not a visibly "broken" error state, which
-  // is a much harder regression to notice/report than a wrong cell set
-  // would be.
+  // behavior — guaranteed to keep working even if the newer wall/vision
+  // code throws for an unanticipated data shape. Without this try/catch, an
+  // exception in the auto-reveal/light loops below would abort the whole
+  // grid layer's render (createFogOverlay never called) — the fog overlay
+  // just not appearing, a much harder regression to notice than a wrong cell set.
   try {
     const blockingSegments = resolveBlockingSegments(baseMapManager, map);
 
@@ -1976,43 +1668,27 @@ function resolveRevealedCells(baseMapManager, map, layer, { getCharacterPayload 
   return Array.from(byKey.values());
 }
 
-// Shared by buildRevealedCellsMask AND createFogOverlay below (its own base/
-// hole rects need to match the SAME extent its caller's own fill rect
-// covers, or the mask's coordinate space and the thing it's masking
-// disagree on how big "everywhere" is). Module-level, not local to either
-// function — confirmed as a real bug otherwise: buildRevealedCellsMask's
-// own extraction originally left this declared ONLY inside itself, while
-// createFogOverlay (which also references it directly for its own `fill`
-// rect, unchanged since before that extraction) was left with no local
-// definition at all — a ReferenceError thrown on every fog-of-war render,
-// which (uncaught, inside renderMapLayers' own per-layer forEach) aborted
-// that whole render pass, silently skipping every layer after the grid one
-// in map.layers' own order — the actual cause of walls/lights also
-// disappearing the instant Fog of War was turned on, not just the fog
-// overlay itself never appearing.
+// Shared by buildRevealedCellsMask AND createFogOverlay below — its base/
+// hole rects must match the SAME extent the caller's fill rect covers, or
+// the mask's coordinate space and the thing it's masking disagree on how
+// big "everywhere" is. Module-level, not local to either function.
 const FOG_MASK_EXTENT = 20000;
 
 // Builds a <mask> — shared between the grid layer's own fog overlay
 // (createFogOverlay below, offset = getGridBackgroundPosition, since that
-// mask lives inside the grid div's own GRID_OVERLAY_EXTENT-shifted
-// coordinate space) and a Light element's own wall-aware glow clip
-// (renderLightElement, offset = plain getGridOffset — its own SVG is a
-// sibling of the grid div, at true-container-space, NOT EXTENT-shifted,
-// same space createVectorLayerElement's path/shape rendering already uses).
-// Passing the offset in explicitly (rather than each caller recomputing it
-// inline) is what makes this one implementation correct for both coordinate
-// spaces instead of hardcoding the grid-only case.
+// mask lives inside the grid div's EXTENT-shifted space) and a Light
+// element's wall-aware glow clip (renderLightElement, offset = plain
+// getGridOffset — its SVG is a sibling of the grid div, true-container-space,
+// NOT shifted). Passing the offset in explicitly makes this one
+// implementation correct for both coordinate spaces.
 //
-// `invert` (default false): fog's own polarity — white base ("shows" by
-// default) with a BLACK hole punched at each given cell (that cell's fog is
-// ABSENT there, i.e. the real map shows through). `invert: true` (a light's
-// own glow clip) is the opposite — the glow should show ONLY within its own
-// visible-cell set, hidden everywhere else — so the base is black and the
-// given cells are punched WHITE instead. Using the non-inverted polarity for
-// a light was a confirmed real bug: in the ordinary no-obstruction case,
-// virtually every cell under the light's own circle counts as "visible," so
-// the fog-style mask punched black (hidden) holes across nearly the whole
-// glow, leaving almost nothing showing.
+// `invert` (default false): fog's polarity — white base with a BLACK hole
+// punched at each revealed cell (fog absent there). `invert: true` (a
+// light's glow clip) is the opposite — black base, WHITE holes — since the
+// glow should show ONLY within its visible-cell set. Using the non-inverted
+// polarity for a light was wrong: in the ordinary no-obstruction case,
+// nearly every cell under the light counts as "visible," so a fog-style
+// mask punched hidden holes across nearly the whole glow.
 function buildRevealedCellsMask(baseMapManager, map, layer, revealedCells, maskId, offset, { invert = false } = {}) {
   const svgNS = "http://www.w3.org/2000/svg";
   const mask = document.createElementNS(svgNS, "mask");
@@ -2039,16 +1715,13 @@ function buildRevealedCellsMask(baseMapManager, map, layer, revealedCells, maskI
 }
 
 // A single opaque SVG rect, masked transparent over each revealed cell —
-// covers a large fixed pixel extent (not the container's own 100%/percentage
-// size, which isn't knowable here since this builds a detached element
-// before it's mounted) with `overflow: visible` on the outer <svg>, so the
-// fixed extent's exact size only has to be "generously larger than any
-// realistic pan/zoom range," not exact.
-// `ownerPreview`: renders a much lighter tint (see the fill alpha below) for
-// the map's own owner/editor, who otherwise never sees fog at all (real fog
-// only renders for `!hasFullAccess`, see createGridLayerElement) — this is
-// purely an authoring aid, so the GM can still see the map underneath while
-// knowing which cells a real viewer currently has hidden.
+// covers a large fixed pixel extent (not the container's own percentage
+// size, not knowable here since this builds a detached element before
+// mounting) with `overflow: visible` on the outer <svg>, so the extent
+// only has to be "generously larger than any realistic pan/zoom range."
+// `ownerPreview`: a much lighter tint for the map's own owner/editor, who
+// otherwise never sees fog at all — a pure authoring aid so the GM can see
+// the map underneath while knowing which cells a real viewer has hidden.
 function createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPreview = false } = {}) {
   const svgNS = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(svgNS, "svg");
@@ -2062,16 +1735,11 @@ function createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPrev
   const maskId = ownerPreview ? `orrery-fog-mask-${layer.id}-owner` : `orrery-fog-mask-${layer.id}`;
   const defs = document.createElementNS(svgNS, "defs");
   // getGridBackgroundPosition, not plain getGridOffset — this svg is a
-  // CHILD of createGridLayerElement's own `grid` div (shifted
-  // GRID_OVERLAY_EXTENT pixels off the container's true corner, see that
-  // constant's own comment), so a hole positioned with the uncompensated
-  // container-relative offset punches through the mask GRID_OVERLAY_EXTENT
-  // pixels away from the actual visible cell — confirmed as the actual
-  // cause of "revealed cells still show grey": the hole existed, just off
-  // in empty space nowhere near the cell it was supposed to uncover, while
-  // the giant ±EXTENT base/fill rects below still fully covered the
-  // visible viewport regardless (their own span dwarfs a 4000px error, so
-  // they never looked broken the way a small, precisely-placed hole did).
+  // CHILD of createGridLayerElement's `grid` div (shifted GRID_OVERLAY_EXTENT
+  // pixels off the container's true corner), so an uncompensated offset
+  // would punch the mask hole that same distance away from the actual
+  // visible cell, while the giant ±EXTENT base/fill rects below still fully
+  // covered the viewport regardless — masking the bug from view.
   const offset = getGridBackgroundPosition(baseMapManager, map, layer);
   const mask = buildRevealedCellsMask(baseMapManager, map, layer, revealedCells, maskId, offset);
   defs.appendChild(mask);
@@ -2081,11 +1749,9 @@ function createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPrev
   fill.setAttribute("y", String(-FOG_MASK_EXTENT));
   fill.setAttribute("width", String(FOG_MASK_EXTENT * 2));
   fill.setAttribute("height", String(FOG_MASK_EXTENT * 2));
-  // Both independently configurable (layer.settings.fogOpacity/
-  // fogPreviewOpacity, see createLayerSettings's own comment) — real fog
-  // (non-owner viewers) defaults near-opaque; the owner's own preview
-  // defaults lighter but still clearly visible, not so faint it reads as
-  // "nothing changed" the way a much fainter first attempt did.
+  // Independently configurable — real fog (non-owner viewers) defaults
+  // near-opaque; the owner's own preview defaults lighter but still clearly
+  // visible.
   const opacity = ownerPreview
     ? (Number.isFinite(layer.settings?.fogPreviewOpacity) ? layer.settings.fogPreviewOpacity : 0.6)
     : (Number.isFinite(layer.settings?.fogOpacity) ? layer.settings.fogOpacity : 0.92);
@@ -2098,16 +1764,13 @@ function createFogOverlay(baseMapManager, map, layer, revealedCells, { ownerPrev
 // `selectionState`: { isInteractive, selectedCells, groupCells, hasFullAccess,
 // onPointerDown(coord, event), paintMode, onPointerPaint(coord, event),
 // onPointerPaintEnd() }. Only Orrery passes any of these — the widget
-// renders the same grid appearance with no click handling attached at all.
-// `paintMode` (Groups' own "paint cells" tool, app.js) swaps the single-
-// click/shift-range/ctrl-toggle gesture below for a click-AND-DRAG one:
-// onPointerPaint fires once per cell the pointer newly enters while the
-// button stays down (not per pointermove event — held on `lastKey` below so
-// lingering inside the same cell doesn't refire), letting a GM sweep a
-// whole revealed area in one drag instead of clicking every cell one at a
-// time. onPointerPaintEnd fires once on release so the caller can close out
-// a single undo entry covering the whole drag, matching how every other
-// drag gesture in this file (shape/marker move) batches to one commit.
+// renders the same grid with no click handling attached. `paintMode`
+// (Groups' "paint cells" tool) swaps the single-click/shift-range/
+// ctrl-toggle gesture for click-AND-DRAG: onPointerPaint fires once per
+// cell newly entered while the button stays down (held on `lastKey` so
+// lingering in a cell doesn't refire), letting a GM sweep an area in one
+// drag. onPointerPaintEnd fires once on release so the caller closes out
+// one undo entry for the whole drag, matching every other drag gesture here.
 export function createGridLayerElement(baseMapManager, map, layer, selectionState = {}) {
   const grid = document.createElement("div");
   grid.className = "orrery-layer-grid-overlay";
@@ -2123,21 +1786,15 @@ export function createGridLayerElement(baseMapManager, map, layer, selectionStat
       event.preventDefault();
       event.stopPropagation();
       baseMapManager.setInteractionEnabled(false);
-      // The real container's rect, not grid's own (oversized by
-      // GRID_OVERLAY_EXTENT, shifted up/left by it) rect below — matches
-      // getGridOffset's own "pixels from the container's true corner"
-      // meaning now that backgroundPosition uses getGridBackgroundPosition's
-      // corrected anchor instead of this raw offset, so a click still lands
-      // on the cell it visually landed on.
+      // The real container's rect, not grid's own (oversized/shifted by
+      // GRID_OVERLAY_EXTENT) — matches getGridOffset's "pixels from the
+      // container's true corner" meaning, so a click lands on the cell it
+      // visually landed on.
       //
-      // getGridCoordFromPoint divides whatever point it's given by
-      // getGridHitTestScale (the current zoom, for non-tile maps) — so
-      // `offset` (already content-space/unscaled) has to be scaled UP by
-      // that same factor before subtracting it from the raw (POST-scale,
-      // real screen pixel) rect-relative point, or the two terms are in
-      // mismatched units and the division below only partially corrects
-      // for zoom. See getNonTileZoom's own comment (map-viewer.js) for the
-      // general version of this same bug.
+      // getGridCoordFromPoint divides its point by getGridHitTestScale (the
+      // current zoom) — so `offset` (content-space/unscaled) must be scaled
+      // UP by that factor before subtracting it from the raw (post-scale)
+      // rect-relative point, or the two terms are in mismatched units.
       const rect = baseMapManager.getOverlayContainer()?.getBoundingClientRect() || grid.getBoundingClientRect();
       const offset = getGridOffset(baseMapManager, map, layer);
       const hitScale = getGridHitTestScale(baseMapManager, map);
@@ -2174,11 +1831,10 @@ export function createGridLayerElement(baseMapManager, map, layer, selectionStat
     grid.addEventListener("pointerup", () => baseMapManager.setInteractionEnabled(true));
     grid.addEventListener("pointercancel", () => baseMapManager.setInteractionEnabled(true));
   }
-  // A fixed PIXEL extent (not a percentage of the container — see
-  // GRID_OVERLAY_EXTENT's own comment for why that broke alignment) sized
-  // via calc() against the normal inset:0 100%/100% box every other layer
-  // overlay uses, so this div's own local origin sits exactly
-  // GRID_OVERLAY_EXTENT pixels from the container's real corner, always.
+  // A fixed PIXEL extent (not a container percentage) sized via calc()
+  // against the normal inset:0 100%/100% box every other layer overlay
+  // uses, so this div's local origin sits exactly GRID_OVERLAY_EXTENT
+  // pixels from the container's real corner, always.
   grid.style.width = `calc(100% + ${GRID_OVERLAY_EXTENT * 2}px)`;
   grid.style.height = `calc(100% + ${GRID_OVERLAY_EXTENT * 2}px)`;
   grid.style.left = `-${GRID_OVERLAY_EXTENT}px`;
@@ -2291,61 +1947,43 @@ export function createRasterLayerElement(layer, renderState = {}) {
 // can be started anywhere, including on top of an existing one.
 // `options.selectedElementId` highlights the currently-selected path (the
 // vector-path selection kind's own "Delete Path" editor).
-// The map's first grid layer supplies pixels-per-cell for AoE shape sizing
-// — same "first grid layer, if any" convention app.js's own
-// findPrimaryGridLayer uses for the Measure tool — falling back to the
-// layer-settings default (createLayerSettings's own 50) rather than 0 so a
-// shape never silently collapses to nothing on a map with no grid layer.
-// Deliberately not filtered on the layer's own visibility — see
-// createMarkerDot's matching comment just above: hiding the grid's lines
-// isn't a statement that it stops being the map's real scale, and shapes
-// visibly resizing the instant the grid layer got hidden was a real bug.
+// Pixels-per-cell from the map's first grid layer (same convention as
+// app.js's findPrimaryGridLayer), falling back to createLayerSettings's
+// default of 50 so a shape never collapses to size 0 with no grid. Not
+// filtered on the grid layer's own visibility — hiding its lines doesn't
+// change the map's real scale.
 function resolveShapePixelsPerCell(baseMapManager, map) {
   const gridLayer = (map.layers || []).find((entry) => entry.type === "grid");
   return gridLayer ? getGridCellSize(baseMapManager, map, gridLayer) : 50;
 }
 
 // One AoE measurement shape (see createVectorShapeElement, map-model.js).
-// Geometry is computed in already-converted LOCAL PIXEL space — the origin
-// via the exact same markerPositionToLocalPixel + offset a path point uses,
-// size/width via resolveShapePixelsPerCell — so a shape pans/zooms exactly
-// like a drawn path does, with no separate per-base-map-type math of its
-// own. "line" and "cone" are plain polygons built from basic trig (origin +
-// angleDeg direction); no existing line-with-width/wedge geometry elsewhere
-// in the codebase to reuse instead (confirmed before writing this).
+// Geometry is computed in already-converted LOCAL PIXEL space (origin via
+// markerPositionToLocalPixel + offset, size via resolveShapePixelsPerCell)
+// so a shape pans/zooms exactly like a drawn path, with no per-base-map-type
+// math of its own. "line"/"cone" are plain trig polygons (origin +
+// angleDeg) — no existing wedge geometry elsewhere to reuse.
 export function renderShapeElement(svg, baseMapManager, map, layer, element, offset, options) {
   const preset = getPresetById(element.presetId) || getPresetById("circle");
-  // A `kind: "particles"` element (an Effect) has nothing static to draw
-  // via this SVG-geometry path at all — its own animated rendering (Part 4)
-  // is a separate, canvas-based system entirely, driven by
-  // requestAnimationFrame rather than a one-shot SVG element. This function
-  // stays scoped to geometry presets only; the particle-selection/drag
-  // affordance in Orrery's own authoring surface is that separate system's
-  // own concern, not this one's.
+  // A "particles" element (an Effect) has no static geometry — its
+  // animated canvas rendering is a separate system entirely.
   if (preset.kind !== "geometry") return;
   const { x: cx, y: cy } = resolveElementOrigin(baseMapManager, map, layer, element);
-  // The drag gesture further below operates in PRE-offset local-pixel space
-  // (it round-trips through markerPositionToLocalPixel/localPixelToMarkerPosition,
-  // neither of which know about a layer's own offset) — recovered by
-  // subtracting `offset` back out of cx/cy. Always valid there: dragging is
-  // only ever enabled for a freestanding shape (canDrag requires no
-  // attachedMarkerId), so cx/cy came from resolveElementOrigin's own
-  // freestanding branch, local pixel + this exact `offset`.
+  // The drag gesture below works in PRE-offset local-pixel space (it
+  // round-trips through markerPositionToLocalPixel/localPixelToMarkerPosition,
+  // which don't know about a layer offset) — subtract `offset` back out.
+  // Always valid: dragging only applies to a freestanding shape, so cx/cy
+  // came from resolveElementOrigin's freestanding branch.
   const local = { x: cx - offset.x, y: cy - offset.y };
   const pixelsPerCell = resolveShapePixelsPerCell(baseMapManager, map);
   const sizePx = Math.max(0, (element.sizeCells || 0) * pixelsPerCell);
   const isSelected = options.selectedElementId === element.id;
 
   const visible = preset.draw(cx, cy, sizePx, element, pixelsPerCell);
-  // Selection used to override stroke to a fixed orange instead of adding a
-  // separate indicator — confirmed as the actual cause of "outline color
-  // isn't honored, always shows orange": the ONLY way to reach this editor
-  // at all is by selecting the shape first, so the real configured color
-  // was never visible while it was actually being edited. Markers already
-  // solve this correctly (a separate box-shadow ring, .is-selected in
-  // styles.css, never touching the marker's own color) — this clones the
-  // same geometry as an outer glow ring instead, leaving `visible`'s own
-  // stroke/fill always exactly what's configured, selected or not.
+  // Selection is shown as a cloned outer glow ring, never by overriding
+  // `visible`'s own stroke/fill — same approach as markers' box-shadow ring
+  // (.is-selected). Overriding stroke directly used to hide the shape's
+  // real configured color exactly while it was being edited.
   if (isSelected) {
     const selectionRing = visible.cloneNode();
     selectionRing.setAttribute("fill", "none");
@@ -2359,24 +1997,18 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
   visible.setAttribute("fill", fillColor && fillColor !== "none" ? fillColor : "none");
   visible.setAttribute("stroke", element.values?.stroke || "#0f172a");
   visible.setAttribute("stroke-width", String(element.strokeWidth || 2));
-  // Falls back to 0.5 only for a shape saved before this field existed —
-  // every shape placed since createVectorShapeElement always stamps a real
-  // number here (see its own comment), this isn't a "normal" default path.
+  // 0.5 fallback only for a shape saved before this field existed —
+  // createVectorShapeElement always stamps a real number now.
   visible.setAttribute("opacity", String(Number.isFinite(element.opacity) ? element.opacity : 0.5));
   svg.appendChild(visible);
 
-  // An attached shape/effect's position is derived from its host marker,
-  // not independently draggable — same gate/reasoning renderLightElement's
-  // own canDrag already establishes just below in this file. The only way
-  // to move it is to move the marker (or detach it via the inspector's own
-  // Attach to Token picker first).
+  // An attached shape/effect's position derives from its host marker, not
+  // independently draggable (same gate as renderLightElement's canDrag) —
+  // move the marker, or detach via the inspector's Attach to Token picker.
   const canDrag = !element.attachedMarkerId && typeof options.onShapeDragEnd === "function";
   if (typeof options.onPathClick === "function" || canDrag) {
-    // A clone reuses whichever shape's own geometry attributes were just
-    // set (cx/cy/r, x/y/width/height, or points) without re-deriving them —
-    // fill:"transparent" (not "none") is what actually makes the WHOLE
-    // shape area register pointer-events:"fill" hits, same reasoning the
-    // path hit-target below already relies on.
+    // Clone reuses the geometry attributes just set; fill:"transparent"
+    // (not "none") is what makes the whole shape area register pointer hits.
     const hit = visible.cloneNode();
     hit.setAttribute("fill", "transparent");
     hit.setAttribute("stroke", "transparent");
@@ -2386,28 +2018,18 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
       if (event.button !== 0) return;
       event.preventDefault();
       event.stopPropagation();
-      // element.kind ("shape") passed as a 3rd arg — this hit-target is
-      // shared with plain drawn paths (which have no drag), so the caller
-      // needs to know which kind of selection this actually is to decide
-      // whether a full rebuild-on-select is safe (paths, nothing dragging
-      // yet) or would tear out the very nodes a drag is about to
-      // setPointerCapture on (shapes — see app.js's own
-      // selectShapeElementForDrag).
+      // element.kind lets the shared caller (this hit-target is shared with
+      // drag-less plain paths) decide whether a rebuild-on-select is safe or
+      // would tear out nodes a drag is about to setPointerCapture on (see
+      // app.js's selectShapeElementForDrag).
       options.onPathClick?.(element.id, event, element.kind);
       if (!canDrag) {
         return;
       }
-      // Same "select immediately on pointerdown, drag is optional, commit
-      // only if the pointer actually moved" gesture beginMarkerDrag uses —
-      // see drawDragPreview below for how the live movement itself is shown.
-      // Best-effort — some browsers throw InvalidStateError capturing on a
-      // freshly-cloned SVG element in this DOM position (confirmed as the
-      // actual cause of "the cursor shows move, but dragging a shape does
-      // nothing at all": an uncaught throw here aborted the rest of this
-      // handler before the pointermove/pointerup listeners below ever got
-      // attached). Capture is a nicety (keeps the cursor/hover locked to
-      // this element) — the drag itself is tracked via window-level
-      // listeners regardless, so it works fine without it.
+      // Same "select on pointerdown, drag is optional" gesture as
+      // beginMarkerDrag. Capture can throw InvalidStateError on a
+      // freshly-cloned SVG element in some browsers — best-effort only,
+      // since the drag itself is tracked via window-level listeners anyway.
       try {
         hit.setPointerCapture(event.pointerId);
       } catch (error) {
@@ -2415,34 +2037,20 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
       }
       const startX = event.clientX;
       const startY = event.clientY;
-      // The mouse delta is POST-scale (real screen pixels); `visible`/`hit`
-      // live inside PanZoomController's own scale(zoom) transform — dividing
-      // the raw delta by zoom first is what keeps the shape tracking the
-      // cursor 1:1 on screen regardless of zoom (see getNonTileZoom's own
-      // comment; same reasoning beginMarkerDrag's own fix uses).
+      // Delta is POST-scale screen pixels; visible/hit live inside
+      // PanZoomController's scale(zoom) transform, so dividing by zoom
+      // keeps the shape tracking the cursor 1:1 (see getNonTileZoom).
       const zoom = isTileBaseMap(map) ? 1 : getNonTileZoom(baseMapManager);
       let lastDelta = null;
       baseMapManager.setInteractionEnabled(false);
-      // A separate, temporary preview — appended fresh to the overlay on
-      // every move, removed on release — instead of mutating the PERMANENT
-      // visible/hit nodes in place. Confirmed necessary: mutating them
-      // in-place (tried both a CSS `transform` and direct geometry
-      // attribute updates) never actually repainted mid-drag — the shape
-      // only ever visually updated once, at the very end, via the full
-      // re-render onShapeDragEnd triggers on commit. This instead reuses
-      // this exact function (renderShapeElement calling itself, with a
-      // shifted origin and no onPathClick/onShapeDragEnd so it doesn't try
-      // to build its own hit-target/drag handlers) against a throwaway
-      // element+svg — the SAME "temporary overlay SVG, redrawn per move,
-      // torn down on release" technique setupShapeTool's own new-shape
-      // placement preview already uses successfully (app.js).
-      // Removed outright, not just display:none — `hit` stays exactly as
-      // it is (it's already invisible: fill/stroke transparent, and it's
-      // what's holding the active pointerdown listener/capture, safer left
-      // untouched mid-gesture). Only `visible` is what's actually painted,
-      // so only it needs to disappear, and removing it from the DOM is a
-      // stronger guarantee than a style property that a stray CSS rule or
-      // browser quirk could otherwise still be overriding.
+      // A temporary preview, redrawn per move and torn down on release,
+      // rather than mutating visible/hit in place — in-place mutation
+      // (transform or direct geometry attrs) never actually repainted
+      // mid-drag. Reuses this same function against a throwaway
+      // element+svg, same technique as setupShapeTool's placement preview.
+      // `hit` is left untouched (already invisible, holds the active
+      // pointer capture); only `visible` needs to disappear, via removal
+      // rather than display:none for a stronger guarantee.
       visible.remove();
       const overlayHost = baseMapManager.getOverlayContainer();
       let preview = null;
@@ -2476,11 +2084,9 @@ export function renderShapeElement(svg, baseMapManager, map, layer, element, off
         window.removeEventListener("pointerup", onUp);
         baseMapManager.setInteractionEnabled(true);
         preview?.remove();
-        // Restored unconditionally — harmless even when a real move is
-        // about to trigger a full re-render below (that rebuild discards
-        // this whole svg/wrapper anyway), and necessary for the "clicked
-        // without actually dragging" case, where no re-render happens at
-        // all and this is the only copy of the shape left.
+        // Restored unconditionally — harmless when a real move triggers a
+        // full re-render, and necessary for the click-without-drag case
+        // where no re-render happens and this is the only copy left.
         svg.appendChild(visible);
         if (lastDelta) {
           const nextLocalPixel = { x: local.x + lastDelta.x, y: local.y + lastDelta.y };
@@ -2532,19 +2138,13 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
   const pointsAttr = pixelPoints.map((point) => `${point.x},${point.y}`).join(" ");
   const isDoor = element.wallType === "door";
   const isSecret = isDoor && element.secret;
-  // A secret door renders EXACTLY like a plain wall for a non-full-access
-  // viewer (no tick, no distinguishing anything) — the GM alone sees the
-  // truth, same "owner preview" asymmetry Fog of War's own real-vs-preview
-  // opacity split already establishes elsewhere in this file.
+  // A secret door renders exactly like a plain wall for a non-full-access
+  // viewer — same GM-only "owner preview" asymmetry as Fog of War elsewhere
+  // in this file.
   const revealDoorStyling = isDoor && (!isSecret || options.hasFullAccess);
 
-  // Everything static (visible line + door decorations) lives in one <g>,
-  // hidden as a single unit during a drag (see the hit-target's own
-  // drawDragPreview below) rather than removing/re-adding individual pieces
-  // — a wall can have several decoration nodes (tick, lock glyph), and
-  // toggling one wrapper's display is simpler and less error-prone than
-  // tracking each piece separately the way a shape (with only ever one
-  // `visible` node) gets away with.
+  // Visible line + door decorations live in one <g>, hidden as a unit
+  // during a drag — simpler than tracking each decoration node separately.
   const wrapper = document.createElementNS(svgNS, "g");
 
   const visible = document.createElementNS(svgNS, "polyline");
@@ -2558,11 +2158,9 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
   wrapper.appendChild(visible);
 
   if (revealDoorStyling) {
-    // A short perpendicular "leaf" tick at the door's own midpoint — reads
-    // as a door regardless of exact stroke color/length. Uses the door's
-    // FIRST segment for direction (a door is normally authored as a single
-    // 2-point segment; a multi-point "door" — unusual, not disallowed —
-    // still gets a reasonable tick off its first leg).
+    // Short perpendicular "leaf" tick at the door's midpoint, using its
+    // first segment for direction (doors are normally a single 2-point
+    // segment; a multi-point door still gets a reasonable tick off leg 1).
     const a = pixelPoints[0];
     const b = pixelPoints[1];
     const dx = b.x - a.x;
@@ -2580,23 +2178,17 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
     tick.setAttribute("stroke", "#92400e");
     tick.setAttribute("stroke-width", "3");
     tick.style.pointerEvents = "none";
-    // Secret (GM-only view) gets an additional dash pattern so the GM can
-    // tell "secret door" apart from "ordinary door" while authoring — this
-    // branch only ever runs when options.hasFullAccess is already true (see
-    // revealDoorStyling above), never for a player.
+    // Dashed for a secret door so the GM (this only runs when
+    // hasFullAccess) can tell it apart from an ordinary one while authoring.
     if (isSecret) {
       tick.setAttribute("stroke-dasharray", "3 2");
     }
     wrapper.appendChild(tick);
 
-    // A small padlock glyph, centered directly ON the door's own midpoint
-    // (overlapping the tick — deliberate, this is the primary "this door is
-    // locked" indicator, not a secondary decoration off to the side) — the
-    // one persistent, always-on-the-map indicator that a door is locked,
-    // rather than something a player only discovers by clicking it and
-    // getting a toast. Shown under the exact same visibility rule as the
-    // tick itself (revealDoorStyling) — a secret+locked door still shows
-    // nothing at all to a non-GM viewer.
+    // Padlock glyph centered on the door's midpoint, deliberately
+    // overlapping the tick — the one persistent locked-door indicator,
+    // rather than something only discovered by clicking. Same visibility
+    // rule as the tick, so a secret+locked door stays invisible to players.
     if (element.locked) {
       const lockGroup = document.createElementNS(svgNS, "g");
       lockGroup.style.pointerEvents = "none";
@@ -2618,11 +2210,7 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
   }
 
   // Player click-to-toggle — a secret door never gets this hit-target at
-  // all (not just "clicking does nothing," it genuinely never registers a
-  // handler), matching "a player doesn't even know it's there." Lives in
-  // the wrapper too (never interactive during a GM-side drag anyway, since
-  // onDoorClick and onWallDragEnd are never both supplied by the same
-  // caller — see this function's own header comment).
+  // all, matching "a player doesn't even know it's there."
   if (isDoor && !isSecret && typeof options.onDoorClick === "function") {
     const doorHit = document.createElementNS(svgNS, "polyline");
     doorHit.setAttribute("points", pointsAttr);
@@ -2723,13 +2311,9 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
 
   svg.appendChild(wrapper);
 
-  // Per-vertex reshape handles — only while THIS wall is the current
-  // selection (not just its layer), same "you have to actually select it
-  // first" convention every other post-placement editing affordance in this
-  // suite already follows. Appended directly to `svg` (siblings of
-  // `wrapper`, not children of it) so hiding `wrapper` during the WHOLE-wall
-  // drag above doesn't also hide these — each handle manages its own
-  // visibility during ITS OWN drag instead.
+  // Per-vertex reshape handles, only while this wall is selected. Appended
+  // as siblings of `wrapper` (not children) so hiding wrapper during a
+  // whole-wall drag doesn't hide these too.
   if (isSelected && typeof options.onWallVertexDragEnd === "function") {
     pixelPoints.forEach((point, index) => {
       const handle = document.createElementNS(svgNS, "circle");
@@ -2773,14 +2357,10 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
             const local = markerPositionToLocalPixel(baseMapManager, map, originalPoint);
             return localPixelToMarkerPosition(baseMapManager, map, { x: local.x + dx, y: local.y + dy });
           });
-          // No onWallVertexDragEnd passed here — this is a throwaway,
-          // non-interactive preview (pointer-events:none on the whole svg
-          // already), and passing even a no-op would make renderWallElement
-          // build REAL handle circles with their own real pointerdown
-          // listeners on top of it, which could pick up and start a SECOND,
-          // conflicting drag gesture if the cursor happens to pass over one
-          // while THIS drag is already in progress. Just the moving vertex
-          // itself is enough visual feedback.
+          // No onWallVertexDragEnd here — passing even a no-op would make
+          // renderWallElement build real handle circles with real listeners
+          // on top of this throwaway preview, risking a second conflicting
+          // drag if the cursor passes over one mid-gesture.
           renderWallElement(preview, baseMapManager, map, layer, { ...element, points: nextPoints }, offset, {
             selectedElementId: element.id,
           });
@@ -2818,23 +2398,18 @@ function renderWallElement(svg, baseMapManager, map, layer, element, offset, opt
   }
 }
 
-// A freestanding OR token-attached placed light. Position is always
-// resolved via resolveLightOrigin (tracks an attached marker's live
-// position when set; the passed-in `offset` — this layer's own manual
-// position, same as every other vector element uses — is deliberately
-// unused here, since resolveLightOrigin already resolves the correct final
-// position itself either way, and re-adding this parameter's offset on top
-// would double-apply it).
+// A freestanding or token-attached placed light. Position always resolves
+// via resolveLightOrigin (tracks an attached marker's live position); the
+// `offset` param is deliberately unused here since re-adding it would
+// double-apply what resolveLightOrigin already resolves.
 //
-// The glow is masked to THIS LIGHT'S OWN wall-aware line-of-sight cell set
-// — never the grid layer's whole unioned reveal set. If it clipped against
-// the shared union, a light would visibly leak into a cell revealed by an
-// unrelated source (e.g. a character standing in the next room) even with a
-// wall directly between them. Applies unconditionally, whether or not Fog
-// of War is even toggled on for the grid layer — a light's wall-shaping is
-// a physical-correctness question ("does the glow pass through a wall"),
-// not a hidden-information one, so every viewer (including the GM) sees
-// the same clipped shape.
+// The glow is masked to THIS light's own wall-aware line-of-sight cell set,
+// never the grid layer's whole unioned reveal set — clipping against the
+// shared union would let a light leak into a cell revealed by an unrelated
+// source even with a wall between them. Applies unconditionally regardless
+// of Fog of War being toggled: wall-shaping is a physical-correctness
+// question, not a hidden-information one, so every viewer sees the same
+// clipped shape.
 export function renderLightElement(svg, baseMapManager, map, layer, element, offset, options) {
   const origin = resolveLightOrigin(baseMapManager, map, layer, element);
   const { x: cx, y: cy } = origin;
@@ -2865,14 +2440,9 @@ export function renderLightElement(svg, baseMapManager, map, layer, element, off
   visible.setAttribute("fill", `url(#${gradientId})`);
   visible.style.pointerEvents = "none";
 
-  // findPrimaryGridLayer's own inline equivalent (map.layers.find(l =>
-  // l.type==="grid")) — this map's scale reference for converting
-  // element.rangeCells into a real segment-intersection test, regardless of
-  // whether Fog of War is on for that layer or it's even visible (same "a
-  // grid's own visibility doesn't affect whether it's still the map's real
-  // scale reference" precedent resolveShapePixelsPerCell/findPrimaryGridLayer
-  // already establish elsewhere). No grid layer at all: nothing to clip
-  // against or measure cells in, so the glow just renders unclipped.
+  // findPrimaryGridLayer's inline equivalent — the map's scale reference
+  // for element.rangeCells regardless of the grid layer's own visibility.
+  // No grid layer: nothing to clip against, glow renders unclipped.
   const gridLayer = (map.layers || []).find((entry) => entry.type === "grid");
   if (gridLayer) {
     const blockingSegments = resolveBlockingSegments(baseMapManager, map);
@@ -2882,25 +2452,17 @@ export function renderLightElement(svg, baseMapManager, map, layer, element, off
       blockingSegments,
     });
     const maskId = `orrery-light-mask-${element.id}`;
-    // getGridOffset, NOT getGridBackgroundPosition — this light's own SVG
-    // is a sibling of the grid div (part of its own vector layer's overlay,
-    // true-container-space, same as every path/shape/marker), NOT a child
-    // of the grid div's own GRID_OVERLAY_EXTENT-shifted coordinate space
-    // (see buildRevealedCellsMask's own header comment for why the two
-    // callers need different offsets despite sharing the same hole-punching
-    // logic).
+    // getGridOffset, not getGridBackgroundPosition — this light's SVG is a
+    // sibling of the grid div (true-container-space like any path/shape/
+    // marker), not a child of its GRID_OVERLAY_EXTENT-shifted space (see
+    // buildRevealedCellsMask's header for why the two callers differ).
     const maskOffset = getGridOffset(baseMapManager, map, gridLayer);
-    // invert: true — buildRevealedCellsMask's own DEFAULT polarity (white
-    // base, black holes at the given cells) is built for FOG's use: fog
-    // SHOWS everywhere except the given (revealed) cells. A light's own
-    // glow needs the OPPOSITE — it should show ONLY within its own visible
-    // cells, hidden everywhere else. Using the uninverted mask here was a
-    // confirmed real bug: in the common no-obstruction case, virtually
-    // every cell under the glow's own circle is "visible," so the
-    // (uninverted) mask punched black holes across nearly the ENTIRE
-    // circle, hiding almost all of it — "the light shows while dragging
-    // (before this mask is even attached to anything) but disappears the
-    // instant it's dropped and actually rendered through this path."
+    // invert: true — buildRevealedCellsMask's default polarity punches
+    // black holes at revealed cells (fog shows everywhere except those). A
+    // light needs the opposite: visible ONLY within its own visible cells.
+    // Without invert, the common no-obstruction case (nearly every cell
+    // under the glow is "visible") punched holes across almost the entire
+    // circle, hiding nearly all of it.
     const mask = buildRevealedCellsMask(baseMapManager, map, gridLayer, visibleCells, maskId, maskOffset, { invert: true });
     defs.appendChild(mask);
     visible.setAttribute("mask", `url(#${maskId})`);
@@ -2913,11 +2475,9 @@ export function renderLightElement(svg, baseMapManager, map, layer, element, off
     ring.setAttribute("cy", String(cy));
     ring.setAttribute("r", String(radiusPx));
     ring.setAttribute("fill", "none");
-    // The light's own color, not a fixed accent blue (unlike a selected
-    // shape's own ring, which deliberately stays a fixed color since a
-    // shape's stroke is a separate, independently-configured field) — a
-    // light has no separate "outline" concept, so the selection indicator
-    // reads more naturally in the same hue as the light itself.
+    // The light's own color, not a fixed accent (unlike a shape's ring,
+    // whose stroke is a separate configurable field) — a light has no
+    // separate "outline" concept.
     ring.setAttribute("stroke", element.color || "#fbbf24");
     ring.setAttribute("stroke-width", "2");
     ring.setAttribute("stroke-dasharray", "6 4");
@@ -2926,31 +2486,21 @@ export function renderLightElement(svg, baseMapManager, map, layer, element, off
   }
   svg.appendChild(visible);
 
-  // An attached light's position is derived from its host marker, not
-  // independently draggable — the only way to move it is to move the
-  // marker (or detach it via the inspector's own Attach to Token picker
-  // first). Gated here, not by whether the caller happens to pass
-  // onShapeDragEnd, since app.js's own renderLayerOverlays wires that
-  // callback identically for every shape/light regardless of attachment.
+  // An attached light's position derives from its host marker, not
+  // independently draggable — gated here (not on whether the caller passes
+  // onShapeDragEnd) since renderLayerOverlays wires that callback
+  // identically for every shape/light regardless of attachment.
   const canDrag = !element.attachedMarkerId && typeof options.onShapeDragEnd === "function";
   if (typeof options.onPathClick === "function" || canDrag) {
-    // A plain (unmasked, ungraded) circle — the light's own glow shape
-    // above isn't a reliable hit-target (a radial gradient fading to 0
-    // opacity, and potentially wall-masked with real holes cut out of it,
-    // both mean parts of the visible glow don't register pointer events
-    // the way a flat-filled shape does). Same "clone geometry, make it
-    // transparent-but-hit-testable" idea renderShapeElement's own hit-target
-    // uses, just built fresh rather than cloning `visible` (which carries
-    // the mask/gradient fill this hit-target deliberately doesn't want).
+    // A plain circle, not a clone of `visible` — the glow's radial gradient
+    // (fading to 0 opacity, possibly wall-masked) isn't a reliable
+    // hit-target the way a flat fill is.
     //
-    // Deliberately its OWN drag implementation, not a shared extraction
-    // with renderShapeElement's nearly-identical block — duplicated here
-    // rather than risking a refactor of that already-working, delicate
-    // gesture code (setPointerCapture, zoom correction, temp-preview-
-    // redraw-per-move) under this feature's own time constraints. Same
-    // overall shape: select-on-pointerdown, drag optional, commit only if
-    // the pointer actually moved, temporary preview redrawn per move via
-    // this exact function calling itself.
+    // Deliberately its own drag implementation rather than a shared
+    // extraction with renderShapeElement's near-identical block, to avoid
+    // refactoring that already-working gesture code. Same overall shape:
+    // select-on-pointerdown, drag optional, commit only on real movement,
+    // temp preview redrawn per move via this function calling itself.
     const hit = document.createElementNS(svgNS, "circle");
     hit.setAttribute("cx", String(cx));
     hit.setAttribute("cy", String(cy));
@@ -3021,116 +2571,77 @@ export function renderLightElement(svg, baseMapManager, map, layer, element, off
   }
 }
 
-// Persists across renderMapLayers rebuilds (module-level, not scoped to any
-// one call) — tracks which loop:false particle elements have already
+// Module-level: tracks which loop:false particle elements already
 // completed their one-shot cycle, so a routine poll/pan/zoom rebuild
-// doesn't replay them from scratch every time it redraws the map (it would
-// otherwise, since every rebuild calls this same render function fresh).
-// Cleared for a specific element by resetParticleEffectPlayState — called
-// on every explicit re-trigger (the inspector's own Play button, a macro,
-// or a remote broadcast delivery, Part 5) so THAT element plays again.
+// doesn't replay them from scratch. Cleared per-element by
+// resetParticleEffectPlayState on an explicit re-trigger (Play button,
+// macro, remote broadcast) so that element plays again.
 const particleEffectPlayedOnce = new Set();
 
 export function resetParticleEffectPlayState(elementId) {
   particleEffectPlayedOnce.delete(elementId);
 }
 
-// Renders a `kind: "particles"` element (an Effect) — a small canvas
-// appended directly to the shared overlay container (NOT the per-layer SVG
-// createVectorLayerElement otherwise builds via renderShapeElement;
-// particles need their own requestAnimationFrame-driven redraw every
-// frame, not a one-shot SVG primitive). Plays continuously if
-// element.loop, otherwise once per explicit trigger (see
-// particleEffectPlayedOnce above).
+// Renders a `kind: "particles"` element (an Effect) as a canvas appended
+// to the shared overlay container, not the per-layer SVG — particles need
+// their own requestAnimationFrame redraw every frame, not a one-shot SVG
+// primitive. Plays continuously if element.loop, else once per trigger.
 //
-// Self-terminates once its own canvas is no longer in the DOM
-// (`canvas.isConnected`) — the SAME renderMapLayers rebuild that wipes the
-// overlay container on every poll/pan/zoom tick naturally stops any
-// still-running loop this way, with no separate cancellation registry
-// needed; a fresh canvas/loop simply starts on the next render pass
-// regardless (same accepted "a rebuild can restart an in-flight cycle"
-// tradeoff the ping tool's own transient overlay element already has).
+// Self-terminates once its canvas leaves the DOM (`canvas.isConnected`) —
+// the same rebuild that wipes the overlay container on every poll/pan/zoom
+// tick stops any running loop this way, no separate cancellation registry
+// needed.
 //
-// Click-to-select (options.onPathClick) AND drag-to-move (options.onShapeDragEnd)
-// — same capability/gating renderShapeElement's own hit-target already has,
-// confirmed as a real parity gap the two should never have had (a GM
-// repositioning a placed effect shouldn't need to fall back to the
-// inspector's own Position X/Y fields just because it happens to be
-// animated rather than static). Simpler than the SVG shape's own drag,
-// though: since this canvas already repositions itself every animation
-// frame via `frame()` below, a live drag preview is just `dragOffset`
-// nudging that SAME per-frame position — no separate temporary preview
-// node to build/redraw/tear down the way the SVG case needs (mutating an
-// SVG shape's geometry attributes in place was confirmed not to repaint
-// mid-drag; a canvas's own style.left/top has no such issue). An attached
-// effect is still never draggable (canDrag requires no attachedMarkerId,
-// identical gate to renderShapeElement's own) — the only way to move it is
-// to move its host marker, or detach it first.
+// Supports click-to-select and drag-to-move, matching renderShapeElement's
+// hit-target (a real prior parity gap). Simpler than the SVG shape's drag
+// though: since this canvas repositions itself every frame via `frame()`
+// below, a live drag preview is just `dragOffset` nudging that same
+// per-frame position — no separate temp preview node needed (unlike an SVG
+// shape, a canvas's style.left/top repaints fine mid-drag). An attached
+// effect still isn't draggable — same gate as renderShapeElement.
 export function renderParticleEffectElement(overlayHost, baseMapManager, map, layer, element, offset, options = {}) {
   if (!element.loop && particleEffectPlayedOnce.has(element.id)) return;
   const preset = getPresetById(element.presetId);
   if (!preset || preset.kind !== "particles") return;
   const pixelsPerCell = resolveShapePixelsPerCell(baseMapManager, map);
   const sizePx = Math.max(0, (element.sizeCells || 0) * pixelsPerCell);
-  // canvasSize is deliberately padded well past sizePx (radiating presets
-  // like Burst/Cone Blast throw particles out to ~1.1x sizePx, and need
-  // margin so they don't get clipped) — but that padding used to ALSO be
-  // the click/drag hit-target, since pointer-events applied to the canvas'
-  // own full bounding box. Confirmed real bug: a "10 ft" effect was
-  // selectable across a much larger area than its own stated size implied.
-  // `hit` below is a separate, purpose-sized element for interaction only,
-  // decoupled from canvasSize's own visual-safety-margin purpose.
+  // Padded well past sizePx (radiating presets like Burst/Cone Blast throw
+  // particles to ~1.1x sizePx) so they don't clip. `hit` below is a
+  // separate, purpose-sized element for interaction, decoupled from this —
+  // a "10 ft" effect used to be selectable across this whole padded area.
   const canvasSize = Math.max(120, sizePx * 3);
   const canvas = document.createElement("canvas");
   canvas.width = canvasSize;
   canvas.height = canvasSize;
   canvas.style.position = "absolute";
   canvas.style.pointerEvents = "none";
-  // Same DOM-order concern as `hit` below (this canvas lands in `overlay`
-  // ahead of its own layer's wrapper) — but for PAINT, not just pointer
-  // events: without this, later-processed layers/markers could visually
-  // cover the particles themselves, not just steal clicks aimed at them.
-  // Dropped by mistake when `hit` was split out into its own element (that
-  // refactor moved this same reasoning/property onto `hit` but never put
-  // it back here too) — restored.
+  // This canvas lands in `overlay` ahead of its own layer's wrapper — an
+  // explicit z-index keeps later-painted layers/markers from covering it.
   canvas.style.zIndex = "5";
   overlayHost.appendChild(canvas);
 
-  // Weather presets (category: "weather") fill the WHOLE canvas edge to
-  // edge (shape-effect-library.js's own header) — their hit target matches
-  // canvasSize, same as their visual footprint. Every other particle preset
-  // radiates from a center point, so its hit target is a circle sized to
-  // sizePx (what "10 ft" actually means to a GM), not the padded canvas.
+  // Weather presets fill the whole canvas edge to edge, so their hit
+  // target matches canvasSize; every other preset radiates from a center
+  // point, so its hit target is a circle sized to sizePx instead.
   const hitDiameter = preset.category === "weather" ? canvasSize : Math.max(24, sizePx * 2);
   const hit = document.createElement("div");
   hit.style.position = "absolute";
   hit.style.width = `${hitDiameter}px`;
   hit.style.height = `${hitDiameter}px`;
   hit.style.borderRadius = "50%";
-  // Appended straight to the shared overlay container (this function's own
-  // header comment), NOT into this layer's own per-layer <svg>/wrapper the
-  // normal per-layer DOM-order stacking relies on — this lands in `overlay`
-  // BEFORE its own layer's wrapper does (createVectorLayerElement calls
-  // this mid-loop, ahead of renderMapLayers' own wrapper.appendChild), so
-  // plain DOM order alone would let markers/shapes/walls anywhere later in
-  // the paint order sit on top of it and steal pointer events aimed at it.
-  // An explicit z-index sidesteps that: nothing else in this stack sets one
-  // (it's z-index:auto throughout), so this alone guarantees `hit` always
-  // wins hit-testing for its own footprint regardless of where it landed in
-  // the DOM.
+  // Lands in `overlay` before its own layer's wrapper, so plain DOM order
+  // would let later markers/shapes/walls steal its pointer events — an
+  // explicit z-index (nothing else in this stack sets one) guarantees this
+  // always wins hit-testing for its footprint regardless of DOM position.
   hit.style.zIndex = "5";
   const canDrag = !element.attachedMarkerId && typeof options.onShapeDragEnd === "function";
   const canInteract = typeof options.onPathClick === "function" || canDrag;
   hit.style.pointerEvents = canInteract ? "auto" : "none";
   hit.style.cursor = canInteract ? (canDrag ? "move" : "pointer") : "";
-  // Drives the subtle boundary ring drawn in frame() below — a geometry
-  // shape's own particles/fill are always visible, so its selection ring
-  // (renderShapeElement's own isSelected treatment) is enough on its own to
-  // show where it is; a particle effect's actual painted particles can be
-  // sparse or (for a large Weather patch especially) spread thin enough
-  // that there's no obvious "here it is" to click on at all. Hover shows
-  // this transiently while finding it; selection keeps it up persistently,
-  // same as geometry shapes.
+  // Drives the boundary ring drawn in frame() below — unlike a geometry
+  // shape's always-visible fill, a particle effect's painted particles can
+  // be too sparse (a Weather patch especially) to show where it is. Hover
+  // shows the ring transiently; selection keeps it up persistently.
   let hovered = false;
   if (canInteract) {
     hit.addEventListener("pointerenter", () => {
@@ -3175,10 +2686,8 @@ export function renderParticleEffectElement(overlayHost, baseMapManager, map, la
         baseMapManager.setInteractionEnabled(true);
         dragOffset = null;
         if (lastDelta) {
-          // Same pre-offset-local-pixel reconstruction renderShapeElement's
-          // own drag commit uses — see its comment for why subtracting
-          // `offset` back out of the resolved position is always valid here
-          // (drag only ever runs for a freestanding effect).
+          // Same pre-offset-local-pixel reconstruction as renderShapeElement's
+          // drag commit — valid here since drag only runs for a freestanding effect.
           const { x: cx, y: cy } = resolveElementOrigin(baseMapManager, map, layer, element);
           const local = { x: cx - offset.x, y: cy - offset.y };
           const nextLocalPixel = { x: local.x + lastDelta.x, y: local.y + lastDelta.y };
@@ -3192,24 +2701,17 @@ export function renderParticleEffectElement(overlayHost, baseMapManager, map, la
   }
   overlayHost.appendChild(hit);
   const ctx = canvas.getContext("2d");
-  // `let`, not `const` — re-seeded on every loop restart below. Confirmed
-  // real bug this fixes: `particles` (each one's own random phase/angle/
-  // reach/size) was only ever generated ONCE, before the very first frame,
-  // and never touched again — a loop:true effect's own `start = null`
-  // reset only rewound `elapsed` back near 0, replaying the EXACT SAME
-  // random pattern every single cycle. A precise repeat like that reads as
-  // an obviously mechanical loop to the eye (real fire/rain/etc. never
-  // exactly repeats), even though each preset's own header comment always
-  // assumed fresh randomization happened here.
+  // `let`, re-seeded on every loop restart below — without it, a loop:true
+  // effect's `start = null` reset only rewound `elapsed`, replaying the
+  // exact same random pattern every cycle (an obviously mechanical loop).
   let particles = preset.seed(sizePx);
   let start = null;
   function frame(now) {
     if (!canvas.isConnected) return;
     if (start === null) start = now;
     const elapsed = now - start;
-    // Recomputed every frame (not just once) so an attached Effect tracks
-    // its host token live, same freshness resolveLightOrigin's own
-    // per-render lookup already guarantees for Lights.
+    // Recomputed every frame so an attached Effect tracks its host token
+    // live, same freshness as resolveLightOrigin for Lights.
     const { x: baseCx, y: baseCy } = resolveElementOrigin(baseMapManager, map, layer, element);
     const cx = baseCx + (dragOffset?.x || 0);
     const cy = baseCy + (dragOffset?.y || 0);
@@ -3264,17 +2766,15 @@ export function createVectorLayerElement(baseMapManager, map, layer, options = {
   svg.style.pointerEvents = "none";
   const offset = getMarkerLayerOffset(map, layer);
   (layer.elements || []).forEach((element) => {
-    // Same "not in the DOM at all for a restricted viewer" treatment
-    // createMarkerLayerElement's own guard gives markers — covers path/
-    // shape/wall/light uniformly since they all flow through this one loop.
+    // Same "not in the DOM at all for a restricted viewer" treatment as
+    // createMarkerLayerElement's marker guard, covering path/shape/wall/
+    // light uniformly through this one loop.
     if (options.hiddenElementIds?.has(element.id)) return;
     if (element.kind === "shape") {
       const preset = getPresetById(element.presetId);
       if (preset?.kind === "particles") {
-        // A canvas, appended to the SHARED overlay container, not this
-        // per-layer SVG — see renderParticleEffectElement's own header
-        // comment for why (continuous requestAnimationFrame redraw, not a
-        // one-shot SVG primitive).
+        // Appended to the shared overlay container, not this per-layer SVG
+        // — see renderParticleEffectElement's header for why.
         const overlayContainer = baseMapManager.getOverlayContainer?.();
         if (overlayContainer) {
           renderParticleEffectElement(overlayContainer, baseMapManager, map, layer, element, offset, options);
@@ -3303,9 +2803,8 @@ export function createVectorLayerElement(baseMapManager, map, layer, options = {
     const pointsAttr = pixelPoints.map((point) => `${point.x},${point.y}`).join(" ");
     let visible;
     if (pixelPoints.length === 1) {
-      // A single-point "path" (a click with no drag) — render as a dot
-      // rather than nothing, since a polyline needs at least two points to
-      // draw a visible line.
+      // A single-point "path" (click with no drag) renders as a dot — a
+      // polyline needs at least two points to draw a visible line.
       visible = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       visible.setAttribute("cx", String(pixelPoints[0].x));
       visible.setAttribute("cy", String(pixelPoints[0].y));
@@ -3353,10 +2852,9 @@ export function createVectorLayerElement(baseMapManager, map, layer, options = {
 }
 
 // --- Groups (grid-cell highlight sets) -----------------------------------
-// Orrery-authoring concept (a named set of cells, e.g. "the goblin camp") —
-// rendering-relevant only for the group-cell highlight overlay above, which
-// only ever draws when a caller passes an `activeGroup` (Orrery only; the
-// widget has no group-selection concept and never does).
+// Orrery-authoring concept (a named set of cells, e.g. "the goblin camp"),
+// rendering-relevant only when a caller passes `activeGroup` (Orrery only;
+// the widget never does).
 
 export function normalizeGroupMembers(group) {
   return (group.elementIds || []).map((entry) => {
@@ -3409,20 +2907,11 @@ function createLayerWrapper(map, layer, isSelected) {
   }
   const offsetX = layer.position?.x || 0;
   const offsetY = layer.position?.y || 0;
-  // Marker and vector layers both fold layer.position into each of their
-  // own elements'/points' pixel positions instead (getMarkerLayerOffset,
-  // used by both getMarkerElementPixelPosition above and
-  // createVectorLayerElement's own per-point offset) — same "layer position
-  // is a pan offset added on top of each element's own coordinate"
-  // convention grid cells use via getGridOffset — so the wrapper itself must
-  // stay untransformed for either, or the offset would apply twice.
-  // Grid also folds layer.position into itself (backgroundPosition, via
-  // getGridOffset/getGridBackgroundPosition below) — excluded here for the
-  // same "or the offset would apply twice" reason marker/vector already
-  // are. Confirmed as a real bug before this: a grid layer on an image/
-  // canvas base map got layer.position applied to BOTH this wrapper's own
-  // translate AND its background-position, so the visible grid moved 2x
-  // whatever Position X/Y actually said.
+  // Marker, vector, and grid layers each fold layer.position into their own
+  // elements/points/backgroundPosition instead (getMarkerLayerOffset,
+  // getGridOffset) — the wrapper must stay untransformed for those or the
+  // offset applies twice, which used to double-move a grid layer's own
+  // translate+background-position together.
   if (!isTileBaseMap(map) && layer.type !== "marker" && layer.type !== "vector" && layer.type !== "grid") {
     wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
   }
@@ -3436,44 +2925,31 @@ function createLayerWrapper(map, layer, isSelected) {
 // `options`:
 // - `viewerTier`, `hasFullAccess` — tiered-visibility filter (computeHiddenIds).
 // - `selection` — Orrery-only: `{kind: "layer"|"grid-cells"|"marker-element"|"group", id, layerId, cells}`.
-//   Omitted (or null) means nothing renders as selected and no layer gets
-//   the whole-layer drag handle — exactly the widget's case.
-// - `activeGroup` — Orrery-only: the currently-selected group record, for
-//   its cells' highlight overlay on grid layers.
+//   Omitted/null: nothing renders selected, no whole-layer drag handle (the widget's case).
+// - `activeGroup` — Orrery-only: selected group record, for its cells' highlight overlay on grid layers.
 // - `onGridCellPointerDown(layer, coord, event)` — Orrery-only.
-// - `onMarkerLayerEmptyClick(layer, position, event)` — Orrery-only ("place
-//   a new marker here").
-// - `isMarkerDraggable(layer, markerElement)` — which markers can be
-//   dragged; omitted means every marker is draggable (Orrery's authoring
-//   default). The widget passes one that's only true for the viewer's own
-//   claimed character's marker.
+// - `onMarkerLayerEmptyClick(layer, position, event)` — Orrery-only, "place a new marker here".
+// - `isMarkerDraggable(layer, markerElement)` — omitted means every marker is draggable
+//   (Orrery's default); the widget only allows the viewer's own claimed character's marker.
 // - `onMarkerDragStart(layer, markerElement, dotEl)`, `onMarkerDragEnd(layer, markerElement, nextPosition)`.
-// - `onVectorPathClick(layer, elementId, event)` — Orrery-only, select a
-//   drawn path or AoE shape (only wired once that path/shape's own layer is
-//   selection-selected — see createVectorLayerElement's own isSelected gate).
-// - `onShapeDragEnd(layer, elementId, nextOrigin)` — Orrery-only, AoE shapes
-//   only (drawn paths have no drag-to-move): reposition a shape after a
-//   drag gesture ends. Same isSelected gate as onVectorPathClick.
-// - `renderLayerHandle(wrapper, layer, element)` — Orrery-only: append +
-//   wire the whole-layer drag handle for whichever layer is `selection`-selected.
+// - `onVectorPathClick(layer, elementId, event)` — Orrery-only, select a path/shape (only wired
+//   once its layer is selection-selected — see createVectorLayerElement's isSelected gate).
+// - `onShapeDragEnd(layer, elementId, nextOrigin)` — Orrery-only, AoE shapes only (paths have no
+//   drag); same isSelected gate as onVectorPathClick.
+// - `renderLayerHandle(wrapper, layer, element)` — Orrery-only: whole-layer drag handle for the
+//   `selection`-selected layer.
 export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
   if (!overlay) return;
   overlay.innerHTML = "";
   const hasFullAccess = options.hasFullAccess ?? false;
   const hidden = computeHiddenIds(map, options.viewerTier ?? "free", hasFullAccess);
-  // Marker-specific parity flag — Orrery's own full-access GM view
-  // (hasFullAccess) AND a restricted widget viewer who's still this map's
-  // own owner/admin (options.hasMapOwnerAccess, buildRestrictedMapOptions'
-  // own isOwner) both get the SAME "dim + badge, not real removal"
-  // treatment for a hidden MARKER (View-based OR Combat Tracker's
-  // combatant.hidden, see createMarkerLayerElement below) — confirmed real
-  // bug this fixes: a map owner using the Dashboard's Map widget for their
-  // OWN map previously either saw a hidden marker vanish entirely (the
-  // combatant-hidden case) or saw no indication it was hidden at all (the
-  // View-based case, since hiddenFromPlayerElementIds below was gated on
-  // hasFullAccess alone, which the widget never sets). Deliberately scoped
-  // to MARKERS only — hidden layers/vector shapes/secret doors keep their
-  // existing hasFullAccess-only behavior, unaffected.
+  // A restricted widget viewer who still owns/admins this map
+  // (options.hasMapOwnerAccess) gets the same "dim + badge, not real
+  // removal" treatment as full GM access for a hidden marker — previously
+  // gated on hasFullAccess alone, which the widget never sets, so a map
+  // owner using the Dashboard widget saw a hidden marker vanish or show no
+  // indication at all. Scoped to markers only; hidden layers/shapes/secret
+  // doors keep their existing hasFullAccess-only behavior.
   const isPrivilegedMarkerViewer = hasFullAccess || Boolean(options.hasMapOwnerAccess);
   // GM-only informational cue (createMarkerDot's own dim/badge treatment below) —
   // "what's hidden from the player tier specifically," independent of whichever
@@ -3490,28 +2966,17 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
   (map.layers || []).forEach((layer) => {
     if (!layer.visible) return;
     if (hidden?.layers.has(layer.id)) return;
-    // A locked layer stays fully VISIBLE (nothing above filters it out) but
-    // every interactivity gate below (isInteractive/isMarkerDraggable/
-    // onPathClick/onShapeDragEnd/onWallDragEnd/onWallVertexDragEnd) is
-    // ANDed with `!locked` — clicks/drags simply never reach this layer's
-    // own elements, so pointer-events fall through to whatever's behind
-    // them instead. The one real motivating case: a Weather effect (an
-    // Effect preset with category "weather") covers the entire map with a
-    // single large hit target (renderParticleEffectElement's own `hit`
-    // div) — once applied, it sat on top of every marker/shape underneath
-    // it and swallowed every click aimed at them, with no way to reach
-    // those elements except first selecting a DIFFERENT layer from the
-    // left pane (which this same layer's own elements don't need to be
-    // interactive to still render/animate). Locking that one layer fixes
-    // it without touching the weather effect itself.
+    // A locked layer stays fully visible but every interactivity gate below
+    // is ANDed with `!locked`, so clicks/drags fall through to whatever's
+    // behind it. Motivating case: a Weather effect's full-map hit target
+    // used to swallow every click aimed at markers/shapes underneath it —
+    // locking that layer fixes it without touching the effect itself.
     const locked = Boolean(layer.locked);
     const isLayerSelected = selection?.kind === "layer" && selection.id === layer.id;
     const isGridCellsSelected = selection?.kind === "grid-cells" && selection.layerId === layer.id;
     const isMarkerElementSelected = selection?.kind === "marker-element" && selection.layerId === layer.id;
-    // Multi-select counterpart to isMarkerElementSelected — true whenever
-    // ANY of this layer's own markers are part of the current multi-
-    // selection (which can span several layers at once), not just when
-    // every selected marker happens to live here.
+    // Multi-select counterpart: true whenever ANY of this layer's markers
+    // are part of the current multi-selection (which can span layers).
     const isMarkerElementsSelected =
       selection?.kind === "marker-elements" && (selection.elements || []).some((entry) => entry.layerId === layer.id);
     const isVectorPathSelected = selection?.kind === "vector-path" && selection.layerId === layer.id;
@@ -3522,21 +2987,14 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
     const layerPosition = getLayerRenderPosition(layer, getLayerPositionScale());
     const renderState = isTileBaseMap(map) ? { position: layerPosition, sizeScale: getLayerSizeScale() } : {};
     if (layer.type === "grid") {
-      // Group's own "paint cells" tool (app.js) arms exactly ONE layer at a
-      // time (options.paintTargetLayerId) — every other grid layer renders
-      // completely normally regardless, same "only the thing you actually
-      // armed responds" precedent Draw/Shape/Measure already follow.
+      // The Paint Cells tool arms exactly one layer at a time
+      // (paintTargetLayerId) — every other grid layer renders normally.
       const isPaintTarget = Boolean(options.paintModeActive) && options.paintTargetLayerId === layer.id;
-      // Deliberately NOT given the same fallback-without-selecting-a-layer
-      // escape hatch onPathClick/markers get below (isVectorLayerInteractive/
-      // isMarkerDraggable) — a grid layer's own hit target is one element
-      // covering the ENTIRE map, not discrete elements at specific points,
-      // so making it fallback-interactive whenever nothing is selected would
-      // swallow every click across the whole map (blocking panning
-      // entirely, and always highlighting a cell) rather than only
-      // responding where something actually is, which is what the fallback
-      // is meant to do for markers/vectors. Grid cells stay reachable only
-      // via explicit layer selection or the paint tool, same as before.
+      // No fallback-without-selecting-a-layer escape hatch here (unlike
+      // markers/vectors below) — a grid layer's hit target is one element
+      // covering the entire map, so fallback-interactive-when-nothing-
+      // selected would swallow every click and block panning entirely.
+      // Reachable only via explicit layer selection or the paint tool.
       element = createGridLayerElement(baseMapManager, map, layer, {
         isInteractive: !locked && (isSelected || isPaintTarget),
         selectedCells: isGridCellsSelected ? selection.cells : [],
@@ -3546,33 +3004,25 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         paintMode: isPaintTarget,
         onPointerPaint: isPaintTarget && options.onGridCellPaint ? (coord, event) => options.onGridCellPaint(layer, coord, event) : undefined,
         onPointerPaintEnd: isPaintTarget ? options.onGridCellPaintEnd : undefined,
-        // Threaded straight through to resolveRevealedCells' own
-        // character-vision auto-reveal loop — see resolveMarkerVisionRangeCells's
-        // own header comment for why this has to be a synchronous,
-        // cache-backed callback rather than a fetch this module does itself.
+        // Threaded through to resolveRevealedCells' character-vision
+        // auto-reveal loop — see resolveMarkerVisionRangeCells for why this
+        // must be a synchronous, cache-backed callback, not a fetch here.
         getCharacterPayload: options.getCharacterPayload,
       });
     } else if (layer.type === "raster") {
       element = createRasterLayerElement(layer, renderState);
     } else if (layer.type === "marker") {
       element = createMarkerLayerElement(baseMapManager, map, layer, {
-        // isLayerSelected OR this specific layer is "armed"
-        // (options.armedMarkerLayerId, app.js's own setSelection/
-        // selectMarkerElementForDrag) — NOT the wider isSelected. This only
-        // gates the container's OWN empty-space click (onEmptyClick,
-        // "place a new marker here") and its crosshair cursor, not whether
-        // existing markers are clickable (that's isMarkerDraggable below,
-        // already covering the fallback-without-selecting-a-layer case on
-        // its own). Using isSelected here meant that fallback-selecting a
-        // single marker (isMarkerElementSelected, one of isSelected's own
-        // branches) ALSO armed "click elsewhere on this layer places a new
-        // marker" — confirmed real bug: clicking off a fallback-selected
-        // marker to deselect it silently placed a brand new one instead.
-        // armedMarkerLayerId is what correctly keeps "select layer, then
-        // rapidly place/nudge several markers" fluid (isLayerSelected alone
-        // would go false the instant the first marker gets placed/clicked,
-        // since selection.kind becomes "marker-element" then) while still
-        // excluding a fresh fallback click that never armed the layer.
+        // isLayerSelected OR this layer is "armed" (armedMarkerLayerId) —
+        // not the wider isSelected. Gates only the empty-space
+        // click/crosshair ("place a new marker here"), not whether existing
+        // markers are clickable (isMarkerDraggable below). Using isSelected
+        // here used to mean fallback-selecting a single marker also armed
+        // "click elsewhere places a new marker" — clicking off a marker to
+        // deselect it silently placed a new one. armedMarkerLayerId keeps
+        // "select layer, then rapidly place/nudge markers" fluid (unlike
+        // isLayerSelected, which goes false the instant a marker is
+        // selected) while excluding a fresh click that never armed the layer.
         isInteractive: !locked && (isLayerSelected || options.armedMarkerLayerId === layer.id),
         selectedElementId: isMarkerElementSelected ? selection.id : null,
         selectedElementIds: isMarkerElementsSelected
@@ -3585,8 +3035,8 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
         onMarkerDragEnd: options.onMarkerDragEnd,
         onMarkerClicked: options.onMarkerClicked,
         onMarkerMultiSelectToggle: options.onMarkerMultiSelectToggle,
-        // Never passed from Orrery's own app.js — see beginMarkerDrag's own
-        // header comment for why free GM authoring must stay unrestricted.
+        // Never passed from Orrery's own app.js — free GM authoring must
+        // stay unrestricted (see beginMarkerDrag).
         resolveMarkerMoveBlocked: options.resolveMarkerMoveBlocked,
         hiddenElementIds: markerHiddenElementIds,
         hiddenFromPlayerElementIds,
@@ -3598,64 +3048,45 @@ export function renderMapLayers(overlay, baseMapManager, map, options = {}) {
       element = createVectorLayerElement(baseMapManager, map, layer, {
         selectedElementId: isVectorPathSelected ? selection.id : null,
         hiddenElementIds: hidden?.elements,
-        // isSelected, not isLayerSelected alone — once a path IS selected,
-        // selection.kind becomes "vector-path", not "layer" anymore, so
-        // isLayerSelected alone would go false the instant you select a
-        // path and never come back true without re-clicking the layer in
-        // the left pane first. Confirmed as a real bug: every path but the
-        // first became unclickable after selecting one. isSelected (which
-        // isVectorPathSelected already feeds into) stays true across a
-        // path-to-path reselection the same way marker-to-marker
-        // reselection already works via isMarkerElementSelected.
-        // `kind` ("shape" vs "path", from renderShapeElement's own 3rd arg
-        // to options.onPathClick) has to be forwarded through here too —
-        // dropping it silently meant app.js's own onVectorPathClick always
-        // saw kind===undefined for a shape click, took its "else" branch
-        // (the full, rebuilding setSelection()) instead of the lightweight
-        // selectShapeElementForDrag() meant for exactly this case. That
-        // rebuild ran INSIDE the still-executing pointerdown handler,
-        // before any of renderShapeElement's own drag-hiding code — every
-        // later line in that handler (setPointerCapture, visible.remove(),
-        // the live preview, svg.appendChild(visible) on release) then
-        // operated on the now-orphaned OLD svg/visible/hit the rebuild had
-        // already replaced. Confirmed as the actual cause of "the original
-        // shape stays visible until the drag is dropped" — the thing on
-        // screen the whole time was the freshly re-rendered copy, which
-        // none of that drag-hiding code ever touched.
-        // isSelected OR options.isVectorLayerInteractive(layer) — the second
-        // half exists for a caller with no layer-selection concept at all
-        // (the Dashboard widget, same reasoning onDoorClick below never
-        // gates on isSelected either): it opts a SPECIFIC layer into
-        // clickability without needing Orrery's own "select the layer from
-        // the left pane first" flow. Per-element ownership (can THIS viewer
-        // actually act on THIS element) is left entirely to the callback
-        // itself — this only controls whether a hit target exists at all.
+        // isSelected, not isLayerSelected alone — once a path is selected,
+        // selection.kind becomes "vector-path", so isLayerSelected alone
+        // would go false and never recover without re-clicking the layer.
+        // isSelected stays true across path-to-path reselection instead.
+        //
+        // `kind` ("shape" vs "path") must be forwarded through onPathClick
+        // too — dropping it silently made a shape click take the full
+        // rebuilding setSelection() path instead of the lightweight
+        // selectShapeElementForDrag(), which ran mid-gesture and orphaned
+        // the svg/visible/hit nodes renderShapeElement's own drag code was
+        // still operating on (the visible symptom: the original shape
+        // stayed on screen until the drag was dropped).
+        //
+        // isSelected OR isVectorLayerInteractive(layer) — the second half
+        // lets a caller with no layer-selection concept (the Dashboard
+        // widget) opt one specific layer into clickability without
+        // Orrery's "select the layer first" flow. Per-element ownership is
+        // left to the callback itself.
         onPathClick:
           !locked && (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onVectorPathClick
             ? (elementId, event, kind) => options.onVectorPathClick(layer, elementId, event, kind)
             : undefined,
-        // AoE shapes only — drawn paths have no drag-to-move (they're
-        // terrain-style annotations, rarely repositioned after drawing;
-        // shapes are transient tactical indicators, meant to move as combat
-        // does). Same gate as onPathClick just above.
+        // AoE shapes only — drawn paths (terrain annotations) have no
+        // drag-to-move; shapes are transient tactical indicators. Same gate
+        // as onPathClick.
         onShapeDragEnd:
           !locked && (isSelected || options.isVectorLayerInteractive?.(layer)) && options.onShapeDragEnd
             ? (elementId, nextOrigin) => options.onShapeDragEnd(layer, elementId, nextOrigin)
             : undefined,
-        // Doors only, and NEVER gated on isSelected — the Dashboard widget
-        // (the only real caller of this) has no layer-selection concept at
-        // all (it never passes `selection`), so an isSelected gate here
-        // would mean door-click-to-open silently never fires for a player.
+        // Doors only, never gated on isSelected — the Dashboard widget (the
+        // only real caller) has no layer-selection concept, so gating here
+        // would mean door-click-to-open never fires for a player.
         onDoorClick: options.onDoorClick ? (elementId, event) => options.onDoorClick(layer, elementId, event) : undefined,
-        // Threaded through so renderWallElement can decide whether to
-        // reveal a secret door's own distinguishing tick (GM/owner only —
-        // see createFogOverlay's own identical ownerPreview asymmetry).
+        // So renderWallElement can decide whether to reveal a secret door's
+        // tick (GM/owner only — same asymmetry as createFogOverlay).
         hasFullAccess: options.hasFullAccess ?? false,
-        // Whole-wall drag + per-vertex handles — same isSelected gate as
-        // onShapeDragEnd (a wall only becomes draggable/reshapeable once its
-        // own layer is selected from the left pane); handles themselves are
-        // additionally gated on THIS wall being the current selection
-        // (renderWallElement's own isSelected check), not just the layer.
+        // Whole-wall drag + per-vertex handles, same isSelected gate as
+        // onShapeDragEnd; handles are additionally gated on this specific
+        // wall being selected (renderWallElement's own check).
         onWallDragEnd:
           !locked && isSelected && options.onWallDragEnd ? (elementId, nextPoints) => options.onWallDragEnd(layer, elementId, nextPoints) : undefined,
         onWallVertexDragEnd:

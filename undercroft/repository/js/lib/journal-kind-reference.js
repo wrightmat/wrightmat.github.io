@@ -1,24 +1,16 @@
 // Generic `` `kindId:Name` `` inline code blocks — the same "post-process a
 // rendered <code> element" treatment journal-dice.js/journal-encounter.js/
-// journal-macro.js already use for their own three special-cased prefixes,
-// extended to every OTHER real Library kind (npc, location, monster,
-// character, system, map, template, ...) instead of leaving those with no
-// reference syntax of their own. `dice`/`encounter`/`macro` keep their
-// existing, richer chips (a die roller, a multi-creature combat starter, a
-// runnable action) — this module only ever handles what's left over after
-// markdown.js's own applyDiceRollers/applyEncounterBlocks/applyMacroBlocks
-// have already consumed their own code spans, so there's no risk of double
-// handling the same block. `journal`/`kind` are excluded too: a page-to-page
-// reference already has its own, richer syntax ([[Wiki Link]]), and `kind`
-// is the meta-kind describing kinds themselves, not something an author
-// would reference directly.
+// journal-macro.js use for their own three special-cased prefixes, extended
+// to every other real Library kind. `dice`/`encounter`/`macro` keep their
+// own richer chips — this only handles what's left after those three passes
+// have already consumed their own spans. `journal`/`kind` are excluded:
+// page-to-page references already use `[[Wiki Link]]`, and `kind` is the
+// meta-kind describing kinds themselves.
 //
-// The actual chip-building/hover-preview mechanism lives in the shared,
-// tool-agnostic common/js/lib/library-reference.js (two other consumers,
-// board.js and markdown.js on handout.js's behalf, were already reaching
-// across into this file to get it) — this module keeps only what's
-// genuinely markdown-specific: recognizing the `` `kindId:Name` `` code-span
-// syntax itself and scanning a page's raw body for every reference it makes.
+// The chip-building/hover-preview mechanism lives in the shared
+// library-reference.js (board.js and markdown.js also consume it) — this
+// module keeps only what's markdown-specific: recognizing the code-span
+// syntax and scanning a page's raw body for every reference it makes.
 import { fetchKindEntriesWithIds, fetchKindEntrySummaries } from "../../../common/js/lib/content-fetch.js";
 import { EXCLUDED_KINDS, createReferenceChip } from "../../../common/js/lib/library-reference.js";
 import { parseEncounterBlock, findMatch } from "./journal-encounter.js";
@@ -26,17 +18,12 @@ import { findMacro } from "./journal-macro.js";
 
 const KIND_REF_CODE_PATTERN = /^([a-z][a-z0-9-]*)\s*:\s*(.+)$/i;
 
-// Runs after applyDiceRollers/applyEncounterBlocks/applyMacroBlocks —
-// CommonMark's own backtick syntax already turned every `` `kindId:Name` ``
-// span into a plain <code>...</code>; those three passes already replaced
-// (removed) their own dice/encounter/macro spans, so this only ever sees
-// whatever's left. `kindLabels` is a {id: label} map (loadLibraryKinds'
-// own display labels) — falls back to the raw kindId when a caller hasn't
-// loaded it yet. Resolution stays lazy (renderMarkdown itself stays fully
-// synchronous, same reasoning journal-macro.js's own buildMacroChip already
-// documents) — the chip renders from the literal typed text alone, and only
-// looks up the real record once hovered/clicked (createReferenceChip's own
-// attachReferencePreview, or onOpenReference).
+// Runs after applyDiceRollers/applyEncounterBlocks/applyMacroBlocks, which
+// already removed their own dice/encounter/macro spans, so this only sees
+// whatever's left. `kindLabels` is a {id: label} map, falling back to the
+// raw kindId when unloaded. Resolution stays lazy — renderMarkdown stays
+// synchronous; the chip renders from the literal typed text and only looks
+// up the real record once hovered/clicked.
 export function applyKindReferenceBlocks(container, { validKindIds, kindLabels = {}, interactive = false, onOpenReference, dataManager } = {}) {
   if (!validKindIds || !validKindIds.size) return;
   container.querySelectorAll("code").forEach((codeEl) => {
@@ -64,19 +51,13 @@ const DICE_CODE_PATTERN = /^dice:\s*(.+)$/i;
 const ENCOUNTER_CODE_PATTERN = /^encounter:\s*(.+)$/i;
 const MACRO_CODE_PATTERN = /^macro:\s*(.+)$/i;
 
-// Scans raw markdown text (not rendered HTML — same "no dependency on
-// marked/DOMPurify" reasoning journal-links.js's own findBacklinks
-// documents) for every code-span reference this page's body actually
-// makes, resolves each against the real Library record it names, and
-// returns the deduped result — what Repository's own Related panel renders
-// directly (app.js's renderRelated), instead of a manually maintained
-// `refs` list. An `encounter:` block resolves to one ref per matched
-// creature (exactly what journal-encounter.js's own findMatch would use to
-// build a real encounter from it); dice blocks are skipped entirely (a die
-// roll references nothing). Unmatched/unresolvable text is silently
-// dropped, same "an unmatched reference just doesn't do anything" spirit
-// every chip already follows — Related only ever shows real, resolved
-// links, never a guess.
+// Scans raw markdown text (no marked/DOMPurify dependency) for every
+// code-span reference a page's body makes, resolves each against the real
+// Library record it names, and returns the deduped result — what app.js's
+// Related panel renders directly, instead of a manually maintained list. An
+// `encounter:` block resolves to one ref per matched creature; dice blocks
+// are skipped (a roll references nothing). Unmatched text is silently
+// dropped — Related only ever shows real, resolved links.
 export async function extractContentReferences(body, dataManager, validKindIds) {
   const text = String(body || "");
   const spans = [];
@@ -86,13 +67,10 @@ export async function extractContentReferences(body, dataManager, validKindIds) 
   }
   if (!spans.length || !dataManager) return [];
 
-  // Fetched at most once per kind actually referenced on this page, shared
-  // across every span that needs it — not once per span. Two separate
-  // caches, not one: findMatch's own encounter-matching (below) genuinely
-  // needs each candidate's FULL payload (real stats, to actually start a
-  // combat from), but the generic `kindId:Name` matching further down only
-  // ever needs id+name to build a Related-panel ref — fetchKindEntrySummaries
-  // (no per-record fetch at all) covers that one for free.
+  // Fetched at most once per kind referenced on this page. Two caches, not
+  // one: encounter-matching (below) needs each candidate's full payload to
+  // actually start combat from, but generic `kindId:Name` matching only
+  // needs id+name, which fetchKindEntrySummaries covers with no per-record fetch.
   const kindEntriesCache = new Map();
   const loadKind = (kindId) => {
     if (!kindEntriesCache.has(kindId)) {

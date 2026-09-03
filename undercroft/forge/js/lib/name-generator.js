@@ -161,15 +161,10 @@ function usesVocabulary(profile) {
 }
 
 // Vocabulary mode: a plain draw from the profile's own curated word pool,
-// with no Markov mutation at all. This is for species whose names are
-// recognizable whole English words in a shared register (Changeling's
-// Ashen/Doubt/Mirage, Warforged's Rivet/Piston/Bastion) rather than an
-// invented phonetic language — running those through a character-level
-// model produces garbage, since there's no shared sub-word phonetic
-// pattern for the model to learn in the first place. The "novelty" here
-// comes from curating a wide pool (see forge.speciesProfileEditor), not
-// from generating new words — a themed one-word name is a closed
-// vocabulary, not an open-ended invented language.
+// with no Markov mutation. For species whose names are recognizable whole
+// English words in a shared register (e.g. Rivet/Piston/Bastion) rather
+// than an invented phonetic language — a character-level model produces
+// garbage here, since there's no shared sub-word pattern to learn.
 function generateVocabularyName(profile, part, { random }) {
   const pool = normalizeNamePool(part === "first" ? profile.firstNames : profile.lastNames);
   if (!pool.length) return "Name";
@@ -226,10 +221,8 @@ function generateAffixBlend(primary, partner, { random }) {
 // Structural mixing for a single-part name: no natural first/last seam
 // exists, so one is invented — walk the primary's chain partway, then
 // continue on the partner's chain. The partner's model almost certainly
-// never saw that exact trailing context (it's a different corpus), so
-// falling back to a fresh draw from the partner's own start state is the
-// expected path, not an error case — the tail still sounds authentically
-// like the partner species even though the seam itself is synthetic.
+// never saw that exact trailing context, so falling back to a fresh draw
+// from the partner's start state is expected, not an error case.
 function generateSeamedSingleName(primary, partner, { random }) {
   const primaryModel = getModel(primary, "first");
   const partnerModel = getModel(partner, "first");
@@ -283,11 +276,9 @@ export function generateBlendedName(primary, partner, { mode, random = Math.rand
 }
 
 // Dominant-vs-weighted-random partner selection, both driven by the same
-// coefficient that gated whether blending happens at all — see
-// generateSpeciesName for the full three-decision sequence this feeds into.
-// Vocabulary-mode species are never picked as a partner either: grafting a
-// phonetic fragment (or a whole invented name) onto a curated whole word
-// like "Piston" is just as convention-breaking in this direction.
+// coefficient that gated whether blending happens at all. Vocabulary-mode
+// species are never picked as a partner either: grafting a phonetic
+// fragment onto a curated whole word is just as convention-breaking.
 export function selectBlendPartner(location, primarySpeciesId, speciesProfiles, { random = Math.random } = {}) {
   const candidates = (location?.speciesWeights || []).filter((entry) => {
     if (entry.entityId === primarySpeciesId) return false;
@@ -314,13 +305,10 @@ export function selectBlendPartner(location, primarySpeciesId, speciesProfiles, 
 }
 
 // The one real entry point. Three independent coefficient-gated decisions —
-// whether to blend at all, who the partner is, and how deep the blend goes
-// — all reusing the same location.mixingCoefficient, so 0 is genuinely
-// isolated (never blends) and 1 is genuinely maximal (always blends, always
-// a random partner, always the deeper structural mode). Vocabulary-mode
-// species (see generateVocabularyName) are the one exception: they never
-// blend regardless of coefficient, in either direction (as primary or as a
-// candidate partner — see selectBlendPartner).
+// whether to blend at all, who the partner is, how deep the blend goes —
+// all reuse the same location.mixingCoefficient, so 0 is genuinely isolated
+// and 1 is genuinely maximal. Vocabulary-mode species are the one
+// exception: they never blend regardless of coefficient, either direction.
 export function generateSpeciesName(location, speciesId, speciesProfiles, { random = Math.random } = {}) {
   const fallback = buildFallbackProfile(location);
   const primary = speciesProfiles?.get(speciesId) || fallback;

@@ -220,10 +220,8 @@ export function buildSystemPreviewData(definition) {
     const key = typeof node.key === "string" ? node.key.trim() : "";
     const nextPrefix = key ? [...prefix, key] : prefix;
     if (nextPrefix.length) {
-      // A values entry can be a bare display string (legacy) or a
-      // {name, entityId} object linking straight to a Library entity (Loom's
-      // System editor) — either way, rendering only ever needs the display
-      // name, so normalize before it's used as dropdown option data.
+      // A values entry can be a bare display string or a {name, entityId}
+      // Library-linked object — normalize to display name either way.
       const normalizedValues = Array.isArray(node.values)
         ? node.values.map((entry) => (entry && typeof entry === "object" ? entry.name : entry))
         : node.values;
@@ -284,20 +282,14 @@ export function buildSystemPreviewData(definition) {
   return preview;
 }
 
-// `description` (a System Source entry's own flavor/rules text — e.g. a
-// Blades in the Dark special ability's rules text, an armor type's own
-// blurb) rides along as a third, optional field alongside value/label —
-// carried through so a Checkbox/Radio group can show it under each option
-// (see component-renderers.js's own radio/checkbox rendering) instead of
-// silently dropping it the way this function used to for every consumer.
-// Empty string, never undefined, so callers can check truthiness uniformly
-// without an extra `?? ""` at every call site.
-// `raw` (the original, unprocessed source entry) also rides along now —
-// harmless for Select/Checkbox (they only ever read value/label/description)
-// but needed by Source-driven Tabs (Container's own tabLabelsSourceBinding),
-// which needs the actual entry — an object's own nested array, for Blades
-// in the Dark's `playbooks.Cutter = [...]` shape — not just its derived
-// display label.
+// Normalizes any source shape into {value, label, description, raw}.
+// `description` (a System Source entry's own flavor/rules text) lets a
+// Checkbox/Radio group show it under each option (component-renderers.js).
+// `raw` (the unprocessed source entry) is needed by Source-driven Tabs
+// (Container's tabLabelsSourceBinding), which need the actual entry — an
+// object's own nested array, e.g. Blades in the Dark's `playbooks.Cutter`
+// — not just its derived display label. Both default to "" / the entry
+// itself so callers can rely on them being present.
 export function normalizeOptionEntries(source) {
   if (!source) {
     return [];
@@ -309,19 +301,13 @@ export function normalizeOptionEntries(source) {
           return null;
         }
         if (typeof entry === "object" && !Array.isArray(entry)) {
-          // resolveSystemFieldValues, for a `type: "object"` System field
-          // (Blades in the Dark's restructured `playbooks`, each child a
-          // `type: "array"` sub-field named after a playbook), returns that
-          // field's own `children` — an array of SUB-FIELD DEFINITIONS
-          // (`{type, key, label, values}`), not plain data rows. Their own
-          // `.key` is a synthetic, dotted, prefixed path ("playbooks.Cutter")
-          // — it would otherwise win as this option's VALUE below (the
-          // generic `entry.key` fallback), which breaks anything that
-          // writes that value back (e.g. the `@playbook` Select's own
-          // `sourceBinding: "@playbooks"`, which needs the option's own
-          // `.label` — "Cutter" — matching already-migrated character data,
-          // not "playbooks.Cutter"). Matches resolveTabEntries' identical
-          // handling of the same shape.
+          // For a `type: "object"` System field (e.g. Blades in the Dark's
+          // `playbooks`, each child an array sub-field per playbook),
+          // resolveSystemFieldValues returns SUB-FIELD DEFINITIONS
+          // (`{type, key, label, values}`), not data rows. Use `.label`
+          // ("Cutter") as the value, not the synthetic dotted `.key`
+          // ("playbooks.Cutter") — character data is keyed by label.
+          // Matches resolveTabEntries' identical handling below.
           if (typeof entry.type === "string" && Array.isArray(entry.values)) {
             const label = entry.label != null ? String(entry.label) : String(entry.key ?? index);
             return { value: label, label, description: "", raw: entry };
@@ -354,12 +340,9 @@ export function normalizeOptionEntries(source) {
           raw: entry,
         };
       }
-      // `entry` is an array (a Source-driven Tab's own bare-array shape —
-      // see the header comment) or a primitive — neither has a `.label`/
-      // `.name` of its own to show, and `String(entry)` on an array would
-      // join it into a garbage comma list (`"[object Object],[object
-      // Object]"`). The object's own KEY is the only meaningful identity
-      // and display text either way.
+      // A bare array or primitive has no `.label`/`.name` of its own, and
+      // String() on an array joins into a garbage comma list — the KEY is
+      // the only meaningful identity/display text either way.
       return {
         value: String(key),
         label: String(key),
@@ -371,25 +354,13 @@ export function normalizeOptionEntries(source) {
   return [];
 }
 
-// Source-driven Tabs (Container's own tabLabelsSourceBinding) need one more
-// unwrapping step beyond normalizeOptionEntries: when the Source binding
-// points at a `type: "object"` System field (Blades in the Dark's
-// restructured `playbooks`, each child a `type: "array"` sub-field named
-// after a playbook), resolveSystemFieldValues (workbench-character-view.js/
-// workbench-template-view.js, both pages) returns that field's own
-// `children` — an array of SUB-FIELD DEFINITIONS (each `{type, key, label,
-// values}`), not the actual per-playbook data. normalizeOptionEntries alone
-// stops at `raw: entry` being that whole field-definition object; a tab's
-// own item needs to be the definition's own nested `values` array instead
-// (the bare abilities list), and its own stable key needs to be the
-// friendly `label` ("Cutter"), not the dotted `key` a nested field
-// definition carries ("playbooks.Cutter") — the ability-write path's own
-// `{item}` substitution (see workbench-character-view.js's
-// resolveTabItemPath) needs the short form to match already-migrated
-// character data (`specialAbilitiesPurchased.cutter`).
-// `sourceValues` is whatever resolveSystemFieldValues already returned
-// (raw `field.values` or `field.children` — this function doesn't care
-// which, only what shape each entry turns out to be after normalizing).
+// One more unwrapping step beyond normalizeOptionEntries, for Source-driven
+// Tabs (Container's tabLabelsSourceBinding): when raw is a sub-field
+// definition (see normalizeOptionEntries above), a tab's own item needs to
+// be that definition's nested `values` array, keyed by its short `label`
+// ("Cutter") — the write path's `{item}` substitution
+// (workbench-character-view.js's resolveTabItemPath) needs that short form
+// to match already-migrated character data (`specialAbilitiesPurchased.cutter`).
 export function resolveTabEntries(sourceValues) {
   return normalizeOptionEntries(sourceValues).map((entry) => {
     const raw = entry.raw;

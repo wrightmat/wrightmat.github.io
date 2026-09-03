@@ -21,26 +21,17 @@ import { confirmDelete } from "../ownership.js";
 import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "./combat-bindings.js";
 import { uniquifyCombatantName } from "./combatant-naming.js";
 import { createReliableInterval } from "../reliable-interval.js";
-// The shared dice engine — see dice-roll.js's own identical import path.
-// Not rollExpression's overlay/toast wrapper: this rolls potentially many
-// non-character combatants' initiative in one Promise.all batch, which a
-// single shared 3D overlay canvas isn't designed to show all at once, so
-// this stays a plain, silent roll same as before — just no longer its own
-// third, independently-duplicated Math.random() implementation.
+// The shared dice engine, not rollExpression's overlay/toast wrapper — this
+// rolls potentially many non-character combatants' initiative in one
+// Promise.all batch, which a single shared 3D overlay canvas isn't
+// designed to show all at once, so this stays a plain, silent roll.
 import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
-// Cross-tool import into common/ from a specific tool's own js/lib — same
-// established pattern map-live-sync.js already uses (createLayer, for the
-// exact same reason: reusing the real shape a Map's own data uses rather
-// than a hand-rolled second copy). Needed for isCombatantHiddenFromPlayers'
-// own write-through to a Map's auto-managed View — see that function's own
-// header comment for why "hidden from players" no longer has its own
-// separate combatant.hidden field to maintain.
+// Cross-tool import — reuses the real shape a Map's own data uses rather
+// than a hand-rolled copy. Needed for isCombatantHiddenFromPlayers' own
+// write-through to a Map's auto-managed View.
 import { createView } from "../../../../orrery/js/lib/map-model.js";
 
-// 5s (was 15s) — a physical second-screen display wants combat to feel
-// live, and single-window background polling is now confirmed reliable
-// (reliable-interval.js) as long as the window stays genuinely visible.
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 5000; // a physical second-screen display wants combat to feel live
 
 function randomId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -88,12 +79,9 @@ export function initCombatTrackerWidget(
     encounterId = "",
     setRightAction,
     // () => mapId — see ensureActiveMapCached's own comment for the
-    // spotlight-first, this-second resolution order. dashboard.js's own
-    // caller supplies this (resolving off a live sibling Map widget on the
-    // SAME dashboard, findActiveWidgetInstance("map")); omitted entirely in
-    // player mode, and gracefully absent in any other caller, since it's
-    // purely a "prep before spotlighting" convenience, not something this
-    // widget can work without.
+    // spotlight-first, this-second resolution order. dashboard.js's caller
+    // supplies this from a live sibling Map widget; omitted in player mode
+    // and gracefully absent elsewhere — purely a prep convenience.
     resolveActiveMapId,
   } = {}
 ) {
@@ -102,71 +90,44 @@ export function initCombatTrackerWidget(
   }
 
   // GM mode only — see ensureGmShell/renderGm's own comments. Permanent
-  // children of `container`, created exactly once and never torn down as
-  // elements: `topBarMount` (New Encounter + Encounter select + System
-  // select, one row), `toolbarMount` (round readout + start/stop/turn/sort/
-  // roll/delete buttons), `listMount` (the combatant list-group — the ONE
-  // region that's rebuilt on every render, since it's the only part meant to
-  // reflect a poll/sync tick landing while the GM might be mid-edit
-  // elsewhere), `editPanelMount` (the selected combatant's own fields),
-  // `addRowMount` (the Add Combatant row), and `emptyStateMount` (the "select
-  // or create an encounter" message).
+  // children of `container`, created once and never torn down as elements:
+  // `topBarMount` (New Encounter + Encounter/System selects), `toolbarMount`
+  // (round readout + start/stop/turn/sort/roll/delete), `listMount` (the
+  // combatant list — the ONE region rebuilt every render, since rows have
+  // no focus to lose), `editPanelMount` (the selected combatant's fields),
+  // `addRowMount` (Add Combatant), `emptyStateMount`.
   //
-  // An earlier attempt only split out addRowMount, leaving every other
-  // input (Name/Init/HP/Max HP/Temp HP/AC, the Encounter/System selects)
-  // inside one big region that got torn down and rebuilt on EVERY render —
-  // including passive ones with nothing to do with whatever the GM was
-  // actually typing into (pollActiveEncounter isn't reached in GM mode, but
-  // startGmCharacterSync's own periodic re-sync sweep, and simply selecting/
-  // editing a DIFFERENT combatant, both trigger a full render()). Splitting
-  // just the Add row out reduced the bug to "everywhere except that one
-  // row," not eliminated it — confirmed by the user still losing focus in
-  // Name/HP/AC while editing. The real fix is the same "never destroy the
-  // element" principle applied everywhere it belongs: topBarMount/
-  // toolbarMount only rebuild their DOM when the data they depend on
-  // (encounter list, system list, started/round) actually changes between
-  // renders (see refreshTopBar/refreshToolbar's own signature checks), and
-  // editPanelMount only rebuilds when the SELECTED COMBATANT ITSELF changes
-  // (see refreshEditPanel) — an unrelated render (a different combatant's
-  // HP changing, a poll tick) just pushes fresh values into the existing,
-  // still-focused inputs via syncEditPanelValues, skipping whichever one is
-  // `document.activeElement` so an in-progress edit is never overwritten out
-  // from under the GM. listMount is the deliberate exception: it always
-  // rebuilds, since combatant rows have no free-text inputs to lose focus
-  // from and are exactly what a GM wants to see update live.
+  // topBarMount/toolbarMount only rebuild their DOM when the data they
+  // depend on actually changes between renders (see refreshTopBar/
+  // refreshToolbar's own signature checks), and editPanelMount only
+  // rebuilds when the SELECTED COMBATANT ITSELF changes — an unrelated
+  // render (a different combatant's HP changing, a poll tick) just pushes
+  // fresh values into the existing, still-focused inputs via
+  // syncEditPanelValues, skipping whichever is `document.activeElement` so
+  // an in-progress edit is never overwritten from under the GM. Confirmed
+  // real bug this fixes: without this, the GM lost input focus in Name/HP/AC while editing.
   let topBarMount = null;
   let toolbarMount = null;
   let listMount = null;
   let editPanelMount = null;
   let addRowMount = null;
   let emptyStateMount = null;
-  // Cheap "did the inputs to this region actually change since last render"
-  // guards — see topBarMount/toolbarMount's own comment above for why.
+  // Cheap "did the inputs to this region actually change since last render" guards.
   let lastTopBarSignature = "";
   let lastToolbarSignature = "";
-  // Reference (not deep) equality is enough — state.conditions is only ever
-  // reassigned to a NEW array when the System's own condition vocabulary is
-  // actually (re)resolved (see the three state.conditions = ... call sites),
-  // never as a side effect of a routine poll/sync tick. See renderGm's own
-  // renderTagDatalist call for why this matters.
+  // Reference (not deep) equality is enough — state.conditions is only
+  // reassigned to a NEW array when the System's condition vocabulary is
+  // actually (re)resolved, never as a side effect of a routine poll/sync tick.
   let lastConditionsRendered = null;
   // {combatantId, panel, nameInput, initInput, hpInput, maxHpInput,
   // tempHpInput, acInput, visibleButton, badgesMount, tagVisibilityButton,
-  // tagVisibilityIcon} for whichever combatant editPanelMount currently
-  // shows — null when nothing's selected. See refreshEditPanel/
-  // syncEditPanelValues.
+  // tagVisibilityIcon} for whichever combatant editPanelMount currently shows — null when nothing's selected.
   let editPanelRefs = null;
-  // Ephemeral UI-only state for the Add Tag row's own visibility toggle —
-  // whether the NEXT tag added (for whichever combatant is currently
-  // selected) should be suppressed from map marker badges. Lives here, not
-  // on any combatant, since it's pre-commit state for a row that's shared
-  // across whichever single combatant is selected at a time (mirrors
-  // visibleButton's own build-once-sync-in-place pattern — see
-  // buildEditPanel's own tagVisibilityButton — just without any backing
-  // field at all, persisted or otherwise; a "hidden from players" tag is
-  // pure per-add UI state the same way, it just happens THAT one's
-  // resolved value now lives on Orrery's own Map data instead — see
-  // isCombatantHiddenFromPlayers below).
+  // Ephemeral UI-only state for the Add Tag row's visibility toggle —
+  // whether the NEXT tag added should be suppressed from map marker badges.
+  // Lives here, not on any combatant, since it's pre-commit state shared
+  // across whichever combatant is selected; its resolved value lives on
+  // Orrery's own Map data instead (see isCombatantHiddenFromPlayers below).
   let pendingTagHidden = false;
 
   const state = {
@@ -176,48 +137,36 @@ export function initCombatTrackerWidget(
     ownedEncounters: [],
     pollTimer: 0,
     // GM mode's own safety-net sync sweep (see startGmCharacterSync) — a
-    // separate timer from pollTimer above, since the two modes never share
-    // an instance and gate on different things (player mode polls the
-    // active encounter itself; this re-syncs each PC combatant from its
-    // live character record, regardless of whether the live-stream
-    // subscription for it actually delivered).
+    // separate timer from pollTimer above: player mode polls the active
+    // encounter; this re-syncs each PC combatant from its live character
+    // record regardless of whether the live-stream subscription delivered.
     gmSyncTimer: 0,
     destroyed: false,
     selectedCombatantId: "",
     // Loaded once and cached — renderGm() reads this synchronously so a
-    // click-driven re-render never has to await a network fetch before it
-    // can rebuild the widget (that gap was the cause of the whole widget
-    // visibly flashing empty on every interaction).
+    // click-driven re-render never awaits a network fetch (that gap caused
+    // the widget to visibly flash empty on every interaction).
     systemsList: null,
-    // Same "loaded once, read synchronously on every render" reasoning as
-    // systemsList — the Add Combatant row's cascading kind+entity select
-    // (renderGmAddCombatantRow) reads this directly rather than
-    // re-fetching character/npc/monster lists on every re-render (this
-    // widget re-renders on nearly every interaction via markDirty).
+    // Same reasoning as systemsList — the Add Combatant row's cascading
+    // kind+entity select reads this directly rather than re-fetching on
+    // every re-render (this widget re-renders on nearly every interaction via markDirty).
     combatantEntityLists: null,
-    // Purely a local "is this encounter currently the one shown to the
-    // table" indicator for the play/stop button — there's no backend
-    // "unspotlight" call to revoke a broadcast, so "stop" just resets this
-    // local flag rather than undoing anything server-side.
+    // Purely a local "is this encounter shown to the table" indicator for
+    // the play/stop button — there's no backend "unspotlight" call, so
+    // "stop" just resets this local flag.
     announced: false,
   };
 
   // "Visible to players" no longer has its own combatant.hidden field —
-  // it's derived live from whichever marker on the campaign's own currently
-  // active/spotlighted MAP represents this combatant, the same "read live
-  // from the other tool's own record, don't keep a shadow copy" precedent
-  // resolveMarkerConditionIcons already established for a marker reading a
-  // Character's own conditions (map-viewer.js). Here the direction is
-  // reversed — Combat Tracker reads FROM Orrery's own Map/View data,
-  // instead of Orrery reading from Combat Tracker's combatant.conditions —
-  // but it's the same principle: exactly one place owns this fact
-  // (Orrery's View.hiddenElementIds), everything else just reads it live,
-  // so the two surfaces can never quietly drift out of sync the way a
-  // second, independently-toggled combatant.hidden flag already had.
+  // it's derived live from whichever marker on the campaign's active/
+  // spotlighted MAP represents this combatant, the same "read live, don't
+  // keep a shadow copy" precedent resolveMarkerConditionIcons established.
+  // Here the direction is reversed — Combat Tracker reads FROM Orrery's own
+  // Map/View data — but the principle is the same: exactly one place owns
+  // this fact (Orrery's View.hiddenElementIds), so the two surfaces can
+  // never quietly drift the way a second, independently-toggled flag would.
   // Fetch-once-then-stale, same shape as the active encounter cache below —
-  // a live-stream subscription to the "map" kind (startLiveStream) wakes
-  // this up sooner on an actual change, same "poll is correct, live-stream
-  // is just faster" relationship every other cache in this file already has.
+  // a live-stream subscription to the "map" kind wakes this up sooner.
   const ACTIVE_MAP_STALE_MS = 8000;
   let activeMapCache = null;
   let activeMapFetchedAt = 0;
@@ -231,27 +180,18 @@ export function initCombatTrackerWidget(
     pendingActiveMapFetch = true;
     (async () => {
       try {
-        // Spotlighted (actually shown to players) takes priority when one
-        // exists — that's the definitive, group-wide "the" active map,
-        // exactly what player mode is ALSO restricted to (a player can
-        // never legitimately see anything un-spotlighted, so this is the
-        // only source that even makes sense for them). resolveActiveMapId
-        // is the fallback, GM-only, for the "prepping before showing
-        // anything to the table yet" case that has no spotlight at all —
-        // see this widget's own init option comment.
+        // Spotlighted (actually shown to players) takes priority — the
+        // definitive, group-wide active map, which is all player mode can
+        // ever see. resolveActiveMapId is the GM-only fallback for
+        // "prepping before showing anything to the table yet."
         const mapId = (await resolveActiveSpotlightId(dataManager, { groupId, kind: "map" })) || resolveActiveMapId?.() || "";
         if (!mapId) {
-          // A TRUTHY empty placeholder, not null — confirmed real bug this
-          // fixes: null failed the staleness guard's own `activeMapCache &&`
-          // check above (a falsy cache always looked "not yet fetched"), so
-          // with no active map spotlighted at all — a completely normal,
-          // common state — every single render re-triggered a fresh fetch,
-          // whose completion called onLoaded (render()) again, which
-          // triggered another fetch... a tight async loop that read as
-          // constant flashing and blocked all interaction. Same fix already
-          // applied once for this exact class of bug — see this file's own
-          // activeEncounterCache (app.js) precedent, which sets a resolved
-          // placeholder object rather than null for the identical reason.
+          // A TRUTHY empty placeholder, not null — null fails the staleness
+          // guard's `activeMapCache &&` check above, so with no active map
+          // spotlighted (a common state) every render would re-trigger a
+          // fetch, whose completion called onLoaded (render()) again,
+          // triggering another fetch — a tight async loop read as constant
+          // flashing that blocked all interaction.
           activeMapCache = { id: "", payload: {} };
           return;
         }
@@ -269,13 +209,10 @@ export function initCombatTrackerWidget(
 
   // Every marker on the active map that represents `combatant` — refKind+
   // refId matched, disambiguated by marker.linkedCombatantId when more than
-  // one marker/combatant pairing shares that refId (same convention map-
-  // viewer.js's own resolveMarkerLinkedCombatant uses, just inverted: that
-  // one starts from a marker and finds its combatant, this starts from a
-  // combatant and finds its marker(s)). Returns [] — not an error — when
-  // there's no active map, no map data yet, or genuinely no marker for this
-  // combatant at all (it just hasn't been placed); callers treat an empty
-  // result as "nothing to show/toggle," not a failure.
+  // one pairing shares a refId (map-viewer.js's resolveMarkerLinkedCombatant,
+  // inverted). Returns [] — not an error — when there's no active map, no
+  // map data yet, or genuinely no marker placed; callers treat an empty
+  // result as "nothing to show/toggle."
   function resolveCombatantMarkers(combatant, map) {
     if (!map?.payload || !combatant?.refId) return [];
     const matches = [];
@@ -289,18 +226,13 @@ export function initCombatTrackerWidget(
     });
     if (matches.length <= 1) return matches;
     const linked = matches.filter(({ marker }) => marker.linkedCombatantId === combatant.id);
-    // Genuinely ambiguous (multiple candidates, none explicitly linked to
-    // THIS combatant) — [] rather than guessing which one(s) to affect;
-    // callers already treat that the same as "nothing to show/toggle."
-    return linked;
+    return linked; // genuinely ambiguous with none linked to THIS combatant — [] rather than guessing
   }
 
   // Read-only — whether ANY marker representing `combatant` on the active
-  // map is currently in that map's auto-managed "Player View" (see Orrery's
-  // own isElementHiddenFromPlayers, the identical read against state.map
-  // instead of a fetched copy). False (not an error, not "unknown") when
-  // there's no linked marker at all right now — nothing placed yet reads as
-  // "visible," matching the default a marker itself starts with.
+  // map is currently in that map's auto-managed "Player View" (Orrery's own
+  // isElementHiddenFromPlayers, read live instead of a fetched copy). False
+  // when there's no linked marker at all, matching a marker's own default.
   function isCombatantHiddenFromPlayers(combatant) {
     const map = getCachedActiveMap();
     const markers = resolveCombatantMarkers(combatant, map);
@@ -313,17 +245,12 @@ export function initCombatTrackerWidget(
   // Write-through — toggles every marker resolveCombatantMarkers finds for
   // this combatant in/out of the active map's own auto-managed View, same
   // read-modify-write-against-the-FRESH-server-copy shape
-  // writeThroughToCharacter and Orrery's own autoSaveHiddenFromPlayersView
-  // already use (never state's own possibly-stale cached copy — another GM
-  // tab, or Orrery itself, could have changed this map in the moments
-  // since). A no-op (status message, not a silent failure) when there's no
-  // active map or no linked marker to toggle at all — see the toolbar
-  // button's own disabled state for why that's expected, not an error case.
+  // writeThroughToCharacter uses (never state's own possibly-stale cached
+  // copy — another GM tab, or Orrery itself, could have changed this map).
+  // A no-op (status message) when there's no active map or linked marker.
   async function toggleCombatantHiddenFromPlayers(combatant) {
     const map = getCachedActiveMap();
-    // !map.id, not !map — getCachedActiveMap() always returns a truthy
-    // object now, even for "no active map" (see ensureActiveMapCached's own
-    // comment for why that has to be true rather than null).
+    // !map.id, not !map — getCachedActiveMap() always returns a truthy object, even for "no active map".
     if (!map?.id) {
       status?.show("No map is shown to the table or open on your dashboard to show/hide this combatant on.", {
         type: "warning",
@@ -362,29 +289,21 @@ export function initCombatTrackerWidget(
   }
 
   // Set the instant a local edit happens (markDirty, below) and only
-  // cleared once persist()'s own debounced save actually finishes — see
-  // refreshCurrentEncounter's own comment for the race this closes. This is
-  // the same "don't apply a fetch that could be older than a write we
-  // already know about" problem map-live-sync.js's watchMapForChanges
-  // already solved for maps (localWriteSeq/noteLocalWrite) — combat-
-  // tracker.js's own encounter refresh never got that same protection.
+  // cleared once persist()'s debounced save finishes — see
+  // refreshCurrentEncounter's own comment for the race this closes: the
+  // same "don't apply a fetch older than a write we already know about"
+  // problem map-live-sync.js's watchMapForChanges already solves for maps.
   let pendingEncounterWrite = false;
 
   const persist = debounce(async () => {
     if (!state.encounter || mode !== "gm") {
-      // markDirty always sets pendingEncounterWrite before scheduling this
-      // — clear it even on this early-out (mode is only ever "gm" in
-      // practice by the time markDirty is reachable, but nothing here
-      // should ever leave the flag stuck true with no save in flight to
-      // eventually clear it).
-      pendingEncounterWrite = false;
+      pendingEncounterWrite = false; // markDirty always sets this — clear it even on this early-out
       return;
     }
     try {
-      // Library-sourced encounters never embed their own id in the body
-      // (Loom's convention, matching every other Library kind) — strip it
-      // from a clone before saving, not from state.encounter itself, since
-      // every other function in this file keeps reading state.encounter.id.
+      // Library-sourced encounters never embed their own id in the body —
+      // strip it from a clone before saving, not state.encounter itself,
+      // since every other function here keeps reading state.encounter.id.
       const { id: _id, ...body } = state.encounter;
       await dataManager.save("encounter", state.encounter.id, body);
     } catch (error) {
@@ -395,23 +314,15 @@ export function initCombatTrackerWidget(
   }, 600);
 
   function markDirty() {
-    // Flagged HERE, synchronously, not just once persist()'s debounced
-    // timer actually fires — confirmed real bug this fixes: a monster/NPC
-    // combatant's added condition only ever lives in state.encounter (no
-    // separate write-through of its own, unlike a character combatant's —
-    // see addTag's own comment), so it was purely at the mercy of this
-    // 600ms debounce window. If the "encounter" live-stream event (which
-    // fires on literally every save to ANY encounter in the group,
-    // including this GM's own — the server has no way to know a change
-    // came from the same tab that's about to persist it) landed inside
-    // that window — a near-certainty, since the server-side live-stream
-    // itself polls every ~1s — refreshCurrentEncounter would refetch the
-    // still-stale (pre-edit) server copy and overwrite state.encounter
-    // with it, silently discarding the just-typed condition before persist()
-    // ever got a chance to save it. A Character combatant mostly self-healed
-    // from the same race via its own independent writeThroughToCharacter
-    // save plus the periodic per-character re-sync; a Monster/NPC combatant
-    // had nothing to self-heal from, so it just... didn't stick.
+    // Flagged HERE, synchronously, not once persist()'s debounced timer
+    // fires — a monster/NPC combatant's added condition only lives in
+    // state.encounter (no separate write-through), so it was purely at the
+    // mercy of this 600ms window: if the "encounter" live-stream event
+    // (fires on every save in the group, including this GM's own) landed
+    // inside it, refreshCurrentEncounter would refetch the still-stale
+    // server copy and overwrite state.encounter, silently discarding the
+    // just-typed condition. A Character combatant self-healed via its own
+    // writeThroughToCharacter save; a Monster/NPC combatant had nothing to self-heal from.
     pendingEncounterWrite = true;
     render();
     persist();
@@ -468,9 +379,7 @@ export function initCombatTrackerWidget(
     const remote = dataManager.collectListEntries(listing.remote, ["owned"]);
     const local = dataManager.listLocalEntries("encounter") || [];
     // Dedupe by id (prefer the remote entry, which carries a real title) —
-    // an encounter created while offline/anonymous and later synced could
-    // otherwise appear twice: once via its local copy (labeled by raw id)
-    // and once via the server copy (labeled by name).
+    // an encounter created while offline/anonymous and later synced could otherwise appear twice.
     const byId = new Map();
     [...local, ...remote].forEach((entry) => {
       if (entry?.id) byId.set(entry.id, entry);
@@ -488,31 +397,21 @@ export function initCombatTrackerWidget(
     }
     try {
       // preferLocal: false — every other network read of an encounter in
-      // this file already does this (pollActiveEncounter,
-      // refreshCurrentEncounter, the macro runner's loadMacroEncounter); this
-      // one was the sole exception. Confirmed real bug: a GM's own tracker
-      // — including on a fresh page reload, since init() below calls this
-      // same function to resume whichever encounter is active — kept
-      // showing its last-known LOCAL copy indefinitely (initiative stuck at
-      // whatever it was before) whenever a player pushed initiative from
-      // their own character sheet, since that write only ever lands on the
-      // server + the player's own local cache, never the GM's.
+      // this file does this; without it a GM's own tracker (including on a
+      // fresh reload) kept showing its last-known LOCAL copy whenever a
+      // player pushed initiative from their own character sheet, since that
+      // write only lands on the server + the player's own local cache.
       const result = await dataManager.get("encounter", id, { shareToken, preferLocal: false });
       state.encounter = result.payload;
-      // The record's own id isn't in the body (see persist's own comment) —
-      // stamp it from the id this was fetched by, same as every other
-      // Library-kind loader in the suite.
-      state.encounter.id = id;
+      state.encounter.id = id; // the record's own id isn't in the body — stamp it from the fetch id
+
       const fields = await loadSystemFields(dataManager, state.encounter.systemId);
       state.combatBindings = deriveCombatBindings(fields);
       state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
       render();
     } catch (error) {
       status?.show("Unable to load that encounter.", { type: "error" });
-      // Same self-heal as pollActiveEncounter's own — a GM hitting a dead
-      // ?encounter=<id> deep link is just as good a moment to notice the
-      // group's active spotlight is stale and clear it for every viewer,
-      // not only a player's own passive poll finding it later.
+      // Same self-heal as pollActiveEncounter's own — a dead ?encounter=<id> deep link clears the stale spotlight too.
       if (error?.status === 404 && groupId) {
         const activeId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }).catch(
           () => ""
@@ -553,14 +452,9 @@ export function initCombatTrackerWidget(
       await loadOwnedEncounters();
       render();
       // Deleting the campaign's currently-spotlighted encounter would
-      // otherwise leave every viewer (any player polling, or the GM's own
-      // tab on a future reload via ?encounter=<id>) stuck re-fetching a dead
-      // id forever — checked authoritatively against the group's actual
-      // active spotlight (resolveActiveSpotlightId), not the local-only
-      // state.announced flag, since that resets on reload even when the
-      // spotlight itself is still live. See pollActiveEncounter's own
-      // matching cleanup for the reactive half of this (an already-stale
-      // spotlight from before this fix existed).
+      // otherwise leave every viewer stuck re-fetching a dead id forever —
+      // checked against the group's actual active spotlight, not the
+      // local-only state.announced flag (which resets on reload).
       if (groupId) {
         const activeId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }).catch(
           () => ""
@@ -599,19 +493,12 @@ export function initCombatTrackerWidget(
     render();
   }
 
-  // Monster, Forge NPC, and now character records all resolve through the
-  // same combatBindings resource/value paths writeThroughToCharacter uses to
-  // write back — a freshly added combatant starts at whatever the source
-  // record's own current/max already are (a fresh monster/NPC's current
-  // always equals max; a character's current reflects any damage it's
-  // already carrying). Falls back to the resource's max if current is
-  // somehow absent. A System with no matching binding, or a record with
-  // nothing at that path (a not-yet-imported character, a Freeform
-  // combatant), falls back to the existing manual-entry 0/0 default —
-  // previously this hardcoded `stats.hitPoints`/`stats.armorClass` directly
-  // instead of resolving through the configured bindings, silently
-  // disagreeing with writeThroughToCharacter for any System whose paths
-  // pointed elsewhere.
+  // Monster, Forge NPC, and character records all resolve through the same
+  // combatBindings resource/value paths writeThroughToCharacter uses to
+  // write back — a freshly added combatant starts at the source record's
+  // own current/max (a fresh monster/NPC's current equals max; a
+  // character's current reflects damage already carried). A System with no
+  // matching binding, or a record with nothing at that path, falls back to the manual-entry 0/0 default.
   async function addCombatant({ refKind, refId, name }) {
     if (!state.encounter) return;
     let resolvedName = name;
@@ -636,12 +523,9 @@ export function initCombatTrackerWidget(
       maxHp: stats.maxHp,
       tempHp: stats.tempHp,
       ac: stats.ac,
-      // Which named resource `hp`/`maxHp` actually represent for this
-      // System (e.g. "Hit Points"), plus every OTHER `resource`-role
-      // binding this System defines (e.g. d20 Modern's Action Points,
-      // Daggerheart's Hope) — read-only mirrors, no edit UI of their own in
-      // Combat Tracker, but real data a different consumer (Orrery's Marker
-      // Resource Bar) can read. See resolveCombatantStats' own comment.
+      // Which named resource `hp`/`maxHp` represent for this System, plus
+      // every OTHER `resource`-role binding — read-only mirrors, no edit UI
+      // here, but real data Orrery's Marker Resource Bar can read.
       hpResourceName: stats.hpResourceName,
       resources: stats.resources,
       conditions: [],
@@ -683,16 +567,12 @@ export function initCombatTrackerWidget(
     markDirty();
   }
 
-  // Players roll their own characters' initiative on their sheet (the
-  // template's own Initiative field/roller — see tpl.5e.flex-basic.json),
-  // so this only touches non-character combatants: monster/npc combatants
-  // (whose linked record supplies a modifier via combatBindings' own
-  // "modifier"-role entry, the same generic binding-path mechanism as
-  // HP/AC/Conditions) and freeform combatants (no linked record, so a flat
-  // roll with +0). The die itself comes from that entry's own `die` (e.g.
-  // "d20"), defaulting to d20 for Systems that don't specify one. Best-effort
-  // per combatant — a record fetch failure just falls back to +0 rather than
-  // aborting the whole roll.
+  // Players roll their own characters' initiative on their sheet, so this
+  // only touches non-character combatants: monster/npc combatants (whose
+  // linked record supplies a modifier via combatBindings' "modifier"-role
+  // entry) and freeform combatants (flat roll with +0). The die comes from
+  // that entry's own `die`, defaulting to d20. Best-effort per combatant —
+  // a record fetch failure falls back to +0 rather than aborting the whole roll.
   async function rollInitiativeForNonCharacters() {
     if (!state.encounter) return;
     const targets = state.encounter.combatants.filter((c) => c.refKind !== "character");
@@ -734,14 +614,11 @@ export function initCombatTrackerWidget(
   }
 
   // A character-combatant's HP/conditions treat the character record as the
-  // source of truth (the opposite of monster/npc, whose base record never
-  // changes — see addCombatant's own comment): a GM edit here writes through
-  // via the System's combatBindings paths, the same paths Workbench's own
-  // character-sheet fields bind to, so both sides read/write one real
-  // value instead of two independently-drifting copies. Best-effort — the
-  // encounter's own copy (already updated by the caller before this runs)
-  // stays this widget's authoritative value regardless of whether the
-  // write-through succeeds, so failures are logged, not surfaced.
+  // source of truth (unlike a monster/npc's base record, which never
+  // changes): a GM edit here writes through via the System's combatBindings
+  // paths, so this and Workbench's character sheet read/write one real
+  // value instead of two drifting copies. Best-effort — the encounter's own
+  // copy stays authoritative regardless of write-through success, so failures are logged, not surfaced.
   async function writeThroughToCharacter(combatant, updates) {
     if (combatant.refKind !== "character" || !combatant.refId) return;
     const bindings = state.combatBindings;
@@ -750,12 +627,9 @@ export function initCombatTrackerWidget(
     const value = findBindingByRole(bindings, "value");
     const tags = findBindingByRole(bindings, "tags");
     try {
-      // preferLocal: false — this is a read-modify-write round trip against
+      // preferLocal: false — a read-modify-write round trip against
       // whatever the character record actually is right now (possibly just
-      // changed by the player themselves, moments ago, on their own sheet);
-      // a stale local cache here would silently clobber that change instead
-      // of merging with it. Same reasoning as Loom's editor and Workbench's
-      // own character loader (see their comments).
+      // changed by the player on their own sheet); a stale local cache would silently clobber that change.
       const result = await dataManager.get("character", combatant.refId, { preferLocal: false });
       const character = result.payload || {};
       let changed = false;
@@ -779,12 +653,9 @@ export function initCombatTrackerWidget(
         setAtBinding(tags.binding, character, updates.conditions);
         changed = true;
       }
-      // Not a game-mechanical field a System defines a binding for (unlike
-      // conditions above) — a suite-level annotation of which of THIS
-      // character's own conditions/tags are hidden from map marker badges
-      // (see resolveMarkerConditionIcons), so it always lives at this same
-      // fixed key regardless of System, the same way overlayIcons/heightCells
-      // live at fixed keys on a marker rather than through a binding.
+      // Not a game-mechanical field a System defines a binding for — a
+      // suite-level annotation of which conditions are hidden from map
+      // marker badges, always at this fixed key regardless of System.
       if (updates.hiddenTags !== undefined) {
         character.hiddenTags = updates.hiddenTags;
         changed = true;
@@ -813,9 +684,7 @@ export function initCombatTrackerWidget(
     const index = combatant.conditions.indexOf(value);
     if (index === -1) return;
     combatant.conditions.splice(index, 1);
-    // Cleanup — a removed tag shouldn't linger in hiddenTags forever, e.g.
-    // silently suppressing a LATER, unrelated tag that happens to reuse the
-    // same text.
+    // Cleanup — a removed tag shouldn't linger in hiddenTags and silently suppress a later, unrelated tag reusing the same text.
     if (Array.isArray(combatant.hiddenTags)) {
       const hiddenIndex = combatant.hiddenTags.indexOf(value);
       if (hiddenIndex !== -1) combatant.hiddenTags.splice(hiddenIndex, 1);
@@ -825,10 +694,8 @@ export function initCombatTrackerWidget(
   }
 
   // Visibility ("Show to table") and combat state ("Start/Stop") are fully
-  // independent controls, with zero automatic coupling in either direction
-  // — starting combat no longer implicitly shows it, stopping doesn't hide
-  // it, and hiding doesn't stop combat. Each is only ever changed by its
-  // own explicit button.
+  // independent controls with zero automatic coupling — starting combat
+  // doesn't show it, stopping doesn't hide it, hiding doesn't stop combat.
   async function showToTable() {
     if (!state.encounter || state.announced) return;
     const active = dataManager.getActiveGroup();
@@ -854,21 +721,15 @@ export function initCombatTrackerWidget(
     }
   }
 
-  // Marks the spotlight `data.hidden` instead of clearing it outright (the
-  // old behavior — dataManager.clearSpotlight) — confirmed real bug that
-  // fixes: a fully-cleared encounter stopped being "the active encounter"
-  // for ANY purpose at all, including character-sheet.js's own
-  // pushInitiativeToActiveEncounter — a GM hiding combat from the table
-  // (a deliberate, supported thing to want — running a private encounter
-  // players still roll initiative into) broke initiative pushing entirely,
-  // not just table visibility. updateSpotlightData posts a
-  // `spotlight-update` entry, which resolveActiveSpotlights/
-  // resolveActiveSpotlightId already treat as equally "active" as the
-  // original `spotlight` entry (see spotlight.js's own comment) — the
-  // encounter stays findable, just flagged not-for-display. Player-facing
-  // rendering (this file's own resolveActiveEncounterId, the spotlight
-  // panel/Game Log in dashboard.js) is what actually checks the flag and
-  // hides accordingly.
+  // Marks the spotlight `data.hidden` instead of clearing it outright — a
+  // fully-cleared encounter stopped being "the active encounter" for ANY
+  // purpose, including character-sheet.js's pushInitiativeToActiveEncounter
+  // — hiding combat from the table (a deliberate, supported thing to want)
+  // broke initiative pushing entirely, not just visibility.
+  // updateSpotlightData posts a `spotlight-update` entry, which
+  // resolveActiveSpotlightId already treats as equally "active" as the
+  // original `spotlight` entry — the encounter stays findable, just flagged
+  // not-for-display; player-facing rendering checks the flag and hides accordingly.
   async function hideFromTable() {
     if (!state.encounter || !state.announced) return;
     const active = dataManager.getActiveGroup();
@@ -880,13 +741,9 @@ export function initCombatTrackerWidget(
         id: state.encounter.id,
         data: { hidden: true },
       });
-      // Only flip state (and re-render the now-off toggle) on confirmed
-      // success — same shape as showToTable's own try block. Setting this
-      // unconditionally after the try/catch used to desync client from
-      // server on any failure: the toggle would visually turn off
-      // immediately, then flip back on after a refresh once the page
-      // re-fetched the real (still-active) server state, with no obvious
-      // explanation why — confirmed real bug, not just theoretical.
+      // Only flip state on confirmed success — setting this unconditionally
+      // used to desync client from server on failure: the toggle turned off
+      // immediately, then flipped back on after a refresh, with no obvious explanation why.
       state.announced = false;
       status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       render();
@@ -904,16 +761,10 @@ export function initCombatTrackerWidget(
   }
 
   // Start places the turn indicator on the first combatant at round 1;
-  // Stop clears both (no turn indicator, no Round display). Deliberately
-  // touches nothing about visibility, in either direction — Start used to
-  // also auto-spotlight the encounter (a "visible by default" convenience),
-  // but per the user's own explicit call, active/started and visible/shown
-  // must be two fully independent toggles with zero automatic coupling
-  // either way — hitting both buttons is one extra click, in exchange for
-  // being able to run combat privately from turn 1 (not just after
-  // starting-then-hiding) or leave a hidden encounter shown from an earlier
-  // session while re-starting it. See showToTable/hideFromTable's own
-  // comment for the other half of this split.
+  // Stop clears both. Deliberately touches nothing about visibility —
+  // active/started and visible/shown are two fully independent toggles with
+  // zero automatic coupling, so combat can run privately from turn 1, or a
+  // hidden encounter can stay shown from an earlier session while re-starting.
   function startCombat() {
     if (!state.encounter) return;
     state.encounter.started = true;
@@ -934,13 +785,10 @@ export function initCombatTrackerWidget(
     if (encounterId) return encounterId;
     const id = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
     if (!id) return "";
-    // A hidden encounter (see hideFromTable's own comment) is still the
-    // campaign's ACTIVE encounter — character-sheet.js's own initiative
-    // push needs to keep finding it regardless of visibility — but a
-    // player-mode tracker's own rendering must still respect "not shown to
-    // the table." Checking the resolved data here (not just
-    // resolveActiveSpotlightId's own id-only answer) is what makes that
-    // distinction: an id existing doesn't mean this viewer should see it.
+    // A hidden encounter is still the campaign's ACTIVE encounter —
+    // character-sheet.js's initiative push needs to find it regardless of
+    // visibility — but a player-mode tracker's rendering must still respect
+    // "not shown to the table." Checking the resolved data (not just the id) makes that distinction.
     const data = await resolveSpotlightData(dataManager, { groupId, shareToken, kind: "encounter", id });
     if (data?.hidden === true) return "";
     return id;
@@ -968,27 +816,19 @@ export function initCombatTrackerWidget(
     } catch (error) {
       state.encounter = null;
       render();
-      // A confirmed 404 (not "not shared with this viewer yet," a 403/other
-      // error, or a network blip) means the spotlighted encounter itself is
-      // gone — deleteEncounter is supposed to clear the spotlight when it
-      // deletes the active one, but this covers any record that ends up
-      // gone without that (an older deletion, a manual file removal, ...).
-      // Clearing it here, group-wide, is what actually stops every viewer's
-      // poll from re-hitting this same dead id every 15s forever — every
-      // group member (not just the GM) is allowed to post a spotlight-clear
-      // log entry (see groups.py's create_group_log_entry), so this is safe
-      // to do from a player's own passive polling, not just the GM's tab.
+      // A confirmed 404 means the spotlighted encounter is gone —
+      // deleteEncounter clears the spotlight for its own deletion, but this
+      // covers any record gone without that. Clearing it here group-wide
+      // stops every viewer's poll from re-hitting the dead id forever —
+      // any group member is allowed to post a spotlight-clear log entry.
       if (error?.status === 404 && groupId) {
         dataManager.clearSpotlight({ groupId, shareToken, kind: "encounter", id }).catch(() => {});
       }
     }
   }
 
-  // createReliableInterval (not plain window.setInterval) — a player-mode
-  // tracker popped out onto a physical second screen sits unfocused for the
-  // whole session; the browser's own background-tab timer throttling was
-  // confirmed to stall this poll until the window was manually refocused.
-  // See reliable-interval.js's own header for how/why this stays reliable.
+  // createReliableInterval, not plain setInterval — a player-mode tracker
+  // popped onto a second screen must not stall unfocused (see reliable-interval.js).
   function startPolling() {
     stopPolling();
     state.pollTimer = createReliableInterval(() => {
@@ -1003,35 +843,26 @@ export function initCombatTrackerWidget(
     }
   }
 
-  // Wakes the existing poll functions up sooner on a relevant change — never
-  // a replacement for them (see live.js's own comment): if the stream can't
-  // connect, or drops, polling alone keeps working exactly as it already
-  // does. GM mode has no poll loop of its own today (a GM is assumed to be
-  // the one making changes) except for this: a character-combatant's HP/
-  // conditions can now change from *outside* the tracker entirely (a player
-  // editing their own sheet — see Phase 5's write-through), so GM mode
-  // subscribes too, purely to catch that.
+  // Wakes the existing poll functions up sooner on a relevant change, never
+  // a replacement for them — if the stream can't connect or drops, polling
+  // keeps working. GM mode has no poll loop of its own except for this: a
+  // character-combatant's HP/conditions can change from *outside* the
+  // tracker (a player editing their own sheet), so GM mode subscribes too.
   let liveStream = null;
 
-  // Unlike selectEncounter() (a deliberate user action — resets selection,
-  // re-announces), this is triggered by *someone else's* change (another GM
-  // tab) landing on the encounter this one already has open, so it swaps in
-  // the fresh data without disturbing what this GM currently has selected.
+  // Unlike selectEncounter() (a deliberate user action), this is triggered
+  // by *someone else's* change landing on the encounter already open, so it
+  // swaps in fresh data without disturbing the current selection.
   async function refreshCurrentEncounter() {
     if (!state.encounter) return;
-    // Skip entirely while a local edit is still queued/mid-save — see
-    // pendingEncounterWrite's own comment for the confirmed bug this
-    // prevents: this fires on literally every encounter save in the group,
-    // including this GM's own not-yet-persisted one, and would otherwise
-    // overwrite state.encounter with a stale pre-edit copy.
+    // Skip entirely while a local edit is still queued/mid-save — this
+    // fires on every encounter save in the group, including this GM's own
+    // not-yet-persisted one, and would otherwise overwrite state.encounter with a stale pre-edit copy.
     if (pendingEncounterWrite) return;
     const id = state.encounter.id;
     try {
       const result = await dataManager.get("encounter", id, { preferLocal: false });
-      // Re-checked after the await, not just before it — a local edit can
-      // start WHILE this fetch is in flight, in which case its result is
-      // now the stale one, same reasoning as the check above.
-      if (pendingEncounterWrite) return;
+      if (pendingEncounterWrite) return; // re-checked after the await — a local edit can start while this fetch is in flight
       state.encounter = result.payload;
       state.encounter.id = id;
       render();
@@ -1055,30 +886,20 @@ export function initCombatTrackerWidget(
       const tags = findBindingByRole(state.combatBindings, "tags");
       if (resource?.binding) {
         // Each of current/max/temp updates independently based on whether
-        // ITS OWN path resolves to a number — confirmed real bug this fixes:
-        // current HP used to only ever update when max ALSO resolved as a
-        // number (nested inside that same check), so a System with no
-        // maxPath configured for its resource binding at all — or one where
-        // max just failed to resolve for any reason — silently never
-        // reflected a player's own current-HP edit here either, even though
-        // current resolved fine on its own. Same "leave alone if
-        // unresolvable" fallback the AC/Conditions checks just below already
-        // use, not resolveCombatantStats' own zero-default (that function is
-        // for seeding a BRAND NEW combatant, where 0 is a reasonable
-        // "nothing configured" default — here, an existing combatant's
-        // already-known value should never get silently reset to 0 just
-        // because the character record briefly didn't resolve one field).
+        // ITS OWN path resolves to a number — current HP used to only
+        // update when max ALSO resolved (nested inside that check), so a
+        // System with no maxPath (or one that failed to resolve) silently
+        // never reflected a player's current-HP edit either. "Leave alone
+        // if unresolvable", not resolveCombatantStats' zero-default (that's
+        // for seeding a BRAND NEW combatant) — an existing combatant's known
+        // value should never reset to 0 just because one field briefly didn't resolve.
         const current = resolveBinding(resource.binding, payload);
         if (typeof current === "number") combatant.hp = current;
         if (resource.maxPath) {
           const max = resolveBinding(resource.maxPath, payload);
           if (typeof max === "number") combatant.maxHp = max;
         } else if (typeof resource.max === "number") {
-          // A literal ceiling (e.g. Daggerheart's Hope: max 6) isn't stored
-          // anywhere on the character record to resolve — it's just always
-          // this fixed value, the same way maxPath's resolved value would be
-          // if it were bound.
-          combatant.maxHp = resource.max;
+          combatant.maxHp = resource.max; // a literal ceiling (e.g. Hope: max 6) isn't stored on the character record
         }
         if (resource.tempPath) {
           const temp = resolveBinding(resource.tempPath, payload);
@@ -1093,11 +914,10 @@ export function initCombatTrackerWidget(
         const resolvedTags = resolveBinding(tags.binding, payload);
         if (Array.isArray(resolvedTags)) combatant.conditions = resolvedTags.slice();
       }
-      // Every OTHER resource-role binding (Action Points, Hope, ...) beyond
-      // the primary one above — same "leave alone if unresolvable" fallback,
-      // matched by name against whatever `combatant.resources` already has
-      // (seeded once at addCombatant time) so a resource this System no
-      // longer defines just stops updating rather than vanishing outright.
+      // Every OTHER resource-role binding beyond the primary one — same
+      // "leave alone if unresolvable" fallback, matched by name against
+      // `combatant.resources` (seeded at addCombatant time) so a resource
+      // this System no longer defines just stops updating rather than vanishing.
       const secondaryResources = findBindingsByRole(state.combatBindings, "resource").slice(1);
       if (secondaryResources.length && Array.isArray(combatant.resources)) {
         secondaryResources.forEach((binding) => {
@@ -1125,22 +945,13 @@ export function initCombatTrackerWidget(
   }
 
   // Safety-net sweep, not the primary update path — the live-stream
-  // subscription above is what makes an edit feel instant. A live-stream
-  // connection can silently miss an event (a backgrounded/throttled tab —
-  // browsers routinely deprioritize timers and can delay reconnects in an
-  // unfocused tab; the reconnect backoff itself climbs up to 15s after
-  // repeated failures; a connection torn down and recreated at the wrong
-  // moment) with nothing else ever noticing or retrying that specific
-  // missed change. Confirmed real gap: GM mode had NO fallback poll at all
-  // for character-driven combatant stats before this — every other poller
-  // in this file/suite (player mode's own pollActiveEncounter, Game Log,
-  // spotlight-inbox) already follows "live-stream wakes it up sooner, a
+  // subscription above makes an edit feel instant, but a live-stream
+  // connection can silently miss an event (a backgrounded/throttled tab, a
+  // reconnect backoff climbing to 15s) with nothing else noticing. Every
+  // other poller in this suite follows "live-stream wakes it up sooner, a
   // plain poll guarantees it eventually happens regardless" — GM mode's
-  // character sync was the one exception, purely live-stream-or-never. This
-  // re-syncs every PC combatant from its live character record on a fixed
-  // cadence, independent of whether any live-stream event for it was ever
-  // received, giving character->encounter sync a bounded worst-case
-  // latency instead of an unbounded "maybe never."
+  // character sync was the one exception. This re-syncs every PC combatant
+  // on a fixed cadence, giving character->encounter sync a bounded worst-case latency.
   async function syncAllCharacterCombatants() {
     if (!state.encounter) return;
     const characterIds = new Set(
@@ -1166,13 +977,10 @@ export function initCombatTrackerWidget(
     }
   }
 
-  // Forces the next ensureActiveMapCached call to actually refetch instead
-  // of trusting the stale-but-not-yet-expired cached copy — same "collapse
-  // the relevant cache entry and re-render immediately" reasoning
-  // Orrery's own app.js and the Dashboard's map.js widget already apply to
-  // THEIR OWN "encounter"/"character" live-stream subscriptions, just for
-  // Combat Tracker's own "map" one (isCombatantHiddenFromPlayers reads live
-  // from that data now — see its own header comment).
+  // Forces the next ensureActiveMapCached call to refetch instead of
+  // trusting the stale-but-not-yet-expired cache — same "collapse the cache
+  // entry and re-render immediately" reasoning Orrery's app.js and the
+  // Dashboard's map.js widget apply to their own live-stream subscriptions.
   function invalidateActiveMapCache() {
     activeMapCache = null;
     activeMapFetchedAt = 0;
@@ -1393,12 +1201,9 @@ export function initCombatTrackerWidget(
     return toolbar;
   }
 
-  // Separate from Start/Stop — visibility to the table and whether combat
-  // is actively running are independent (see startCombat/stopCombat's own
-  // comment). Lives in the Dashboard card's own header now (setRightAction —
-  // same right-side slot Map/Handout/Game Log use), not inline in the
-  // widget's own content, so every widget that can be shown to the table
-  // puts that toggle in the same place.
+  // Separate from Start/Stop — visibility and whether combat is actively
+  // running are independent. Lives in the Dashboard card's header
+  // (setRightAction — same slot Map/Handout/Game Log use).
   function updateVisibilityAction() {
     if (!state.encounter) {
       setRightAction?.(null);
@@ -1412,14 +1217,9 @@ export function initCombatTrackerWidget(
     });
   }
 
-  // A badge (its own background box) reads clearly regardless of whether
-  // the row is also selected — a left border, tried first, visually
-  // disappeared once Bootstrap's `.active` selection background took over
-  // the same edge of the row.
   // `.text-warning` carries `!important` in Bootstrap, so this stays
-  // legible whether or not the row is also selected (a full badge read as
-  // too big/heavy; a plain border disappeared under the selected-row
-  // background).
+  // legible whether or not the row is also selected — a left border, tried
+  // first, disappeared once Bootstrap's `.active` selection background took over the same edge.
   function renderTurnBadge() {
     const marker = el("span", "text-warning fw-bold", "▶");
     marker.setAttribute("data-bs-toggle", "tooltip");
@@ -1429,11 +1229,8 @@ export function initCombatTrackerWidget(
   }
 
   // Temp HP is a separate buffer on top of current HP (5e-style: absorbed
-  // first, doesn't raise the max) — shown as "current(+temp)/max" so it
-  // reads as HP added on top rather than folded invisibly into current.
-  // Enforcing 5e's own stacking rule (temp doesn't stack, take-the-higher)
-  // isn't this tracker's job — it just displays whatever the sheet (or a
-  // GM's manual edit) currently says.
+  // first, doesn't raise the max) — shown as "current(+temp)/max". Enforcing
+  // 5e's own stacking rule isn't this tracker's job; it just displays whatever the sheet currently says.
   function formatHpText(combatant) {
     const tempHp = Number(combatant.tempHp) || 0;
     const suffix = tempHp > 0 ? `(+${tempHp})` : "";
@@ -1462,17 +1259,14 @@ export function initCombatTrackerWidget(
   }
 
   // Shown below the list whenever a combatant is selected — no separate
-  // Edit button/toolbar; selecting a row IS opening its details. Visible
-  // and Delete (previously a separate small toolbar above this panel) now
-  // live in its header, next to the Name field.
+  // Edit button; selecting a row IS opening its details. Visible and
+  // Delete live in its header, next to the Name field.
   //
   // Built exactly ONCE per selected combatant identity (see refreshEditPanel
-  // below) — every input handler here resolves selectedCombatant() fresh at
-  // event time rather than closing over the `combatant` parameter directly,
-  // since state.encounter (and so every combatant object inside it) can be
-  // wholesale-replaced by a poll/sync refresh between when this panel was
-  // built and when the GM actually commits an edit; reading fresh keeps the
-  // write landing on the live object instead of a detached stale one.
+  // below) — every input handler resolves selectedCombatant() fresh at
+  // event time rather than closing over `combatant` directly, since
+  // state.encounter can be wholesale-replaced by a poll/sync refresh
+  // between when this panel was built and when the GM commits an edit.
   function buildEditPanel(combatant) {
     const panel = el("div", "border rounded-3 p-2 d-flex flex-column gap-2");
 
@@ -1488,8 +1282,7 @@ export function initCombatTrackerWidget(
     });
     nameRow.appendChild(nameInput);
     // Icon/title/disabled state all get synced in place every render (see
-    // syncEditPanelValues) — the values here just seed the very first paint
-    // before that first sync runs a moment later.
+    // syncEditPanelValues) — these values just seed the first paint.
     const visibleButton = iconButton(
       isCombatantHiddenFromPlayers(combatant) ? "tabler:eye-off" : "tabler:eye",
       "Visible to players"
@@ -1499,20 +1292,15 @@ export function initCombatTrackerWidget(
     deleteButton.addEventListener("click", deleteSelected);
     nameRow.append(visibleButton, deleteButton);
 
-    // Labels come from the active System's own combatBindings entries (e.g.
-    // a non-D&D System might call these "Reflexes"/"Stress"/"Defense"
-    // instead of Init/HP/AC) — falling back to these generic names only
-    // when a System hasn't configured combat bindings at all, since the
-    // tracker still needs *some* label to show either way. Initiative
-    // tracking itself always shows regardless (core turn-order feature,
-    // independent of whether a System defines a "modifier" binding to
-    // auto-roll it — see rollInitiativeForNonCharacters).
+    // Labels come from the active System's own combatBindings entries (a
+    // non-D&D System might call these "Reflexes"/"Stress"/"Defense"),
+    // falling back to generic names when a System hasn't configured
+    // combat bindings. Initiative tracking always shows regardless.
     const resourceBinding = findBindingByRole(state.combatBindings, "resource");
     const valueBinding = findBindingByRole(state.combatBindings, "value");
     const modifierBinding = findBindingByRole(state.combatBindings, "modifier");
 
-    // Row 2: Initiative + AC together — the two "how this turn/hit goes"
-    // numbers, as opposed to HP's own resource-tracking row below.
+    // Row 2: Initiative + AC together — the "how this turn/hit goes" numbers, separate from HP below.
     const initAcRow = el("div", "d-flex gap-2 align-items-center flex-wrap");
     const initWrap = el("div", "d-flex align-items-center gap-1");
     initWrap.appendChild(el("span", "small text-body-secondary", modifierBinding?.name || "Init"));
@@ -1545,15 +1333,10 @@ export function initCombatTrackerWidget(
 
     initAcRow.append(initWrap, acWrap);
 
-    // Row 3: current/max/temp HP and the ± delta box all together — every
-    // number that describes "how hurt is this combatant right now" in one
-    // place, separate from Init/AC above.
-    // flex-nowrap + overflow-x-auto (not flex-wrap) — four number boxes plus
-    // the delta box is too much to reliably fit one line at every dashboard
-    // card width even at the reduced 3.5rem size below; scrolling sideways
-    // beats the row breaking onto a second line and separating HP from the
-    // ± box the GM actually wants right next to it. Same convention the Add
-    // Combatant row already uses for the same reason.
+    // Row 3: current/max/temp HP and the ± delta box together, separate
+    // from Init/AC above. flex-nowrap + overflow-x-auto, not flex-wrap —
+    // four number boxes plus the delta box don't reliably fit one line at
+    // every card width; scrolling sideways beats separating HP from the ± box next to it.
     const hpRow = el("div", "d-flex align-items-center gap-1 flex-nowrap overflow-x-auto");
     hpRow.appendChild(el("span", "small text-body-secondary", resourceBinding?.name || "Resource"));
     const hpInput = el("input", "form-control form-control-sm");
@@ -1589,15 +1372,10 @@ export function initCombatTrackerWidget(
       markDirty();
       void writeThroughToCharacter(current, { tempHp: current.tempHp });
     });
-    // "Remove HP" — a delta box, not a value box: type a positive number to
-    // subtract it from current HP, or a negative number to add it back
-    // (heal). The sign is deliberately inverted from what a plain "+/- HP"
-    // box would do — per the user, most entries during a real session are
-    // damage, so making the common case not require typing a leading "-"
-    // every time is the point, not an accident. Always clears back to blank
-    // after applying so it's immediately ready for the next hit, and never
-    // reflects any persisted value itself (see syncEditPanelValues, which
-    // skips it on purpose).
+    // "Remove HP" — a delta box: a positive number subtracts from current
+    // HP, negative adds it back (heal). Inverted from a plain "+/- HP" box
+    // on purpose — most entries during a real session are damage. Always
+    // clears back to blank after applying, and never reflects persisted state.
     const hpDeltaInput = el("input", "form-control form-control-sm");
     hpDeltaInput.type = "number";
     hpDeltaInput.style.width = "4.5rem";
@@ -1625,17 +1403,11 @@ export function initCombatTrackerWidget(
     );
 
     // Row 4: current tag badges on the left (badgesMount — rebuilt fresh
-    // every sync, same as before, since a badge/remove-button has no value
-    // a GM sits typing into), the Add Tag input+visibility-toggle+Add
-    // button on the right (addTagRow) — built ONCE here, like nameInput/
-    // hpInput/visibleButton above, and only ever SYNCED in place afterward
-    // (see syncEditPanelValues). This used to also be rebuilt every sync —
-    // confirmed real bug that caused: typing getting wiped mid-keystroke by
-    // an unrelated render, and (once the visibility toggle was added)
-    // clicking that toggle moving focus off the input and losing the SAME
-    // protection a moment later. Making this row stable, exactly like every
-    // other input on this panel, removes the whole class of bug rather than
-    // chasing each new way to trigger it.
+    // every sync, since a badge has no value to type into), the Add Tag
+    // input+visibility-toggle+Add button on the right — built ONCE here and
+    // only ever SYNCED in place afterward. This used to also rebuild every
+    // sync, which wiped typing mid-keystroke by an unrelated render. Making
+    // this row stable removes the whole bug class rather than chasing it.
     const tagsRow = el("div", "d-flex align-items-center justify-content-between gap-2 flex-wrap");
     const badgesMount = el("div", "flex-grow-1");
     const { row: addTagRow, visibilityButton: tagVisibilityButton } = buildTagInputRow(TAG_DATALIST_ID, {
@@ -1670,11 +1442,9 @@ export function initCombatTrackerWidget(
   }
 
   // Pushes `combatant`'s current values into an already-built panel's
-  // inputs — never recreates a single DOM node. Skips whichever input is
-  // `document.activeElement`, so a render triggered by anything else (a
-  // poll/sync tick, a different combatant's HP changing) can't overwrite an
-  // edit the GM is mid-typing into. hpDeltaInput is deliberately excluded —
-  // it never represents persisted state, only a transient action.
+  // inputs — never recreates a DOM node. Skips whichever input is
+  // `document.activeElement`, so an unrelated render can't overwrite an
+  // edit mid-typing. hpDeltaInput is excluded — it's a transient action, not persisted state.
   function syncEditPanelValues(refs, combatant) {
     const active = document.activeElement;
     if (active !== refs.nameInput) refs.nameInput.value = combatant.name;
@@ -1684,38 +1454,23 @@ export function initCombatTrackerWidget(
     if (active !== refs.tempHpInput) refs.tempHpInput.value = combatant.tempHp ?? 0;
     if (active !== refs.acInput) refs.acInput.value = combatant.ac ?? 0;
 
-    // Needed to resolve whether THIS combatant has a linked marker on the
-    // active map at all, and if so whether it's currently hidden — see
-    // isCombatantHiddenFromPlayers' own header comment for why this reads
-    // live from Orrery's own Map/View data instead of a stored
-    // combatant.hidden field.
+    // Resolves whether THIS combatant has a linked marker on the active map, and if so whether it's currently hidden.
     ensureActiveMapCached(() => render());
     const activeMap = getCachedActiveMap();
-    // "Hidden from players" is only ever meaningful once a map is actually
-    // being shown to players at all — before that, everything on every map
-    // is effectively hidden already, spotlight or not. Distinguishing WHY
-    // there's nothing to toggle matters here: "no map is currently shown to
-    // the table" (an ordinary, common prep-time state — nothing wrong with
-    // the combatant's own setup) reads very differently from "this specific
-    // combatant isn't placed on the map that IS being shown" (an actual
-    // setup gap worth fixing). Conflating the two into one generic message
-    // was confirmed genuinely confusing — it read as "your marker is wrong"
-    // when the real reason was just "you haven't clicked Show to Table yet."
+    // "Hidden from players" is only meaningful once a map is actually shown
+    // to players — before that, everything on every map is effectively
+    // hidden already. Distinguishing WHY matters: "no map shown to the
+    // table" (ordinary prep-time state) reads very differently from "this
+    // combatant isn't placed on the map that IS shown" (an actual setup
+    // gap) — conflating the two read as "your marker is wrong" when the real reason was "you haven't clicked Show yet."
     const hasActiveMap = Boolean(activeMap?.id);
     const linkedMarkerCount = resolveCombatantMarkers(combatant, activeMap).length;
     const hiddenFromPlayers = isCombatantHiddenFromPlayers(combatant);
     const visibleIcon = refs.visibleButton.querySelector(".iconify");
     if (visibleIcon) visibleIcon.dataset.icon = hiddenFromPlayers ? "tabler:eye-off" : "tabler:eye";
-    // Disabled (not hidden entirely) when this combatant has no linked
-    // marker on the active map right now — same "absent/inert rather than
-    // a fake no-op control" treatment the Linked Combatant picker already
-    // gives an inapplicable state, just disabled instead of absent since
-    // this button's OWN row (Name/Visible/Delete) always needs to exist.
-    // A real `disabled` attribute blocks hover entirely, so the
-    // explanation for WHY has to live on setDisabledTooltip's own wrapper,
-    // not on this button directly — see tooltips.js's own header for why
-    // the previous same-element version of this never actually showed a
-    // tooltip while disabled.
+    // Disabled (not hidden) when this combatant has no linked marker on the
+    // active map — this button's own row always needs to exist. A real
+    // `disabled` attribute blocks hover, so the WHY lives on setDisabledTooltip's own wrapper, not this button.
     const blockedTitle = !hasActiveMap
       ? "No map is shown to the table or open on your dashboard — nothing to show/hide yet"
       : !linkedMarkerCount
@@ -1726,20 +1481,10 @@ export function initCombatTrackerWidget(
     setDisabledTooltip(refs.visibleButton, blockedTitle);
     if (!blockedTitle) initTooltip(refs.visibleButton, { title: readyTitle });
 
-    // Badges have no value a GM sits typing into (buttons + static labels),
-    // so it's safe (and simplest) to rebuild this fresh every sync rather
-    // than diffing — same reasoning as before, just narrowed to ONLY this
-    // mount now. The Add Tag input/visibility-toggle/Add button are no
-    // longer rebuilt at all — they're built ONCE in buildEditPanel (like
-    // nameInput/hpInput/visibleButton above) and only ever synced in place,
-    // via applyTagVisibilityState just below — the exact same pattern
-    // visibleButton itself already uses successfully, one call up. This
-    // replaced an earlier "rebuild the whole row every sync, but skip it
-    // while X is focused" guard: that approach kept needing a new exemption
-    // every time a new interactive element (the visibility toggle) was
-    // added to the row, and broke again each time the exemption's own
-    // query hook changed. Making the row genuinely stable removes the bug
-    // class instead of chasing its next instance.
+    // Badges have no value a GM types into, so it's safe to rebuild this
+    // fresh every sync. The Add Tag input/visibility-toggle/Add button are
+    // built ONCE in buildEditPanel and only ever synced in place via
+    // applyTagVisibilityState — same pattern visibleButton uses.
     disposeTooltips(refs.badgesMount);
     refs.badgesMount.innerHTML = "";
     refs.badgesMount.appendChild(renderCombatantTagBadges(combatant, { removable: true }));
@@ -1748,48 +1493,34 @@ export function initCombatTrackerWidget(
     refreshTooltips(refs.panel);
   }
 
-  // Creates every persistent mount exactly once (a no-op every call after
-  // the first) — see their own declaration comment for why the split
-  // exists. Called from renderGm() itself rather than init(), so it's
-  // naturally never reached in player mode at all.
+  // Creates every persistent mount exactly once (a no-op after the first
+  // call). Called from renderGm() itself rather than init(), so it's never reached in player mode.
   function ensureGmShell() {
     if (topBarMount) return;
     container.innerHTML = "";
     const root = el("div", "combat-tracker-widget d-flex flex-column gap-2");
 
-    // No individual mt-2/spacing classes needed on any of these — they're
-    // all direct children of `root`'s own gap-2 flex column now (unlike the
-    // old addRowMount, a sibling of the whole rebuilt tree rather than a
-    // child within it, which needed its own margin for exactly that reason).
-    // gap-2 only applies between children actually in layout, so a hidden
-    // (d-none) mount correctly contributes no extra blank space.
+    // All direct children of `root`'s gap-2 flex column — gap-2 only
+    // applies between children actually in layout, so a hidden (d-none) mount contributes no extra blank space.
     topBarMount = el("div");
     toolbarMount = el("div", "d-flex flex-wrap gap-3 align-items-center justify-content-end d-none");
     emptyStateMount = el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat.");
     listMount = el("div", "list-group d-none");
-    // Deliberately NOT appended to `root` here — it's relocated dynamically,
-    // inline into listMount right after whichever row is currently
-    // selected (see refreshCombatantList's own comment), not a fixed
-    // section of its own anymore. Still created once, up front, so
-    // refreshEditPanel always has a stable node to build/sync into
-    // regardless of whether it's attached anywhere at the moment.
+    // Not appended to `root` here — relocated dynamically into listMount
+    // right after whichever row is selected. Still created once up front so
+    // refreshEditPanel always has a stable node to build/sync into.
     editPanelMount = el("div");
-    // Starts hidden — toggled per-render below, same "only show once an
-    // encounter is selected" behavior this row always had, just via a class
-    // now instead of being present/absent.
-    addRowMount = el("div", "d-none");
+    addRowMount = el("div", "d-none"); // starts hidden — only shows once an encounter is selected
     addRowMount.appendChild(renderGmAddCombatantRow());
 
     root.append(topBarMount, toolbarMount, emptyStateMount, listMount, addRowMount);
     container.appendChild(root);
   }
 
-  // Rebuilds topBarMount's actual DOM only when what it depends on
-  // (the owned-encounter list, the systems list, which encounter/system are
-  // current) has actually changed since the last render — see topBarMount's
-  // declaration comment for why this matters. Cheap to call on every render;
-  // the signature check is what keeps it from touching the DOM (and so the
-  // Encounter/System selects) on renders that have nothing to do with them.
+  // Rebuilds topBarMount's DOM only when what it depends on (owned-
+  // encounter list, systems list, current encounter/system) has actually
+  // changed since the last render. Cheap to call every render; the
+  // signature check keeps it from touching the DOM otherwise.
   function refreshTopBar() {
     const signature = JSON.stringify({
       encounters: state.ownedEncounters.map((entry) => [entry.id, entry.title || entry.name]),
@@ -1821,36 +1552,27 @@ export function initCombatTrackerWidget(
   }
 
   // Rebuilt in full on most renders — combatant ROWS have no free-text
-  // inputs of their own, so that's exactly what a GM wants reflecting a
-  // poll/sync tick live (same reasoning this always had). That stopped
-  // being unconditionally true the moment editPanelMount started living
-  // INLINE here (see its own declaration comment) instead of as a separate
-  // section below the list — it DOES have free-text inputs (Name/Init/HP/
-  // AC/tags), and rebuilding via innerHTML="" detaches whatever's currently
-  // focused inside it, then re-inserts it moments later once row-building
-  // finishes — a real gap (not an atomic move) during which the browser
-  // reliably fires blur, exactly the same class of "typing gets interrupted
-  // by an unrelated render" bug already fixed elsewhere in this file (the
-  // tag input, the visibility toggle) for the identical reason. Skipping
-  // the whole rebuild while focus is inside editPanelMount closes it the
-  // same way: refreshEditPanel (called before this, in renderGm) already
-  // handles syncing/tearing down editPanelMount's own CONTENT on its own,
-  // independent of whether this function touches its POSITION at all — a
-  // deselect/delete moves focus itself (removing/replacing what was
-  // focused) before this check runs, so that case still updates
-  // immediately; only "still editing the SAME combatant" is deferred here,
-  // same as everywhere else this pattern is used.
+  // inputs, so that's fine reflecting a poll/sync tick live. That stopped
+  // being unconditionally true once editPanelMount started living INLINE
+  // here instead of as a separate section — it DOES have free-text inputs,
+  // and rebuilding via innerHTML="" detaches whatever's currently focused,
+  // then re-inserts it moments later, during which the browser reliably
+  // fires blur — the same "typing interrupted by an unrelated render" class
+  // of bug fixed elsewhere in this file. Skipping the rebuild while focus
+  // is inside editPanelMount closes it: refreshEditPanel (called before
+  // this in renderGm) already handles syncing/tearing down its CONTENT
+  // independent of whether this function touches its POSITION — a
+  // deselect/delete moves focus itself before this check runs, so that
+  // case still updates immediately; only "still editing the SAME combatant" is deferred.
   function refreshCombatantList() {
     if (editPanelMount.contains(document.activeElement)) return;
     disposeTooltips(listMount);
     listMount.innerHTML = "";
     state.encounter.combatants.forEach((combatant, index) => {
       listMount.appendChild(renderCombatantRow(combatant, index));
-      // Inline expansion — right after the row it belongs to, not a fixed
-      // section at the bottom anymore. editPanelRefs (not just
-      // state.selectedCombatantId) is the source of truth for "is this
-      // panel actually built and ready" — refreshEditPanel is what
-      // maintains it, called before this in renderGm.
+      // Inline expansion, right after the row it belongs to. editPanelRefs
+      // (not just state.selectedCombatantId) is the source of truth for "is
+      // this panel actually built and ready" — refreshEditPanel maintains it.
       if (editPanelRefs?.combatantId === combatant.id) {
         listMount.appendChild(editPanelMount);
       }
@@ -1862,10 +1584,8 @@ export function initCombatTrackerWidget(
   }
 
   // Rebuilds editPanelMount's DOM only when the SELECTED COMBATANT ITSELF
-  // changes (a real structural change); otherwise pushes fresh values into
-  // the already-built inputs via syncEditPanelValues, which itself skips
-  // whichever input currently has focus — see editPanelRefs' declaration
-  // comment and buildEditPanel's own comment for the full reasoning.
+  // changes; otherwise pushes fresh values into the already-built inputs
+  // via syncEditPanelValues, which skips whichever input has focus.
   function refreshEditPanel() {
     const combatant = selectedCombatant();
     if (!combatant) {
@@ -1881,15 +1601,12 @@ export function initCombatTrackerWidget(
       editPanelMount.innerHTML = "";
       editPanelRefs = buildEditPanel(combatant);
       editPanelMount.appendChild(editPanelRefs.panel);
-      // A toggle left on for a tag that never got added shouldn't silently
-      // carry over to a DIFFERENT combatant's own Add Tag row.
-      pendingTagHidden = false;
+      pendingTagHidden = false; // a toggle left on shouldn't carry over to a DIFFERENT combatant's Add Tag row
     }
     syncEditPanelValues(editPanelRefs, combatant);
   }
 
-  // Synchronous, and touches only whichever mounts actually need it this
-  // render — see each mount's own declaration/refresh-function comment.
+  // Synchronous, and touches only whichever mounts actually need it this render.
   function renderGm() {
     ensureGmShell();
     const hasEncounter = Boolean(state.encounter);
@@ -1901,24 +1618,15 @@ export function initCombatTrackerWidget(
 
     refreshTopBar();
     if (hasEncounter) {
-      // Needed by refreshCombatantList's own eye-off row badge below, and
-      // by refreshEditPanel's own "Visible to players" toggle — see
-      // isCombatantHiddenFromPlayers' own header comment for why this reads
-      // live from Orrery's own Map/View data instead of a stored
-      // combatant.hidden field.
+      // Needed by refreshCombatantList's eye-off row badge and refreshEditPanel's "Visible to players" toggle.
       ensureActiveMapCached(() => render());
       refreshToolbar();
-      // refreshEditPanel BEFORE refreshCombatantList, not after — two
-      // reasons, both load-bearing: (1) refreshEditPanel's own teardown
-      // when a combatant gets deselected/deleted (editPanelMount.innerHTML =
-      // "") removes whatever was focused inside it as a side effect,
-      // BEFORE refreshCombatantList's own "skip while focused" guard runs —
-      // reversed, that guard would see the just-deleted combatant's own
-      // Delete button (about to be torn down) as still "focused" and
-      // incorrectly skip updating the list to reflect the deletion. (2) by
-      // the time refreshCombatantList re-inserts editPanelMount inline, its
-      // own content (and tooltips) are already fresh, not stale-then-
-      // immediately-redone.
+      // refreshEditPanel BEFORE refreshCombatantList, not after: (1) its own
+      // teardown on deselect/delete removes whatever was focused BEFORE
+      // refreshCombatantList's "skip while focused" guard runs — reversed,
+      // that guard would see the just-deleted Delete button as still
+      // "focused" and skip updating the list. (2) by the time
+      // refreshCombatantList re-inserts editPanelMount, its content is already fresh.
       refreshEditPanel();
       refreshCombatantList();
     } else if (editPanelRefs) {
@@ -1927,15 +1635,10 @@ export function initCombatTrackerWidget(
       editPanelRefs = null;
     }
 
-    // Was unconditional every renderGm() call — i.e. every poll/sync tick,
-    // completely unrelated to conditions ever changing — which rebuilds the
-    // shared <datalist>'s own <option> elements out from under the browser
-    // while its native suggestion popup is open. Confirmed real bug: that's
-    // exactly what made the "Add a tag" autocomplete list keep disappearing
-    // mid-use. renderTagDatalist only actually needs to run again when
-    // state.conditions itself changed (see lastConditionsRendered's own
-    // comment) — everything else this function does each render is
-    // unrelated to what's IN that list.
+    // Was unconditional every renderGm() call, rebuilding the shared
+    // <datalist>'s <option> elements out from under the browser while its
+    // native suggestion popup was open — that's what made the "Add a tag"
+    // autocomplete list keep disappearing mid-use.
     if (state.conditions !== lastConditionsRendered) {
       renderTagDatalist(TAG_DATALIST_ID, state.conditions);
       lastConditionsRendered = state.conditions;
@@ -1943,10 +1646,7 @@ export function initCombatTrackerWidget(
     updateVisibilityAction();
   }
 
-  // A rough, numeric-free read on how hurt a non-PC combatant is — players
-  // never see a monster/NPC's actual HP numbers, just this. Full health
-  // renders no badge at all (nothing to report), matching the existing
-  // "only show temp HP when it's non-zero" convention elsewhere in this row.
+  // A rough, numeric-free read on how hurt a non-PC combatant is — players never see actual HP numbers, just this.
   function describeMonsterCondition(hp, maxHp) {
     if (hp <= 0) return "Unconscious";
     if (maxHp > 0 && hp / maxHp <= 0.5) return "Bleeding";
@@ -1954,15 +1654,11 @@ export function initCombatTrackerWidget(
     return "";
   }
 
-  // "Character 1"/"NPC 1"/"Monster 1" — reuses REF_KIND_LABELS (already the
-  // suite's own Character/NPC/Monster vocabulary, see buildCombatantEntries
-  // above) rather than a new label set. `hiddenCombatants` is every
-  // currently-hidden combatant in the encounter, in render order — N is this
-  // one's ordinal among just the others sharing its own kind, so two hidden
-  // Characters and one hidden Monster read "Character 1"/"Character 2"/
-  // "Monster 1", not sharing one counter across kinds. Computed fresh every
-  // render, never stored, same reasoning as everywhere else names get
-  // numbered in this suite.
+  // "Character 1"/"NPC 1"/"Monster 1" — reuses REF_KIND_LABELS.
+  // `hiddenCombatants` is every currently-hidden combatant, in render
+  // order — N is this one's ordinal among others sharing its kind, so two
+  // hidden Characters and one hidden Monster read "Character 1"/"Character
+  // 2"/"Monster 1", not one counter across kinds. Computed fresh every render, never stored.
   function anonymizedCombatantLabel(combatant, hiddenCombatants) {
     const kind = REF_KIND_LABELS[combatant.refKind] || "Monster";
     const ordinal = hiddenCombatants.filter((c) => (REF_KIND_LABELS[c.refKind] || "Monster") === kind).indexOf(combatant) + 1;
@@ -2004,10 +1700,7 @@ export function initCombatTrackerWidget(
     }
     root.appendChild(header);
 
-    // Needed for isCombatantHiddenFromPlayers below — see that function's
-    // own header comment for why player mode reads this live too, instead
-    // of a stored combatant.hidden field.
-    ensureActiveMapCached(() => render());
+    ensureActiveMapCached(() => render()); // needed for isCombatantHiddenFromPlayers below
     const list = el("div", "list-group");
     const hiddenCombatants = state.encounter.combatants.filter((c) => isCombatantHiddenFromPlayers(c));
     state.encounter.combatants.forEach((combatant, index) => {
@@ -2032,36 +1725,23 @@ export function initCombatTrackerWidget(
       if (encounterId) {
         await selectEncounter(encounterId);
         if (!state.encounter) {
-          // The deep-linked encounter (?encounter=<id> — see dashboard.js's
-          // own encounterParam) no longer exists, e.g. deleted since the
-          // link was made. selectEncounter already surfaced a toast; this
-          // just stops that same dead reference from re-triggering (and
-          // re-toasting) on every future reload of this same dashboard tab.
+          // The deep-linked encounter no longer exists. selectEncounter
+          // already surfaced a toast; this stops the dead reference from re-triggering on every future reload.
           const url = new URL(window.location.href);
           url.searchParams.delete("encounter");
           window.history.replaceState(null, "", url);
         }
       } else {
-        // Resume whatever's actually still being shown to the table, if
-        // anything — without this, a plain page refresh (no ?encounter=
-        // deep link) always started with NOTHING selected, even though the
-        // server-side spotlight itself is untouched by the GM's own browser
-        // reloading. Confirmed bug this fixes: after a refresh, the GM's own
-        // tracker showed "no active encounter" while the second screen (and
-        // every player's own dashboard, which both read the same spotlight,
-        // not this widget's local state) correctly kept showing the
-        // still-running encounter — the two views disagreeing about
-        // something that was never actually stopped.
+        // Resume whatever's still being shown to the table — without this,
+        // a plain page refresh always started with NOTHING selected, even
+        // though the server-side spotlight is untouched by reloading.
         const activeId = groupId
           ? await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }).catch(() => "")
           : "";
         if (activeId) {
           await selectEncounter(activeId);
-          // Confirmed via the spotlight resolution above — selectEncounter
-          // itself always resets this to false at its own start, since it
-          // has no way to know WHY an id was selected; this is the one
-          // caller that does know, because resolving to this id at all
-          // means it's currently being shown.
+          // selectEncounter always resets this to false, since it has no
+          // way to know WHY an id was selected — this caller does know, since resolving to this id means it's currently shown.
           if (state.encounter) state.announced = true;
         }
         render();
@@ -2077,25 +1757,13 @@ export function initCombatTrackerWidget(
   void init();
 
   return {
-    // No per-instance show/hide toggle of its own the way Clock/Calendar
-    // have (Combat Tracker is multiple: false — only one instance can ever
-    // exist on a dashboard at all) — always true once mounted. Needed
-    // purely so dashboard.js's own findActiveWidgetInstance("combat") can
-    // find this instance at all (its own isVisible gate, shared with Clock/
-    // Calendar/WLED/Soundboard) — see the "map" widget's own identical
-    // isVisible for the sibling half of this same cross-widget wiring.
+    // No per-instance show/hide toggle (Combat Tracker is multiple: false —
+    // only one instance can exist on a dashboard) — always true once
+    // mounted. Needed purely so dashboard.js's findActiveWidgetInstance("combat") can find this instance.
     isVisible: () => true,
-    // Called by the Map widget (via dashboard.js's own
-    // findActiveWidgetInstance("combat")) when its own map owner clicks a
-    // linked marker — selects the matching combatant here too, the same
-    // refKind+refId(+linkedCombatantId-when-ambiguous) matching
-    // map-viewer.js's own resolveMarkerLinkedCombatant already uses, just
-    // run against this widget's own live state.encounter instead of a
-    // fetched copy. GM mode only (a player has no business driving this
-    // widget's own selection from a marker click); no-op (returns false,
-    // not an error) when there's no encounter loaded, or no unambiguous
-    // match — same "absent rather than guessing" treatment the Linked
-    // Combatant picker itself already applies to the identical ambiguity.
+    // Called by the Map widget when its map owner clicks a linked marker —
+    // selects the matching combatant here too, same refKind+refId(+linkedCombatantId) matching as
+    // map-viewer.js's resolveMarkerLinkedCombatant. GM mode only; no-op when there's no encounter or no unambiguous match.
     selectCombatantByRef(refKind, refId, linkedCombatantId) {
       if (mode !== "gm" || !state.encounter) return false;
       const matches = state.encounter.combatants.filter(
@@ -2113,17 +1781,11 @@ export function initCombatTrackerWidget(
       return true;
     },
     // `removed` (dashboard.js's removeWidget passes true) — this instance's
-    // own "show to table" spotlight, if it announced one, needs clearing.
-    // Confirmed real bug this fixes: unlike handout.js/map.js/clocks.js
-    // (each keyed by a single per-instance `visible` flag this widget has
-    // no equivalent of — GM/player share the same widget shape here, mode
-    // decided live from groupContext.access, not a per-instance toggle),
-    // this widget never cleared its own spotlight on removal at all — a GM
-    // removing their Combat Tracker widget while an encounter was shown left
-    // that encounter permanently stuck "active" in the group log, with no
-    // way to turn it off short of a server-side fix. `state.announced`
-    // (set by showToTable/cleared by hideFromTable, GM mode only) is this
-    // widget's own equivalent of that missing `visible` flag.
+    // "show to table" spotlight, if announced, needs clearing. Unlike
+    // handout.js/map.js/clocks.js (each keyed by a per-instance `visible`
+    // flag), this widget never cleared its spotlight on removal at all — a
+    // GM removing Combat Tracker while an encounter was shown left it
+    // permanently stuck "active" in the group log. `state.announced` is this widget's equivalent of that missing flag.
     async destroy(removed) {
       state.destroyed = true;
       stopPolling();
@@ -2144,11 +1806,9 @@ export function initCombatTrackerWidget(
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
 // Standalone — no mounted Combat Tracker widget instance required. Each
 // call does its own fetch → mutate → save round trip against the real
-// "encounter" Library record (preferLocal:false, same reasoning the live
-// widget's own save/writeThroughToCharacter already document: this has to
-// see whatever's actually on the server right now, not a stale local
-// cache), rather than reusing the widget's own in-memory `state.encounter`
-// — there may be no live widget mounted anywhere on this dashboard at all.
+// "encounter" Library record (preferLocal:false — must see whatever's
+// actually on the server) rather than reusing `state.encounter`, since
+// there may be no live widget mounted at all.
 
 export const COMBAT_MACRO_ACTIONS = {
   advanceTurn: { label: "Advance turn", params: ["delta"] },
@@ -2162,10 +1822,7 @@ export const COMBAT_MACRO_ACTIONS = {
 
 // `target` is either a real encounter id, or "active" (the literal string)
 // — resolved dynamically via resolveActiveSpotlightId against whichever
-// encounter is currently spotlighted to the group, exactly like the
-// player-mode poll above already does. Never a specific widget instance id
-// — see macro-runner.js's own design notes on why Clock/Calendar can't do
-// the same and need Phase 2 instead.
+// encounter is currently spotlighted to the group, like the player-mode poll above.
 async function resolveMacroEncounterId(target, { dataManager, groupContext }) {
   const trimmed = (target || "").trim();
   if (trimmed && trimmed.toLowerCase() !== "active") return trimmed;

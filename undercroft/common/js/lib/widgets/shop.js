@@ -1,22 +1,17 @@
 // Dashboard "Shop" widget — the player-facing front end for
 // shop-transactions.js's own openShop/closeShop/buyFromShop/sellToShop. A
-// shop's live state is a Group Property (shop-transactions.js's own header
-// explains why), so this widget is mostly a thin, live-synced view over
-// that plus the GM-only Open/Close/treasury controls and a "Buying
-// for"/"Selling as" override any GM can use to act on behalf of an offline
-// player or the party — see this feature's own plan
-// (mellow-pondering-dijkstra.md) for the full reasoning.
+// shop's live state is a Group Property, so this widget is mostly a thin,
+// live-synced view over that plus GM-only Open/Close/treasury controls and
+// a "Buying for"/"Selling as" override a GM can use to act on behalf of an
+// offline player or the party.
 //
 // Which Location this instance shows is a per-widget-instance choice,
-// stored as `{followKind:"shop", followId:<locationId>}` — the exact same
-// shape dashboard.js's own acceptSpotlight hands a widget for any
-// INLINE_FOLLOW_KINDS kind (see that Set's own comment for why "shop" is
-// one), reused here as this widget's ONE contentRef shape regardless of
-// whether it was added by accepting a GM's spotlight or picked by hand from
-// the select below — so dashboard.js's own "is this already on my
-// dashboard"/"remove when un-spotlighted" matching (isSpotlightItemOnMyDashboard/
-// removeSpotlightItemFromDashboard) recognizes a manually-added instance
-// too, not only an accepted one.
+// stored as `{followKind:"shop", followId:<locationId>}` — the same shape
+// dashboard.js's acceptSpotlight hands any INLINE_FOLLOW_KINDS widget,
+// reused here as this widget's ONE contentRef shape regardless of whether
+// it was added by accepting a GM's spotlight or picked by hand from the
+// select below, so dashboard.js's own dashboard-membership matching
+// recognizes a manually-added instance too, not only an accepted one.
 import { el, setElementVisible } from "../dom.js";
 import { fetchKindEntriesWithIds } from "../content-fetch.js";
 import { createReferenceChip } from "../library-reference.js";
@@ -80,31 +75,22 @@ export function initShopWidget(
   let latestPropertyValues = {}; // the shop's own group's full propertyValues, refreshed alongside currentShop — .currencies is the party wallet
   let buyerCurrency = null; // {[shortName]: amount} for whoever "Buying for" currently resolves to, or null while unresolved
   // The same "how did the PC's haggling check go" lever the Dashboard's
-  // own Item Price calculator offers (PRICE_CHECK_TIERS) — ONE shared
-  // pick for the whole shop (not per-item: a haggling roll covers the
-  // whole exchange with this merchant, not one item at a time), affecting
-  // both what a buyer pays (applyBuyCheckTier, shop-transactions.js) and
-  // what a seller receives (rollItemPrices' own sellMultiplier). "none" —
-  // no check rolled — is the byte-identical default every price already
-  // had before this existed.
+  // Item Price calculator offers — ONE shared pick for the whole shop, not
+  // per-item, affecting both what a buyer pays and what a seller receives.
+  // "none" is the byte-identical default every price had before this existed.
   let checkTierId = "none";
-  // Sell prices are a real roll (rollItemPrices), not deterministic — this
-  // caches each item's own rolled price so it stays STABLE and visible up
-  // front across the frequent re-renders any shop-wide change triggers
-  // (another player's purchase, a live-sync tick, ...), only re-rolling
-  // when the thing that would actually change the roll changes: which
-  // item, the shared check tier, or (for an unresolved item) which rarity
-  // the GM manually picked. Cleared whenever "Selling as" changes, since a
-  // different seller's own item at the same list index isn't the same item.
+  // Sell prices are a real roll (rollItemPrices), not deterministic — cached
+  // per item so it stays stable across the frequent re-renders any
+  // shop-wide change triggers, only re-rolling when the item, shared check
+  // tier, or manually-picked rarity actually changes. Cleared whenever
+  // "Selling as" changes, since a different seller's item at the same list
+  // index isn't the same item.
   let sellQuoteCache = new Map();
-  // The GM's own manual-rarity pick for an item with no reference of its
-  // own to auto-price from (sellToShop's own tier 3) — keyed by item, NOT
-  // by check tier (unlike sellQuoteCache above, a manual rarity choice is
-  // independent of how the haggle roll went). refreshSellInventory rebuilds
-  // every row's own <select> from scratch on every re-render (any shop-wide
-  // change triggers one), so without this the GM's own pick would silently
-  // revert to blank the next time anything else happened in the shop —
-  // confirmed real, reported bug this fixes.
+  // The GM's own manual-rarity pick for an item with no reference to
+  // auto-price from — keyed by item, not check tier. refreshSellInventory
+  // rebuilds every row's <select> from scratch on every re-render, so
+  // without this the pick would silently revert to blank the next time
+  // anything else happened in the shop.
   let manualRaritySelections = new Map();
 
   container.innerHTML = "";
@@ -168,12 +154,9 @@ export function initShopWidget(
   statusRow.append(statusLabel, closeButton);
 
   // --- PC's check (GM-only, applies to both Buy and Sell) --------------
-  // One shared pick, not per-item — a haggling roll covers the whole
-  // exchange with this merchant, the same way the Dashboard's own Item
-  // Price calculator treats it as one roll per calculation. GM-only, same
-  // gate as "Buying for"/"Selling as" — letting a player freely dial their
-  // own discount up with no oversight defeats the point of it being a
-  // roll at all.
+  // One shared pick, not per-item. GM-only, same gate as "Buying for"/
+  // "Selling as" — letting a player freely dial their own discount up with
+  // no oversight defeats the point of it being a roll at all.
   const checkTierRow = el("div", "d-flex align-items-center gap-2");
   checkTierRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "PC's check"));
   const checkTierSelect = document.createElement("select");
@@ -256,9 +239,8 @@ export function initShopWidget(
     if (shopLocations.some((location) => location.id === config.followId)) {
       locationSelect.value = config.followId;
     } else if (shopLocations.length === 1) {
-      // A single shop-tagged Location is the overwhelmingly common case for
-      // a campaign — auto-selecting it means the GM never has to touch this
-      // picker just to add the widget.
+      // The common case — auto-selecting the only shop-tagged Location
+      // means the GM never has to touch this picker just to add the widget.
       locationSelect.value = shopLocations[0].id;
       persistConfig({ followId: shopLocations[0].id });
     }
@@ -301,10 +283,9 @@ export function initShopWidget(
   }
 
   // The active System's own "currency" field (same Array-field convention
-  // extractSystemDice/extractSystemRolls use for dice/moves) — cp/sp/ep/gp/
-  // pp for sys.dnd5e, whatever a different System defines otherwise. Shared
-  // with shop-transactions.js's own affordability/payment conversion
-  // (currency.js) — one loader, not two copies that could drift apart.
+  // extractSystemDice/extractSystemRolls use). Shared with
+  // shop-transactions.js's own affordability/payment conversion (currency.js)
+  // — one loader, not two copies that could drift apart.
   async function loadCurrencyDenominations() {
     const systemId = groupContext?.systemId;
     if (!dataManager || !systemId) return;
@@ -312,10 +293,9 @@ export function initShopWidget(
   }
 
   // Resolves the {type:"character",characterId,label}|{type:"party"}|null
-  // recipient shape buyFromShop/sellToShop's own recipient param expects,
-  // from whichever "Buying for"/"Selling as" select is currently showing —
-  // null (no override) for a non-GM, always resolving to their own
-  // character exactly as before this feature existed.
+  // recipient shape buyFromShop/sellToShop expect, from whichever "Buying
+  // for"/"Selling as" select is showing — null for a non-GM, always
+  // resolving to their own character.
   function resolveRecipient(selectEl) {
     if (!isGm) return null;
     const value = selectEl.value;
@@ -325,11 +305,10 @@ export function initShopWidget(
     return { type: "character", characterId: value, label: entry?.label || value };
   }
 
-  // Mirrors buyFromShop's own payFromParty resolution exactly (shop-
-  // transactions.js) — an explicit recipient always wins, absent one the
-  // shop's own default currency mode decides, so the currency line/
-  // afford-ability check below always reflects who will ACTUALLY be
-  // charged, never a guess.
+  // Mirrors buyFromShop's own payFromParty resolution exactly — an explicit
+  // recipient always wins, absent one the shop's default currency mode
+  // decides, so the currency line/affordability check always reflects who
+  // will actually be charged, never a guess.
   function resolvePayer() {
     const recipient = resolveRecipient(buyForSelect);
     if (recipient?.type === "party") return { type: "party" };
@@ -417,22 +396,19 @@ export function initShopWidget(
 
   // --- Buy ----------------------------------------------------------------
 
-  // Mirrors shop-transactions.js's own applyBuyCheckTier exactly (same
-  // multiplier, same rounding) — client-side, so what's shown here is
-  // always the exact number buyFromShop will actually charge, not a
+  // Mirrors shop-transactions.js's own applyBuyCheckTier exactly — what's
+  // shown here is always the exact number buyFromShop will charge, not a
   // separate estimate that could drift from it.
   function applyBuyCheckTierClient(amount) {
     const tier = PRICE_CHECK_TIERS.find((entry) => entry.id === checkTierId) || PRICE_CHECK_TIERS.find((entry) => entry.id === "none");
     return roundPrice(amount * tier.buyMultiplier);
   }
 
-  // Every input this render actually depends on, in one string — renderAll
-  // calls this on EVERY live-sync tick (any change anywhere in the group,
-  // most of which have nothing to do with this shop at all), and a full
-  // innerHTML rebuild on each one was confirmed to reset scroll position
-  // mid-browse — annoying, and pointless when nothing about the Buy list
-  // itself actually changed. Skipping the rebuild entirely when this
-  // signature matches the last one fixes both: no rebuild, no scroll jump.
+  // Every input this render depends on, in one string — renderAll calls
+  // this on every live-sync tick (most of which have nothing to do with
+  // this shop), and a full innerHTML rebuild on each one resets scroll
+  // position mid-browse. Skipping the rebuild when the signature matches
+  // fixes both.
   let lastBuyRenderSignature = null;
   function renderBuyItems() {
     const items = Array.isArray(currentShop?.items) ? currentShop.items : [];
@@ -456,10 +432,9 @@ export function initShopWidget(
       nameWrap.style.textOverflow = "ellipsis";
       nameWrap.appendChild(createReferenceChip({ kind: item.refKind, id: item.refId, name: item.label, dataManager }));
       row.appendChild(nameWrap);
-      // A GM can hand-adjust an already-open item's price directly here
-      // (setShopItemPrice) — openShop's own rarity/dice-expression roll is
-      // only ever a starting suggestion, never permanent. A player just
-      // sees the current price as plain text, same as before.
+      // A GM can hand-adjust an already-open item's price directly here —
+      // openShop's own rarity/dice-expression roll is only ever a starting
+      // suggestion, never permanent. A player sees plain text.
       if (isGm) {
         const priceInput = document.createElement("input");
         priceInput.type = "number";
@@ -512,11 +487,8 @@ export function initShopWidget(
       const denom = item.price?.denomination || "gp";
       // Affordability is about TOTAL VALUE, not this one denomination — a
       // buyer with plenty of silver but no gold could still afford a
-      // gold-priced item (currency.js's own header explains why). Falls
-      // back to comparing just this denomination when the System has no
-      // "currency" field to convert with at all — currencyDenominations
-      // empty means priceBaseUnits/ownedBaseUnits both collapse to the
-      // exact same single-denomination comparison as before.
+      // gold-priced item. Falls back to comparing just this denomination
+      // when the System has no "currency" field to convert with.
       const priceDenoms = currencyDenominations.length ? currencyDenominations : [{ shortName: denom, cost: 1 }];
       const priceBaseUnits = amount * (priceDenoms.find((d) => d.shortName === denom)?.cost || 1);
       const ownedBaseUnits = buyerCurrency ? currencyToBaseUnits(buyerCurrency, priceDenoms) : null;
@@ -577,21 +549,14 @@ export function initShopWidget(
   // Resolves (from cache, or a fresh quoteSaleToShop call) and displays the
   // EXACT price this item would sell for right now — never a range. Cached
   // by (seller, item, check tier, manual rarity) so it stays stable across
-  // the frequent re-renders any shop-wide change triggers, and only rolls
-  // again when one of those actually changes. Called once per row at
-  // build time for an auto-priceable item, and again from the manual
-  // rarity picker's own change handler for one that isn't. `wrap` is the
-  // Sell button's own persistent tooltip-trigger wrapper (see its own
-  // creation comment below), passed through to setDisabledTooltip's
-  // `wrapper` option so a later re-resolve can freely toggle the tooltip
-  // on/off without re-parenting the button in and out of it — priceDisplay
-  // stays short (just the price, or a bare "—") with the actual REASON
-  // living in that tooltip instead, not as a long, ever-present sentence
-  // that only shrinks once a price finally appears.
-  // Sets the Sell button's own disabled/tooltip state directly, no quote
-  // involved — for the two cases known up front with no point attempting
-  // one (nothing sellable in this System at all, or a non-GM viewer who
-  // can't pick a rarity anyway).
+  // frequent re-renders, only rolling again when one of those changes.
+  // `wrap` is the Sell button's persistent tooltip-trigger wrapper, so a
+  // later re-resolve can toggle the tooltip without re-parenting the
+  // button — priceDisplay stays short with the actual reason in the
+  // tooltip instead.
+  // Sets the Sell button's disabled/tooltip state directly, no quote
+  // involved — for the two cases known up front (nothing sellable in this
+  // System, or a non-GM viewer who can't pick a rarity anyway).
   function setSellUnresolved(priceDisplay, sellButton, wrap, reason) {
     priceDisplay.textContent = "—";
     setDisabledTooltip(sellButton, reason, { wrapper: wrap });
@@ -608,17 +573,10 @@ export function initShopWidget(
         });
         sellQuoteCache.set(cacheKey, quote);
       } catch (error) {
-        // Always the real thrown reason, never a generic placeholder — this
-        // function is only ever called with a genuine resolution attempt
-        // already underway (a stamped reference, or a GM's own picked
-        // rarity — the caller's own "nothing picked yet" case bypasses this
-        // function entirely, going straight to setSellUnresolved itself).
-        // Confirmed real, reported bug this fixes: a REFERENCED item whose
-        // own rarity data failed to resolve (a hand-authored Wonder record
-        // with rarity misplaced outside `properties`) showed the same
-        // generic "Pick a rarity to price this." a referenced item has no
-        // picker to act on at all, with no way to tell what actually went
-        // wrong short of digging through the data by hand.
+        // Always the real thrown reason, never a generic placeholder — a
+        // referenced item has no picker to fall back on, so without this a
+        // failed auto-price (e.g. rarity data misplaced on the record) gave
+        // no way to tell what actually went wrong.
         setSellUnresolved(priceDisplay, sellButton, wrap, error.message);
         return;
       }
@@ -627,15 +585,10 @@ export function initShopWidget(
     setDisabledTooltip(sellButton, "", { wrapper: wrap });
   }
 
-  // Same "skip the rebuild if nothing actually changed" reasoning as
-  // renderBuyItems' own lastBuyRenderSignature — refreshSellInventory
-  // fires on every live-sync tick too (renderAll's own unconditional call
-  // whenever the shop is open), and rebuilding a scrolled list every time
-  // regardless of whether this seller's own inventory moved was the other
-  // confirmed source of the same scroll-reset complaint. The fetch itself
-  // still has to happen (there's no way to know it's unchanged without
-  // it) — this only skips the DOM rebuild once the fetch confirms nothing
-  // relevant to display actually differs.
+  // Same signature-skip reasoning as renderBuyItems' own
+  // lastBuyRenderSignature — the fetch still has to happen, but the DOM
+  // rebuild (and its scroll-reset) is skipped once the fetch confirms
+  // nothing relevant to display actually changed.
   let lastSellRenderSignature = null;
   async function refreshSellInventory() {
     sellTargetCharacterId = await resolveSellTargetCharacterId();
@@ -693,10 +646,8 @@ export function initShopWidget(
         rarityFallback.appendChild(option);
       });
       // Restores the GM's own prior pick for THIS item — refreshSellInventory
-      // rebuilds this <select> from scratch on every re-render (any
-      // shop-wide change triggers one), so without this it would silently
-      // revert to blank the moment anything else happened in the shop
-      // (confirmed real, reported bug this fixes).
+      // rebuilds this <select> from scratch on every re-render, so without
+      // this it would silently revert to blank on any unrelated shop change.
       const restoredRarityId = manualRaritySelections.get(manualRarityKey) || "";
       if (restoredRarityId && rarityRanges.some((range) => range.id === restoredRarityId)) {
         rarityFallback.value = restoredRarityId;
@@ -704,21 +655,18 @@ export function initShopWidget(
       setElementVisible(rarityFallback, !isReferenced && isGm && rarityRanges.length > 0, "inline-block");
       row.appendChild(rarityFallback);
 
-      // The EXACT price (rollItemPrices' own roll, not a range) — resolved
-      // and cached by resolveAndShowSellQuote, never re-rolled just from
-      // this row re-rendering. Kept short (just the number, or a bare
-      // "—") — the reason it's unresolved lives in the Sell button's own
-      // tooltip instead (see setSellUnresolved), not this text.
+      // The EXACT price (a real roll, not a range) — resolved and cached
+      // by resolveAndShowSellQuote, never re-rolled just from a re-render.
+      // Kept short — the reason it's unresolved lives in the Sell button's
+      // own tooltip instead (see setSellUnresolved).
       const priceDisplay = el("span", "small text-body-secondary text-nowrap", "—");
       row.appendChild(priceDisplay);
       const sellButton = el("button", "btn btn-outline-secondary btn-sm", "Sell");
       sellButton.type = "button";
       sellButton.disabled = true;
-      // setDisabledTooltip's `wrapper` option (see resolveAndShowSellQuote/
-      // setSellUnresolved above) takes this wrapper as-is instead of
-      // auto-creating/removing its own — kept always present, not just
-      // while disabled, so a later re-resolve can freely toggle the
-      // tooltip on/off without re-parenting the button in and out of it.
+      // setDisabledTooltip's `wrapper` option takes this wrapper as-is
+      // instead of auto-creating/removing its own — kept always present so
+      // a later re-resolve can toggle the tooltip without re-parenting.
       const sellButtonWrap = el("span", "d-inline-block");
       sellButtonWrap.tabIndex = 0;
       sellButtonWrap.appendChild(sellButton);
@@ -750,12 +698,9 @@ export function initShopWidget(
         sellButton.disabled = true;
         try {
           // "Sell" only ever moves ONE unit — a stack of 10 Rations needs
-          // that spelled out explicitly (confirmed real confusion: nothing
-          // in the old single-button copy said so), and offers "Sell All"
-          // as a genuine third choice rather than making a GM click Sell
-          // ten separate times. Only shown at all once there's more than
-          // one to sell — for a single unit "Sell All" would just be a
-          // second, redundant button doing the exact same thing.
+          // that spelled out explicitly, and offers "Sell All" as a genuine
+          // third choice rather than clicking Sell ten times. Only shown
+          // once there's more than one to sell.
           const ownedQuantity = Number.isFinite(item.quantity) ? item.quantity : 1;
           const unitPriceText = formatPriceAmount(quote.price, quote.denomination, currencyDenominations);
           const bodyHtml =
@@ -804,9 +749,9 @@ export function initShopWidget(
     refreshTooltips(sellItemsWrap);
   }
   sellAsSelect.addEventListener("change", () => {
-    // Both keyed by sellTargetCharacterId already, so this isn't strictly
-    // required for correctness — just avoids the two Maps growing
-    // unbounded across a long session of switching between many sellers.
+    // Not strictly required for correctness (both Maps are already keyed
+    // by sellTargetCharacterId) — just avoids unbounded growth across a
+    // long session of switching between many sellers.
     sellQuoteCache.clear();
     manualRaritySelections.clear();
     void refreshSellInventory();
@@ -837,11 +782,9 @@ export function initShopWidget(
     }
     if (isOpen) {
       setElementVisible(buyForRow, isGm, "flex");
-      // The Party is always offered, not only when this shop's own default
-      // currency mode is "party" — buyFromShop's own payFromParty now
-      // respects an explicit Party pick regardless of the shop's default
-      // (see that function's own comment), so this select's own options
-      // should reflect that it's always a real, working choice.
+      // The Party is always offered, not only when this shop's default
+      // currency mode is "party" — buyFromShop's payFromParty respects an
+      // explicit Party pick regardless of the shop's default.
       populateRosterSelect(buyForSelect, { includeParty: true });
       renderBuyItems();
       void refreshBuyerCurrency();
@@ -865,13 +808,10 @@ export function initShopWidget(
   // --- Show to table (eye icon) -------------------------------------------
   //
   // Same direct spotlightToGroup/clearSpotlight toggle Map's own visibility
-  // button uses (see that widget's own comment) — the only real difference
-  // is `contentType`/`kind` is the synthetic "shop" (see this widget's own
-  // header) rather than a real Library kind, since a shop isn't its own
-  // Library record — the Location it's built from already is one. This is
-  // what actually gets a Shop widget onto a player's own dashboard: without
-  // ever toggling this, only the GM who manually added this instance can
-  // see it at all.
+  // button uses — the only difference is `contentType`/`kind` is the
+  // synthetic "shop" rather than a real Library kind, since a shop isn't
+  // its own Library record. Without toggling this, only the GM who
+  // manually added this instance can see it at all.
   function updateVisibilityAction() {
     if (!canToggleVisibility) return;
     setRightAction?.({
@@ -902,13 +842,10 @@ export function initShopWidget(
         await dataManager.clearSpotlight({ groupId, kind: "shop", id: config.followId });
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } else {
-        // skipShare: true — "shop" isn't a real Library kind (there's
-        // nothing to grant edit/view access to; the Location it's built
-        // from is already independently readable via feat.shop's own
-        // presence, and its live state is the campaign Group's own
-        // property, which every member can already read), same as every
-        // other INLINE_FOLLOW_KINDS widget's own spotlightToGroup call
-        // (clocks.js/browser.js/calendar.js/soundboard.js).
+        // skipShare: true — "shop" isn't a real Library kind (nothing to
+        // grant access to; its live state is the campaign Group's own
+        // property, already readable by every member), same as every
+        // other INLINE_FOLLOW_KINDS widget's spotlightToGroup call.
         await dataManager.spotlightToGroup({ groupId, contentType: "shop", contentId: config.followId, skipShare: true });
         status?.show("Showing to the table.", { type: "success", timeout: 2000 });
       }

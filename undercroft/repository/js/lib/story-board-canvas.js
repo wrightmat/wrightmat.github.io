@@ -1,29 +1,25 @@
 // The interactive visual editor for a Story Board (journal-story-board.js's
 // own parsed model) — a GM-constructed planning surface, not something
-// derived from other content (see that file's own header comment, and
-// relationships-graph.js's own explicit boundary: this canvas's own
-// nodes/edges never leak into Relationships until a placeholder gets
-// promoted into real, separately-linked content).
+// derived from other content (see relationships-graph.js's own explicit
+// boundary: this canvas's nodes/edges never leak into Relationships until a
+// placeholder gets promoted into real, separately-linked content).
 //
-// Two layout modes over the SAME node data — every node carries both a
-// free {x, y} position (freeform) and an optional {lane, stage} assignment
-// (swimlane); switching modes just changes which fields drive rendering,
-// never touches the other. Freeform reuses common/js/lib/pan-zoom.js
-// directly for the corkboard's own pan/zoom; node drag is self-contained
-// pointerdown/move/up handling (not a separate "click" listener after the
-// fact) — same lesson graph-view.js's own node-click bug already taught
-// this suite: PanZoomController's container calls setPointerCapture on
-// every pointerdown regardless of target, so a node's own pointerdown must
-// stopPropagation before that ever happens, whether or not a real drag
-// follows.
+// Two layout modes over the SAME node data — every node carries both a free
+// {x, y} position (freeform) and an optional {lane, stage} assignment
+// (swimlane); switching modes just changes which fields drive rendering.
+// Freeform reuses common/js/lib/pan-zoom.js directly for the corkboard's own
+// pan/zoom; node drag is self-contained pointerdown/move/up handling (not a
+// separate "click" listener after the fact) — PanZoomController's container
+// calls setPointerCapture on every pointerdown regardless of target, so a
+// node's own pointerdown must stopPropagation before that happens, whether
+// or not a real drag follows.
 //
 // Every edit calls back through `onMutate(mutateFn)` — a PURE function
-// `(model) => nextModel`, the exact same shape journal-story-board.js's own
-// updateStoryBoardInPage expects, applied here for immediate local
-// feedback AND handed to the caller (repository/js/app.js) to apply
-// against a freshly re-parsed copy of the persisted page body, so local
-// and persisted state can never diverge from applying two different
-// transforms.
+// `(model) => nextModel`, the exact shape journal-story-board.js's
+// updateStoryBoardInPage expects, applied here for immediate local feedback
+// AND handed to the caller (repository/js/app.js) to apply against a
+// freshly re-parsed copy of the persisted page body, so local and persisted
+// state can never diverge from applying two different transforms.
 import { el } from "../../../common/js/lib/dom.js";
 import { PanZoomController } from "../../../common/js/lib/pan-zoom.js";
 import { resolveColor } from "./journal-callouts.js";
@@ -32,9 +28,9 @@ import { refreshTooltips, disposeTooltips } from "../../../common/js/lib/tooltip
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 // Also hardcoded as `.story-board-content`'s own fixed width/height in
-// styles.css (see that rule's own comment for why it has to be a real
-// fixed size, not 100%) — change both together, or the SVG edge layer and
-// the plain-HTML card layer stop agreeing on where a given x/y actually is.
+// styles.css (that rule has its own note on why it must be fixed, not
+// 100%) — change both together, or the SVG edge layer and the plain-HTML
+// card layer stop agreeing on where a given x/y actually is.
 const CANVAS_W = 1000;
 const CANVAS_H = 700;
 const DEFAULT_ZOOM = 1.2;
@@ -53,9 +49,8 @@ function randomId() {
 }
 
 // HTML `id` attributes can't contain whitespace — a node's own `id` is a
-// free-text display label (e.g. "Find the Merchant"), so every DOM id this
-// module derives from one needs slugifying first, not just string-
-// concatenated as-is.
+// free-text display label, so every DOM id derived from one needs slugifying
+// first, not just string-concatenated as-is.
 function domIdFor(prefix, nodeId) {
   const slug = String(nodeId || "")
     .toLowerCase()
@@ -64,9 +59,8 @@ function domIdFor(prefix, nodeId) {
   return `${prefix}-${slug || randomId()}`;
 }
 
-// --- Pure model mutations — each one handed BOTH to local state and to
-// the caller's own updateStoryBoardInPage call, see this file's own header
-// comment for why that's the one thing every mutation here must stay. ---
+// --- Pure model mutations — each handed BOTH to local state and to the
+// caller's own updateStoryBoardInPage call (see this file's own header). ---
 
 function withNodePosition(id, x, y) {
   return (model) => ({ ...model, nodes: model.nodes.map((node) => (node.id === id ? { ...node, x, y } : node)) });
@@ -108,28 +102,20 @@ function withStages(stages) {
   return (model) => ({ ...model, stages });
 }
 
-// `container` — an empty element this owns entirely (wiped/rebuilt on
-// every render). `model` — journal-story-board.js's own parsed shape.
-// `onMutate(mutateFn)` — see this file's own header comment.
-// `resolveRef(ref) => {label, icon}|null` — optional; lets the caller
-// resolve a node's own Ref cell against real Library/quest data for
-// display (icon, a friendlier label) without this module needing a
-// dataManager of its own. `openRefPicker() => Promise<string|null>` —
-// optional; opens whatever kind+entity picker the caller already has
-// (Handout's own convention) and resolves to a new `kindId:Name` ref
-// string, or null if cancelled — used by the node inspector's own
-// "Promote to real content" and "Change reference" actions.
-// `modeSlot` — optional; the reserved `.callout-mode-slot` element
-// markdown.js's own applyCalloutStyling builds into EVERY callout's title
-// bar (generic, not story-board-specific — see that function's own
-// comment). When given, the Corkboard/Swimlane View toggle
-// (ui-components.js's own createCycleToggleButton — a single cycling
-// button, the suite-wide View shape, NOT the two-button check-group this
-// used before) mounts there instead of inside this module's own internal
-// toolbar, which then keeps only "Add node." Omitted, the toggle falls
-// back to living in the internal toolbar (keeps this function usable
-// standalone, without requiring a caller to also thread a title-bar slot
-// through).
+// `container` — an empty element this owns entirely (wiped/rebuilt on every
+// render). `model` — journal-story-board.js's own parsed shape. `onMutate` —
+// see this file's own header. `resolveRef(ref) => {label, icon}|null` —
+// optional; resolves a node's Ref cell against real Library/quest data for
+// display without this module needing a dataManager of its own.
+// `openRefPicker() => Promise<string|null>` — optional; opens whatever
+// kind+entity picker the caller already has and resolves to a new
+// `kindId:Name` ref string, used by the node inspector's "Promote to real
+// content"/"Change reference" actions. `modeSlot` — optional; the reserved
+// `.callout-mode-slot` element markdown.js's applyCalloutStyling builds into
+// every callout's title bar. When given, the Corkboard/Swimlane toggle
+// mounts there instead of this module's own internal toolbar (which then
+// keeps only "Add node"). Omitted, the toggle falls back to the internal
+// toolbar, keeping this function usable standalone.
 export function mountStoryBoard(container, { model, onMutate, resolveRef, openRefPicker, status, modeSlot } = {}) {
   if (!container) return { update() {}, destroy() {} };
 
@@ -148,19 +134,15 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     return currentModel.nodes.find((node) => node.id === id) || null;
   }
 
-  // The suite-wide View control (ui-components.js's own
-  // createCycleToggleButton) — ONE button cycling between Swimlane and
-  // Corkboard, icon+tooltip only, describing what clicking switches TO.
-  // Mounts into `modeSlot` (the callout's own title bar) when given,
-  // otherwise falls back into this module's own internal toolbar — either
-  // way this is the SAME rebuild-fresh-on-every-render() function, just
-  // appended to a different host.
+  // The suite-wide View control (ui-components.js's createCycleToggleButton)
+  // — one button cycling Swimlane/Corkboard, icon+tooltip only. Mounts into
+  // `modeSlot` when given, otherwise into this module's own internal
+  // toolbar — either way the same rebuild-fresh-on-every-render() function.
   function renderLayoutModeToggle() {
     // Swimlane first — a saved board's own layoutMode (Swimlane for
     // anything hand-authored with Lanes/Stages already filled in) is the
-    // more common initial state, so the toggle offers switching TO
-    // Corkboard first when starting from Swimlane, matching how a GM is
-    // more likely to actually use this.
+    // more common starting state, so the toggle offers switching TO
+    // Corkboard first.
     return createCycleToggleButton({
       states: [
         {
@@ -181,19 +163,17 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     });
   }
 
-  // --- Toolbar ---------------------------------------------------------
-  // Sits directly above the node canvas/grid only (see render() below,
-  // which nests this inside the same column as the stage — not the whole
-  // card), so "Add node" pushed to the right edge here lands above the
+  // --- Toolbar — sits directly above the node canvas/grid only (see
+  // render() below, nested inside the same column as the stage, not the
+  // whole card), so "Add node" pushed to the right edge lands above the
   // nodes themselves, not above the inspector panel too.
   function renderToolbar() {
     const bar = el("div", "d-flex align-items-center gap-2 flex-wrap mb-2");
     if (!modeSlot) bar.appendChild(renderLayoutModeToggle());
 
-    // Add Lane/Add Stage moved OUT of this toolbar entirely — see
-    // renderSwimlane's own `+` cells at the actual edge of the grid they
-    // each extend, rather than a pair of buttons here that only made sense
-    // in one of the two modes.
+    // Add Lane/Add Stage live as `+` cells at the actual edge of the grid
+    // they extend (see renderSwimlane), not as buttons here — those only
+    // made sense in one of the two modes.
     bar.appendChild(
       createIconButton({
         icon: "tabler:square-plus",
@@ -219,7 +199,7 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     return `${base} ${index}`;
   }
 
-  // --- Node card (shared look, different positioning per mode) --------
+  // --- Node card (shared look, different positioning per mode) ----------
   function nodeCardColor(node) {
     return node.color ? resolveColor(node.color) : null;
   }
@@ -231,15 +211,11 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     const color = nodeCardColor(node);
     if (color) {
       card.style.borderColor = color.value;
-      // Two layered background properties, not one `rgba(..., 0.12)` shorthand
-      // — that alone left the WHOLE card only 12% opaque, letting an edge
-      // line rendered behind it (see the edge/card z-index split above)
-      // show straight through — confirmed real bug: every colored node had
-      // this, uncolored ones (opaque `--bs-body-bg` from the base CSS rule)
-      // never did, exactly matching "only some boxes have lines above them".
-      // background-image (the tint, still translucent) paints OVER
-      // background-color (a fully opaque base), so the composite stays
-      // 100% opaque while the color accent still reads correctly.
+      // Two layered background properties, not one `rgba(..., 0.12)`
+      // shorthand — that left the WHOLE card only 12% opaque, letting an
+      // edge line rendered behind it show through. background-image (the
+      // tint, translucent) paints OVER background-color (fully opaque), so
+      // the composite stays 100% opaque while the color accent still reads.
       card.style.backgroundColor = "var(--bs-body-bg)";
       card.style.backgroundImage = `linear-gradient(rgba(${color.rgbValue}, 0.12), rgba(${color.rgbValue}, 0.12))`;
     }
@@ -265,13 +241,10 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
   // both inside the same pan-zoom content div so they pan/zoom together.
   function renderFreeform(host) {
     // Every drag/add/remove goes through applyMutation -> render(), which
-    // tears this whole stage down and rebuilds it from scratch — a FRESH
-    // PanZoomController every time, always re-seeded from DEFAULT_ZOOM,
-    // silently threw away whatever pan/zoom the GM had actually set the
-    // moment they finished dragging a single node. Capturing the outgoing
-    // controller's own current view (before it's replaced) and reusing it
-    // as the new one's starting view is what actually persists it —
-    // confirmed real bug, not just a rebuild-is-expensive concern.
+    // tears this stage down and rebuilds it — a FRESH PanZoomController
+    // every time. Capturing the outgoing controller's current view (before
+    // it's replaced) and reusing it as the new one's starting view is what
+    // persists the GM's own pan/zoom across a single node drag.
     const previousView = panZoom?.getView();
     const stage = el("div", "story-board-stage");
     const content = el("div", "story-board-content");
@@ -290,8 +263,8 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     });
     stage.addEventListener("pointerdown", (event) => {
       // A click on empty canvas (not a node) clears selection — the stage
-      // itself still needs to receive this event for panning, so this
-      // deliberately does NOT stopPropagation.
+      // itself still needs this event for panning, so this deliberately
+      // does NOT stopPropagation.
       if (event.target === stage || event.target === content) {
         selectedNodeId = null;
         render();
@@ -340,9 +313,8 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
 
   // Self-contained pointerdown/move/up — click-vs-drag is decided entirely
   // within this sequence (a small movement threshold), never a separate
-  // "click" listener depending on the browser's own synthesized click
-  // surviving the container's own pointer capture (see this file's own
-  // header comment).
+  // "click" listener depending on the browser's synthesized click surviving
+  // the container's own pointer capture (see this file's own header).
   function wireFreeformDrag(card, node, repositionEdges) {
     let dragging = false;
     let moved = false;
@@ -390,18 +362,16 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
   }
 
   // --- Swimlane mode: a plain CSS grid, node cards placed by lane/stage.
-  // Every cell's own grid-row/grid-column is set EXPLICITLY (not left to
-  // CSS Grid's implicit row-wrapping auto-flow) — auto-flow only keeps
-  // columns aligned when every row contributes exactly the same number of
-  // cells, which the Add Lane/Add Stage `+` cells below break (each only
-  // ever occupies ONE cell, not a full row/column), so explicit placement
-  // is the only way to keep the header/cell grid itself honest regardless.
+  // Every cell's grid-row/grid-column is set EXPLICITLY, not left to CSS
+  // Grid's implicit row-wrapping auto-flow — auto-flow only keeps columns
+  // aligned when every row contributes the same cell count, which the Add
+  // Lane/Add Stage `+` cells break (each occupies only ONE cell, not a
+  // whole row/column).
   function renderSwimlane(host) {
     const lanes = currentModel.lanes.length ? currentModel.lanes : ["(No lane)"];
     const stages = currentModel.stages.length ? currentModel.stages : ["(No stage)"];
     // +1 for the lane-header column, +1 for the trailing Add Stage column;
-    // same shape for rows, +1 for the stage-header row, +1 for the
-    // trailing Add Lane row.
+    // same shape for rows.
     const totalCols = 2 + stages.length;
     const totalRows = 2 + lanes.length;
     const grid = el("div", "story-board-swimlane");
@@ -413,20 +383,16 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
       node.style.gridColumn = String(col);
       grid.appendChild(node);
     }
-    // A plain, body-colored cell for every position the grid's own explicit
-    // template creates but nothing actually occupies (the rest of the Add
-    // Stage column below its own button, the rest of the Add Lane row
-    // beside its own button) — without these, that space stays fully
-    // unfilled and shows the grid container's own hairline-gap background
-    // color as a solid stripe instead of blending in.
+    // A plain, body-colored cell for every grid position the explicit
+    // template creates but nothing occupies — without these, that space
+    // shows the grid's own hairline-gap background as a solid stripe.
     function filler(row, col) {
       place(el("div", "story-board-swimlane-filler"), row, col);
     }
 
     place(el("div", "story-board-swimlane-corner"), 1, 1);
-    // Stage-row vs. lane-column headers need their own modifier class (not
-    // just the shared `.story-board-swimlane-header` both used to share) —
-    // one sticks to the top edge, the other to the left edge.
+    // Stage-row vs. lane-column headers need their own modifier class — one
+    // sticks to the top edge, the other to the left edge.
     stages.forEach((stage, stageIndex) => {
       place(el("div", "story-board-swimlane-header story-board-swimlane-header-stage", stage), 1, 2 + stageIndex);
     });
@@ -485,7 +451,7 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     host.appendChild(grid);
   }
 
-  // --- Node inspector ---------------------------------------------------
+  // --- Node inspector -----------------------------------------------------
   function renderInspector(host) {
     const node = selectedNodeId ? findNode(selectedNodeId) : null;
     if (!node) {
@@ -494,10 +460,6 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     }
     const wrap = el("div", "d-flex flex-column gap-2");
 
-    // Title + Remove Node share the top row now (an icon button, top-right)
-    // instead of a full-width "Remove node" button previously sitting at
-    // the very bottom of the whole panel, disconnected from the node it
-    // acts on.
     const titleRow = el("div", "d-flex align-items-center gap-2");
     titleRow.appendChild(el("div", "fw-semibold text-truncate flex-grow-1", node.id));
     const removeNodeButton = createIconButton({
@@ -630,14 +592,12 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
 
   function render() {
     if (destroyed) return;
-    // Disposed before the wipe, not just left to be garbage-collected — a
-    // Bootstrap tooltip's own popup is a sibling appended to <body> (via
-    // Popper), not inside the trigger element, so wiping the trigger out
-    // via innerHTML = "" without disposing it first leaves that popup
-    // orphaned on <body> forever (Bootstrap's own mouseleave cleanup can
-    // never run for a trigger that no longer exists) — same "stuck
-    // tooltip" failure mode already fixed this way in dashboard.js's own
-    // toolbar rebuild and audio-recorder.js's own render().
+    // Disposed before the wipe, not left to be garbage-collected — a
+    // Bootstrap tooltip's popup is a sibling appended to <body> (via
+    // Popper), not inside the trigger element, so wiping the trigger via
+    // innerHTML = "" without disposing it first leaves that popup orphaned
+    // on <body> forever (same "stuck tooltip" fix used elsewhere, e.g.
+    // dashboard.js's own toolbar rebuild).
     disposeTooltips(container);
     container.innerHTML = "";
     if (modeSlot) {
@@ -650,8 +610,8 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     body.style.minHeight = "0";
     // The toolbar (Add Node included) lives INSIDE this column, sized to
     // the stage/grid's own width rather than the full card — so Add Node,
-    // pushed to this row's own right edge, lands above the node canvas
-    // itself, not above the inspector panel beside it.
+    // pushed to this row's right edge, lands above the node canvas itself,
+    // not above the inspector panel beside it.
     const stageColumn = el("div", "d-flex flex-column flex-grow-1");
     stageColumn.style.minHeight = "24rem";
     stageColumn.appendChild(renderToolbar());
@@ -665,9 +625,9 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
     renderInspector(inspectorHost);
     body.appendChild(inspectorHost);
     container.appendChild(body);
-    // Every element here is freshly rebuilt this render — re-scans and
-    // initializes tooltips fresh each time rather than assuming Bootstrap's
-    // own instances survive a full DOM replacement, which they don't.
+    // Every element here is freshly rebuilt this render — Bootstrap's own
+    // tooltip instances don't survive a full DOM replacement, so this
+    // re-scans and initializes them fresh each time.
     refreshTooltips(container);
   }
 
@@ -676,9 +636,9 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
   return {
     // The caller re-parses the persisted page body after every save
     // (updateStoryBoardInPage's own return) and hands the fresh model back
-    // here — this never re-derives it from its own local state, so a
-    // concurrent edit elsewhere (another tab, another GM) is never
-    // silently clobbered by a stale local copy.
+    // here — this never re-derives it from local state, so a concurrent
+    // edit elsewhere (another tab, another GM) is never silently clobbered
+    // by a stale local copy.
     update(nextModel) {
       currentModel = nextModel || currentModel;
       render();
@@ -690,8 +650,8 @@ export function mountStoryBoard(container, { model, onMutate, resolveRef, openRe
       container.innerHTML = "";
       // modeSlot lives in markdown.js's own rendered DOM, not inside
       // `container` — this module still owns whatever it mounted there, so
-      // it cleans that up itself rather than leaving an orphaned toggle
-      // (and a stuck tooltip) behind once this story board's own
+      // it cleans that up itself rather than leaving an orphaned toggle (and
+      // a stuck tooltip) behind once this story board's own
       // .callout-content is torn down or re-rendered.
       if (modeSlot) {
         disposeTooltips(modeSlot);

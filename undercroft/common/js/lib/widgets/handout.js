@@ -1,21 +1,12 @@
-// Renders one specific library entity as a real Press print card — the
-// successor to the old Card widget, which only ever showed a plain name/
-// description placeholder (rendering an arbitrary Press template outside
-// Press's own page was flagged there as future work). That work turns out to
-// already be done: Workbench's own "Now Showing" panel
-// (workbench-character-view.js's renderNowShowingCard) already proved
-// createTemplate + template.createPage renders correctly outside Press's own
-// page — this widget reuses that exact function, not a parallel
-// reimplementation.
+// Renders one specific library entity as a real Press print card — reuses
+// Workbench's own "Now Showing" panel render path (createTemplate +
+// template.createPage), not a parallel reimplementation.
 //
-// This also replaces the old "Show to table" buttons that used to live in
-// Sanctum/Forge/Crucible/Vault: a GM now adds a Handout directly to their own
-// dashboard (picking the record + a print template via openHandoutPicker
-// below) and toggles visibility from here — spotlightToGroup/clearSpotlight
-// called directly, no modal, the same pair combat-tracker.js's own
-// autoShowOnStart/hideFromTable and clocks.js's toggleVisibility already
-// call the same way. The point: the dashboard itself is now the one place
-// that shows what's currently visible to the table, instead of a separate,
+// Also replaces the old "Show to table" buttons that used to live in
+// Sanctum/Forge/Crucible/Vault: a GM adds a Handout to their own dashboard
+// (picking the record + a print template via openHandoutPicker below) and
+// toggles visibility from here — the dashboard is now the one place that
+// shows what's currently visible to the table, instead of a separate,
 // easy-to-forget action buried in whichever tool the GM happened to be in.
 import { createTemplate, getFormatById, getPageSize } from "../../../../press/js/templates.js";
 import {
@@ -28,9 +19,8 @@ import { resolveIsSpotlighted, listPrintTemplates } from "../spotlight.js";
 import { resolveToolContextPath } from "../app-shell.js";
 import { el } from "../dom.js";
 import { disposeTooltips, refreshTooltips } from "../tooltips.js";
-// Repository's own markdown renderer — journal pages are plain markdown
-// text, never a Press template, so they get a completely different render
-// path below (renderJournalEntry) than every other Handout kind.
+// Journal pages are plain markdown text, never a Press template, so they get
+// a completely different render path below (renderJournalEntry).
 import { renderMarkdown } from "../../../../repository/js/lib/markdown.js";
 import { buildTitleIndex } from "../../../../repository/js/lib/journal-links.js";
 import { startEncounter, deterministicEncounterId } from "../../../../repository/js/lib/journal-encounter.js";
@@ -38,24 +28,17 @@ import { extractOutline, findHeadingByText } from "../../../../repository/js/lib
 import { extractQuests } from "../../../../repository/js/lib/journal-quests.js";
 import { buildCalloutRaw } from "../../../../repository/js/lib/journal-story-board.js";
 
-// Kinds with an actual print-card rendering of their own — mirrors the exact
-// set the old Card widget's KIND_WIDGET_MAP entries covered (npc/location/
-// monster/wonder) — plus "journal" (Repository's own kind), which renders as
-// formatted markdown instead of a Press card (see renderJournalEntry).
-// Maps/encounters (spotlight.js's own LINK_ONLY_KINDS) have no single-entity
-// card shape and stay out of this widget entirely; every other registered
-// kind (character, system, template, taxonomy entries like class/species/...)
-// isn't something a GM hands to the table as a card.
+// Kinds with an actual print-card rendering, plus "journal" (renders as
+// formatted markdown instead of a Press card). Maps/encounters have no
+// single-entity card shape and stay out of this widget entirely; every other
+// registered kind (character, system, template, taxonomy entries) isn't
+// something a GM hands to the table as a card.
 // Exported for macro-runner.js/loom's Macro editor — a Handout macro
-// action's contentRef.kind should only ever offer a kind this widget can
-// actually render, not every Library kind that exists (see loom/js/app.js's
-// own MACRO_ACTION_TYPES.handout).
+// action's contentRef.kind should only offer a kind this widget can render.
 export const HANDOUT_KINDS = ["npc", "location", "monster", "wonder", "journal"];
 
-// Same labels SPOTLIGHT_KIND_LABELS (game-log.js) uses for the log line —
-// kept as its own small table here rather than importing that one, since
-// this needs the bare noun ("NPC"), not the "an NPC" article form the log
-// sentence wants. Exported alongside HANDOUT_KINDS for the same reason.
+// Same labels game-log.js's SPOTLIGHT_KIND_LABELS uses, kept separate since
+// this needs the bare noun ("NPC"), not the "an NPC" article form.
 export const KIND_LABELS = {
   npc: "NPC",
   location: "Location",
@@ -65,8 +48,7 @@ export const KIND_LABELS = {
 };
 
 // Kinds with no Press template at all — the picker's Template field is
-// irrelevant for these (same reasoning as spotlight.js's own LINK_ONLY_KINDS
-// hiding its template select, applied here for a different kind of content).
+// irrelevant for these.
 const NO_TEMPLATE_KINDS = new Set(["journal"]);
 
 const MODAL_ID = "undercroft-handout-picker-modal";
@@ -153,9 +135,8 @@ export async function openHandoutPicker({ dataManager } = {}) {
   updateTemplateGroupVisibility();
 
   // Anchor options (Whole Page / a heading / a quest) only make sense for
-  // journal-kind selections, and depend on the currently-selected item's own
-  // body — repopulated from `currentEntries` (kept in sync by
-  // populateItemSelect below) whenever either the kind or the item changes.
+  // journal selections, and depend on the currently-selected item's own
+  // body — repopulated whenever either the kind or the item changes.
   let currentEntries = [];
   function updateAnchorSelect() {
     if (!anchorSelect || !anchorGroup) return;
@@ -289,18 +270,12 @@ export function initHandoutWidget(
   if (!container || !dataManager || !kind || !id) {
     return { destroy() {} };
   }
-  // `kind` is fixed for this widget instance's whole lifetime (contentRef
-  // never changes after mount — same reasoning map.js's own mapId comment
-  // gives), so this is a one-time decision, not something re-evaluated per
-  // render. A journal page renders as plain markdown prose (renderJournalEntry
-  // below) — ordinary flow layout, no conflict with a per-widget zoom
+  // A journal page renders as plain markdown prose (renderJournalEntry) —
+  // ordinary flow layout, no conflict with a per-widget CSS zoom
   // (dashboard.js). Every other kind renders as a Press-templated or plain
-  // print CARD (renderTemplatedCard/renderPlain), which does its own
-  // JS-measurement-based scale-to-fit (applyScale) — CSS zoom's layout-
-  // affecting nature broke that math outright (confirmed directly), so those
-  // always render into the never-zoomed sibling container instead, when one's
-  // available (dashboard.js only ever supplies one for widget types that would
-  // otherwise conflict — see its own ZOOM_EXCLUDED_WIDGET_TYPES comment).
+  // card, which does its own JS-measurement-based scale-to-fit (applyScale)
+  // — CSS zoom's layout-affecting nature breaks that math, so those always
+  // render into the never-zoomed sibling container instead, when available.
   const renderTarget = kind !== "journal" && plainMountContainer ? plainMountContainer : container;
   if (renderTarget !== container) {
     container.classList.add("d-none");
@@ -309,11 +284,10 @@ export function initHandoutWidget(
   }
   let destroyed = false;
   let visible = false;
-  // Re-applied whenever `renderTarget` itself resizes (selecting this widget
-  // opens the Widget Inspector pane, narrowing the dashboard column — see
-  // the ResizeObserver below) — set fresh by renderTemplatedCard each time
-  // it draws a card, cleared by the other render* states below since
-  // there's nothing to rescale while loading/erroring/plain.
+  // Re-applied whenever renderTarget resizes (selecting this widget opens
+  // the Widget Inspector pane, narrowing the dashboard column) — set fresh
+  // by renderTemplatedCard each time it draws, cleared by the other render*
+  // states since there's nothing to rescale while loading/erroring/plain.
   let applyScale = null;
   const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => applyScale?.()) : null;
   resizeObserver?.observe(renderTarget);
@@ -341,16 +315,12 @@ export function initHandoutWidget(
     renderTarget.appendChild(card);
   }
 
-  // Slices a journal page's raw body down to just one anchored fragment —
-  // a heading's own section (through the next same-or-higher-level heading,
-  // or end of doc) or a single quest's own standalone callout (reconstructed
-  // via journal-story-board.js's own buildCalloutRaw, the same primitive
-  // that file's read-modify-write cycle already uses, rather than a second
-  // "rebuild one callout's raw text" implementation here). Falls back to the
-  // whole body if the anchor can no longer be found (a stale reference —
-  // the page was edited since this Handout was configured), same tolerance
-  // Repository's own selectPage scroll-resolution already gives a missing
-  // heading/quest anchor.
+  // Slices a journal page's raw body down to just one anchored fragment — a
+  // heading's own section, or a single quest's standalone callout
+  // (reconstructed via journal-story-board.js's buildCalloutRaw, the same
+  // primitive that file's own read-modify-write cycle uses). Falls back to
+  // the whole body if the anchor can no longer be found (a stale reference
+  // — the page was edited since this Handout was configured).
   function sliceBodyByAnchor(body, entryAnchor) {
     if (!entryAnchor || !entryAnchor.value) return body;
     if (entryAnchor.type === "heading") {
@@ -378,29 +348,18 @@ export function initHandoutWidget(
   }
 
   // Journal pages are plain markdown prose, not a fixed-size print card —
-  // they need scrolling for whatever length the GM wrote, not the
-  // width-based scale-to-fit renderTemplatedCard's applyScale handles below,
-  // so this doesn't touch that machinery at all. Wiki-links resolve for
-  // *display* only (so a real link to another page doesn't render with the
-  // "missing page" styling) — never clickable here, since a player
-  // link-hopping through the GM's whole notebook would defeat the point of
-  // choosing what to show; renderMarkdown's onNavigate is deliberately left
-  // unset, which already makes every link a no-op click.
+  // they need scrolling, not applyScale's width-based scale-to-fit.
+  // Wiki-links resolve for display only (a real link doesn't render with
+  // "missing page" styling) — never clickable, since a player link-hopping
+  // through the GM's whole notebook would defeat the point of choosing what
+  // to show (renderMarkdown's onNavigate is deliberately left unset).
   async function renderJournalEntry(entity) {
     applyScale = null;
     let titleIndex = null;
-    // `validKindIds`/`kindLabels` — the same pair Repository's own
-    // renderPreview fetches once via loadLibraryKinds() and passes through
-    // to renderMarkdown so a `` `npc:Name` ``/`` `location:Name` `` span
-    // turns into a real icon+name chip. Missing here entirely was a
-    // confirmed real bug — every kind-reference span in a Handout journal
-    // page rendered as plain unconverted inline code (literally
-    // "npc:Berosalia Hart") instead of matching how Repository itself
-    // shows the exact same page. `onOpenReference` is deliberately left
-    // unset — chips render correctly but stay non-interactive here, same
-    // as wiki-links a few lines below (a player clicking through into
-    // another tool entirely would defeat the point of a spotlighted
-    // fragment, the same reasoning that comment already gives).
+    // `validKindIds`/`kindLabels` let a `` `npc:Name` ``/`` `location:Name` ``
+    // span turn into a real icon+name chip, matching how Repository itself
+    // shows the page. `onOpenReference` stays unset — chips render but stay
+    // non-interactive here, same reasoning as wiki-links above.
     let validKindIds = new Set();
     let kindLabels = {};
     try {
@@ -419,13 +378,10 @@ export function initHandoutWidget(
     container.innerHTML = "";
     const card = el("div", "border rounded-3 bg-body p-3 d-flex flex-column gap-2");
     // Always fills the widget's own mount point (a flex column sized to
-    // this grid cell's own colSpan/rowSpan-driven footprint — dashboard.js's
-    // card chain propagates that height down via flex/min-height:0, see
-    // mountWidget) rather than just in forcePlayerView — every card gets a
-    // real, resizable grid cell now (GM view included), so a fixed 24rem cap
-    // here previously meant resizing a Handout widget's grid cell taller
-    // never actually grew the visible text area (confirmed directly: it
-    // stayed capped with its own internal scrollbar).
+    // this grid cell) rather than just in forcePlayerView — every card gets
+    // a real, resizable grid cell now, so a fixed height cap here would mean
+    // resizing a Handout widget's cell taller never actually grows the
+    // visible text area.
     card.style.flex = "1 1 0";
     card.style.minHeight = "0";
     card.style.overflowY = "auto";
@@ -435,11 +391,9 @@ export function initHandoutWidget(
         resolveWikiLink: titleIndex ? (title) => titleIndex.resolve(title) : undefined,
         status,
         dataManager,
-        // Same gate as the eye-icon visibility toggle just below — true only
-        // for the owning GM's own dashboard, never a player/shared viewer:
-        // starting combat, rolling dice, and firing a macro are all GM-only
-        // actions here (checkboxes are never interactive in Handout at all —
-        // see interactiveCheckboxes' own default above).
+        // Same gate as the eye-icon visibility toggle below — true only for
+        // the owning GM's own dashboard: starting combat, rolling dice, and
+        // firing a macro are all GM-only actions here.
         interactiveEncounters: canToggleVisibility,
         onStartEncounter: (creatures, blockIndex) =>
           void startEncounter({
@@ -463,15 +417,12 @@ export function initHandoutWidget(
     refreshTooltips(container);
   }
 
-  // Crops a rendered page down to just its one drawn tile — ported straight
-  // from Press's own cropPageToSingleTile (press/js/app.js's Grid View):
-  // createPage still lays the tile out on a full print-sheet-sized page
-  // (margins and all) even with singleCardIndex forcing a 1x1 render, so
-  // without this the tile ends up as a small offset block inside a much
-  // wider invisible page — exactly the "empty space on the left, overhangs
-  // on the right" symptom. Cropping the stage to the tile's own measured
-  // box is what actually makes the visible card fill (and later center
-  // within) its stage, not a separate centering fix on top.
+  // Crops a rendered page down to just its one drawn tile — createPage still
+  // lays the tile out on a full print-sheet-sized page even with
+  // singleCardIndex forcing a 1x1 render, so without this the tile ends up
+  // as a small offset block inside a much wider invisible page. Cropping the
+  // stage to the tile's own measured box is what makes the visible card
+  // fill (and later center within) its stage.
   function cropToTile(page, stage) {
     const tile = page.querySelector(".card-tile, .chip-tile");
     if (!tile) return;
@@ -486,15 +437,11 @@ export function initHandoutWidget(
     stage.style.height = `${tileRect.height}px`;
   }
 
-  // Same render Workbench's own "Now Showing" panel already proved works
-  // outside Press's own page (renderNowShowingCard) — createTemplate +
-  // template.createPage, the exact function Press's own Grid View uses for a
-  // single-card render — but showing every side (front AND back, for a
+  // The same render Workbench's "Now Showing" panel already proved works
+  // outside Press's own page — but showing every side (front AND back, for a
   // two-sided card) side by side, cropped to just each tile, the way Press's
-  // own Grid View tab shows a card — not one side alone. No trim/bleed/safe
-  // guide overlay call (Press's own applyOverlays) at all — those are print-
-  // specific guide lines Grid View itself only draws for the print-preview
-  // tabs, not something a table-facing handout should ever show.
+  // Grid View tab shows a card. No trim/bleed/safe guide overlay — those are
+  // print-specific guides a table-facing handout should never show.
   function renderTemplatedCard(templateRecord, entity) {
     const template = createTemplate(templateRecord);
     const format = getFormatById(template);
@@ -502,14 +449,10 @@ export function initHandoutWidget(
     const size = getPageSize(template, format?.id, orientation);
     const sides = template.sides?.length ? template.sides : ["front"];
 
-    // `inline-flex` (not `d-flex`, which is block and stretches to fill
-    // container) — row needs to size itself to its own tiles' natural
-    // combined width so the scale-to-fit measurement below reflects the
-    // actual content, not the container it's about to be centered in.
-    // `nowrap` — narrowing the widget (e.g. selecting it opens the Widget
-    // Inspector pane, shrinking this column) must never let the browser's
-    // own flex-wrap stack front above back; applyScale below is what
-    // shrinks the whole row to fit instead, at any width.
+    // `inline-flex`/`nowrap` — the row must size to its own tiles' natural
+    // width for the scale-to-fit measurement below to reflect real content,
+    // and must never let flex-wrap stack front above back when the widget
+    // narrows; applyScale is what shrinks the whole row instead.
     const row = el("div");
     row.style.display = "inline-flex";
     row.style.flexWrap = "nowrap";
@@ -517,14 +460,11 @@ export function initHandoutWidget(
     row.style.alignItems = "flex-start";
     row.style.gap = "1rem";
 
-    // A plain wrapper, sized to fit its own content and centered within
-    // whatever width the widget actually has — `row` itself is what gets the
-    // scale transform below, since a transformed element keeps contributing
-    // its *pre*-transform box size to layout; without this outer box's own
-    // width being set to the *post*-scale size, the container would still
-    // reserve (and could overflow past) the untransformed footprint even
-    // though the card visually shrank, which was the "overhangs the right"
-    // half of the original bug alongside the missing crop below.
+    // A plain wrapper sized to its own content and centered — `row` gets the
+    // scale transform below, and a transformed element keeps contributing
+    // its PRE-transform box size to layout, so this outer box's width must
+    // be set to the POST-scale size or the container would still reserve
+    // (and overflow past) the untransformed footprint.
     const scaleBox = el("div");
     scaleBox.style.width = "fit-content";
     scaleBox.style.margin = "0 auto";
@@ -532,11 +472,8 @@ export function initHandoutWidget(
     renderTarget.innerHTML = "";
     renderTarget.appendChild(scaleBox);
 
-    // Attached to the live document BEFORE any of this — getBoundingClientRect
-    // (both here and inside applyAutoWidthCaps/applyOverflowIndicators) reads
-    // real, laid-out geometry, and returns nothing but zeros for anything
-    // still detached — same ordering constraint Press's own renderGridView
-    // follows (build/attach the stage, then measure).
+    // Attached to the live document before any of this — getBoundingClientRect
+    // reads real, laid-out geometry and returns zeros for anything detached.
     sides.forEach((side) => {
       const page = template.createPage(side, {
         size,
@@ -556,10 +493,9 @@ export function initHandoutWidget(
       cropToTile(page, stage);
     });
 
-    // Measured once, before any transform is ever applied — row's own rect
-    // reads as post-transform (already-scaled) on every call after the
-    // first, so this natural size has to be captured here and reused by
-    // every later applyScale() call, not re-measured from row each time.
+    // Measured once, before any transform is applied — row's own rect reads
+    // as post-transform on every call after the first, so this natural size
+    // must be captured here and reused by every later applyScale() call.
     const rowRect = row.getBoundingClientRect();
     const naturalWidth = rowRect.width;
     const naturalHeight = rowRect.height;
@@ -604,15 +540,14 @@ export function initHandoutWidget(
       return;
     }
     try {
-      // "templates" (plural) — the same legacy bucket alias Workbench's own
-      // template loads use (server/storage.py's _LEGACY_BUCKET_SPECS).
+      // "templates" (plural) — the legacy bucket alias Workbench's own
+      // template loads use.
       const result = await dataManager.get("templates", templateId, { shareToken });
       if (destroyed) return;
       renderTemplatedCard(result.payload, entity);
     } catch (error) {
       // A private/unshared template (or one since deleted) shouldn't block
-      // showing the entity itself — fall back to plain, same as Workbench's
-      // own refreshNowShowing.
+      // showing the entity itself — fall back to plain.
       if (!destroyed) renderPlain(entity);
     }
   }
@@ -633,8 +568,7 @@ export function initHandoutWidget(
       return;
     }
     // Per-instance, not just per-kind — a second Handout of the same kind
-    // (two NPCs, both kind "npc") must stay independently toggleable, see
-    // resolveIsSpotlighted's own comment.
+    // must stay independently toggleable.
     visible = await resolveIsSpotlighted(dataManager, { groupId, shareToken, kind, id });
     updateVisibilityAction();
   }
@@ -668,8 +602,7 @@ export function initHandoutWidget(
 
   return {
     // Exposed for the Widget Inspector's Refresh action — a GM editing the
-    // underlying record doesn't push a live update here, so a manual refresh
-    // is the only way to pick up a change without removing and re-adding.
+    // underlying record doesn't push a live update here.
     refresh: () => {
       void refresh();
       void refreshVisibility();
@@ -677,14 +610,11 @@ export function initHandoutWidget(
     // `removed` (dashboard.js's removeWidget passes true) — this instance's
     // own spotlight (if any) needs clearing, or removing a currently-shown
     // Handout orphans that spotlight entry as still "active" with no way to
-    // toggle it off again. Confirmed real bug this fixes: adding a NEW
-    // Handout for the same record after the old, spotlighted instance was
-    // removed this way found that orphaned entry via resolveIsSpotlighted
-    // and correctly showed "Show to Table" already ON — but since nothing
-    // ever posted a NEW spotlight entry, players' spotlight-inbox watcher
-    // had nothing new to notify about, so the toggle looked on but nobody
-    // was actually told. Same shape as clocks.js/browser.js/soundboard.js/
-    // calendar.js's own destroy(removed).
+    // toggle it off. Without this, a new Handout for the same record would
+    // find the orphaned entry and show "Show to Table" already ON, but since
+    // nothing posted a new spotlight entry, players' watcher never notified
+    // anyone. Same shape as clocks.js/browser.js/soundboard.js/calendar.js's
+    // own destroy(removed).
     async destroy(removed) {
       destroyed = true;
       resizeObserver?.disconnect();

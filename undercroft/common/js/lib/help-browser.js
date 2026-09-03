@@ -16,11 +16,9 @@ function groupHelpTopicsByCategory(topics) {
 }
 
 // Shared by Account's right-pane help browser and the Dashboard's left-pane
-// copy — same data-help-browser-* markup contract either way. Pinning (a
-// pin toggle next to each topic, plus a "Pinned" section above the category
-// list) is opt-in via getPinnedIds/onTogglePin: Account passes neither and
-// gets none of that UI; the Dashboard passes both, backed by its own
-// dashboardPinnedHelpTopics setting.
+// copy — same data-help-browser-* markup contract either way. Pinning is
+// opt-in via getPinnedIds/onTogglePin: Account passes neither, Dashboard
+// passes both.
 export async function initHelpBrowser({
   root = document,
   topicsUrl,
@@ -47,14 +45,9 @@ export async function initHelpBrowser({
   let topicsById = new Map();
   let activeQuery = "";
   let activeTopicId = "";
-  // Runtime-only (not persisted) EXPAND state, keyed by category name — every
-  // section starts collapsed; a category only appears here once the user
-  // deliberately opens it, and that survives a re-render (e.g. from typing a
-  // search query) but not a page reload. "Pinned" gets its own flag since
-  // it's not a category. Search overrides this rather than using it: any
-  // category with a match while a query is active renders expanded
-  // regardless of this set (see renderList) — the intent is "let me see what
-  // I searched for," not "remember what I searched for last time."
+  // Runtime-only expand state per category, survives a re-render but not a
+  // reload. Search overrides it (see renderList) — a query always forces
+  // matching categories open regardless of what's remembered here.
   const expandedCategories = new Set();
   let pinnedExpanded = false;
 

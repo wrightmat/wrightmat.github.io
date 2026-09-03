@@ -1,23 +1,15 @@
 // CSS class-name search/suggestions for a "Classes" (Advanced) inspector
-// field — shared by Press and Workbench, extracted from Press's original
-// inline attachClassNameAutocomplete (moved here verbatim; the one
-// Press-specific bit, wrapping a suggestion click in its own undo-stack
-// recording, becomes an optional caller-supplied `wrapChange` — a plain
-// caller with no undo stack of its own can just omit it) so the suggestion
-// list and dropdown widget stay byte-for-byte identical instead of
-// drifting apart. splitClassTokens is exported too since Press's own
-// COMPONENT_REQUIRED_CLASS_MAP handling (a real Press-specific concept —
-// certain node types reserve a structural base class — that has no
-// Workbench equivalent and stays in press/js/app.js) needs the same
-// token-splitting helper.
+// field, shared by Press and Workbench so the suggestion list and dropdown
+// stay identical instead of drifting apart. The one Press-specific bit
+// (wrapping a click in its own undo-stack recording) is an optional
+// caller-supplied `wrapChange`. splitClassTokens is exported since Press's
+// own COMPONENT_REQUIRED_CLASS_MAP handling (press/js/app.js) needs the
+// same token-splitting helper.
 
 // A short, deliberately non-overlapping reference list — nothing here
-// duplicates a control the inspector already has a dedicated field for
-// (alignment, bold/italic, text size, color, border, corner radius, etc.),
-// so this is only ever the fastest way to reach for something that has no
-// other home. "badge text-bg-primary" specifically replaces what used to
-// be its own dedicated "Badge" field component in Press, which was really
-// always just Text with this class combo.
+// duplicates a control the inspector already has a dedicated field for.
+// "badge text-bg-primary" replaces what used to be a dedicated "Badge"
+// field component in Press, which was really just Text with this combo.
 export const CLASS_NAME_SUGGESTIONS = [
   { classes: "badge text-bg-primary", label: "Badge", description: "Pill-style badge background" },
   { classes: "text-body-secondary", label: "Muted", description: "Theme-aware secondary text color (adapts to light/dark)" },
@@ -33,12 +25,9 @@ export function splitClassTokens(value = "") {
   return value.split(/\s+/).filter(Boolean);
 }
 
-// Toggles the whole class combo as one unit (e.g. "badge" and
-// "text-bg-primary" together) rather than each token independently — that
-// matches how these are actually used, and avoids leaving a half-applied
-// combo behind. `wrapChange(fn)` lets a caller with its own undo stack
-// (Press) record this as one undoable step; a caller without one can just
-// leave it at the default passthrough.
+// Toggles the whole class combo as one unit, not each token independently
+// — avoids leaving a half-applied combo behind. `wrapChange(fn)` lets a
+// caller with its own undo stack (Press) record this as one undoable step.
 function toggleClassNameSuggestion(input, suggestion, wrapChange) {
   const current = splitClassTokens(input.value);
   const toggleTokens = splitClassTokens(suggestion.classes);
@@ -46,10 +35,8 @@ function toggleClassNameSuggestion(input, suggestion, wrapChange) {
   const next = hasAll
     ? current.filter((token) => !toggleTokens.includes(token))
     : [...current, ...toggleTokens.filter((token) => !current.includes(token))];
-  // One-shot programmatic write (a suggestion click), not a batched typing
-  // session — dispatches a real "input" event so it reuses the field's own
-  // existing write path (undo, state commit, whatever the caller's own
-  // input listener already does) rather than needing a second one here.
+  // Dispatches a real "input" event so it reuses the field's own existing
+  // write path (undo, state commit) rather than needing a second one here.
   wrapChange(() => {
     input.value = next.join(" ");
     input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -78,13 +65,10 @@ function renderClassNameSuggestionRow(suggestion, isApplied) {
   return row;
 }
 
-// Mirrors attachIconAutocomplete's/attachFontFamilyAutocomplete's own
-// structure closely (same container helper shape, same open-on-focus/
-// click, arrow-key nav, blur-closes-after-a-short-delay-so-clicks-land
-// pattern) — the one real difference is that this list is fixed (a short,
-// curated reference, not a filtered search) and a click toggles rather
-// than replaces the field's value, so the dropdown stays open afterward
-// for toggling more than one suggestion in a row.
+// Mirrors attachIconAutocomplete's/attachFontFamilyAutocomplete's structure
+// closely — the difference: this list is fixed (curated, not searched) and
+// a click toggles rather than replaces, so the dropdown stays open for
+// toggling more than one suggestion in a row.
 function ensureClassNameAutocompleteContainer(input) {
   if (!input || !input.parentElement) return null;
   const parent = input.closest(".form-floating") ?? input.parentElement;

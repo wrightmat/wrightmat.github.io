@@ -1,20 +1,14 @@
 import { evaluateFormula } from "./formula-engine.js";
 
-// The generic replacement for what used to be `dnd-rules.js` — a per-System
-// JS module hardcoding D&D's own ability-modifier/proficiency-bonus/HP-
-// average math. That's game-rules arithmetic, not something inherent to
-// JavaScript, so it belongs on the System record as authored `=formula`
-// data (same reserved-key-array convention `dice`/`combatBindings`/
-// `levelUpBindings` already use — see undercroft/README.md's "Reserved-key
-// System fields") evaluated through the SAME formula engine every other
-// `@path`/`=formula` consumer in this suite already shares
-// (`formula-engine.js`), not a second bespoke syntax. `findDerivedFormula`/
-// `evaluateDerivedFormula` mirror `findBindingByRole` (bindings.js) exactly
-// — same shape, same file-not-invented-twice reasoning.
+// Game-rules arithmetic (ability modifiers, proficiency bonus, HP average)
+// lives on the System record as authored `=formula` data (the reserved-key-
+// array convention `dice`/`combatBindings`/`levelUpBindings` already use),
+// evaluated through the same formula engine every other `@path`/`=formula`
+// consumer shares. `findDerivedFormula`/`evaluateDerivedFormula` mirror
+// `findBindingByRole` (bindings.js) exactly.
 //
-// A System with no `derivedFormulas` declared (or missing one specific
-// role) gets `undefined` back — graceful degradation, same as every other
-// optional System field in this suite, never a crash.
+// A System with no `derivedFormulas` declared (or missing one role) gets
+// `undefined` back — graceful degradation, never a crash.
 export function findDerivedFormula(formulas, role) {
   return (formulas || []).find((entry) => entry && entry.role === role) || null;
 }
@@ -33,26 +27,17 @@ export function evaluateDerivedFormula(formulas, role, context) {
   }
 }
 
-// Relocated from dnd-rules.js's own averageDiceRoll — this half is string
-// SYNTAX parsing ("2d6+3" -> {count, sides, modifier}), not game-rules
-// knowledge, so it stays a small generic JS helper (same category as
-// dotted-path.js's path-walking, already listed in README.md as an
-// accepted generic utility) rather than becoming System-authored data —
-// there's no game rule to author here, just notation. The actual RULE for
-// how to turn {count, sides, modifier} into an average damage number is a
-// System-declared `derivedFormulas` role (e.g. "averageDamage") evaluated
-// via evaluateDerivedFormula above, fed by this parser's own output.
-// Convenience composers matching dnd-rules.js's OLD external call shapes
-// (same argument order/names, `derivedFormulas` appended as the final
-// argument) — every consumer that used to call e.g. `abilityModifier(score)`
-// now calls `abilityModifier(score, derivedFormulas)`, minimal call-site
-// churn across Crucible/Forge/the Character Builder. Each one is pure
-// orchestration over evaluateDerivedFormula/parseDiceExpression above —
-// composing two role lookups is not the same thing as hardcoding a
-// formula; the actual arithmetic still lives entirely in each System's own
-// authored `derivedFormulas` data. A System missing the underlying role(s)
-// gets 0/null back, same graceful-degradation posture as everything else
-// here.
+// String SYNTAX parsing ("2d6+3" -> {count, sides, modifier}), not game-
+// rules knowledge, so it stays a small generic JS helper rather than
+// System-authored data — there's no rule to author here, just notation.
+// The actual rule for turning that shape into an average damage number is
+// a System-declared `derivedFormulas` role, evaluated via
+// evaluateDerivedFormula above, fed by this parser's output.
+//
+// Convenience composers below are pure orchestration over
+// evaluateDerivedFormula/parseDiceExpression — the actual arithmetic still
+// lives entirely in each System's own authored `derivedFormulas` data. A
+// System missing the underlying role(s) gets 0/null back.
 export function abilityModifier(score, derivedFormulas) {
   return evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
 }

@@ -1,17 +1,14 @@
 // Generic per-tool settings: a floating gear button + modal, backed by the
-// same local-first + server-sync pattern every other per-user setting in
-// this suite already uses (localStorage always, dataManager.saveUserSettings
-// — a merge-patch endpoint — when authenticated; see dashboard.js's own
-// persistSetting/loadLocalSetting for the pattern this mirrors). One shared
-// implementation so a tool wanting a settings panel calls this instead of
-// building its own modal/storage from scratch — Repository is the first
-// caller, not the only intended one.
+// same local-first + server-sync pattern every per-user setting in this
+// suite uses (localStorage always, dataManager.saveUserSettings — a
+// merge-patch endpoint — when authenticated; mirrors dashboard.js's own
+// persistSetting/loadLocalSetting). One shared implementation so a tool
+// calls this instead of building its own modal/storage — Repository is the
+// first caller, not the only intended one.
 //
-// The module owns *behavior* (state, persistence, the modal itself) but not
-// *placement* — it hands the caller a plain button element via
-// `mountButton` and lets that tool's own HTML/CSS decide where it lives
-// (Repository puts it as a sticky-to-the-bottom fixture in its left pane;
-// another tool's layout might want a different spot entirely).
+// Owns *behavior* (state, persistence, the modal) but not *placement* — it
+// hands the caller a plain button via `mountButton` and lets that tool's
+// own HTML/CSS decide where it lives.
 import { el } from "./dom.js";
 import { initHelpSystem } from "./help.js";
 import { initTooltip } from "./tooltips.js";
@@ -32,9 +29,8 @@ function saveLocal(toolId, values) {
   try {
     localStorage.setItem(`${LOCAL_PREFIX}${toolId}`, JSON.stringify(values));
   } catch (error) {
-    // Local storage unavailable (private browsing, quota) — the server sync
-    // below (when signed in) still gives this a home, same graceful-degrade
-    // as every other local-setting writer in the suite.
+    // Local storage unavailable (private browsing, quota) — server sync
+    // below still gives this a home when signed in.
   }
 }
 
@@ -65,38 +61,27 @@ function ensureModal() {
 
 // initToolSettings({toolId, dataManager, status, title, definitions, mountButton})
 // — definitions: [{key, label, type, helpTopic, default, options, getValue,
-// setValue}], or a `() => [...]` thunk returning the same (see below).
-// `type` is `"boolean"` (default, a switch) or `"select"` (a `<select>`,
-// needs `options: [{value, label}]`). `helpTopic` is an entry id in
-// common/data/help-topics.json, rendered as the same data-help-topic
-// trigger span every other explanatory bit of UI in this suite uses — not
-// inline paragraph text — right after the label; omit it for a setting
-// that's genuinely self-explanatory from its label alone.
+// setValue}], or a `() => [...]` thunk. `type` is `"boolean"` (default, a
+// switch) or `"select"` (needs `options: [{value, label}]`). `helpTopic` is
+// an id in help-topics.json, rendered as the standard data-help-topic
+// trigger after the label; omit for a self-explanatory setting.
 //
-// A definition's value is normally read/written through this module's own
-// flat, per-tool localStorage+server-sync store (keyed by `key`) — fine for
-// Repository's tool-wide switches, where one value covers the whole tool.
-// Passing `getValue()`/`setValue(value)` on a definition opts that one
-// setting OUT of that store entirely and defers to the caller's own
-// persistence instead — this is what a *per-System* preference (Crucible's
-// Combat Scaling/Creature Type fields, Vault's Budget Ceiling field) uses:
-// each already has its own `dataManager.getLocal/saveLocal("<tool>-settings",
-// systemId, {...})` record, so the value genuinely lives elsewhere, keyed by
-// whichever System is currently active — this module just needs to render
-// and persist through to it, not own the value itself.
+// A definition's value normally reads/writes through this module's own
+// flat, per-tool localStorage+server-sync store — fine for a tool-wide
+// switch. Passing `getValue()`/`setValue(value)` opts a setting OUT of that
+// store and defers to the caller's own persistence — used by a *per-System*
+// preference (Crucible's Combat Scaling field, Vault's Budget Ceiling) that
+// already has its own `dataManager.getLocal/saveLocal` record keyed by the
+// active System; this module just renders and persists through to it.
 //
-// `definitions` may be a thunk instead of a plain array — evaluated fresh
-// every time the modal opens/re-renders, so a caller whose options (or even
-// whose set of keys) depend on live app state (e.g. "whichever array fields
-// the active System currently defines") always sees a current list without
-// this module needing to know anything about that state itself.
+// `definitions` may be a thunk, evaluated fresh every modal open/re-render,
+// for a caller whose options depend on live app state (e.g. the active
+// System's own array fields).
 //
-// Returns {get(key), subscribe(fn), openModal()} — `get` always reflects the
-// current best-known value (for a plain, self-owned definition only — a
-// getValue-backed one should be read via that same getValue, not `get`);
-// server-synced values (if signed in) arrive asynchronously shortly after
-// this returns and fire `subscribe` callbacks once reconciled, same as any
-// other server round trip in this suite.
+// Returns {get(key), subscribe(fn), openModal()} — `get` reflects the
+// current best-known value for a self-owned definition (a getValue-backed
+// one should be read via that same getValue). Server-synced values arrive
+// asynchronously and fire `subscribe` once reconciled.
 export function initToolSettings({
   toolId,
   dataManager,
@@ -106,22 +91,16 @@ export function initToolSettings({
   mountButton,
 } = {}) {
   const local = loadLocal(toolId);
-  // Starts as a full copy of whatever's already persisted (not just the
-  // keys named by `definitions`) — `definitions` can be a thunk producing a
-  // different key set call to call (e.g. one active System at a time), so
-  // seeding only from the current call's keys would silently drop any
-  // other System's already-saved preference the next time this object gets
-  // written back out (see setValue/persistLocalAndServer below).
+  // Full copy of whatever's already persisted, not just the current call's
+  // keys — `definitions` can be a thunk producing a different key set call
+  // to call, and seeding only from the current keys would drop another
+  // System's already-saved preference on the next write-back.
   const values = { ...local };
   const resolveDefinitions = () => (typeof definitions === "function" ? definitions() : definitions || []);
-  // A static array's keys are all known up front, so its defaults can be
-  // applied immediately — this is what makes get(key) return a real,
-  // usable value (e.g. Repository's own boolean switches) before the modal
-  // has ever been opened. A thunk's key set can vary call to call (e.g.
-  // Crucible's per-System keys), so there's nothing fixed to pre-seed;
-  // those definitions fall back to their own `default` lazily instead, via
-  // currentValueFor below — moot anyway for the getValue/setValue-backed
-  // ones a thunk is normally used for, since those never consult `values`.
+  // A static array's keys are known up front, so defaults apply immediately
+  // — get(key) returns a real value before the modal ever opens. A thunk's
+  // key set varies call to call, so those fall back to `default` lazily via
+  // currentValueFor instead.
   if (typeof definitions !== "function") {
     definitions.forEach((def) => {
       if (values[def.key] === undefined) values[def.key] = def.default;
@@ -146,9 +125,7 @@ export function initToolSettings({
     notify();
   }
 
-  // A def's own getValue/setValue (when given) fully own that setting's
-  // value — this module's flat store is only ever consulted for a
-  // definition that didn't opt out of it.
+  // A def's own getValue/setValue, when given, fully own that setting's value.
   function currentValueFor(def) {
     if (typeof def.getValue === "function") return def.getValue();
     return values[def.key] !== undefined ? values[def.key] : def.default;
@@ -199,12 +176,9 @@ export function initToolSettings({
         }
         row.appendChild(select);
       } else if (def.type === "multiselect") {
-        // A visible multi-row listbox (matches this suite's own "Locked
-        // Features"-style pickers elsewhere), not a dropdown that needs a
-        // ctrl/cmd-click to discover — the value is always an array
-        // (empty when nothing's checked, never undefined), so a
-        // getValue/setValue-backed definition can distinguish "nothing
-        // selected" from "never configured" on its own if it needs to.
+        // A visible multi-row listbox (matches this suite's "Locked
+        // Features"-style pickers), not a dropdown needing a ctrl/cmd-click
+        // to discover. Value is always an array, never undefined.
         row = el("div", "d-flex flex-column gap-1");
         const label = document.createElement("label");
         label.className = "form-label fw-semibold mb-0 d-flex align-items-center gap-1";
@@ -262,9 +236,8 @@ export function initToolSettings({
       }
       bodyEl.appendChild(row);
     });
-    // The spans above just got inserted — initHelpSystem's own boot-time
-    // scan (called once, at page load) never saw them, so it has to run
-    // again scoped to this freshly-built content each time the modal opens.
+    // The spans above just got inserted — initHelpSystem's boot-time scan
+    // never saw them, so it reruns scoped to this fresh content.
     void initHelpSystem({ root: bodyEl });
   }
 
@@ -278,10 +251,8 @@ export function initToolSettings({
   }
 
   if (typeof mountButton === "function") {
-    // Same sizing/shape as the other icon-only utility buttons every tool
-    // header already has (pane toggles, theme toggle) — no `btn-sm` — since
-    // that's the header/toolbar convention this button is meant to sit
-    // alongside in practice, not a smaller one-off.
+    // Same sizing/shape as other icon-only header utility buttons (pane
+    // toggles, theme toggle) — no `btn-sm`.
     const button = el("button", "btn btn-outline-secondary d-flex align-items-center justify-content-center");
     button.type = "button";
     button.setAttribute("aria-label", title);
@@ -291,18 +262,14 @@ export function initToolSettings({
     button.appendChild(icon);
     button.addEventListener("click", () => openModal());
     mountButton(button);
-    // Instantiated directly here (not left for the caller's own later
-    // boot-time refreshTooltips() sweep to pick up) — self-contained
-    // regardless of whether this module's own init happens to run before
-    // or after that sweep in a given tool's own init() ordering.
+    // Instantiated directly here, not left for the caller's later boot-time
+    // refreshTooltips() sweep — self-contained regardless of init ordering.
     initTooltip(button, { title, placement: "bottom" });
   }
 
   // Fire-and-forget reconciliation against server-synced values (a
-  // different device/browser may have changed a setting) — local storage
-  // and the button/modal above already work fine before this resolves, this
-  // just corrects `values` (and re-renders the modal if it happens to be
-  // open) once the round trip completes.
+  // different device may have changed a setting) — corrects `values` and
+  // re-renders the modal if open, once the round trip completes.
   if (dataManager?.isAuthenticated?.()) {
     dataManager
       .getUserSettings()
@@ -312,8 +279,7 @@ export function initToolSettings({
         let changed = false;
         resolveDefinitions().forEach((def) => {
           // getValue/setValue-backed definitions never went through this
-          // module's own flat store in the first place (see setValue's own
-          // comment) — nothing here to reconcile against.
+          // module's flat store — nothing to reconcile against.
           if (typeof def.getValue === "function") return;
           if (serverValues[def.key] !== undefined && serverValues[def.key] !== values[def.key]) {
             values[def.key] = serverValues[def.key];

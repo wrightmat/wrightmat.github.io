@@ -1,17 +1,12 @@
-// A shared, server-persisted library of GM-added audio clips (links only —
-// still no file hosting by this app, see soundboard.js's own header
-// comment) for the Dashboard's Soundboard widget — same pattern
-// press/js/font-library.js already established for Press's own custom
-// fonts: a flat JSON file (common/data/audio-clips.json), not a Library
-// kind, since there's no per-clip ownership/sharing to model, just one
-// shared catalog everyone reads from and gm+ can add to. Framework-free
-// (no DataManager import) on purpose, same reasoning font-library.js gives
-// — callers pass whatever auth token they already have.
+// A shared, server-persisted library of GM-added audio clips (links only,
+// no file hosting — see soundboard.js) for the Dashboard's Soundboard
+// widget, same pattern as press/js/font-library.js: a flat JSON file, not
+// a Library kind, since there's no per-clip ownership to model. Framework-
+// free (no DataManager import) — callers pass whatever auth token they have.
 export const BUILTIN_CLIPS = [];
 
-// Clips added at runtime (via the widget's own "Add a clip" form) or loaded
-// from the server on mount — starts empty, grows in-memory immediately on
-// add (optimistic) and is repopulated from the server via loadClipLibrary.
+// Clips added at runtime or loaded from the server on mount — starts
+// empty, grows optimistically on add, repopulated via loadClipLibrary.
 let customClips = [];
 
 export function getAllClips() {
@@ -22,10 +17,8 @@ export function getClipById(id) {
   return customClips.find((clip) => clip.id === id) ?? null;
 }
 
-// Upserts by id — re-registering an id that already exists (this GM's own
-// optimistic add landing again after the server round-trip, or two people
-// adding the same clip independently) replaces it in place rather than
-// duplicating the list.
+// Upserts by id — a re-registered id (this client's own optimistic add
+// landing again after the server round-trip) replaces in place.
 export function registerClip(clip) {
   if (!clip?.id || !clip.url) return null;
   const index = customClips.findIndex((entry) => entry.id === clip.id);
@@ -37,9 +30,8 @@ export function registerClip(clip) {
   return clip;
 }
 
-// Removes it from the in-memory list only — callers pair this with
-// deleteClip for the server-persisted removal, same "update immediately,
-// persist async" shape as adding one.
+// In-memory only — callers pair this with deleteClip for the server-
+// persisted removal, same optimistic-update shape as adding one.
 export function removeClipLocally(id) {
   customClips = customClips.filter((clip) => clip.id !== id);
 }
@@ -52,12 +44,8 @@ async function loadJson(url) {
   return response.json();
 }
 
-// Mirrors font-library.js's own loadCustomFonts exactly — same
-// server-persisted, shared-across-everyone pattern, same "register
-// immediately in-memory, persist async" flow. No internal caching guard
-// (matches loadCustomFonts, not the separately-cached
-// loadGoogleFontsMetadata) — a widget mounted more than once in one session
-// just re-fetches and re-registers, harmless.
+// Mirrors font-library.js's loadCustomFonts. No internal caching guard —
+// a widget mounted twice in one session just re-fetches, harmless.
 export async function loadClipLibrary() {
   try {
     const url = new URL("../../data/audio-clips.json", import.meta.url);

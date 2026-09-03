@@ -1,10 +1,6 @@
-// A small, generic Promise-based wrapper around one IndexedDB object store —
-// not audio-specific, even though the Audio Recorder widget is its first
-// consumer. IndexedDB's own native API is callback/event-based and verbose
-// for what this suite needs (open once, put/getAll/clear against one
-// store); this exists so a future consumer with the same shape of need
-// doesn't hand-roll the same open/onupgradeneeded/transaction boilerplate
-// again. Reach for this before writing a second copy of it.
+// Generic Promise-based wrapper around one IndexedDB object store — not
+// audio-specific despite the Audio Recorder widget being its first
+// consumer. Reach for this before hand-rolling IndexedDB's own callback API.
 
 const dbCache = new Map(); // `${dbName}::${storeName}` -> Promise<IDBDatabase>, so opening twice reuses one connection
 
@@ -58,11 +54,9 @@ export function createIdbStore(dbName, storeName, { keyPath } = {}) {
     async clear() {
       return withStore("readwrite", (store) => store.clear());
     },
-    // Deletes one record by its own store key (the value `put` resolved to,
-    // for an auto-incrementing store) — for a caller that needs to remove
-    // only ITS OWN entries rather than wiping the whole shared store (see
-    // audio-recorder.js's own per-session cleanup for why `clear()` alone
-    // isn't safe when more than one logical "session" can share a store).
+    // Deletes one record by store key — for a caller (e.g. audio-recorder.js)
+    // that must remove only its own entries, since `clear()` wipes the whole
+    // shared store even when multiple logical "sessions" share it.
     async delete(key) {
       return withStore("readwrite", (store) => store.delete(key));
     },

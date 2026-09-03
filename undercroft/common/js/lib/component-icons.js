@@ -1,11 +1,9 @@
 // Single source of truth for "what icon represents this component type,"
-// shared across every tool. Previously Press's own paletteComponents array
-// and Workbench's own COMPONENT_ICONS map each hardcoded icon values
-// independently — for the two type names both tools register (icon, text),
-// they'd drifted to different icons entirely (Press: tabler:star for Icon,
-// tabler:align-left for Text; Workbench: tabler:icons, tabler:typography).
-// Union of every type registered by any tool; each tool imports only the
-// keys it actually uses.
+// shared across every tool. Previously Press's paletteComponents array and
+// Workbench's COMPONENT_ICONS map each hardcoded values independently —
+// for the two shared type names (icon, text) they'd drifted to different
+// icons entirely. Union of every type registered by any tool; each tool
+// imports only the keys it uses.
 export const COMPONENT_ICONS = {
   // Shared between Press and Workbench.
   icon: "tabler:icons",

@@ -1,15 +1,12 @@
 // Auto-numbering for duplicate combatant names ("Goblin" + "Goblin" ->
 // "Goblin 1" + "Goblin 2") — a single shared helper so every way of adding a
-// combatant (Combat Tracker's own one-at-a-time "Add Combatant" box, and
-// Repository's bulk `encounter:` block builder) gets identical behavior
-// instead of each maintaining its own copy.
+// combatant (Combat Tracker's "Add Combatant" box, Repository's bulk
+// `encounter:` block builder) gets identical behavior.
 //
-// Combatant name is a single, directly-editable `combatant.name` field (see
-// combat-tracker.js's renderCombatantEditPanel) — there's no separate "base
-// name" stored anywhere. Numbering is therefore baked into the stored name
-// at add-time, not computed at render time, so every row (and the edit
-// panel's own Name field) always agree, and a GM can still freely rename
-// afterward same as today.
+// Combatant name is a single, directly-editable `combatant.name` field —
+// no separate "base name" stored anywhere. Numbering is baked into the
+// stored name at add-time, not computed at render time, so every row and
+// the edit panel's Name field always agree, and a GM can still rename freely afterward.
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

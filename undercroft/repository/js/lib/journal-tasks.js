@@ -1,19 +1,17 @@
 // Obsidian "Tasks"-plugin-style interactive checkboxes. `- [ ] Todo` /
 // `- [x] Done` GFM task-list syntax already renders as real (but `disabled`)
-// checkboxes via marked's own default GFM support — nothing custom needed
-// to parse the syntax itself. This module makes them clickable (always —
-// that part isn't optional) and keeps the underlying markdown source in
-// sync; whether checking one off *also* appends a "✅ YYYY-MM-DD" completion
-// stamp (Obsidian's own Tasks plugin convention) is Repository's own
-// settings toggle, plumbed through as toggleTaskLine's `appendStamp` option.
+// checkboxes via marked's own default GFM support. This module makes them
+// clickable and keeps the underlying markdown source in sync; whether
+// checking one off also appends a "✅ YYYY-MM-DD" completion stamp
+// (Obsidian's own Tasks-plugin convention) is Repository's own settings
+// toggle, plumbed through as toggleTaskLine's `appendStamp` option.
 // The optional `(?:>\s?)*` prefix tolerates one or more blockquote markers
 // before the list marker — a `[!quest]` objective line in the PAGE's own raw
 // body reads as `> - [ ] ...`, not `- [ ] ...` (the ">" is only stripped once
-// parseCallout pulls a callout's bodyRaw out on its own — see
-// journal-quests.js's own extractQuests). Without this, extractTaskLines run
-// against a whole page (markdown.js's own applyTaskCheckboxes) silently found
-// zero task lines for anything inside a callout, leaving those checkboxes
-// permanently disabled — confirmed real bug, not a hypothetical.
+// parseCallout pulls a callout's bodyRaw out — see journal-quests.js's
+// extractQuests). Without this, extractTaskLines run against a whole page
+// found zero task lines inside any callout, leaving those checkboxes
+// permanently disabled.
 const TASK_LINE_PATTERN = /^((?:>\s?)*\s*[-*+]\s+\[)([ xX])(\]\s*)(.*)$/;
 const COMPLETION_STAMP_PATTERN = /\s*✅\s*\d{4}-\d{2}-\d{2}\s*$/;
 
@@ -25,12 +23,8 @@ function todayStamp() {
 
 // Every `- [ ]`/`- [x]` line, in document order — positionally paired with
 // marked's own rendered checkboxes below (both are the same top-to-bottom
-// scan of the same text), same convention journal-outline.js's heading
-// pairing already uses for its own repo-heading-<index> ids. `checked`/
-// `text` come from the same regex match every caller used to re-run
-// separately (`taskLineText`'s own exec, callers' own checked-state
-// guesses) — surfaced here once so a quest callout's own objective list
-// (journal-quests.js) doesn't need a second pass over the same lines.
+// scan of the same text). Surfaced here once so a quest callout's own
+// objective list (journal-quests.js) doesn't need a second pass.
 export function extractTaskLines(body) {
   const lines = String(body || "").split("\n");
   const tasks = [];
@@ -42,7 +36,7 @@ export function extractTaskLines(body) {
 }
 
 // The line's own text after "- [ ] "/"- [x] " — what a checkbox's <li>
-// should actually display, without re-parsing markdown for it.
+// should display, without re-parsing markdown for it.
 export function taskLineText(body, lineIndex) {
   const line = String(body || "").split("\n")[lineIndex] || "";
   const match = TASK_LINE_PATTERN.exec(line);
@@ -51,12 +45,11 @@ export function taskLineText(body, lineIndex) {
 
 // Pure — toggles one task line's checked state in the raw text and returns
 // the updated full body string, no DOM involved, so app.js's recordHistory
-// can wrap it exactly the same way every other body edit already is.
-// Checking a box always flips [ ]→[x]; whether that *also* appends a
-// "✅ YYYY-MM-DD" stamp is the one thing `appendStamp` controls (Repository's
-// own settings toggle) — unchecking always strips any existing stamp
-// regardless of that setting, since a stamp left behind on an unchecked task
-// would just be stale/wrong, not a matter of preference.
+// can wrap it exactly like every other body edit. Checking a box always
+// flips [ ]→[x]; `appendStamp` (Repository's settings toggle) is the one
+// thing that controls whether a "✅ YYYY-MM-DD" stamp gets appended —
+// unchecking always strips any existing stamp regardless of that setting,
+// since a stamp left on an unchecked task would just be stale.
 export function toggleTaskLine(body, lineIndex, { appendStamp = true } = {}) {
   const lines = String(body || "").split("\n");
   const line = lines[lineIndex];
@@ -75,10 +68,9 @@ export function toggleTaskLine(body, lineIndex, { appendStamp = true } = {}) {
 }
 
 // Replaces everything inside a checkbox's <li> except the checkbox itself
-// with fresh text — task-list line content is simple inline prose, not
-// nested block markdown, so this doesn't need a full re-render of the
-// preview (and the scroll position that would disturb) just to reflect one
-// line's new completion stamp.
+// with fresh text — task-list content is simple inline prose, not nested
+// block markdown, so this avoids a full re-render (and the scroll-position
+// disturbance that would cause) just to reflect one line's new stamp.
 export function updateCheckboxLineText(checkbox, text) {
   const li = checkbox.closest("li");
   if (!li) return;
@@ -89,7 +81,7 @@ export function updateCheckboxLineText(checkbox, text) {
 }
 
 // Runs after marked+DOMPurify — enables whichever checkboxes marked already
-// rendered and wires each one back to its own line number by position.
+// rendered and wires each back to its own line number by position.
 export function applyTaskCheckboxes(container, { body, onToggle } = {}) {
   const tasks = extractTaskLines(body);
   const checkboxes = container.querySelectorAll('input[type="checkbox"]');

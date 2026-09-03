@@ -64,11 +64,10 @@ import {
 // SOURCES now imported from content-fetch.js (shared with Workbench's own
 // player-facing Import Character picker) — see that module's own comment.
 
-// Built and mounted before any of this file's many querySelector("[data-*]")
-// lines below (undo/redo/mapping consts here, library/system/macro consts
-// further down, loomGroup*/loomUser* consts much later in the file) — every
-// one of them keeps working unchanged since each JS-created button carries
-// the exact same data-* attribute/selector its static markup used to.
+// Each button below is JS-built once but keeps the exact data-*
+// attribute/selector the old static markup used, so every querySelector
+// further down (undo/redo, library/system/macro, loomGroup*/loomUser*) still
+// resolves unchanged.
 createToolbarButtonGroup([
   { action: "new", label: "New Mapping", attrs: { "data-action": "new-mapping", "data-loom-view-panel": "import" } },
   { action: "save", label: "Save Mapping", disabled: true, attrs: { "data-action": "save-mapping", "data-loom-view-panel": "import" } },
@@ -143,13 +142,9 @@ createToolbarButtonGroup([
     attrs: { "data-macro-delete": true, "data-loom-view-panel": "macros", hidden: true },
   },
 ]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
-// No "New Feature" here, unlike System/Macro's own groups — see the
-// Features tab's own header comment for why (a Feature created from
-// scratch here would be missing name/description/mechanics, which this
-// tab deliberately doesn't author; that still happens on the Library tab).
-// Duplicate is still offered despite no New — cloning an existing Feature
-// under a new id is a sensible action even without blank authoring (see
-// featureDuplicateButton's own handler comment).
+// No New here (unlike System/Macro) — a blank Feature would be missing
+// name/description/mechanics, which this tab doesn't author (that's the
+// Library tab's job). Duplicate still makes sense on an existing Feature.
 createToolbarButtonGroup([
   {
     action: "save",
@@ -222,19 +217,16 @@ createToolbarButtonGroup([
     attrs: { "data-loom-group-delete": true, "data-loom-view-panel": "groups", hidden: true },
   },
 ]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — Undo/Redo are shared across
-// every tab (no data-loom-view-panel attr, always visible regardless of the
-// active tab) and get their own little two-button group, same convention
-// every other tool's toolbar now uses (see forge/js/app.js's own comment).
+// Undo/Redo get their own group since they're shared across every tab (no
+// data-loom-view-panel attr, always visible) — same convention every other
+// tool's toolbar uses.
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-action": "undo-mapping" } },
   { action: "redo", label: "Redo", attrs: { "data-action": "redo-mapping" } },
 ]).forEach((button) => document.querySelector("[data-loom-undo-toolbar-mount]")?.appendChild(button));
 
-// "Add Property"/"Add Action" — small inline compact-kind buttons (top
-// tooltip, plain icon), not part of the left-pane toolbar cluster above.
-// Original markup used `btn-sm p-1` rather than createIconButton's own
-// compact-kind padding; `p-1` is added via className to match exactly.
+// Small inline compact icon buttons, not part of the toolbar cluster above;
+// `p-1` className matches the original markup's padding exactly.
 document.querySelector("[data-system-add-property-mount]")?.appendChild(
   createIconButton({
     icon: "tabler:plus",
@@ -269,13 +261,10 @@ document.querySelector("[data-loom-group-add-property-mount]")?.appendChild(
 );
 const loomGroupAddPropertyButton = document.querySelector("[data-loom-group-add-property]");
 
-// Property Inspector toolbar (right pane) — New/Delete/Duplicate/Required
-// Property. Built directly via createIconButton rather than
-// createToolbarButtonGroup: it needs top tooltip placement (this toolbar
-// sits in the right pane, unlike the bottom-placement left-pane clusters
-// above) and Required is a genuine pressed/unpressed toggle
-// (aria-pressed), not a fire-once action, so it doesn't fit the
-// New/Save/Delete preset shape.
+// Property Inspector toolbar (right pane) — built via createIconButton
+// directly, not createToolbarButtonGroup: needs top tooltip placement (right
+// pane, not bottom) and Required is a real pressed/unpressed toggle, not a
+// fire-once action.
 const propertyInspectorToolbarMount = document.querySelector("[data-property-inspector-toolbar-mount]");
 if (propertyInspectorToolbarMount) {
   propertyInspectorToolbarMount.append(
@@ -356,12 +345,10 @@ if (groupPropertyInspectorToolbarMount) {
   );
 }
 
-// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
-// for why: an appended-into wrapper stays an empty-but-in-flow flex item
-// even while its field is conditionally hidden, silently spending a full
-// gap-3 on both sides of it. Any class the static mount div itself carried
-// is merged onto the built field first so removing the wrapper doesn't
-// lose that layout.
+// replaceWith, not appendChild (see press/js/app.js's mountInspectorField):
+// an appended-into wrapper stays an empty flex item when its field is
+// hidden, silently spending a gap-3. The mount's own classes are merged
+// onto the built field first so the layout survives removal.
 function mountField(key, element) {
   const mount = document.querySelector(`[data-field-mount="${key}"]`);
   if (!mount) return;
@@ -371,12 +358,9 @@ function mountField(key, element) {
 mountField("mapping-select", createCompactField({ type: "select", id: "loomMappingSelect", label: "Mapping", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-mapping-select" }));
 
 const mappingSelect = document.querySelector("[data-mapping-select]");
-// Adopts each section's existing static `[data-xxx-panel]` markup (its own
-// content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as the collapsible section's content; createCollapsibleSection's
-// own internal bindCollapsibleToggle replaces the old standalone calls
-// below. Selection/Mapping Tree/Entities/Data all start expanded
-// (collapsed: false), matching their original aria-expanded="true" markup.
+// Adopts each section's existing static `[data-xxx-panel]` markup as content
+// (only the header+chevron wrapper is JS-built). Selection/Mapping
+// Tree/Entities/Data start expanded, matching their original markup.
 const mappingsSection = createCollapsibleSection({
   label: "Selections",
   collapsed: false,
@@ -384,11 +368,9 @@ const mappingsSection = createCollapsibleSection({
 });
 document.querySelector("[data-mappings-mount]")?.appendChild(mappingsSection.section);
 
-// Same "Selections" collapsible convention as every other tab's own
-// left-pane picker(s) — see the Systems/Macros/Features/Library/Users/
-// Groups selects wrapped just below. Each keeps its own tab-specific
-// helpTopic (previously a plain <h2>+help-icon heading removed from the
-// static markup) so the same explanatory content stays reachable.
+// Same "Selections" collapsible convention as every other tab. Each keeps
+// its own tab-specific helpTopic so the explanatory content that used to
+// live in a static heading stays reachable.
 [
   ["systems", "loom.systems"],
   ["macros", "loom.macros"],
@@ -411,30 +393,25 @@ const stepPalette = document.querySelector("[data-step-palette]");
 const sampleDataInput = document.querySelector("[data-sample-data-input]");
 const sampleDataApplyButton = document.querySelector("[data-sample-data-apply]");
 const sourceSelect = document.querySelector("[data-source-select]");
-// Purely a categorization tag on the mapping itself ($dataType, see
-// enterMappingMode/the Save handler below) — unlike sourceSelect, it never
-// locks (a GM can freely retag a mapping's data type at any time) and has
-// no bearing on how Fetch behaves. Controls which mappings Workbench's own
-// player-facing "Import Character" flow offers.
+// A categorization tag on the mapping ($dataType) — never locks (unlike
+// sourceSelect) and doesn't affect Fetch; controls which mappings
+// Workbench's player-facing Import Character flow offers.
 const dataTypeSelect = document.querySelector("[data-data-type-select]");
-// A friendly name shown in place of this mapping's own raw id in
-// Workbench's player-facing "Import Character" picker (content-fetch.js's
-// listCharacterMappings) — same "stamp at save time" handling as
-// dataTypeSelect above, no live dirty-tracking wiring needed.
+// Friendly name shown instead of the mapping's raw id in Workbench's Import
+// Character picker (content-fetch.js's listCharacterMappings) — stamped at
+// save time like dataTypeSelect above.
 const mappingDescriptionInput = document.querySelector("[data-mapping-description]");
 const sourceValueInput = document.querySelector("[data-source-value]");
-// Shown instead of sourceValueInput above only for a source flagged
-// `file: true` (SOURCES, content-fetch.js) — currently just Fantasy
-// Statblocks' own markdown upload; every other source's value is typed
-// text/a URL.
+// Shown instead of sourceValueInput only for a source flagged `file: true`
+// (SOURCES, content-fetch.js) — currently just Fantasy Statblocks' markdown
+// upload.
 const sourceFileInput = document.querySelector("[data-source-file]");
 const sourceValueLabelRow = document.querySelector("[data-source-value-label-row]");
 const sourceFetchButton = document.querySelector("[data-source-fetch]");
 const sourceFetchStatus = document.querySelector("[data-source-fetch-status]");
-// Folder-picker for Fantasy Statblocks bulk import — see loom/index.html's
-// own comment on data-source-bulk-folder for why this can't just be the
-// `multiple` sourceFileInput itself (`webkitdirectory` forces folder-only
-// mode on whichever input has it).
+// Folder-picker for Fantasy Statblocks bulk import — can't reuse the
+// `multiple` sourceFileInput since `webkitdirectory` forces folder-only mode
+// on whichever input has it.
 const sourceBulkFolderInput = document.querySelector("[data-source-bulk-folder]");
 const sourceBulkFolderButton = document.querySelector("[data-source-bulk-folder-button]");
 const bulkImportCard = document.querySelector("[data-bulk-import-card]");
@@ -448,9 +425,9 @@ const entitiesSummary = document.querySelector("[data-entities-summary]");
 const entitiesList = document.querySelector("[data-entities-list]");
 const entitiesSaveAllButton = document.querySelector("[data-entities-save-all]");
 const entitiesSaveAllProgress = document.querySelector("[data-entities-save-all-progress]");
-// Entities and Data (io) both need programmatic re-collapse later
-// (enterMappingMode's workflow-mode logic below) — their setCollapsed
-// return values are captured for that, same as treeSetCollapsed below.
+// Entities and Data (io) need programmatic re-collapse later (enterMappingMode's
+// workflow-mode logic) — their setCollapsed is captured for that, same as
+// treeSetCollapsed below.
 const entitiesSection = createCollapsibleSection({
   label: "Entities",
   collapsed: false,
@@ -465,11 +442,9 @@ const ioSection = createCollapsibleSection({
 });
 document.querySelector("[data-io-mount]")?.appendChild(ioSection.section);
 const ioSetCollapsed = ioSection.setCollapsed;
-// Builds and mounts a collapsible-section chevron toggle via the shared
-// factory, for a header whose other content (label, Refresh button) stays
-// static HTML — the section-level createCollapsibleSection isn't used here
-// since it would rebuild the whole header, conflicting with that sibling
-// Refresh button (see Orrery's identical helper for the precedent).
+// Builds a chevron toggle only, for a header whose label/Refresh button stay
+// static HTML — createCollapsibleSection isn't used since it would rebuild
+// the whole header (see Orrery's identical helper).
 function createCollapsibleToggleButton(mountSelector, collapsed) {
   const button = createIconButton({
     icon: "tabler:chevron-right",
@@ -486,9 +461,8 @@ const recentSavesRefreshButton = document.querySelector("[data-recent-saves-refr
 const recentSavesToggle = createCollapsibleToggleButton("[data-recent-saves-toggle-mount]", true);
 const recentSavesPanel = document.querySelector("[data-recent-saves-panel]");
 const treeContainer = document.querySelector("[data-mapping-tree]");
-// Mapping Tree needs programmatic re-collapse later (enterMappingMode's
-// workflow-mode logic below) — its setCollapsed return value is captured
-// for that, same as entitiesSetCollapsed/ioSetCollapsed above.
+// Mapping Tree needs programmatic re-collapse later (enterMappingMode) — its
+// setCollapsed is captured, same as entitiesSetCollapsed/ioSetCollapsed above.
 const treeSection = createCollapsibleSection({
   label: "Mapping Tree",
   collapsed: false,
@@ -527,9 +501,8 @@ mountField("system-title", createCompactField({ type: "text", id: "loomSystemTit
 mountField("system-version", createCompactField({ type: "text", id: "loomSystemVersion", label: "Version", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-system-version" }));
 
 const libraryIdInput = document.querySelector("[data-library-id]");
-// Assigned Systems/Settings are collapsible for the same reason every other
-// Loom section is (Selection/Entities/Data/Mapping Tree above) — adopts its
-// own pre-existing static list div as content, same pattern as those.
+// Same collapsible pattern as Selection/Entities/Data/Mapping Tree above —
+// adopts its pre-existing static list div as content.
 const librarySystemList = document.querySelector("[data-library-system-list]");
 const librarySystemSection = createCollapsibleSection({
   label: "Assigned Systems",
@@ -573,20 +546,18 @@ const systemSaveButton = document.querySelector("[data-system-save]");
 const systemDuplicateButton = document.querySelector("[data-system-duplicate]");
 const systemDeleteButton = document.querySelector("[data-system-delete]");
 const systemAddPropertyButton = document.querySelector("[data-system-add-property]");
-// Gated behind a "Select a system..." message, same convention as Groups/
-// Users — hidden until a system is loaded or New is explicitly clicked (see
-// newSystemEditor/loadSystemIntoEditor below), not shown by default just
-// because a blank draft exists in the form underneath.
+// Gated behind a "Select a system..." message, same convention as
+// Groups/Users — hidden until a system is loaded or New is clicked, not
+// shown just because a blank draft exists underneath.
 const systemsEmpty = document.querySelector("[data-systems-empty]");
 const systemsPanel = document.querySelector("[data-systems-panel]");
 function setSystemFormVisible(visible) {
   if (systemsEmpty) systemsEmpty.hidden = visible;
   if (systemsPanel) systemsPanel.classList.toggle("d-none", !visible);
 }
-// Read-only, live "the whole record as it'll be saved" view — see
-// buildSystemPayload/renderSystemJsonPreview below. Built via the shared
-// ui-components.js factory (pilot migration) instead of hand-written markup
-// + separate collapsible/copy wiring.
+// Read-only live "whole record as it'll be saved" view (buildSystemPayload/
+// renderSystemJsonPreview below), built via the shared ui-components.js
+// factory instead of hand-written markup.
 const systemJsonPanelInstance = createJsonDataPanel({
   label: "JSON Data",
   helpTopic: "loom.systemJsonPreview",
@@ -604,13 +575,10 @@ const systemJsonPanelInstance = createJsonDataPanel({
   },
 });
 document.querySelector("[data-system-json-mount]")?.appendChild(systemJsonPanelInstance.section);
-// Property Inspector (right pane) — a second, more spacious way to edit
-// whichever property row is currently selected in the Properties list above,
-// for anyone who finds that list's single-row-per-property layout cramped or
-// confusing. Deliberately NOT a replacement for that list — every field here
-// proxies the selected row's own real input (see createPropertyInspector,
-// common/js/lib/property-schema-editor.js), so editing in either place is
-// the exact same edit, just through a different control.
+// Property Inspector (right pane) — a more spacious way to edit the selected
+// Properties-list row, not a replacement for it: every field here proxies
+// that row's own real input (createPropertyInspector,
+// property-schema-editor.js), so either place edits the same thing.
 const systemInspectorEmpty = document.querySelector("[data-system-inspector-empty]");
 const systemInspectorDetails = document.querySelector("[data-system-inspector-details]");
 const systemInspectorFields = document.querySelector("[data-system-inspector-fields]");
@@ -618,11 +586,10 @@ const systemInspectorNewButton = document.querySelector("[data-system-inspector-
 const systemInspectorDeleteButton = document.querySelector("[data-system-inspector-delete]");
 const systemInspectorDuplicateButton = document.querySelector("[data-system-inspector-duplicate]");
 const systemInspectorRequiredButton = document.querySelector("[data-system-inspector-required]");
-// Collapsible, same convention as every other right-pane/Loom section — see
-// the Group Property Inspector's identical wrapping further down. Expanded
-// by default: unlike Assigned Systems/Settings/Share link, this was never
-// collapsed before it became a collapsible section, so nothing changes for
-// anyone with the tab already open.
+// Collapsible, same convention as every other Loom section (see Group
+// Property Inspector below). Expanded by default — unlike Assigned
+// Systems/Settings, this was never collapsed before, so nothing changes for
+// existing users.
 const systemInspectorContent = document.querySelector("[data-system-inspector-content]");
 const systemInspectorSection = createCollapsibleSection({
   label: "Property Inspector",
@@ -631,12 +598,9 @@ const systemInspectorSection = createCollapsibleSection({
 }).section;
 document.querySelector("[data-system-inspector-mount]")?.appendChild(systemInspectorSection);
 
-// Macros tab — its own dedicated authoring UI (mirrors the Systems tab
-// above: a select of existing records + New/Save/Delete, editing one at a
-// time), NOT a section bolted onto the generic Library JSON editor. The
-// generic Library tab (libraryJsonTextarea etc. above) still edits a
-// "macro" kind entity too, same as any other kind, but as raw JSON only —
-// this tab is the non-JSON authoring surface for it, same relationship
+// Macros tab — its own dedicated authoring UI (mirrors Systems: select +
+// New/Save/Delete), not bolted onto the generic Library JSON editor. The
+// Library tab can still edit a "macro" entity as raw JSON, same relationship
 // Systems has to its own kind.
 mountField("macro-select", createCompactField({ type: "select", id: "loomMacroSelect", label: "Macro", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-macro-select" }));
 mountField("macro-id", createCompactField({ type: "text", id: "loomMacroId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-id", disabled: true }));
@@ -664,10 +628,9 @@ function setMacroFormVisible(visible) {
 // The set of function names never depends on which lookup tables the
 // factory closes over — an empty stand-in is enough just to enumerate them.
 const CUSTOM_FUNCTION_NAMES = Object.keys(createMappingCustomFunctions({}));
-// PROPERTY_TYPES, and the whole Properties row editor (type-cycling,
-// drag-to-reorder, nested Sub-fields/Record fields, value lists) now live in
-// common/js/lib/property-schema-editor.js, shared with the Group Properties
-// editor below — see that module's own header comment.
+// PROPERTY_TYPES and the Properties row editor (type-cycling, drag-to-reorder,
+// nested fields, value lists) live in property-schema-editor.js, shared with
+// Group Properties below.
 
 let mappingDefinition = null;
 let selectedNode = null;
@@ -675,14 +638,11 @@ let sampleData = {};
 let currentMappingId = null;
 let isApplyingHistory = false;
 let dataManager = null;
-// The D&D 5e System's lookup tables/custom functions for the live mapping
-// preview below — used to be a static import from common/js/lib/
-// lookup-tables.js, now derived at runtime from sys.dnd5e's own fields
-// (edited in Loom itself) via system-lookup-tables.js's deriveLookupTables,
-// fetched once at startup (see init()) since runLivePreview() reads this
-// synchronously on every mapping edit. Defaults to empty so the Mapping tab
-// still works for editing structure before the fetch resolves — only
-// `lookup()` calls resolve blank until then.
+// D&D 5e's lookup tables/custom functions for the live mapping preview —
+// derived at runtime from sys.dnd5e's own fields via deriveLookupTables
+// (system-lookup-tables.js), fetched once at startup since runLivePreview
+// reads this synchronously. Defaults empty so the Mapping tab still works
+// before the fetch resolves; only `lookup()` calls resolve blank until then.
 let ddbLookupContext = { lookupTables: {}, customFunctions: createMappingCustomFunctions({}) };
 let shareModal = null;
 let undoStack = null;
@@ -690,17 +650,13 @@ let status = null;
 let lastMappedResult = null;
 
 // --- Undo/redo -------------------------------------------------------------
-// One shared undo stack across every tab (Import/Library/Systems) — the
-// toolbar's Undo/Redo pair is always visible (see setLoomView) and
-// dispatches by each pushed entry's `type` to the matching tab's
-// create/apply-snapshot pair below. Whole-form JSON snapshots per domain,
-// mirroring press/js/app.js's recordUndoableChange pattern: cheap to
-// diff/clone at this scale, and side-steps having to track stable node/row
-// identity across undo/redo (selection/focus just resets, same as the
-// original mapping-only version already did). The Library/System
-// create/apply functions are declared further down (with the rest of each
-// tab's own logic) — referencing them here works because `function`
-// declarations hoist fully, unlike `const`.
+// One shared undo stack across every tab — the toolbar's Undo/Redo pair is
+// always visible and dispatches by each entry's `type` to the matching tab's
+// create/apply-snapshot pair. Whole-form JSON snapshots per domain (mirrors
+// press/js/app.js's recordUndoableChange): cheap at this scale, and avoids
+// tracking stable node/row identity across undo/redo. The per-tab
+// create/apply functions are declared further down — works via `function`
+// hoisting.
 const SNAPSHOT_HANDLERS = {
   mapping: { create: createMappingSnapshot, apply: applyMappingSnapshot },
   library: { create: createLibrarySnapshot, apply: applyLibrarySnapshot },
@@ -710,19 +666,14 @@ const SNAPSHOT_HANDLERS = {
 };
 
 // --- Save/Rename/Delete gating -----------------------------------------
-// "Clean" baseline per tab (the state at last load/new/save) — reuses the
-// same per-type snapshot functions undo/redo already has, so dirty-checking
-// doesn't need its own parallel tracking. Save only lights up once the
-// current state actually differs from that baseline; Rename/Delete only
-// need a real, currently-loaded item (an id), not necessarily a change.
+// "Clean" baseline per tab reuses undo/redo's own snapshot functions, so
+// dirty-checking needs no parallel tracking. Save lights up once state
+// differs from that baseline; Rename/Delete only need a real loaded item.
 const cleanSnapshots = { mapping: null, library: null, system: null, macro: null, feature: null };
 
-// Declared here (a no-op placeholder, reassigned once real DOM/state is
-// ready — see buildSystemPayload/collectSystemProperties below) so
-// updateToolbarState below can call it unconditionally on every System
-// edit without a `let`-in-temporal-dead-zone ReferenceError: this const
-// block sits well before that later reassignment runs, `let` has no TDZ
-// issue once past its own declaration, only before it.
+// No-op placeholder, reassigned once real DOM/state is ready
+// (buildSystemPayload below) — lets updateToolbarState call it
+// unconditionally without a temporal-dead-zone error.
 let renderSystemJsonPreview = () => {};
 
 function markClean(type) {
@@ -757,9 +708,8 @@ function canDeleteLibrary() {
   return libraryEntryAllowsDelete(loomLibraryTableState.activeKind, id);
 }
 
-// Same "there's a real id typed" gate as canDuplicateSystem, without also
-// requiring isDirty("library") — duplicating an unmodified, already-saved
-// entity is exactly as valid as duplicating a mid-edit one.
+// Same "real id typed" gate as canDuplicateSystem, minus isDirty —
+// duplicating an unmodified saved entity is just as valid as a mid-edit one.
 function canDuplicateLibrary() {
   return Boolean(loomLibraryTableState.activeKind && (libraryIdInput?.value || "").trim() && currentLibraryEntity());
 }
@@ -772,9 +722,8 @@ function canDeleteSystem() {
   return systemAllowsDelete(systemSelect?.value);
 }
 
-// Enabled off the same "there's a real id typed" check Save uses, but
-// without also requiring isDirty("system") — duplicating an unmodified,
-// already-saved System is exactly as valid as duplicating a mid-edit one.
+// Same "real id typed" check Save uses, minus isDirty — duplicating an
+// unmodified saved System is just as valid as a mid-edit one.
 function canDuplicateSystem() {
   return Boolean((systemIdInput?.value || "").trim());
 }
@@ -793,13 +742,10 @@ function canDuplicateMacro() {
   return Boolean((macroIdInput?.value || "").trim());
 }
 
-// Surfaces *why* Save is disabled for the common case of broken JSON —
-// canSaveLibrary() already silently requires currentLibraryEntity() to
-// parse, but a disabled button with no explanation left the user unable to
-// tell "invalid JSON" apart from "nothing changed yet" (see the npc title
-// fix: a test edit that broke the JSON looked identical to no edit at all).
-// Blank/untouched textarea is treated as neutral, not an error, so this
-// doesn't fire before anything's ever been loaded.
+// Surfaces *why* Save is disabled for broken JSON — canSaveLibrary()
+// silently requires valid JSON, but a disabled button alone can't
+// distinguish "invalid JSON" from "nothing changed". Blank/untouched
+// textarea is treated as neutral, not an error.
 function updateLibraryJsonFeedback() {
   if (!libraryJsonTextarea) return;
   const raw = libraryJsonTextarea.value || "";
@@ -874,15 +820,12 @@ function recordUndoableChange(type, action) {
   updateToolbarState();
 }
 
-// Free-text/number/select fields (Library's id/JSON, System's id/title/
-// version/property rows) can't be wrapped in recordUndoableChange the way a
-// button click can — the browser already mutated the field by the time any
-// listener fires. Instead this snapshots on focus-in (before the edit) and
-// compares against a snapshot on commit
-// (`change`, which fires once on blur/Enter, not per keystroke — one undo
-// step per edit rather than one per character). `container` may be the
-// field itself (non-delegated) or a row-holding container with `selector`
-// naming which descendants count (for dynamically added/removed rows).
+// Free-text/number/select fields can't wrap in recordUndoableChange like a
+// button click — the field's already mutated by the time any listener
+// fires. Instead this snapshots on focus-in and commits on `change`
+// (blur/Enter, not per keystroke — one undo step per edit). `container` may
+// be the field itself, or a row-holding container with `selector` naming
+// which descendants count.
 const pendingFieldUndoSnapshots = {};
 
 function wireUndoTracking(container, type, { selector = null } = {}) {
@@ -894,9 +837,9 @@ function wireUndoTracking(container, type, { selector = null } = {}) {
     if (isApplyingHistory || !undoStack || !handler) return;
     pendingFieldUndoSnapshots[type] = handler.create();
   });
-  // Live, on every keystroke — Save should light up as soon as the content
-  // actually differs, not only once the field loses focus (that's just when
-  // an undo *step* gets committed, a coarser granularity — see below).
+  // Live on every keystroke — Save should light up as soon as content
+  // differs, not only once the field loses focus (that's just when an undo
+  // step commits).
   container.addEventListener("input", (event) => {
     if (!matchesTarget(event.target)) return;
     updateToolbarState();
@@ -1346,30 +1289,24 @@ if (treeContainer) {
   treeContainer.addEventListener("mouseleave", () => setHoveredElement(null));
 }
 
-// --- Workflow mode: a mapping with a fixed $source (already saved/loaded)
-// favors the Entities pane; a brand-new mapping (no $source yet) favors the
-// Mapping Tree instead. Input/Output stays expanded either way. This only
-// fires on actual mode transitions (load/new/first-save), not on every
-// small edit, so it doesn't fight the user's own manual collapse/expand.
+// --- Workflow mode: a mapping with a fixed $source favors the Entities
+// pane; a new mapping (no $source yet) favors the Mapping Tree. Only fires
+// on load/new/first-save, not every edit, so it doesn't fight manual
+// collapse/expand.
 //
-// Data Source itself is never disabled — Loom is the only place a mapping's
-// $source can be edited at all (Workbench's own player-facing Import
-// Character flow has no such control, see content-fetch.js), so locking it
-// here once set would make a mistagged mapping's $source permanently
-// unfixable short of hand-editing its JSON file. applySourceSelection just
-// reflects the mapping's own current value; the Save handler below now
-// always stamps whatever's currently selected, not only when unset.
+// Data Source is never disabled — Loom is the only place $source can be
+// edited (Workbench's Import Character flow has no such control), so
+// locking it would make a mistagged $source unfixable short of hand-editing
+// JSON. The Save handler always stamps whatever's currently selected.
 
-// Toggles which of sourceValueInput/sourceFileInput is actually shown for
-// `active` — the one place both this function and updateSourceUi below
-// (Data Source dropdown's own change handler) need to agree on which
-// element to display, so it isn't duplicated between them.
+// Toggles which of sourceValueInput/sourceFileInput is shown for `active` —
+// shared with updateSourceUi below so the logic isn't duplicated.
 function applySourceValueVisibility(active) {
   if (sourceValueInput) sourceValueInput.classList.toggle("d-none", Boolean(active.file));
   if (sourceFileInput) sourceFileInput.classList.toggle("d-none", !active.file);
   // Folder-picker button only makes sense for a `bulk: true` + `file: true`
-  // source (Fantasy Statblocks) — SRD's own bulk fetch reads the same typed
-  // value/URL input above, no file picker needed at all.
+  // source (Fantasy Statblocks) — SRD's own bulk fetch reads the typed
+  // value/URL input above, no file picker needed.
   sourceBulkFolderButton?.classList.toggle("d-none", !(active.bulk && active.file));
   if (sourceFetchStatus) sourceFetchStatus.classList.add("d-none");
 }
@@ -1389,13 +1326,10 @@ function enterMappingMode(definition) {
   if (mappingDescriptionInput) {
     mappingDescriptionInput.value = (definition && typeof definition === "object" && definition.$description) || "";
   }
-  // A source that ships its own well-known list endpoint (the 5e API's own
-  // documented URLs) pre-fills it here so picking the mapping alone is
-  // enough to fetch everything of that kind — the user can still edit it
-  // down to one specific item's own URL, or leave it as-is for a bulk
-  // "Fetch All". Only ever applied on a freshly loaded mapping (this
-  // function's own entry point), never overwrites an in-progress edit to
-  // the SAME mapping's own value.
+  // A source with a well-known list endpoint (the 5e API's documented URLs)
+  // pre-fills it so picking the mapping alone is enough to fetch everything
+  // of that kind. Only applied on a freshly loaded mapping — never
+  // overwrites an in-progress edit.
   if (sourceValueInput && definition?.$defaultSourceValue) {
     sourceValueInput.value = definition.$defaultSourceValue;
   }
@@ -1554,10 +1488,9 @@ if (sourceSelect) {
   updateSourceUi();
 }
 
-// Whichever file input (the `multiple` sourceFileInput, or the folder-picker
-// sourceBulkFolderInput) was used most recently — a single `<input>` can't
-// offer both a normal multi-select and `webkitdirectory` folder-picker mode
-// at once, so there are two, both feeding the same Fetch handler below.
+// Whichever file input was used most recently — a single `<input>` can't
+// offer both multi-select and `webkitdirectory` folder mode, so there are
+// two, both feeding the same Fetch handler below.
 let pickedFiles = null;
 
 if (sourceFileInput) {
@@ -1574,12 +1507,10 @@ if (sourceBulkFolderButton) {
   sourceBulkFolderButton.addEventListener("click", () => sourceBulkFolderInput?.click());
 }
 
-// Which bulk loader a `file: true, bulk: true` source's own multi-file pick
-// feeds into — every such source parses its own files independently (no
-// mapping-engine involvement yet, same "raw records first, map at import
-// time" reasoning beginBulkImport's own comment already gives), so this is
-// the one place that raw-parse choice has to dispatch on the selected
-// source rather than always assuming Fantasy Statblocks.
+// Which bulk loader a `file:true, bulk:true` source's multi-file pick feeds
+// into — each source parses its files independently (raw records first,
+// mapped at import time), so this dispatches on the selected source rather
+// than assuming Fantasy Statblocks.
 const BULK_FILE_LOADERS = {
   "fantasy-statblocks": loadFantasyStatblockDataBulk,
   "markdown-wonder": loadMarkdownWonderDataBulk,
@@ -1593,17 +1524,12 @@ function setFetchStatus(text) {
 
 // Fetch itself detects bulk vs. single: a list-shaped SRD result, or more
 // than one file picked for Fantasy Statblocks, routes into the checklist
-// below instead of straight into the live preview — no separate Fetch All
-// button (per explicit request: "flex the existing Fetch button INTO a
-// Fetch All when a directory is provided").
-// Summarizes a bulk-fetch result array (SRD's own `_bulkError`/`rateLimited`
-// tagging, content-fetch.js's loadSrdData — loadFantasyStatblockDataBulk
-// uses the same `_bulkError` shape but never sets `rateLimited`) into one
-// toast/status-line message — plain success when nothing failed, an
-// explicit rate-limit callout when that's why some items are missing
-// (rather than the generic "N failed" every other partial-failure gets),
-// since that one specifically means "try again later," not "something's
-// wrong with these records."
+// below instead of the live preview — no separate Fetch All button (the
+// existing Fetch button doubles as Fetch All when a directory is provided).
+// Turns a bulk-fetch result array (SRD's `_bulkError`/`rateLimited`
+// tagging) into one toast: plain success, or an explicit rate-limit callout
+// (vs. the generic "N failed") since a rate limit means "try again later,"
+// not "something's wrong with these records."
 function bulkFetchSummary(items) {
   const total = items.length;
   const failed = items.filter((item) => item?._bulkError).length;
@@ -1621,15 +1547,11 @@ if (sourceFetchButton) {
     const source = SOURCES.find((entry) => entry.id === sourceSelect?.value) || SOURCES[0];
     sourceFetchButton.disabled = true;
     setFetchStatus("Fetching…");
-    // Tracks whether the try block ended in an error/partial-failure state
-    // — the finally block below only clears the status line on a clean
-    // success, so a failure (a thrown error, or a bulk fetch that came back
-    // with some items rate-limited/failed) stays visibly readable next to
-    // the Fetch button instead of silently vanishing the instant the
-    // button re-enables. Confirmed live: a 429 partway through a large SRD
-    // list used to show nothing in the app at all — only the transient
-    // error toast, easy to miss on a fetch that runs for a minute or more,
-    // and even that got wiped by an unconditional setFetchStatus("") here.
+    // Tracks whether the try block ended in error/partial-failure — the
+    // finally block only clears the status line on clean success, so a
+    // failure (thrown error, or some bulk items rate-limited/failed) stays
+    // visible next to the Fetch button instead of vanishing when it
+    // re-enables.
     let statusMessage = "";
     try {
       if (source.file) {
@@ -1694,15 +1616,14 @@ if (sourceFetchButton) {
 // --- Bulk import (checklist + Import Selected) -----------------------
 
 // Raw records fetched in bulk, not yet mapped — mapping is deferred to
-// import time (per checked item) rather than run eagerly on all of them,
-// since rendering the checklist just needs each item's own raw `name` and
-// doesn't need to wait on hundreds of mapping-engine runs first.
+// import time per item, since the checklist only needs each item's raw
+// `name`.
 let bulkRawItems = [];
 const bulkSelected = new Set();
-// Indices already imported this session — kept as a separate set (rather
-// than splicing bulkRawItems) so bulkSelected's existing indices stay valid;
-// renderBulkChecklist skips these instead, giving the "row disappears once
-// imported" feedback without any index-shifting bugs.
+// Indices already imported this session — a separate set (not splicing
+// bulkRawItems) so bulkSelected's indices stay valid; renderBulkChecklist
+// skips these to give the "row disappears" feedback without index-shifting
+// bugs.
 const bulkImported = new Set();
 
 function bulkItemLabel(item) {
@@ -1781,14 +1702,10 @@ if (bulkImportSelectedButton) {
     bulkImportSelectedButton.disabled = true;
     let imported = 0;
     const failures = [];
-    // Sequential, not Promise.all — deliberately: (1) a public free API
-    // shouldn't get hundreds of parallel requests fired at once from a
-    // single click, and (2) each save's own Feature-matching
-    // (saveEntity → convertStatBlockToFeatures) benefits from running in
-    // order — a later monster in this same batch reuses a Feature an
-    // earlier one just created (e.g. "Multiattack" converging to one
-    // shared Feature instead of many near-duplicates), the same continuity
-    // a real one-at-a-time import already has.
+    // Sequential, not Promise.all: a public free API shouldn't get hundreds
+    // of parallel requests from one click, and Feature-matching benefits
+    // from running in order (a later monster can reuse a Feature an earlier
+    // one just created, e.g. Multiattack converging to one shared Feature).
     for (let i = 0; i < indices.length; i += 1) {
       const index = indices[i];
       const rawItem = bulkRawItems[index];
@@ -1800,13 +1717,11 @@ if (bulkImportSelectedButton) {
         if (!entities.length) throw new Error("Mapping produced no save-able entity.");
         for (const entity of entities) {
           // SRD's own `index` (e.g. "adult-black-dragon") is already a
-          // clean canonical slug — preferred over re-slugifying the
-          // display name. Fantasy Statblocks items have no `index`, so
-          // this falls back to the same default the single-save prompt
-          // itself uses. `rawItem.url` is each item's OWN detail URL (SRD
-          // only) — resolved to an absolute URL the same way a manual
-          // paste into the Fetch field would be, NOT the shared list-
-          // endpoint value sourceValueInput still holds.
+          // clean canonical slug — preferred over re-slugifying the name.
+          // Fantasy Statblocks items have no `index`, falling back to the
+          // single-save prompt's own default. `rawItem.url` is each item's
+          // own detail URL, not the shared list-endpoint value
+          // sourceValueInput holds.
           const autoId = rawItem.index || slugify(entity.name);
           const url = rawItem.url ? normalizeSrdInput(rawItem.url) : undefined;
           await saveEntity(entity, { autoId, url, quiet: true });
@@ -1829,16 +1744,14 @@ if (bulkImportSelectedButton) {
 }
 
 // --- Entities: one-to-many expansion + per-entity save ---------------------
-// Convention, not engine metadata: a mapped result with a top-level {kind,
-// name} is the primary entity; ENTITY_ARRAY_FIELDS below map a specific field
-// name to the entity kind its items should be saved as. Explicit by design —
-// reference arrays like saving_throws/proficiencies also carry {name, ...}
-// entries but aren't separate entities to save, so a field only qualifies if
-// it's actually listed here, never just by shape. `subclasses` is NOT listed:
-// it's deliberately just a lightweight ref array on the class ({index, name,
-// url}, matching the 5e API's class shape) — the full subclass list is its
-// own separate mapping (ddb-subclass.json), whose pipeline root already
-// produces subclass entities directly via the Array.isArray branch below.
+// Convention, not engine metadata: a mapped {kind, name} result is the
+// primary entity; ENTITY_ARRAY_FIELDS maps a field name to the entity kind
+// its items save as. Explicit by design — arrays like saving_throws also
+// carry {name,...} entries but aren't separate entities, so a field only
+// qualifies if listed here. `subclasses` is NOT listed: it's just a
+// lightweight ref array on the class — the full subclass list is its own
+// mapping (ddb-subclass.json), producing entities directly via the
+// Array.isArray branch below.
 const ENTITY_ARRAY_FIELDS = { variants: "variant" };
 
 function slugify(name) {
@@ -1851,10 +1764,10 @@ function slugify(name) {
   );
 }
 
-// A mapping's root can itself be a pipeline (e.g. ddb-subclass.json applies
-// to the same class-page fetch as ddb-class.json, but its root is a pipeline
-// over `subclasses` producing the full array directly) — every item that
-// looks like an entity ({kind, name}) is one, no wrapping object needed.
+// A mapping's root can itself be a pipeline (e.g. ddb-subclass.json's root
+// is a pipeline over `subclasses`, producing the array directly) — every
+// item shaped like an entity ({kind, name}) is one, no wrapping object
+// needed.
 function deriveEntities(mappedResult) {
   if (Array.isArray(mappedResult)) {
     return mappedResult
@@ -1878,45 +1791,34 @@ function deriveEntities(mappedResult) {
   return entities;
 }
 
-// `autoId`/`url`/`quiet` — all set by the bulk-import loop below, which
-// needs to save potentially hundreds of entities in a row:
-// - `autoId`: skips the id `window.prompt` (a hard blocker looped that many
-//   times) — used directly as the save id.
-// - `url`: bulk items each have their OWN source URL (one per fetched SRD
-//   monster), not the single shared `sourceValueInput` value (which for a
-//   bulk fetch holds the *list* endpoint, not any one item's own detail
-//   URL) — overrides what would otherwise be read from that shared input.
-// - `quiet`: suppresses the per-save success/Feature-matching toasts and
-//   the recent-saves reload — 300+ of each would just be noise; the bulk
-//   loop shows its own aggregate summary and reloads recent saves once at
-//   the end instead.
-// Every existing single-import call site (the Entities panel's own per-row
-// Save button) passes none of these and keeps today's exact behavior.
+// `autoId`/`url`/`quiet` — set by the bulk-import loop, which saves
+// potentially hundreds of entities in a row:
+// - `autoId`: skips the id `window.prompt` (a hard blocker looped that
+//   often) — used directly as the save id.
+// - `url`: each bulk item has its own source URL, not the shared
+//   `sourceValueInput` value (which holds the *list* endpoint for a bulk
+//   fetch, not any one item's detail URL).
+// - `quiet`: suppresses per-save toasts and the recent-saves reload — the
+//   bulk loop shows its own aggregate summary instead.
+// The single-import call site (Entities panel's per-row Save) passes none
+// of these.
 async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = {}) {
-  // Same preference order as the bulk-import loop above (`rawItem.index ||
-  // slugify(entity.name)`) — a mapping's own `index` field (e.g.
-  // ddb-subclass.json's `compoundSlug`, producing "barbarian-path-of-the-
-  // berserker" rather than just "path-of-the-berserker") already encodes
-  // exactly the disambiguating context a bare name-slug can't. Confirmed
-  // real gap this fixes: bulk import already got this right, but a single
-  // manual Save (this prompt) recomputed a bare slug from the name alone,
-  // silently discarding index whenever one existed.
+  // Same preference order as the bulk-import loop above — a mapping's own
+  // `index` field (e.g. ddb-subclass.json's `compoundSlug`,
+  // "barbarian-path-of-the-berserker" not just "path-of-the-berserker")
+  // encodes disambiguating context a bare name-slug can't.
   const id = autoId || promptKey(`Save "${entity.name}" as (id):`, entity.data?.index || slugify(entity.name));
   if (!id) return;
   if (!dataManager) return;
   try {
     let data = entity.data;
-    // Records exactly what this record would need to redo this same
-    // fetch+transform later without reopening Loom at all — Workbench's own
-    // "Re-import" button (workbench-character-view.js) shows up only when
-    // both are present, and passes them straight to content-fetch.js's
-    // reimportViaMapping. `mapping` alone (no `url`) happens when the
-    // mapping was applied to hand-pasted/edited Sample Data rather than a
-    // real fetch — nothing to re-fetch from, so `url` is deliberately left
-    // unset rather than storing an empty placeholder. Generic across every
-    // kind (not character-specific) — this is also the suite's standard
-    // "was this imported?" signal (see Crucible's own isImportedStatBlock),
-    // so any mapping-driven save needs it stamped, not just Character's.
+    // Records what this record needs to redo the fetch+transform without
+    // reopening Loom — Workbench's Re-import button shows only when both
+    // `mapping` and `url` are present (content-fetch.js's
+    // reimportViaMapping). `mapping` alone happens when applied to
+    // hand-edited Sample Data — nothing to re-fetch from. Generic across
+    // every kind — also the suite's standard "was this imported?" signal
+    // (see Crucible's isImportedStatBlock).
     if (currentMappingId) {
       data = { ...data, mapping: currentMappingId };
     }
@@ -1925,61 +1827,44 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
       data = { ...data, url: sourceValue };
     }
     if (entity.kind === "character") {
-      // content-fetch.js's own mergeImportedCharacterData preserves
-      // template/systemIds/data/url/mapping from whatever's already saved
-      // at this id — see its own comment for why a plain overwrite here
-      // (re-importing to refresh an existing character's mapped fields)
-      // would otherwise silently wipe Workbench's own template/system
-      // assignment, making the character vanish from Workbench's own
-      // picker (which filters on `template` being set) even though the
-      // record itself still exists and loads fine here in Loom.
+      // mergeImportedCharacterData preserves template/systemIds/data/url/
+      // mapping from whatever's already saved at this id — a plain
+      // overwrite on re-import would silently wipe Workbench's
+      // template/system assignment, making the character vanish from
+      // Workbench's picker (filtered on `template`) though it still loads
+      // fine here.
       try {
-        // preferLocal: false for the same reason loadLibraryEntry uses it —
-        // this specifically needs the record actually on the server right
-        // now, not a possibly-stale local cache from an earlier save.
+        // preferLocal: false, same reason as loadLibraryEntry — needs the
+        // record actually on the server, not a stale local cache.
         const existing = await dataManager.get("character", id, { preferLocal: false });
         data = mergeImportedCharacterData(data, existing?.payload);
       } catch (error) {
         // No existing record at this id — nothing to preserve, first import.
       }
-      // Every imported (or created) character needs at least one Assigned
-      // System — without this, a brand-new DDB import (nothing to preserve
-      // above, and the mapping itself never produces a systemIds field —
-      // see the comment above) would save with an empty array, invisible to
-      // anything keyed off Assigned Systems (character-sheet.js's own
-      // combat-binding lookup, Workbench's `@`-suggestion field list, ...).
-      // Gated on the currently loaded mapping's own declared `$source`
-      // ("ddb", ddb-character.json's root) rather than hardcoded
-      // unconditionally — a future non-DDB character mapping wouldn't
-      // inherit this default by accident; still explicit user data
-      // (`entity.data.systemIds`, if the mapping ever DOES start producing
-      // one) or a prior save's own preserved value always wins over this.
+      // Every imported character needs at least one Assigned System —
+      // without this, a brand-new DDB import would save with an empty
+      // systemIds array, invisible to anything keyed off Assigned Systems
+      // (combat-binding lookup, Workbench's `@`-suggestion list). Gated on
+      // the mapping's own `$source === "ddb"` rather than unconditional, so
+      // a future non-DDB mapping doesn't inherit this default by accident;
+      // explicit data or a prior save's value always wins.
       if ((!Array.isArray(data.systemIds) || !data.systemIds.length) && mappingDefinition?.$source === "ddb") {
         data = { ...data, systemIds: ["sys.dnd5e"] };
       }
-      // A real, verified name-match against the Species/Class/Variant/Wonder
-      // libraries (content-feature-matching.js's own "Character reference
-      // linking" section) — unconditional here (unlike Workbench's own
-      // persistDraft, this Loom save is always an explicit, deliberate
-      // action, never autosave, so there's no keystroke-spam concern to
-      // gate against).
+      // Verified name-match against Species/Class/Variant/Wonder libraries
+      // (content-feature-matching.js) — unconditional here since a Loom
+      // save is always explicit, never autosave, so no keystroke-spam
+      // concern.
       await linkCharacterSpeciesClassReferences(dataManager, data);
       await linkCharacterSpellReferences(dataManager, data);
       await linkCharacterInventoryReferences(dataManager, data);
       // Same automatic-on-save promotion as Monster/Wonder/Species/Class/
-      // Variant above — a Character's own imported `feats[]`/`features[]`
-      // prose (raw text duplicated verbatim into every character file, with
-      // no connection to any Library record) becomes real `featureIds`
-      // references, mirroring Monster/NPC's own shape exactly. Both passes
-      // tag `category:"character"` — every Feature this suite creates gets
-      // SOME category (never left untagged, since an untagged Feature can't
-      // be found via Loom's own Type filter), and Undercroft doesn't model
-      // race/class/background/feat as separate concepts, so a single broad
-      // "character" bucket (sibling to monster/item/spell/location) is
-      // deliberate, not a placeholder — see content-feature-matching.js's
-      // own header comment for why this module accumulates rather than
-      // replacing on each call, unlike monster-feature-matching.js's
-      // single-pass design.
+      // Variant — imported `feats[]`/`features[]` prose becomes real
+      // `featureIds`, mirroring Monster/NPC's shape. Both passes tag
+      // `category:"character"` — every Feature needs some category
+      // (untagged ones can't be found via Loom's Type filter), and a single
+      // broad bucket is deliberate since Undercroft doesn't model
+      // race/class/background/feat separately.
       if (hasEmbeddedFeatures(data, "feats") || hasEmbeddedFeatures(data, "features")) {
         const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
           (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
@@ -1990,19 +1875,12 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         let updatedCount = 0;
         let errors = [];
         for (const sourceField of ["feats", "features"]) {
-          // `excludeSpeciesPropertyTraits` — a Character's own "features"
-          // list merges in racial traits too (ddb-character.json's own
-          // featuresTable, via rawCharacter.race.racialTraits), which
-          // carries the exact same universal-shape PROPERTIES (Size,
-          // Speed, Creature Type, ...) a Species' own traits[] does —
-          // confirmed real, user-flagged: Maris Wavedeep's own promoted
-          // features included "Size"/"Speed" despite Species promotion
-          // already excluding them, because Character promotion never
-          // passed this flag at all. Harmless for "feats" (a feat is never
-          // named "Size"/"Speed") — passed for both loop iterations rather
-          // than branching on sourceField, since the filter only ever
-          // matches these specific names regardless of which list they
-          // came from.
+          // `excludeSpeciesPropertyTraits` — a Character's "features" list
+          // merges in racial traits (ddb-character.json's featuresTable),
+          // which carry the same universal PROPERTIES (Size, Speed,
+          // Creature Type) a Species' traits[] does. Harmless for "feats" —
+          // passed for both loop iterations since the filter only matches
+          // these specific names.
           const outcome = await promoteEmbeddedFeatures(data, {
             sourceField,
             category: "character",
@@ -2026,11 +1904,10 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         }
       }
     } else if (entity.kind === "monster") {
-      // Same "every imported record needs at least one Assigned System"
-      // reasoning as the character branch above — a monster mapping that
-      // never sets systemIds would otherwise leave the conversion below
-      // unable to scope its matching to the right System's own Feature
-      // library, not just invisible to Assigned-Systems-driven UI.
+      // Same "every imported record needs an Assigned System" reasoning as
+      // the character branch above — without systemIds, the conversion
+      // below can't scope its matching to the right System's Feature
+      // library.
       if (
         (!Array.isArray(data.systemIds) || !data.systemIds.length) &&
         (mappingDefinition?.$source === "ddb-monster" ||
@@ -2039,13 +1916,10 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
       ) {
         data = { ...data, systemIds: ["sys.dnd5e"] };
       }
-      // Every monster import lands with real featureIds, unconditionally —
-      // this is what "every import aligns with internal data standards"
-      // means in practice, not an opt-in extra step. See
-      // monster-feature-matching.js's own module comment for the full
-      // reasoning — this is one of its two call sites (Crucible's own
-      // handleSave, which bypasses this function entirely, is the other),
-      // both automatic-on-save, no manual/backfill action anywhere.
+      // Every monster import lands with real featureIds, unconditionally,
+      // not an opt-in step (see monster-feature-matching.js). This is one
+      // of its two call sites (Crucible's own handleSave is the other),
+      // both automatic-on-save.
       if (hasConvertibleStatBlock(data)) {
         const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(
           (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
@@ -2063,14 +1937,9 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
           );
         }
         // Surfaced regardless of `quiet` — a monster still saves fine with
-        // one or more of its own traits skipped (see monster-feature-
-        // matching.js's own try/catch), but that's real information loss a
-        // GM would otherwise only discover by noticing a missing Feature
-        // much later, or never (confirmed live: this is exactly how an
-        // Isonade import went unnoticed — one trait's own conversion
-        // silently failed, and before that try/catch existed it took the
-        // WHOLE monster record down with it, with no error surfaced
-        // anywhere).
+        // a trait skipped (monster-feature-matching.js's own try/catch),
+        // but that's real information loss a GM would otherwise only
+        // discover much later, or never.
         if (errors?.length) {
           status?.show(
             `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the monster saved fine.`,
@@ -2117,52 +1986,32 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
     } else if (entity.kind === "species" || entity.kind === "variant" || entity.kind === "class") {
       // Same automatic-on-save promotion as Monster/Wonder above, via the
       // simpler generic engine (content-feature-matching.js) — a Species'
-      // own `traits[]` (racial traits), a Class's own `features[]`
-      // (class-level features like Rage/Extra Attack — currently populated
-      // only by ddb-class.json's own import; the free 5e-api SRD source has
-      // no viable single-fetch path to this content, so 5e-api-class.json
-      // is unchanged), or a Variant's own `features[]` (subclass features)
-      // become real `feature` Library references instead of staying
-      // embedded flavor text with nothing else able to reference them.
-      // Species/Class/Variant have no dedicated authoring tool of their own
-      // (unlike Monster/Crucible or Wonder/Vault) — Loom's own saveEntity is
-      // their only save path, so there's no second call site to wire the
-      // way Crucible/Vault each get their own.
-      // Unlike Character above (mergeImportedCharacterData, explicitly
-      // preserving featureIds/featureParams from whatever's already saved
-      // at this id), a fresh Species/Variant/Class scrape never carried
-      // that forward — confirmed real bug this fixes: re-importing an
-      // ALREADY-imported class always saw an empty ownFeatureIds (`data.
-      // featureIds` was simply undefined on every fresh mapped result),
-      // which wrongly excludes every one of that class's own already-
-      // created "unique"-scoped Features from candidatePool
-      // (promoteEmbeddedFeatures's own matchesScope check), forcing EVERY
-      // entry through the create/overwrite path on every single re-import
-      // — harmless-looking for byte-identical text (same deterministic
-      // recordSlug-based id, silent overwrite), but a genuine duplicate
-      // for anything whose current live text no longer matches a Feature
-      // that's since been hand-edited (Ability Score Improvement's own
-      // generic consolidation being the confirmed real case: the live
-      // scrape still includes the "again at Cleric levels..." clause my
-      // manual cleanup stripped from feat.ability-score-improvement's own
-      // stored text, so a Cleric re-import never matched it and spawned a
-      // fresh feat.cleric-ability-score-improvement instead).
+      // `traits[]`, a Class's `features[]` (class-level features, currently
+      // only from ddb-class.json's import — the free 5e-api SRD source has
+      // no viable single-fetch path to this content), or a Variant's
+      // `features[]` (subclass features) become real `feature` Library
+      // references instead of staying embedded flavor text. Species/Class/
+      // Variant have no dedicated authoring tool (unlike Monster/Crucible
+      // or Wonder/Vault) — Loom's saveEntity is their only save path.
+      // Unlike Character above (mergeImportedCharacterData explicitly
+      // preserves featureIds/featureParams), a fresh Species/Variant/Class
+      // scrape never carried that forward, so this does the same
+      // preservation here — without it, re-importing an already-imported
+      // record wrongly excludes its own already-created "unique"-scoped
+      // Features from matching, forcing every entry through create/
+      // overwrite on every re-import (silently fine for byte-identical
+      // text, but a real duplicate for anything hand-edited since).
       try {
         const existingRecord = await dataManager.get(entity.kind, id, { preferLocal: false });
         if (existingRecord?.payload?.featureIds) data.featureIds = existingRecord.payload.featureIds;
         if (existingRecord?.payload?.featureParams) data.featureParams = existingRecord.payload.featureParams;
-        // dataManager.save is a full file overwrite, not a merge (see
-        // storage.py's own write_json) — a field neither current mapping
-        // (ddb-species.json, 5e-api-species.json) ever produces would
-        // otherwise be silently WIPED the next time this same species gets
-        // re-imported. Confirmed real, none of these five are derivable
-        // from either source today: `names` (Forge's own NPC name-
-        // generator tables read this — a real functional dependency, not
-        // just cosmetic), `icon`/`image`/`tagline` (display metadata,
-        // hand-curated or from a since-removed import path), `updated_at`
-        // (DDB's own species page carries no such timestamp; the 5e API
-        // source now supplies its own real one directly via its mapping,
-        // so this fallback only ever matters for the DDB path).
+        // dataManager.save is a full file overwrite, not a merge — a field
+        // neither mapping produces would otherwise be silently wiped on
+        // re-import. None of these five are derivable from either source:
+        // `names` (Forge's NPC name-generator tables read this),
+        // `icon`/`image`/`tagline` (hand-curated display metadata),
+        // `updated_at` (DDB's species page has no such timestamp; only
+        // matters for the DDB path).
         if (entity.kind === "species") {
           for (const field of ["names", "icon", "image", "tagline", "updated_at"]) {
             if (data[field] == null && existingRecord?.payload?.[field] != null) {
@@ -2179,49 +2028,37 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
           (entries) => entries.map((entry) => ({ id: entry.id, ...entry.entity })),
           () => []
         );
-        // Variant's own `parentId` (e.g. "barbarian") scopes a newly-created
-        // one-off's id by CLASS, same as it always has — every other class's
-        // own subclasses (67 of 68) never actually collide on a feature name
-        // with genuinely different per-subclass content, so keeping this
-        // class-level default is what keeps every one of THEIR already-
-        // saved ids stable across a re-import; escalating everything to a
-        // subclass-scoped id here instead (tried first, reverted) would
-        // have silently changed the id of every already-imported subclass
-        // feature in the whole library on its next re-import, not just
-        // Artificer's own genuinely-colliding ones.
+        // Variant's own `parentId` (e.g. "barbarian") scopes a new one-off's
+        // id by CLASS — nearly every subclass never actually collides on a
+        // feature name, so this class-level default keeps their ids stable
+        // across re-import; escalating everything to subclass-scoped would
+        // change every already-imported feature's id, not just the
+        // genuinely-colliding ones.
         // `disambiguationSlug` — the variant's own compound id (e.g.
-        // "artificer-cartographer") — is passed alongside as a FALLBACK
-        // only, used by promoteEmbeddedFeatures purely to escalate a
-        // detected same-class-different-content collision (confirmed real:
-        // every Artificer subclass has its own "Tools of the Trade"; Battle
-        // Smith and Forge Adept both have their own "Battle Ready") to a
-        // more specific id, instead of silently overwriting whichever
-        // subclass's text got there first.
+        // "artificer-cartographer") — is a fallback only, used by
+        // promoteEmbeddedFeatures to escalate a detected same-class-
+        // different-content collision (e.g. every Artificer subclass has
+        // its own "Tools of the Trade") to a more specific id instead of
+        // silently overwriting.
         // Species/Class scope by their own name instead (no parent, no
         // finer-grained fallback below the Species/Class level itself).
         const parentPath = entity.kind === "variant" ? data.parentId || data.name : data.name;
         const disambiguationSlug = entity.kind === "variant" ? id : undefined;
         const isSpeciesDomain = entity.kind === "species" || (entity.kind === "variant" && data.parentKind === "species");
-        // Cross-scope healing (Epic Boon/Extra Attack's own "genuinely
-        // identical across records" reuse) is allowed for BOTH domains this
-        // block ever handles — Class-feature (always vetted case by case)
-        // and, as of this fix, Species/racial-variant too: a real, distinct
-        // FEATURE (Darkvision, Flight, ...) that happens to be worded
-        // identically across two species is fine to share the same way
-        // Epic Boon is. What actually caused Owlin's own "Speed" to wrongly
-        // absorb Yuan-ti's content wasn't cross-scope sharing being
-        // possible in principle — it's that Speed/Size/Height and Weight/
-        // etc. aren't features at all (see excludeSpeciesPropertyTraits
-        // below); once those never reach promotion, sharing an ACTUAL
-        // feature's exact text across species is legitimate the same way
-        // it is across classes.
+        // Cross-scope healing (Epic Boon/Extra Attack's "genuinely identical
+        // across records" reuse) is allowed for both Class-feature and
+        // Species/racial-variant — a real, distinct FEATURE (Darkvision,
+        // Flight) worded identically across two species is fine to share,
+        // same as Epic Boon. Only safe because Speed/Size/Height/Weight
+        // aren't features at all (see excludeSpeciesPropertyTraits below) —
+        // once those never reach promotion, sharing an actual feature's
+        // exact text across species is legitimate too.
         const allowCrossScopeMatch = true;
         // Species' own scraped traits mix universal-shape PROPERTIES
-        // (Height and Weight, Size, Speed, Creature Type, Ability Score
+        // (Height/Weight, Size, Speed, Creature Type, Ability Score
         // Increases, Languages, Life Span — fill-in-the-blank facts, not a
-        // distinctive mechanic, most already covered by dedicated fields
-        // elsewhere) in with actual FEATURES — confirmed real, user-
-        // flagged: none of the former belong in the Feature library.
+        // distinctive mechanic) in with actual FEATURES — none of the
+        // former belong in the Feature library.
         const { matchedCount, createdCount, updatedCount, errors } = await promoteEmbeddedFeatures(data, {
           sourceField,
           parentPath,
@@ -2292,22 +2129,13 @@ function renderEntities() {
 }
 
 // Loops the same one-at-a-time saveEntity() a manual per-row Save click
-// already uses, just without its own window.prompt — same `autoId`
-// fallback the bulk-import loop above already relies on (a mapping's own
-// `index`, e.g. compoundSlug's "barbarian-path-of-the-berserker", ahead of
-// a bare name-slug), so "Save All" never pops up N prompts in a row.
-// Sequential, not Promise.all, for the same reason the bulk-import loop is:
-// each save's own Feature-matching benefits from running in order (a later
-// entity in this same batch — e.g. a Variant's own features — reuses a
-// Feature an earlier one in the batch just created/healed to Generic scope,
-// rather than each running against a stale, pre-batch snapshot).
-// Deliberately NOT passing `quiet` (defaults false, same as a manual Save
-// click) — confirmed real ask: Save All should behave exactly like clicking
-// every row's own Save button in sequence, including each entity's own
-// "Saved x/y.json" toast AND its own Feature-promotion detail toast
-// (matched/created/updated counts), not a single silent batch with one
-// summary at the end. Each entity's own non-quiet save already calls
-// loadRecentSaves() itself, so this doesn't need to again.
+// uses, minus its window.prompt — same `autoId` fallback the bulk-import
+// loop relies on, so Save All never pops up N prompts. Sequential, not
+// Promise.all, same reason as the bulk-import loop: Feature-matching
+// benefits from running in order. Deliberately NOT passing `quiet` — Save
+// All should behave exactly like clicking every row's Save button in
+// sequence, including each entity's own toasts, not one silent batch with a
+// summary at the end.
 async function saveAllEntities() {
   if (!entitiesSaveAllButton) return;
   const entities = deriveEntities(lastMappedResult);
@@ -2377,14 +2205,10 @@ if (recentSavesToggle && recentSavesPanel) {
 }
 
 // --- View tabs (Import / Library / Systems) ---------------------------------
-// Same nav-tabs convention as every other top-level view switcher in the
-// suite (Workbench's Template/Edit/Play, Press's Live Preview/Grid View).
-// Only the
-// active view's cards show — in the main pane, AND in the left/right panes
-// (the mapping toolbar/palette/sample-data on the left and the tree Inspector
-// on the right are Import-only; Library/Systems carry their own
-// pickers/toolbars inline, so they don't need anything extra from either
-// side pane).
+// Same nav-tabs convention as every other top-level view switcher. Only the
+// active view's cards show, in the main pane AND the side panes (the
+// mapping toolbar/palette/sample-data and tree Inspector are Import-only;
+// Library/Systems carry their own pickers/toolbars inline).
 const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups", "auth"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
@@ -2395,9 +2219,9 @@ function setLoomView(view) {
     tab.classList.toggle("active", isActive);
     tab.setAttribute("aria-selected", isActive ? "true" : "false");
   });
-  // Same `.hidden` + `.d-none` combo as everywhere else this session — these
-  // panels carry `.d-flex`, which Bootstrap declares `!important` and beats
-  // the plain `[hidden]` UA rule on its own.
+  // Same `.hidden` + `.d-none` combo as everywhere else — these panels
+  // carry `.d-flex`, which Bootstrap declares `!important` and beats the
+  // plain `[hidden]` UA rule alone.
   document.querySelectorAll("[data-loom-view-panel]").forEach((panel) => {
     const visible = panel.dataset.loomViewPanel === view;
     panel.hidden = !visible;
@@ -2485,10 +2309,9 @@ const loomGroupSaveButton = document.querySelector("[data-loom-group-save]");
 const loomGroupDuplicateButton = document.querySelector("[data-loom-group-duplicate]");
 const loomGroupDeleteButton = document.querySelector("[data-loom-group-delete]");
 
-// Property Inspector (right pane) — same mechanism as Systems' own, see
-// createPropertyInspector below. Collapsible, same as Systems' own; expanded
-// by default for the same "wasn't collapsed before this became a
-// collapsible section" reasoning.
+// Property Inspector (right pane) — same mechanism as Systems' own
+// (createPropertyInspector below). Collapsible, expanded by default for the
+// same reason Systems' own is.
 const groupInspectorEmpty = document.querySelector("[data-loom-group-inspector-empty]");
 const groupInspectorDetails = document.querySelector("[data-loom-group-inspector-details]");
 const groupInspectorFields = document.querySelector("[data-loom-group-inspector-fields]");
@@ -2504,12 +2327,10 @@ const groupInspectorSection = createCollapsibleSection({
 }).section;
 document.querySelector("[data-loom-group-inspector-mount]")?.appendChild(groupInspectorSection);
 
-// Share link (right pane, below Property Inspector) — same static controls
-// as before, just moved out of the main pane into a collapsible section,
-// same convention as Assigned Systems/Settings above (an existing static
-// content div adopted as-is). Expanded by default, unlike Assigned Systems/
-// Settings — a campaign's share link is the one thing on this tab a GM
-// reaches for right after picking a group, not a rarely-needed detail.
+// Share link (right pane) — same static controls, moved into a collapsible
+// section (existing static content div adopted as-is). Expanded by default,
+// unlike Assigned Systems/Settings — a campaign's share link is the one
+// thing a GM reaches for right after picking a group.
 const loomGroupShareList = document.querySelector("[data-loom-group-share-list]");
 const loomGroupShareSection = createCollapsibleSection({
   label: "Share link",
@@ -2552,30 +2373,25 @@ const loomGroupsState = {
   cleanSystemId: null,
   cleanSettingId: null,
   cleanTemplateId: null,
-  // JSON.stringify of the loaded group's own `properties` schema — same
-  // "clean baseline snapshot, compare on demand" shape as cleanName/
-  // cleanSystemId/cleanSettingId above, just for the Properties editor
-  // (common/js/lib/property-schema-editor.js) instead of a plain field.
+  // JSON.stringify of the loaded group's `properties` schema — same
+  // clean-baseline-snapshot shape as cleanName/cleanSystemId/cleanSettingId
+  // above, for the Properties editor instead of a plain field.
   cleanPropertiesJson: null,
 };
-// Populated once per Groups-tab session (systems don't change while this tab
-// is open) rather than re-fetched on every loomRenderGroupDetail call — same
-// "load list, then render selection against it" split loomOwnedCharacters
-// already uses for the member picker.
+// Populated once per Groups-tab session rather than re-fetched on every
+// render — same "load list, then render against it" split
+// loomOwnedCharacters uses for the member picker.
 let loomGroupSystemsCatalog = [];
-// Same "load once per Groups-tab session" shape as loomGroupSystemsCatalog,
-// sourced from the same listAllSettings() the "Assigned Settings" checkbox
-// section (populateLibrarySettingCheckboxes) already uses — not filtered to
-// the Group's own selected System, deliberately: a mismatched System/Setting
-// pairing is an authoring concern for the GM to notice, not something this
-// picker enforces.
+// Same load-once shape as loomGroupSystemsCatalog, sourced from the same
+// listAllSettings() the Assigned Settings checkboxes use — not filtered to
+// the Group's selected System; a mismatched pairing is a GM authoring
+// concern, not something this picker enforces.
 let loomGroupSettingsCatalog = [];
 const loomUsersState = { items: [], selectedTier: "", selectedUsername: "", clean: null, mode: "view" };
-// Populated alongside loomLoadGroups() — the Groups tab's member picker needs
-// the signed-in user's own saved characters (same shape Admin's Owned Content
-// tab used to track), but Loom otherwise has no reason to track "my owned
-// content" as its own concept, so this is a lightweight, Groups-tab-local
-// fetch rather than porting that whole view-state machine over too.
+// Populated alongside loomLoadGroups() — the member picker needs the
+// signed-in user's own saved characters; a lightweight Groups-tab-local
+// fetch rather than porting Admin's whole Owned Content view-state machine
+// over.
 let loomOwnedCharacters = [];
 
 function isLoomAdminSession() {
@@ -2608,10 +2424,10 @@ function loomFormatLastActivity(value) {
 }
 
 // --- Users tab ---------------------------------------------------------------
-// Left pane: Tier filter + User select (who to look at). Center pane: a full
-// editable form for whoever's selected — Save commits Email + Tier together
-// (explicit Save/Delete toolbar buttons, the same convention Library/Systems
-// already use, rather than the old table's auto-save-on-change tier select).
+// Left pane: Tier filter + User select. Center pane: a full editable form —
+// Save commits Email + Tier together via explicit toolbar buttons, same
+// convention as Library/Systems, rather than the old table's
+// auto-save-on-change tier select.
 
 function loomPopulateUsersTierFilter() {
   if (!loomUsersTierFilter) return;
@@ -2933,11 +2749,10 @@ if (loomUserDeleteButton) {
 }
 
 // --- Groups tab ---------------------------------------------------------------
-// Left pane: Group select (which to look at) + New/Save/Delete toolbar.
-// Center pane: the selected group's full detail — name, member roster, and
-// public share-link controls — what used to live in a per-row collapsible
-// table section now shown directly, the same "one thing selected, its
-// details shown in the center pane" convention Library/Users/Systems use.
+// Left pane: Group select + New/Save/Delete toolbar. Center pane: the
+// selected group's full detail — name, member roster, public share-link
+// controls — same "one thing selected, details in the center pane"
+// convention Library/Users/Systems use.
 
 function loomRenderGroupsMessage(message) {
   const text = typeof message === "string" ? message.trim() : "";
@@ -2968,10 +2783,9 @@ function loomFormatGroupCharacterLabel(entry) {
   return templateLabel ? `${name} (${templateLabel})` : name;
 }
 
-// Workbench's own bootstrap (workbench.js) is what actually reads
-// ?record=<bucket>:<id>&share=<token> to pick a view and load the shared
-// record, so every share link this tab generates must resolve to
-// workbench/index.html regardless of which page built the link.
+// Workbench's own bootstrap reads ?record=<bucket>:<id>&share=<token> to
+// pick a view and load the shared record, so every share link this tab
+// generates must resolve to workbench/index.html.
 function loomBuildShareUrl(bucket, id, token = "") {
   const pageMap = { groups: "../workbench/index.html" };
   const page = pageMap[bucket];
@@ -3045,13 +2859,11 @@ function loomRenderGroupsSelect() {
   loomRenderGroupDetail();
 }
 
-// The shared row editor (common/js/lib/property-schema-editor.js) is
-// undo/dirty-tracking-agnostic — unlike Systems (which plugs into Loom's
-// whole-tab undo stack, see systemPropertyCtx), the Groups tab has no undo
-// stack of its own at all (member checkboxes already auto-save immediately,
-// with no undo either), so this just re-renders/marks the tab dirty via the
-// exact same loomUpdateGroupsToolbarState() every other Group field change
-// already calls.
+// The shared row editor (property-schema-editor.js) is undo/dirty-tracking-
+// agnostic — unlike Systems (which plugs into Loom's whole-tab undo stack),
+// the Groups tab has no undo stack at all, so this just marks the tab dirty
+// via the same loomUpdateGroupsToolbarState() every other Group field
+// change calls.
 const groupPropertyCtx = {
   runChange: (fn) => {
     fn();
@@ -3066,19 +2878,13 @@ const groupPropertyCtx = {
     return dataManager;
   },
   // No filterSystemId — a Group Property's own Library-linked values aren't
-  // scoped to any one System the way a System's own Properties are to
-  // itself (that System IS the thing being edited); every entity of the
-  // chosen Library kind is offered here regardless of the group's own
-  // assigned System.
+  // scoped to any System (every entity of the chosen kind is offered
+  // regardless of the group's assigned System).
   //
-  // "Public" — the one Group-only addition Systems has no equivalent of
-  // (no System/Character field has a party-wide "who may edit this value"
-  // concept; a Character's own fields are always editable by that
-  // character's own owner). Only added to TOP-LEVEL property rows (this
-  // row's own parent is the top-level container, not a nested Sub-fields/
-  // Record-fields container) — nested sub-fields inherit their parent's
-  // flag rather than getting their own, same as this suite's other
-  // "permission lives on the whole field, not each of its pieces"
+  // "Public" — the one Group-only addition Systems has no equivalent of (no
+  // System/Character field has a party-wide "who may edit this" concept).
+  // Only added to TOP-LEVEL rows — nested sub-fields inherit their parent's
+  // flag, same as this suite's other "permission lives on the whole field"
   // precedents.
   extraRowControls: (row, field) => {
     if (row.parentElement !== loomGroupPropertyRows) return;
@@ -3109,14 +2915,10 @@ const groupPropertyCtx = {
 };
 
 // Same as collectFieldFromRow, plus merging this row's own "Public" toggle
-// state back in — collectFieldFromRow itself has no idea that concept
-// exists (it's a Group-only addition, see groupPropertyCtx's own comment),
-// so this reads it straight off the row's button right after, the one place
-// that both the field object and its own DOM row are still both in hand
-// together. Assigned as groupPropertyCtx.collectField below so the Property
-// Inspector's own Duplicate button (createPropertyInspector, common/js/lib/
-// property-schema-editor.js) preserves Public the same way Save already
-// does, not just top-level collectGroupProperties.
+// back in — collectFieldFromRow has no idea that concept exists, so this
+// reads it straight off the row's button. Assigned as
+// groupPropertyCtx.collectField so the Property Inspector's Duplicate
+// button preserves Public too, not just collectGroupProperties.
 function collectGroupFieldFromRow(row) {
   const field = collectFieldFromRow(row, groupPropertyCtx);
   const publicButton = row.firstElementChild?.querySelector("[data-property-public]");
@@ -3183,10 +2985,9 @@ function loomUpdateGroupShareDisplay(group, nextLink) {
 
 // Options for the Group System select — "None" (falls through to each
 // character's own Assigned System, then the standard 7) plus every System
-// listAllSystems() knows about, same catalog the Systems tab itself lists
-// from. Rebuilds the whole option list each time (cheap, and simplest way to
-// stay in sync with loomGroupSystemsCatalog without a separate diffing pass)
-// then restores whichever value loomRenderGroupDetail sets afterward.
+// listAllSystems() knows about. Rebuilds the whole option list each time
+// (cheap, simplest way to stay in sync with loomGroupSystemsCatalog) then
+// restores whichever value loomRenderGroupDetail sets afterward.
 function loomPopulateGroupSystemSelect() {
   if (!loomGroupSystemSelect) return;
   const previous = loomGroupSystemSelect.value;
@@ -3227,17 +3028,14 @@ function loomPopulateGroupSettingSelect() {
   }
 }
 
-// Same System-filtered Template list populateLibraryTemplateSelect already
-// builds for a Character's own `template` field — adapted for a Group's
-// singular `systemId` instead of a `systemIds` array (a Group only ever has
-// one assigned System, unlike a Character's Assigned Systems list). Unlike
-// that function, picking a Template here does NOT fold its schema back into
-// the Group's own System — the System select above is Group's own
-// independent, explicit field (it already drives Party Inventory's own
-// System-matching), not something a Template pick should silently change.
-// Re-fetched fresh (not cached) each time a Group is selected or its System
-// changes, matching populateLibraryTemplateSelect's own "always current"
-// convention.
+// Same System-filtered Template list populateLibraryTemplateSelect builds
+// for a Character's `template` field — adapted for a Group's singular
+// `systemId` instead of a `systemIds` array. Unlike that function, picking a
+// Template here does NOT fold its schema back into the Group's System — the
+// System select is Group's own independent field (it drives Party
+// Inventory's System-matching), not something a Template pick should
+// silently change. Re-fetched fresh each time a Group is selected or its
+// System changes.
 async function loomPopulateGroupTemplateSelect(systemId, currentTemplateId) {
   if (!loomGroupTemplateSelect) return;
   const previous = currentTemplateId !== undefined ? currentTemplateId || "" : loomGroupTemplateSelect.value;
@@ -3270,12 +3068,11 @@ async function loomPopulateGroupTemplateSelect(systemId, currentTemplateId) {
   }
 }
 
-// Reads the System filter from the SELECT's own live value (not
-// group.system_id) so a not-yet-saved System choice narrows this list
-// immediately, the same way any other unsaved edit previews live — see the
+// Reads the System filter from the SELECT's live value (not group.system_id)
+// so a not-yet-saved System choice narrows this list immediately — see the
 // loomGroupSystemSelect "change" listener below, which calls this directly
-// instead of the full loomRenderGroupDetail (which would otherwise stomp the
-// live selection back to the saved value).
+// instead of the full loomRenderGroupDetail (which would stomp the live
+// selection back to the saved value).
 function loomRenderGroupMembersList(group) {
   if (!loomGroupMembersList) return;
   const members = Array.isArray(group?.members) ? group.members.filter((member) => member.content_type === "character") : [];
@@ -3285,11 +3082,9 @@ function loomRenderGroupMembersList(group) {
   const seenIds = new Set();
   const rows = [];
   // A Group with its own System narrows "available to add" down to
-  // characters assigned to that same System — leaving the Group's System
-  // unset (the common case for a brand-new campaign) shows everyone, same
-  // as before this filter existed. Characters already added stay visible
-  // regardless (see the memberMap.forEach fallback below) — this only
-  // affects what's offered to ADD, never removes an existing member.
+  // characters assigned to that System — leaving it unset shows everyone.
+  // Characters already added stay visible regardless (memberMap.forEach
+  // fallback below) — this only affects what's offered to ADD.
   const groupSystemId = loomGroupSystemSelect?.value || "";
   loomOwnedCharacters.forEach((character) => {
     if (groupSystemId) {
@@ -3362,13 +3157,10 @@ function loomRenderGroupDetail() {
   loomUpdateGroupShareDisplay(group);
   loomUpdateGroupsToolbarState();
   // Properties (the full schema) aren't part of the lightweight list-view
-  // payload above — list_groups' own server-side row shaping deliberately
-  // skips a kind's full JSON body for a LIST response (same reason
-  // list_bucket/list_owned_content never include one either, to avoid an
-  // N-file-reads cost). Fetched separately, via the exact same generic
-  // content route (`dataManager.get("group", id)`) Loom's own raw-JSON
-  // Library editor already uses for every kind, once this specific group
-  // becomes the one being edited.
+  // payload above — list_groups' server-side row shaping skips a kind's
+  // full JSON body for a LIST response (avoids an N-file-reads cost).
+  // Fetched separately via the same generic `dataManager.get("group", id)`
+  // route the Library editor uses for every kind.
   void loomLoadGroupProperties(group.id);
 }
 
@@ -3381,14 +3173,13 @@ async function loomLoadGroupProperties(groupId) {
     console.error("Failed to load group properties", error);
     if (status) status.show(error.message || "Unable to load this group's Properties.", { type: "danger" });
   }
-  // The GM may have already clicked a different group (or navigated away)
-  // by the time this resolves — a stale response landing after that would
-  // otherwise silently repopulate the Properties editor for the WRONG group.
+  // The GM may have already clicked a different group by the time this
+  // resolves — a stale response landing after that would otherwise silently
+  // repopulate the Properties editor for the WRONG group.
   if (loomGroupsState.selectedId !== groupId) return;
   loomRenderGroupPropertyRows(properties);
-  // Rebuilt from scratch above — whatever was selected before (if anything)
-  // is now a detached DOM node, same reasoning as System's own
-  // loadSystemIntoEditor/applySystemSnapshot resets.
+  // Rebuilt from scratch above — whatever was selected before is now a
+  // detached DOM node, same reasoning as System's own resets.
   groupPropertyInspector.selectRow(null);
   loomGroupsState.cleanPropertiesJson = JSON.stringify(properties);
   loomUpdateGroupsToolbarState();
@@ -3455,13 +3246,11 @@ if (loomGroupSystemSelect) {
     loomUpdateGroupsToolbarState();
     // Re-render just the member list against the live (possibly unsaved)
     // selection — NOT the full loomRenderGroupDetail, which would reset this
-    // very select back to the saved group.system_id.
+    // select back to the saved group.system_id.
     loomRenderGroupMembersList(loomFindGroup(loomGroupsState.selectedId));
     // Cascades to the Template list the same way (a different System means
-    // a different, possibly empty, set of matching Templates) — keeps
-    // whatever's currently typed/selected in the Template select if it's
-    // still a valid option for the new System, same "preserve the live
-    // unsaved value" reasoning as the member-list re-render above.
+    // a different set of matching Templates), preserving the live selection
+    // if still valid.
     void loomPopulateGroupTemplateSelect(loomGroupSystemSelect.value || "");
   });
 }
@@ -3477,10 +3266,9 @@ if (loomGroupTemplateSelect) {
 }
 
 // Delegated add/remove-property/sub-field/record-field/value handling for
-// the Group Properties editor — same shared-module wiring Systems uses
-// (systemPropertyCtx/wirePropertyContainerEvents above), just bound to
-// groupPropertyCtx instead. One persistent instance, same "never recreated,
-// only its children are" reasoning as Systems' own equivalent call.
+// the Group Properties editor — same shared-module wiring Systems uses,
+// bound to groupPropertyCtx. One persistent instance; only its children are
+// ever recreated.
 wirePropertyContainerEvents(loomGroupPropertyRows, groupPropertyCtx);
 
 if (loomGroupAddPropertyButton) {
@@ -3519,12 +3307,10 @@ if (loomGroupNewButton) {
 }
 
 // Clones the currently loaded group's System/Setting/Template/Properties
-// (read live off the form, same fields loomGroupSaveButton's own handler
-// reads) into a brand-new group — same two-step createGroup-then-updateGroup
-// shape loomGroupNewButton uses, since a group has no client-side "unsaved
-// draft" state to stage into. Members are deliberately NOT copied — another
-// group's claimed member roster is campaign-specific and would be actively
-// wrong to carry over, not a helpful default.
+// (read live off the form) into a brand-new group — same two-step
+// createGroup-then-updateGroup shape loomGroupNewButton uses, since a group
+// has no client-side "unsaved draft" to stage into. Members are NOT copied —
+// another group's claimed roster is campaign-specific, not a helpful default.
 if (loomGroupDuplicateButton) {
   loomGroupDuplicateButton.addEventListener("click", async () => {
     const group = loomFindGroup(loomGroupsState.selectedId);
@@ -3638,14 +3424,12 @@ if (loomGroupMembersList) {
     );
     const checkboxes = Array.from(loomGroupMembersList.querySelectorAll("[data-loom-group-member-checkbox]"));
     checkboxes.forEach((input) => (input.disabled = true));
-    // A not-yet-saved System choice (the dropdown, staged until the Save
-    // button is clicked) drives this list's own live filter — member
-    // checkboxes auto-save immediately and independently of that Save
-    // button, via the reload below, which otherwise re-renders the whole
-    // detail panel from the server's last-SAVED group and silently discards
-    // the staged choice, resetting the filter to "show everyone."
+    // A not-yet-saved System choice drives this list's live filter — member
+    // checkboxes auto-save independently of the Save button via the reload
+    // below, which otherwise re-renders from the last-SAVED group and
+    // discards the staged choice, resetting the filter to "show everyone."
     const pendingSystemId = loomGroupSystemSelect?.value || "";
-    // Same reasoning applies to an unsaved pending Setting choice.
+    // Same reasoning for an unsaved pending Setting choice.
     const pendingSettingId = loomGroupSettingSelect?.value || "";
     try {
       await dataManager.updateGroupMembers({ id: group.id, characterIds: selected });
@@ -3719,13 +3503,11 @@ if (loomGroupShareDisableButton) {
 
 // --- Auth tab ------------------------------------------------------------
 // Deployment-wide credentials (D&D Beyond session cookie, Anthropic API
-// key) — admin-only, see server/integrations.py's deployment_secrets store
-// and server/ddb_auth_status.py for the validity-check story. No left-pane
-// picker: always the same two fixed credentials, nothing to filter/select.
-// Expanded by default only when the cookie looks expired (an admin who
-// needs the steps sees them right away; one who doesn't isn't forced past
-// them) — collapsed state is re-derived every time fresh status comes in
-// (loomRenderAuthDdbStatus below), not just set once at mount time.
+// key) — admin-only (server/integrations.py's deployment_secrets store,
+// server/ddb_auth_status.py for validity checks). No left-pane picker: two
+// fixed credentials, nothing to filter/select. Expanded by default only
+// when the cookie looks expired — re-derived every time fresh status comes
+// in (loomRenderAuthDdbStatus below), not set once at mount.
 const loomAuthDdbInstructionsSection = createCollapsibleSection({
   label: "How to get a new session cookie",
   collapsed: true,
@@ -3750,10 +3532,9 @@ function loomFormatAuthCheckedAt(checkedAt) {
 
 function loomRenderAuthDdbStatus(ddb) {
   loomAuthDdbInstructionsSection.setCollapsed(ddb?.valid !== false);
-  // The server distinguishes "the cookie is genuinely rejected as
-  // logged-out" from "the probe itself failed" from "not configured at
-  // all" in this same text rather than collapsing every failure into one
-  // generic "looks expired" — see ddb_auth_status.py's _describe_outcome.
+  // The server distinguishes a genuinely-rejected cookie from a failed
+  // probe from "not configured" in this text rather than one generic
+  // "looks expired" (ddb_auth_status.py's _describe_outcome).
   if (loomAuthDdbDetail) {
     loomAuthDdbDetail.textContent = ddb?.detail || "";
     loomAuthDdbDetail.hidden = !ddb?.detail;
@@ -3842,14 +3623,12 @@ if (loomAuthAnthropicSaveButton) {
 }
 
 // --- Tab-level tier gating ----------------------------------------------------
-// The whole tool is gated at GM tier and above (see init()'s initTierGate
-// call), but not every tab makes sense at every tier above that floor: GM
-// sees Groups and Macros (running a campaign — Macros' own kind is
-// writeTier "gm" in common/data/kind/macro.json, a GM's own table cues, not
-// Creator-authored shareable content in the same sense Systems/Templates
-// are); Creator adds Import/Library/Systems (author reusable, shareable
-// content); Admin adds Users (suite-wide tier management) on top of
-// everything Creator sees.
+// The whole tool is gated at GM tier and above (init()'s initTierGate), but
+// not every tab makes sense at every tier above that floor: GM sees Groups
+// and Macros (running a campaign — Macros is writeTier "gm", a GM's own
+// table cues, not Creator-authored shareable content); Creator adds
+// Import/Library/Systems (author reusable content); Admin adds Users
+// (suite-wide tier management) on top of everything Creator sees.
 const LOOM_CREATOR_TABS = ["import", "library", "systems"];
 
 function loomAvailableViews() {
@@ -3872,11 +3651,9 @@ function updateLoomTabAvailability() {
     button.disabled = !visible;
   });
   // Always (re-)apply setLoomView, even when the active tab isn't changing —
-  // it's what actually adds the `.d-none` class every non-active panel needs
-  // (the static HTML only carries the `hidden` attribute, which Bootstrap's
-  // `.d-flex` `!important` rule beats on its own; see setLoomView's own
-  // comment). Skipping this call whenever no tab-switch was needed used to
-  // leave every panel visible at once on a fresh load.
+  // it's what adds the `.d-none` class every non-active panel needs (the
+  // static HTML only carries `hidden`, which Bootstrap's `.d-flex`
+  // `!important` beats on its own).
   const activeButton = document.querySelector("[data-loom-view-tab].active");
   const activeView = activeButton?.dataset.loomViewTab;
   const nextView = activeView && available.has(activeView) ? activeView : loomAvailableViews()[0] || "groups";
@@ -3887,11 +3664,10 @@ function updateLoomTabAvailability() {
 // The Kind+Entity picker in the center pane below is for direct editing of
 // one entity at a time; this left-pane select + right-pane inspector is the
 // "manage the whole Library" surface the account page's Owned Content view
-// intentionally doesn't try to be (that page only ever shows the signed-in
-// user's own items) — Share reuses the exact same generic share modal Owned
-// Content uses. The two pickers are deliberately independent: picking an
-// item here only surfaces its metadata/Share action, it doesn't load it into
-// the Kind+Entity editor below.
+// doesn't try to be (that page only shows the signed-in user's own items) —
+// Share reuses the same generic share modal Owned Content uses. The two
+// pickers are independent: picking an item here only surfaces its
+// metadata/Share action, it doesn't load it into the editor below.
 const loomLibraryTableMessage = document.querySelector("[data-loom-library-table-message]");
 mountField(
   "library-table-type",
@@ -3904,28 +3680,22 @@ mountField(
 
 const loomLibraryTableTypeSelect = document.querySelector("[data-loom-library-table-type]");
 const loomLibraryTableSelect = document.querySelector("[data-loom-library-table-select]");
-// Library Type is gated on the Type FILTER select alone (loomLibraryTableState
-// .selectedType) — it shows the instant a type is picked, before any
-// specific item is. Library Item stays gated on an actual selected item (it
-// has nothing to show without one: no created/accessed/owner/share data
+// Library Type is gated on the Type FILTER select alone — it shows the
+// instant a type is picked, before any specific item is. Library Item stays
+// gated on an actual selected item (no created/accessed/owner/share data
 // exists for "a kind" in the abstract).
 const loomLibraryTypeEmpty = document.querySelector("[data-loom-library-table-type-empty]");
 const loomLibraryTypeDetails = document.querySelector("[data-loom-library-table-type-details]");
 const loomLibraryInspectorEmpty = document.querySelector("[data-loom-library-table-inspector-empty]");
 const loomLibraryInspectorDetails = document.querySelector("[data-loom-library-table-inspector-details]");
-// "Library Type" (kind-level policy — Viewable/Editable by) and "Library
-// Item" (this one record's own Created/Owner/Share) are collapsible for the
-// same reason nearly every right-pane section in the suite is — adopts each
-// pre-existing static list div as content, same pattern as Assigned
-// Systems/Settings above. Unlike those, these two sections themselves are
-// always present (not gated behind a "select something" swap) — only their
-// CONTENT is: each one's own list still opens with an empty "Select a ..."
-// message (data-loom-library-table-type-empty/-inspector-empty) that gives
-// way to real details once something's picked, same convention as the
-// center-pane's own gating. Both start collapsed; loomRenderLibraryTypeInspector/
-// loomRenderLibraryInspector below auto-expand (never auto-collapse — a
-// manual re-collapse after inspecting stays collapsed, this only ever opens
-// it for you) the moment there's something worth showing.
+// "Library Type" (kind-level Viewable/Editable-by policy) and "Library Item"
+// (this record's own Created/Owner/Share) are collapsible like nearly every
+// right-pane section — adopts each pre-existing static list div as content.
+// Unlike those, these sections are always present — only their content is
+// gated: each opens with an empty "Select a..." message that gives way to
+// real details once something's picked. Both start collapsed;
+// loomRenderLibraryTypeInspector/loomRenderLibraryInspector below
+// auto-expand (never auto-collapse) the moment there's something to show.
 const loomLibraryTypeSection = createCollapsibleSection({
   label: "Library Type",
   collapsed: true,
@@ -3939,12 +3709,10 @@ const loomLibraryItemSection = createCollapsibleSection({
 });
 document.querySelector("[data-loom-library-item-mount]")?.appendChild(loomLibraryItemSection.section);
 
-// Relationships for whichever item is selected via the Type/Item pickers
-// above — mirrors Workbench's own left-pane Relationships section
-// (data-relationships-mount/-panel), list editor only (no force graph).
-// Re-rendered from loomRenderLibraryInspector(), the same choke point the
-// right-pane Library Item card already refreshes from on every selection
-// change.
+// Relationships for whichever item is selected via the Type/Item pickers —
+// mirrors Workbench's own left-pane Relationships section, list editor only
+// (no force graph). Re-rendered from loomRenderLibraryInspector(), the same
+// choke point the Library Item card refreshes from on every selection change.
 const LOOM_RELATIONSHIP_TYPE_SUGGESTIONS = [
   "Related to",
   "Part of",
@@ -4085,8 +3853,7 @@ function loomFindLibraryItem(key) {
 }
 
 // A short, glanceable summary of who/what this item is shared with — the
-// full breakdown (add/remove specific users or groups, public link
-// controls) lives in the Share modal itself; this is just enough to know
+// full breakdown lives in the Share modal; this is just enough to know
 // whether it's worth opening.
 function loomLibraryShareSummaryText(shares, link, isPublic) {
   const parts = [];
@@ -4126,14 +3893,10 @@ async function loomRenderLibraryShareSummary(item) {
 }
 
 // Same "does this candidate's tier clear the bar" check account.js's own
-// tierMeetsOwnerRequirement makes, but sourced from this kind's own real
-// writeTier policy (loomLibraryKindWriteTiers, populated in
-// loomLoadLibraryTable) instead of a hardcoded 3-bucket table — every kind
-// Loom's own Library browse table spans gets a correct answer this way, not
-// just character/template/system. No policy on record for a kind (a custom
-// creator-defined kind with no kind.json, or the value simply absent) means
-// unconstrained — same "absent = universal" convention used everywhere else
-// in this suite.
+// tierMeetsOwnerRequirement makes, but sourced from this kind's real
+// writeTier policy (loomLibraryKindWriteTiers) instead of a hardcoded
+// 3-bucket table, so every kind gets a correct answer. No policy on record
+// means unconstrained — "absent = universal" like everywhere else in the suite.
 function loomTierMeetsOwnerRequirement(tier, bucket) {
   const requirement = loomLibraryKindWriteTiers.get(bucket);
   return !requirement || roleRank(tier) >= roleRank(requirement);
@@ -4144,10 +3907,9 @@ function loomDescribeOwnerOption(username, tier) {
   return dataManager?.session?.user?.username === username ? `${base} (You)` : base;
 }
 
-// Mirrors account.js's own buildOwnerOptions exactly (current owner first,
-// then — admin sessions only — every other tier-eligible user), just
-// scoped to whichever single item is selected here instead of one row per
-// item in a table.
+// Mirrors account.js's own buildOwnerOptions (current owner first, then —
+// admin sessions only — every other tier-eligible user), scoped to whichever
+// single item is selected instead of one row per table item.
 function loomBuildOwnerOptions(bucket, currentOwner) {
   const options = [];
   const seen = new Set();
@@ -4173,20 +3935,15 @@ function loomBuildOwnerOptions(bucket, currentOwner) {
   return options;
 }
 
-// The kind's own policy (common/data/kind/{id}.json), not any one item's own
+// The kind's own policy (common/data/kind/{id}.json), not any one item's
 // sharing — "who can see/edit ANY item of this kind" vs. Share's own "who
 // can see/edit THIS ONE item" in Library Item below. Gated on the Type
-// filter select alone, so it appears the instant a type is picked in the
-// left pane, before any specific item is — the Library Item section below
-// is the one that needs an actual selected item. Defaults match the
-// server's own load_kind_policy() fallback for a kind with no kind.json on
-// disk.
+// filter alone, so it appears the instant a type is picked. Defaults match
+// the server's own load_kind_policy() fallback for a kind with no kind.json.
 // Tracks the PREVIOUS hasType/hasItem, not just the current one — this
-// function re-runs on every Library table refresh, not only when the
-// selection actually changes (loomRenderLibraryTableSelect calls it
-// unconditionally), so auto-expanding only on the false→true edge is what
-// keeps a manual re-collapse (while the same type/item is still selected)
-// from being silently undone the next time the table happens to refresh.
+// re-runs on every Library table refresh, not only when selection changes,
+// so auto-expanding only on the false→true edge keeps a manual re-collapse
+// from being silently undone on the next refresh.
 let loomLibraryTypeWasSelected = false;
 function loomRenderLibraryTypeInspector() {
   const bucket = loomLibraryTableState.selectedType;
@@ -4240,22 +3997,20 @@ function loomRenderLibraryInspector() {
       });
     }
     loomLibraryInspectorOwner.value = currentOwner.username;
-    // Only an admin session can actually change ownership (the server hard-
-    // enforces this too — see update_owner()) — a non-admin, or an item
-    // with nothing else to switch to, sees a locked single-option select,
-    // same convention account.js's own row-level dropdown uses.
+    // Only an admin session can actually change ownership (server-enforced
+    // too, update_owner()) — a non-admin, or an item with nothing else to
+    // switch to, sees a locked single-option select.
     loomLibraryInspectorOwner.disabled = !isLoomAdminSession() || options.length <= 1;
   }
   if (loomLibraryInspectorPublic) {
     loomLibraryInspectorPublic.checked = Boolean(item.is_public);
-    // Same "owner or admin" tier the server itself enforces for sharing
-    // (ensure_share_permission, server/app.py) — reuses the exact same
-    // check the item-level Delete button already gates on, rather than
-    // inventing a parallel permission rule here.
+    // Same "owner or admin" tier the server enforces for sharing
+    // (ensure_share_permission) — reuses the item-level Delete button's own
+    // check rather than a parallel permission rule.
     loomLibraryInspectorPublic.disabled = !libraryEntryAllowsDelete(item.bucket, item.id);
   }
-  // Admin-only (server/storage.py's own rename_item hard-enforces this too)
-  // — same gate as the Owner select above, not a separate/looser rule.
+  // Admin-only (server-enforced too, rename_item) — same gate as the Owner
+  // select above, not a separate/looser rule.
   if (loomLibraryInspectorRenameButton) loomLibraryInspectorRenameButton.classList.toggle("d-none", !isLoomAdminSession());
   void loomRenderLibraryShareSummary(item);
 }
@@ -4270,10 +4025,9 @@ if (loomLibraryInspectorOwner) {
       loomLibraryInspectorOwner.value = previousUsername;
       return;
     }
-    // Same window.confirm pattern as every other significant/hard-to-undo
-    // action in Loom (deleting a user/group/macro/system, above) — changing
-    // an owner isn't destructive, but it does immediately hand this item's
-    // edit/delete rights to someone else, so it deserves the same pause.
+    // Same window.confirm pattern as every other hard-to-undo action in
+    // Loom — changing an owner isn't destructive, but it does immediately
+    // hand this item's edit/delete rights to someone else.
     const itemLabel = item.label || item.id;
     if (!window.confirm(`Change the owner of "${itemLabel}" from ${previousUsername || "Unassigned"} to ${selected}?`)) {
       loomLibraryInspectorOwner.value = previousUsername;
@@ -4293,13 +4047,11 @@ if (loomLibraryInspectorOwner) {
   });
 }
 
-// A shortcut for the SAME mechanism the Share modal's own "All Users"
-// share target already uses (server/shares.py: sharing/revoking with this
-// exact username is what actually flips library_items.is_public) — not a
-// second, independent way to mark something public. Kept deliberately in
-// sync rather than a parallel is_public setter, so the two surfaces can't
-// drift: toggling here calls the exact same shareWithUser/revokeShare
-// dataManager methods the modal's own "All Users" row does.
+// A shortcut for the SAME mechanism the Share modal's own "All Users" share
+// target uses (sharing/revoking with this exact username is what flips
+// library_items.is_public) — not a second, independent way to mark
+// something public. Toggling here calls the exact same
+// shareWithUser/revokeShare methods the modal's "All Users" row does.
 const LOOM_ALL_USERS_USERNAME = "All Users";
 
 if (loomLibraryInspectorPublic) {
@@ -4314,9 +4066,8 @@ if (loomLibraryInspectorPublic) {
       } else {
         await dataManager.revokeShare({ contentType: item.bucket, contentId: item.id, username: LOOM_ALL_USERS_USERNAME });
       }
-      // Kept in sync locally (the next full table refresh would pick this
-      // up anyway, but the share summary line below reads item.is_public
-      // immediately) rather than waiting on a refetch.
+      // Kept in sync locally so the share summary line below reads
+      // item.is_public immediately, rather than waiting on a refetch.
       item.is_public = makePublic;
       if (status) status.show(makePublic ? "Marked public." : "Marked private.", { type: "success", timeout: 2000 });
       void loomRenderLibraryShareSummary(item);
@@ -4330,11 +4081,10 @@ if (loomLibraryInspectorPublic) {
 }
 
 // Two-step: a dry-run scan builds a confirmation prompt listing exactly
-// what will change (renameContent/rename_item's own {touched} summary),
-// then — only once the admin explicitly confirms — the real rename runs.
-// Everything a rename can touch (any other record's own reference) is
-// server-side/global, not scoped to this browser's own local caches, so
-// there's nothing client-side to pre-check beyond "is something selected."
+// what will change (rename_item's own {touched} summary), then — only once
+// confirmed — the real rename runs. Everything a rename can touch is
+// server-side/global, so there's nothing client-side to pre-check beyond
+// "is something selected."
 if (loomLibraryInspectorRenameButton) {
   loomLibraryInspectorRenameButton.addEventListener("click", async () => {
     const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
@@ -4363,10 +4113,9 @@ if (loomLibraryInspectorRenameButton) {
       });
       if (!confirmed) return;
       const result = await dataManager.renameContent(item.bucket, item.id, newId, { dryRun: false });
-      // Every touched kind's own bulk-fetch cache (content-fetch.js) needs
-      // invalidating — not just this one bucket's — since a rename's own
-      // reference repair can rewrite records of ANY kind, not only the
-      // renamed one's own.
+      // Every touched kind's own bulk-fetch cache needs invalidating, not
+      // just this bucket's — a rename's reference repair can rewrite
+      // records of any kind.
       const affectedKinds = new Set([item.bucket, ...result.touched.map((entry) => entry.kind)]);
       affectedKinds.forEach((kind) => window.dispatchEvent(new CustomEvent("workbench:content-saved", { detail: { bucket: kind } })));
       status?.show(`Renamed to "${newId}".`, { type: "success", timeout: 2500 });
@@ -4426,10 +4175,9 @@ async function loomLoadLibraryTable({ refresh = false } = {}) {
     loomLibraryTableShowMessage("Loading content…");
   }
   loomLibraryTableState.loading = true;
-  // The Owner dropdown (loomBuildOwnerOptions) needs the full user list —
-  // admin-only, same as the Owner control itself, so this is a no-op for
-  // any non-admin session. Loaded here (not only when the Users tab is
-  // visited) so it's already populated before the inspector needs it.
+  // The Owner dropdown needs the full user list — admin-only, so a no-op
+  // for non-admin sessions. Loaded here so it's populated before the
+  // inspector needs it, not only when the Users tab is visited.
   if (isLoomAdminSession()) void loomLoadUsers();
   try {
     if (!loomLibraryKindLabels.size) {
@@ -4440,15 +4188,12 @@ async function loomLoadLibraryTable({ refresh = false } = {}) {
     }
     const payload = await dataManager.listOwnedContent({ scope: "all", refresh: shouldRefresh });
     const items = Array.isArray(payload?.items) ? payload.items : [];
-    // Relationship records are no longer directly browsable/editable as raw
-    // JSON here — they're managed entirely through the left pane's own
-    // Relationships section (loomRefreshLibraryRelationships) now, the same
-    // way Workbench already keeps them off its own Library-style editing
-    // surfaces. Filtered at the single source both the type-filter dropdown
-    // (loomPopulateLibraryTableTypeFilter) and the item picker
-    // (loomRenderLibraryTableSelect) read from, so neither has to remember
-    // to exclude it separately — including the "All types" case, which
-    // reads loomLibraryTableState.items unfiltered otherwise.
+    // Relationship records aren't directly browsable/editable as raw JSON
+    // here — they're managed through the left pane's own Relationships
+    // section, same as Workbench keeps them off its editing surfaces.
+    // Filtered at the single source both the type-filter dropdown and the
+    // item picker read from, so neither has to remember to exclude it
+    // separately.
     loomLibraryTableState.items = items.filter((item) => item.bucket !== "relationship");
     loomLibraryTableState.stale = false;
     loomPopulateLibraryTableTypeFilter();
@@ -4463,10 +4208,9 @@ async function loomLoadLibraryTable({ refresh = false } = {}) {
 }
 
 // These two selects are the SINGLE picker for the Library tab — besides
-// updating the right-pane inspector here, they also drive the center-pane
-// JSON editor via loomLoadPickedLibraryEntry(), defined alongside the rest
-// of the editor logic further down (referencing it here works because
-// `function` declarations hoist fully, unlike `const`).
+// updating the right-pane inspector, they also drive the center-pane JSON
+// editor via loomLoadPickedLibraryEntry() (defined further down; works via
+// `function` hoisting).
 if (loomLibraryTableTypeSelect) {
   loomLibraryTableTypeSelect.addEventListener("change", () => {
     loomLibraryTableState.selectedType = loomLibraryTableTypeSelect.value || "";
@@ -4492,8 +4236,7 @@ if (loomLibraryInspectorShareButton) {
 }
 
 // Refresh the summary once the Share modal closes — access may have just
-// changed, and the modal itself doesn't know about this inspector to notify
-// it directly.
+// changed, and the modal doesn't know about this inspector to notify it.
 document.addEventListener("hidden.bs.modal", (event) => {
   if (!event.target?.hasAttribute?.("data-share-modal")) return;
   const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
@@ -4503,9 +4246,9 @@ document.addEventListener("hidden.bs.modal", (event) => {
 // --- Systems: list every saved System (Workbench's own DataManager bucket —
 // Loom is a second editor for the exact same data, not a separate store) ----
 
-// Populated by every listAllSystems() call so canDeleteSystem() (a synchronous
-// toolbar-state check) can look up the currently-selected system's ownership
-// without a fresh fetch.
+// Populated by every listAllSystems() call so canDeleteSystem() (a
+// synchronous toolbar-state check) can look up the selected system's
+// ownership without a fresh fetch.
 let systemsCatalog = new Map();
 
 async function listAllSystems() {
@@ -4513,9 +4256,8 @@ async function listAllSystems() {
   const merged = new Map();
   // Workbench ships sys.dnd5e as a "builtin" — a static JSON file, not a row
   // in the systems DB table — so it never shows up in dataManager.list()
-  // below on its own. Without this, the picker only ever shows Systems a
-  // creator has actually saved, hiding the one every seed Location/Setting
-  // already points at.
+  // on its own. Without this, the picker only shows Systems a creator has
+  // saved, hiding the one every seed Location/Setting already points at.
   try {
     const builtins = await dataManager.listBuiltins();
     (builtins?.systems || []).forEach((entry) => {
@@ -4550,8 +4292,8 @@ async function listAllSystems() {
 }
 
 // Same shape as listAllSystems, minus the builtins merge — Settings have no
-// builtin/shipped-as-a-static-file concept (unlike sys.dnd5e), they're
-// always real saved "setting" Library records, authored in Sanctum.
+// builtin/shipped-as-a-static-file concept, they're always real saved
+// "setting" Library records, authored in Sanctum.
 async function listAllSettings() {
   if (!dataManager) return [];
   const merged = new Map();
@@ -4579,11 +4321,9 @@ async function listAllSettings() {
   return Array.from(merged.values()).sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 }
 
-// Owner-or-admin, same rule as everywhere else this session (Workbench's
-// Template/Character delete gating): a System can be deleted by an admin
-// regardless of ownership, or by whichever user actually owns it. Systems
-// have no "shared with edit permission" concept today, unlike templates/
-// characters, so ownership is the only non-admin path.
+// Owner-or-admin, same rule as Workbench's Template/Character delete gating.
+// Systems have no "shared with edit permission" concept, unlike
+// templates/characters, so ownership is the only non-admin path.
 function systemAllowsDelete(id) {
   if (!id) return false;
   if (dataManager?.getUserTier() === "admin") return true;
@@ -4592,18 +4332,15 @@ function systemAllowsDelete(id) {
 }
 
 // --- Library: browse/edit every saved entity of any kind --------------------
-// The Entities panel above only ever shows the CURRENT mapping's fresh
-// output — this is the only place a previously-saved entity can be reopened,
-// edited directly as JSON, and assigned to (or removed from) Systems. The
-// left-pane "Library Contents" Type + Item select (see the Library contents
-// section above) is the ONE picker driving this editor — there's no separate
-// Kind/Entity select here anymore, so picking an item on the left is what
+// The Entities panel above only shows the CURRENT mapping's fresh output —
+// this is the only place a previously-saved entity can be reopened, edited
+// as JSON, and assigned to Systems. The left-pane "Library Contents" Type +
+// Item select is the ONE picker driving this editor — picking an item there
 // loads it below and in the right-pane inspector.
 
-// Ownership metadata for each kind's entries, refreshed whenever an entity is
-// loaded for editing — same "cache for a synchronous toolbar check" role as
-// systemsCatalog above. Keyed by "kind:id" since ids aren't guaranteed unique
-// across kinds.
+// Ownership metadata for each kind's entries, refreshed whenever an entity
+// is loaded for editing — same cache role as systemsCatalog above. Keyed by
+// "kind:id" since ids aren't unique across kinds.
 let libraryEntryCatalog = new Map();
 
 async function refreshLibraryEntryCatalog(kind) {
@@ -4623,9 +4360,8 @@ async function refreshLibraryEntryCatalog(kind) {
   }
 }
 
-// Owner-or-admin, same rule as the Systems tab (systemAllowsDelete) and
-// Workbench's Template/Character delete gating — every kind has ownership
-// now.
+// Owner-or-admin, same rule as systemAllowsDelete and Workbench's
+// Template/Character delete gating — every kind has ownership now.
 function libraryEntryAllowsDelete(kind, id) {
   if (!kind || !id) return false;
   return allowsDelete(libraryEntryCatalog, `${kind}:${id}`, { dataManager });
@@ -4635,13 +4371,12 @@ async function populateLibrarySystemCheckboxes(selectedIds) {
   if (!librarySystemList) return;
   // A System entity can't be assigned to itself — nonsensical the same way
   // a Template can't apply to non-character kinds (see
-  // populateLibraryTemplateSelect's isCharacter check just below).
+  // populateLibraryTemplateSelect's isCharacter check below).
   const isSystemKind = loomLibraryTableState.activeKind === "system";
   if (librarySystemSection) {
     // Plain `.hidden` silently loses to this wrapper's own `.d-flex`
-    // (Bootstrap's `display: flex !important`) — same bug/fix as Press's
-    // own setElementVisible: an inline `!important` style is the one thing
-    // guaranteed to win regardless of class order.
+    // (`display: flex !important`) — same fix as Press's setElementVisible:
+    // an inline `!important` style is guaranteed to win.
     if (isSystemKind) {
       librarySystemSection.style.setProperty("display", "none", "important");
     } else {
@@ -4674,8 +4409,8 @@ async function populateLibrarySystemCheckboxes(selectedIds) {
   });
 }
 
-// Byte-for-byte parallel to populateLibrarySystemCheckboxes above — a
-// Setting entity can't be assigned to itself, same reasoning as System.
+// Parallel to populateLibrarySystemCheckboxes above — a Setting entity
+// can't be assigned to itself, same reasoning as System.
 async function populateLibrarySettingCheckboxes(selectedIds) {
   if (!librarySettingList) return;
   const isSettingKind = loomLibraryTableState.activeKind === "setting";
@@ -4713,9 +4448,9 @@ async function populateLibrarySettingCheckboxes(selectedIds) {
 }
 
 // Cascades from Assigned Systems above: only Templates built for one of this
-// entity's assigned Systems are offered, the same cascading-select pattern
-// Sanctum's System > Setting > Location pickers use. Only shown for the
-// "character" kind — the other kinds have no Workbench Template concept.
+// entity's assigned Systems are offered, same cascading-select pattern
+// Sanctum's System > Setting > Location pickers use. Only shown for
+// "character" — other kinds have no Workbench Template concept.
 async function populateLibraryTemplateSelect(entity) {
   if (!libraryTemplateSection || !libraryTemplateSelect) return;
   const kind = loomLibraryTableState.activeKind || "";
@@ -4734,9 +4469,8 @@ async function populateLibraryTemplateSelect(entity) {
     const { remote } = await dataManager.list("templates", { refresh: true, includeLocal: false });
     const entries = dataManager.collectListEntries(remote, ["owned", "shared", "public", "items"]);
     entries
-      // The templates bucket now also holds Press's print templates
-      // (category: "print") — irrelevant to "which Workbench Template does
-      // this character open with", so only character templates are offered.
+      // The templates bucket also holds Press's print templates (category:
+      // "print") — irrelevant here, so only character templates are offered.
       .filter((entry) => (entry.category || "character") === "character")
       .filter((entry) => !systemIds.size || systemIds.has(entry.schema || entry.system))
       .forEach((entry) => {
@@ -4765,12 +4499,9 @@ if (libraryTemplateSelect) {
         entity.template = templateId;
         const chosen = Array.from(libraryTemplateSelect.options).find((option) => option.value === templateId);
         // Folds the chosen Template's own System into this character's
-        // Assigned Systems (systemIds) instead of the old singular `system`
-        // field — that legacy key is gone; Assigned Systems (the same
-        // librarySystemList checkboxes above) is the one mechanism every
-        // Library kind uses for "which System(s) does this apply to" now.
-        // Additive only (never removes an already-assigned System the
-        // author picked independently of the Template cascade).
+        // Assigned Systems (systemIds) — the one mechanism every Library
+        // kind uses for "which System(s) does this apply to" now. Additive
+        // only — never removes an already-assigned System.
         if (chosen?.dataset.schema) {
           const ids = new Set(Array.isArray(entity.systemIds) ? entity.systemIds : []);
           ids.add(chosen.dataset.schema);
@@ -4786,30 +4517,22 @@ if (libraryTemplateSelect) {
 }
 
 // --- Features tab (its OWN tab — NOT a section inside the Library tab) -----
-// The Library tab is the consistent raw-JSON fallback editor for every kind,
-// full stop — it never grows kind-specific structured UI (that mistake was
-// made and corrected here more than once; see this repo's own memory of the
-// correction). A kind whose shape earns a structured editor gets its own
-// `data-loom-view-panel="<kind>"` tab instead, the same way Systems and
-// Macros already each have one. This tab is the FULL structured editor for
-// `feature` — every field (id, name, description, mechanics, tags.*,
-// synergizesWith, conflictsWith) is accessible and editable here, not just
-// budgetCost/tags (undercroft/README.md's own Workstream E motivation still
-// holds: budgetCost/tags are what make a Feature eligible for Crucible's
-// native generation — an untagged Feature is invisible to it — but a GM
-// comparing near-duplicate Features, e.g. three different "Dagger" entries,
-// needs to see their actual description/mechanics differences too, not just
-// their cost/tags). `mechanics` is edited as its own small JSON textarea
-// rather than type-specific structured fields — its shape genuinely varies
-// by `mechanics.type` (passive/weapon-attack/multiattack/save-effect/
-// active), so one generic JSON box handles every variant without hand-
-// building 4+ different sub-forms; this doesn't reopen the "Library tab is
-// JSON-only" question since it's one FIELD on a dedicated tab, not the
-// whole entity replacing this tab's own structure.
+// The Library tab is the consistent raw-JSON fallback editor for every
+// kind, full stop — it never grows kind-specific structured UI. A kind
+// whose shape earns a structured editor gets its own
+// `data-loom-view-panel="<kind>"` tab instead, same as Systems and Macros.
+// This tab is the FULL structured editor for `feature` — every field is
+// editable here, not just budgetCost/tags: those make a Feature eligible
+// for Crucible's native generation, but a GM comparing near-duplicate
+// Features needs to see actual description/mechanics differences too.
+// `mechanics` is its own small JSON textarea rather than type-specific
+// fields — its shape varies by `mechanics.type`, so one generic JSON box
+// handles every variant without hand-building 4+ sub-forms; still one FIELD
+// on a dedicated tab, not the whole entity, so this doesn't reopen the
+// "Library tab is JSON-only" rule.
 //
-// Still no New button — creating a brand-new Feature (rare; Features are
-// almost always import/conversion-produced) still starts on the Library
-// tab, where an id gets typed once; every other field is fully editable
+// Still no New button — a brand-new Feature (rare) still starts on the
+// Library tab, where an id gets typed once; every other field is editable
 // here immediately afterward.
 
 mountField("feature-id", createCompactField({ type: "text", id: "loomFeatureId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-feature-id", disabled: true }));
@@ -4822,16 +4545,13 @@ mountField(
   })
 );
 // Friendly controls, not raw JSON — a Feature's `mechanics` object only
-// ever holds { type, text, scope } across every record in the Library
-// (verified directly against every feat.*.json file: type is always one of
-// exactly 8 known strings, text is free-form prose, scope is handled by the
-// separate "Scope" select below), so there's nothing a JSON textarea offers
-// here that a select + a plain textarea don't already cover, and those are
-// what an end user actually understands. Type's 8 options are exactly the
+// ever holds { type, text, scope } across every record in the Library (type
+// is always one of exactly 8 known strings, text is free-form prose, scope
+// is the separate "Scope" select below), so a select + plain textarea
+// covers everything a JSON textarea would. Type's 8 options are exactly the
 // mechanics.type values dispatched on elsewhere (feature-params-editor.js's
-// own isWeaponAttack/isSaveEffect/isActive checks; every other value falls
-// through to no extra per-type UI there) — ordered roughly by how often
-// each appears in the Library, not alphabetically.
+// isWeaponAttack/isSaveEffect/isActive checks) — ordered by frequency in
+// the Library, not alphabetically.
 mountField(
   "feature-mechanics-type",
   createCompactField({
@@ -4865,14 +4585,10 @@ mountField(
 );
 // "Generic" is the DEFAULT/unreviewed state, not a confirmed judgment —
 // same "empty means unreviewed, not confirmed-reusable" convention
-// budgetCost/tags already use (undercroft/README.md's own Workstream E:
-// 991 of 1070 Features had budgetCost: 0 because nobody had gotten to them
-// yet, not because they were reviewed and found unsuitable). The label
-// used to read "Generic (eligible for native generation)" — misleading,
-// since an untagged Feature (no tags.recipeSlots) is ALREADY excluded from
-// Crucible's own generation via a separate whitelist gate regardless of
-// this select's own value; see the note rendered next to the Recipe Slots
-// checklist below when it's empty.
+// budgetCost/tags use. The label used to read "Generic (eligible for
+// native generation)" — misleading, since an untagged Feature (no
+// tags.recipeSlots) is already excluded from Crucible's generation via a
+// separate whitelist gate regardless of this select's value.
 mountField(
   "feature-scope",
   createCompactField({
@@ -4931,32 +4647,25 @@ const featureConflictsList = mountFeatureChecklist("[data-feature-conflicts-moun
 
 // The FULL entity, loaded once per selection — a field this tab's own
 // controls don't directly own (`combat`, `systemIds`) still round-trips
-// untouched on Save, since Save patches this SAME object rather than
-// building a fresh one from scratch.
+// untouched on Save, since Save patches this SAME object.
 let currentFeatureEntity = null;
 
 // The Tiers list's own in-progress array — same "flat array is the source
-// of truth while editing" convention macroEditorActions already uses (see
-// that array's own comment), not currentFeatureEntity.tiers directly, so a
-// reorder/add/remove can re-render freely before Save patches it back in.
+// of truth while editing" convention macroEditorActions uses, not
+// currentFeatureEntity.tiers directly, so reorder/add/remove can re-render
+// freely before Save patches it back in.
 let featureEditorTiers = [];
 
 // Every vocabulary collector below does at least one server round trip;
-// recomputing all of them on EVERY single Feature selection was the actual
-// cause of a real, reported ~1s lag per click — fetchKindEntriesWithIds
-// ("feature") alone scans the FULL feature Library (1000+ records) just to
-// build the Behaviors/Categories vocabulary and the Synergizes/Conflicts
-// Feature-reference picker's own candidate list. Cached at module scope
-// instead: the whole feature Library listing is fetched ONCE and shared by
-// all three of those (and by the Feature picker select itself — see
-// populateFeatureSelect below); the System-scoped vocab (Recipe Slots/
-// Roles/Creature Types) is cached per distinct systemIds combination, since
-// most Features share the same Assigned Systems and repeat visits hit the
-// cache. Some staleness (a value saved moments ago on another Feature not
-// showing up yet) is an acceptable trade for not re-fetching on every
-// click — reset on every Save (a save might introduce a new value) and on
-// every fresh visit to this tab (populateFeatureSelect runs on every
-// `setLoomView("features")`).
+// recomputing all of them on every Feature selection caused a real ~1s lag
+// per click — fetchKindEntriesWithIds("feature") alone scans the full
+// feature Library just to build the Behaviors/Categories vocabulary and the
+// Synergizes/Conflicts picker's candidate list. Cached at module scope
+// instead: the whole listing is fetched once and shared by all three (and
+// by the Feature picker select — populateFeatureSelect below); the
+// System-scoped vocab is cached per distinct systemIds combination. Some
+// staleness is an acceptable trade for not re-fetching on every click —
+// reset on every Save and on every fresh visit to this tab.
 let featureLibraryEntriesCache = null;
 let featureBehaviorVocabularyCache = null;
 let featureCategoryVocabularyCache = null;
@@ -4981,15 +4690,11 @@ function systemVocabKey(systemIds) {
 }
 
 // Live vocabulary for the Behaviors checklist — the union of every
-// `tags.behaviors` value ALREADY used across the whole feature Library, not
-// a hardcoded list (this vocabulary is authored content, same as
-// recipeSlots/roles/creatureTypes below, not a fixed JS table — see
-// undercroft/README.md's "avoid hardcoding" stance). Returns `{value,
-// label}` pairs (value === label here — a behavior word like "damage" is
-// its own storage form and its own readable label) for the same shape
-// every collector below returns, so populateFeatureTagChecklists can treat
-// all of them uniformly. Cached (see the module-level comment above) —
-// shares the one loadFeatureLibraryEntries() fetch with
+// `tags.behaviors` value already used across the whole feature Library, not
+// a hardcoded list (authored content, same as recipeSlots/roles/
+// creatureTypes below). Returns `{value, label}` pairs (value === label
+// here) so populateFeatureTagChecklists can treat every collector
+// uniformly. Cached — shares the one loadFeatureLibraryEntries() fetch with
 // collectFeatureCategoryVocabulary and the Synergizes/Conflicts picker.
 async function collectFeatureBehaviorVocabulary() {
   if (featureBehaviorVocabularyCache) return featureBehaviorVocabularyCache;
@@ -5003,9 +4708,8 @@ async function collectFeatureBehaviorVocabulary() {
 }
 
 // Same shape/reasoning as collectFeatureBehaviorVocabulary above, for
-// `tags.categories` (the "which tool(s) this Feature belongs to" tag —
-// "monster"/"spell"/"item"/"location" confirmed live across the current
-// Library).
+// `tags.categories` (which tool(s) this Feature belongs to —
+// monster/spell/item/location).
 async function collectFeatureCategoryVocabulary() {
   if (featureCategoryVocabularyCache) return featureCategoryVocabularyCache;
   featureCategoryVocabularyCache = (async () => {
@@ -5019,15 +4723,11 @@ async function collectFeatureCategoryVocabulary() {
 
 // Shared by the Recipe Slots/Roles vocabulary collectors below — both are
 // Crucible-authored Library kinds scoped to a System the same way
-// crucible/js/lib/tables.js's own listKindForSystem already scopes
-// Archetype/Role/Feature lookups (mirrored locally here rather than
-// importing across tools — see this function's own callers for the
-// System-defined Creature Types case, which reads a System field directly
-// instead since it isn't a Library kind at all). `pickValue(entity, map)`
-// sets `map.set(storedValue, readableLabel)` — a Map (not a Set) since,
-// unlike Recipe Slots, a Role's own STORED tag value is its lowercase id
-// ("brute"), not its display name ("Brute") — confirmed live: every
-// Feature's own `tags.roles` uses ids, never names.
+// crucible/js/lib/tables.js's listKindForSystem scopes Archetype/Role/
+// Feature lookups (mirrored locally rather than importing across tools).
+// `pickValue(entity, map)` sets `map.set(storedValue, readableLabel)` — a
+// Map since a Role's stored tag value is its lowercase id ("brute"), not
+// its display name.
 async function collectFeatureKindNamesForSystems(kind, systemIds, pickValue) {
   if (!dataManager) return [];
   try {
@@ -5055,12 +4755,10 @@ function collectFeatureRecipeSlotVocabulary(systemIds) {
 }
 
 // Stored as the Role's own lowercase `id` ("brute"), never its display
-// `name` ("Brute") — confirmed live against every Feature's own
-// `tags.roles` (this was a real bug: using `.name` here produced a
-// checklist entry that could never match what's actually saved on a
-// Feature, and — worse — a Feature already tagged with the lowercase id
-// would show up as TWO separate rows, one checked one not, once the id
-// form was also present in the live vocabulary).
+// `name` ("Brute") — using `.name` here would produce a checklist entry
+// that never matches what's saved on a Feature, and a Feature already
+// tagged with the id would show up as two separate rows once both forms
+// were present in the vocabulary.
 function collectFeatureRoleVocabulary(systemIds) {
   return collectFeatureKindNamesForSystems("monster-role", systemIds, (entity, values) => {
     if (entity?.id) values.set(entity.id, entity.name || entity.id);
@@ -5069,14 +4767,11 @@ function collectFeatureRoleVocabulary(systemIds) {
 
 // Creature Types vocabulary — read straight off each Assigned System's own
 // `creatureTypes` array field (System-defined game-rule vocabulary, not a
-// Library kind — see crucible/CLAUDE.md's own "Creature Type is not a
-// Library kind" section), unioned across every Assigned System since a
-// Feature (unlike Crucible's single active System) can carry more than one.
-// Always the conventional "creatureTypes" field key — Loom has no
-// per-browser tool-preference concept to read Crucible's own override from.
-// Stored as the type's own lowercase `id` ("ooze"), never its display
-// `name` ("Ooze") — same real bug/fix as Roles above (confirmed live:
-// feat.acid-corrosion's own `tags.creatureTypes: ["ooze"]`).
+// Library kind — see crucible/CLAUDE.md), unioned across every Assigned
+// System since a Feature can carry more than one. Always the conventional
+// "creatureTypes" field key — Loom has no per-browser override concept.
+// Stored as the type's own lowercase `id`, never its display name, same
+// reasoning as Roles above.
 async function collectFeatureCreatureTypeVocabulary(systemIds) {
   if (!dataManager || !Array.isArray(systemIds) || !systemIds.length) return [];
   const values = new Map();
@@ -5098,9 +4793,8 @@ async function collectFeatureCreatureTypeVocabulary(systemIds) {
 
 // Bundles the three System-scoped collectors above into ONE cached promise
 // per distinct Assigned-Systems combination — most Features share the same
-// systemIds, so repeat visits within one Features-tab session hit this
-// cache instead of re-fetching monster-archetype/monster-role/each System
-// record on every click (see the module-level cache comment above).
+// systemIds, so repeat visits hit this cache instead of re-fetching
+// monster-archetype/monster-role/each System record on every click.
 function loadFeatureSystemVocabulary(systemIds) {
   const key = systemVocabKey(systemIds);
   if (!featureSystemVocabularyCache.has(key)) {
@@ -5117,10 +4811,9 @@ function loadFeatureSystemVocabulary(systemIds) {
 }
 
 // Already-selected values that fell out of a live vocabulary (a Recipe Slot
-// from a deleted Archetype, say) still need to show up in the list,
-// checked — never silently drop authored data just because its source
-// vocabulary moved on. Shared by every checklist below, including the
-// Synergizes/Conflicts Feature-reference pickers.
+// from a deleted Archetype) still need to show up, checked — never silently
+// drop authored data just because its source moved on. Shared by every
+// checklist below, including Synergizes/Conflicts.
 function withSelectedVocabulary(vocabulary, selected) {
   const known = new Set(vocabulary.map((item) => item.value));
   const extra = (selected || []).filter((value) => !known.has(value)).map((value) => ({ value, label: value }));
@@ -5130,11 +4823,10 @@ function withSelectedVocabulary(vocabulary, selected) {
 // Populates the Categories/Behaviors/Recipe Slots/Roles/Creature Types
 // checklists for `entity` (a real loaded Feature, or a synthetic
 // `{...currentFeatureEntity, tags: suggestion}` shape when applying an LLM
-// suggestion — see handleSuggestFeatureTags below) — ALWAYS the full live
-// vocabulary, with `entity.tags` checked and sorted to the top via
-// populateStringChecklist's own explicit `selected` param. Never passes
-// just the checked values as the whole list (that would wipe every other
-// option from view — a real bug this function used to have).
+// suggestion) — always the full live vocabulary, with `entity.tags` checked
+// and sorted to the top via populateStringChecklist's `selected` param.
+// Never passes just the checked values as the whole list — that would wipe
+// every other option from view.
 async function populateFeatureTagChecklists(entity) {
   const systemIds = Array.isArray(entity?.systemIds) ? entity.systemIds : [];
   const tags = entity?.tags || {};
@@ -5155,12 +4847,9 @@ async function populateFeatureTagChecklists(entity) {
 }
 
 // Synergizes With / Conflicts With — plain references to OTHER Feature ids,
-// not a tag vocabulary, so the checklist's own "vocabulary" is just every
-// other Feature in the Library (excluding this one itself, which can't
-// synergize/conflict with itself) shown by name. Shares
-// loadFeatureLibraryEntries()'s one cached fetch with the Behaviors/
-// Categories vocabulary above rather than fetching the whole Library a
-// second/third time.
+// not a tag vocabulary, so the "vocabulary" is just every other Feature
+// (excluding this one) shown by name. Shares loadFeatureLibraryEntries()'s
+// cached fetch with the Behaviors/Categories vocabulary above.
 async function populateFeatureReferenceCheckLists(entity) {
   const entries = await loadFeatureLibraryEntries();
   const candidates = entries
@@ -5188,21 +4877,18 @@ function readFeatureReferenceLists() {
 }
 
 // Type + Notes read straight off their own controls — no JSON parsing, so
-// there's no invalid-JSON failure mode to guard against the way
-// currentLibraryEntity() (Library tab) still needs to for its raw-JSON
-// entity body.
+// no invalid-JSON failure mode to guard against, unlike
+// currentLibraryEntity() (Library tab) and its raw-JSON entity body.
 function currentFeatureMechanics() {
   return { type: featureMechanicsTypeSelect?.value || "", text: featureMechanicsTextInput?.value || "" };
 }
 
 // Flags a real question the Scope field alone doesn't answer: even a
-// Generic Feature is invisible to Crucible's own generator until it's
-// tagged with at least one Recipe Slot (generator.js's own
-// candidatesForSlot is a whitelist gate, separate from Scope entirely).
-// Scope's own eligibility meaning (Unique = never eligible) is stated
-// directly in its own select option now, so this note only ever needs to
-// cover the Recipe Slots half — nothing shown for a Feature that's already
-// tagged, since there's nothing surprising left to flag.
+// Generic Feature is invisible to Crucible's generator until tagged with at
+// least one Recipe Slot (generator.js's candidatesForSlot is a whitelist
+// gate, separate from Scope). Scope's own eligibility meaning is stated in
+// its select option now, so this note only ever needs to cover Recipe
+// Slots — nothing shown once a Feature is already tagged.
 function updateFeatureEligibilityNote() {
   if (!featureEligibilityNote) return;
   if (!currentFeatureEntity) {
@@ -5219,10 +4905,9 @@ function updateFeatureEligibilityNote() {
 
 // Tiers editor — same row-list shape as the Macros tab's own
 // macroEditorActions/renderMacroActionsEditor (add/remove/reorder a flat
-// array, re-render the whole list on any change), reusing that same tab's
-// generic macroFieldRow/macroTextInput/macroTextarea/macroNumberInput DOM
-// builders directly rather than duplicating them — those are plain field
-// builders with no macro-specific logic despite the name.
+// array, re-render on any change), reusing that tab's generic
+// macroFieldRow/macroTextInput/macroTextarea/macroNumberInput DOM builders
+// directly — plain field builders with no macro-specific logic despite the name.
 function updateFeatureTier(index, patch) {
   recordUndoableChange("feature", () => {
     if (!featureEditorTiers[index]) return;
@@ -5311,14 +4996,11 @@ function renderFeatureTierRow(tier, index) {
 
   row.appendChild(headerRow);
 
-  // Tier `mechanics.text` is the only per-tier mechanics field surfaced
-  // here — every existing tiered Feature (feat.impose-condition,
-  // feat.damage, feat.action-restricted) keeps `mechanics.type` identical
-  // to the parent Feature's own mechanics.type across all its tiers, so
-  // that value is copied from the parent (currentFeatureMechanics()) on
-  // Save rather than duplicated as its own field per row here. No label —
-  // the placeholder text ("What this tier means…") already says what it
-  // is, and a 2-row textarea doesn't have room to spare for one.
+  // Tier `mechanics.text` is the only per-tier mechanics field surfaced —
+  // every tiered Feature keeps `mechanics.type` identical to the parent's
+  // across all its tiers, so that value is copied from the parent
+  // (currentFeatureMechanics()) on Save rather than duplicated per row. No
+  // label — the placeholder already says what it is.
   row.appendChild(
     macroTextarea(
       tier.mechanics?.text,
@@ -5335,9 +5017,9 @@ let featureTiersSortable = null;
 
 function renderFeatureTiersEditor() {
   if (!featureTiersList) return;
-  // Disposed before the wipe — each tier row's own Remove button carries a
-  // real tooltip now, and this reruns on every tier edit/add/remove/reorder.
-  // See tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — each tier row's Remove button carries a real
+  // tooltip, and this reruns on every tier edit/add/remove/reorder (see
+  // tooltips.js's BUG CLASS 2).
   disposeTooltips(featureTiersList);
   featureTiersList.innerHTML = "";
   if (featureTiersEmpty) featureTiersEmpty.classList.toggle("d-none", featureEditorTiers.length > 0);
@@ -5368,11 +5050,9 @@ if (featureAddTierButton) {
   });
 }
 
-// Undo/dirty-tracking snapshot for this tab — every field this tab's own
-// controls can change (id selection, name, description, mechanics text,
-// budgetCost, scope, tags, references, tiers), same "SNAPSHOT_HANDLERS[type]"
-// convention every other tab (mapping/library/system/macro) already
-// registers itself under.
+// Undo/dirty-tracking snapshot for this tab — every field this tab's
+// controls can change, same SNAPSHOT_HANDLERS[type] convention every other
+// tab registers itself under.
 function createFeatureSnapshot() {
   return {
     id: featureRecordSelect?.value || "",
@@ -5416,19 +5096,13 @@ function applyFeatureSnapshot(snapshot) {
 }
 
 // Resets the vocabulary cache on every fresh visit to this tab (a Save
-// elsewhere in this same session, or by another user, might have
-// introduced a new value since the cache was last built) — see the
-// module-level cache comment above. Also reuses the SAME
-// loadFeatureLibraryEntries() fetch this triggers for the Feature picker
-// itself, rather than a separate, redundant full-Library fetch.
-// Type filter (data-feature-type-filter) narrows the Feature picker below
-// by tags.categories — e.g. "monster" vs a Vault-authored "spell"/"item" —
-// so a Feature that reads as generic (feat.fire-breath's own Vault content
-// vs feat.fire-breath-monster) can be told apart without opening each one.
-// Options are the distinct categories actually present across the Library
-// right now (never a fixed hardcoded list — a new category tagged
-// elsewhere should show up here automatically), rebuilt every visit same
-// as the vocabulary caches above.
+// elsewhere might have introduced a new value since the cache was built).
+// Also reuses the SAME loadFeatureLibraryEntries() fetch this triggers for
+// the Feature picker itself, rather than a redundant full-Library fetch.
+// Type filter narrows the Feature picker below by tags.categories — e.g.
+// "monster" vs a Vault-authored "spell"/"item" — so similarly-named
+// Features can be told apart without opening each one. Options are the
+// distinct categories actually present (never hardcoded), rebuilt every visit.
 function populateFeatureTypeFilter(entries) {
   if (!featureTypeFilterSelect) return;
   const current = featureTypeFilterSelect.value;
@@ -5452,25 +5126,19 @@ function populateFeatureTypeFilter(entries) {
   }
 }
 
-// `preserveSelection` (default true) re-selects whatever was already
-// picked once reloading finishes, IF it's still among the visible options
-// — right after Save (the feature you just edited should stay selected)
-// and on this tab's own initial load both want that. Switching the Type
-// filter is the one caller that wants the opposite: a features list
-// filtered to a different type almost never still contains the
-// previously-selected feature, and even when it happens to, landing back
-// on "whatever was picked before I changed Type" reads as the Type change
-// not having done anything — so that one caller passes false and always
-// lands on the blank "Select a feature…" option instead.
+// `preserveSelection` (default true) re-selects whatever was already picked
+// once reloading finishes, if it's still visible — right after Save and on
+// initial load both want that. Switching the Type filter wants the
+// opposite: a filtered list almost never still contains the previously-
+// selected feature, and even when it does, staying selected reads as the
+// Type change having done nothing — so that caller passes false.
 async function populateFeatureSelect({ preserveSelection = true } = {}) {
   if (!featureRecordSelect || !dataManager) return;
   const current = featureRecordSelect.value;
-  // Immediate, synchronous feedback before the slow part below even
-  // starts — loadFeatureLibraryEntries can take a real moment, and
-  // leaving the select showing its own previous option during that wait
-  // gave no indication anything was happening at all (confirmed real
-  // complaint: it "sits on the previously selected feature until the
-  // loading finishes, which can take a while, and is confusing").
+  // Immediate, synchronous feedback before the slow part below starts —
+  // loadFeatureLibraryEntries can take a real moment, and leaving the
+  // select showing its previous option during that wait gave no indication
+  // anything was happening.
   featureRecordSelect.innerHTML = "";
   const loadingOption = document.createElement("option");
   loadingOption.value = "";
@@ -5513,9 +5181,8 @@ async function loadFeatureIntoEditor(id) {
   if (!dataManager) return;
   try {
     // preferLocal: false — same reasoning as loadMacroIntoEditor/
-    // loadLibraryEntry: this tab is a real editor feeding a load-then-save
-    // round trip, so a stale local cache entry silently winning would mean
-    // a resave here reverts whatever's actually on the server.
+    // loadLibraryEntry: a stale local cache winning here would mean a
+    // resave reverts whatever's actually on the server.
     const result = await dataManager.get("feature", id, { preferLocal: false });
     currentFeatureEntity = result.payload || null;
     if (!currentFeatureEntity) throw new Error("Not found");
@@ -5560,11 +5227,9 @@ wireUndoTracking(featureMechanicsTextInput, "feature");
 wireUndoTracking(featureBudgetCostInput, "feature");
 wireUndoTracking(featureScopeSelect, "feature");
 // A checklist's checkboxes are dynamically rebuilt rows, not one fixed
-// field — same `selector` use wireUndoTracking's own header comment
-// anticipates ("a row-holding container with dynamically added/removed
-// rows"). focusin (before the native check/uncheck) + change (after) is the
-// same two-phase capture every other field here needs, since the browser
-// already mutated the checkbox by the time any listener could see it.
+// field — same `selector` use wireUndoTracking's header comment anticipates.
+// focusin (before the check/uncheck) + change (after) is the same two-phase
+// capture every other field here needs.
 [
   featureCategoriesList,
   featureBehaviorsList,
@@ -5586,8 +5251,8 @@ function canDeleteFeature() {
 }
 
 // No isDirty("feature")/mechanics requirement, unlike canSaveFeature —
-// duplicating an unmodified, already-saved Feature is exactly as valid as
-// duplicating a mid-edit one (same reasoning canDuplicateSystem documents).
+// duplicating an unmodified saved Feature is just as valid as a mid-edit
+// one (same reasoning canDuplicateSystem documents).
 function canDuplicateFeature() {
   return Boolean(currentFeatureEntity && featureRecordSelect?.value);
 }
@@ -5603,9 +5268,8 @@ if (featureSaveButton) {
     }
     // Every tier needs its own non-blank, unique id — it's the storage key
     // record.featureTiers[feature.id] resolves against elsewhere (Vault/
-    // Crucible's own renderFeatureTierEditor), so a blank or duplicate id
-    // here would silently break that lookup rather than fail loudly at
-    // save time.
+    // Crucible's renderFeatureTierEditor), so a blank/duplicate id would
+    // silently break that lookup.
     const tierIds = featureEditorTiers.map((tier) => (tier.id || "").trim());
     if (tierIds.some((tierId) => !tierId)) {
       status?.show("Every tier needs an id before saving.", { type: "error", timeout: 3000 });
@@ -5638,9 +5302,9 @@ if (featureSaveButton) {
       await dataManager.save("feature", id, currentFeatureEntity);
       status?.show(`Saved feature ${id}.`, { type: "success", timeout: 2000 });
       markClean("feature");
-      // A new name/tag/category value from this save should be visible the
-      // next time it's needed — populateFeatureSelect resets the
-      // vocabulary cache and rebuilds the picker (in case the name changed).
+      // A new name/tag/category value from this save should be visible next
+      // time it's needed — populateFeatureSelect resets the vocabulary
+      // cache and rebuilds the picker.
       await populateFeatureSelect();
       featureRecordSelect.value = id;
     } catch (error) {
@@ -5666,11 +5330,9 @@ function generateDuplicateFeatureId(baseId) {
 }
 
 // Unlike Library/System/Macro's own duplicate handlers, a Feature has no
-// typeable-id "staged, not yet saved" state — featureRecordSelect only ever
-// holds ids that already exist on the server (see this tab's own "no New
-// Feature" comment above). Duplicate here saves the clone immediately under
-// a fresh id, then loads it into the editor, rather than pretending to
-// stage an unsaved draft the picker can't actually represent.
+// typeable-id "staged, not yet saved" state — featureRecordSelect only
+// holds ids that already exist on the server. Duplicate here saves the
+// clone immediately under a fresh id, then loads it into the editor.
 if (featureDuplicateButton) {
   featureDuplicateButton.addEventListener("click", async () => {
     if (!dataManager || !currentFeatureEntity || !featureRecordSelect?.value) return;
@@ -5708,22 +5370,18 @@ if (featureDeleteButton) {
   });
 }
 
-// LLM-assisted starting guess (Workstream E) — POSTs this ONE Feature to
-// /loom/suggest-feature-tags. Applies the suggestion via
-// populateFeatureTagChecklists — the SAME full-vocabulary render a normal
-// load uses, just with the suggestion's own values as the checked set —
-// never wipes the other available options out of the checklists (an
-// earlier version of this function called populateStringChecklist directly
-// with ONLY the suggested values as the whole list, which did exactly
-// that). Never saves on its own; the GM still reviews and clicks Save.
+// LLM-assisted starting guess — POSTs this ONE Feature to
+// /loom/suggest-feature-tags. Applies via populateFeatureTagChecklists —
+// the SAME full-vocabulary render a normal load uses, with the suggestion's
+// values as the checked set, so it never wipes the other options out.
+// Never saves on its own; the GM still reviews and clicks Save.
 //
 // Not wrapped in recordUndoableChange — that helper snapshots synchronously
-// immediately before/after its action() runs, but populating the
-// checklists here is async (live vocabulary fetch), so the "after" snapshot
-// would be captured before the DOM actually finished updating. Skips a
-// dedicated undo-stack entry for this one action (re-selecting the Feature
-// without saving already discards it) but still calls updateToolbarState()
-// directly so Save correctly lights up once applied.
+// around its action(), but populating the checklists here is async, so the
+// "after" snapshot would be captured before the DOM finished updating.
+// Skips a dedicated undo-stack entry (re-selecting the Feature without
+// saving already discards it) but still calls updateToolbarState() so Save
+// lights up once applied.
 async function handleSuggestFeatureTags() {
   const id = featureRecordSelect?.value;
   if (!currentFeatureEntity || !id) return;
@@ -5734,9 +5392,9 @@ async function handleSuggestFeatureTags() {
   }
   if (featureSuggestStatus) featureSuggestStatus.classList.add("d-none");
   try {
-    // Reads the LIVE, possibly-unsaved fields rather than currentFeatureEntity's
-    // own (last-loaded) values — a description just typed in but not yet
-    // saved should still inform the suggestion.
+    // Reads the LIVE, possibly-unsaved fields rather than
+    // currentFeatureEntity's last-loaded values — an unsaved description
+    // should still inform the suggestion.
     const response = await fetch("/loom/suggest-feature-tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -5756,11 +5414,9 @@ async function handleSuggestFeatureTags() {
     const suggestion = payload?.suggestions?.[id];
     if (!suggestion) throw new Error("No suggestion returned for this Feature.");
     if (featureBudgetCostInput) featureBudgetCostInput.value = String(suggestion.budgetCost ?? 0);
-    // Scope isn't part of the suggestion payload (a monster-boss-move
-    // "unique" judgment call the LLM route deliberately doesn't make) —
-    // left exactly as it already was. Categories isn't part of it either
-    // (which tool(s) a Feature belongs to isn't a cost/tag-style judgment
-    // call) — preserved from the real current tags, not suggested.
+    // Scope isn't part of the suggestion payload (a "unique" judgment call
+    // the LLM route deliberately doesn't make) — left as-is. Categories
+    // isn't either — preserved from the current tags, not suggested.
     await populateFeatureTagChecklists({
       ...currentFeatureEntity,
       tags: {
@@ -5789,15 +5445,13 @@ featureSuggestButton?.addEventListener("click", handleSuggestFeatureTags);
 
 // --- Macro Actions editor (Library tab, kind "macro" only) -----------------
 // Same kind-gated-section pattern as populateLibraryTemplateSelect above,
-// authoring the exact actions:[] array runMacro() (macro-runner.js) reads
-// at execution time. Type/label/action metadata comes from the shared
+// authoring the exact actions:[] array runMacro() (macro-runner.js) reads at
+// execution time. Type/label/action metadata comes from the shared
 // MACRO_ACTION_CATALOG (macro-action-catalog.js) — the same registry
-// macro-runner.js's own per-step toasts read — plus one more thing only
-// this authoring UI needs: which kind of `target` field (if any) each type
-// takes. No `target` for Clock/Calendar — see their own *_MACRO_ACTIONS
-// comment: there's no portable "which one" to author into a shared macro,
-// only "whichever is currently shown to the table," resolved at run time
-// (dashboard.js's findActiveWidgetInstance).
+// macro-runner.js's per-step toasts read — plus which `target` field (if
+// any) each type takes. No `target` for Clock/Calendar — there's no
+// portable "which one" to author, only "whichever is shown to the table,"
+// resolved at run time (dashboard.js's findActiveWidgetInstance).
 const MACRO_ACTION_TARGET_KINDS = {
   wled: "alias",
   combat: "encounterOrActive",
@@ -5825,9 +5479,8 @@ function macroFieldRow(labelText, inputEl) {
 }
 
 // Label beside the input on one line, not stacked above it — for a row of
-// several short fields (the Tier editor's own Id/Name/Short Name/Cost
-// Budget) where a full-height stacked label per field wastes vertical space
-// the row doesn't need.
+// several short fields (Tier editor's Id/Name/Short Name/Cost Budget) where
+// a stacked label per field wastes vertical space.
 function macroInlineFieldRow(labelText, inputEl) {
   const wrap = document.createElement("div");
   wrap.className = "d-flex align-items-center gap-1";
@@ -5910,24 +5563,19 @@ function macroClipOptions() {
 
 // Shared by every "pick one saved record of a kind" field below (Handout/
 // Map's contentRef id, Character's target, Encounter's target) — one inline
-// <select> populated via fetchKindEntrySummaries, never a modal picker. This
-// used to be two different patterns (an inline select for Character/
-// Encounter, a "Choose…" button opening openContentPicker for Handout/Map);
-// unified onto the inline-select shape since it's what every other
-// reference field here already used, and a modal adds a click for no benefit
-// once the list is short enough to live in a dropdown (the same content
-// picker Handout/Map's own live widgets use for their initial "add" step,
-// where the list can be much longer, keeps the modal — this is Loom's
+// <select> populated via fetchKindEntrySummaries, never a modal picker: a
+// modal adds a click for no benefit once the list is short enough for a
+// dropdown (Handout/Map's own live widgets keep the modal for their initial
+// "add" step, where the list can be much longer — this is Loom's
 // authoring-time editor, not that picker).
 function macroKindEntitySelect(kind, currentValue, onChange, { leadingOption } = {}) {
   const blank = leadingOption || { value: "", label: kind ? "Select…" : "Pick a kind first…" };
   const select = macroSelect([blank], currentValue || blank.value, onChange);
   select.disabled = !kind;
   if (dataManager && kind) {
-    // Just an id -> label lookup for the dropdown's own options — never
-    // reads any other field off the picked record — so the metadata-only
-    // /list fetch is enough here (see fetchKindEntrySummaries's own
-    // "motivating case" comment).
+    // Just an id -> label lookup for the dropdown — never reads any other
+    // field off the picked record, so the metadata-only /list fetch
+    // (fetchKindEntrySummaries) is enough.
     void fetchKindEntrySummaries(dataManager, kind)
       .then((entries) => {
         const current = select.value || currentValue || blank.value;
@@ -5963,13 +5611,12 @@ function renderMacroParamField(fieldName, action, onUpdate) {
     case "segmentId":
       return macroFieldRow("Segment id (optional)", macroNumberInput(params.segmentId, (v) => setParam({ segmentId: v })));
     case "entityId": {
-      // Populated from Home Assistant's own live entity list rather than a
-      // free-text field — same "pick from what actually exists" shape
-      // macroKindEntitySelect already gives every Library-kind reference
-      // field above, just backed by a live external fetch instead of a
-      // saved Library kind. Not domain-restricted here (unlike the Lighting
-      // widget's own "Add an HA light" flow, which only wants light.*) —
-      // this action can target any entity in any domain.
+      // Populated from Home Assistant's live entity list rather than a
+      // free-text field — same "pick from what exists" shape
+      // macroKindEntitySelect gives every Library-kind reference field
+      // above, backed by a live external fetch instead. Not
+      // domain-restricted here (unlike the Lighting widget's own "Add an HA
+      // light" flow) — this action can target any entity in any domain.
       const select = macroSelect([{ value: "", label: "Loading…" }], params.entityId || "", (v) => setParam({ entityId: v }));
       void listHaEntities(dataManager, { status }).then((entities) => {
         const current = select.value || params.entityId || "";
@@ -6084,11 +5731,9 @@ function renderMacroParamField(fieldName, action, onUpdate) {
       wrap.className = "d-flex flex-column gap-2";
 
       if (!isMap) {
-        // Restricted to what Handout can actually render (HANDOUT_KINDS,
-        // imported from handout.js) — not every Library kind. This used to
-        // offer the full kind list, which meant most choices would 404 at
-        // run time; picking a real kind from Handout's own actual palette
-        // is a matching-precedent fix, not just a smaller list.
+        // Restricted to what Handout can actually render (HANDOUT_KINDS),
+        // not every Library kind — offering the full list meant most
+        // choices would 404 at run time.
         const kindOptions = [
           { value: "", label: "Select a kind…" },
           ...HANDOUT_KINDS.map((id) => ({ value: id, label: HANDOUT_KIND_LABELS[id] || id })),
@@ -6134,10 +5779,10 @@ function renderMacroTargetField(targetKind, action, onChange) {
 }
 
 // The Macros tab's own in-progress action list — source of truth while
-// editing (unlike the Systems tab's own Properties, which nest arbitrarily
-// deep and so read straight from the DOM instead via collectSystemProperties;
-// a flat actions array has no such need). newMacroEditor/loadMacroIntoEditor/
-// applyMacroSnapshot all reset this before re-rendering.
+// editing (unlike Systems' own Properties, which nest arbitrarily deep and
+// read straight from the DOM instead; a flat actions array has no such
+// need). newMacroEditor/loadMacroIntoEditor/applyMacroSnapshot all reset
+// this before re-rendering.
 let macroEditorActions = [];
 
 function updateMacroAction(index, patch) {
@@ -6242,9 +5887,9 @@ let macroActionsSortable = null;
 
 function renderMacroActionsEditor() {
   if (!macroActionsList) return;
-  // Disposed before the wipe — each action row's own Remove button carries
-  // a real tooltip now, and this reruns on every action edit/add/remove/
-  // reorder. See tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — each action row's Remove button carries a
+  // real tooltip, and this reruns on every add/remove/reorder (tooltips.js's
+  // BUG CLASS 2).
   disposeTooltips(macroActionsList);
   macroActionsList.innerHTML = "";
   if (!macroEditorActions.length) {
@@ -6297,8 +5942,7 @@ function applyMacroSnapshot(snapshot) {
 // See newSystemEditor's own comment on `reveal` — same reasoning here.
 function newMacroEditor({ reveal = true } = {}) {
   // Same "typeable only before the first save" id rule as Systems — once a
-  // macro exists, its id is how a shared record and any future reference to
-  // it stay stable.
+  // macro exists, its id is how a shared record stays stable.
   if (macroIdInput) {
     macroIdInput.value = "";
     macroIdInput.disabled = false;
@@ -6314,10 +5958,9 @@ function newMacroEditor({ reveal = true } = {}) {
 async function loadMacroIntoEditor(id) {
   if (!dataManager) return;
   try {
-    // preferLocal: false — same reasoning as loadSystemIntoEditor: this is
-    // the authoritative editor for macro content, so a stale local cache
-    // entry silently winning over the current server file would mean a
-    // resave here reverts whatever's actually on the server.
+    // preferLocal: false — same reasoning as loadSystemIntoEditor: a stale
+    // local cache winning here would mean a resave reverts whatever's
+    // actually on the server.
     const result = await dataManager.get("macro", id, { preferLocal: false });
     setMacroFormVisible(true);
     const payload = result.payload || {};
@@ -6341,10 +5984,9 @@ async function populateMacroSelect() {
   const current = macroRecordSelect.value;
   let entries = [];
   try {
-    // The select's own options only need id + display name — the actual
-    // macro body (actions/icon/etc.) loads separately once one is picked
-    // (see loadMacro above) — so this list doesn't need every macro's full
-    // body just to populate a dropdown.
+    // The select's options only need id + display name — the macro body
+    // loads separately once one is picked, so this list doesn't need every
+    // macro's full body just to populate a dropdown.
     entries = await fetchKindEntrySummaries(dataManager, "macro");
   } catch (error) {
     status?.show(`Unable to list macros: ${error.message}`, { type: "error", timeout: 4000 });
@@ -6451,9 +6093,8 @@ if (macroSaveButton) {
     };
     try {
       // A macro's own id is filename/library_items metadata, never body
-      // content (every Library kind now follows this convention) —
-      // loadMacroIntoEditor already falls back to the known id when a
-      // loaded payload doesn't carry one, so it's never included here.
+      // content — loadMacroIntoEditor falls back to the known id when a
+      // loaded payload doesn't carry one.
       await dataManager.save("macro", id, payload);
       status?.show(`Saved macro ${id}.`, { type: "success", timeout: 2000 });
       if (macroIdInput) macroIdInput.disabled = true;
@@ -6521,9 +6162,8 @@ function applyLibrarySnapshot(snapshot) {
 // See newSystemEditor's own comment on `reveal` — same reasoning here.
 function newLibraryEntry({ reveal = true } = {}) {
   // Only a not-yet-saved entity gets a typeable Id — once it exists, the id
-  // is how everything else (Systems' Assigned entries, Templates, share
-  // records) refers to it, so changing it later would silently break those
-  // references.
+  // is how everything else refers to it, so changing it later would
+  // silently break those references.
   if (libraryIdInput) {
     libraryIdInput.value = "";
     libraryIdInput.disabled = false;
@@ -6538,14 +6178,11 @@ function newLibraryEntry({ reveal = true } = {}) {
 }
 
 // A lightweight nudge, never a gate — shown only when the loaded record
-// LOOKS player-facing (a Feature tagged "character") but has no `grants`
-// authored yet, so the Character Builder engine (Workbench's Level Up/Add
-// a Class/Build wizard) has nothing to offer the player for it. Computed
-// fresh on every load, never persisted or cached; doesn't try to guess
-// whether a given Feature SHOULD have grants (most legitimately don't —
-// only a small fraction of Feature records are ever choice-bearing) —
-// just surfaces the fact plainly so an author who DOES mean to wire this
-// one up knows where to start.
+// looks player-facing (a Feature tagged "character") but has no `grants`
+// authored, so the Character Builder engine (Workbench's Level Up/Add a
+// Class/Build wizard) has nothing to offer for it. Computed fresh on every
+// load, never persisted; doesn't guess whether a Feature SHOULD have
+// grants (most legitimately don't) — just surfaces the fact plainly.
 function updateLibraryContentNudge(kind, entity) {
   if (!libraryContentNudge) return;
   const isCharacterFeature =
@@ -6562,15 +6199,12 @@ function updateLibraryContentNudge(kind, entity) {
 async function loadLibraryEntry(kind, id) {
   try {
     // preferLocal: false — Loom is the authoritative editor for Library
-    // content, and every load here feeds a load-then-save round trip
-    // (edit the JSON textarea, hit Save). A stale local cache entry (left
-    // over from an earlier save made by this same browser, anonymous or
-    // not) silently winning over the current server file would mean this
-    // resave reverts whatever's actually on the server — including any
-    // fix applied directly to the file, or a change made from a different
-    // tab/session — without any visible sign anything was wrong. Read-only
-    // display lookups elsewhere in Loom (e.g. populateValueEntitySelect)
-    // don't carry this risk, since nothing gets written back from them.
+    // content, and every load here feeds a load-then-save round trip. A
+    // stale local cache entry silently winning would mean a resave reverts
+    // whatever's actually on the server, with no visible sign anything was
+    // wrong. Read-only display lookups elsewhere (e.g.
+    // populateValueEntitySelect) don't carry this risk since nothing writes
+    // back from them.
     const entity = (await dataManager?.get(kind, id, { preferLocal: false }))?.payload;
     if (!entity) throw new Error("Not found");
     setLibraryFormVisible(true);
@@ -6586,13 +6220,11 @@ async function loadLibraryEntry(kind, id) {
     await refreshLibraryEntryCatalog(kind);
     markClean("library");
   } catch (error) {
-    // A 404 means the library_items row has no backing file at all — an
-    // orphan (a row registered — e.g. by an old test that wrote straight to
-    // the DB — with nothing ever saved to match it). There's no content to
-    // lose, so clean it up automatically instead of leaving a dead entry the
-    // user can never remove: the id field never got set above (the throw
-    // happens before that), so canDeleteLibrary() had nothing correct to act
-    // on and the Delete button stayed disabled.
+    // A 404 means the library_items row has no backing file — an orphan.
+    // There's no content to lose, so clean it up automatically instead of
+    // leaving a dead entry the user can never remove: the id field never
+    // got set above, so canDeleteLibrary() had nothing to act on and the
+    // Delete button stayed disabled.
     if (error?.status === 404) {
       try {
         await deleteLibraryEntry(kind, id);
@@ -6611,9 +6243,9 @@ async function loadLibraryEntry(kind, id) {
       return;
     }
     // Any other failure (auth, network, ...) still isn't a reason to leave
-    // stale id/state from whatever was loaded before — set the id so a
-    // manual Delete at least has the right target, same as the success path.
-    // Reveals the panel too, since that Delete button lives inside it.
+    // stale id/state — set the id so a manual Delete at least has the right
+    // target, same as the success path. Reveals the panel too, since the
+    // Delete button lives inside it.
     setLibraryFormVisible(true);
     updateLibraryContentNudge(kind, null);
     if (libraryIdInput) {
@@ -6625,10 +6257,9 @@ async function loadLibraryEntry(kind, id) {
   }
 }
 
-// Called by both the Type and Item select's own "change" listeners (see the
-// Library Contents section above) — whichever one changed, this loads
-// whatever is now selected into the editor below, or resets to a blank "new
-// entity of this Type" state if nothing (existing) is selected.
+// Called by both the Type and Item select's "change" listeners — whichever
+// changed, this loads whatever is now selected into the editor, or resets
+// to a blank "new entity of this Type" state if nothing is selected.
 function loomLoadPickedLibraryEntry() {
   const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
   if (item) {
@@ -6658,8 +6289,8 @@ if (libraryNewButton) {
 }
 
 // Same "-copy"/"-copyN" suffix convention generateDuplicateSystemId uses,
-// scoped to entities of this same kind (a Library id only needs to be
-// unique within its own bucket, not suite-wide).
+// scoped to this kind (a Library id only needs to be unique within its own
+// bucket, not suite-wide).
 function generateDuplicateLibraryId(kind, baseId) {
   const raw = (baseId || "").trim();
   const root = raw.replace(/(-copy\d*)$/i, "") || raw || kind || "entity";
@@ -6676,9 +6307,8 @@ function generateDuplicateLibraryId(kind, baseId) {
 }
 
 // Clones the currently loaded entity's JSON in place — id and `name` (when
-// present) get a fresh id/" Copy" suffix, every other field stays exactly
-// as shown. Same "in-DOM, review then Save" flow as systemDuplicateButton's
-// own handler, not a round trip through a parse/rebuild helper.
+// present) get a fresh id/" Copy" suffix, every other field stays as shown.
+// Same "in-DOM, review then Save" flow as systemDuplicateButton's handler.
 if (libraryDuplicateButton) {
   libraryDuplicateButton.addEventListener("click", () => {
     const kind = loomLibraryTableState.activeKind;
@@ -6702,8 +6332,7 @@ if (libraryDuplicateButton) {
 }
 
 // Toggling a System checkbox writes straight back into the JSON textarea
-// (rather than merging on save) so the textarea always stays the single
-// source of truth for what's about to be saved.
+// (not merged on save) so the textarea stays the single source of truth.
 if (librarySystemList) {
   librarySystemList.addEventListener("change", (event) => {
     const checkbox = event.target.closest("[data-library-system-checkbox]");
@@ -6743,11 +6372,10 @@ wireUndoTracking(libraryJsonTextarea, "library");
 
 // After saving an entity, opportunistically link it into any of its
 // Assigned Systems' matching Properties (an array field whose entityKind
-// matches this entity's kind, with a values entry whose name matches this
-// entity's own name and no entityId yet). This is what keeps a System's
-// roster pointing at real data without requiring every link to be made by
-// hand in the Systems tab — but only when the match is unambiguous
-// (exactly one candidate); anything else is left for manual linking there.
+// matches this entity's kind, with a values entry whose name matches and no
+// entityId yet). Keeps a System's roster pointing at real data without
+// requiring every link by hand — only when the match is unambiguous
+// (exactly one candidate); anything else is left for manual linking.
 function findEntityKindFields(fields, kind, matches = []) {
   (Array.isArray(fields) ? fields : []).forEach((field) => {
     if (field?.type === "array" && field.entityKind === kind && Array.isArray(field.values)) {
@@ -6819,17 +6447,14 @@ if (librarySaveButton) {
       status?.show("Entity JSON isn't valid — fix it before saving.", { type: "error", timeout: 3000 });
       return;
     }
-    // Every character or monster needs at least one Assigned System
-    // (systemIds) — every record's downstream consumers (combat bindings,
-    // Feature-matching's own System-scoped candidate pool, Assigned-Systems-
-    // driven UI everywhere) depend on it being set, so this isn't optional
-    // for either kind. The Systems checkbox list right above already writes
-    // straight into this same JSON textarea (see librarySystemList's own
-    // "change" handler), so this only ever fires if the GM saves a
-    // brand-new record without checking any of them first. Library's own
-    // generic newLibraryEntry() starts every kind blank, so there's nothing
-    // upstream that already guarantees this the way saveEntity's own
-    // import-time defaults do (Mapping tool, above).
+    // Every character or monster needs at least one Assigned System —
+    // downstream consumers (combat bindings, Feature-matching's
+    // System-scoped candidate pool, Assigned-Systems-driven UI everywhere)
+    // depend on it. The Systems checkbox list above writes straight into
+    // this same JSON textarea, so this only fires if the GM saves a
+    // brand-new record without checking any of them — newLibraryEntry()
+    // starts every kind blank, unlike saveEntity's import-time defaults
+    // (Mapping tool, above).
     if (
       (kind === "character" || kind === "monster") &&
       (!Array.isArray(entity.systemIds) || !entity.systemIds.length)
@@ -6885,71 +6510,47 @@ if (libraryDeleteButton) {
 
 // --- Systems: Properties list-editor + System CRUD --------------------------
 // No canvas/drag-drop — a System is just a list of Properties (form rows)
-// plus whichever Library entities are assigned to it (from the Library panel
-// above). Storage is unchanged from Workbench's own System Editor: the same
-// DataManager "systems" bucket, same tier gating, same sharing.
+// plus whichever Library entities are assigned to it. Storage is unchanged
+// from Workbench's own System Editor: the same DataManager "systems"
+// bucket, same tier gating, same sharing.
 
-// Object properties get a recursive "Sub-fields" list (their own nested
-// property rows, e.g. Abilities > Strength/Dexterity/...); Array properties
-// are either Enum mode — a flat, System-defined list of fixed choices, the
-// same for every record (Rarity, Combat Bindings' own entries) — or Records
-// mode, a per-record repeating structure whose *shape* (not values) the
-// System defines (Inventory > Name/Quantity/Weight/Notes; each character has
-// its own different actual items). Both nesting shapes reuse this same row
-// renderer for their children, so the tree can go arbitrarily deep even
-// though nothing in this codebase's real data needs more than one level.
-// Combat Bindings isn't a field type of its own, or even a flagged field —
-// it's just whichever ordinary Enum-mode array field's values happen to use
-// the Role column (see common/js/lib/bindings.js's findRoleBoundField),
-// so common/js/lib/widgets/combat-tracker.js and Workbench's character view
-// can find it without assuming a fixed key name or needing a separate marker
-// checkbox. Role/Binding/Source field describe generic behavior (a resource
-// with a ceiling, a standalone value, a tag list, a roll modifier), a
-// generic @-path pointer, and a generic pointer at another array field —
-// useful on any array's values, not only a System's live combat state. A
-// role's own extra metadata that's still just a single field's own quirk
-// (Resource's max/temp path, Modifier's die) isn't a dedicated column —
-// it's authored in that value's "Extra properties" JSON instead.
-// Per-value columns worth a dedicated, structured input because the same
-// property name recurs across several System fields (cost/targetBudget:
+// Object properties get a recursive "Sub-fields" list; Array properties are
+// either Enum mode (a flat, System-defined list of fixed choices, same for
+// every record — Rarity, Combat Bindings) or Records mode (a per-record
+// repeating structure whose *shape*, not values, the System defines —
+// Inventory > Name/Quantity/Weight/Notes). Both reuse this same row
+// renderer for their children, so the tree can nest arbitrarily deep even
+// though nothing today needs more than one level.
+//
+// Combat Bindings isn't a field type of its own — it's just whichever
+// ordinary Enum-mode array field's values use the Role column (see
+// bindings.js's findRoleBoundField), so combat-tracker.js and Workbench's
+// character view can find it without a fixed key name. Role/Binding/
+// SourceField describe generic behavior — a resource with a ceiling, a
+// standalone value, a tag list, a roll modifier — useful on any array's
+// values, not only combat state. `binding` is a generic @-path pointer
+// (bindings.js's resolveBinding/setAtBinding) into a character record.
+// `sourceField` is a pointer at another array field's key on this same
+// System whose values are the valid options (e.g. a Tags-role value
+// pointing at a Conditions field). A role needing more than one path
+// (Resource's max/temp) or other field-specific metadata (Modifier's die)
+// doesn't get a dedicated column — it's authored in that value's "Extra
+// properties" JSON catch-all instead, same as any property specific to just
+// one field (combatScaling's hitPoints/armorClass/...).
+//
+// Per-value columns are worth a dedicated input only when the same property
+// name recurs across several System fields (cost/targetBudget:
 // rarity+activation+form+combatScaling; sourceId: conditions+alignments+
 // sizes+senses+speeds+components+skills+activation; shortName: alignments;
-// entityId: classes). A property specific to just one field (combatScaling's
-// hitPoints/armorClass/damagePerRound/attackBonus/saveDC) isn't promoted here
-// — it stays in that value's "Extra properties" catch-all instead, since a
-// bespoke checkbox for a single field's own stat block doesn't generalize
-// and would clutter every other array field's options row.
+// entityId: classes) — a bespoke checkbox for one field's own stat block
+// doesn't generalize and would clutter every other array field's options row.
 //
-// The last 3 (role/binding/sourceField) are general-purpose, not specific to
-// any one field or consumer: `role` is a small fixed vocabulary describing
-// *structural behavior*, not a game concept — resource (a number with a max,
-// optionally a temp buffer), value (one standalone number), tags (a
-// multi-select status list), or modifier (a number that feeds a roll) — any
-// array's values can use it for whatever purpose calls for that shape.
-// Whichever field's values happen to use it is what
-// common/js/lib/widgets/combat-tracker.js and Workbench's character view
-// read as a System's live play-state (see findRoleBoundField), but nothing
-// requires that to be the only use. `binding` is a generic @-path pointer
-// (see common/js/lib/bindings.js's resolveBinding/setAtBinding) into a
-// character record — where a value's live data is read/written. `sourceField`
-// is a different kind of pointer — the *key* of another array field on this
-// same System whose values are the valid options for this value (e.g. a
-// Tags-role value pointing at a Conditions field so its picker offers
-// exactly this System's condition vocabulary) — not where data lives, but
-// where the list of legal choices is defined. A role that needs more than
-// one path (Resource's max/temp) or other single-field-specific metadata
-// (Modifier's die) doesn't get its own dedicated column — that's authored
-// directly in the value's "Extra properties" JSON catch-all instead, the
-// same as any other field-specific property (see below).
-// The shared row editor (common/js/lib/property-schema-editor.js) is
-// undo/dirty-tracking-agnostic — this `ctx` is what plugs it into Loom's own
-// whole-tab undo stack for the Systems tab specifically (SNAPSHOT_HANDLERS.
-// system/recordUndoableChange/the Property Inspector below), exactly
-// reproducing what used to be hardcoded inline before this editor was
-// extracted into that shared module. Getters (not plain properties) for
-// status/dataManager/filterSystemId since those module-level bindings are
-// only assigned later, during init — a plain property captured here at
-// module-eval time would freeze in at `null`.
+// The shared row editor (property-schema-editor.js) is undo/dirty-tracking-
+// agnostic — this `ctx` plugs it into Loom's own whole-tab undo stack for
+// Systems specifically. Getters (not plain properties) for
+// status/dataManager/filterSystemId since those bindings are only assigned
+// later during init — a plain property captured at module-eval time would
+// freeze in at `null`.
 const systemPropertyCtx = {
   runChange: (fn) => recordUndoableChange("system", fn),
   refreshTooltips,
@@ -6975,12 +6576,11 @@ const systemPropertyCtx = {
     }
     updateToolbarState();
   },
-  // Property Inspector integration (createPropertyInspector, instantiated
-  // as systemPropertyInspector below) — a caller with no such panel simply
-  // omits these three and nothing fires. Referencing systemPropertyInspector
-  // here before its own declaration further down is safe: these arrow
-  // functions only ever run later, from a click/input event, by which point
-  // the whole module has finished evaluating.
+  // Property Inspector integration (systemPropertyInspector below) — a
+  // caller with no such panel omits these three and nothing fires.
+  // Referencing systemPropertyInspector here before its own declaration is
+  // safe: these arrow functions only run later, from an event, by which
+  // point the module has finished evaluating.
   onRowSelected: (row) => systemPropertyInspector.selectRow(row),
   onRowChanged: (row) => {
     if (row === systemPropertyInspector.selectedRow) systemPropertyInspector.refresh();
@@ -6991,9 +6591,8 @@ const systemPropertyCtx = {
 };
 
 // Thin, name-preserving wrappers around the shared editor, bound to
-// systemPropertyCtx above and defaulting to this tab's own top-level
-// container — every pre-existing call site elsewhere in this file keeps
-// working completely unchanged after the extraction into a shared module.
+// systemPropertyCtx and defaulting to this tab's own top-level container —
+// every pre-existing call site keeps working unchanged.
 function renderSystemPropertyRow(field = {}, container = systemPropertyRows) {
   return renderPropertyRow(field, container, systemPropertyCtx);
 }
@@ -7008,9 +6607,8 @@ function collectSystemProperties() {
 }
 
 // The one place that assembles a full System record from the editor's
-// current form state — used by both the Save handler and the live JSON
-// Preview panel below, so JSON Preview is guaranteed to show exactly what
-// Save actually writes.
+// current form state — used by both Save and the live JSON Preview panel,
+// so Preview is guaranteed to show exactly what Save writes.
 function buildSystemPayload() {
   const id = (systemIdInput?.value || "").trim();
   return {
@@ -7029,11 +6627,9 @@ function buildSystemPayload() {
 // already relies on, so this updates live without needing its own wiring.
 renderSystemJsonPreview = systemJsonPanelInstance.render;
 
-// Existing ids come straight off the System <select>'s own already-
-// populated options (populateSystemSelect) — no separate catalog needed,
-// unlike Workbench's Template duplicate (which tracks its own
-// templateCatalog Map for other reasons); this is the one place Loom's
-// System editor needs an "all known ids" list at all.
+// Existing ids come straight off the System <select>'s already-populated
+// options — no separate catalog needed, unlike Workbench's Template
+// duplicate (which tracks its own templateCatalog Map for other reasons).
 function generateDuplicateSystemId(baseId) {
   const raw = (baseId || "").trim();
   const root = raw.replace(/(-copy\d*)$/i, "") || raw || "system";
@@ -7085,20 +6681,17 @@ function applySystemSnapshot(snapshot) {
     systemPropertyRows.innerHTML = "";
     (snapshot.properties || []).forEach((field) => renderSystemPropertyRow(field));
   }
-  // Undo/redo rebuilds every row from scratch — whatever was selected before
-  // is now a detached DOM node representing (at best) the same logical
-  // property, not a meaningful selection to keep pointing at.
+  // Undo/redo rebuilds every row from scratch — whatever was selected
+  // before is now a detached DOM node, not a meaningful selection to keep.
   systemPropertyInspector.selectRow(null);
 }
 
 // --- Property Inspector (right pane) ---------------------------------------
-// A second, more spacious editing surface for whichever property row is
-// currently selected in the Properties list — the list itself is untouched,
-// this is purely additive. Shared factory (common/js/lib/property-schema-
-// editor.js's createPropertyInspector) — Group's own Properties tab gets the
-// exact same mechanism below (New/Delete/Duplicate/Required toolbar, per-
-// type field proxies, Up/Down keyboard navigation), not a hand-duplicated
-// second copy.
+// A more spacious editing surface for whichever property row is currently
+// selected in the Properties list — the list itself is untouched, this is
+// purely additive. Shared factory (property-schema-editor.js's
+// createPropertyInspector) — Group's own Properties tab gets the exact same
+// mechanism below, not a hand-duplicated second copy.
 
 function isLoomViewActive(view) {
   return document.querySelector("[data-loom-view-tab].active")?.dataset.loomViewTab === view;
@@ -7130,9 +6723,9 @@ const groupPropertyInspector = createPropertyInspector({
   isActive: () => isLoomViewActive("groups"),
 });
 
-// Group Properties had no right-pane panel of its own before this — wired
-// here (rather than inline on the groupPropertyCtx object literal above)
-// since groupPropertyInspector doesn't exist yet at that point in the file.
+// Group Properties had no right-pane panel before this — wired here rather
+// than inline on the groupPropertyCtx object literal above since
+// groupPropertyInspector doesn't exist yet at that point in the file.
 groupPropertyCtx.onRowSelected = (row) => groupPropertyInspector.selectRow(row);
 groupPropertyCtx.onRowChanged = (row) => {
   if (row === groupPropertyInspector.selectedRow) groupPropertyInspector.refresh();
@@ -7144,16 +6737,14 @@ groupPropertyCtx.onRowRemoved = (row) => {
 // collectGroupFieldFromRow's own comment.
 groupPropertyCtx.collectField = collectGroupFieldFromRow;
 
-// `reveal` defaults to true (an explicit New click, a select reset to
-// blank, or Delete's own "stay in a fresh draft" flow — all real user
-// actions that should show the form) — the one caller that suppresses it is
-// the page-load init below, which primes this editor's own state without
-// yet showing anything, matching Groups/Users' own default "nothing
-// selected yet" state.
+// `reveal` defaults to true (New click, select reset to blank, Delete's own
+// "stay in a fresh draft" flow — all should show the form) — the one
+// caller that suppresses it is page-load init below, which primes this
+// editor's state without showing anything yet, matching Groups/Users'
+// default "nothing selected" state.
 function newSystemEditor({ reveal = true } = {}) {
   // Only a not-yet-saved System gets a typeable Id — once it exists, the id
-  // is how Library entities' Assigned Systems and Templates refer to it, so
-  // changing it later would silently break those references.
+  // is how Library entities' Assigned Systems and Templates refer to it.
   if (systemIdInput) {
     systemIdInput.value = "";
     systemIdInput.disabled = false;
@@ -7169,11 +6760,9 @@ function newSystemEditor({ reveal = true } = {}) {
 async function loadSystemIntoEditor(id) {
   if (!dataManager) return;
   try {
-    // preferLocal: false — this is the editor a creator uses specifically
-    // to fix a System's data; it must never show a stale locally-cached copy
-    // (e.g. from an earlier save this same browser made before a bug like
-    // this one was fixed) instead of what's actually on the server. Same
-    // reasoning as combat-tracker.js's System reads.
+    // preferLocal: false — the editor a creator uses to fix a System's
+    // data must never show a stale locally-cached copy instead of what's
+    // on the server. Same reasoning as combat-tracker.js's System reads.
     const result = await dataManager.get("systems", id, { preferLocal: false });
     setSystemFormVisible(true);
     const payload = result.payload || {};
@@ -7213,16 +6802,13 @@ if (systemNewButton) {
   });
 }
 
-// Clones the CURRENTLY LOADED/edited System in place — id/title/version/
-// Preview Data/every Property row stay exactly as they are on screen, only
-// the id (which must be unique) and title get a "-copy"/"(Copy)" suffix.
-// Deliberately doesn't round-trip through buildSystemPayload/
-// collectSystemProperties + re-render — the rows are already right there in
-// the DOM, so this only needs to touch Id/Title and re-enable Id for
-// editing (same as any other not-yet-saved draft). Matches this editor's
-// own simpler, non-modal "New System" flow (no id/title prompt dialog, just
-// pre-filled fields the user reviews before Save) rather than Workbench
-// Template's modal-based duplicate.
+// Clones the CURRENTLY LOADED/edited System in place — every Property row
+// stays exactly as shown, only id (must be unique) and title get a
+// "-copy"/"(Copy)" suffix. Doesn't round-trip through
+// buildSystemPayload/collectSystemProperties + re-render — the rows are
+// already in the DOM, so this only touches Id/Title and re-enables Id for
+// editing. Matches this editor's simpler, non-modal "New System" flow
+// rather than Workbench Template's modal-based duplicate.
 if (systemDuplicateButton) {
   systemDuplicateButton.addEventListener("click", () => {
     const sourceId = (systemIdInput?.value || "").trim();
@@ -7256,19 +6842,15 @@ wireUndoTracking(systemPropertyRows, "system", {
   selector: "input, select, textarea",
 });
 // One persistent instance — unlike nested Sub-fields/Record fields
-// containers (created fresh per row in renderSystemPropertyRow), this
-// top-level container itself is never recreated, only its children (see
-// loadSystemIntoEditor/newSystemEditor's `innerHTML = ""` + re-render), so
-// it only needs wiring once.
+// containers (created fresh per row), this top-level container is never
+// recreated, only its children, so it only needs wiring once.
 initSystemPropertySortable(systemPropertyRows);
 
 // Delegated add/remove-property/sub-field/record-field/value handling, plus
-// (via systemPropertyCtx's own onRowSelected/onRowChanged/onRowRemoved)
-// Property Inspector selection/refresh — all now the shared editor's own
-// common/js/lib/property-schema-editor.js implementation, see that module's
-// own header for why every recordUndoableChange("system", ...) call that
-// used to be inline here is unchanged in effect, just routed through
-// systemPropertyCtx.runChange instead.
+// Property Inspector selection/refresh via systemPropertyCtx's own
+// onRowSelected/onRowChanged/onRowRemoved — the shared editor's own
+// property-schema-editor.js implementation; every recordUndoableChange
+// call routes through systemPropertyCtx.runChange.
 wirePropertyContainerEvents(systemPropertyRows, systemPropertyCtx);
 
 if (systemSaveButton) {
@@ -7281,11 +6863,8 @@ if (systemSaveButton) {
     }
     try {
       // A System's own id is filename/library_items metadata, never body
-      // content (every Library kind now follows this convention) —
-      // systemIdInput's own value (payload.id) is only ever used for the
-      // SAVE target id below, never persisted as a field inside the body
-      // itself; loadSystemIntoEditor already falls back to the known id
-      // when a loaded payload doesn't carry one.
+      // content — systemIdInput's value is only used as the SAVE target id
+      // below, never persisted inside the body itself.
       const { id: _systemId, ...bodyWithoutId } = payload;
       await dataManager.save("systems", payload.id, bodyWithoutId);
       status?.show(`Saved system ${payload.id}.`, { type: "success", timeout: 2000 });
@@ -7312,9 +6891,9 @@ if (systemDeleteButton) {
       await dataManager.delete("systems", id);
       status?.show(`Deleted system ${id}.`, { type: "success", timeout: 2000 });
     } catch (error) {
-      // Covers an orphaned local-only record, or a listed system whose
-      // remote delete fails (e.g. a DB row with no matching file) — either
-      // way, a "not found" system otherwise has no way to leave the picker.
+      // Covers an orphaned local-only record, or a remote delete failing
+      // (e.g. a DB row with no matching file) — either way, a "not found"
+      // system otherwise has no way to leave the picker.
       dataManager.removeLocal("systems", id);
       status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning", timeout: 4000 });
     }
@@ -7326,9 +6905,8 @@ if (systemDeleteButton) {
 }
 
 // --- Mapping load/save -------------------------------------------------
-// listAvailableMappings now imported from content-fetch.js (shared with
-// Workbench's own player-facing Import Character picker, via
-// listCharacterMappings) — see that module's own comment.
+// listAvailableMappings imported from content-fetch.js, shared with
+// Workbench's player-facing Import Character picker (listCharacterMappings).
 
 async function populateMappingSelect() {
   if (!mappingSelect) return;
@@ -7347,11 +6925,10 @@ async function populateMappingSelect() {
   });
 }
 
-// Switching mappings changes what shape of data is expected entirely — a
-// class fetch means nothing to a species mapping — so the raw input, the
-// source-fetch value, and (via rerenderAll -> runLivePreview) the mapped
-// output and Entities pane all reset rather than re-running the new mapping
-// against leftover data from a different shape.
+// Switching mappings changes the expected data shape entirely — a class
+// fetch means nothing to a species mapping — so the raw input, source-fetch
+// value, and (via rerenderAll -> runLivePreview) the mapped output and
+// Entities pane all reset rather than reusing data from a different shape.
 function resetRawData() {
   sampleData = {};
   if (sourceValueInput) sourceValueInput.value = "";
@@ -7361,17 +6938,15 @@ function resetRawData() {
 
 async function loadMapping(id) {
   const url = new URL(`../mappings/${id}.json`, import.meta.url);
-  // no-store: mapping files get edited/saved iteratively (including from
-  // outside the browser), so a stale cached copy silently showing old
-  // behavior is worse than the extra round trip every load costs.
+  // no-store: mapping files get edited/saved iteratively (including outside
+  // the browser), so a stale cached copy is worse than the extra round trip.
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   mappingDefinition = await response.json();
   currentMappingId = id;
   selectedNode = null;
-  // Only mapping-type entries — the undo stack is shared across every tab
-  // now, so a plain clear() here would also wipe Library/System history that
-  // has nothing to do with switching mappings.
+  // Only mapping-type entries — the undo stack is shared across every tab,
+  // so a plain clear() would also wipe Library/System history.
   undoStack?.removeWhere((entry) => entry.type === "mapping");
   resetRawData();
   enterMappingMode(mappingDefinition);
@@ -7417,9 +6992,8 @@ if (newButton) {
   });
 }
 
-// Same dirty checks the Save buttons already use — Loom had no guard at
-// all against navigating/closing away from unsaved edits (unlike
-// Workbench, which already had this).
+// Same dirty checks the Save buttons use — Loom had no guard against
+// navigating/closing away from unsaved edits (unlike Workbench).
 window.addEventListener("beforeunload", (event) => {
   if (!canSaveMapping() && !canSaveLibrary() && !canSaveSystem()) return;
   event.preventDefault();
@@ -7432,9 +7006,8 @@ if (saveButton) {
       status?.show("Nothing to save yet.", { type: "warning", timeout: 2000 });
       return;
     }
-    // Unconditional — Data Source is never disabled/locked (see
-    // applySourceSelection's own comment), so whatever's currently selected
-    // always wins on save, the same as Data Type below.
+    // Unconditional — Data Source is never disabled/locked, so whatever's
+    // currently selected always wins on save, same as Data Type below.
     if (sourceSelect) {
       mappingDefinition.$source = sourceSelect.value;
     }
@@ -7528,14 +7101,11 @@ async function init() {
   dataManager = auth.dataManager;
   shareModal = initShareModal({ dataManager, status });
 
-  // Loom edits shared suite-wide data (Library entities, Systems, and now
-  // DB-backed Characters, Campaign Groups, and user tiers) — gated to gm+ for
-  // the whole tool, not just individual save actions, so anonymous/simple-tier
-  // visitors can't view or edit any of it. This is a whole-page gate (unlike
-  // Workbench's per-tab gating), since Loom has no ungated view worth showing
-  // partially. Individual tabs above this floor are further gated by
-  // updateLoomTabAvailability() below — GM sees only Groups, Creator adds
-  // Import/Library/Systems, Admin adds Users.
+  // Loom edits shared suite-wide data — gated to gm+ for the whole tool,
+  // not just individual save actions, so lower-tier visitors can't view or
+  // edit any of it. A whole-page gate (unlike Workbench's per-tab gating),
+  // since Loom has no ungated view worth showing partially. Individual tabs
+  // above this floor are further gated by updateLoomTabAvailability() below.
   const gate = initTierGate({
     root: document,
     dataManager,
@@ -7552,10 +7122,9 @@ async function init() {
     return;
   }
 
-  // preferLocal: false — a fellow author's edit to sys.dnd5e's fields
-  // (adding/renaming a condition, alignment, skill, ...) must be visible
-  // immediately in this session's mapping preview, not hidden behind a
-  // stale local cache. Same convention as combat-tracker.js's System reads.
+  // preferLocal: false — a fellow author's edit to sys.dnd5e's fields must
+  // be visible immediately in this session's mapping preview, not hidden
+  // behind a stale local cache. Same convention as combat-tracker.js.
   try {
     const dnd5eSystem = await dataManager.get("system", "sys.dnd5e", { preferLocal: false });
     const lookupTables = deriveLookupTables(dnd5eSystem?.payload);
@@ -7566,16 +7135,13 @@ async function init() {
   }
 
   // Also picks the first available tab if the static HTML's default active
-  // tab (Import) isn't available at this session's tier — see its own
-  // comment for the GM/Creator/Admin breakdown.
+  // tab (Import) isn't available at this session's tier.
   updateLoomTabAvailability();
 
-  // Proactive notice, not just an on-request status pill — this is what
-  // actually would have caught the DDB session cookie going stale for over
-  // a month unnoticed (see the Auth tab's own comment). type: "error" is
-  // the only StatusManager variant that persists with a manual close
-  // button (see status.js) rather than auto-dismissing — appropriate here
-  // since this genuinely needs an admin's attention, not a quick FYI.
+  // Proactive notice, not just an on-request status pill — catches the DDB
+  // session cookie going stale unnoticed. type: "error" is the only
+  // StatusManager variant that persists with a manual close button rather
+  // than auto-dismissing — appropriate since this needs an admin's attention.
   if (isLoomAdminSession()) {
     dataManager
       .getAuthCredentialsStatus()
@@ -7598,11 +7164,10 @@ async function init() {
   rerenderAll();
   loadRecentSaves();
 
-  // reveal: false on all three — this just primes each editor's own blank-
-  // draft state so it's ready the instant something is picked; the panel
-  // itself stays behind its "Select a ..." message (see setSystemFormVisible
-  // and its Macro/Library equivalents) until a real user action (a select
-  // change, New, or a deep link below) explicitly reveals it.
+  // reveal: false on all three — primes each editor's blank-draft state so
+  // it's ready the instant something is picked; the panel stays behind its
+  // "Select a ..." message until a real user action (select change, New, or
+  // a deep link below) explicitly reveals it.
   newLibraryEntry({ reveal: false });
 
   await populateSystemSelect();
@@ -7610,13 +7175,10 @@ async function init() {
 
   newMacroEditor({ reveal: false });
 
-  // Deep link from the Dashboard's Board widget (board.js's own
+  // Deep link from the Dashboard's Board widget (board.js's
   // renderMacroButtonCard) — clicking a macro-button card while rearranging
-  // the layout lands here instead of running it for real, already on the
-  // Macros tab with that macro loaded, so editing it is one click away
-  // instead of a manual tab-and-select.
-  // Runs after updateLoomTabAvailability() above so the tab is already
-  // visible for this session's tier by the time setLoomView fires.
+  // the layout lands here already on the Macros tab with that macro loaded.
+  // Runs after updateLoomTabAvailability() so the tab is already visible.
   const deepLinkMacroId = new URLSearchParams(window.location.search).get("macro");
   if (deepLinkMacroId) {
     setLoomView("macros");
@@ -7625,10 +7187,9 @@ async function init() {
     await loadMacroIntoEditor(deepLinkMacroId);
   }
 
-  // Deep link from Crucible's own Inspector ("Edit Feature" button, a new
-  // tab so the GM's in-progress monster stays untouched) — same shape as
-  // the macro deep link above, lands already on the Features tab with
-  // that Feature loaded instead of a manual tab-and-select.
+  // Deep link from Crucible's own Inspector ("Edit Feature", a new tab so
+  // the GM's in-progress monster stays untouched) — same shape as the macro
+  // deep link above.
   const deepLinkFeatureId = new URLSearchParams(window.location.search).get("feature");
   if (deepLinkFeatureId) {
     setLoomView("features");
@@ -7637,11 +7198,10 @@ async function init() {
     await loadFeatureIntoEditor(deepLinkFeatureId);
   }
 
-  // Deep link from Repository's own kind-reference chips (KIND_TOOL_ROUTE,
-  // see repository/js/app.js) for `system` — same shape as the macro/feature
-  // deep links above, lands already on the Systems tab with that System
-  // loaded. systemSelect's own options are already populated (above), not
-  // scoped by anything else, so this needs no cascade.
+  // Deep link from Repository's own kind-reference chips (KIND_TOOL_ROUTE)
+  // for `system` — same shape as the macro/feature deep links above.
+  // systemSelect's options are already populated, not scoped by anything
+  // else, so this needs no cascade.
   const deepLinkSystemId = new URLSearchParams(window.location.search).get("system");
   if (deepLinkSystemId) {
     setLoomView("systems");
@@ -7650,12 +7210,10 @@ async function init() {
   }
 
   // Deep link for every OTHER kind authored through Loom's generic Library
-  // editor (monster-archetype/role, location-type/purpose, resource, class,
-  // subclass, background, species, variant, ...) — one shared `?library=
-  // <kindId>:<id>` param rather than one param per kind, since they all go
-  // through this exact same table+editor regardless of which kind. Mirrors
-  // the type-filter + selectedKey bookkeeping saveLibraryEntry's own success
-  // path already does (this file, above) rather than a second copy of it.
+  // editor — one shared `?library=<kindId>:<id>` param rather than one per
+  // kind, since they all go through this same table+editor. Mirrors the
+  // type-filter + selectedKey bookkeeping the Save handler's success path
+  // already does above.
   const deepLinkLibraryValue = new URLSearchParams(window.location.search).get("library");
   if (deepLinkLibraryValue) {
     const separatorIndex = deepLinkLibraryValue.indexOf(":");

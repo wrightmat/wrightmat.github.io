@@ -1,34 +1,23 @@
 // Records a whole GM session's audio locally in the browser — GM-only,
-// local-only by design (see the plan this was built from): the recording
-// itself is never shared, spotlighted, or persisted server-side. Not shown
-// on the second-screen table mirror, same reasoning board.js's own header
-// comment gives for itself (a private GM tool, not table-facing content) —
-// this widget type stays out of dashboard.js's own TABLE_WIDGET_TYPES. One
-// exception to "local-only": the combined session-record export (see
-// downloadCombinedSessionRecord) READS the active campaign's own Game Log
-// (server-side, shared) to interleave with the transcript — nothing is ever
-// written back to it from here.
+// local-only by design: the recording itself is never shared, spotlighted,
+// or persisted server-side, and stays out of dashboard.js's own
+// TABLE_WIDGET_TYPES (not table-facing, like board.js). One exception:
+// downloadCombinedSessionRecord READS the active campaign's Game Log to
+// interleave with the transcript, but never writes back to it.
 //
-// Recording is chunked (default 5 min/chunk, configurable) rather than one
-// continuous multi-hour capture, for two reasons: optional live
-// transcription needs bounded-size pieces (every OpenAI-compatible Whisper
-// endpoint caps request size well under an hour), and each chunk is its own
-// fresh MediaRecorder instance — a genuinely independent, standalone-
-// decodable audio file with its own container header, not a fragment of one
-// ongoing stream. That second point is also why this widget does NOT offer
-// one seamlessly-merged final download: naively concatenating several
-// independent WebM files' bytes does not produce one valid multi-hour file
-// (only slices from the SAME MediaRecorder instance concatenate cleanly —
-// real audio remuxing needs a media library this suite has no reason to
-// carry). Each chunk downloads as its own file instead — stitching them
-// into one file afterward, if wanted, is an ordinary audio-tool job outside
-// this widget's scope.
+// Recording is chunked (default 5 min) for two reasons: optional live
+// transcription needs bounded-size pieces (Whisper-compatible endpoints cap
+// request size), and each chunk is its own fresh MediaRecorder instance —
+// a standalone-decodable file, not a fragment of one stream. That's also
+// why there's no single merged download: naive byte-concatenation of
+// separate WebM files doesn't produce a valid file (only slices from the
+// SAME MediaRecorder instance do). Each chunk downloads separately;
+// stitching them via ffmpeg afterward (see downloadStitchBundle) is opt-in.
 //
-// Each finished chunk is also written to IndexedDB immediately (idb-store.js)
-// as a durability backstop against a crashed/closed tab mid-session — not a
-// polished "resume an interrupted recording" flow (out of scope for now),
-// just insurance that a chunk already captured isn't only ever held in this
-// one tab's JS heap.
+// Each finished chunk is also written to IndexedDB immediately as a
+// durability backstop against a crashed/closed tab — not a "resume an
+// interrupted recording" flow, just insurance against losing a chunk that
+// only ever lived in this tab's JS heap.
 import { el } from "../dom.js";
 import { createIdbStore } from "../idb-store.js";
 import { promptConnectionModal } from "../connection-modal.js";
@@ -38,13 +27,9 @@ import { formatTimestamp, parseTimestamp, summarizeLogEntry } from "./game-log.j
 
 const DEFAULT_CONFIG = {
   chunkMinutes: 5,
-  // Which of the deployment's own saved transcription servers (see
-  // manageTranscriptionServer below) this recording uses — "" means no
-  // transcription, same "select = the feature is active for whatever's
-  // selected" shape the Lighting widget's own device picker uses. Per-
-  // instance (this widget's own contentRef), like WLED's selectedIp — the
-  // LIST of known servers is deployment-wide, but which one a given
-  // recording card uses is a local choice.
+  // Which saved transcription server (see manageTranscriptionServer) this
+  // recording uses — "" means no transcription. Per-instance selection over
+  // a deployment-wide list, same split WLED's device picker uses.
   transcriptionServerId: "",
 };
 
@@ -86,33 +71,21 @@ function downloadBlob(blob, filename) {
   document.body.appendChild(link);
   link.click();
   link.remove();
-  // Deferred, not immediate — an immediate revoke can race the download
-  // actually starting in some browsers.
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  setTimeout(() => URL.revokeObjectURL(url), 4000); // deferred to avoid racing the download start
 }
 
 // --- Transcription servers ---------------------------------------------
 //
-// Deployment-wide (server/app.py's own /admin/transcription-servers
-// routes), not per-account — a GM-managed LIST (add/edit/delete/select),
-// same shape as WLED's own known-devices list (wled.js), not a single
-// deployment-wide singleton — a real need if you run more than one
-// transcription server (a homelab box AND a laptop, say) or just want to
-// keep an old one around without losing it. `existing`, when given, opens
-// the shared modal pre-filled for editing (with its own Disconnect/delete
-// action built in); omitted opens it blank for adding a new one. Admin-only
-// server-side (server/app.py's own require_admin) — a non-admin never sees
-// this UI at all (see renderSettings below), so there's no need to guard
-// against a rejected save here the way ensureHaConnection's own "ask an
-// admin" toast has to for HA (any gm+ account can at least attempt that
-// one, since it's their own personal connection).
+// Deployment-wide (server/app.py's /admin/transcription-servers routes),
+// managed as a list (add/edit/delete/select) rather than one singleton —
+// same shape as WLED's known-devices list, useful if more than one server
+// exists (homelab box + laptop). Admin-only server-side, so no non-admin
+// guard is needed here (see renderSettings). `existing` given opens the
+// modal pre-filled for editing; omitted opens it blank for adding.
 //
-// Resolves null if cancelled, else {id, deleted} — `id` is the entry that
-// was saved (existing.id on an edit, a freshly generated one on an add) or
-// the one that was just deleted; `deleted` tells the caller which. Callers
-// need both: adding should select the new entry, editing should keep the
-// current selection UNLESS this was actually a delete, in which case the
-// selection needs clearing instead.
+// Resolves null if cancelled, else {id, deleted}: `id` is the entry saved
+// or deleted; callers need `deleted` to distinguish "select the new entry"
+// from "clear the selection because it was just removed".
 async function manageTranscriptionServer({ dataManager, status, existing }) {
   const id = existing?.id || randomId();
   let deleted = false;
@@ -131,13 +104,9 @@ async function manageTranscriptionServer({ dataManager, status, existing }) {
     labelPlaceholder: "e.g. Homelab (Speaches)",
     urlLabel: "Endpoint URL",
     urlPlaceholder: "https://api.openai.com/v1/audio/transcriptions",
-    // Genuinely per-server — confirmed real bug leaving this out entirely
-    // and hardcoding OpenAI's own "whisper-1": a self-hosted server 404'd
-    // because it had no model by that name loaded. Check the server's own
-    // /v1/models (also on its /docs page) for the exact identifier it
-    // actually has available. Blank keeps "whisper-1" as the fallback —
-    // correct for OpenAI's own real API, which is why it's not a hard
-    // requirement here.
+    // Per-server, not hardcoded to OpenAI's "whisper-1" — a self-hosted
+    // server can 404 on that name. Blank keeps "whisper-1" as the fallback,
+    // correct for OpenAI's real API.
     showModel: true,
     modelLabel: "Model (optional — check /v1/models on this server)",
     modelPlaceholder: "Leave blank for OpenAI's own \"whisper-1\"",
@@ -176,48 +145,29 @@ export function initAudioRecorderWidget(
   let sessionId = "";
   let chunkIndex = 0;
   let chunkStartMs = 0;
-  // Real wall-clock time, alongside the relative elapsedMs/chunkStartMs
-  // this widget already tracked — captured directly at the moments that
-  // matter (session start, each chunk's own start) rather than derived as
-  // sessionStartedAt + offset, since elapsedMs stops advancing during a
-  // pause and a derived value would drift off the real clock by however
-  // long the pauses added up to. This is what makes the combined session-
-  // record export (downloadCombinedSessionRecord below) able to interleave
-  // transcript lines with Game Log entries by actual time-of-day.
+  // Real wall-clock timestamps, captured directly at session/chunk start
+  // rather than derived from elapsedMs + offset — elapsedMs pauses during a
+  // pause, so a derived value would drift. This is what lets
+  // downloadCombinedSessionRecord interleave by actual time-of-day.
   let sessionStartedAt = ""; // ISO string
   let chunkStartedAtReal = ""; // ISO string, current in-progress chunk
   let elapsedMs = 0;
   let elapsedTimer = null;
   let permissionError = "";
-  // Expanded by default (nothing recorded yet, this is the first thing a
-  // GM needs); startRecording() forces this true the moment a recording
-  // actually begins. Tracked here rather than re-derived from
-  // recordingState on every render() so a manual expand/collapse the user
-  // makes mid-recording survives a re-render triggered by something else
-  // (a chunk finishing, a transcript line arriving) instead of snapping
-  // back to a state-derived default.
+  // Tracked separately from recordingState (rather than re-derived every
+  // render) so a manual expand/collapse survives an unrelated re-render.
+  // startRecording() forces this true once a recording actually begins.
   let settingsCollapsed = false;
 
-  // Kept in memory for the per-chunk download list (the widget's own
-  // primary read path — see this file's own header comment on why IDB is a
-  // backstop, not the read path finalize() uses).
   let chunksInMemory = [];
   let transcriptLines = []; // {startOffsetMs, text}
   let transcriptFilterText = "";
-  // The actual IndexedDB store keys handleChunkFinished's own put() resolved
-  // to for THIS session's chunks — not sessionId, since the store is
-  // auto-incrementing (its "key" field is just data, not the real primary
-  // key). stopRecording() deletes exactly these, never the whole store, so
-  // a prior crashed session's own still-unrecovered chunks (and any future
-  // session's) are never touched by this session's own cleanup.
+  // The IndexedDB keys handleChunkFinished's own put() resolved to for THIS
+  // session (the store auto-increments, so its "key" field isn't the real
+  // primary key) — stopRecording deletes exactly these, never the whole
+  // store, so other sessions' chunks are untouched.
   let sessionDbKeys = [];
 
-  // The deployment's own known transcription servers — fetched once at
-  // mount and re-fetched after any add/edit/delete (manageTranscriptionServer
-  // below), same "shared list, per-instance selection" split WLED's own
-  // known-devices list uses, just fetched directly here rather than passed
-  // in from dashboard.js (this widget has no other consumer that also needs
-  // this list to justify centralizing it the way WLED's device list is).
   let transcriptionServers = [];
 
   const idbStore = createIdbStore(IDB_DB_NAME, IDB_STORE_NAME);
@@ -252,10 +202,8 @@ export function initAudioRecorderWidget(
     }
   }
 
-  // Only updates the elapsed-time text node in place rather than a full
-  // render() every second — this widget's own controls/transcript list have
-  // no reason to rebuild every tick, and a full innerHTML wipe once a
-  // second would also drop keyboard focus from the transcript search box.
+  // Updates only the timer text node — a full render() every second would
+  // also drop keyboard focus from the transcript search box.
   let timerNode = null;
   function renderTimerOnly() {
     if (timerNode) timerNode.textContent = formatElapsed(elapsedMs);
@@ -282,12 +230,9 @@ export function initAudioRecorderWidget(
       void handleChunkFinished(blob, chunkStartMs, chunkStartedAtReal);
       if (shouldContinue) void beginChunk();
     };
-    // 1s timeslice — keeps the browser's own internal buffer bounded across
-    // a multi-minute chunk rather than holding it all until stop(); every
-    // slice from this ONE instance still concatenates cleanly into one
-    // valid file at onstop (they're pieces of the same stream, not
-    // independent files — see this file's own header comment on why that
-    // distinction matters).
+    // 1s timeslice bounds the browser's internal buffer across a long
+    // chunk; slices from this one instance still concatenate cleanly at
+    // onstop since they're pieces of the same stream.
     recorder.start(1000);
     scheduleChunkCycle();
   }
@@ -298,7 +243,7 @@ export function initAudioRecorderWidget(
     const chunkMs = Math.max(1, Number(config.chunkMinutes) || DEFAULT_CONFIG.chunkMinutes) * 60 * 1000;
     chunkCycleTimer = setTimeout(() => {
       if (recordingState !== "recording" || !recorder || recorder.state === "inactive") return;
-      recorder.stop(); // onstop (above) sees recordingState still "recording" and starts the next chunk
+      recorder.stop(); // onstop sees recordingState still "recording" and starts the next chunk
     }, chunkMs);
   }
 
@@ -311,8 +256,7 @@ export function initAudioRecorderWidget(
       const dbKey = await idbStore.put({ key: `${sessionId}::${index}`, sessionId, ...record });
       sessionDbKeys.push(dbKey);
     } catch (error) {
-      // Best-effort durability backstop — a failed IDB write doesn't lose
-      // the chunk itself, it's still in chunksInMemory for this session.
+      // Best-effort — a failed IDB write doesn't lose the chunk, it's still in chunksInMemory.
     }
     render();
     if (config.transcriptionServerId) {
@@ -363,8 +307,7 @@ export function initAudioRecorderWidget(
     recordingState = "paused";
     stopElapsedTimer();
     if (chunkCycleTimer) clearTimeout(chunkCycleTimer);
-    // onstop still fires and finalizes this chunk, but sees recordingState
-    // already "paused" and does not start a new one.
+    // onstop still fires and finalizes this chunk, but sees "paused" and does not start a new one.
     if (recorder && recorder.state !== "inactive") recorder.stop();
     render();
   }
@@ -384,10 +327,7 @@ export function initAudioRecorderWidget(
     stopElapsedTimer();
     if (chunkCycleTimer) clearTimeout(chunkCycleTimer);
     if (wasRecording && recorder && recorder.state !== "inactive") {
-      // Let the final onstop (which appends the last chunk) run before
-      // tearing the stream down — a fixed short wait is simpler and safe
-      // here (onstop fires promptly on a real stop() call), rather than
-      // threading a promise through the recorder's own event.
+      // Wait for the final onstop (appends the last chunk) before tearing down the stream.
       await new Promise((resolve) => {
         const originalOnStop = recorder.onstop;
         recorder.onstop = (event) => {
@@ -399,15 +339,11 @@ export function initAudioRecorderWidget(
     }
     mediaStream?.getTracks().forEach((track) => track.stop());
     mediaStream = null;
-    // Only THIS session's own IDB backup copies — never idbStore.clear(),
-    // which would also wipe any other session's chunks sharing this same
-    // store (see sessionDbKeys' own comment above; confirmed real bug when
-    // this used clear() instead).
+    // Only this session's own IDB copies — never idbStore.clear(), which would wipe other sessions' chunks too.
     try {
       await Promise.all(sessionDbKeys.map((dbKey) => idbStore.delete(dbKey)));
     } catch (error) {
-      // Not fatal — the chunks already downloaded/are downloadable from
-      // chunksInMemory regardless.
+      // Not fatal — chunks are still downloadable from chunksInMemory.
     }
     render();
   }
@@ -422,10 +358,7 @@ export function initAudioRecorderWidget(
   }
 
   function downloadAllChunks() {
-    // Sequential with a small stagger — firing every download click
-    // synchronously in a tight loop gets several silently blocked by the
-    // browser's own multiple-download prompt/popup-style throttling in
-    // some browsers; a short gap between each avoids that.
+    // Staggered — firing every download synchronously gets several silently blocked by browser throttling.
     chunksInMemory.forEach((entry, i) => {
       setTimeout(() => downloadChunk(entry), i * 300);
     });
@@ -440,31 +373,20 @@ export function initAudioRecorderWidget(
     return `session-${sessionId}-combined.${ext}`;
   }
 
-  // An ffmpeg "concat demuxer" file list — the standard, lossless way to
-  // join same-codec media files without re-encoding. Real byte-
-  // concatenation of the chunks themselves doesn't produce a valid file
-  // (see this widget's own header comment on why each chunk is an
-  // independent MediaRecorder instance); ffmpeg's concat demuxer re-muxes
-  // the container properly while copying the audio stream untouched, which
-  // works here specifically because every chunk shares the same codec
-  // (this session's own `mimeType`, fixed for its whole duration).
-  // Filenames match chunkFilename exactly — this and the scripts below all
-  // assume every downloaded chunk plus this list sits together, unmodified,
-  // in one folder.
+  // An ffmpeg "concat demuxer" file list — the standard lossless way to
+  // join same-codec files without re-encoding, since raw byte-concatenation
+  // of separate chunk files doesn't produce a valid one (see header
+  // comment). Works here because every chunk shares this session's one
+  // fixed mimeType. Filenames must match chunkFilename exactly.
   function stitchFilelistContent() {
     const lines = chunksInMemory.map((entry) => `file '${chunkFilename(entry)}'`).join("\n");
     return `${lines}\n`;
   }
 
-  // Downloads the file list PLUS a ready-to-run script for each of the two
-  // realistic platforms, rather than just the ffmpeg command as text for
-  // someone to retype by hand — the actual ask here. Both scripts are
-  // trivial (one ffmpeg call each) and cost nothing extra to include, and
-  // there's no reliable way from a browser tab to know what OS the person
-  // will actually run this on later (could easily differ from the one
-  // recording), so this hands over both rather than guessing. Staggered
-  // like downloadAllChunks — three near-simultaneous downloads can hit the
-  // same browser throttling.
+  // Downloads the file list plus a ready-to-run script for both realistic
+  // platforms (rather than just the ffmpeg command as text) since there's
+  // no way to know from this tab what OS will run it later. Staggered like
+  // downloadAllChunks to avoid browser download throttling.
   function downloadStitchBundle() {
     const files = [
       [stitchFilelistName(), stitchFilelistContent(), "text/plain;charset=utf-8"],
@@ -491,16 +413,10 @@ export function initAudioRecorderWidget(
     downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `session-${sessionId}-transcript.txt`);
   }
 
-  // Interleaves this session's own transcript with the campaign's Game Log
-  // (chat/rolls/spotlights) into one chronological plain-text record —
-  // possible now that both sides carry a real (not just relative) timestamp:
-  // the transcript's own startedAtReal (see this file's own header comment
-  // on why it's captured directly rather than derived from elapsedMs), and
-  // the Game Log's own server-stamped created_at. limit: 200 is the
-  // server's own hard cap on one /groups/{id}/log fetch (groups.py's
-  // _sanitize_log_limit) — a session chattier than that only gets its most
-  // recent 200 entries here, same ceiling the Game Log widget itself is
-  // bound by.
+  // Interleaves this session's transcript with the campaign's Game Log into
+  // one chronological plain-text record, keyed on each side's own real
+  // timestamp (transcript's startedAtReal, Game Log's created_at).
+  // limit: 200 matches groups.py's own hard cap on one log fetch.
   async function downloadCombinedSessionRecord() {
     if (!groupId && !shareToken) return;
     let log;
@@ -552,13 +468,9 @@ export function initAudioRecorderWidget(
     chunkRow.appendChild(chunkInput);
     wrap.appendChild(chunkRow);
 
-    // A select over the deployment's own known transcription servers, not a
-    // plain on/off checkbox — a GM might have more than one (a homelab box,
-    // a laptop) and want to pick between them per recording; "(none)" is
-    // the off state. Add/Edit only render for an admin at all (rather than
-    // rendering and rejecting on click) — only an admin can actually change
-    // this deployment-wide list (server/app.py's own require_admin), so
-    // there's nothing a non-admin could do with them anyway.
+    // A select over known transcription servers, not a checkbox — a GM may
+    // have more than one. Add/Edit only render for an admin, since only an
+    // admin can change this deployment-wide list.
     const transcribeRow = el("div", "d-flex flex-wrap align-items-center gap-1");
     transcribeRow.appendChild(el("label", "small text-body-secondary mb-0", "Transcription server"));
     const serverSelect = document.createElement("select");
@@ -576,11 +488,7 @@ export function initAudioRecorderWidget(
       serverSelect.appendChild(option);
     });
     serverSelect.value = config.transcriptionServerId || "";
-    // Re-renders, not just persistConfig — confirmed real bug otherwise:
-    // the Edit button's own disabled state (below) is only ever computed
-    // at render time, so without this it stayed stuck on whatever it was
-    // when the settings panel was first drawn, even after picking a real
-    // entry from this select.
+    // Re-render (not just persistConfig) — the Edit button's disabled state below is only computed at render time.
     serverSelect.addEventListener("change", () => {
       persistConfig({ transcriptionServerId: serverSelect.value });
       render();
@@ -588,9 +496,6 @@ export function initAudioRecorderWidget(
     transcribeRow.appendChild(serverSelect);
 
     if (dataManager.meetsTier("admin")) {
-      // Icon buttons with tooltips, matching every other "add/edit a saved
-      // item" row in this suite (the Lighting widget's own device row,
-      // e.g.) rather than these ones' own previous plain text buttons.
       const addServerButton = createIconButton({
         icon: "tabler:plus",
         label: "Add a transcription server",
@@ -626,14 +531,11 @@ export function initAudioRecorderWidget(
     return wrap;
   }
 
-  // Collapsed automatically the moment a recording starts (startRecording
-  // sets settingsCollapsed = true) — these two rows matter most before
-  // anything's recording and rarely afterward, but stay reachable rather
-  // than disappearing outright, in case the chunk length or transcription
-  // server needs changing mid-session. `autoBindToggle: false` because the
-  // toggle needs to write back to `settingsCollapsed` itself (see that
-  // variable's own comment) rather than only holding local DOM state that a
-  // later unrelated render() would blow away.
+  // Auto-collapses once a recording starts (startRecording sets
+  // settingsCollapsed = true) but stays reachable in case settings need
+  // changing mid-session. autoBindToggle: false because the toggle must
+  // write back to settingsCollapsed itself, not just local DOM state a
+  // later render() would blow away.
   function renderSettingsSection() {
     const { section, toggle, setCollapsed } = createCollapsibleSection({
       label: "Recording Settings",
@@ -641,9 +543,6 @@ export function initAudioRecorderWidget(
       autoBindToggle: false,
       className: "d-flex flex-column gap-2",
       panelClassName: "d-flex flex-column gap-2",
-      // Toned down from the shared default (uppercase, fs-6) to match this
-      // widget's own compact row labels — that heavier treatment reads as
-      // too aggressive on a small dashboard-card section header.
       headingClassName: "small fw-semibold text-body-secondary mb-0",
       content: renderSettings(),
     });
@@ -654,14 +553,9 @@ export function initAudioRecorderWidget(
     return section;
   }
 
-  // One condensed row: the timer, every action as a small icon button (New
-  // / Play-Pause-toggle / Stop / Download all / Download stitch script /
-  // Download transcript), then the running chunk count — replaces what
-  // used to be a separate controls row plus each download list's own
-  // header row of full-text buttons. Play/Pause is a single toggle (icon
-  // and behavior swap by state) rather than separate Pause/Resume buttons,
-  // matching an ordinary media-player control instead of exposing every
-  // recordingState transition as its own always-visible button.
+  // One condensed row: timer, icon-button actions, running chunk count.
+  // Play/Pause is a single toggle (icon+behavior swap by state) rather than
+  // separate always-visible Pause/Resume buttons.
   function renderToolbar() {
     const row = el("div", "d-flex align-items-center gap-2 flex-wrap");
 
@@ -714,12 +608,6 @@ export function initAudioRecorderWidget(
     buttonGroup.appendChild(
       createIconButton({
         icon: "tabler:terminal-2",
-        // Each chunk is its own independent file (see this widget's own
-        // header comment) — no single "one big file" download exists. This
-        // downloads everything needed to join them back into one
-        // afterward: the ffmpeg concat file list plus a ready-to-run
-        // script for either platform (see downloadStitchBundle) — nothing
-        // left to retype by hand.
         label: "Download stitch script (Windows + Mac/Linux)",
         attrs: { disabled: !chunksInMemory.length },
         onClick: downloadStitchBundle,
@@ -733,9 +621,6 @@ export function initAudioRecorderWidget(
           onClick: downloadTranscript,
         })
       );
-      // Only when there's an active campaign to pull a Game Log from at
-      // all — same gate the Game Log widget itself uses to decide whether
-      // it has anything to show (see game-log.js's own render()).
       if (groupId || shareToken) {
         buttonGroup.appendChild(
           createIconButton({
@@ -755,11 +640,7 @@ export function initAudioRecorderWidget(
 
   function renderChunkList() {
     if (!chunksInMemory.length) return null;
-    // One pill per chunk rather than a row-per-chunk list with its own
-    // separate "Download" link — clicking the pill itself downloads that
-    // chunk. Wrapped + height-constrained + scrollable so a long session
-    // (dozens of chunks at the default 5min length) stays a fixed-size
-    // strip instead of pushing the rest of the widget down.
+    // One pill per chunk; clicking downloads that chunk. Height-constrained/scrollable for long sessions.
     const list = el("div", "d-flex flex-wrap gap-1");
     list.style.maxHeight = "6rem";
     list.style.overflowY = "auto";
@@ -821,12 +702,7 @@ export function initAudioRecorderWidget(
 
   function render() {
     if (destroyed) return;
-    // Disposed before the wipe, not just left to be garbage-collected —
-    // same "orphaned tooltip popup stuck on <body> forever" failure mode
-    // dashboard.js's own toolbar rebuild already documents; this widget
-    // didn't have any data-bs-toggle="tooltip" elements before the
-    // transcription server row's own icon buttons.
-    disposeTooltips(container);
+    disposeTooltips(container); // dispose before wipe — an orphaned tooltip popup would otherwise stick to <body>
     container.innerHTML = "";
     const wrap = el("div", "d-flex flex-column gap-2 overflow-auto");
     wrap.style.minHeight = "0";
@@ -849,14 +725,10 @@ export function initAudioRecorderWidget(
     refreshTooltips(container);
   }
 
-  // A closed/crashed tab mid-chunk loses that chunk outright — it only
-  // reaches IndexedDB at chunk completion (handleChunkFinished above), so
-  // whatever's in currentParts right now is pure JS-heap state. This can't
-  // save it (there's no reliable synchronous flush of an in-progress
-  // MediaRecorder on unload), only warn loudly enough that a GM mid-session
-  // doesn't close the tab by accident. Standard "set returnValue" shape —
-  // the browser supplies its own generic confirmation text, no custom
-  // message is actually shown by any modern browser.
+  // A closed/crashed tab mid-chunk loses that chunk — it only reaches
+  // IndexedDB at chunk completion, and there's no reliable synchronous
+  // flush of an in-progress MediaRecorder on unload. This only warns
+  // loudly; the browser supplies its own generic confirmation text.
   function handleBeforeUnload(event) {
     if (recordingState !== "recording" && recordingState !== "paused") return;
     event.preventDefault();
@@ -873,11 +745,6 @@ export function initAudioRecorderWidget(
       window.removeEventListener("beforeunload", handleBeforeUnload);
       stopElapsedTimer();
       if (chunkCycleTimer) clearTimeout(chunkCycleTimer);
-      // Recording is left running across a widget re-mount only in the
-      // trivial sense that nothing here forcibly stops it on destroy — in
-      // practice destroy() only ever fires from removing the card or
-      // leaving the page, at which point the mic stream needs releasing
-      // regardless of in-progress state.
       if (recorder && recorder.state !== "inactive") {
         recorder.onstop = null;
         recorder.stop();

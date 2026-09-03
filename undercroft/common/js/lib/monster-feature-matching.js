@@ -1,33 +1,23 @@
 // Turns an imported monster's flat `stats.traits`/`actions`/`bonusActions`/
 // `reactions`/`legendaryActions`/`lairActions` (the one canonical shape both
-// the DDB and Fantasy Statblocks mappings already converge on — each entry
+// the DDB and Fantasy Statblocks mappings converge on — each entry
 // `{name, description}`) into real `feature` Library references, so an
 // imported monster ends up structurally identical to a Crucible-generated
-// one: `isImportedStatBlock` (crucible/js/app.js) keys off `featureIds`
-// being a real array, and once that's true every existing Crucible code
-// path (Add Feature select, Features list, budget/cost display) just works
-// with zero special-casing — this module's only job is producing that one
-// array, not teaching Crucible anything new about how to render it.
+// one: `isImportedStatBlock` keys off `featureIds` being a real array, and
+// every existing Crucible code path just works with zero special-casing.
 //
-// Two call sites share this exact function, both automatic-on-save — no
-// manual/backfill button anywhere in this suite (deliberately cut): Loom's
-// own saveEntity, and Crucible's own handleSave (crucible/js/app.js) calls
-// it directly too, since Crucible's save path bypasses saveEntity entirely
-// (it writes straight to dataManager.save). Either way, every monster save
-// gets this unconditionally, not as an opt-in extra step — "every import
-// should align with internal data standards" per explicit product
-// direction, not a toggle. Idempotent by construction (hasConvertibleStatBlock
-// below returns false once a monster has nothing left to convert), so it's
-// safe to call on every save rather than gating on "is this the first
-// save" — this is also what repairs a monster imported before this module
-// existed, the next time it's opened and saved.
+// Two call sites share this exact function, both automatic-on-save: Loom's
+// saveEntity, and Crucible's own handleSave (since Crucible's save path
+// bypasses saveEntity entirely). Every monster save gets this
+// unconditionally, not as an opt-in step. Idempotent by construction
+// (hasConvertibleStatBlock returns false once nothing's left to convert),
+// so it's also what repairs a monster imported before this module existed,
+// the next time it's opened and saved.
 //
 // The kind-agnostic matching/dedup/tiering/options machinery this module
-// relies on (findMatch, resolveTemplateId, the choice-effect `options`
-// mechanism, tier resolution, id/slug helpers) now lives in
-// feature-import-core.js, shared with Vault's own spell/item importer
-// (vault-feature-matching.js) — this file keeps only what's genuinely about
-// PARSING 5e monster stat-block prose.
+// relies on now lives in feature-import-core.js, shared with Vault's own
+// spell/item importer — this file keeps only what's genuinely about PARSING
+// 5e monster stat-block prose.
 import {
   normalizeName,
   cappedSlug,
@@ -64,36 +54,20 @@ const ACTION_COST_BY_GROUP_KEY = {
 // own name words. The full name is always tried first regardless.
 const GENERIC_NAME_WORDS = new Set(["adult", "young", "greater", "lesser", "giant", "the", "of", "and", "a", "an"]);
 
-// Ported from this session's Python migration script (undercroft/README.md
-// — the same technique used to clean up ~300 imported monsters' Feature
-// text without the corruption a sentence-structure-guessing regex caused).
 // Only ever substitutes a VERIFIED reference to THIS monster's own name
 // (its full name, or an individual word over 3 characters, minus common
 // age/size descriptors), always preceded by an article — never guesses at
-// sentence structure, so unlike that earlier regex it can't eat into
-// unrelated later text no matter how the sentence is built. Case-insensitive
-// (the Python original wasn't, and silently missed lowercase common-noun
-// references like "the demon" for Shadow Demon — confirmed live during
-// this session's Shadow Stealth cleanup) while still preserving the actual
-// matched article's own case for the output.
+// sentence structure, so it can't eat into unrelated later text. Case-
+// insensitive, while preserving the matched article's own case for output.
 // Applied to every trait's description before matching AND when storing a
-// newly-created one-off Feature — so a freshly-imported ability starts out
-// already generic instead of baking this one monster's name into shared
-// Library content, which is exactly what caused this whole cleanup pass to
-// be necessary in the first place.
-// This module briefly tried a combat-language-detected "the attacker"
-// fallback for a "the creature" collision (Frightful Presence, a breath
-// weapon), on the theory that a plain noun would misread for a genuinely
-// combat-shaped ability. Reverted — "attacker" turned out to be its own
-// source of wrong/awkward text just as often: a breath weapon's own
-// "the attacker exhales..." reads oddly (exhaling isn't really an
-// "attack"), and worse, Gem Stalker's own Protective Link ("...the
-// attacker reduces that damage by 10, the attacker then takes damage
-// equal to that amount") is flatly WRONG — the gem stalker is the
-// PROTECTOR in that ability, not an attacker at all. The monster's own
-// creature type reads correctly in every case checked (an attack, a
-// breath weapon, telepathy, a protective reaction) since it's just an
-// ordinary noun, not a role-specific one.
+// newly-created one-off Feature, so a freshly-imported ability starts out
+// generic instead of baking one monster's name into shared Library content.
+// A combat-language-detected "the attacker" fallback for a "the creature"
+// collision was tried and reverted — "attacker" produced its own wrong text
+// just as often (a breath weapon "attacking" reads oddly; a protective
+// reaction attributing to "the attacker" is flatly wrong when the monster
+// is the protector). The monster's own creature type reads correctly in
+// every case instead, since it's just an ordinary noun.
 
 function knownNameSubstitute(text, monsterName, creatureType) {
   const raw = String(text || "");
@@ -104,20 +78,14 @@ function knownNameSubstitute(text, monsterName, creatureType) {
   const candidates = [name];
   // Contiguous multi-word slices, longest first — a colloquial partial
   // reference to a multi-word name ("the deep one" for "Deep One
-  // Archimandrite", "the dragon turtle" for "Dragon Turtle Wyrmling") needs
-  // to be recognized as a WHOLE phrase, not word-by-word. Confirmed live:
-  // without this, only the FIRST word of such a reference matched, leaving
-  // the rest dangling as broken trailing text ("The creature turtle can
-  // breathe air and water." / "a creature one can breathe..."). Listed
-  // before the single-word candidates below so the regex alternation (which
-  // tries options in listed order, first-match-wins per position) prefers
-  // the longer slice over a shorter one that would also match at the same
-  // position. Not filtered by GENERIC_NAME_WORDS — that check exists to
-  // keep a single bare generic word ("giant") from matching alone, but a
-  // generic word AS PART OF a genuine multi-word slice ("Adult Black" in
-  // "Adult Black Dragon") is still unambiguously a reference to this one
-  // monster, since the whole slice must be a real contiguous substring of
-  // its actual name.
+  // Archimandrite") needs to be recognized as a WHOLE phrase, not word-by-
+  // word, or only the first word matches, leaving the rest dangling as
+  // broken trailing text. Listed before the single-word candidates so the
+  // regex alternation (first-match-wins per position) prefers the longer
+  // slice. Not filtered by GENERIC_NAME_WORDS — that check exists to keep a
+  // bare generic word ("giant") from matching alone, but as part of a real
+  // multi-word slice ("Adult Black" in "Adult Black Dragon") it's still
+  // unambiguously a reference to this monster.
   for (let len = words.length - 1; len >= 2; len--) {
     for (let start = 0; start + len <= words.length; start++) {
       const slice = words.slice(start, start + len).join(" ");
@@ -139,28 +107,18 @@ function knownNameSubstitute(text, monsterName, creatureType) {
     });
   const alternation = candidates.map((candidate) => candidate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
   const pattern = new RegExp(`\\b(The|the|A|a|An|an)\\s+(?:${alternation})(['’]s)?\\b`, "gi");
-  // A real 5e trait's own text almost always ALSO uses "creature" as a
-  // plain common noun for its TARGETS ("each creature within 120 feet...",
-  // "a creature can repeat the saving throw...") alongside the monster's
-  // own self-reference by name ("the dragon", "the aboleth") that this
-  // function is about to genericize. Substituting the self-reference with
-  // the SAME word ("the creature") then collides with those pre-existing
-  // target-references — confirmed live: Adult Black Dragon's own Frightful
-  // Presence ("Each creature of the dragon's choice... immune to the
-  // dragon's Frightful Presence...") became "Each creature of the
-  // creature's choice... immune to the creature's Frightful Presence...",
-  // and Aboleth's own Probing Telepathy ("...the aboleth learns the
-  // creature's greatest desires if the aboleth can see the creature")
-  // became an unreadable "...the creature learns the creature's greatest
-  // desires if the creature can see the creature" — "creature" now means
-  // two different things in the same sentence. Falls back to this
+  // A real 5e trait's text almost always ALSO uses "creature" as a plain
+  // common noun for its TARGETS, alongside the monster's own self-reference
+  // by name that this function is about to genericize. Substituting the
+  // self-reference with the same word ("the creature") then collides with
+  // those pre-existing target-references, producing an unreadable sentence
+  // where "creature" means two different things at once. Falls back to this
   // monster's own creature type once a collision is detected — a plain
-  // noun, so it reads correctly regardless of what the ability actually
-  // does (see the module note above this function for why "the attacker"
-  // was tried and reverted). A missing/unknown creatureType falls back to
-  // "attacker" as an imperfect last resort — this should be rare in
-  // practice (every real monster record carries its own `type`), and
-  // imperfect wording still beats the original collision bug.
+  // noun, so it reads correctly regardless of what the ability does (see
+  // the module note above for why "the attacker" was tried and reverted).
+  // A missing/unknown creatureType falls back to "attacker" as an
+  // imperfect last resort, rare in practice since every real monster
+  // record carries its own `type`.
   const genericWord = /\bcreatures?\b/i.test(raw) ? creatureType || "attacker" : "creature";
   const indefiniteArticle = /^[aeiou]/i.test(genericWord) ? "an" : "a";
   return raw.replace(pattern, (whole, article, possessive) => {
@@ -189,13 +147,11 @@ function resolveAttackFeatureId(rawName, nameToFeatureId) {
 
 // A real stat block sometimes elides the repeated trailing "attack(s)" noun
 // across an AND-list ("one bite and one gore attack" meaning "one bite
-// ATTACK and one gore attack" — confirmed live, Bukavac's own Multiattack)
-// — the general patterns below require EVERY item to carry its own trailing
-// "attack(s)"/"with its", so this elliptical 2-item shape would otherwise
-// silently swallow "bite and one gore" as one unresolvable name and fail the
-// whole segment. Anchored end-to-end (same safe-fallback discipline as
-// parseWeaponAttack/parseSaveEffect) so it only ever fires on exactly this
-// shape, never partially matches something else.
+// ATTACK and one gore attack"). The general patterns below require EVERY
+// item to carry its own trailing "attack(s)"/"with its", so this elliptical
+// 2-item shape would otherwise silently swallow "bite and one gore" as one
+// unresolvable name and fail the whole segment. Anchored end-to-end so it
+// only fires on exactly this shape, never partially matches something else.
 const ELIDED_TRAILING_NOUN_PAIR_PATTERN =
   /^(one|two|three|four|five|six|seven|eight)\s+([a-z][a-z '’-]*?)\s+and\s+(one|two|three|four|five|six|seven|eight)\s+([a-z][a-z '’-]*?)\s+attacks?\.?$/i;
 
@@ -243,28 +199,18 @@ function extractAttacksFromSegment(segment, nameToFeatureId) {
 
 // Splits a Multiattack's text on top-level "or" boundaries ("two Branch
 // attacks, two Radiant Pellet attacks, or one of each" → 3 segments) —
-// "either" is a discourse marker paired with "or", not content, so it's
-// stripped rather than treated as its own boundary.
+// "either" is a discourse marker paired with "or", stripped rather than
+// treated as its own boundary.
 // A bare comma (not immediately before "or") is ALSO a valid option
-// boundary — but ONLY when the text never uses "and" anywhere. Real 5e
-// Oxford-comma phrasing ("two Branch attacks, two Radiant Pellet attacks,
-// or one of each") lists 3+ PEER alternatives this way, "or" appearing
-// only before the last one — confirmed live: without this, "two Branch
-// attacks, two Radiant Pellet attacks" was mis-parsed as ONE option worth
-// 4 attacks (both mentions found by the same segment's own general pattern
-// loop) instead of two SEPARATE 2-attack alternatives, a genuine semantic
-// bug (not just a wording difference — Aartuk Elder never has an option
-// where it makes both Branch AND Radiant Pellet attacks together). Gated
-// on the ABSENCE of "and" specifically because "and" is the one word every
-// real AND-combo option (Bukavac's own "two Claw attacks and one Bite
-// attack") uses to bind its own items together — if "and" appears
-// anywhere in the text, a bare comma might legitimately be part of an
-// Oxford-comma AND-list WITHIN one option (e.g. "one Claw, one Bite, and
-// one Tail attack"), so this falls back to the more conservative
-// comma-only-directly-before-or behavior instead. Verified against every
-// real Multiattack trait across the whole imported monster set: this
-// changes ONLY Aartuk Elder's own parse (correctly, from 2 options to 3);
-// every other already-structured or already-text-only case is unaffected.
+// boundary, but ONLY when the text never uses "and" anywhere. Real 5e
+// Oxford-comma phrasing lists 3+ PEER alternatives this way, "or" appearing
+// only before the last one — without this, two comma-separated options get
+// mis-parsed as one option worth the sum of both, a genuine semantic bug.
+// Gated on the absence of "and" specifically because "and" is the word
+// every real AND-combo option uses to bind its own items together — if
+// "and" appears anywhere, a bare comma might legitimately be part of an
+// Oxford-comma AND-list WITHIN one option, so this falls back to the more
+// conservative comma-only-directly-before-or behavior instead.
 const CONSERVATIVE_OPTION_SPLIT_PATTERN = /,?\s*\bor\b\s*/i;
 const AGGRESSIVE_OPTION_SPLIT_PATTERN = /\s*,\s*(?:or\s+)?|\s+or\s+/i;
 
@@ -284,42 +230,30 @@ function splitTopLevelOptions(text) {
 const EACH_OF_PREVIOUS_OPTIONS_PATTERN = /^(?:one|1)\s+of\s+each\.?$/i;
 
 // A second elliptical shape, this time at the WHOLE-text level rather than
-// per-segment: "two Stab or Spike attacks" (Adult Kruthik's own Multiattack)
-// means "two attacks, each a Stab or a Spike" — the count and trailing
-// "attacks" noun are shared across BOTH names rather than repeated, so the
-// generic split-on-"or"-then-parse-each-segment path below would produce two
-// segments ("...two Stab", "Spike attacks") neither of which parses on its
-// own. Anchored to the FULL text (not just a segment) specifically so it
-// never partially matches a longer sentence with real extra content after it
-// (confirmed live: Autumn Eladrin's own "two Longsword or Longbow attacks.
-// It can replace one attack with a use of Spellcasting." must NOT match this
-// — the second sentence changes what the ability actually does, so silently
-// representing it as just a Longsword-or-Longbow choice would misrepresent
-// it, the same "never guess" concern driving every other end-anchored
-// pattern in this file).
+// per-segment: "two Stab or Spike attacks" means "two attacks, each a Stab
+// or a Spike" — the count and trailing "attacks" noun are shared across
+// both names rather than repeated, so the generic split-on-"or" path would
+// produce two segments neither of which parses on its own. Anchored to the
+// full text so it never partially matches a longer sentence with real extra
+// content after it (a second sentence changing what the ability does must
+// not be silently swallowed into a false choice).
 const SHARED_SUFFIX_CHOICE_PATTERN =
   /^The creature makes (one|two|three|four|five|six|seven|eight)\s+([a-z][a-z '’-]*?)\s+or\s+([a-z][a-z '’-]*?)\s+attacks?\.?$/i;
 
 // Parses a Multiattack trait's own free text ("The aalpamac makes three
 // attacks: one with its bite and two with its claws.") into structured
-// `{featureId, count}` references against this SAME monster's own
-// already-resolved attack Features (nameToFeatureId, built up over the main
-// convertStatBlockToFeatures loop) — the reference-based data
-// buildMultiattackParams actually stores. Two return shapes:
+// `{featureId, count}` references against this monster's own already-
+// resolved attack Features. Two return shapes:
 // - a flat `{featureId, count}[]` for a fixed combination (no real choice).
 // - `{options: Array<{featureId,count}[]>}` for a genuine CHOICE ("two X,
 //   two Y, or one of each") — an "or"/"either" cue means summing every
-//   mentioned count would misrepresent the ability (confirmed live: Aartuk
-//   Elder's own "two Branch attacks, two Radiant Pellet attacks, or one of
-//   each" is not "four attacks always"). Each top-level "or" segment is
-//   parsed independently (extractAttacksFromSegment) — if ANY segment fails
-//   to parse (a genuinely nested/conditional phrasing like Autumn Eladrin's
-//   own "...replace one attack with a use of Spellcasting"), this returns
-//   null for the WHOLE trait rather than a wrong partial structure, same
-//   "never guess" contract extractAttacksFromSegment itself already follows.
+//   mentioned count would misrepresent the ability. Each top-level "or"
+//   segment is parsed independently; if ANY segment fails to parse (a
+//   genuinely nested/conditional phrasing), this returns null for the WHOLE
+//   trait rather than a wrong partial structure.
 // The caller always keeps the original text as a fallback either way, so a
-// null return here never loses information — it just means Crucible renders
-// the stored text instead of computing it.
+// null return here never loses information — Crucible just renders the
+// stored text instead of computing it.
 function extractMultiattackReferences(text, nameToFeatureId) {
   const raw = String(text || "").trim();
   if (!raw) return null;
@@ -343,18 +277,13 @@ function extractMultiattackReferences(text, nameToFeatureId) {
     return extractAttacksFromSegment(raw, nameToFeatureId);
   }
 
-  // Multiple sentences (an interior period, not just one at the very end)
-  // means an "or" found anywhere in the text isn't necessarily a clean
-  // top-level option boundary for the WHOLE thing — confirmed live:
-  // Werebat's own two-sentence Multiattack ("In humanoid form, the creature
-  // makes two scimitar attacks or two shortbow attacks. In hybrid form, it
-  // can make one bite attack and one scimitar attack.") would otherwise let
-  // the SECOND sentence's own unrelated "and"-list bleed into the FIRST
-  // sentence's own last "or" segment, since splitTopLevelOptions only splits
-  // on "or", not on sentence boundaries — producing a wrong-but-plausible
-  // merged option (shortbow+bite+scimitar as one combination) instead of the
-  // real 3 separate, form-gated options. Bailing here (never a wrong merge)
-  // rather than trying to also reason about per-sentence/form structure.
+  // Multiple sentences (an interior period, not just one at the end) means
+  // an "or" anywhere in the text isn't necessarily a clean top-level option
+  // boundary for the whole thing — a second, unrelated sentence's own
+  // "and"-list could bleed into the first sentence's last "or" segment,
+  // since splitTopLevelOptions only splits on "or", not sentence
+  // boundaries. Bailing here (never a wrong merge) rather than also
+  // reasoning about per-sentence/form structure.
   if (raw.replace(/\.\s*$/, "").includes(".")) return null;
 
   const segments = splitTopLevelOptions(raw);
@@ -1012,32 +941,18 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
     for (let entryIndex = 0; entryIndex < entries.length; entryIndex++) {
       const trait = entries[entryIndex];
       if (!trait?.name) continue;
-      // Wraps this whole trait's processing (matching, template/one-off
-      // creation, every dataManager.save call in between) so that ONE bad
-      // trait — malformed source data producing an oversized id (see
-      // cappedSlug/cappedDisplayName above), a save that fails for any
-      // other reason, anything unexpected — can only ever cost THIS trait
-      // its own Feature, never the rest of the monster. Confirmed live:
-      // before this existed, an Isonade import's own "Swallow" trait threw
-      // while saving (its name field held its whole multi-sentence
-      // description, producing a ~700-character id), and since nothing
-      // caught it, the exception propagated all the way up and aborted the
-      // ENTIRE monster's conversion — Isonade's own monster record was
-      // never saved at all, with no error surfaced anywhere the user could
-      // see it. `result.errors` carries what failed back to the caller
-      // (Loom's saveEntity, Crucible's own handleSave) to surface instead
-      // of staying silent.
+      // Wraps this whole trait's processing so ONE bad trait (malformed
+      // source data producing an oversized id, a save failing for any
+      // reason) can only ever cost THIS trait its own Feature, never the
+      // rest of the monster. `result.errors` carries what failed back to
+      // the caller to surface instead of staying silent.
       try {
       // A "roll/pick one of the following" choice-effect ability, split
       // across several separate {name, desc} entries by the source itself
-      // (Iron Cobra's own numbered "1. Poison Damage:"/"2. Confusion:"/
-      // "3. Paralysis:", Gem Stalker's own plain-named "Amethyst."/
-      // "Crystal."/etc.) — consumed as ONE Feature's own `options` instead
-      // of becoming standalone Features that don't make sense read alone.
-      // Confirmed live: left unhandled, this exact shape is how Iron
-      // Cobra's Bite ended up split into 3 meaningless separate "Features"
-      // and Gem Stalker's Crystal Dart ended up truncated at its own
-      // choice-lead-in colon with its 5 named effects orphaned.
+      // (numbered "1. Poison Damage:"/"2. Confusion:", or plain-named
+      // "Amethyst."/"Crystal.") — consumed as ONE Feature's own `options`
+      // instead of becoming standalone Features that don't make sense read
+      // alone.
       const choiceGroup = detectChoiceEffectGroup(entries, entryIndex, looksLikeIndependentAbility);
       if (choiceGroup) {
         const optionsFeatureId = await saveOptionsFeature(trait, trait.description, choiceGroup.options, {
@@ -1049,11 +964,11 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
         entryIndex += choiceGroup.consumedCount;
         continue;
       }
-      // The OTHER real shape: the choice is already this ONE entry's own
-      // multi-paragraph text (dragon Breath Weapons' own "uses one of the
-      // following breath weapons.\nFire Breath. ...\nWeakening Breath.
-      // ..." — never split into separate entries by the source). Same
-      // treatment as above, just with nothing following to skip past.
+      // The OTHER real shape: the choice is already this one entry's own
+      // multi-paragraph text ("uses one of the following breath weapons.\n
+      // Fire Breath. ...\nWeakening Breath. ..."), never split into
+      // separate entries by the source. Same treatment as above, just with
+      // nothing following to skip past.
       const embeddedOptions = splitEmbeddedEffectOptions(trait.description);
       if (embeddedOptions) {
         const optionsFeatureId = await saveOptionsFeature(trait, embeddedOptions.intro, embeddedOptions.options, {
@@ -1066,67 +981,41 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
       }
       // Spellcasting is prose (an intro sentence plus a per-frequency spell
       // list), not a discrete atomic ability — it doesn't participate in
-      // Crucible's recipe-slot/synergy Feature model the way "Legendary
-      // Resistance" does, and creating a Feature for it just duplicates
-      // whatever a source's own spellcasting summary already belongs in:
-      // stats.spells, the one dedicated field for this (Fantasy
-      // Statblocks' own `spells` frontmatter already targets it directly —
-      // see that mapping). Matches "Spellcasting"/"Innate
-      // Spellcasting"/"Psionic Spellcasting"/etc. — this is only ever a
-      // trait, never an action/reaction/legendary/lair entry.
+      // Crucible's recipe-slot/synergy Feature model, and creating a
+      // Feature for it just duplicates stats.spells, the one dedicated
+      // field for this. Matches "Spellcasting"/"Innate Spellcasting"/etc. —
+      // only ever a trait, never an action/reaction/legendary/lair entry.
       if (groupKey === "traits" && normalizeName(trait.name).includes("spellcasting")) {
         if (trait.description) spellcastingTexts.push(trait.description);
         continue;
       }
-      // "Multiattack" is a menu of a monster's OWN other attacks ("makes
-      // two claw attacks", "can use its Frightful Presence, then makes
-      // three attacks: ...") — its CONTENT is monster-specific by
-      // definition, so unlike a real shared mechanic ("Legendary
-      // Resistance", "Amphibious") that content should never be MATCHED
-      // against another monster's own Multiattack text no matter how the
-      // generic phrasing scores (confirmed live: Aalpamac's own Multiattack
-      // — no Frightful Presence, different attack combination — still
-      // matched Adult Black Dragon's unrelated one on the exact-name low
-      // bar under the old prose-matching path). That's an argument for why
-      // the DATA is per-monster, not for why it needs its own Feature file
-      // per monster to hold it — findMatch is skipped entirely (not just
-      // given a stricter bar) and this always resolves to the ONE shared
-      // `feat.multiattack` template (MULTIATTACK_TEMPLATE_ID below,
-      // parseWeaponAttack's feat.bite/feat.claw/... convention extended to
-      // cover this too), with the structured reference list living in
-      // record.featureParams instead of prose on a dedicated Feature — a
+      // "Multiattack" is a menu of a monster's OWN other attacks, so its
+      // content is monster-specific by definition and should never be
+      // MATCHED against another monster's own Multiattack text no matter
+      // how the generic phrasing scores. findMatch is skipped entirely and
+      // this always resolves to the one shared `feat.multiattack` template
+      // (MULTIATTACK_TEMPLATE_ID below, the same feat.bite/feat.claw
+      // convention extended to cover this too), with the structured
+      // reference list living in record.featureParams instead of prose — a
       // reserved placeholder slot in featureIds holds its eventual position.
       if (normalizeName(trait.name) === "multiattack") {
         deferredMultiattacks.push({ trait, actionCost, index: featureIds.length });
         featureIds.push(null);
         continue;
       }
-      // A cleanly-parseable simple weapon attack (see parseWeaponAttack's
-      // own comment) matches/creates by NAME ALONE against a shared,
-      // number-free template — never findMatch's description-similarity
-      // logic, which would always disagree here since the numbers
-      // genuinely differ per monster. `feat.<slug(name)>` deliberately has
-      // no monster-slug prefix, unlike every other created-here id — it's
-      // meant to be reused by name across every monster with an attack of
-      // this name, the same as an EXISTING shared canonical (Amphibious,
-      // Legendary Resistance, ...) already is.
-      // parseWeaponAttackWithRider only ever runs once the clean (rider-
-      // free) pattern has already failed, and its return shape is a strict
-      // superset of parseWeaponAttack's own (the same base fields plus an
-      // optional `.rider`) — so the whole match/create-template block below
-      // handles either result identically, no separate branch needed. The
-      // template's own stored description stays rider-agnostic either way
-      // ("Melee Weapon Attack against one target.") since the rider is
-      // per-monster data (featureParams), never baked into the shared
-      // template itself.
-      // Computed once here (rather than down at the generic findMatch
-      // fallback, where it used to live) since parseSaveEffect now needs it
-      // too — a breath weapon's OWN self-reference mid-sentence ("pushed 30
-      // feet away from the dragon") still needs genericizing even though
-      // the LEADING self-reference word no longer does (see
-      // SAVE_EFFECT_PATTERN's own comment for why that part now matches any
-      // word). Weapon-attack text has no self-references to clean up, so
-      // this is a no-op for that branch either way.
+      // A cleanly-parseable simple weapon attack matches/creates by NAME
+      // ALONE against a shared, number-free template — never findMatch's
+      // description-similarity logic, which would always disagree since
+      // the numbers genuinely differ per monster. `feat.<slug(name)>`
+      // deliberately has no monster-slug prefix, unlike every other
+      // created-here id, since it's meant to be reused by name across
+      // every monster with an attack of this name.
+      // parseWeaponAttackWithRider only runs once the clean pattern has
+      // already failed, and its return shape is a strict superset of
+      // parseWeaponAttack's own — so the match/create-template block below
+      // handles either result identically. The template's own description
+      // stays rider-agnostic since the rider is per-monster data
+      // (featureParams), never baked into the shared template.
       const substitutedDescription = knownNameSubstitute(trait.description, record?.name, record?.type);
       const parsedAttack =
         parseWeaponAttack(trait.description) || parseWeaponAttackWithVersatile(trait.description) || parseWeaponAttackWithRider(trait.description);
@@ -1162,15 +1051,11 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
         featureParams[template.id] = parsedAttack;
         continue;
       }
-      // Same "matches/creates by NAME ALONE against a shared, number-free
-      // template" reasoning as the weapon-attack branch above — a breath
-      // weapon's own trait name is already element-specific in practice
-      // ("Acid Breath" never gets reused by a monster whose breath is
-      // actually poison), so name-only matching is safe here for the same
-      // reason it's safe there: the shared template carries no numbers of
-      // its own to get wrong, and findMatch's own description-similarity
-      // logic would always disagree anyway since the numbers genuinely
-      // differ per monster.
+      // Same "matches/creates by NAME ALONE" reasoning as the weapon-attack
+      // branch above — a breath weapon's trait name is already element-
+      // specific in practice ("Acid Breath" never gets reused by a monster
+      // whose breath is actually poison), and the shared template carries
+      // no numbers of its own to get wrong.
       const parsedSaveEffect = parseSaveEffect(substitutedDescription);
       if (parsedSaveEffect) {
         const templateId = resolveTemplateId(`feat.${cappedSlug(baseAbilityName(trait.name))}`, existingFeatures, ["monster"], "monster");
@@ -1199,13 +1084,11 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
         featureParams[template.id] = parsedSaveEffect;
         continue;
       }
-      // substitutedDescription (computed above, before the weapon-attack
-      // block) is what findMatch actually compares below: a fresh import's
-      // own monster-name mentions read the same as the generic wording
-      // already stored on shared/tiered Features, it's what a newly-created
-      // one-off Feature is stored with (so it starts out generic instead of
-      // needing this same cleanup again later), and it's what a
-      // newly-discovered named tier's own text is stored with.
+      // substitutedDescription is what findMatch actually compares below: a
+      // fresh import's own monster-name mentions read the same as the
+      // generic wording already stored on shared/tiered Features, and it's
+      // what a newly-created one-off Feature is stored with, so it starts
+      // out generic instead of needing this same cleanup again later.
       const match = findMatch({ name: trait.name, description: substitutedDescription }, candidatePool);
       if (match) {
         const matchedFeature = match.feature;
@@ -1214,41 +1097,29 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
         // processes groups in a fixed order (actions before legendaryActions),
         // and a monster whose `legendary_actions` list re-mentions an attack
         // by its own plain name ("Claw." — "The dragon makes one Claw
-        // attack.") used to silently clobber that SAME name's earlier,
-        // real mapping from the `actions` group (the actual templated
-        // weapon-attack Feature) — confirmed live: Adult Topaz Dragon's own
-        // Multiattack ("...and two Claw attacks") ended up pointing at the
-        // Legendary Action wrapper Feature instead of the real weapon
-        // attack once this ran, since the legendary-action entry is
-        // processed later and always overwrote it. Keeping the FIRST
-        // mapping means Multiattack always resolves to the mechanically
-        // real ability, never a same-named wrapper/reference encountered
-        // later in the stat block.
+        // attack.") would otherwise clobber that SAME name's earlier, real
+        // mapping from the `actions` group with the Legendary Action
+        // wrapper Feature instead. Keeping the FIRST mapping means
+        // Multiattack always resolves to the mechanically real ability.
         if (!nameToFeatureId.has(normalizeName(trait.name))) nameToFeatureId.set(normalizeName(trait.name), matchedFeature.id);
         result.matchedCount += 1;
         // Backfill actionCost only if the matched Feature doesn't already
-        // have one — never silently overwrite already-authored content
-        // just because this particular import happened to categorize the
-        // same mechanic differently.
+        // have one — never overwrite already-authored content just because
+        // this import categorized the same mechanic differently.
         if (actionCost && !matchedFeature.combat?.actionCost) {
           matchedFeature.combat = { ...(matchedFeature.combat || {}), actionCost };
           await dataManager.save("feature", matchedFeature.id, matchedFeature);
         }
         // A monster-slug-prefixed id (`feat.<monsterSlug>-...`) is, by this
-        // module's own id convention, a one-off scoped to THIS monster —
-        // never a shared/canonical Feature (those are never monster-slug-
-        // prefixed). Re-importing the same monster re-matches its own
-        // already-existing one-off (same name, near-identical content) far
-        // more often than it creates a fresh one, and unlike a genuinely
-        // shared Feature (never blindly overwritten — it may be curated, or
-        // used by other monsters) this monster's own prior one-off is safe
-        // to refresh: it can only ever have come from an earlier pass of
-        // this exact same automatic conversion, never hand-authored.
-        // Confirmed live: Adult Oblex's own "Aversion to Fire" and Cactid's
-        // own "Hail of Needles" both re-matched their pre-existing one-offs
-        // on re-import and silently kept last time's un-genericized text —
-        // matching alone was never enough, the match's own stored text
-        // needs to move forward too.
+        // module's own convention, a one-off scoped to THIS monster, never
+        // a shared/canonical Feature. Re-importing the same monster
+        // re-matches its own already-existing one-off far more often than
+        // it creates a fresh one, and unlike a genuinely shared Feature
+        // (never blindly overwritten), this monster's prior one-off is safe
+        // to refresh — it can only have come from an earlier pass of this
+        // exact same automatic conversion, never hand-authored. Matching
+        // alone isn't enough; the match's own stored text needs to move
+        // forward too, or it silently keeps last time's un-genericized text.
         if (matchedFeature.id.startsWith(`feat.${monsterSlug}-`) && matchedFeature.description !== substitutedDescription) {
           matchedFeature.description = substitutedDescription || "";
           if (matchedFeature.mechanics && typeof matchedFeature.mechanics.text === "string") {
@@ -1258,10 +1129,8 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
         }
         // Name-suffix tiers ("(N/Day)"/"(Recharge N)") take priority since
         // they're an unambiguous, deterministic label; only when a trait's
-        // name carries neither does findMatch's own tier-text match (a
-        // trait whose SUBSTITUTED description matched one of the Feature's
-        // existing description-encoded tiers, e.g. Teleport's "60 ft."
-        // tier) apply — never both at once in practice.
+        // name carries neither does findMatch's own tier-text match apply —
+        // never both at once in practice.
         const namedTierId = await resolveNamedTier(trait, matchedFeature, dataManager, substitutedDescription);
         const tierId = namedTierId || match.tierId || null;
         if (tierId) featureTiers[matchedFeature.id] = tierId;
@@ -1272,19 +1141,15 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
         name: cappedDisplayName(trait.name),
         systemIds: systemId ? [systemId] : [],
         description: substitutedDescription || "",
-        // scope: "unique" — a monster-slug-prefixed id is, by this
-        // module's own convention, scoped to THIS monster alone (see the
-        // "matchedFeature.id.startsWith" refresh-on-reimport comment
-        // above) — never a shared/canonical Feature, so it should never
-        // be silently eligible for native generation, and should be
-        // immediately editable from Crucible's own Inspector (which gates
-        // editability on this exact flag). Previously left unset, so
-        // every freshly-imported one-off was both wrongly generation-
-        // eligible and stuck read-only until someone hand-reviewed it.
+        // scope: "unique" — a monster-slug-prefixed id is scoped to THIS
+        // monster alone, never a shared/canonical Feature, so it should
+        // never be silently eligible for native generation, and should be
+        // immediately editable from Crucible's Inspector (which gates
+        // editability on this exact flag).
         mechanics: { type: "passive", scope: "unique", text: substitutedDescription || "" },
-        // 0, not omitted — this is genuinely unbalanced/unreviewed content
-        // (see the module comment), and an explicit 0 reads as "not yet
-        // costed" rather than silently behaving like a free pick forever.
+        // 0, not omitted — this is genuinely unbalanced/unreviewed content,
+        // and an explicit 0 reads as "not yet costed" rather than silently
+        // behaving like a free pick forever.
         budgetCost: 0,
         tags: { behaviors: [], recipeSlots: [], roles: [], creatureTypes: [], categories: ["monster"] },
         synergizesWith: [],
@@ -1308,9 +1173,8 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
   for (const { trait, actionCost, index } of deferredMultiattacks) {
     // Same "one bad trait can't take the whole monster down" reasoning as
     // the try/catch above — featureIds[index] is left at its placeholder
-    // `null` on failure (renderFeatureList's own findById already handles
-    // an unresolvable id gracefully) rather than the exception propagating
-    // and aborting everything after this monster's own Multiattack.
+    // `null` on failure (findById already handles an unresolvable id
+    // gracefully) rather than the exception aborting everything after this.
     try {
       let template = candidatePool.find((entry) => entry.id === MULTIATTACK_TEMPLATE_ID);
       if (!template) {
@@ -1347,39 +1211,28 @@ export async function convertStatBlockToFeatures(record, { dataManager, existing
 
   // Saving Throws/Skills come off an import as `[{name, value}]`; Spells is
   // an intro sentence plus per-frequency spell-list objects. Nothing in
-  // Crucible reads either shape programmatically (deriveStats' own native
-  // output has no equivalent field at all), and Crucible's Stats section
-  // (renderStats) renders every stat as a plain editable text box — so both
-  // get flattened to one plain string here, the same "fully editable, no
-  // bespoke structure" treatment every other imported stat already gets.
-  // Idempotent: a value that's already a string (already converted, or a
-  // hand-authored record) is left alone.
+  // Crucible reads either shape programmatically, and Crucible's Stats
+  // section renders every stat as a plain editable text box — so both get
+  // flattened to one plain string here. Idempotent: a value that's already
+  // a string is left alone.
   if (Array.isArray(stats.savingThrows)) stats.savingThrows = formatValueList(stats.savingThrows);
   if (Array.isArray(stats.skills)) stats.skills = formatValueList(stats.skills);
   // Only fills stats.spells from the Spellcasting trait(s) skipped above
-  // when a source didn't already provide one directly (Fantasy Statblocks'
-  // own dedicated `spells` field) — never overwrites real structured/
-  // authored data with the trait's own prose fallback.
+  // when a source didn't already provide one directly — never overwrites
+  // real structured/authored data with the trait's own prose fallback.
   if (stats.spells === undefined && spellcastingTexts.length) {
     stats.spells = spellcastingTexts.join("\n\n");
   }
   if (stats.spells !== undefined) stats.spells = formatSpells(stats.spells);
 
   // Best-effort: a monster with real Spellcasting always states its own
-  // spell save DC in that trait's own text ("...spell save DC 12...") — the
-  // one DC of the several a stat block can have (see undercroft/README.md's
-  // stats.saveDC entry) that's both consistently phrased and consistently
-  // the one a GM most wants at a glance next to the Spells box. Reads the
-  // FINAL stats.spells string, not just the local spellcastingTexts
-  // fallback above — a source with its own dedicated spells field (Fantasy
-  // Statblocks' `spells` frontmatter) never touches spellcastingTexts at
-  // all (nothing to skip out of `traits`, since a well-formed file already
-  // keeps spellcasting prose out of there), so gating on that array being
-  // non-empty silently skipped every one of those imports' own DC — same
-  // "spell save DC 12" text lives in stats.spells either way, whichever
-  // path put it there. Only fills stats.saveDC when it isn't already set —
-  // same "never overwrite an already-authored value" rule every other
-  // backfill here follows.
+  // spell save DC in that trait's text ("...spell save DC 12..."), the one
+  // DC that's both consistently phrased and the one a GM most wants at a
+  // glance. Reads the FINAL stats.spells string, not just the local
+  // spellcastingTexts fallback above — a source with its own dedicated
+  // spells field never touches spellcastingTexts, so gating on that array
+  // would silently skip every one of those imports' own DC. Only fills
+  // stats.saveDC when it isn't already set.
   if (stats.saveDC === undefined && typeof stats.spells === "string") {
     const match = stats.spells.match(/spell save DC\s*(\d+)/i);
     if (match) stats.saveDC = Number(match[1]);

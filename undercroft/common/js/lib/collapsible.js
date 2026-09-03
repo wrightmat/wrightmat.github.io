@@ -1,15 +1,8 @@
-// Hides/shows an arbitrary element regardless of what CSS classes it
-// carries — critically, regardless of Bootstrap 5 display utilities
-// (.d-flex, .d-grid, ...), which are ALL generated with !important.
-// `element.hidden = true` (the native [hidden] { display: none } UA rule,
-// which carries no !important) and a plain `element.style.display = "none"`
-// (no !important either) are BOTH silently no-ops on any element that also
-// carries one of those utility classes — the !important rule always wins
-// regardless of the hidden attribute or a same-priority inline style. An
-// inline style set WITH !important is the one thing that reliably beats a
-// class's own !important rule (inline beats a class selector at equal
-// importance), so that's what this uses instead — no need to know or
-// enumerate the element's own classes.
+// Hides/shows an arbitrary element regardless of Bootstrap display
+// utilities (.d-flex, .d-grid, ...), which are ALL generated with
+// !important — `element.hidden` and a plain `style.display = "none"` are
+// both silently no-ops against one of those classes. An inline style set
+// WITH !important is the one thing that reliably beats it.
 import { updateTooltipContent } from "./tooltips.js";
 
 export function setElementCollapsed(element, isCollapsed) {
@@ -24,15 +17,12 @@ export function setElementCollapsed(element, isCollapsed) {
   element.hidden = isCollapsed;
 }
 
-// The toggle's chevron is a single, static "tabler:chevron-right" icon
-// (set once, in markup or at creation) — the down/right pivot is done
-// entirely by common/css/shell.css's ".collapsible-toggle[aria-expanded]
-// .iconify" rotate rule, driven off the aria-expanded attribute this
-// function sets below. Deliberately NOT also swapping the icon's own
-// data-icon between chevron-right/chevron-down here: that used to run
-// alongside the CSS rotate, which doubled up (a chevron-down rotated
-// another 90° reads as pointing sideways, not down) — one mechanism, not
-// two. See createCollapseToggleButton's own version of this same note.
+// The toggle's chevron is a single, static "tabler:chevron-right" icon —
+// the down/right pivot is done entirely by shell.css's
+// ".collapsible-toggle[aria-expanded] .iconify" rotate rule, driven off
+// the aria-expanded attribute set below. Never also swap data-icon here —
+// that doubled up with the CSS rotate (a rotated chevron-down points
+// sideways, not down).
 export function setCollapsibleState(toggle, panel, { collapsed, expandLabel, collapseLabel, labelElement } = {}) {
   if (!toggle || !panel) return;
   const label = labelElement || toggle.querySelector("[data-toggle-label]");
@@ -40,12 +30,9 @@ export function setCollapsibleState(toggle, panel, { collapsed, expandLabel, col
   panel.hidden = isCollapsed;
   panel.classList.toggle("d-none", isCollapsed);
   panel.setAttribute("aria-hidden", isCollapsed ? "true" : "false");
-  // !important, same reasoning as setElementCollapsed above — a panel that
-  // also carries a Bootstrap display utility (.d-flex, .d-grid, ...), which
-  // several real collapsible panels in this suite do, silently never hides
-  // with a plain `panel.style.display = "none"` (confirmed real: Orrery's
-  // own Map Properties panel, `class="d-flex flex-column gap-3"`, toggled
-  // through this exact function).
+  // !important, same reasoning as setElementCollapsed above — a panel
+  // carrying a Bootstrap display utility never hides with a plain
+  // `style.display = "none"`.
   if (isCollapsed) {
     panel.style.setProperty("display", "none", "important");
   } else {
@@ -69,18 +56,14 @@ export function bindCollapsibleToggle(toggle, panel, { collapsed = false, expand
 // A self-contained collapse/expand chevron button that manages its own
 // icon/aria state and calls back on toggle, rather than assuming a
 // pre-built toggle+panel pair the way bindCollapsibleToggle above does —
-// useful when the caller wants to build the panel's own show/hide logic
-// itself (e.g. a section that also needs to recompute its contents).
-// Canonical shared home for what used to be duplicated in
-// workbench/js/lib/canvas-card.js (which now re-exports this).
+// useful when the caller builds its own panel show/hide logic (e.g. a
+// section that also needs to recompute contents).
 export function createCollapseToggleButton({ label = "section", collapsed = false, onToggle } = {}) {
   let isCollapsed = Boolean(collapsed);
   const button = document.createElement("button");
   button.type = "button";
-  // "collapsible-toggle" (not just "canvas-collapse-toggle") so this
-  // shares the exact same down/right rotate CSS as every other collapse
-  // button in the suite (common/css/shell.css) — see setCollapsibleState's
-  // own note on why the icon itself is never swapped, just rotated.
+  // "collapsible-toggle" (not just "canvas-collapse-toggle") shares the
+  // same rotate CSS as every other collapse button in the suite.
   button.classList.add(
     "canvas-collapse-toggle",
     "collapsible-toggle",

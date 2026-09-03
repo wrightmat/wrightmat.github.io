@@ -1,38 +1,28 @@
-// Quests as Repository callouts — a `[!quest]` callout IS a quest: its
-// title is the quest's name, its body is free markdown containing an
-// ordinary GFM checklist for objectives. No custom syntax, no separate
-// Library kind — a quest rarely deserves to be its own document, and this
-// keeps it embedded in whatever page it naturally arises from (a settlement
-// note, an adventure outline, ...). Rendering the callout itself stays
-// markdown.js's own job (see journal-callouts.js's CALLOUT_TYPES); this
-// module only extracts/derives structure a caller (the wikilink resolver,
-// Relationships, Handout's fragment spotlight, ...) needs to reason about a
-// quest without re-rendering the whole page.
+// Quests as Repository callouts — a `[!quest]` callout IS a quest: title is
+// the quest name, body is free markdown with an ordinary GFM checklist for
+// objectives. No custom syntax, no separate Library kind. Rendering stays
+// markdown.js's job (see journal-callouts.js's CALLOUT_TYPES); this module
+// only extracts/derives structure a caller (wikilink resolver, Relationships,
+// Handout's fragment spotlight) needs without re-rendering the whole page.
 //
 // Blockquote discovery uses marked's own lexer (`window.marked.lexer`)
-// rather than a hand-rolled regex scanner over raw text — this is the exact
-// same tokenizer markdown.js's own callout renderer override parses against
-// (see markdown.js's ensureCalloutRenderer), so a quest this module finds is
-// guaranteed to be a quest that also actually renders as one, including
-// every block-parsing edge case (lazy continuation lines, nested
-// blockquotes, ...) a regex scanner would otherwise have to reinvent.
+// rather than a hand-rolled regex scanner — this is the exact tokenizer
+// markdown.js's callout renderer parses against (see ensureCalloutRenderer),
+// so a quest found here is guaranteed to also render as one.
 import { parseCallout } from "./journal-callouts.js";
 import { extractTaskLines } from "./journal-tasks.js";
 
-// Label + Bootstrap color name (resolved via journal-callouts.js's own
-// resolveColor, the same color system a callout's icon/border already use)
-// for each derived status — the rendered badge markdown.js's own
-// applyCalloutStyling builds for a quest callout reads this directly.
+// Label + Bootstrap color name (via journal-callouts.js's resolveColor) for
+// each derived status — read directly by markdown.js's applyCalloutStyling.
 export const QUEST_STATUS_META = {
   "not-started": { label: "Not Started", color: "secondary" },
   active: { label: "Active", color: "blue" },
   complete: { label: "Complete", color: "green" },
 };
 
-// Not started (no objectives exist yet, or none are checked), active (some
-// but not all checked), complete (at least one objective, all checked) — no
-// separate status field to remember to update; this IS the status, derived
-// fresh every time from the checklist itself.
+// Not started (no objectives, or none checked), active (some but not all),
+// complete (at least one, all checked) — no status field to keep in sync;
+// this IS the status, derived fresh from the checklist every time.
 export function computeQuestStatus(objectives) {
   if (!objectives.length) return "not-started";
   const checkedCount = objectives.filter((objective) => objective.checked).length;
@@ -42,11 +32,10 @@ export function computeQuestStatus(objectives) {
 }
 
 // Every `[!quest]` callout on a page, in document order. `objectives` reuses
-// extractTaskLines (journal-tasks.js) against the callout's OWN bodyRaw, not
-// the whole page — line numbers here are relative to bodyRaw, matching what
-// a caller mutating just this one callout's own text (a future "toggle this
-// objective" action, or journal-story-board.js's own read-modify-write
-// primitive for a sibling callout type) needs.
+// extractTaskLines against the callout's OWN bodyRaw, not the whole page —
+// line numbers are relative to bodyRaw, matching what a caller mutating just
+// this callout (journal-story-board.js's own read-modify-write primitive)
+// needs.
 export function extractQuests(body) {
   const marked = window.marked;
   if (!marked || typeof marked.lexer !== "function") return [];
@@ -77,12 +66,9 @@ export function extractQuests(body) {
   return quests;
 }
 
-// Same shape/reasoning as journal-links.js's own buildTitleIndex — pure
-// function over an already-fetched entries list ({id, payload:{body,...}}),
-// case-insensitive, first match wins across the whole workspace on a title
-// collision (documented limitation: two identically-titled quests on
-// different pages, only the first-scanned wins a bare [[Quest Title]] link;
-// [[Page#Quest Title]] is always unambiguous regardless of collisions).
+// Same shape as journal-links.js's buildTitleIndex — case-insensitive, first
+// match wins across the workspace on a title collision (a bare [[Quest
+// Title]] link is ambiguous then; [[Page#Quest Title]] never is).
 export function buildQuestIndex(entries) {
   const index = new Map();
   (entries || []).forEach((entry) => {

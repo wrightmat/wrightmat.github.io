@@ -1,17 +1,12 @@
 // Pure data-reading/math for the Dashboard Calculator's "Encounter
-// Difficulty & XP" mode (common/js/lib/widgets/calculator.js) — no DOM here,
-// same split travel-means.js already has from calculator.js's own Travel
-// Time mode.
+// Difficulty & XP" mode — no DOM here, same split travel-means.js has from
+// calculator.js's own Travel Time mode.
 //
-// `levels` is a reserved-key System field (Loom's Properties editor, an
-// ordinary `type:"array"` field — no new PROPERTY_TYPE, same convention
-// travelMeans/combatScaling already use): one row per character level,
-// carrying an optional `xpToLevel` (character-advancement XP, not consumed
-// by this calculator today but exposed for any future consumer) plus an
-// ARBITRARY, GM-named set of difficulty-tier XP-budget numbers (e.g.
-// easy/medium/hard/deadly for a D&D-flavored System, something else
-// entirely for another) — see sys.dnd5e.json's own copy for a worked
-// example. Tier vocabulary is never hardcoded: every key on a row besides
+// `levels` is a reserved-key System field: one row per character level,
+// carrying an optional `xpToLevel` plus an ARBITRARY, GM-named set of
+// difficulty-tier XP-budget numbers (easy/medium/hard/deadly for D&D,
+// something else for another System) — see sys.dnd5e.json for a worked
+// example. Tier vocabulary is never hardcoded: every key besides
 // name/level/xpToLevel is treated as a tier.
 const LEVEL_ROW_RESERVED_KEYS = new Set(["name", "level", "xpToLevel", "id"]);
 
@@ -95,13 +90,10 @@ export function computeMonsterXp(selections, combatScalingLevels) {
   return { total, missingXp };
 }
 
-// The highest tier (in the System's own authored order) whose party budget
-// is met or exceeded by the monster XP total — generalizes the classic
-// "compare total monster XP to the party's per-tier budget" method to
-// however many tiers a System defines, under whatever names it gives them.
-// Returns null at either extreme (below the easiest tier's budget, or a
-// tier couldn't be judged due to missing level data) rather than forcing a
-// match.
+// The highest tier (in authored order) whose party budget is met or
+// exceeded by the monster XP total — generalizes "compare monster XP to
+// the party's per-tier budget" to however many tiers a System defines.
+// Returns null at either extreme (below the easiest tier, or missing data).
 export function resolveVerdict(roster, levels, tierNames, monsterXpTotal) {
   let verdictTier = null;
   for (const tier of tierNames) {
@@ -130,21 +122,14 @@ export function resolveCharacterLevel(characterPayload) {
   return null;
 }
 
-// Fetches every member of `groupId` and buckets them by resolved level into
-// roster rows — the convenience "auto-fill" the always-available manual
-// roster entry doesn't need. A member with no resolvable level is excluded
-// (never defaulted to level 1 — an honest omission beats a wrong invented
-// number), and the caller gets a skip count to report.
+// Fetches every member of `groupId` and buckets them by resolved level —
+// a convenience auto-fill. A member with no resolvable level is excluded
+// (never defaulted to level 1), and the caller gets a skip count.
 //
-// isOwner (the caller's own already-resolved groupContext.access ===
-// "owner", never re-derived here) gates the fetch itself, not just its
-// result — the generic full-document route only ever grants a non-owner
-// reader via a share token or Character-linked share, which a non-owner
-// building an encounter from their own Dashboard has neither of, so it
-// always 401'd for them regardless. Skipped entirely for a non-owner now,
-// rather than attempted-then-caught, so this doesn't log a doomed request
-// to the console on every click (same reasoning as
-// group-live-sync.js's own watchGroupForChanges).
+// isOwner gates the fetch itself, not just its result — a non-owner has no
+// share token/Character-link, so the fetch would always 401 anyway; skipped
+// upfront rather than attempted-then-caught (same reasoning as
+// group-live-sync.js's watchGroupForChanges).
 export async function autoFillRosterFromGroup(dataManager, groupId, isOwner = false) {
   if (!dataManager || !groupId || !isOwner) return { roster: [], skipped: 0 };
   const group = await dataManager.get("group", groupId, { preferLocal: false }).catch(() => null);

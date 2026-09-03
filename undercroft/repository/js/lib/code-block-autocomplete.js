@@ -1,26 +1,18 @@
-// A `` `macro:`/`encounter:`/`dice:` `` — and now every other Library
-// kind's own `` `kindId:` `` — autocomplete dropdown for the plain
-// <textarea> body editor — same style/mechanics as wiki-link-autocomplete.js
-// (mirror-<div> caret measurement, a positioned list-group dropdown,
-// arrow/Enter/Tab/Escape keyboard nav, mousedown-to-select), just detecting
-// a different in-progress syntax: an unclosed single-backtick code span
-// starting with one of the recognized prefixes, instead of an unclosed
-// `[[`. Reuses measureCaretPosition from that module rather than a second
-// copy of the same non-trivial measurement technique.
+// A `` `macro:`/`encounter:`/`dice:` `` — and every other Library kind's own
+// `` `kindId:` `` — autocomplete dropdown for the body textarea, same style/
+// mechanics as wiki-link-autocomplete.js, just detecting an unclosed
+// backtick code span starting with a recognized prefix instead of `[[`.
+// Reuses that module's measureCaretPosition rather than a second copy.
 import { measureCaretPosition } from "./wiki-link-autocomplete.js";
 import { fetchKindEntrySummaries, loadLibraryKinds } from "../../../common/js/lib/content-fetch.js";
 import { QUICK_DICE } from "../../../common/js/lib/widgets/dice-roll.js";
 import { EXCLUDED_KINDS, iconFor } from "../../../common/js/lib/library-reference.js";
 
 // macro/encounter/dice/date are always recognized, even before the full
-// kind list below has loaded — the special-cased prefixes this dropdown
-// (and markdown.js's own rendering) already understand outside the generic
-// kind-reference system. `date` is never a Library kind (journal-date.js's
-// own header comment — there's no "date" entity to look up), so it can
-// never come from loadLibraryKinds() the way every other kind's own prefix
-// does; it has to be hardcoded here alongside macro/encounter/dice.
-// Rebuilt once loadLibraryKinds() resolves (see attachCodeBlockAutocomplete
-// below) to also recognize every real kind.
+// kind list below loads. `date` is never a real Library kind (no "date"
+// entity to look up), so it can't come from loadLibraryKinds() the way
+// every other prefix does — it's hardcoded here. Rebuilt once
+// loadLibraryKinds() resolves to also recognize every real kind.
 let PREFIX_PATTERN = /^(macro|encounter|dice|date)\s*:\s*/i;
 
 function buildPrefixPattern(kindIds) {
@@ -31,15 +23,11 @@ function buildPrefixPattern(kindIds) {
   return new RegExp(`^(${alternation})\\s*:\\s*`, "i");
 }
 
-// Detects an in-progress `` `type:...` `` span ending exactly at the
-// cursor — nothing closing it (a "`") and no newline crossed (this suite's
-// code spans, per markdown.js's own CODE_SPAN_SPLIT_PATTERN, are always
-// single-line). `encounter:` gets its own sub-parse: its content is a
-// comma-separated `qty: Name` list (journal-encounter.js's own
-// parseEncounterBlock), so completion has to target just the segment
-// currently being typed — the last comma-separated piece, and within that,
-// just the name part if a "qty:" has already been typed — not the whole
-// block's text.
+// Detects an in-progress `` `type:...` `` span ending at the cursor —
+// unclosed, no newline crossed (code spans are always single-line).
+// `encounter:` gets its own sub-parse: its content is a comma-separated
+// `qty: Name` list, so completion targets just the segment being typed —
+// and within that, just the name part once a "qty:" has been typed.
 function parseInProgressCodeBlock(textBeforeCursor) {
   const backtickIndex = textBeforeCursor.lastIndexOf("`");
   if (backtickIndex === -1) return null;
@@ -67,10 +55,8 @@ function parseInProgressCodeBlock(textBeforeCursor) {
 
 async function macroCandidates(dataManager, query) {
   if (!dataManager) return [];
-  // Only ever needs a name/id lookup for the dropdown label — never
-  // executes or reads a macro's own actions here (runMacroReference does
-  // that separately once one is picked) — so the metadata-only /list fetch
-  // is enough, unlike journal-macro.js's own findMacro.
+  // Only needs a name/id lookup for the dropdown label — a metadata-only
+  // fetch is enough, unlike journal-macro.js's own findMacro.
   const entries = await fetchKindEntrySummaries(dataManager, "macro").catch(() => []);
   const q = query.trim().toLowerCase();
   const seen = new Set();
@@ -85,10 +71,8 @@ async function macroCandidates(dataManager, query) {
   return results.slice(0, 20);
 }
 
-// Matches journal-encounter.js's own findMatch exactly — monsters AND npcs,
-// both resolvable as an encounter block's own creature names — so what
-// autocompletes here is exactly what would actually resolve when the block
-// runs, not a narrower guess.
+// Matches journal-encounter.js's findMatch exactly — monsters AND npcs —
+// so what autocompletes is exactly what would resolve when the block runs.
 async function encounterCandidates(dataManager, query) {
   if (!dataManager) return [];
   const [monsters, npcs] = await Promise.all([
@@ -120,9 +104,8 @@ function diceCandidates(query) {
   }));
 }
 
-// The only real completion `date:` has — a fixed day index isn't something
-// to complete from a list, but `current` (the ambient campaign date) is
-// worth surfacing since it's easy to forget exists otherwise.
+// A fixed day index isn't completable from a list, but `current` is worth
+// surfacing since it's easy to forget exists otherwise.
 function dateCandidates(query) {
   const q = query.trim().toLowerCase();
   if (q && !"current".startsWith(q)) return [];
@@ -130,7 +113,7 @@ function dateCandidates(query) {
 }
 
 // Every kind that isn't macro/encounter/dice — same shape as macroCandidates
-// above, just parameterized on which kind's own saved entries to offer.
+// above, parameterized on which kind's entries to offer.
 async function genericCandidates(dataManager, kindId, query) {
   if (!dataManager) return [];
   const entries = await fetchKindEntrySummaries(dataManager, kindId).catch(() => []);
@@ -147,10 +130,8 @@ async function genericCandidates(dataManager, kindId, query) {
   return results.slice(0, 20);
 }
 
-// macro/monster/npc/dice keep their own specific icons (a bolt, paws, a
-// person, dice pips) even though monster/npc/macro also have a shared
-// library-reference.js entry — iconFor's own fallback covers every
-// other kind so this map doesn't need one entry per Library kind.
+// macro/monster/npc/dice keep their own specific icons — iconFor's fallback
+// covers every other kind, so this map doesn't need one entry per kind.
 const KIND_ICON = {
   macro: "tabler:bolt",
   monster: "tabler:paw",
@@ -172,11 +153,9 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
   dropdown.style.display = "none";
   document.body.appendChild(dropdown);
 
-  // Fetched once per attach (Repository only ever has the one body
-  // textarea) — until this resolves, PREFIX_PATTERN stays at its
-  // macro/encounter/dice-only default, so typing one of those still works
-  // immediately; every other kind's own prefix becomes recognized the
-  // moment the list loads, with no reload/re-attach needed.
+  // Until this resolves, PREFIX_PATTERN stays at its macro/encounter/dice
+  // default, so those still work immediately; every other prefix becomes
+  // recognized the moment the list loads, no reload needed.
   void loadLibraryKinds()
     .then((kinds) => {
       PREFIX_PATTERN = buildPrefixPattern((kinds || []).map((kind) => kind.id));
@@ -187,11 +166,8 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
   let activeIndex = -1;
   let currentParse = null;
   let suppressNextRefresh = false;
-  // Bumped on every refresh() call — an in-flight async candidate fetch
-  // (macro/encounter lookups both hit the server) that resolves after a
-  // newer keystroke already moved on must not clobber the dropdown with
-  // stale results, same "ignore a superseded async response" guard every
-  // other debounced-fetch UI in this suite uses.
+  // Bumped on every refresh() — guards against an in-flight fetch resolving
+  // after a newer keystroke and clobbering the dropdown with stale results.
   let requestToken = 0;
 
   function hide() {
@@ -214,9 +190,7 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
       iconSpan.dataset.icon = KIND_ICON[candidate.kind] || iconFor(candidate.kind);
       iconSpan.setAttribute("aria-hidden", "true");
       item.append(iconSpan, document.createTextNode(candidate.label));
-      // mousedown+preventDefault (not click) — same reasoning
-      // wiki-link-autocomplete.js's own dropdown gives: no focus-loss race
-      // with a separate blur handler.
+      // mousedown+preventDefault, not click — avoids a focus-loss race with blur.
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
         selectCandidate(index);
@@ -251,24 +225,18 @@ export function attachCodeBlockAutocomplete(textarea, { dataManager } = {}) {
       insertText = `1: ${insertText}`;
     }
     let newCursor = currentParse.replaceFrom + insertText.length;
-    // macro/dice are single-value blocks — a selection completes the whole
-    // span, so it's auto-closed with a backtick (unless one's already
-    // sitting right there, e.g. editing an existing block), same
-    // "don't double up the closer" reasoning wiki-link-autocomplete.js's
-    // own `]]` handling uses. encounter is a multi-segment list — closing
-    // it automatically after just one creature would fight anyone adding a
-    // second, so it's left open for a `, ` to continue, or a manual
-    // closing backtick when the GM is actually done.
+    // macro/dice are single-value blocks — auto-closed with a backtick
+    // (unless one's already there). encounter is a multi-segment list —
+    // closing it after one creature would fight adding a second, so it's
+    // left open for `, ` or a manual closing backtick.
     if (currentParse.type !== "encounter" && !after.startsWith("`")) {
       insertText = `${insertText}\``;
       newCursor = currentParse.replaceFrom + insertText.length - 1;
     }
     textarea.value = `${before}${insertText}${after}`;
     textarea.setSelectionRange(newCursor, newCursor);
-    // Same same-tick-echo suppression wiki-link-autocomplete.js's own
-    // selectCandidate uses — the dispatched "input" event below would
-    // otherwise immediately have refresh() see this same edit and reopen
-    // the dropdown against text this function itself just inserted.
+    // Suppresses refresh() from reopening the dropdown against the text
+    // this function itself just inserted, once the "input" event below fires.
     suppressNextRefresh = true;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     hide();

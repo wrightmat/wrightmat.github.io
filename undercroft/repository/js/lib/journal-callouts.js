@@ -1,39 +1,26 @@
 // Obsidian-style callouts (https://obsidian.md/help/callouts) — pure
-// parsing/lookup here, no marked/DOM dependency, same split
-// journal-encounter.js's own parseEncounterBlock uses (that file parses,
-// markdown.js renders). A callout is a blockquote whose first line is
-// `[!type]`, optionally followed directly by a fold marker (`+`/`-`) and a
-// title:
+// parsing/lookup here, no marked/DOM dependency (markdown.js renders). A
+// callout is a blockquote whose first line is `[!type]`, optionally
+// followed by a fold marker (`+`/`-`) and a title:
 //
 //   > [!danger]- Custom title
 //   > Body, itself full markdown.
 //
-// `type` selects the icon/color below (case-insensitive, alias-aware); an
-// unrecognized type still renders (Obsidian allows arbitrary custom types),
-// just with DEFAULT_CALLOUT's generic look. No title text after `[!type]`
-// defaults to the type identifier itself, title-cased — same rule Obsidian
-// documents. The fold marker is absent (never foldable, no toggle affordance
-// at all), `+` (foldable, open by default), or `-` (foldable, collapsed by
-// default) — markdown.js maps these to a plain `<div>` or a native
-// `<details>`/`<summary>` pair respectively, which is what actually makes a
-// callout collapsible in View mode with no extra click-handling JS needed.
+// An unrecognized type still renders, with DEFAULT_CALLOUT's generic look.
+// No title text defaults to the type identifier, title-cased. Fold marker:
+// absent (not foldable), `+` (open by default), `-` (collapsed by default)
+// — markdown.js maps these to a plain `<div>` or a native `<details>` pair.
 //
-// Colors are resolved here (not left as bare keywords for markdown.js to
-// interpret) because this module is also what handout.js's Dashboard widget
-// renders through via markdown.js's shared renderMarkdown — a page that
-// never loads Repository's own stylesheet — so, same reasoning
-// markdown.js's own applyWikiLinkStyling/styleAsChip already establish for
-// exactly this cross-tool reuse, a callout's look has to travel as inline
-// styles set from these resolved values, not a CSS class alone.
+// Colors are resolved here rather than left as bare keywords, since this
+// also renders through handout.js's Dashboard widget, which never loads
+// Repository's own stylesheet — a callout's look has to travel as inline
+// styles.
 
-// Bootstrap's own extended named-color palette (already used suite-wide —
-// see common/css/shell.css's own --undercroft-tool-accent, which pulls from
-// this exact same set) — reused here instead of inventing a parallel color
-// system, and automatically consistent with whatever light/dark theme
-// Bootstrap itself is rendering under. Hex/rgb triples are the same fixed
-// defaults Bootstrap 5.3 ships (unchanged since 5.0) — only ever used as the
-// `var(--bs-x, FALLBACK)` fallback, for the rare host page where Bootstrap's
-// own CSS somehow isn't loaded.
+// Bootstrap's own extended named-color palette (also used by shell.css's
+// --undercroft-tool-accent) — automatically consistent with whichever
+// theme Bootstrap is rendering under. Hex/rgb triples are only ever the
+// `var(--bs-x, FALLBACK)` fallback for the rare host where Bootstrap's own
+// CSS isn't loaded.
 const BOOTSTRAP_COLORS = {
   blue: { hex: "#0d6efd", rgb: "13, 110, 253" },
   teal: { hex: "#20c997", rgb: "32, 201, 151" },
@@ -47,10 +34,8 @@ const BOOTSTRAP_COLORS = {
   secondary: { hex: "#6c757d", rgb: "108, 117, 125" },
 };
 
-// Exported so journal-quests.js's own QUEST_STATUS_META (a not-started/
-// active/complete badge, not a callout type) can resolve the same
-// Bootstrap-named colors a callout's own icon/border already use, rather
-// than inventing a second color system.
+// Exported so journal-quests.js's own status badge can resolve the same
+// Bootstrap-named colors, rather than inventing a second color system.
 export function resolveColor(name) {
   const entry = BOOTSTRAP_COLORS[name] || BOOTSTRAP_COLORS.secondary;
   return {
@@ -59,13 +44,9 @@ export function resolveColor(name) {
   };
 }
 
-// The 13 types Obsidian documents as built in, with their documented
-// aliases — "the basic types," per the user's own ask, nothing from the
-// advanced feature set (custom CSS-only types, nested callouts as a
-// deliberate feature, etc. — those aren't special-cased here, but nesting
+// The 13 types Obsidian documents as built in, with their aliases. Nesting
 // falls out for free since markdown.js re-parses a callout's body as
-// ordinary markdown, which would hit this same machinery again for a nested
-// `> [!type]` line).
+// ordinary markdown, hitting this same machinery again for a nested line.
 export const CALLOUT_TYPES = {
   note: { icon: "tabler:pencil", color: "blue" },
   abstract: { icon: "tabler:clipboard-list", color: "teal", aliases: ["summary", "tldr"] },
@@ -80,19 +61,13 @@ export const CALLOUT_TYPES = {
   bug: { icon: "tabler:bug", color: "pink" },
   example: { icon: "tabler:list-details", color: "purple" },
   quote: { icon: "tabler:quote", color: "secondary", aliases: ["cite"] },
-  // Not one of Obsidian's own 13 built-ins — this suite's own addition, a
-  // GM-authored quest embedded in whatever page it naturally arises from
-  // (see journal-quests.js). Parsing/collapsibility/nesting all already
-  // work generically for any [!type]; this is the one entry needed to give
-  // it a real look instead of DEFAULT_CALLOUT's generic gray.
+  // This suite's own addition — a GM-authored quest (journal-quests.js).
+  // Parsing/nesting already work generically for any [!type]; this just
+  // gives it a real look instead of DEFAULT_CALLOUT's generic gray.
   quest: { icon: "tabler:map-2", color: "purple" },
-  // This suite's other own addition — deliberately authored planning
-  // structure (see journal-story-board.js), not something derived from
-  // other content. Rendered as a plain callout (its own raw Nodes/Edges
-  // tables) through this generic path; Repository's own app.js separately
-  // upgrades a rendered `[data-callout="story-board"]` element into a live
-  // interactive canvas — see that file's own header comment for why that
-  // stays out of markdown.js itself.
+  // Also this suite's own — authored planning structure (journal-story-
+  // board.js). Rendered as a plain callout here; app.js separately upgrades
+  // a `[data-callout="story-board"]` element into a live interactive canvas.
   "story-board": { icon: "tabler:layout-board-split", color: "teal" },
 };
 
@@ -106,9 +81,6 @@ const ALIAS_TO_TYPE = Object.entries(CALLOUT_TYPES).reduce((map, [type, def]) =>
   return map;
 }, {});
 
-// Exported so an eventual "insert callout" editor toolbar button could list
-// every known type/alias without duplicating this table — not built yet,
-// not part of this ask, but free to add later against this same export.
 export function resolveCalloutStyle(rawType) {
   const key = String(rawType || "").toLowerCase();
   const def = CALLOUT_TYPES[ALIAS_TO_TYPE[key]] || DEFAULT_CALLOUT;
@@ -121,17 +93,10 @@ function titleCase(word) {
 }
 
 // `rawBlockquoteText` is a blockquote's already-dedented content (marked's
-// own token.text for a "blockquote" token — every leading `>` and the single
-// space after it already stripped, multi-line structure otherwise intact) —
-// see markdown.js's own renderer override for where this comes from. Returns
-// null for an ordinary blockquote (no `[!type]` marker on its first line),
-// otherwise `{ type, style, title, fold, bodyRaw }` — `fold` is `""`
-// (not foldable), `"+"` (foldable, open by default), or `"-"` (foldable,
-// collapsed by default); `title` is already resolved to its default
-// (title-cased type identifier) when the author didn't write one of their
-// own; `bodyRaw` is everything after the first line, still raw markdown,
-// ready for the caller to render independently (empty string for a
-// title-only callout).
+// token.text — leading `>` and the space after it already stripped).
+// Returns null for an ordinary blockquote, otherwise
+// `{type, style, title, fold, bodyRaw}` — `bodyRaw` is everything after the
+// first line, still raw markdown, ready for the caller to render.
 const CALLOUT_HEADER_PATTERN = /^\[!([A-Za-z][\w-]*)\]([+-]?)[ \t]*([^\n]*)\n?([\s\S]*)$/;
 
 export function parseCallout(rawBlockquoteText) {

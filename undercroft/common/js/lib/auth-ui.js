@@ -110,9 +110,8 @@ function setError(element, message) {
   }
 }
 
-// Exported so the tool-side copies of this same function (Forge/Loom/
-// Sanctum/Workbench's dice.js/character-view.js) can share one implementation
-// instead of re-defining it — see undercroft/README.md's Code Conventions section.
+// Exported so other tools (Forge/Loom/Sanctum/Workbench) share one
+// implementation instead of re-defining it.
 export function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 }
@@ -125,20 +124,10 @@ export function initAuthControls({
   const manager = dataManager || new DataManager({ baseUrl: resolveApiBase() });
   const container = root.querySelector("[data-auth-control]");
   const modalElement = ensureModal();
-  // Resolved fresh on every call, not once here — initAuthControls runs as
-  // part of each page's own module script, which (deliberately, per
-  // app-shell.js's own script-order comment) executes BEFORE Bootstrap's
-  // own deferred CDN <script> tag has necessarily finished. Caching a
-  // one-time `window.bootstrap ? ... : null` result at setup time meant
-  // that race being lost even once (more likely on a cold/uncached first
-  // load, which is exactly when this was reported: a fresh browser with
-  // nothing cached) permanently left this null — the Login/Register button
-  // still attached its click handler and ran openModal() on every click,
-  // but modal.show() was silently skipped forever after, with no console
-  // error at all. Same fix dom.js's own attachHoverDropdown already uses
-  // for the identical race on the account/tool-switcher dropdown: resolve
-  // the Bootstrap instance INSIDE the handler, where a real click can only
-  // ever happen well after Bootstrap has had time to load.
+  // Resolved fresh on every call, not cached — initAuthControls runs before
+  // Bootstrap's deferred CDN <script> necessarily finishes, so caching a
+  // one-time result risks permanently capturing `null` on a cold load. Same
+  // fix dom.js's attachHoverDropdown uses for the identical race.
   function getModal() {
     return window.bootstrap && typeof window.bootstrap.Modal === "function"
       ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
@@ -227,12 +216,9 @@ export function initAuthControls({
   }
 
   // Resolves each distinct system_id/setting_id across `groups` to its real
-  // title/name once (deduped — campaigns commonly share the same System),
-  // for the small-print line renderUserMenu shows under a campaign's name.
-  // Best-effort per id: a deleted/inaccessible record just falls back to
-  // showing its own raw id, the same "id when the name can't be resolved"
-  // convention already used suite-wide (e.g. forge/js/lib/tables.js's own
-  // `entry.entity.name || entry.id`) rather than silently dropping the line.
+  // title once (deduped), for the small-print line under a campaign's name.
+  // Best-effort per id: a deleted/inaccessible record falls back to its
+  // own raw id, the same convention used suite-wide.
   async function resolveTitles(bucket, ids) {
     const map = new Map();
     await Promise.all(
@@ -262,10 +248,8 @@ export function initAuthControls({
     return { systemTitles, settingTitles };
   }
 
-  // One dropdown for everything "who/what context am I in" — a user has to
-  // be signed in to be in a campaign anyway, so the campaign selector lives
-  // inside the same menu as account/logout rather than as a second,
-  // separately-toggled control next to it.
+  // One dropdown for "who/what context am I in" — the campaign selector
+  // lives inside the account menu rather than a second, separate control.
   function renderUserMenu(user, groups, contextLabels = { systemTitles: new Map(), settingTitles: new Map() }) {
     if (!container) return;
     container.innerHTML = "";
@@ -276,15 +260,11 @@ export function initAuthControls({
     const groupItems = groups
       .map((group) => {
         const isActive = activeStillExists && group.id === active.groupId;
-        // list_groups' own scope=member query (groups.py) returns both
-        // groups this user owns AND groups they're only a member of (via a
-        // character they own) — owner_id is how the two are told apart
-        // here, same field _serialize_group already puts on every group.
+        // list_groups' scope=member query returns both owned groups and
+        // ones this user is only a member of — owner_id tells them apart.
         const isOwner = group.owner_id === user.id;
-        // System first, Setting second — matches _serialize_group's/
-        // updateGroup's own {systemId, settingId} field order elsewhere in
-        // the suite. Either alone is fine (just that one label); neither
-        // assigned means no sub-line at all, not an empty one.
+        // System first, Setting second, matching _serialize_group's field
+        // order elsewhere. Neither assigned means no sub-line, not an empty one.
         const contextParts = [
           group.system_id ? contextLabels.systemTitles.get(group.system_id) || group.system_id : "",
           group.setting_id ? contextLabels.settingTitles.get(group.setting_id) || group.setting_id : "",
@@ -389,16 +369,10 @@ export function initAuthControls({
     }
   }
 
-  // getActiveGroup() only ever returns whatever {groupId, name} was cached
-  // at the moment setActiveGroup was last called (renderUserMenu's own
-  // data-campaign-select handler below) — it never re-checks that against
-  // the server, so a group renamed (or deleted) since then leaves this
-  // browser showing a stale name (or, worse, a dead groupId) indefinitely.
-  // This is the one place that actually fetches the live group list, so
-  // it's also the one place that can catch the cache up: refresh the
-  // cached name if it drifted, or clear the selection entirely if the
-  // group no longer exists at all. groupId itself is never rewritten (a
-  // true rename keeps the same id) — only the id's own validity/label.
+  // getActiveGroup() returns whatever was cached at selection time and
+  // never re-checks the server, so a renamed/deleted group can go stale
+  // indefinitely. This is the one place that fetches the live list, so it
+  // catches the cache up: refresh a drifted name, or clear a dead groupId.
   function resyncActiveGroup(groups) {
     const active = manager.getActiveGroup();
     if (!active?.groupId) return;
@@ -413,11 +387,9 @@ export function initAuthControls({
   async function refreshUserMenu(user) {
     let groups = [];
     try {
-      // includeMemberGroups — this menu is "which campaigns can I select as
-      // my active context," which should include a campaign you were added
-      // to (a character you own became a member of someone else's group),
-      // not just ones you personally own. See data-manager.js's own
-      // listGroups comment for why this doesn't just become the default.
+      // includeMemberGroups — this menu should offer campaigns you were
+      // added to, not just ones you own. See data-manager.js's listGroups
+      // comment for why this isn't the default.
       const result = await manager.listGroups({ includeMemberGroups: true });
       groups = Array.isArray(result?.groups) ? result.groups : [];
     } catch (error) {
@@ -493,10 +465,8 @@ export function initAuthControls({
         if (result.message && status) {
           status.show(result.message, { type: "info", timeout: 2500 });
         }
-        // Same showView + modal.show() pair openModal itself does — this
-        // branch runs mid-registration, with the modal already open, but
-        // reuses openModal rather than a third inline copy of the now-lazy
-        // getModal() resolution.
+        // Reuses openModal (rather than a third inline copy) even though
+        // the modal is already open mid-registration here.
         openModal("verify");
         return;
       }
@@ -555,9 +525,8 @@ export function initAuthControls({
     openModal("login");
   });
 
-  // Keep the header in sync if something else on the page changes the
-  // active campaign (e.g. a "Share with [active campaign]" flow elsewhere)
-  // rather than only reacting to this control's own click handlers.
+  // Keep the header in sync when something else changes the active
+  // campaign (e.g. a "Share with [active campaign]" flow elsewhere).
   window.addEventListener("workbench:active-group-changed", () => {
     const user = sessionUser();
     if (user && manager.isAuthenticated()) {

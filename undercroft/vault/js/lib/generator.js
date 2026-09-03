@@ -2,14 +2,13 @@
 // by traversal), Vault has no slots at all: a Signature Feature (the anchor)
 // seeds the result, and the generator repeatedly pulls in whichever
 // remaining eligible Feature has the strongest synergy with what's already
-// selected, as long as it (and any of its own unmet `dependsOn`
-// prerequisites, bundled atomically) fits inside the remaining budget.
-// Budget itself comes entirely from the active System's generator-property
-// fields (ordinary array fields on the System's `fields`, translated by
-// tables.js's getSystemPropertyTypes) — this module has no hardcoded notion
-// of "Rarity"/"Activation"/"Form" as concepts, only "one property type may
-// set the ceiling, the rest spend from it," so a different System can define
-// an entirely different set of property types with zero changes here.
+// selected, as long as it (and any unmet `dependsOn` prerequisites, bundled
+// atomically) fits inside the remaining budget. Budget comes entirely from
+// the active System's generator-property fields (translated by tables.js's
+// getSystemPropertyTypes) — this module has no hardcoded notion of "Rarity"/
+// "Activation"/"Form", only "one property type may set the ceiling, the rest
+// spend from it," so a different System can define an entirely different
+// set of property types with zero changes here.
 
 const DEFAULT_TARGET_BUDGET = 10;
 
@@ -24,24 +23,20 @@ function matchesSystem(entity, systemId) {
   return !ids.length || ids.includes(systemId);
 }
 
-// A feature with no categories tag is treated as universally compatible
-// (the suite-wide "no tag means unconstrained" convention); otherwise it
-// must claim "spell" or "item" — Vault produces one wonder concept usable
-// as either, per its design (Form controls presentation, not eligibility).
+// A feature with no categories tag is universally compatible; otherwise it
+// must claim "spell" or "item" — Vault produces one wonder concept usable as
+// either (Form controls presentation, not eligibility).
 export function matchesCategory(feature) {
   const categories = feature.tags?.categories;
   if (!Array.isArray(categories) || !categories.length) return true;
   return categories.includes("spell") || categories.includes("item");
 }
 
-// A Feature with no `tags.propertyHints` (most of them) or a class with no
-// `allowedFeatureTags` (a non-caster, or a System with no "classes" field at
-// all) is unconstrained — the same "no tag means universal" convention used
-// everywhere else in this suite. Only an actual populated, non-overlapping
-// pair excludes a Feature: e.g. a Wizard whose own `allowedFeatureTags`
-// includes "illusion"/"ritual"/... can take a Feature tagged
-// `["illusion","advanced"]` (they share "illusion"), but not one tagged only
-// `["healing","revival","divine"]` (Revive — no overlap).
+// A Feature with no `tags.propertyHints`, or a class with no
+// `allowedFeatureTags` (a non-caster, or a System with no "classes" field),
+// is unconstrained. Only an actual populated, non-overlapping pair excludes
+// a Feature — e.g. a Wizard tagged "illusion"/"ritual" can take a Feature
+// tagged `["illusion","advanced"]` but not `["healing","revival","divine"]`.
 function matchesClass(feature, allowedFeatureTags) {
   if (!Array.isArray(allowedFeatureTags) || !allowedFeatureTags.length) return true;
   const hints = feature.tags?.propertyHints;
@@ -67,11 +62,10 @@ function conflictsWithSelected(feature, selected) {
   return selected.some((entry) => (entry.conflictsWith || []).includes(feature.id));
 }
 
-// Bundles a candidate with every one of its own unmet `dependsOn`
-// prerequisites (recursively, deduped), so a hard dependency is never added
-// partially. Returns null if a dependency reference doesn't resolve to an
-// eligible feature — the candidate is then skipped entirely rather than
-// added without its prerequisite.
+// Bundles a candidate with every unmet `dependsOn` prerequisite
+// (recursively, deduped), so a hard dependency is never added partially.
+// Returns null if a dependency doesn't resolve — the candidate is then
+// skipped entirely rather than added without its prerequisite.
 function collectDependencyBundle(feature, featuresById, selectedIds, seen) {
   if (seen.has(feature.id)) return [];
   seen.add(feature.id);
@@ -87,22 +81,12 @@ function collectDependencyBundle(feature, featuresById, selectedIds, seen) {
   return bundle;
 }
 
-// A Feature can optionally carry a `tiers` array — e.g. feat.mending-pulse's
-// Healing scales from a Common-tier "2d4+2" up through a Very-Rare-tier
-// "10d4+20", each tier its own `{id, name, shortName, budgetCost}` entry —
-// the same "one record, graduated levels" shape Combat Scaling/Challenge
-// Rating levels and Rarity already use elsewhere in this suite, applied here
-// to an individual Feature instead of a System-wide field. A feature with no
-// `tiers` (nearly all of them) is entirely unaffected — this only ever
-// changes behavior for a feature that opts in.
-//
-// `featureTierIds` is a plain `{ [featureId]: tierId }` map — which tier of
-// any tiered feature in `selectedFeatures` was actually picked. Omitted or
-// missing an entry for a given feature means "use that feature's own base
-// `budgetCost`" (equivalent to always picking the cheapest/first tier),
-// which keeps every pre-existing caller (nothing here passed tier info
-// before this existed) and every non-tiered feature behaving exactly as
-// before.
+// A Feature can optionally carry a `tiers` array (e.g. Healing scaling from
+// a Common "2d4+2" to a Very-Rare "10d4+20", each its own
+// `{id, name, shortName, budgetCost}`) — the same graduated-level shape
+// Combat Scaling/Rarity use elsewhere, applied per-Feature instead of
+// System-wide. `featureTierIds` is a `{ [featureId]: tierId }` map; a
+// missing entry uses the feature's own base `budgetCost` (its cheapest tier).
 export function resolveFeatureBudgetCost(feature, featureTierIds) {
   const tierId = featureTierIds?.[feature?.id];
   if (tierId && Array.isArray(feature?.tiers)) {
@@ -118,9 +102,8 @@ export function resolveFeatureBudgetCost(feature, featureTierIds) {
  * Shared by both the automatic generator and the manual authoring UI, so
  * they can never disagree about the running total. `properties` is a plain
  * `{ [propertyTypeId]: valueId }` map; `propertyTypes` is the active
- * System's `propertyTypes` array (or a subset/empty array — every step here
- * degrades gracefully to `DEFAULT_TARGET_BUDGET`/0-cost when data is missing).
- * `featureTierIds` is optional — see resolveFeatureBudgetCost above.
+ * System's `propertyTypes` array (degrades gracefully to
+ * DEFAULT_TARGET_BUDGET/0-cost when data is missing).
  */
 export function computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds = {}) {
   let target = DEFAULT_TARGET_BUDGET;
@@ -151,12 +134,9 @@ function resolvePropertyValue(propertyType, overrideId, random) {
   return pickRandom(values, random);
 }
 
-// Backs the per-property reroll button in Identity (createFieldBox's own
-// `rerollable` option, mirroring Forge's Identity/4D and Crucible's
-// Identity fields) — a new random value for just this one property type,
-// excluding its current value when another choice exists. Returns null if
-// this property type has no values (or only the one already selected) to
-// reroll into; the caller leaves the record untouched in that case.
+// Backs the per-property reroll button in Identity (mirroring Forge's/
+// Crucible's own per-attribute reroll) — excludes the current value when
+// another choice exists. Returns null if nothing else to reroll into.
 export function rerollPropertyValue(propertyType, currentValueId, { random = Math.random } = {}) {
   const values = Array.isArray(propertyType?.values) ? propertyType.values : [];
   const eligible = values.filter((value) => value.id !== currentValueId);
@@ -176,22 +156,11 @@ function resolveProperties(propertyTypes, overrides, random) {
 
 // Finds the single best-synergy, non-conflicting, affordable candidate (and
 // its dependency bundle) among whatever isn't already selected — ties broken
-// randomly, exactly like Crucible's resolveSlot. Prefers positive synergy
-// when it exists, but — unlike an earlier version of this function, which
-// refused a candidate scoring zero at all ("a feature with zero synergy to
-// the current selection is never pulled in automatically") — falls back to
-// any compatible, affordable candidate when nothing synergizes, the same
-// restraint Crucible's own resolveSlot already applies via its slot-driven
-// traversal. Confirmed real bug the old behavior caused: with no slots
-// forcing a fill here, traversal routinely stopped after just one or two
-// Features regardless of how much budget was actually left — a target
-// budget in the dozens with barely a quarter of it spent, consistently, not
-// as an occasional edge case. Positive-synergy candidates still win over
-// zero-synergy ones whenever both exist (bestScore below), so a genuinely
-// synergistic pick is never passed over for a random one — this only
-// changes what happens once nothing else synergizes. Returns null once
-// nothing qualifies at all, which is the traversal's real stopping
-// condition now (out of budget, or every candidate's used/conflicting).
+// randomly, exactly like Crucible's resolveSlot. Prefers positive synergy,
+// but falls back to any compatible, affordable candidate once nothing
+// synergizes — without this, traversal routinely stalled after 1-2 Features
+// with most of the budget still unspent. Returns null once nothing
+// qualifies (out of budget, or every candidate used/conflicting).
 function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random) {
   const featuresById = new Map(eligibleFeatures.map((entry) => [entry.id, entry]));
   const selectedIds = new Set(selected.map((entry) => entry.id));
@@ -215,10 +184,8 @@ function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes
 
 // Expands an already-selected list to include every transitively unmet
 // dependsOn prerequisite, unconditionally — used for features that arrived
-// via a locked pin or an explicit Signature Feature override, where the
-// dependency must come along regardless of budget (same "explicit choice
-// can exceed budget" allowance as everything else in this module). A
-// missing dependency reference is skipped rather than failing generation.
+// via a locked pin or explicit Signature Feature override, where the
+// dependency comes along regardless of budget. A missing dependency is skipped.
 function expandWithDependencies(selectedList, eligibleFeatures) {
   const featuresById = new Map(eligibleFeatures.map((entry) => [entry.id, entry]));
   const result = [...selectedList];
@@ -250,13 +217,10 @@ function traverse(eligibleFeatures, selected, properties, propertyTypes, random)
 }
 
 // Proactive readiness check for the Generate button — mirrors generateWonder's
-// own `eligibleFeatures` computation exactly (same matchesSystem/
-// matchesCategory/matchesClass filters), so the button's disabled state and
-// generateWonder's own actual throw condition (`!selected.length`, once
-// locked/signature features are also empty) can never drift apart. Doesn't
+// own eligibleFeatures filter exactly, so the button's disabled state and
+// generateWonder's actual throw condition can never drift apart. Doesn't
 // account for an impossibly tight budget leaving nothing affordable — that
-// remains a rare, reactive edge case the click handler's own guard still
-// catches.
+// stays a rare, reactive edge case the click handler's own guard catches.
 export function getWonderGenerationBlockReason(allFeatures, options = {}) {
   const { systemId = null, allowedFeatureTags = null } = options;
   const eligibleFeatures = allFeatures.filter(
@@ -270,11 +234,9 @@ export function getWonderGenerationBlockReason(allFeatures, options = {}) {
  * generateWonder(allFeatures, propertyTypes, options)
  *
  * `propertyTypes` is the active System's `propertyTypes` array (already
- * fetched by the caller, same as Crucible receives its already-fetched
- * reference lists). Signature Feature is an optional override (blank =
- * random, like everything else in this suite); locked features and property
- * overrides let a caller pin part of the result before traversal fills in
- * the rest.
+ * fetched by the caller). Signature Feature is an optional override (blank =
+ * random); locked features and property overrides let a caller pin part of
+ * the result before traversal fills in the rest.
  */
 export function generateWonder(allFeatures, propertyTypes, options = {}) {
   const {
@@ -282,13 +244,10 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     signatureFeatureId = "",
     lockedFeatureIds = [],
     propertyOverrides = {},
-    // The active System's own class vocabulary is read entirely by the
-    // caller (vault/js/app.js, via getSystemClasses) and passed in as this
-    // one class's own allowedFeatureTags — this module has no hardcoded
-    // notion of "Wizard"/"Cleric" any more than it has one of "Rarity", the
-    // same "zero hardcoded System knowledge" guarantee as everywhere else
-    // in Vault. null/undefined (no class selected, or the System has no
-    // "classes" field at all) means unconstrained.
+    // The active System's class vocabulary is read entirely by the caller
+    // (vault/js/app.js, via getSystemClasses) and passed as this class's own
+    // allowedFeatureTags — no hardcoded "Wizard"/"Cleric" notion here, same
+    // as Vault has none of "Rarity". null/undefined means unconstrained.
     allowedFeatureTags = null,
     random = Math.random,
   } = options;
@@ -296,8 +255,6 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
   const eligibleFeatures = allFeatures.filter(
     (feature) => matchesSystem(feature, systemId) && matchesCategory(feature) && matchesClass(feature, allowedFeatureTags)
   );
-  // propertyTypes belongs to one already-chosen System record (fetched by
-  // the caller), not a merged cross-system list — no systemId filter needed.
   const eligiblePropertyTypes = propertyTypes || [];
 
   const properties = resolveProperties(eligiblePropertyTypes, propertyOverrides, random);
@@ -311,16 +268,11 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     ? eligibleFeatures.find((entry) => entry.id === signatureFeatureId)
     : null;
   if (!signatureFeature) {
-    // A random Signature Feature must still respect the just-resolved
-    // properties' budget — without this, an expensive random pick at a low
-    // Rarity tier would start the whole generation over budget before
-    // traversal even runs, breaking the "automatic path never exceeds
-    // budget" guarantee. Its own dependsOn bundle counts too (bundled the
-    // same way traversal candidates are), since a hard prerequisite pulled
-    // in right after could otherwise immediately blow a budget the pick
-    // alone just met. An explicit signatureFeatureId override is still
-    // allowed to exceed it (that's a deliberate user choice, not a random
-    // accident).
+    // A random Signature Feature must respect the just-resolved properties'
+    // budget (its own dependsOn bundle counts too), or an expensive pick at
+    // a low Rarity tier would start generation already over budget. An
+    // explicit signatureFeatureId override is still allowed to exceed it —
+    // that's a deliberate user choice, not a random accident.
     const excludeIds = new Set(lockedFeatures.map((entry) => entry.id));
     const candidates = eligibleFeatures.filter((entry) => !excludeIds.has(entry.id));
     const { remaining } = computeBudget(lockedFeatures, properties, eligiblePropertyTypes);
@@ -337,10 +289,8 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     if (affordable.length) {
       chosen = pickRandom(affordable, random);
     } else if (withBundleCost.length) {
-      // Nothing fits at all (an unusually tight budget) — fall back to
-      // whichever eligible feature (plus its own dependency bundle) costs
-      // least, so the overshoot is as small as possible rather than an
-      // arbitrary amount.
+      // Nothing fits (an unusually tight budget) — fall back to whichever
+      // eligible feature costs least, so the overshoot is as small as possible.
       const cheapest = Math.min(...withBundleCost.map((item) => item.cost));
       chosen = pickRandom(
         withBundleCost.filter((item) => item.cost === cheapest),
@@ -359,10 +309,9 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     throw new Error("Not enough Feature reference data to generate a wonder.");
   }
 
-  // Hard dependencies always come along, whether their requiring feature
-  // arrived via a locked pin, an explicit Signature Feature override, or the
-  // budget-aware random pick above (which already accounted for its own
-  // bundle cost, so this is a no-op in that case).
+  // Hard dependencies always come along, regardless of how their requiring
+  // feature arrived (locked pin, Signature override, or the budget-aware
+  // pick above, which already accounted for its own bundle cost).
   selected = expandWithDependencies(selected, eligibleFeatures);
 
   traverse(eligibleFeatures, selected, properties, eligiblePropertyTypes, random);
@@ -372,14 +321,11 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     signatureFeatureId: signatureFeature ? signatureFeature.id : null,
     featureIds: selected.map((entry) => entry.id),
     // Always present (even empty) so callers never need an `|| {}` guard —
-    // automatic generation never picks a tier for a tiered feature it
-    // selects (that's a deliberate manual choice, see resolveFeatureBudgetCost
-    // above), so a freshly generated Wonder always starts every tiered
-    // feature at its base/cheapest tier until a GM upgrades it by hand.
+    // automatic generation always starts a tiered feature at its cheapest
+    // tier; a GM upgrades it by hand afterward.
     featureTiers: {},
     properties,
     budget: computeBudget(selected, properties, eligiblePropertyTypes),
     notes: "",
   };
 }
-

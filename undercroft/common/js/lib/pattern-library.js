@@ -27,21 +27,16 @@ function starPoints(cx, cy, outerR, innerR, points) {
   return coords.join(" ");
 }
 
-// A viewBox-only <svg> (no width/height attributes) hits a real browser
-// quirk where object-fit ("contain" especially, but this user report shows
-// "fill" isn't reliable either) doesn't compute against a well-defined
-// intrinsic size — every generated preset must declare explicit width/height
-// matching its viewBox so object-fit has an unambiguous box to work from.
+// A viewBox-only <svg> (no width/height) hits a real browser quirk where
+// CSS object-fit doesn't compute against a well-defined intrinsic size —
+// every preset declares explicit width/height matching its viewBox.
 //
-// preserveAspectRatio='none' is the actual fix for "fill" specifically: SVG
-// has its own internal scaling instruction (default "xMidYMid meet" — fit
-// and center, preserving aspect ratio) that's entirely separate from the
-// outer CSS object-fit. When the browser hands the SVG a viewport whose
-// aspect ratio doesn't match its viewBox (which is exactly what "fill" does
-// whenever the target box's proportions differ from the artwork's), that
-// internal default can still letterbox on top of object-fit's own decision
-// — disabling it here makes object-fit the sole authority over fitting, for
-// every preset, regardless of which fit mode is chosen downstream.
+// preserveAspectRatio='none' fixes object-fit:"fill" specifically: SVG has
+// its own internal scaling instruction (default "xMidYMid meet") separate
+// from the outer CSS object-fit, which can still letterbox on top of
+// object-fit's own decision when the viewport's aspect ratio doesn't match
+// the viewBox. Disabling it makes object-fit the sole authority over
+// fitting for every preset.
 function svgOpen(width, height) {
   return `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' preserveAspectRatio='none'>`;
 }

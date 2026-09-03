@@ -1,20 +1,13 @@
 // A custom color-picker popover shared by Press and Workbench — replaces
-// the native <input type="color"> for each tool's own color concepts (Text/
-// Foreground/Background/Border — this module doesn't know or care which;
-// that vocabulary lives in each tool's own COLOR_FIELD_MAP), for two
-// reasons: (1) the native OS picker has no room for a second control,
-// and this tool needs a binding/formula box alongside the color controls
-// (mirrors createFormulaToggleField's manual-vs-formula contract — see
-// common/js/lib/inspector-fields.js); (2) the native picker's own hue-bar
-// click commits and closes it before a shade is actually chosen, which is
-// exactly the "weird behavior" this replaces — a popover we open/close
-// ourselves never closes on an internal drag or click, only on outside
-// click or Escape.
+// the native <input type="color"> for two reasons: (1) this needs a
+// binding/formula box alongside the color controls (mirrors
+// createFormulaToggleField's manual-vs-formula contract, inspector-fields.js);
+// (2) the native picker's hue-bar click commits and closes before a shade
+// is actually chosen — a popover we open/close ourselves only closes on
+// outside click or Escape.
 //
-// Same "evaluate is injected, not imported" shape createFormulaToggleField
-// already uses, so this module stays resolver-agnostic: each tool supplies
-// its own binding/formula resolution rather than this module importing
-// bindings.js/a formula engine directly.
+// `evaluate` is injected, not imported, so this module stays
+// resolver-agnostic — each tool supplies its own binding/formula resolution.
 
 import { initTooltip } from "./tooltips.js";
 
@@ -114,15 +107,11 @@ function parseRgbFunction(value) {
   return rgbToHex({ r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) });
 }
 
-// Resolves a CSS custom property's CURRENT computed value (e.g. Bootstrap's
-// own --bs-body-bg, "#fff" in light mode) to a hex string this module's
-// existing hex/HSV pipeline can use for the picker's own live preview — NOT
-// used for user-typed hex input, which stays strictly 6-digit via
-// normalizeHex above. Bootstrap uses 3-digit shorthand for some tokens
-// (confirmed by reading the vendored CSS directly: --bs-body-bg:#fff),
-// which normalizeHex's own strict regex rejects — this tries that first,
-// then a 3-digit expansion, then a rgb()/rgba() function-syntax fallback in
-// case a custom (non-Bootstrap) token happens to be defined that way.
+// Resolves a CSS custom property's CURRENT computed value (e.g.
+// --bs-body-bg) to a hex string for the picker's own live preview — not
+// used for user-typed input, which stays strict via normalizeHex. Tries
+// 6-digit hex first, then 3-digit shorthand (Bootstrap uses this for some
+// tokens), then an rgb()/rgba() fallback.
 export function resolveThemeTokenHex(tokenName) {
   if (typeof document === "undefined" || !tokenName) return null;
   const raw = getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim();
@@ -131,19 +120,12 @@ export function resolveThemeTokenHex(tokenName) {
 }
 
 // Curated, deliberately small — Bootstrap's own semantic/surface tokens,
-// already redefined automatically per active Bootswatch pack
-// (common/data/theme-packs.json) and per light/dark mode
-// ([data-bs-theme]), so a color stored as one of these stays correct
-// forever with zero template-side changes when either changes. Accent
-// Background/Accent Text are a deliberate PAIR — Bootstrap 5.3's own
-// "subtle background + emphasis text" convention, engineered to stay
-// readable together in both modes — the direct answer to needing a
-// foreground that's always readable against its own background regardless
-// of active theme (5e proficiency pips, e.g.), which no fixed hex can
-// promise once the palette itself is user-selectable. Not a JSON manifest
-// like theme-packs.json — this list is tied to Bootstrap's own fixed
-// vocabulary, not per-System/user content — just add an entry here to
-// extend it later (Danger/Warning/Success, etc.).
+// redefined automatically per active theme pack and light/dark mode, so a
+// color stored as one of these stays correct forever. Accent Background/
+// Accent Text are a deliberate PAIR (Bootstrap's subtle-bg + emphasis-text
+// convention) for a foreground always readable against its own background
+// regardless of theme. Not a JSON manifest — tied to Bootstrap's own fixed
+// vocabulary, just add an entry here to extend it (Danger/Warning/Success).
 export const THEME_COLOR_SWATCHES = [
   { label: "Primary", token: "--bs-primary" },
   { label: "Body Background", token: "--bs-body-bg" },
@@ -154,10 +136,8 @@ export const THEME_COLOR_SWATCHES = [
   { label: "Accent Text", token: "--bs-primary-text-emphasis" },
 ];
 
-// Matches exactly what this field writes back out for a theme-token
-// selection (see commitThemeToken below) — the one shape this module
-// recognizes as "this value is a theme token," on load and on every
-// render.
+// Matches exactly what commitThemeToken writes back for a theme-token
+// selection — the one shape this module recognizes as a theme token.
 const THEME_TOKEN_PATTERN = /^var\((--[\w-]+)\)$/;
 
 let idCounter = 0;
@@ -171,12 +151,10 @@ function clamp01(value) {
 }
 
 // The unified manual-vs-formula control for a color — same contract as
-// createFormulaToggleField (inspector-fields.js): manual controls (the
-// swatch/square/hue/hex) work when bindingValue is empty; a non-empty
-// bindingValue disables them and shows evaluate(raw)'s result instead (or
-// an indeterminate "can't preview" state when evaluate returns undefined —
-// e.g. Workbench's Template editor canvas, which never evaluates
-// "=formula" expressions, only "@bindings" — see that module's own note).
+// createFormulaToggleField (inspector-fields.js): manual controls work
+// when bindingValue is empty; a non-empty bindingValue disables them and
+// shows evaluate(raw)'s result instead, or an indeterminate state when
+// evaluate returns undefined.
 export function createColorPickerField(labelText, {
   value = "",
   defaultValue = "#000000",
@@ -237,12 +215,10 @@ export function createColorPickerField(labelText, {
   hueHandle.className = "color-picker-hue-handle";
   hueSlider.appendChild(hueHandle);
 
-  // Theme-color swatches — clicking one is a shortcut that fills
-  // valueInput below with that token's bare name (e.g. "--bs-primary"),
-  // not a separate mechanism from it. Each swatch's own background is set
-  // inline to var(<token>) directly, so every dot always shows its real,
-  // live, currently-active-theme color with no computed-value lookup
-  // needed just to render the row itself.
+  // Theme-color swatches — clicking one fills valueInput with the token's
+  // bare name (e.g. "--bs-primary"). Each background is set inline to
+  // var(<token>), so every dot shows its live theme color with no
+  // computed-value lookup needed to render the row.
   const themeSwatchRow = document.createElement("div");
   themeSwatchRow.className = "color-picker-theme-swatches";
   const themeSwatchButtons = THEME_COLOR_SWATCHES.map((entry) => {
@@ -257,15 +233,10 @@ export function createColorPickerField(labelText, {
     return button;
   });
 
-  // One input for every color source this field understands — a leading
-  // character decides which (see classifyInput below): "#" a literal hex,
-  // "--" a CSS theme variable (what the swatches above are shortcuts for),
-  // "@" a binding or "=" a formula (unchanged from before this
-  // consolidation — both were always handed to onBindingChange raw either
-  // way, never actually two different code paths here). Accept/Clear apply
-  // to whatever this currently holds, same "confirm what's shown" contract
-  // the old per-mode Accept button already had, just one shared instance
-  // of it instead of one per mode.
+  // One input for every color source this field understands (see
+  // classifyInput below): "#" hex, "--" a CSS theme variable, "@"/"="
+  // binding/formula (both handed to onBindingChange raw). Accept/Clear
+  // apply to whatever this currently holds.
   const valueRow = document.createElement("div");
   valueRow.className = "d-flex align-items-center gap-2 color-picker-value-row";
   const valueInput = document.createElement("input");
@@ -274,10 +245,8 @@ export function createColorPickerField(labelText, {
   valueInput.autocomplete = "off";
   valueInput.spellcheck = false;
   valueInput.placeholder = "#hex · --theme · @bind · =formula";
-  // The caller's own richer example (e.g. "@abilities.str.mod or
-  // =if(...)") moves to a hover tooltip rather than the placeholder text —
-  // there's only one input now, and the placeholder above already has to
-  // cover all four shapes at once.
+  // The caller's own richer example moves to a hover tooltip — the
+  // placeholder above already has to cover all four shapes at once.
   initTooltip(valueInput, { title: placeholder });
   const acceptButton = document.createElement("button");
   acceptButton.type = "button";
@@ -304,11 +273,9 @@ export function createColorPickerField(labelText, {
     return THEME_TOKEN_PATTERN.exec(raw || "")?.[1] || "";
   }
 
-  // "#" hex, "--" a CSS custom property, "@"/"=" binding/formula — the
-  // one place this module decides which of the three (or "empty"/
-  // "unrecognized") a raw string is, used identically for live preview
-  // (render/previewInput) and for commitCurrent, so they can never
-  // disagree about what the input currently means.
+  // The one place this module decides which shape a raw string is, used
+  // identically for live preview and for commitCurrent, so they can
+  // never disagree about what the input currently means.
   function classifyInput(raw) {
     const trimmed = typeof raw === "string" ? raw.trim() : "";
     if (!trimmed) return { kind: "empty", text: "" };
@@ -318,36 +285,27 @@ export function createColorPickerField(labelText, {
     return { kind: "unrecognized", text: trimmed };
   }
 
-  // What the input shows for "the last actually committed state" — binding
-  // wins if both `bindingValue` and `value` happen to be set, same
-  // precedence this field already gave binding over manual color before
-  // this consolidation. Everything this field ever commits is exactly one
-  // of these three shapes (see commitCurrent), so recognizing which one
-  // `value` already is uses the same classification, just run once here.
+  // The last actually committed state — binding wins if both
+  // `bindingValue` and `value` are set, same precedence this field gives
+  // binding over manual color elsewhere.
   let committedRawText = bindingValue || themeTokenFromValue(value) || value || "";
   valueInput.value = committedRawText;
-  // Set by any actual edit (drag, typing, a theme swatch click); cleared on
-  // open and after every commit. Lets commitCurrent() no-op on a plain
-  // open-then-click-away with nothing touched, instead of writing an
-  // unchanged value and pushing a no-op undo entry every time someone
-  // glances at a swatch.
+  // Set by any actual edit; cleared on open and after every commit. Lets
+  // commitCurrent() no-op on open-then-click-away, instead of pushing a
+  // no-op undo entry every time someone glances at a swatch.
   let dirty = false;
   let isOpen = false;
 
-  // Renders the swatch/indicator from whatever the input currently
-  // classifies as. Never invents a color of its own: an unresolved
-  // binding/formula/theme-token shows the same unset/indeterminate
-  // treatment the rest of this inspector already uses for "nothing is
-  // actually set," not a guessed hex. Called on every drag/typing frame
-  // purely for this LOCAL preview — nothing here writes to the actual data
-  // (see commitCurrent for the only path that does).
+  // Renders the swatch/indicator from whatever the input classifies as.
+  // Never invents a color: an unresolved binding/formula/theme-token shows
+  // the indeterminate treatment, not a guessed hex. Local preview only —
+  // see commitCurrent for the only path that writes to actual data.
   function render() {
     const classification = classifyInput(valueInput.value);
     let effectiveHex = hsvToHex(hsv);
     // Only set for the theme case — a live var() reference, kept correct
-    // forever by the browser itself (theme pack/light-dark changes need no
-    // re-render here). effectiveHex stays a resolved snapshot, used for
-    // the wheel's own indicator position regardless of which kind is active.
+    // by the browser with no re-render needed. effectiveHex stays a
+    // resolved snapshot, used for the wheel indicator regardless of kind.
     let effectiveSwatchColor = null;
     let isSet = false;
     let indeterminate = false;
@@ -395,9 +353,8 @@ export function createColorPickerField(labelText, {
     hueHandle.style.left = `${(h / 360) * 100}%`;
   }
 
-  // Local-only: re-renders the popover's own preview (swatch included)
-  // without writing anything to the actual data — see commitCurrent for
-  // the only thing that actually does that.
+  // Local-only: re-renders the popover's own preview without writing to
+  // actual data — see commitCurrent for the only thing that does that.
   function previewInput() {
     const classification = classifyInput(valueInput.value);
     if (classification.kind === "hex") {
@@ -408,11 +365,9 @@ export function createColorPickerField(labelText, {
     render();
   }
 
-  // Dragging always writes its resulting hex straight into valueInput —
-  // there's only one input now, so this IS how a drag stays visible,
-  // exactly as if the user had typed the same hex by hand. Whatever kind
-  // of value was there before (a binding, a theme token) is simply
-  // overwritten, same as typing over it would be.
+  // Dragging writes its resulting hex straight into valueInput — this IS
+  // how a drag stays visible, as if typed by hand. Overwrites whatever
+  // was there before (a binding, a theme token), same as typing over it.
   function applyHsvToInput() {
     valueInput.value = hsvToHex(hsv);
     dirty = true;
@@ -431,11 +386,9 @@ export function createColorPickerField(labelText, {
     if (typeof onBindingChange === "function") onBindingChange(raw);
   }
   // Writes "var(--the-token)" into the SAME field a hex value normally
-  // occupies (via onManualChange, not a new callback) — every renderer
-  // already just assigns whatever string it's given to element.style.color/
-  // backgroundColor, so a var() reference works there with zero rendering-
-  // side changes, and stays live/correct automatically if the active theme
-  // pack or light/dark mode changes later.
+  // occupies (via onManualChange) — every renderer just assigns the string
+  // to element.style.color/backgroundColor, so a var() reference works
+  // there with zero rendering-side changes.
   function commitThemeToken(tokenName) {
     committedRawText = tokenName;
     if (typeof onManualChange === "function") onManualChange(`var(${tokenName})`);
@@ -448,12 +401,9 @@ export function createColorPickerField(labelText, {
 
   // The one place anything gets committed — Accept, Enter, and closing the
   // popover by any means other than Escape all funnel through this. A
-  // no-op open-then-close (nothing actually touched) commits nothing at
-  // all — see `dirty`'s own comment. Typing the input down to nothing and
-  // committing that is a real "clear" edit, same as clicking Clear
-  // outright; typing something that matches none of the four recognized
-  // shapes commits nothing, same defensive "silently ignore, don't guess"
-  // behavior this field's own hex input always had for invalid text.
+  // no-op open-then-close commits nothing (see `dirty`). Typing something
+  // matching none of the recognized shapes also commits nothing —
+  // "silently ignore, don't guess."
   function commitCurrent() {
     if (!dirty) return;
     const classification = classifyInput(valueInput.value);
@@ -577,12 +527,10 @@ export function createColorPickerField(labelText, {
 
   // ---- Open/close ----
   //
-  // Escape is the only real "never mind" — it discards whatever's staged
-  // and falls back to the last actually-committed state. Every other way
-  // of leaving the popover (Accept, Enter, clicking away, toggling the
-  // swatch closed) commits first, same as clicking Accept — "closing"
-  // isn't a separate action from "confirming," except when you explicitly
-  // hit Escape to back out.
+  // Escape is the only real "never mind" — discards staged changes and
+  // falls back to the last committed state. Every other way of leaving
+  // (Accept, Enter, clicking away) commits first — closing isn't a
+  // separate action from confirming.
 
   function teardownOpenState() {
     isOpen = false;
@@ -610,16 +558,11 @@ export function createColorPickerField(labelText, {
     render();
   }
 
-  // Finds the nearest ancestor that actually bounds this field's visible
-  // area on the given edge (an x/y-scrollable/clipped panel), if any —
-  // deliberately generic rather than reaching for a tool-specific pane
-  // selector, since this module is shared by Press and Workbench and each
-  // has its own inspector panel structure. Falls back to the viewport
-  // itself, which already covers the common case of a sidebar that simply
-  // runs to the window's own edge with nothing narrower clipping it first.
-  // `edge` is "right" or "bottom" — the only two directions this popover
-  // ever needs to flip away from, since it always anchors top-left of its
-  // swatch to start with.
+  // Finds the nearest ancestor that bounds this field's visible area on
+  // the given edge — generic rather than a tool-specific pane selector,
+  // since Press and Workbench each have their own panel structure. Falls
+  // back to the viewport. `edge` is "right" or "bottom", the only two
+  // directions this popover (anchored top-left) ever needs to flip.
   function getClippingAncestorEdge(el, edge) {
     const overflowProp = edge === "right" ? "overflowX" : "overflowY";
     let node = el.parentElement;
@@ -635,16 +578,12 @@ export function createColorPickerField(labelText, {
       : document.documentElement.clientHeight || window.innerHeight;
   }
 
-  // Default anchor is flush with the swatch's left edge, just below it
-  // (popover's own `left: 0`/`top: calc(100% + 0.375rem)` in shell.css).
-  // Both edges are checked independently and flipped whichever way
-  // actually fits — a field near the bottom of a scrollable panel has
-  // exactly the same problem vertically that a field near the right edge
-  // (Border, the rightmost of the three/four in the Colors grid) already
-  // had horizontally; both get the same treatment here, not just one.
-  // Measured after unhiding (getBoundingClientRect needs real layout), and
-  // only overridden when it actually doesn't fit — most fields never need
-  // this.
+  // Default anchor is flush with the swatch's left edge, just below it.
+  // Both edges are checked independently and flipped whichever way fits —
+  // a field near the bottom has the same problem vertically that one near
+  // the right edge (Border) has horizontally. Measured after unhiding
+  // (getBoundingClientRect needs real layout); only overridden when it
+  // doesn't fit.
   function repositionPopover() {
     popover.style.left = "0";
     popover.style.right = "auto";

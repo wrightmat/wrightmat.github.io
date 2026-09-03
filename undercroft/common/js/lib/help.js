@@ -73,19 +73,10 @@ export async function loadHelpTopics(topicsUrl = DEFAULT_TOPICS_URL) {
   return cachedTopicsPromise;
 }
 
-// Every topic's own stored `href` (help-topics.json) predates a real,
-// working destination for most tools — some point at docs.html (the page
-// itself moved twice: originally only ever reachable from under workbench/,
-// then to common/docs/, now flat at common/docs.html so it sits at the same
-// depth as every other common/ page and can share app-shell.js's own
-// tool-context path math instead of working around it), others at
-// "../{tool}/index.html#..." anchors that were never actually added to that
-// tool's markup. The account page's help browser (undercroft/common/
-// account.js) is now the one destination guaranteed to exist and work from
-// every tool, so this ignores the stored href entirely and always builds a
-// fresh link there — the full common/docs.html page (linked from the
-// account page's panel) is still there too for anyone who wants to browse
-// everything at once.
+// Every topic's own stored `href` (help-topics.json) points at destinations
+// that don't reliably exist across tools, so this ignores it entirely and
+// always builds a fresh link to the account page's help browser — the one
+// destination guaranteed to exist and work from every tool.
 function resolveHelpTopicHref(topic) {
   const base = resolveAccountHref(resolveToolContextPath());
   const separator = base.includes("?") ? "&" : "?";

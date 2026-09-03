@@ -1,19 +1,14 @@
-// A generic "connect a third-party service" modal — an optional display
-// label, a server URL, an optional model/identifier field, and an
-// optional-or-required key/token, Save/Disconnect/Cancel — shared by
-// home-assistant.js's own HA connection and audio-recorder.js's own
-// transcription server list, rather than each keeping its own near-
-// identical modal-building/promise-wiring code. Purely a UI/interaction
-// concern: the caller supplies the current config and the actual save/
-// disconnect calls (its own dataManager methods); this module never talks
-// to dataManager directly, so it has no idea which service it's connecting.
+// A generic "connect a third-party service" modal — label, server URL,
+// optional model field, key/token, Save/Disconnect/Cancel — shared by
+// home-assistant.js's HA connection and audio-recorder.js's transcription
+// server list, rather than each keeping near-identical modal-building code.
+// Purely a UI/interaction concern: the caller supplies config and the
+// actual save/disconnect calls; this module never talks to dataManager.
 //
-// Built and torn down fresh per call (a unique id, removed from the DOM on
-// close) rather than the single cached-singleton-element pattern this
-// suite's other one-shape modals use (wled.js's own alias-prompt modal,
-// e.g.) — this one's actual copy (title/labels/which optional fields even
-// show) differs per caller, so a cached element would leak one caller's
-// copy into the next.
+// Built and torn down fresh per call (not a cached singleton, unlike
+// wled.js's alias-prompt modal) — this one's copy (title/labels/which
+// optional fields show) differs per caller, so a cached element would leak
+// one caller's copy into the next.
 let modalCounter = 0;
 
 function buildModal(
@@ -84,19 +79,13 @@ function buildModal(
   return element;
 }
 
-// `existing` — {configured, baseUrl, label?, model?} from the caller's own
-// already-fetched config, so this module doesn't need to know how to fetch
-// it. The key field always starts blank regardless of `existing.configured`
-// — never re-populated from a real secret (there's nothing to re-populate
-// it with; the server never sends a saved key back, see integrations.py's
-// own header comment) — `keyPlaceholder` is how a caller communicates
-// "leave blank to keep what's already saved" vs. "leave blank for no key at
-// all" to the person filling this in. The label/model fields only render at
-// all when `showLabel`/`showModel` are set (HA's own single-per-account
-// connection has no use for either). `onSave(baseUrl, token, label, model)`
-// — a caller that didn't ask for label/model just ignores those arguments
-// (always "" when their own show flag is false). Resolves true if something
-// was saved or disconnected, false if cancelled.
+// `existing` — {configured, baseUrl, label?, model?} from the caller's
+// already-fetched config. The key field always starts blank regardless of
+// `existing.configured` — the server never sends a saved key back —
+// `keyPlaceholder` communicates "leave blank to keep what's saved" vs.
+// "leave blank for no key" to the person filling this in. Label/model
+// fields only render when `showLabel`/`showModel` are set. Resolves true
+// if something was saved or disconnected, false if cancelled.
 export async function promptConnectionModal({
   existing,
   title,
@@ -195,9 +184,8 @@ export async function promptConnectionModal({
     if (modal) {
       modal.show();
     } else {
-      // No Bootstrap JS on the page (shouldn't happen anywhere in this
-      // suite, but stay defensive rather than silently doing nothing) —
-      // same fallback shape wled.js's own promptForWledAlias uses.
+      // No Bootstrap JS on the page — stay defensive, same fallback shape
+      // wled.js's promptForWledAlias uses.
       finish(false);
     }
   });

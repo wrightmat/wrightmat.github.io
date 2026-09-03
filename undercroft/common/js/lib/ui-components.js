@@ -3,15 +3,8 @@
 // New/Save/Delete toolbar clusters. Each returns real, already-wired DOM
 // nodes (same style as dom.js's el() and collapsible.js's own
 // createCollapseToggleButton, which this generalizes) — callers
-// `.appendChild()` them into a mount point, exactly like Press's
-// dynamically-rendered canvas-layer rows already do today. No new markup
-// convention, no custom elements, no attribute-driven auto-init.
-//
-// Written to replace the same hand-typed HTML block (and matching, separate
-// JS wiring call) that used to be duplicated across every tool's own
-// index.html/app.js — see undercroft/README.md's Code Conventions section
-// for this codebase's established practice of tracking exactly this kind of
-// extraction.
+// `.appendChild()` them into a mount point. No new markup convention, no
+// custom elements, no attribute-driven auto-init.
 
 import { bindCollapsibleToggle, setCollapsibleState } from "./collapsible.js";
 import { attachIconAutocomplete, buildIconPreviewElement } from "./icon-picker.js";
@@ -19,25 +12,21 @@ import { bindCopyButton } from "./clipboard.js";
 import { createJsonPreviewRenderer } from "./json-preview.js";
 import { disposeTooltips, refreshTooltips, initTooltip } from "./tooltips.js";
 
-// One tooltipped icon button — the single most-repeated primitive in the
-// suite (162 hand-written instances measured across all 9 tools' index.html
-// files before this module existed). Two established shapes exist suite-wide
-// (see undercroft/README.md's UI & Style Conventions section, "Toolbar
-// Buttons") — `kind`
-// picks between them:
-//   - "compact" (default) — small inline actions (JSON copy buttons,
-//     collapsible chevron toggles, per-row actions): `btn-sm
-//     d-inline-flex align-items-center justify-content-center`, plain icon,
-//     tooltip on top, aria-label only (no visible-but-hidden text).
-//   - "toolbar" — left-pane action toolbars (New/Save/Export/Delete, ...):
-//     `p-2`, `fs-5` icon, tooltip on bottom, PLUS a `visually-hidden` label
-//     span alongside aria-label (the established redundant-but-intentional
-//     toolbar convention — never mix in a *visible* text label instead).
-// `label` drives the tooltip title, the aria-label, and (for "toolbar" kind)
-// the visually-hidden span. `includeToggleLabel` is a separate, narrower
-// mechanism for the collapsible chevron's own dynamic expand/collapse text
-// — see createCollapsibleSection below, which relies on that span's
-// [data-toggle-label] marker so bindCollapsibleToggle can keep it in sync.
+// One tooltipped icon button — the most-repeated primitive in the suite.
+// Two established shapes (see README's "Toolbar Buttons" convention) —
+// `kind` picks between them:
+//   - "compact" (default) — small inline actions (JSON copy, collapsible
+//     chevrons, per-row actions): `btn-sm`, plain icon, tooltip on top,
+//     aria-label only.
+//   - "toolbar" — left-pane toolbars (New/Save/Export/Delete): `p-2`,
+//     `fs-5` icon, tooltip on bottom, PLUS a `visually-hidden` label span
+//     alongside aria-label (the redundant-but-intentional convention —
+//     never a *visible* text label instead).
+// `label` drives the tooltip title, aria-label, and (for "toolbar") the
+// hidden span. `includeToggleLabel` is a separate mechanism for the
+// collapsible chevron's dynamic expand/collapse text — see
+// createCollapsibleSection below, which relies on the [data-toggle-label]
+// marker so bindCollapsibleToggle can keep it in sync.
 export function createIconButton({
   icon,
   label,
@@ -97,16 +86,14 @@ export function createIconButton({
   return button;
 }
 
-// One collapsible section — the ~15-25-line hand-written header+panel block
-// every "Selections"/"Inspector"/"Notes"/"JSON Data"/... section in the
-// suite used to duplicate, plus the separate bindCollapsibleToggle() call
-// each one needed alongside it. `content` is either an existing DOM node or
-// a builder function `(panel) => Node|void` (for callers that want to
-// append directly rather than build first). `actions` are extra
-// createIconButton-shaped configs rendered in the header, before the
-// chevron toggle (e.g. JSON Data's own Copy button) — their built button
-// nodes come back as `actionButtons`, in the same order, so a caller can
-// wire up behavior (like bindCopyButton) on the exact node it needs.
+// One collapsible section — the header+panel block every "Selections"/
+// "Inspector"/"Notes"/"JSON Data" section in the suite used to duplicate by
+// hand, plus the separate bindCollapsibleToggle() call each needed. `content`
+// is either an existing DOM node or a builder function `(panel) => Node|void`.
+// `actions` are extra createIconButton-shaped configs rendered in the
+// header before the chevron toggle (e.g. JSON Data's Copy button) — their
+// built nodes come back as `actionButtons`, in order, so a caller can wire
+// behavior (like bindCopyButton) on the exact node it needs.
 export function createCollapsibleSection({
   label,
   id,
@@ -116,23 +103,18 @@ export function createCollapsibleSection({
   content,
   className = "d-flex flex-column gap-3",
   panelClassName = "d-flex flex-column gap-3",
-  // The suite's standard section-header treatment (uppercase, fs-6) reads
-  // as too heavy in a small, already-compact context (a dashboard widget
-  // card, e.g.) — overridable per caller rather than only ever the one
-  // fixed weight every existing caller still gets by default.
+  // Overridable per caller — the standard uppercase/fs-6 treatment reads
+  // too heavy in a small, already-compact context (a dashboard widget card).
   headingClassName = "text-uppercase fs-6 fw-semibold text-body-secondary mb-0",
-  // Set false when the caller needs fully custom click behavior (e.g. a
-  // toggle that's conditionally gated, or that triggers a re-render on
-  // expand) — bindCollapsibleToggle's own click handler can't express that,
-  // and stacking a second listener on the same toggle to intercept/veto it
-  // does NOT work: per the DOM spec, listeners on the event's own target
-  // fire in registration order regardless of the capture flag (the
-  // capture-vs-bubble skip only applies on ancestor nodes during the
-  // capturing/bubbling phases), so a later "block this click" listener can
-  // never pre-empt an earlier one on the identical element. With this
-  // false, only the toggle's initial visual state is set here (via
-  // setCollapsibleState) — the caller registers its own click listener and
-  // calls the returned `setCollapsed` from inside it.
+  // Set false when the caller needs fully custom click behavior (a
+  // conditionally-gated toggle, a re-render on expand) that
+  // bindCollapsibleToggle's own handler can't express. Stacking a second
+  // listener on the same toggle to intercept/veto it does NOT work — DOM
+  // listeners on the event's own target fire in registration order
+  // regardless of capture flag, so a later "block this click" listener can
+  // never pre-empt an earlier one. With this false, only the toggle's
+  // initial visual state is set here — the caller registers its own click
+  // listener and calls the returned `setCollapsed` from inside it.
   autoBindToggle = true,
 } = {}) {
   const section = document.createElement("section");
@@ -208,24 +190,19 @@ export function createCollapsibleSection({
   return { section, header, panel, toggle, actionButtons, setCollapsed };
 }
 
-// The exact panel rebuilt by hand in 8 different tools before this module
-// existed — a read-only textarea (for easy copy-out) inside a
+// The JSON Data panel — a read-only textarea inside a
 // createCollapsibleSection, with a Copy button (size shown in its own
 // tooltip, not a separate badge — see json-preview.js's
 // updateCopyButtonSize) wired via bindCopyButton, and a `render()` that's
 // the same createJsonPreviewRenderer every tool already used individually.
-// `getData` is the same "() => value to serialize" contract
-// createJsonPreviewRenderer's own `serialize` option already expects.
+// `getData` is the "() => value to serialize" contract
+// createJsonPreviewRenderer's `serialize` option expects.
 // `onImport`/`onExport` — optional. When given, prepend Import/Export icon
-// buttons before Copy (header reads Import -> Export -> Copy -> collapse
-// toggle, per the suite's own canonical toolbar-action order applied to this
-// header's own action cluster) so a tool's own file-download/file-picker
-// round-trip lives right next to the read-only preview it corresponds to,
-// instead of as a separate button elsewhere in the toolbar. `exportIcon`/
-// `importIcon` override the default `tabler:file-export`/`tabler:file-import`
-// for a tool that already has an established icon choice (Orrery's own
-// Import/Export use tabler:upload/tabler:download) — preserving that
-// per-tool choice rather than silently reskinning it.
+// buttons before Copy (Import -> Export -> Copy -> collapse toggle, the
+// suite's canonical toolbar-action order) so a tool's file round-trip lives
+// next to the preview it corresponds to. `exportIcon`/`importIcon` override
+// the defaults for a tool with an established icon choice (Orrery's own
+// Import/Export use tabler:upload/tabler:download).
 export function createJsonDataPanel({
   label = "JSON Data",
   rows = 10,
@@ -276,22 +253,18 @@ export function createJsonDataPanel({
   return { section, header, panel, toggle, textarea, copyButton, importButton, exportButton, render, setCollapsed };
 }
 
-// A left-pane action toolbar cluster (~20 instances suite-wide — New/Save/
-// Export/Delete and friends). `action` picks the icon/color preset per
-// undercroft/README.md's UI & Style Conventions section, "Toolbar Buttons"
-// color table; anything not
-// in ACTION_PRESETS falls back to a plain secondary-outline button, so this
-// still works for a toolbar with an odd one out. Pass `icon`/`variant` to
-// override a preset's default icon/color for a tool-specific case (e.g.
-// Vault's Generate uses "tabler:sparkles" instead of the "generate" preset's
-// own "tabler:flask"; Repository's Duplicate Page is `outline-secondary`
-// rather than the "duplicate" preset's usual `outline-success`, an existing
-// exception being preserved here, not introduced). Pass `primary: true` for
-// the "New/Generate is this tool's one true primary activity" case (e.g.
-// Crucible/Forge/Vault/Sanctum's "Generate", Press's "Print") — swaps that
-// one button to filled `btn-primary` per the style guide, no icon/label
-// change. Returns the button nodes in order — caller appends them into
-// whatever wrapper (btn-toolbar, btn-group, ...) it already uses.
+// A left-pane action toolbar cluster (New/Save/Export/Delete and friends).
+// `action` picks the icon/color preset per README's "Toolbar Buttons" color
+// table; anything not in ACTION_PRESETS falls back to a plain
+// secondary-outline button. Pass `icon`/`variant` to override a preset's
+// default for a tool-specific case (Vault's Generate uses "tabler:sparkles"
+// instead of "generate"'s own "tabler:flask"; Repository's Duplicate Page
+// is `outline-secondary` rather than the usual `outline-success` — existing
+// exceptions preserved, not introduced). Pass `primary: true` for the
+// "New/Generate is this tool's one true primary activity" case (Crucible/
+// Forge/Vault/Sanctum's "Generate", Press's "Print") — swaps that button to
+// filled `btn-primary`, no icon/label change. Returns the button nodes in
+// order — caller appends them into whatever wrapper it already uses.
 const ACTION_PRESETS = {
   undo: { icon: "tabler:arrow-back-up", variant: "outline-secondary" },
   redo: { icon: "tabler:arrow-forward-up", variant: "outline-secondary" },
@@ -307,21 +280,17 @@ const ACTION_PRESETS = {
 };
 
 // A single form-floating field (Bootstrap's `.form-floating` label-over-
-// input pattern) — the single most-repeated shape inside Press's Component
-// Inspector (~20 instances, one per component property: Gap, Space after,
-// Column template, Layer sizing, Aria label, Classes, ...). Each of those
-// fields is genuinely one-of-a-kind (different id/label/tooltip/attrs), not
-// duplicated content — this factory exists to turn "one repeated shape,
-// many distinct configs" into data instead of hand-typed markup, the same
-// win createIconButton gives the suite's icon buttons.
-// `wrapperAttr` is the field's own `data-inspector-*` marker (present on
-// EVERY field, whether or not it's currently hidden — some fields keep
-// theirs always visible, e.g. Classes) — `hidden: true` additionally sets
-// the `hidden` attribute AND `.hidden = true`, matching how these fields
-// get toggled by the inspector's own show/hide logic. `wrapperAttr` may
-// repeat across several fields that all show/hide together as one group
-// (e.g. Press's five different `data-inspector-image-field` elements) —
-// that's fine, it's just an attribute value, not a unique key.
+// input pattern) — the most-repeated shape inside Press's Component
+// Inspector. Each field is genuinely one-of-a-kind (different
+// id/label/tooltip/attrs), not duplicated content — this factory turns "one
+// repeated shape, many distinct configs" into data instead of hand-typed markup.
+// `wrapperAttr` is the field's `data-inspector-*` marker (present on EVERY
+// field, hidden or not — some stay always visible, e.g. Classes) —
+// `hidden: true` additionally sets the `hidden` attribute AND `.hidden =
+// true`, matching how the inspector's show/hide logic toggles these.
+// `wrapperAttr` may repeat across several fields that show/hide together as
+// one group (Press's five `data-inspector-image-field` elements) — that's
+// fine, it's just an attribute value, not a unique key.
 export function createFormFloatingField({
   type = "text",
   id,
@@ -433,23 +402,18 @@ export function createButtonCheckGroup({
       input.setAttribute(dataAttr, "");
     }
     if (opt.disabled) {
-      // disabled on the input is what actually stops it (a <label> for a
-      // disabled input is inert to click/keyboard activation per the HTML
-      // spec — no separate pointer-events/click-guard needed); .disabled
-      // on the label is purely visual, this input shape's own .btn-check
-      // + <label class="btn"> pattern has no native way to dim the label
-      // itself since it isn't the form control.
+      // disabled on the input actually stops it (a <label> for a disabled
+      // input is inert to click/keyboard per the HTML spec); .disabled on
+      // the label is purely visual — .btn-check has no other way to dim
+      // the label, since it isn't the form control.
       input.disabled = true;
     }
 
     const label = document.createElement("label");
     label.className = size === "sm" ? "btn btn-outline-secondary btn-sm" : "btn btn-outline-secondary";
     if (opt.disabled) {
-      // Bootstrap's own documented pattern for a disabled .btn-check pair:
-      // .disabled on the label is what dims it and blocks pointer events
-      // (.btn.disabled { opacity: .65; pointer-events: none; } is part of
-      // Bootstrap's own base .btn styling); the input's own `disabled`
-      // attribute above is what stops it from being checked/focused at all.
+      // Bootstrap's documented pattern: .disabled on the label dims it and
+      // blocks pointer events (.btn.disabled in Bootstrap's base styling).
       label.classList.add("disabled");
       label.setAttribute("aria-disabled", "true");
     }
@@ -484,29 +448,20 @@ export function createButtonCheckGroup({
 }
 
 // The suite-wide "Mode" control — which top-level thing a center pane is
-// showing (Repository's Page/Relationships/Timeline, a generator tool's own
-// kind vs. Relationships, Workbench's Template vs. Character). A real
-// button GROUP built on createButtonCheckGroup above — every option always
-// visible, one marked active, ALWAYS labeled (icon + visible text, never
-// icon-only) — deliberately a different shape from createCycleToggleButton
-// below (the "View" control), per explicit design feedback: the two axes
-// need to look different at a glance, not be the same control reused at two
-// scales. Rebuilds `container` fresh on every call (this suite's own
-// "no diffing" convention for toggle re-renders); the caller re-invokes
-// this after any value change, same as every hand-rolled renderXToggle()
-// this pattern replaces.
+// showing (Repository's Page/Relationships/Timeline, Workbench's Template
+// vs. Character). A real button GROUP built on createButtonCheckGroup —
+// every option always visible, one marked active, ALWAYS labeled (icon +
+// visible text, never icon-only) — deliberately a different shape from
+// createCycleToggleButton below (the "View" control): the two axes need to
+// look different at a glance, not be the same control reused at two scales.
+// Rebuilds `container` fresh on every call (this suite's "no diffing"
+// convention); the caller re-invokes this after any value change.
 export function createModeToggleGroup({ container, options = [], value, onChange, ariaLabel } = {}) {
   if (!container) return;
-  // Disposed before the wipe, not just left to be garbage-collected — a
-  // Bootstrap tooltip's own popup is a sibling appended to <body> (via
-  // Popper), not inside the trigger element, so clearing the trigger via
-  // innerHTML = "" without disposing it first leaves that popup orphaned
-  // on <body> forever (confirmed real bug: this is exactly what made the
-  // View/Edit tooltip "stick" after a click before this fix). Every
-  // rebuild-on-every-call widget in this suite already follows this same
-  // dispose-then-wipe-then-refresh order; centralizing it here means every
-  // Mode/View toggle gets it for free instead of each caller having to
-  // remember it individually.
+  // Disposed before the wipe — a Bootstrap tooltip's popup is a <body>
+  // sibling (via Popper), so clearing via innerHTML = "" without disposing
+  // first leaves it orphaned on <body> forever. Centralized here so every
+  // Mode/View toggle gets it for free.
   disposeTooltips(container);
   container.innerHTML = "";
   const groupName = `mode-toggle-${Math.random().toString(16).slice(2)}`;
@@ -514,12 +469,10 @@ export function createModeToggleGroup({ container, options = [], value, onChange
     ariaLabel,
     name: groupName,
     // Deliberately NOT the default groupClassName ("template-radio-group")
-    // — that class's own CSS stacks icon-above-text in a tiny caption
-    // (right for Template Properties' compact pickers), which reads as a
-    // visibly different size/shape than createCycleToggleButton's own
-    // single icon button sitting right beside it. mode-toggle-group (this
-    // module's own CSS, shell.css) is icon-LEFT-text-RIGHT at btn-sm sizing
-    // instead, so the two controls' heights actually match.
+    // — that class stacks icon-above-text in a tiny caption, visibly
+    // different size/shape than createCycleToggleButton's icon button
+    // beside it. mode-toggle-group (shell.css) is icon-LEFT-text-RIGHT at
+    // btn-sm instead, so the two controls' heights actually match.
     groupClassName: "btn-group mode-toggle-group",
     size: "sm",
     options: options.map((option) => ({
@@ -541,39 +494,28 @@ export function createModeToggleGroup({ container, options = [], value, onChange
   refreshTooltips(container);
 }
 
-// The suite-wide "View" control — a secondary axis only meaningful (and
-// only ever rendered) under whichever Mode currently has more than one way
-// to look at it (View/Edit, List/Graph, Corkboard/Swimlane). ONE button
-// that cycles through `states` — icon-only, no visible label, sized
-// (via the shared `cycle-toggle-btn` class, shell.css) to match
-// createModeToggleGroup's own button height so the two controls read as
-// one cohesive header row. The tooltip names BOTH the current state and
-// what clicking switches to ("View — click to change to Edit"), not just
-// the destination alone — a bare "Edit" tooltip on a button already
-// showing the pencil icon told you what you'd get, not what you're
-// currently looking at. Deliberately NOT a button group — see
-// createModeToggleGroup's own comment for why the two stay visually
-// distinct. `states` is usually 2 entries but isn't required to be;
-// `value` not found in `states` defaults to treating the first entry as
-// current (so an unset/unknown value still renders something sane rather
-// than throwing).
+// The suite-wide "View" control — a secondary axis only meaningful under
+// whichever Mode has more than one way to look at it (View/Edit, List/
+// Graph, Corkboard/Swimlane). ONE button that cycles through `states` —
+// icon-only, sized (`cycle-toggle-btn`, shell.css) to match
+// createModeToggleGroup's height. The tooltip names BOTH the current state
+// and what clicking switches to ("View — click to change to Edit"), not
+// just the destination — a bare "Edit" tooltip on a button showing the
+// pencil icon told you what you'd get, not what you're looking at now.
+// Deliberately NOT a button group (see createModeToggleGroup above).
+// `value` not found in `states` defaults to the first entry.
 //
 // `container` is optional — when given, this owns the full "dispose old
-// tooltip, clear, mount, refresh" lifecycle itself (same shape
-// createModeToggleGroup already has), so a caller rebuilding this button
-// fresh on every state change (the norm — see every renderXViewToggle()
-// this replaces) can't forget the dispose step and leak a stuck tooltip
-// the way Repository's own first draft of this did. Omit `container` (as
-// Story Board's own layout toggle does) when the caller needs to place the
-// returned button itself rather than have it appended directly.
+// tooltip, clear, mount, refresh" lifecycle itself, so a caller rebuilding
+// this fresh on every state change can't forget the dispose step and leak a
+// stuck tooltip. Omit `container` (Story Board's layout toggle) when the
+// caller needs to place the returned button itself.
 // Each state is `{value, icon, label, tooltip?}` — `label` is a SHORT name
-// ("View", "Swimlane"), used both to build the default compound tooltip
-// below AND as the fallback if `tooltip` is omitted. `tooltip`, when given,
-// completely overrides the auto-generated phrase for the state clicking
-// switches TO — for a caller that wants richer destination detail than a
-// bare name (Story Board's own Corkboard/Swimlane toggle keeps its
-// existing full descriptions this way, rather than cramming them into
-// `label` and breaking the compound phrase's own short-name assumption).
+// ("View", "Swimlane"), used for the default compound tooltip and as the
+// fallback if `tooltip` is omitted. `tooltip`, when given, completely
+// overrides the auto-generated phrase — for a caller wanting richer
+// destination detail than a bare name (Story Board's Corkboard/Swimlane
+// toggle keeps its own full descriptions this way).
 export function createCycleToggleButton({ container, states = [], value, onSelect } = {}) {
   const currentIndex = Math.max(
     0,
@@ -601,10 +543,8 @@ export function createCycleToggleButton({ container, states = [], value, onSelec
   return button;
 }
 
-// A single form-check checkbox (optionally styled as a switch) — 7
-// instances in Press's Component Inspector (Header row, Visible, Inline,
-// four Border-side toggles). `tooltip` goes on the LABEL (every observed
-// instance that has one puts it there, not on the input).
+// A single form-check checkbox (optionally styled as a switch). `tooltip`
+// goes on the LABEL, not the input.
 export function createCheckField({
   id,
   label,
@@ -643,37 +583,24 @@ export function createCheckField({
 // Fixed order: New -> Save -> Duplicate -> Delete -> Undo -> Redo, using
 // only the slots a toolbar actually needs. New is always outline-primary,
 // never filled — including a generator tool's own "Generate X" button,
-// which fills the New slot conceptually. Import/Export are NOT toolbar-
-// cluster slots — they live in the JSON Data section instead (see
-// createJsonDataPanel's own Import -> Export -> Copy action order); Print
-// and Rename are tool-specific placements outside this cluster too (Press's
-// own standalone center-pane Print button, Loom's per-tab Rename Mapping),
-// not part of the fixed six. Keep a single cluster to 6 buttons or fewer —
-// confirmed real problem past that point (Workbench's own left-pane toolbar
-// started wrapping/scrolling once a 7th button was added, twice). Hitting
-// the limit means designing an alternative WITH the user (a secondary
-// toolbar, moving the action to a more relevant location, a dropdown of
-// less-common actions) — never just letting the cluster keep growing.
-// `disabled: true` here only ever sets the initial state — a REAL
-// `disabled` attribute, which (per tooltips.js's own header) blocks hover
-// entirely, so `label`'s own tooltip (set on this same button by
-// createIconButton above) cannot show while disabled. Harmless as long as
-// nothing actually depends on it — a disabled element's inert
-// data-bs-toggle/data-bs-title just never fires, same as having none at
-// all — but a caller that DOES need a working explanatory tooltip on a
-// currently-disabled toolbar button (Forge/Sanctum/Crucible/Vault's own
-// Generate buttons are the concrete example) must call
-// setDisabledTooltip(button, reason) itself once the button is actually in
-// the DOM (this function can't do it here: setDisabledTooltip's wrapper
-// needs a real parent to insert into, and these buttons haven't been
-// appended anywhere yet — that's the caller's job, right after this
-// returns). setDisabledTooltip only ever manages ITS OWN wrapper's
-// tooltip, never touching this button's own native one — so `label`'s
-// attributes are deliberately left in place here (not stripped) rather
-// than removed and never restored: once setDisabledTooltip's wrapper is
-// gone again (generation ready), this button's own original tooltip is
-// still exactly where createIconButton left it, immediately usable again
-// with zero extra work from the caller.
+// which fills the New slot conceptually. Import/Export live in the JSON
+// Data section instead (createJsonDataPanel's own Import -> Export -> Copy
+// order); Print and Rename are tool-specific placements outside this
+// cluster (Press's standalone Print button, Loom's Rename Mapping), not
+// part of the fixed six. Keep a single cluster to 6 buttons or fewer —
+// Workbench's left-pane toolbar started wrapping past that point twice.
+// Hitting the limit means designing an alternative WITH the user (a
+// secondary toolbar, a dropdown of less-common actions), never letting the
+// cluster keep growing.
+// `disabled: true` only sets the initial state — a REAL `disabled`
+// attribute blocks hover entirely, so `label`'s tooltip can't show while
+// disabled. A caller needing a working tooltip on a disabled toolbar button
+// (Forge/Sanctum/Crucible/Vault's Generate buttons) must call
+// setDisabledTooltip(button, reason) itself once the button is in the DOM
+// (its wrapper needs a real parent, not yet available here). `label`'s
+// attributes are left in place, not stripped, so once setDisabledTooltip's
+// wrapper is gone the button's own original tooltip is immediately usable
+// again with no extra work.
 export function createToolbarButtonGroup(items = []) {
   return items.map(
     ({ action, label, icon, variant: variantOverride, onClick, visible = true, disabled = false, primary = false, attrs = {} }) => {
@@ -696,22 +623,14 @@ export function createToolbarButtonGroup(items = []) {
 }
 
 // The generator tools' "nothing yet" placeholder — a centered icon
-// (optional — Repository's own instance has none, just a message) inside a
-// plain `card shadow-theme`, shown until something's been generated or
-// selected. Five near-identical hand-typed copies of this (Vault, Crucible,
-// Sanctum, Forge, Repository) used to exist across the suite, differing
-// only in icon and message text.
+// (optional — Repository's own instance has none) inside a plain `card
+// shadow-theme`, shown until something's been generated or selected.
 // The small "label above, form-control-sm/form-select-sm control" field —
-// the shape used throughout Template/Grid Properties panels and
-// grid-packed inspector fields (Position, Image size, Pan/Zoom, Border
-// width/radius) that sit dense multiple-to-a-row, as opposed to
-// createFormFloatingField's floating-label shape for single-column
-// inspector fields. Pair with createFieldRow (common/js/lib/
-// inspector-fields.js) for the row/col grid wrapper. Was previously ~30
-// independently hand-built label+input pairs across Press alone, with one
-// real drift already found and fixed here: three of them (Custom size
-// label/width/height) were missing `fw-semibold` that every other instance
-// had — this factory bakes in the majority shape rather than the outlier.
+// used throughout Template/Grid Properties panels and grid-packed
+// inspector fields (Position, Image size, Pan/Zoom, Border width/radius)
+// that sit dense multiple-to-a-row, as opposed to createFormFloatingField's
+// floating-label shape for single-column fields. Pair with createFieldRow
+// (inspector-fields.js) for the row/col grid wrapper.
 export function createCompactField({
   type = "text",
   id,
@@ -738,9 +657,7 @@ export function createCompactField({
   labelEl.textContent = label;
 
   // A help-icon tooltip sits beside (not inside) the label — matches the
-  // "label + help span" row every other help-bearing field in this suite
-  // uses (createCollapsibleSection's own header, Press's Template/Format/
-  // Orientation selects).
+  // "label + help span" row every other help-bearing field uses.
   let labelRow = labelEl;
   if (helpTopic) {
     labelRow = document.createElement("div");
@@ -794,20 +711,15 @@ export function createCompactField({
 }
 
 // A compact "search box + scrollable checkbox list" — the Locked Features
-// picker's replacement for a bare `<select multiple>` (Crucible/Vault/
-// Sanctum all had one). A native multi-select forces ctrl/cmd-click to pick
-// more than one option, gives no way to search a long list, and its
-// "selected" rows are barely distinguishable from unselected ones at a
-// glance — checkboxes fix all three with a single click per item and an
-// obvious checked state. `maxHeight` caps the scrollable list so the whole
-// control (search input + list) stays about the same footprint as the
-// multi-select it replaces rather than growing with the option count.
-// Callers populate/read it via populateLockedFeaturesCheckList/
-// readLockedFeatureIds (common/js/lib/generator-kit.js), which look inside
-// this control for the fixed `data-checklist-search`/`data-checklist-options`
-// markers below — `dataAttr` (like every other field factory here) marks the
-// whole control so a caller's usual `document.querySelector("[data-x]")`
-// still finds it.
+// picker's replacement for a bare `<select multiple>`. A native multi-
+// select forces ctrl/cmd-click to pick more than one option, gives no way
+// to search, and its "selected" rows are barely distinguishable at a
+// glance — checkboxes fix all three. `maxHeight` caps the scrollable list
+// so the whole control stays about the multi-select's footprint rather than
+// growing with the option count. Callers populate/read it via
+// populateLockedFeaturesCheckList/readLockedFeatureIds (generator-kit.js),
+// which look inside for the fixed `data-checklist-search`/
+// `data-checklist-options` markers below.
 export function createSearchableCheckList({
   id,
   label,
@@ -873,38 +785,26 @@ export function createSearchableCheckList({
 
 // A bordered "field box" — label above, editable value below, an optional
 // trailing action button (Forge's per-attribute reroll) — the shared
-// generator-tool property/stat card. Originally Forge's own buildFieldCard
-// (its Identity/4D/Stats fields), independently reinvented near-identically
-// as Crucible's buildStatCard (its own Stats fields); consolidated here so
-// Crucible's Identity fields and Vault's Identity fields can adopt the exact
-// same look instead of a fourth hand-rolled variant, per explicit user
-// feedback that Forge's box style — "it basically matches the Stats boxes
-// and Features boxes in the other tools" — should be the one shared look
-// across every tool's center-pane properties. `.field-inline-edit` (see
-// common/css/shell.css) is the "blend in until hovered/focused" idiom that
-// keeps an editable value from visually standing out among read-only ones;
-// works for both an <input> and a <select>.
+// generator-tool property/stat card. Consolidated from Forge's own
+// buildFieldCard and Crucible's independently-reinvented buildStatCard so
+// every tool's center-pane properties share one look. `.field-inline-edit`
+// (shell.css) is the "blend in until hovered/focused" idiom keeping an
+// editable value from standing out among read-only ones; works for both
+// <input> and <select>.
 //
-// type: "text" (a free-typed value, e.g. Forge's Name/Stats, Crucible's
-// Stats/an imported monster's Size-Type-Alignment-Speed) or "select" (a
-// fixed-vocabulary pick, e.g. Crucible's Creature Type/Archetype/Role,
-// Vault's Rarity/Activation/Item Form) — `options` is required for "select"
-// (`[{value, label}]`). `editable: false` renders a plain read-only value
-// line instead (no border/background at all — the pre-existing "static"
-// look every tool already used before any field here was editable).
+// type: "text" (a free-typed value) or "select" (a fixed-vocabulary pick,
+// e.g. Crucible's Creature Type, Vault's Rarity) — `options` is required
+// for "select" (`[{value, label}]`). `editable: false` renders a plain
+// read-only value line instead (no border/background).
 //
 // `rerollable` adds a trailing reroll button carrying `data-reroll-attribute`
-// (Forge's own per-attribute-reroll delegated listener reads this) —
-// harmless to any tool that doesn't wire up that listener, since the button
-// simply wouldn't do anything without it; only Forge currently sets this.
-// `selectable` adds `data-select-field` (Forge's click-a-field-to-inspect-it
-// convention) — also Forge-only today, for the same reason.
+// (Forge's per-attribute-reroll delegated listener reads this; harmless
+// elsewhere). `selectable` adds `data-select-field` (Forge's click-to-
+// inspect convention, also Forge-only today).
 //
-// `colClass` wraps the box in a Bootstrap grid column (the default,
-// matching every field-box grid in the suite); pass `colClass: null` for a
-// caller that wants the bare box itself instead — for a flex-row mount like
-// Name/Image (not laid out via `.row`/`.col-*`), the caller supplies its own
-// wrapping/sizing.
+// `colClass` wraps the box in a Bootstrap grid column (the default); pass
+// `colClass: null` for the bare box — a flex-row mount like Name/Image
+// supplies its own wrapping/sizing.
 export function createFieldBox({
   key,
   label,
@@ -958,13 +858,11 @@ export function createFieldBox({
   let control = null;
   let suffixEl = null;
   if (editable) {
-    // .field-inline-edit already sets font-weight: 600 on its own (see
-    // common/css/shell.css) — no fw-semibold utility class needed on top.
-    // Compact boxes size the INPUT to the box's own width (flex-grow-1 on a
-    // w-100 valueRow below), not a fixed rem value — colClass can make a
-    // compact box anywhere from 1x an ability-score box up to several times
-    // wider (e.g. Crucible/Forge's own 2x/3x stat boxes), and a fixed-width
-    // input left most of a wider box empty instead of actually using it.
+    // .field-inline-edit already sets font-weight: 600 (shell.css) — no
+    // fw-semibold needed on top. Compact boxes size the INPUT to the box's
+    // own width (flex-grow-1 on a w-100 valueRow), not a fixed rem value —
+    // colClass can make a compact box several times wider (Crucible/Forge's
+    // 2x/3x stat boxes), and a fixed-width input would leave it mostly empty.
     control = buildControl(compact ? "field-inline-edit small text-center flex-grow-1" : "field-inline-edit");
     if (key) control.setAttribute(dataAttr, key);
     control.setAttribute("aria-label", `${ariaLabelPrefix} ${label}`);
@@ -1043,17 +941,15 @@ export function createFieldBox({
 
 // A label + searchable icon input with a live preview swatch, wired to
 // icon-picker.js's attachIconAutocomplete — defaults to the ddb-*/bi-*
-// class vocabulary and dropdown Press's own Icon component field uses (see
-// press/index.html's `data-inspector-icon-field` for the markup this
-// mirrors); pass `sources: ["tabler"]` (or any subset icon-picker.js's own
-// getAllIconOptions understands) to search a different vocabulary instead —
-// board.js's card icon field does this, since its own `icon` value is a
-// `tabler:*` Iconify identifier, not a CSS class. Deliberately NOT the same
-// factory as Press's own field: that one resolves @binding/=formula preview
-// values through the template's live data context, which callers like
-// Orrery's marker icon (a literal class/icon string, no binding concept)
-// don't need. Commits on "change" (blur/Enter), not every keystroke, since
-// callers whose selection editor rebuilds its whole DOM per change (Orrery,
+// class vocabulary Press's own Icon component field uses; pass `sources:
+// ["tabler"]` (or any subset getAllIconOptions understands) to search a
+// different vocabulary — board.js's card icon field does this, since its
+// `icon` value is a `tabler:*` Iconify identifier, not a CSS class.
+// Deliberately NOT the same factory as Press's own field: that one resolves
+// @binding/=formula preview values through the template's live data
+// context, which callers like Orrery's marker icon (a literal string, no
+// binding concept) don't need. Commits on "change" (blur/Enter), not every
+// keystroke, since callers that rebuild their whole DOM per change (Orrery,
 // board.js) would lose focus on a live-keystroke commit.
 export function createIconPickerField({
   id,
@@ -1091,10 +987,9 @@ export function createIconPickerField({
   group.append(previewWrap, input);
   wrapper.append(labelEl, group);
 
-  // buildIconPreviewElement (icon-picker.js's own) handles all three value
-  // shapes ddb-*/bi-*/tabler: — getIconTokens alone (the old body here)
-  // only ever recognized bi-*/ddb-*, so a tabler:* value silently rendered
-  // nothing at all.
+  // buildIconPreviewElement handles all three value shapes ddb-*/bi-*/
+  // tabler: — getIconTokens alone only recognized bi-*/ddb-*, so a
+  // tabler:* value would silently render nothing.
   function updatePreview(nextValue) {
     preview.innerHTML = "";
     const icon = buildIconPreviewElement(nextValue);
@@ -1102,20 +997,13 @@ export function createIconPickerField({
   }
   updatePreview(value);
 
-  // Guards against firing onSelect twice for one selection: clicking a
-  // dropdown row commits via attachIconAutocomplete's own onSelect below,
-  // but if the input still has focus with a dirty value (the user typed a
-  // search term before clicking a row — its native change-on-blur "dirty"
-  // flag is only set by real user edits, never by the input.value=selected
-  // assignment just below), and the caller's own onSelect synchronously
-  // tears down/rebuilds this field's container (as Orrery's marker overlay-
-  // icon picker does), removing the still-focused input from the DOM fires
-  // a native blur, which then fires a native "change" event on the same
-  // already-committed value — re-invoking the "change" listener further
-  // down for a value that was never actually re-typed. Tracking the last
-  // committed value and skipping a repeat no-op commit fixes this without
-  // suppressing any genuine reselection (a real new pick always differs
-  // from whatever was last committed).
+  // Guards against firing onSelect twice for one selection: if the input
+  // still has a dirty value when a dropdown row is clicked, and the
+  // caller's onSelect synchronously tears down/rebuilds this field's
+  // container (Orrery's marker overlay-icon picker does), removing the
+  // still-focused input fires a native blur then "change" on the same
+  // already-committed value. Tracking the last committed value and
+  // skipping a repeat no-op fixes this without suppressing a genuine reselect.
   let committedValue = value;
   function commit(nextValue) {
     if (nextValue === committedValue) return;
@@ -1139,13 +1027,11 @@ export function createIconPickerField({
 // One row in a reference/entity list — a title, an optional description, an
 // optional click-to-select (onSelect), optional extra icon-button actions
 // before Remove (e.g. an "Open in <Tool>" link-out), and Remove itself.
-// Promoted from Sanctum's own local createListRow (js/app.js — Assets/Needs/
-// Features rows), which stays as-is rather than being migrated onto this in
-// the same pass; this is here for NEW callers (relationship-editor.js is the
-// first) so a second near-identical implementation doesn't get hand-rolled a
-// third time. `actions` — `{icon, label, onClick}[]` — rendered via
-// createIconButton (this module's own), so each gets the same tooltip/sizing
-// as every other icon button in the suite.
+// Promoted from Sanctum's own local createListRow (Assets/Needs/Features
+// rows), which stays as-is rather than migrating; this exists for NEW
+// callers (relationship-editor.js first) so a third near-identical
+// implementation doesn't get hand-rolled. `actions` are rendered via
+// createIconButton, so each gets the same tooltip/sizing suite-wide.
 export function createListRow({ title, description, onRemove, removeLabel = "Remove", onSelect, actions = [] }) {
   const row = document.createElement("div");
   row.className = "border rounded-3 p-2 d-flex align-items-start justify-content-between gap-2";
@@ -1155,9 +1041,8 @@ export function createListRow({ title, description, onRemove, removeLabel = "Rem
   const titleEl = document.createElement("div");
   titleEl.className = "fw-semibold";
   // `title` is usually a plain string, but a caller with something inline-
-  // referenceable to show (a Feature/Wonder/NPC hover chip, e.g. — see
-  // library-reference.js's own createReferenceChip) can pass a real DOM
-  // node instead — appended as-is rather than stringified.
+  // referenceable to show (library-reference.js's createReferenceChip) can
+  // pass a real DOM node instead.
   if (title instanceof Node) titleEl.appendChild(title);
   else titleEl.textContent = title;
   info.appendChild(titleEl);
@@ -1205,11 +1090,10 @@ export function createListRow({ title, description, onRemove, removeLabel = "Rem
 }
 
 // `variant: "inline"` — a condensed, left-aligned, card-free rendering used
-// by the four generator tools' (Forge/Crucible/Sanctum/Vault) own Mode/View
-// header row, where the "Nothing selected yet" message sits flush in-line
-// with the Mode/View controls instead of as a separate full-width centered
-// card below them. Default (no variant) stays exactly the original full
-// card — Repository/Orrery/graph-view.js's own empty states still want that.
+// by the generator tools' Mode/View header row, where the "Nothing selected
+// yet" message sits flush in-line instead of as a separate full-width card.
+// Default (no variant) stays the original full card — Repository/Orrery/
+// graph-view.js still want that.
 export function createEmptyStateCard({ icon, message, variant } = {}) {
   if (variant === "inline") {
     const wrap = document.createElement("div");

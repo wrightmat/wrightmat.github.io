@@ -1,43 +1,34 @@
 // A control panel for WLED (https://kno.wled.ge) instances — table/room
 // lighting rigs a GM points at the WLED JSON API directly from the browser
 // (no server involvement; WLED's HTTP API is served by the device itself on
-// the LAN and already allows cross-origin requests). Loosely rebuilt from an
-// old standalone page (dnd/wled.htm + wled.json at the repo root) — that
-// page hardcoded one GM's own physical rig (fixed segment ids/starts/stops,
-// a personal preset list) directly into shared script, which doesn't belong
-// in a suite-wide widget (see feedback_undercroft_avoid_hardcoding). This
-// version reads segments/effects/palettes/presets live from whichever device
-// is selected instead, so it works with any WLED instance's own
-// configuration, not just one specific rig.
+// the LAN and already allows cross-origin requests). Reads segments/
+// effects/palettes/presets live from whichever device is selected, so it
+// works with any WLED instance's configuration, not one hardcoded rig.
 //
 // Two persistence scopes, matching Clock's own instance-vs-shared split:
 //  - The list of known devices ({type,ip,entityId,label}) is account-wide
 //    (GM-tied, not per-widget-card) — dashboard.js owns it via
 //    persistSetting, the same local+server merge-patch sync layout/
 //    background use, passed in here as `devices`/`onDevicesChange`.
-//  - Which device THIS card is currently showing/controlling is per-instance
-//    state — small enough to live directly in this widget's own contentRef
-//    (the same generic per-instance slot Clock/Calendar/Browser already
-//    repurpose for "this instance's own config" — see clocks.js's own
-//    comment), not a Library kind of its own. `multiple: true` in the
-//    dashboard catalog — a GM with two lighting zones adds the widget twice,
-//    each pointed at its own device.
+//  - Which device THIS card is showing/controlling is per-instance state —
+//    small enough to live directly in this widget's own contentRef (the
+//    same generic per-instance slot Clock/Calendar/Browser repurpose), not
+//    a Library kind of its own. `multiple: true` in the dashboard catalog —
+//    a GM with two lighting zones adds the widget twice, each pointed at
+//    its own device.
 //
 // This widget generalized from "WLED control panel" to "Lighting" — a known
 // device is now either a real WLED instance (type: "wled", its own rich
-// segment/effect/palette JSON API, handled entirely in this file) or an HA
-// `light.*` entity (type: "haLight", a much smaller on/off + brightness +
-// color surface — see ha-light.js). Kept as two separate driver modules
-// rather than merging their JSON shapes into one, since they don't share
-// one; this file is the composer that picks which driver to call based on
-// the selected device's own type. Follow-a-Clock and Advanced Mode stay
-// WLED-only for now — extending either to HA lights is a reasonable later
-// addition, not something either device type needs to function today. Live
-// Poll (below) is the reverse case — HA-only, since only an HA light's
-// state can change from outside this widget entirely (a physical switch,
-// another HA automation); a WLED device only ever changes because THIS
-// widget (or its own app/API directly) told it to, so there's nothing
-// external for a WLED card to poll for.
+// segment/effect/palette JSON API) or an HA `light.*` entity (type:
+// "haLight", a much smaller on/off + brightness + color surface — see
+// ha-light.js). Kept as two separate driver modules since they share no
+// JSON shape; this file is the composer that picks which driver to call
+// based on the selected device's type. Follow-a-Clock and Advanced Mode
+// stay WLED-only for now. Live Poll (below) is the reverse case — HA-only,
+// since only an HA light's state can change from outside this widget
+// entirely (a physical switch, another HA automation); a WLED device only
+// changes because this widget told it to, so there's nothing external for
+// a WLED card to poll for.
 import { el } from "../dom.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, updateTooltipContent } from "../tooltips.js";
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
@@ -53,32 +44,27 @@ import {
   haLightSupportsColor,
 } from "./ha-light.js";
 
-// Phase 2 — "Follow a Clock": deliberately reuses the exact same spotlight/
-// group-log transport every other follower in this suite already polls
-// (Clock's own follower-of-itself, Combat Tracker's player-mode poll, ...)
-// rather than a new same-page mechanism — see the plan this was built from
-// for why a same-page-only bus would have duplicated existing plumbing for
-// no reason. `followTarget` is always "active" for now (whichever Clock is
+// "Follow a Clock" — reuses the same spotlight/group-log transport every
+// other follower in this suite already polls (Clock's own follower-of-
+// itself, Combat Tracker's player-mode poll) rather than a new same-page
+// mechanism. `followTarget` is always "active" for now (whichever Clock is
 // currently spotlighted to the group) — resolved fresh via
 // resolveActiveSpotlightId every poll, never a baked-in instance id.
 const FOLLOW_POLL_INTERVAL_MS = 5000;
 
 // HA light state can change from OUTSIDE this widget entirely (a physical
-// switch, Google Home, an HA automation) — unlike WLED's own Follow-a-Clock
-// above, this isn't pushing state out on a schedule, it's periodically
-// checking whether HA's own state drifted from what this card last showed.
-// Off by default (config.haLivePollEnabled) and a much coarser 30s, not
-// FOLLOW_POLL_INTERVAL_MS's 5s — a live table-lighting cue needs to react
-// fast; noticing "someone flipped the physical switch" doesn't, and this
-// polls even while nobody's looking at the dashboard tab, so the interval
-// deliberately errs slow rather than hammering the GM's own HA instance for
-// every idle card left open between sessions.
+// switch, Google Home, an HA automation) — unlike Follow-a-Clock above,
+// this periodically checks whether HA's state drifted from what this card
+// last showed. Off by default and a much coarser 30s, not
+// FOLLOW_POLL_INTERVAL_MS's 5s — noticing "someone flipped the physical
+// switch" doesn't need to react fast, and this polls even while nobody's
+// looking at the dashboard tab, so the interval errs slow rather than
+// hammering the GM's HA instance for every idle card left open.
 const HA_POLL_INTERVAL_MS = 30000;
 
 const DEFAULT_CONFIG = {
   // Absent/"wled" on any card saved before the Lighting generalization —
-  // selectedIp being set is exactly what "wled" already implies, so no
-  // migration step is needed for existing saved cards.
+  // selectedIp being set is exactly what "wled" already implies.
   selectedType: "wled",
   selectedIp: "",
   selectedEntityId: "",
@@ -88,10 +74,8 @@ const DEFAULT_CONFIG = {
   // — a real dot-clock look, not just a dimmer.
   followMode: "brightness",
   followSegmentIds: [],
-  // Opt-in per card (see HA_POLL_INTERVAL_MS's own comment on why this
-  // isn't just always-on) — absent on any card saved before this existed,
-  // which correctly defaults to false (no behavior change for an existing
-  // card until a GM turns it on).
+  // Opt-in per card — absent on any card saved before this existed, which
+  // correctly defaults to false (no behavior change until a GM turns it on).
   haLivePollEnabled: false,
 };
 
@@ -112,8 +96,8 @@ async function wledFetchJson(base, path) {
 
 // POST to /json (not /json/state) — supported by every WLED version this
 // widget might meet, unlike the newer /json/state-only shorthand. Also
-// exactly what the Advanced/raw-JSON textarea below sends, so "basic"
-// controls and "advanced" commands are the same request shape underneath.
+// exactly what the Advanced/raw-JSON textarea sends, so "basic" controls
+// and "advanced" commands are the same request shape underneath.
 async function wledPostState(base, body) {
   const response = await fetch(`${base}/json`, {
     method: "POST",
@@ -193,43 +177,37 @@ export function initWledWidget(
   let deviceState = null; // last full /json GET (state + info + effects + palettes) — WLED only
   let presets = {}; // id -> {n: name, ...} — WLED only
   let haLightState = null; // last {state, brightness, rgbColor, supportedColorModes, friendlyName} — HA light only
-  // The Add-device form's own type toggle (WLED vs HA Light) — local UI
-  // state, not persisted; defaults to whichever type the currently-selected
-  // device already is, so re-opening the form to add a SECOND device of the
-  // same kind doesn't require re-picking the type every time.
+  // The Add-device form's type toggle — local UI state, not persisted;
+  // defaults to whichever type the selected device already is, so adding a
+  // SECOND device of the same kind doesn't require re-picking the type.
   let addDeviceType = "wled";
   let haEntityOptions = []; // populated lazily when the Add-device form switches to HA Light
-  let haEntityLoadFailed = false; // distinguishes "still loading" from "the fetch actually failed" in the placeholder below
-  // Which segment id(s) the Basic controls below apply to — empty means
-  // "the device's own main segment" (WLED's own top-level bri/on/col/fx/pal
-  // shorthand), matching the old page's identical seg-array-or-bare-field
-  // branching.
+  let haEntityLoadFailed = false; // distinguishes "still loading" from "the fetch actually failed"
+  // Which segment id(s) the Basic controls apply to — empty means "the
+  // device's own main segment" (WLED's top-level bri/on/col/fx/pal shorthand).
   const targetSegmentIds = new Set();
   let loading = false;
   let loadError = "";
   let showAddDevice = false;
   let destroyed = false;
-  // The Advanced section's own draft/expanded state, kept outside render()
-  // — every render() call fully rebuilds the DOM (this widget's own
-  // convention, same as most others in this suite), which would otherwise
-  // wipe out an in-progress custom JSON command the moment an unrelated
-  // Basic control (brightness, color, ...) triggered a refresh mid-edit.
-  // A plain show/hide toggle button, not tied to any persisted setting —
-  // unlike Follow (below), there's no "enabled" state to remember, just
-  // whether the section is currently open.
+  // The Advanced section's draft/expanded state, kept outside render() —
+  // every render() call fully rebuilds the DOM, which would otherwise wipe
+  // out an in-progress custom JSON command the moment an unrelated Basic
+  // control triggered a refresh mid-edit. A plain show/hide toggle, not
+  // tied to any persisted setting — unlike Follow, there's no "enabled"
+  // state to remember, just whether the section is open.
   let advancedExpanded = false;
   let advancedDraft = "";
-  // Follow-a-Clock's own poll/live-stream handles — only running while
+  // Follow-a-Clock's poll/live-stream handles — only running while
   // config.followEnabled and a device is selected (see syncFollowWatch).
   let followTimer = null;
   let followLiveStream = null;
-  // HA light live-poll's own handle — only running while config.haLivePollEnabled,
-  // an HA light is selected, and the widget hasn't been destroyed (see
-  // syncHaPollWatch).
+  // HA light live-poll's handle — only running while
+  // config.haLivePollEnabled, an HA light is selected, and the widget
+  // hasn't been destroyed (see syncHaPollWatch).
   let haPollTimer = null;
   // Dedupes identical clock states between polls so an unchanged clock
-  // doesn't repeatedly re-POST the same brightness/segment state to the
-  // device every 5s for no reason.
+  // doesn't repeatedly re-POST the same state every 5s for no reason.
   let lastAppliedFollowKey = "";
 
   function persistInstanceConfig(patch) {
@@ -250,11 +228,10 @@ export function initWledWidget(
     return config.selectedType === "haLight" ? "haLight" : "wled";
   }
 
-  // Dispatches to whichever driver the currently-selected device type
-  // needs — WLED's own /json+presets fetch, or a single HA entity-state
-  // read (ha-light.js). Both set loading/loadError/render the same way, so
-  // every caller below (selectDevice, the manual Refresh button, sendRaw's
-  // own post-command refresh) stays type-agnostic.
+  // Dispatches to whichever driver the selected device type needs — WLED's
+  // /json+presets fetch, or a single HA entity-state read. Both set
+  // loading/loadError/render the same way, so every caller stays
+  // type-agnostic.
   async function refreshState({ silent = false } = {}) {
     if (currentDeviceType() === "haLight") {
       await refreshHaLightState({ silent });
@@ -330,9 +307,8 @@ export function initWledWidget(
     }
   }
 
-  // Shared by every failable device request below — one place to surface a
-  // network/HTTP error as a toast and refresh afterward, rather than each
-  // call site repeating the same try/catch.
+  // Shared by every failable device request — one place to surface a
+  // network/HTTP error as a toast and refresh afterward.
   async function sendRaw(body) {
     const base = currentBase();
     if (!base) return;
@@ -356,15 +332,11 @@ export function initWledWidget(
     await sendRaw(body);
   }
 
-  // Effect/palette/color have NO top-level/master equivalent in WLED at
-  // all — they're exclusively per-segment properties, always. This is why
-  // the old dnd/wled.htm script this widget was rebuilt from only ever sent
-  // these wrapped in a `seg` array, never bare (unlike on/bri above, which
-  // it did send bare when nothing was selected). Sending them bare (as an
-  // earlier version of this widget did) silently no-ops on real hardware —
-  // confirmed live: the Effect dropdown changing nothing and reverting to
-  // the prior value on refresh was exactly that bug. Defaults to the
-  // device's own current main segment when nothing is explicitly targeted,
+  // Effect/palette/color have NO top-level/master equivalent in WLED —
+  // they're exclusively per-segment properties. Sending them bare
+  // silently no-ops on real hardware (the Effect dropdown changing nothing
+  // and reverting on refresh was exactly this bug). Defaults to the
+  // device's current main segment when nothing is explicitly targeted,
   // rather than doing nothing.
   async function sendSegmentCommand(fields) {
     const ids = targetSegmentIds.size ? Array.from(targetSegmentIds) : [mainSegment()?.id ?? 0];
@@ -382,12 +354,12 @@ export function initWledWidget(
     return segs[mainIndex] || segs[0];
   }
 
-  // Translates a Clock's own posted config ({filled, segments, ...} — see
-  // clocks.js's own DEFAULT_CONFIG) into a WLED command. "segments" mode
-  // lights a prefix of config.followSegmentIds proportional to fill —
-  // real dot-clock behavior, not just a dimmer; falls back to "brightness"
-  // if no segments are assigned yet, so turning the feature on always does
-  // *something* visible even before the GM picks specific segments.
+  // Translates a Clock's own posted config ({filled, segments, ...}) into a
+  // WLED command. "segments" mode lights a prefix of
+  // config.followSegmentIds proportional to fill — real dot-clock
+  // behavior, not just a dimmer; falls back to "brightness" if no segments
+  // are assigned yet, so turning the feature on always does something
+  // visible.
   async function applyClockState(clockConfig) {
     const segments = Number(clockConfig?.segments) || 0;
     const filled = Math.max(0, Math.min(segments, Number(clockConfig?.filled) || 0));
@@ -422,14 +394,13 @@ export function initWledWidget(
       });
       if (clockConfig) await applyClockState(clockConfig);
     } catch (error) {
-      // Best-effort — a missed poll just means the next one (5s later, or
-      // the next group-log change) catches up.
+      // Best-effort — a missed poll just means the next one catches up.
     }
   }
 
   // Started/stopped whenever followEnabled or the selected device changes
-  // — never runs at all with nothing to follow or nowhere to send it,
-  // rather than polling pointlessly in the background.
+  // — never runs with nothing to follow or nowhere to send it, rather than
+  // polling pointlessly in the background.
   function syncFollowWatch() {
     if (followTimer) {
       followTimer.stop();
@@ -443,12 +414,12 @@ export function initWledWidget(
     lastAppliedFollowKey = "";
     void refreshFollow();
     // createReliableInterval (not plain setInterval) — same reasoning
-    // clocks.js's own follower uses: a Dashboard tab can sit unfocused for
-    // a whole session and plain setInterval was confirmed to stall there.
+    // clocks.js's follower uses: a Dashboard tab can sit unfocused for a
+    // whole session and plain setInterval stalls there.
     followTimer = createReliableInterval(() => void refreshFollow(), FOLLOW_POLL_INTERVAL_MS);
     // The group log itself is the one live channel every inline-kind
-    // follower watches (Clock has no dedicated "clock" live-stream kind of
-    // its own) — matches clocks.js's own initFollowerClock exactly.
+    // follower watches (Clock has no dedicated live-stream kind of its
+    // own) — matches clocks.js's initFollowerClock exactly.
     followLiveStream = connectLiveStream({
       dataManager,
       groupId: groupContext.groupId,
@@ -459,11 +430,10 @@ export function initWledWidget(
   }
 
   // Started/stopped whenever haLivePollEnabled or the selected device
-  // changes — mirrors syncFollowWatch's own shape, just polling HA's own
-  // entity-state endpoint (fetchHaLightState, silently — no loading spinner
-  // for a background poll the GM didn't explicitly ask for) instead of
-  // pushing a clock's fill outward. Never runs for a WLED device or while
-  // the toggle is off, same "don't poll with nothing to check" guard.
+  // changes — mirrors syncFollowWatch's shape, just polling HA's
+  // entity-state endpoint silently (no loading spinner for a background
+  // poll) instead of pushing a clock's fill outward. Never runs for a WLED
+  // device or while the toggle is off.
   function syncHaPollWatch() {
     if (haPollTimer) {
       haPollTimer.stop();
@@ -474,9 +444,8 @@ export function initWledWidget(
   }
 
   // A composite key so ONE <select> can list both device types without
-  // colliding (a WLED IP and an HA entity id live in different namespaces
-  // entirely) — encode/decode kept together so renderDeviceRow's population
-  // and selectDevice's parsing can never drift out of sync with each other.
+  // colliding (a WLED IP and an HA entity id live in different namespaces)
+  // — encode/decode kept together so population and parsing can't drift.
   function deviceKey(device) {
     return device.type === "haLight" ? `haLight::${device.entityId}` : `wled::${device.ip}`;
   }
@@ -553,12 +522,9 @@ export function initWledWidget(
     row.appendChild(removeButton);
 
     // Section toggles live here too, on the same icon-button row, rather
-    // than a separate row of their own — same active/pressed styling
-    // iconButton already gives any toggle, just fewer rows competing for
-    // space on a small widget card (see this widget's own render() for
-    // what each one shows/hides). Both stay WLED-only for now — see this
-    // file's own header comment on why HA lights don't get Follow/Advanced
-    // yet.
+    // than a separate row of their own — fewer rows competing for space on
+    // a small widget card (see render() for what each shows/hides). Both
+    // stay WLED-only for now.
     const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
     const followButton = iconButton("tabler:clock", "Follow a Clock", { active: config.followEnabled });
     followButton.addEventListener("click", () => {
@@ -569,12 +535,9 @@ export function initWledWidget(
     });
     row.appendChild(followButton);
     // setDisabledTooltip owns `disabled` itself — a real `disabled` on the
-    // SAME element as the explanatory tooltip blocks the hover that would
-    // ever show it (see tooltips.js's own BUG CLASS 1); the old
-    // `.disabled = ...` + `.title = ...` pair here silently never showed
-    // the "WLED devices only" explanation for exactly that reason. Called
-    // after row.appendChild, not before — setDisabledTooltip's own wrapper
-    // needs a real DOM parent to insert itself next to.
+    // same element as the tooltip blocks the hover that would show it (see
+    // tooltips.js's own BUG CLASS 1). Called after row.appendChild —
+    // setDisabledTooltip's wrapper needs a real DOM parent to insert next to.
     if (isWledSelected) {
       setDisabledTooltip(followButton, "");
       updateTooltipContent(followButton, "Follow a Clock");
@@ -595,10 +558,9 @@ export function initWledWidget(
       setDisabledTooltip(advancedButton, "Advanced Mode (WLED devices only)");
     }
 
-    // HA-light-only, mirroring Follow/Advanced's own WLED-only gating —
-    // opt-in per card (HA_POLL_INTERVAL_MS's own comment on why), so this
-    // stays off until a GM deliberately wants this card to notice state
-    // changes made outside Undercroft.
+    // HA-light-only, mirroring Follow/Advanced's WLED-only gating — opt-in
+    // per card, so this stays off until a GM deliberately wants this card
+    // to notice state changes made outside Undercroft.
     const isHaSelected = currentDeviceType() === "haLight" && Boolean(config.selectedEntityId);
     const livePollButton = iconButton("tabler:activity", "Live Poll (every 30s)", { active: config.haLivePollEnabled });
     livePollButton.addEventListener("click", () => {
@@ -619,15 +581,12 @@ export function initWledWidget(
   }
 
   // Two device types, two rows — a type toggle on its own line (WLED vs HA
-  // light/group), then a second line that always holds the device
-  // select/input, Label, and the +/x buttons together — a free-text IP
-  // (WLED, unauthenticated LAN device, no directory to pick from) or a
-  // populated select of live HA entities (HA has a real directory to pick
-  // from, via listHaEntities — the "populated select" this widget's own
-  // generalization was built around). Two separate rows, not one, since
-  // type+device+label+buttons genuinely doesn't fit on one physical line at
-  // this widget's normal card width — confirmed real problem trying it as
-  // one row.
+  // light/group), then a second line holding the device select/input,
+  // Label, and +/x buttons together — a free-text IP (WLED, unauthenticated
+  // LAN device, no directory to pick from) or a populated select of live HA
+  // entities (via listHaEntities). Two separate rows since
+  // type+device+label+buttons doesn't fit on one physical line at this
+  // widget's normal card width.
   function renderAddDeviceForm() {
     const form = el("div", "d-flex flex-column gap-1");
 
@@ -651,13 +610,12 @@ export function initWledWidget(
     });
     typeRow.appendChild(typeSelect);
 
-    // Only when HA is the selected type — the one entry point for fixing a
-    // wrong Home Assistant base URL or disconnecting entirely. Confirmed a
-    // real gap without this: ensureHaConnection (invoked below when the
-    // entity picker loads) only ever prompts once, the first time there's
-    // no connection at all — once configured, however wrong, there was no
-    // way back into that modal short of clearing the row directly in the
-    // database.
+    // Only when HA is the selected type — the entry point for fixing a
+    // wrong Home Assistant base URL or disconnecting entirely.
+    // ensureHaConnection (invoked below when the entity picker loads) only
+    // ever prompts once, the first time there's no connection at all — once
+    // configured, however wrong, there's no way back into that modal
+    // without this.
     if (addDeviceType === "haLight") {
       const manageButton = el("button", "btn btn-sm btn-outline-secondary", "Manage connection");
       manageButton.type = "button";
@@ -675,12 +633,11 @@ export function initWledWidget(
     labelInput.placeholder = "Label (optional)";
 
     // WLED-only — this is the stable name a shared `wled`-type Macro action
-    // references this device by (see runWledMacroAction below), not what
-    // shows up in this dropdown. Keeping it separate from Label means
-    // renaming how a device displays here never breaks a macro that already
-    // references it. HA's own macro actions (home-assistant.js) target an
-    // entityId directly — there's no alias-resolution step for them at all,
-    // so an HA-light entry has nothing to put here.
+    // references this device by, not what shows up in this dropdown.
+    // Keeping it separate from Label means renaming how a device displays
+    // never breaks a macro that already references it. HA's own macro
+    // actions target an entityId directly — no alias-resolution step, so
+    // an HA-light entry has nothing to put here.
     const aliasInput = document.createElement("input");
     aliasInput.type = "text";
     aliasInput.className = "form-control form-control-sm";
@@ -713,19 +670,15 @@ export function initWledWidget(
         });
       };
       populateEntitySelect();
-      // Prompts to connect (ensureHaConnection's own modal) only if this
-      // account hasn't already — a no-op resolve(true) otherwise, same
-      // "connect once, remembered" flow every entry point into HA shares.
+      // Prompts to connect only if this account hasn't already — a no-op
+      // resolve(true) otherwise, same "connect once, remembered" flow every
+      // entry point into HA shares.
       void ensureHaConnection({ dataManager, status }).then((connected) => {
         if (!connected || destroyed) return;
         // "light" covers both a real HA Light Group helper AND a Hubitat
-        // "Group Dimmer" virtual device (Hubitat's own driver for combining
-        // several bulbs into one dimmer, synced into HA as an ordinary
-        // light.* entity by the Hubitat integration — confirmed against a
-        // real instance; this is what "Group Dimmer" in HA's UI turned out
-        // to mean). "group" stays in the list defensively for HA's own
-        // classic Group platform, which can expose a homogeneous group
-        // under its own group.* domain instead.
+        // "Group Dimmer" virtual device (synced into HA as an ordinary
+        // light.* entity by the Hubitat integration). "group" stays in the
+        // list defensively for HA's own classic Group platform.
         void listHaEntities(dataManager, { domainFilter: ["light", "group"], status }).then((entities) => {
           if (destroyed) return;
           haEntityOptions = entities;
@@ -745,10 +698,9 @@ export function initWledWidget(
           return;
         }
         // Falls back to HA's own friendly name (already fetched to build
-        // this very picker) rather than the raw entityId — confirmed real
-        // gap: leaving Label blank (its whole point being optional) meant
-        // the device row/select showed "light.living_room_lamp" forever
-        // instead of what the picker itself already displayed.
+        // this picker) rather than the raw entityId — leaving Label blank
+        // would otherwise show "light.living_room_lamp" forever instead of
+        // what the picker itself displayed.
         const selectedEntity = haEntityOptions.find((entity) => entity.entityId === entityId);
         const label = labelInput.value.trim() || selectedEntity?.friendlyName || "";
         persistDevices([...deviceList, { type: "haLight", entityId, label }]);
@@ -1067,27 +1019,20 @@ export function initWledWidget(
   }
 
   // The HA-light equivalent of renderWledBasicControls above — deliberately
-  // small: on/off, a brightness slider (0-255, same scale WLED's own slider
-  // uses so nothing about the slider markup itself needed to change), and a
-  // color picker only when haLightSupportsColor says this entity actually
-  // reports a color-capable mode. No effects/palettes/presets/segments —
-  // those are WLED-specific concepts with no HA equivalent; anything beyond
-  // this common surface (a specific media_player command, a script/scene
-  // trigger) belongs in the Macro system's own "Call a service" action
-  // (home-assistant.js), not a live control here.
+  // small: on/off, a brightness slider (0-255, same scale WLED's slider
+  // uses), and a color picker only when haLightSupportsColor says this
+  // entity reports a color-capable mode. No effects/palettes/presets/
+  // segments — WLED-specific concepts with no HA equivalent; anything
+  // beyond this common surface belongs in the Macro system's "Call a
+  // service" action instead.
   // Every command below updates haLightState LOCALLY right after a
-  // successful call, instead of re-fetching from HA — confirmed real bug
-  // otherwise: HA's REST API accepts and returns from a service call before
-  // the entity's own state has actually caught up (especially with a real
-  // physical bulb reporting back), so an immediate re-fetch reads the STALE
-  // value and the control shown is always one interaction behind what you
-  // just did. Same "trust what we just told the device" reasoning WLED's
-  // own sendRaw already uses, just genuinely necessary here rather than a
-  // nice-to-have — WLED's own device applies+reports state synchronously
-  // with no such lag. This can drift from the true state if something else
-  // changes the light (an HA automation, another user) — the device row's
-  // own Refresh button is the way back to a real read, same reconciliation
-  // model WLED already relies on (it has no live-push either).
+  // successful call, instead of re-fetching from HA — HA's REST API
+  // accepts and returns from a service call before the entity's own state
+  // has actually caught up, so an immediate re-fetch would read the stale
+  // value and the control shown would always be one interaction behind.
+  // This can drift from the true state if something else changes the light
+  // (an HA automation, another user) — the device row's Refresh button is
+  // the way back to a real read.
   function renderHaLightBasicControls() {
     const wrap = el("div", "d-flex flex-column gap-2");
     const entityId = config.selectedEntityId;
@@ -1109,33 +1054,27 @@ export function initWledWidget(
     });
     powerBriRow.appendChild(powerButton);
 
-    // Gated on the entity's own reported capability now, matching the color
-    // picker's own gate just below — previously always shown regardless,
-    // which meant a plain on/off entity (a switch-like group, no brightness
-    // channel at all) got a slider that silently no-op'd on every move.
+    // Gated on the entity's reported capability, matching the color
+    // picker's gate below — otherwise a plain on/off entity (no brightness
+    // channel at all) gets a slider that silently no-ops on every move.
     if (haLightSupportsBrightness(haLightState)) {
       const briInput = document.createElement("input");
       briInput.type = "range";
-      // 3, not HA's own raw-scale minimum of 1 — matches
-      // setHaLightBrightness's own MIN_SAFE_BRIGHTNESS floor (ha-light.js);
-      // the slider shouldn't offer a value that gets silently translated
-      // into "off" downstream. See that constant's own comment for why.
+      // 3, not HA's raw-scale minimum of 1 — matches
+      // setHaLightBrightness's own MIN_SAFE_BRIGHTNESS floor; the slider
+      // shouldn't offer a value that gets silently translated into "off."
       briInput.min = "3";
       briInput.max = "255";
       briInput.value = String(brightness);
       briInput.className = "form-range flex-grow-1";
       briInput.setAttribute("aria-label", "Brightness");
 
-      // A plain inline label to the slider's own right, not a tooltip/
-      // popup — a floating value bubble was tried first and confirmed a
-      // real overflow bug (positioned by percentage, it could render
+      // A plain inline label to the slider's right, not a tooltip/popup —
+      // a floating value bubble (positioned by percentage) could render
       // partway outside the widget/viewport at the high end and force a
-      // scrollbar). A label in normal document flow has no positioning
-      // math to get wrong. Percentage computed the same way HA's own
-      // percent-based UI would (round(value/255*100)), so it matches what
-      // HA's own dashboard would call the same level. Fixed width so the
-      // slider itself doesn't visibly resize as the label's own text
-      // width changes between "3%" and "100%".
+      // scrollbar. Percentage computed the same way HA's percent-based UI
+      // would (round(value/255*100)). Fixed width so the slider doesn't
+      // visibly resize as the label's text changes between "3%" and "100%".
       const brightnessPercent = (value) => Math.round((Number(value) / 255) * 100);
       const briLabel = el("span", "small text-body-secondary text-end", `${brightnessPercent(briInput.value)}%`);
       briLabel.style.minWidth = "2.5rem";
@@ -1190,12 +1129,10 @@ export function initWledWidget(
     wrap.appendChild(renderDeviceRow());
     if (showAddDevice) wrap.appendChild(renderAddDeviceForm());
 
-    // The Follow/Advanced Mode toggle buttons themselves live on the
-    // device row now (renderDeviceRow) — this just shows/hides each
-    // section's own content in place, right where its toggle button is,
-    // rather than a separate always-visible header row for a section that
-    // might not even be in use. Both stay WLED-only (see this file's own
-    // header comment).
+    // The Follow/Advanced Mode toggle buttons live on the device row
+    // (renderDeviceRow) — this just shows/hides each section's content in
+    // place, rather than a separate always-visible header row for a
+    // section that might not even be in use. Both stay WLED-only.
     const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
     if (isWledSelected && config.followEnabled) {
       wrap.appendChild(renderFollowSection());
@@ -1222,21 +1159,17 @@ export function initWledWidget(
   }
 
   // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
-  // Reuses this instance's own sendRaw — the exact same call path the Basic
+  // Reuses this instance's own sendRaw — the same call path the Basic
   // controls use — so a macro-triggered command both hits the device AND
-  // refreshes deviceState/render() afterward, same as a manual click.
-  // Confirmed real bug otherwise: running "Haunted Forest" turned the
-  // physical lights on (the standalone fallback below still worked, since it
-  // posts straight to the device), but this card kept showing "Off" — WLED
+  // refreshes deviceState/render() afterward, same as a manual click. WLED
   // has no push/poll of its own to notice an EXTERNAL state change the way
-  // Combat Tracker's periodic poll or Clock's spotlight-follow do, so
-  // nothing here ever re-fetched until this existed. On/off/preset/
-  // brightness send bare (never wrapped in `seg`, never scoped to whatever
-  // segments this card's own UI happens to have selected right now —
-  // targetSegmentIds is transient GM browsing state, not part of what the
-  // macro author meant), matching runWledMacroAction's own standalone
-  // payload shape exactly so both paths behave identically, mount-a-widget
-  // or not.
+  // Combat Tracker's poll or Clock's spotlight-follow do, so without this a
+  // macro-triggered command left the card showing stale state. On/off/
+  // preset/brightness send bare (never scoped to whatever segments this
+  // card's UI happens to have selected — targetSegmentIds is transient GM
+  // browsing state, not part of what the macro author meant), matching
+  // runWledMacroAction's own standalone payload shape so both paths behave
+  // identically, mount-a-widget or not.
   async function runMacroAction(action) {
     const params = action?.params || {};
     switch (action?.action) {
@@ -1281,10 +1214,10 @@ export function initWledWidget(
 }
 
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
-// Standalone — does not need a mounted widget instance at all, unlike the
-// live widget above. Reuses the same wledPostState/normalizeWledBase this
-// file's own instance already calls, so a macro-triggered command hits the
-// device exactly the same way the live widget's own controls do.
+// Standalone — does not need a mounted widget instance, unlike the live
+// widget above. Reuses the same wledPostState/normalizeWledBase this file's
+// own instance calls, so a macro-triggered command hits the device exactly
+// the same way the live widget's controls do.
 
 export const WLED_MACRO_ACTIONS = {
   on: { label: "Turn on" },
@@ -1296,13 +1229,11 @@ export const WLED_MACRO_ACTIONS = {
 
 // `alias` is deliberately separate from `label` — see this widget's own
 // header comment. Exported so every reader of the account-wide device list
-// (dashboard.js's own settings load, fetchWledDevices below) normalizes it
-// exactly the same way, rather than each keeping its own copy of this
-// filter/trim logic to drift out of sync. Handles both device types now —
-// a WLED entry needs a real `ip`, an HA-light entry needs a real
-// `entityId`; a bare/legacy entry (no `type` at all, from before the
-// Lighting generalization) is treated as "wled", matching DEFAULT_CONFIG's
-// own selectedType fallback.
+// normalizes it the same way, rather than each keeping its own copy of
+// this filter/trim logic. Handles both device types — a WLED entry needs a
+// real `ip`, an HA-light entry needs a real `entityId`; a bare/legacy entry
+// (no `type` at all) is treated as "wled", matching DEFAULT_CONFIG's own
+// selectedType fallback.
 export function normalizeWledDeviceList(list) {
   return Array.isArray(list)
     ? list
@@ -1330,21 +1261,16 @@ export function normalizeWledDeviceList(list) {
 }
 
 // The account-wide WLED device list, fetched fresh — for callers with no
-// already-loaded dashboard settings blob in hand to read it from (unlike
-// dashboard.js's own loadWledDevices(serverSettings), which reads it out of
-// the ONE settings fetch the whole Dashboard already does at boot).
-// Confirmed real bug this exists to fix: a macro's WLED action run from a
-// Journal page (journal-macro.js, via Repository directly or the Handout
-// widget inside a Dashboard) had no wledDevices list to resolve its alias
-// against at all — runMacro()'s own `wledDevices = []` default silently
-// meant every alias looked unconfigured, even though the exact same macro
-// ran fine from the Dashboard's own Macro board widget, which DOES pass
-// its live list through. Same local+server merge-patch pattern every
-// Dashboard setting uses (see dashboard.js's own persistSetting/
-// loadWledDevices) — local storage is the only source once a device list
-// is saved anonymously (never signed in), so this still works for that
-// case, just without the "prefer the one already-fetched blob" shortcut
-// dashboard.js itself gets to take.
+// already-loaded dashboard settings blob in hand (unlike dashboard.js's own
+// loadWledDevices(serverSettings), which reads it out of the one settings
+// fetch the Dashboard already does at boot). Exists because a macro's WLED
+// action run from a Journal page has no wledDevices list to resolve its
+// alias against otherwise — runMacro()'s `wledDevices = []` default would
+// make every alias look unconfigured, even though the same macro runs fine
+// from the Dashboard's Macro board widget, which does pass its live list.
+// Same local+server merge-patch pattern every Dashboard setting uses —
+// local storage is the only source once a device list is saved
+// anonymously, so this still works for that case too.
 const WLED_DEVICES_LOCAL_KEY = "undercroft.dashboard.wledDevices";
 const WLED_DEVICES_SERVER_KEY = "dashboardWledDevices";
 
@@ -1381,13 +1307,9 @@ export function resolveWledDeviceByAlias(devices, alias) {
 
 // The write half of fetchWledDevices above — same two keys, same local-
 // always/server-when-signed-in shape, so a device list saved from ANY
-// caller (dashboard.js's own device manager, or promptForWledAlias below,
-// invoked from a macro running anywhere: a Board widget card, a Journal
-// page's inline `` `macro:...` `` chip viewed directly in Repository, a
-// Handout) is readable by every other caller regardless of which one wrote
+// caller is readable by every other caller regardless of which one wrote
 // it. dashboard.js's own persistWledDevices calls this too, rather than
-// keeping a second, independently-typed copy of the same two key strings
-// that could quietly drift out of sync with these.
+// keeping a second, independently-typed copy of the same key strings.
 export async function saveWledDevices(dataManager, devices) {
   const normalized = normalizeWledDeviceList(devices);
   try {
@@ -1434,20 +1356,15 @@ function ensureAliasPromptModal() {
 }
 
 // Prompts to map ONE unresolved alias to a known device, persists the
-// updated device list (saveWledDevices above — durable regardless of which
-// page/widget triggered this), and resolves to the updated list — or null
-// if the GM cancelled, or there's nothing saved to pick from at all. Shared
-// by every macro-running surface (macro-runner.js's own runMacro is the one
-// caller today, checked once per distinct alias per run — see its own
-// comment) so a macro referencing an unconfigured device alias never just
-// fails with no way to fix it in the moment: the GM aliases it right here
-// and the macro keeps going.
+// updated device list, and resolves to the updated list — or null if the
+// GM cancelled, or there's nothing saved to pick from. Shared by every
+// macro-running surface so a macro referencing an unconfigured device
+// alias never just fails with no way to fix it in the moment: the GM
+// aliases it right here and the macro keeps going.
 export async function promptForWledAlias({ dataManager, status, alias, devices }) {
   // WLED-only — an HA-light entry has no `.ip` at all, and this whole flow
-  // (alias resolution for a `wled`-type macro action's own `target`) only
-  // ever runs for that action type in the first place (see macro-runner.js's
-  // own `if (action?.type === "wled")` gate), so an HA-light entry showing
-  // up here would just be a broken, irrelevant option.
+  // only ever runs for a `wled`-type macro action, so an HA-light entry
+  // showing up here would just be a broken, irrelevant option.
   const deviceList = normalizeWledDeviceList(devices).filter((device) => device.type !== "haLight");
   if (!deviceList.length) {
     status?.show?.(
@@ -1497,8 +1414,7 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
         .then(() => finish(updated))
         .catch((error) => {
           // Still resolved for THIS run even if the persist failed —
-          // better to let the macro keep going than block it on a save
-          // error the GM can't do anything about mid-scene.
+          // better to let the macro keep going than block on a save error.
           status?.show?.(error?.message || "Unable to save that alias.", { type: "error" });
           finish(updated);
         });
@@ -1509,9 +1425,9 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
     if (modal) {
       modal.show();
     } else {
-      // No Bootstrap JS on the page (shouldn't happen anywhere in this
-      // suite, but stay defensive rather than silently doing nothing) —
-      // same fallback shape content-picker.js's own openContentPicker uses.
+      // No Bootstrap JS on the page — stay defensive rather than silently
+      // doing nothing, same fallback shape content-picker.js's
+      // openContentPicker uses.
       finish(null);
     }
   });
@@ -1519,12 +1435,11 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
 
 export async function runWledMacroAction(action, { wledDevices = [], widgetInstance } = {}) {
   // Prefer routing through a live, mounted WLED card already pointed at the
-  // resolved device (dashboard.js's ensureWidgetForMacroAction) — see that
-  // card's own runMacroAction for why (state refresh). Falls back to the
-  // standalone path below when there's no widget grid to route through at
-  // all (a Journal-triggered macro, journal-macro.js) or ensureWidget wasn't
-  // able to find/add a matching card — the physical device still gets the
-  // command either way, just without a card on screen reflecting it.
+  // resolved device — see that card's own runMacroAction for why (state
+  // refresh). Falls back to the standalone path below when there's no
+  // widget grid to route through at all, or ensureWidget couldn't find/add
+  // a matching card — the physical device still gets the command either
+  // way, just without a card on screen reflecting it.
   if (widgetInstance && typeof widgetInstance.runMacroAction === "function") {
     return widgetInstance.runMacroAction(action);
   }

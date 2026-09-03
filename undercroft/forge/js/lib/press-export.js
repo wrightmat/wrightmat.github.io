@@ -1,10 +1,8 @@
-// Clones the committed base template (the "forge-npc-reference" Library template,
-// undercroft/common/data/template/forge-npc-reference.json) and bakes a specific
-// location's Species/Archetype data into it — CLAUDE.md:
-// "species weights and setting-specific archetypes are embedded in the
-// template data." Alignment/Gender/Attitude/Name/4D tables never vary by
-// location, so the base template's own baked-in rows for those are left
-// untouched; only the nodes marked with a matching `forgeRole` get replaced.
+// Clones the committed "forge-npc-reference" Library template and bakes a
+// specific location's Species/Archetype data into it. Alignment/Gender/
+// Attitude/Name/4D tables never vary by location, so the base template's
+// baked-in rows for those are left untouched; only nodes with a matching
+// `forgeRole` get replaced.
 import { getArchetypeOptions, loadSpeciesProfilesForLocation, rollWeightedSpecies } from "./tables.js";
 import { generateSpeciesName } from "./name-generator.js";
 
@@ -63,12 +61,10 @@ export async function buildLocationPressTemplate(location, tables, templateId, d
     archetypeNode.rows = getArchetypeOptions(tables.archetype, location);
   }
 
-  // Names are no longer a discrete syllable table — they come from the
-  // exemplar-interpolation engine. The printed sheet keeps a real, rollable
-  // d20 table, but its 20 rows are freshly generated here (same population
-  // + mixing coefficient a live Generate NPC click would use), so
-  // re-exporting a location produces a different, still-legitimate table
-  // each time.
+  // Names come from the exemplar-interpolation engine, not a discrete
+  // syllable table. The printed sheet keeps a real, rollable d20 table, but
+  // its 20 rows are freshly generated here, so re-exporting a location
+  // produces a different, still-legitimate table each time.
   const nameNode = findNodeByRole(template, "name");
   if (nameNode) {
     nameNode.rows = Array.from({ length: 20 }, (_, index) => {

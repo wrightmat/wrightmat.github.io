@@ -1,31 +1,16 @@
 // Shared weapon-attack/rider/save-effect/`options`-menu/tier/generic-
 // active-params editor UI for a selected Feature's per-record numbers —
-// extracted from Crucible's own Inspector (crucible/js/app.js), which was
-// the only place any of this could be edited until now. Vault needs the
-// exact same editing surface once it has its own parameterized (weapon-
-// attack/save-effect-shaped, or generic "active" clause-recognized) spell/
-// item mechanics types — hand-porting a second copy would violate the
-// suite's own "never recreate shared code" rule and create a second thing
-// to keep in sync forever every time a rider kind or params shape changes
-// (this file's own history: 6 weapon-attack rider kinds, 2 save-effect
-// rider kinds, a Melee-or-Ranged distance shape, a Versatile clause, a
-// tier selector, a generic active-params editor — all added incrementally,
-// all needing this ONE editor updated).
+// shared by Crucible and Vault so a rider kind or params shape change never
+// needs syncing across two copies.
 //
-// Which TIER of a Feature's own `tiers` array a given record uses IS
-// editable here (renderFeatureTierEditor) — a real UI for
-// `record.featureTiers[feature.id]`, shared so both Crucible's monster
-// frequency variants and Vault's own magnitude ladders gain it at once.
-// Authoring the tiers ARRAY ITSELF (adding/removing/renaming a tier on the
-// shared Feature) is still Loom-only, same as every other structural edit
-// to a shared Feature's own definition.
+// Which TIER of a Feature's `tiers` array a record uses is editable here
+// (renderFeatureTierEditor) — a real UI for `record.featureTiers[feature.id]`.
+// Authoring the tiers array itself is still Loom-only, same as every other
+// structural edit to a shared Feature's definition.
 //
-// Every dependency on a specific tool's own module-level state (which
-// record is being edited, how a param edit gets persisted, how a Feature-
-// record edit gets persisted, what the active System's own ability fields
-// are) is injected via `createFeatureParamsEditor(hooks)` rather than
-// hardcoded — this file knows nothing about Crucible's `currentRecord` or
-// Vault's own selection state.
+// Every dependency on a specific tool's own module-level state is injected
+// via `createFeatureParamsEditor(hooks)` rather than hardcoded — this file
+// knows nothing about Crucible's or Vault's own selection state.
 import { createIconButton } from "./ui-components.js";
 import { disposeTooltips, refreshTooltips } from "./tooltips.js";
 import { setElementVisible } from "./dom.js";
@@ -84,30 +69,22 @@ function slugifyOptionName(name) {
 //   - `getRecord()` — the record currently being edited (has `featureParams`).
 //   - `onParamsChanged()` — called after a param patch is applied; the
 //     caller owns persisting `getRecord()` and re-rendering whatever else
-//     depends on it (mirrors Crucible's own `refreshAfterFeatureEdit`).
+//     depends on it.
 //   - `saveFeature(feature)` — async, persists a Feature-RECORD edit
-//     (`options` only — everything else here writes to the current
-//     record's own `featureParams`, never the shared Feature).
+//     (`options` only — everything else writes to the record's own
+//     `featureParams`, never the shared Feature).
 //   - `onFeatureSaved(feature)` — called after `saveFeature` resolves, so
-//     the caller can re-render whatever else displays this Feature (e.g.
-//     Crucible's own Features list).
-//   - `getAbilityFieldDefs()` — returns the active System's own ability
-//     fields as `[{key, label}]`, read live (not captured once) since it
-//     can load asynchronously after this editor is first created.
+//     the caller can re-render whatever else displays this Feature.
+//   - `getAbilityFieldDefs()` — the active System's ability fields as
+//     `[{key, label}]`, read live since it can load asynchronously.
 //   - `onParamSelectionChanged(hasSelection)` — optional. Called whenever
-//     the generic active-params grid's own row selection changes (a row
-//     clicked, cleared, or removed) — the caller owns enabling/disabling
-//     its own "Delete Parameter" toolbar button from this, the same way
-//     Crucible/Vault already enable "Edit Feature" only once a Feature row
-//     is selected. See deleteSelectedParam below for the matching action.
+//     the generic active-params grid's row selection changes — the caller
+//     owns enabling/disabling its own "Delete Parameter" toolbar button.
 export function createFeatureParamsEditor(hooks) {
   const { getRecord, onParamsChanged, saveFeature, onFeatureSaved, getAbilityFieldDefs, onParamSelectionChanged } = hooks;
   // Which param row (by key) of which Feature the generic active-params
-  // grid currently has selected — a toolbar button lives OUTSIDE this
-  // module (Vault's own Inspector toolbar, next to Edit Feature), so
-  // there's no DOM element here to just read `.dataset` off at click time;
-  // this is that state's one real home. Reset whenever a different
-  // Feature is rendered (see renderFeatureParamsEditor below).
+  // grid currently has selected — the toolbar button that acts on this
+  // lives outside this module, so this is that state's one real home.
   let selectedParamKey = null;
   let selectedParamFeature = null;
 
@@ -117,8 +94,7 @@ export function createFeatureParamsEditor(hooks) {
     onParamSelectionChanged?.(Boolean(selectedParamKey));
   }
 
-  // Deletes whichever param row is currently selected — the action half of
-  // the select-then-delete pattern above. A no-op if nothing's selected,
+  // Deletes whichever param row is selected. No-op if nothing's selected,
   // so the caller's toolbar button can always be wired to this directly.
   function deleteSelectedParam() {
     if (!selectedParamFeature || !selectedParamKey) return;
@@ -128,11 +104,10 @@ export function createFeatureParamsEditor(hooks) {
     renderFeatureParamsEditor(feature, currentContainer);
   }
 
-  // Patches `patch` onto the current record's own featureParams entry for
-  // `feature` (creating it if this is the first edit). An `undefined` or
-  // empty-string value DELETES the key rather than storing a blank/
-  // placeholder one — keeps a partially-filled-in Feature's own params
-  // object honest about which fields the GM has actually set.
+  // Patches `patch` onto the record's featureParams entry for `feature`
+  // (creating it on first edit). `undefined`/empty-string DELETES the key
+  // rather than storing a placeholder, keeping the params object honest
+  // about which fields the GM has actually set.
   function updateFeatureParams(feature, patch) {
     const record = getRecord();
     if (!record) return;
@@ -145,13 +120,9 @@ export function createFeatureParamsEditor(hooks) {
     onParamsChanged();
   }
 
-  // Which of a shared Feature's own `tiers` THIS record's own copy uses —
-  // `record.featureTiers[feature.id]`, the same convention Crucible's
-  // monster records and Vault's own effect records already both read
-  // (Crucible's renderFeatureList, Vault's own resolveFeatureBudgetCost).
-  // Writing it was previously only possible by hand-editing raw JSON in
-  // Loom — this is the first structured UI for it, shared so both tools
-  // gain it at once rather than Vault growing its own copy.
+  // Which of a shared Feature's `tiers` this record's copy uses —
+  // `record.featureTiers[feature.id]`, the convention both Crucible's
+  // monster records and Vault's effect records read.
   function updateFeatureTier(feature, tierId) {
     const record = getRecord();
     if (!record) return;
@@ -176,12 +147,9 @@ export function createFeatureParamsEditor(hooks) {
         })
       )
     );
-    // The selected tier's own `mechanics.text` — e.g. feat.impose-condition's
-    // own per-tier Minor/Moderate/Severe/Extreme descriptions ("frightened,
-    // blinded, ... " vs "stunned, incapacitated, ..."). That data already
-    // existed on every tiered Feature but had NO UI surface anywhere before
-    // this — a GM picking a tier had only its bare name to go on, with no
-    // way to tell what any of them actually mean without opening raw JSON.
+    // The selected tier's own `mechanics.text` (e.g. per-tier Minor/
+    // Moderate/Severe/Extreme descriptions) had no UI surface before this —
+    // a GM picking a tier had only its bare name to go on.
     const selectedTier = feature.tiers.find((tier) => tier.id === selected);
     const tierText = selectedTier?.mechanics?.text;
     if (tierText) {
@@ -193,31 +161,20 @@ export function createFeatureParamsEditor(hooks) {
     return wrapper;
   }
 
-  // A closed, small vocabulary of param keys this editor recognizes as
-  // "an ability score" and renders as a select from the active System's
-  // own ability fields — not a hardcoded per-Feature schema (which would
-  // mean a special case for every one of Vault's 100+ "active"-type
-  // Features), just the one axis that already has a dedicated cross-tool
-  // hook (getAbilityFieldDefs, also used by the weapon-attack/save-effect
-  // editors above) because it's genuinely System-defined vocabulary, not
-  // free text. Every other param key — however many different shapes
-  // Vault's own clause-recognized Features carry (skill, damageType,
-  // detects, rollType, condition, ...) — gets a plain text/number field
-  // instead of guessing at a bespoke widget per key name.
+  // A closed, small vocabulary of param keys this editor recognizes as "an
+  // ability score" and renders as a select from the active System's ability
+  // fields — not a hardcoded per-Feature schema, just the one axis that's
+  // genuinely System-defined vocabulary, not free text. Every other param
+  // key gets a plain text/number field instead of a bespoke widget per name.
   const ABILITY_LIKE_PARAM_KEYS = new Set(["ability", "dcAbility", "saveAbility"]);
 
   // A JSON-text field for a param value that's an object/array (e.g.
-  // Damage's own `scaling: {by, values}`) — there's no per-shape schema to
-  // build a real form from (every one of Vault's own clause-recognized
-  // Features can nest a different shape here), so this shows/edits the
-  // exact raw JSON instead of silently stringifying it. Confirmed real bug
-  // this replaces: the plain text input below used to set `input.value =
-  // someObject`, which JS coerces to the literal string "[object Object]"
-  // — displayed, AND (on any other edit in the same row set) saved back
-  // over the real structured value. Invalid JSON is left uncommitted
-  // (button disabled, `updateFeatureParams` never called) rather than
-  // guessed at — this module has no toast/status hook to report a parse
-  // error through, so silence-until-valid is the only safe failure mode.
+  // Damage's `scaling: {by, values}`) — no per-shape schema to build a real
+  // form from, so this shows/edits the raw JSON instead of silently
+  // stringifying it (a plain text input would coerce an object to the
+  // literal string "[object Object]" and save that back over the real
+  // value). Invalid JSON is left uncommitted rather than guessed at — this
+  // module has no toast/status hook to report a parse error through.
   function featureParamJsonTextarea(value, onChange) {
     const wrap = document.createElement("div");
     wrap.className = "d-flex flex-column gap-1 flex-grow-1";
@@ -252,24 +209,17 @@ export function createFeatureParamsEditor(hooks) {
     );
   }
 
-  // Damage/Healing's own `scaling: {by, values: {level: dice}}` shape
-  // (vault-feature-matching.js's own damage/heal mapping) is common and
-  // well-known enough to earn a real structured editor instead of raw
-  // JSON — a level→dice table plus a By mode select, no textarea at all.
-  // Any OTHER object-shaped param (rarer, and with no fixed shape to build
-  // a form from) still falls back to featureParamJsonTextarea below.
+  // Damage/Healing's `scaling: {by, values: {level: dice}}` shape is common
+  // enough to earn a real structured editor instead of raw JSON — a
+  // level→dice table plus a By mode select. Any other object-shaped param
+  // falls back to featureParamJsonTextarea below.
   function isScalingShape(value) {
     return Boolean(value) && typeof value === "object" && !Array.isArray(value) && value.values && typeof value.values === "object";
   }
 
   // A minimal-footprint remove affordance — a bare "×" glyph, no button
-  // chrome/padding — for a row inside an ALREADY-nested editor (the
-  // scaling level/dice table lives inside the outer grid's own Value
-  // column, itself already narrowed by the Key column next to it).
-  // createIconButton's own icon-in-a-bordered-button was, combined with
-  // the Level/Dice columns, too wide to leave the Level number input any
-  // visible room at all — confirmed real complaint ("can't see any
-  // numbers in the level column").
+  // chrome — for a row nested inside the already-narrow scaling table;
+  // createIconButton's bordered-button style left no room for the Level input.
   function smallRedRemoveButton(label, onClick) {
     const button = document.createElement("button");
     button.type = "button";
@@ -308,12 +258,8 @@ export function createFeatureParamsEditor(hooks) {
 
     const table = document.createElement("table");
     table.className = "table table-sm small align-middle mb-0";
-    // Level gets a fixed-but-real width (a number input needs room to show
-    // its own digits, not just its placeholder), Dice takes whatever's
-    // left, and the remove glyph's own column is just wide enough for one
-    // character — explicit widths here for the same reason the outer
-    // grid's own <colgroup> exists: an unconstrained 3-column table lets
-    // the browser starve whichever column it feels like.
+    // Explicit widths (Level fixed, Dice flexible, remove-glyph minimal) —
+    // an unconstrained 3-column table lets the browser starve any column.
     table.innerHTML = '<colgroup><col style="width: 3.5rem;"><col><col style="width: 1.25rem;"></colgroup>';
     const thead = document.createElement("thead");
     thead.innerHTML = '<tr><th scope="col">Level</th><th scope="col">Dice</th><th scope="col"></th></tr>';
@@ -375,28 +321,19 @@ export function createFeatureParamsEditor(hooks) {
     return wrapper;
   }
 
-  // The generic editor for `mechanics.type === "active"` — Vault's own
-  // clause-recognized spell/item Features (vault-feature-matching.js),
-  // which have no fixed params schema the way weapon-attack/save-effect
-  // do (every one of 100+ Features can carry a different key set). Shown
-  // as a literal key/value GRID rather than a labeled form — a raw key
-  // name (`saveAbility`, `resolutionKind`) styled as a polished field
-  // label read as a real, curated form; a grid makes clear this is exactly
-  // what's stored, no more. Each row's own value input is picked by the
-  // stored value's own JS type (a `scaling`-shaped object → the structured
-  // editor above, any other object/array → raw JSON text, boolean →
-  // True/False select, number → number input, an ability-like key name →
-  // select from the active System's own ability fields, otherwise plain
-  // text) — never guessed from the key name alone except for those two
-  // closed vocabularies (isScalingShape/ABILITY_LIKE_PARAM_KEYS above).
+  // The generic editor for `mechanics.type === "active"` — Vault's clause-
+  // recognized spell/item Features, which have no fixed params schema the
+  // way weapon-attack/save-effect do. Shown as a literal key/value grid
+  // rather than a labeled form — a raw key name styled as a curated field
+  // label would read as more structured than it is. Each row's value input
+  // is picked by the stored value's JS type (scaling object → structured
+  // editor, other object/array → raw JSON, boolean → select, number →
+  // number input, ability-like key → ability select, otherwise plain text).
   //
-  // Deleting a row is select-then-delete, not a per-row button: click a
-  // row to select it (setSelectedParam), then the caller's own "Delete
-  // Parameter" toolbar button (wired to deleteSelectedParam) removes it —
-  // freed up real width for the Value column, which a per-row trash icon
-  // column was squeezing badly for anything wider than a couple of
-  // characters (confirmed real complaint: the scaling JSON textarea was
-  // "extremely narrow, impossible to use" with that third column present).
+  // Deleting a row is select-then-delete, not a per-row button: click a row
+  // to select it, then the caller's "Delete Parameter" toolbar button
+  // removes it — frees width for the Value column, which a per-row trash
+  // icon squeezed badly for anything wider than a couple of characters.
   function renderGenericActiveParamsEditor(feature, params) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2 small";
@@ -404,12 +341,8 @@ export function createFeatureParamsEditor(hooks) {
 
     const table = document.createElement("table");
     table.className = "table table-sm align-middle mb-0";
-    // Key column narrowed (was 9rem) AND its own text shrunk further below
-    // (a raw key name like "saveAbility" needs to read as a label, not
-    // compete with Value for room) — freed-up width matters most for a
-    // Value that's itself a nested table (renderScalingParamEditor), which
-    // was starved down to unusable when Key claimed 9rem of an already
-    // narrow Inspector sidebar.
+    // Key column kept narrow — a Value that's itself a nested table
+    // (renderScalingParamEditor) needs the room in an already-narrow sidebar.
     table.innerHTML = '<colgroup><col style="width: 5.5rem;"><col></colgroup>';
     const thead = document.createElement("thead");
     thead.innerHTML = '<tr><th scope="col">Key</th><th scope="col">Value</th></tr>';
@@ -488,14 +421,11 @@ export function createFeatureParamsEditor(hooks) {
     renderFeatureParamsEditor(feature, currentContainer);
   }
 
-  // The formula/literal mode toggle switches which fields are even
-  // relevant (formula mode's `ability` present means computed from an
-  // ability score; absent means literal fixed numbers) — deliberately a
-  // plain, honest reset rather than an attempted numeric conversion
-  // between the two (literal mode's damageDice already has a modifier
-  // baked in as text, e.g. "2d10 + 6"; formula mode's is a bare base die,
-  // e.g. "1d10" — converting between them would mean guessing at a
-  // record's own ability modifier).
+  // The formula/literal mode toggle switches which fields are relevant
+  // (formula mode's `ability` present means computed from an ability score).
+  // A plain, honest reset rather than an attempted numeric conversion —
+  // literal mode's damageDice has a modifier baked in as text (e.g.
+  // "2d10 + 6"), formula mode's is a bare base die (e.g. "1d10").
   function renderWeaponAttackParamsEditor(feature, params) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
@@ -664,13 +594,11 @@ export function createFeatureParamsEditor(hooks) {
     return wrapper;
   }
 
-  // A rider clause tacked onto this attack/save-effect — the per-record
-  // half of the Effect Options / rider split: every field here lives in
-  // the current record's own params.rider, never on the shared Feature,
-  // since the same base template (feat.bite/feat.gore/...) can carry a
-  // different rider — or none — on every record that uses it. Kind
-  // switches which fields are even relevant, same "honest reset on mode
-  // change" discipline as the Literal/Formula toggle above.
+  // A rider clause tacked onto this attack/save-effect — lives in the
+  // record's own params.rider, never on the shared Feature, since the same
+  // base template can carry a different rider — or none — per record.
+  // Kind switches which fields are relevant, same reset discipline as the
+  // Literal/Formula toggle above.
   function updateRiderParams(feature, params, patch) {
     const nextRider = { ...(params.rider || {}), ...patch };
     Object.keys(nextRider).forEach((key) => {
@@ -819,14 +747,11 @@ export function createFeatureParamsEditor(hooks) {
     return wrapper;
   }
 
-  // Field names/shape match parseSaveEffect (monster-feature-matching.js)
-  // exactly: `dcAbility` is the ACTING record's own ability driving the
-  // computed DC (5e's own breath-weapon convention defaults this to
-  // Constitution, but stays editable here for a non-5e/homebrew System);
-  // `ability` is the TARGET's own saving-throw ability, genuinely varies
-  // per effect and has nothing to do with the actor's own stats, so it's
-  // never computed. `lineWidth` only makes sense (and only renders) once
-  // Area Shape is "line".
+  // Field names/shape match parseSaveEffect (monster-feature-matching.js):
+  // `dcAbility` is the acting record's ability driving the computed DC (5e's
+  // breath-weapon convention defaults Constitution, but stays editable for a
+  // homebrew System); `ability` is the target's saving-throw ability, never
+  // computed. `lineWidth` only renders once Area Shape is "line".
   function renderSaveEffectParamsEditor(feature, params) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
@@ -917,13 +842,10 @@ export function createFeatureParamsEditor(hooks) {
   }
 
   // Options live on the Feature record itself (feature.options), not the
-  // current record's own featureParams — a real departure from the
-  // weapon-attack/save-effect editors above (those only ever touch the
-  // current record's own featureParams). Safe to edit directly here rather
-  // than only from Loom: an options-bearing Feature is ALWAYS a record-
-  // specific one-off by construction (saveOptionsFeature in
-  // feature-import-core.js never shares one across records) — there's no
-  // OTHER record whose own view this edit could silently affect.
+  // current record's featureParams — a departure from the weapon-attack/
+  // save-effect editors above. Safe to edit directly rather than only from
+  // Loom: an options-bearing Feature is always a record-specific one-off by
+  // construction (saveOptionsFeature never shares one across records).
   function renderFeatureOptionsEditor(feature) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex flex-column gap-2";
@@ -979,28 +901,20 @@ export function createFeatureParamsEditor(hooks) {
   }
 
   // Tracks the container passed to the most recent top-level render call so
-  // the recursive re-render calls scattered above (mode/kind toggles that
-  // change which fields even apply) always redraw into the right place
-  // without every inner function needing its own container parameter.
+  // the recursive re-render calls scattered above always redraw into the
+  // right place without every inner function needing its own parameter.
   let currentContainer = null;
-  // Which Feature the params row-selection above belongs to — reset only
-  // when a genuinely DIFFERENT Feature is rendered (not on every re-render
-  // of the SAME one, e.g. after adding a param or editing a scaling level),
-  // so an in-progress selection survives its own edits but never leaks
-  // across to whatever Feature gets selected next in the Features list.
+  // Which Feature the params row-selection belongs to — reset only when a
+  // genuinely different Feature is rendered, so an in-progress selection
+  // survives its own edits but never leaks to the next selected Feature.
   let lastRenderedFeatureId = null;
 
-  // Top-level entry point — shown for the two mechanics.type values that
-  // keep their own numbers in the current record's featureParams (weapon-
-  // attack/save-effect), a Feature with a non-empty `options` menu, a
-  // Feature with `tiers` (Crucible's monster frequency variants AND
-  // Vault's own magnitude ladders — orthogonal to mechanics.type, so it's
-  // checked independently of the branches below), or `mechanics.type ===
-  // "active"` (Vault's own generic clause-recognized Features — see
-  // renderGenericActiveParamsEditor's own comment for why that one has no
-  // fixed schema the way weapon-attack/save-effect do). `container` is the
-  // DOM element to render into (and to hide entirely when nothing applies)
-  // — the caller owns showing/hiding its own surrounding chrome.
+  // Top-level entry point — shown for weapon-attack/save-effect (which keep
+  // their numbers in featureParams), a Feature with a non-empty `options`
+  // menu, a Feature with `tiers` (orthogonal to mechanics.type, checked
+  // independently), or `mechanics.type === "active"` (see
+  // renderGenericActiveParamsEditor for why that has no fixed schema).
+  // `container` is hidden entirely when nothing applies.
   function renderFeatureParamsEditor(feature, container) {
     currentContainer = container;
     if (!container) return;
@@ -1017,10 +931,8 @@ export function createFeatureParamsEditor(hooks) {
     const record = getRecord();
     const shouldShow = Boolean(record) && (isWeaponAttack || isSaveEffect || hasOptions || isActive || hasTiers);
     setElementVisible(container, shouldShow, "flex");
-    // Disposed before either wipe, not left to be garbage-collected — the
-    // scaling-level/dice-table row's own remove "×" carries a real tooltip
-    // now, and this rebuilds on every feature-params edit. See tooltips.js's
-    // own BUG CLASS 2.
+    // Disposed before either wipe — the scaling row's remove "×" carries a
+    // real tooltip, and this rebuilds on every feature-params edit.
     disposeTooltips(container);
     if (!shouldShow) {
       container.innerHTML = "";

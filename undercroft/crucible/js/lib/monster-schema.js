@@ -5,10 +5,8 @@ function randomId() {
   return `${Math.random().toString(16).slice(2)}-${Date.now()}`;
 }
 
-// Stamps a freshly generated monster (from generator.js) with an id +
-// timestamp so it's ready to save — kept separate from generateMonster
-// itself so rerolls (which reuse an existing record) don't get a new
-// id/createdAt each time, same reasoning as Forge's npc-schema.js.
+// Separate from generateMonster so a reroll (which reuses an existing
+// record) doesn't get a new id/createdAt each time.
 export function createMonsterRecord(generated) {
   return {
     id: `mon_${randomId()}`,
@@ -17,11 +15,8 @@ export function createMonsterRecord(generated) {
   };
 }
 
-// The saved monster record is already Press-compatible (flat, JSON-
-// serializable) — nothing to strip today, but kept as its own function
-// (mirroring Forge's toPressExportShape) so a future GM-facing-only field
-// (e.g. a resolution-audit trail analogous to Forge's `rolls`) has an
-// obvious place to be excluded from exports without touching every call site.
+// Nothing to strip today — kept as its own function so a future GM-only
+// field has one place to be excluded from exports.
 export function toPressExportShape(record) {
   return { ...record };
 }

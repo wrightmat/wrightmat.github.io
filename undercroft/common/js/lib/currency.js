@@ -1,26 +1,18 @@
 // Shared, System-agnostic currency conversion — "how much is this ACTUALLY
 // worth, and can it be paid regardless of which specific coins someone is
-// holding." A System's own denominations (D&D's cp/sp/ep/gp/pp, or whatever
-// else a different System defines) live as an ordinary Enum-mode Array
-// property with the reserved key "currency" (same "just another array
-// field, discovered by a fixed marker" convention dice.js's own dice/rolls
-// fields and travel-means.js's own travelMeans field already establish) —
-// each value's `cost` is that denomination's own worth in the SMALLEST
-// denomination the System defines (sys.dnd5e.json's own currency field:
-// Copper cost 1, Silver cost 10, Electrum cost 50, Gold cost 100, Platinum
-// cost 1000). Never hardcoded here — travel-means.js's own COPPER_PER_UNIT
-// table is the cautionary example this deliberately avoids repeating (fixed
-// to exactly cp/sp/gp/pp, silently missing Electrum entirely, and unusable
-// for any non-D&D System's own denominations).
+// holding." A System's own denominations live as an ordinary Enum-mode
+// Array property with the reserved key "currency" — each value's `cost` is
+// its worth in the SMALLEST denomination the System defines (sys.dnd5e.json:
+// Copper 1, Silver 10, Electrum 50, Gold 100, Platinum 1000). Never
+// hardcoded here — travel-means.js's own COPPER_PER_UNIT table is the
+// cautionary example this avoids repeating (fixed to cp/sp/gp/pp, missing
+// Electrum, unusable for a non-D&D System's denominations).
 //
-// The core idea, matching how real money actually works ("someone could
-// drop 100 pennies on the counter to pay for something that's a dollar"):
-// affordability and payment are never about matching ONE specific
-// denomination — they're about TOTAL VALUE. Convert everything to the
-// System's own smallest unit for comparison/arithmetic, then convert back
-// to the largest denominations that cleanly cover the result for display —
-// the same "coins as change" a real cashier would hand back, not a pile of
-// the smallest coin.
+// The core idea, matching how real money works: affordability and payment
+// are never about matching ONE specific denomination — they're about TOTAL
+// VALUE. Convert everything to the smallest unit for comparison/arithmetic,
+// then convert back to the largest denominations that cleanly cover the
+// result for display, like a cashier making change.
 
 export function loadCurrencyDenominations(systemDefinition) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
@@ -52,29 +44,23 @@ export function currencyToBaseUnits(currency, denominations) {
 
 // The inverse — breaks a base-unit total back into the FEWEST coins
 // (largest denominations first), e.g. 250 base units on sys.dnd5e ->
-// {gp: 2, sp: 5}. Returns a plain {[shortName]: amount} object, the exact
-// shape Character.currencies/the party wallet already use, with only
+// {gp: 2, sp: 5}. Returns a plain {[shortName]: amount} object with only
 // nonzero denominations set. Any remainder smaller than the smallest
-// denomination's own cost (shouldn't happen when the smallest cost is 1,
-// as D&D's own Copper is, but stays safe for a System whose smallest
-// denomination costs more than that) lands on that smallest denomination
-// rather than silently vanishing.
+// denomination's cost lands on that smallest denomination rather than
+// silently vanishing.
 export function baseUnitsToCurrency(totalBaseUnits, denominations) {
   const result = {};
   if (!Array.isArray(denominations) || !denominations.length) return result;
   let remaining = Math.max(0, Math.round(totalBaseUnits));
-  // Fills in the denominations' OWN authored order (the System's
-  // Currency field order), not sorted by cost — a GM lists denominations
-  // in the order they actually want change made in (largest-to-smallest
-  // by ACTUAL usage, e.g. pp/gp/sp/cp), and an in-between denomination
-  // nobody uses (D&D's own Electrum — cost 50, sitting numerically
-  // between sp and gp, but effectively unused at most tables) shouldn't
-  // get silently preferred just because it happens to fall in that value
-  // range. Confirmed real, reported case: 250 base units broke down as
-  // "2gp, 1ep" under cost-descending order — fewest coins mathematically,
-  // but not what any table actually hands over. Authored order fixes this
-  // by simply never reaching for Electrum unless a GM deliberately lists
-  // it ahead of sp/cp in the System's own Currency field.
+  // Fills in the denominations' OWN authored order (the System's Currency
+  // field order), not sorted by cost — a GM lists denominations in the
+  // order they actually want change made in, and an in-between
+  // denomination nobody uses (D&D's Electrum, sitting between sp and gp)
+  // shouldn't get silently preferred just because it falls in that value
+  // range (250 base units broke down as "2gp, 1ep" under cost-descending
+  // order — fewest coins mathematically, but not what any table hands
+  // over). Authored order fixes this by never reaching for Electrum unless
+  // a GM deliberately lists it ahead of sp/cp.
   denominations.forEach((denom) => {
     const count = Math.floor(remaining / denom.cost);
     if (count > 0) {
@@ -84,36 +70,30 @@ export function baseUnitsToCurrency(totalBaseUnits, denominations) {
   });
   if (remaining > 0) {
     // The smallest-COST denomination specifically has to absorb any
-    // leftover that doesn't evenly divide — deliberately NOT "whichever
-    // one is listed last" (per the reordering above, the last-listed one,
-    // e.g. Electrum, is usually NOT the lowest-value coin) — so nothing
-    // silently vanishes into the wrong denomination.
+    // leftover that doesn't evenly divide — not "whichever is listed
+    // last" (the last-listed one, e.g. Electrum, is usually not the
+    // lowest-value coin) — so nothing vanishes into the wrong denomination.
     const smallest = [...denominations].sort((a, b) => a.cost - b.cost)[0];
     result[smallest.shortName] = (result[smallest.shortName] || 0) + remaining;
   }
   return result;
 }
 
-// Converts a base-unit AMOUNT (not a whole purse — e.g. an item's own
-// price) into the same fewest-coins {[shortName]: amount} shape, for
-// display ("this costs 2gp 5sp", not "this costs 250 of the smallest
-// unit"). Thin wrapper over baseUnitsToCurrency — kept as its own named
-// export since "price this many base units" and "break down this whole
-// purse" are conceptually different callers even though the math is
-// identical.
+// Converts a base-unit AMOUNT (e.g. an item's price, not a whole purse)
+// into the same fewest-coins shape, for display. Thin wrapper over
+// baseUnitsToCurrency — its own named export since "price this many base
+// units" and "break down this whole purse" are conceptually different
+// callers even though the math is identical.
 export function baseUnitsToPriceBreakdown(baseUnits, denominations) {
   return baseUnitsToCurrency(baseUnits, denominations);
 }
 
 // A rolled/priced AMOUNT expressed in ONE denomination (item-pricing.js's
-// own roundPrice deliberately keeps these fractional below its rounding
-// threshold now — 2.5 "gp" is a real price, not an imprecise one) ->
-// "2 gp, 5 sp" broken across whatever denominations the System actually
-// has, exactly like a real cashier would make change rather than a raw
-// decimal number in a coin nobody hands over as a fraction. Rounds to the
-// nearest WHOLE base unit (the System's own smallest coin) — the only
-// rounding that ever happens here, and it's lossless for any price that
-// isn't already finer than that smallest coin's own value.
+// roundPrice deliberately keeps these fractional now — 2.5 "gp" is a real
+// price) -> "2 gp, 5 sp" broken across whatever denominations the System
+// has, like a real cashier making change rather than a raw decimal. Rounds
+// to the nearest WHOLE base unit — lossless for any price not already
+// finer than that.
 export function formatPriceAmount(amount, denomination, denominations) {
   if (!Number.isFinite(amount)) return "";
   if (!Array.isArray(denominations) || !denominations.length) {
@@ -125,17 +105,13 @@ export function formatPriceAmount(amount, denomination, denominations) {
 }
 
 // A per-unit AMOUNT × a quantity -> the formatted TOTAL, rounding the
-// per-unit amount to the nearest whole base unit FIRST and only THEN
-// multiplying by quantity — not the reverse (rounding quantity×amount as
-// one aggregate). Those two orders can land on different totals whenever
-// the per-unit amount isn't itself a whole base unit (item-pricing.js's
-// own roundPrice deliberately allows fractional per-unit prices now), and
-// showing a bulk total that isn't exactly quantity × the SAME per-unit
-// price already shown elsewhere reads as broken math even though the
-// aggregate-rounded figure is, in isolation, no less "correct." Shared
-// here so shop-transactions.js's own sellToShop (which actually charges
-// this amount) and any preview UI computing the same total can never
-// drift onto two different rounding orders again.
+// per-unit amount to the nearest whole base unit FIRST, only THEN
+// multiplying by quantity — not the reverse. Those two orders land on
+// different totals whenever the per-unit amount isn't itself a whole base
+// unit, and a bulk total that isn't exactly quantity × the SAME per-unit
+// price shown elsewhere reads as broken math. Shared so
+// shop-transactions.js's sellToShop and any preview UI can never drift
+// onto two different rounding orders.
 export function formatPriceTotal(unitAmount, quantity, denomination, denominations) {
   if (!Number.isFinite(unitAmount) || !Number.isFinite(quantity)) return "";
   if (!Array.isArray(denominations) || !denominations.length) {

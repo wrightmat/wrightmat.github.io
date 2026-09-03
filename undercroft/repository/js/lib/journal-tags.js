@@ -1,8 +1,8 @@
 // The colon-namespaced tag convention — no registry, no config panel, the
 // tag TEXT itself is the whole instruction. Two prefixes are meaningful to
-// the UI: "group:<path>" and "display:<label>"; anything else (prefixed or
-// not) is just a normal freeform tag. See repository/index.html's own
-// right-pane hint text for the user-facing version of this same rule.
+// the UI: "group:<path>" and "display:<label>"; anything else is just a
+// normal freeform tag. See repository/index.html's own right-pane hint text
+// for the user-facing version of this rule.
 export function parseTag(tag) {
   const raw = String(tag || "");
   const separatorIndex = raw.indexOf(":");
@@ -13,14 +13,12 @@ export function parseTag(tag) {
 }
 
 // A page's own `payload.parentId` (set via the right pane's "Parent"
-// section — a distinct, structured relationship, not a tag or a generic
-// Related reference) — {parentId -> [child entries]}, plus which ids have a
-// *valid* parent (exists in `entries`, isn't itself, and isn't part of a
-// cycle). Skipping cyclic/self/missing parents here means a broken or
-// mutually-circular parentId (shouldn't normally happen — handleSetParent
-// in app.js already rejects those — but a page's own parent could still get
-// deleted later) just falls back to being treated as parentless, rather
-// than breaking tree construction.
+// section) — {parentId -> [child entries]}, plus which ids have a *valid*
+// parent (exists in `entries`, isn't itself, isn't part of a cycle). A
+// broken/cyclic parentId shouldn't normally happen (app.js's
+// handleSetParent already rejects those) but a page's parent could still get
+// deleted later, so it just falls back to parentless rather than breaking
+// tree construction.
 function buildChildrenIndex(entries) {
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
   const childrenOf = new Map();
@@ -47,23 +45,22 @@ function buildChildrenIndex(entries) {
   return { childrenOf, parented };
 }
 
-// Recursively wraps an entry with its own children (via parentId), each
-// wrapped the same way — this is the shape buildGroupTree's own `pages`
-// arrays hold below, and what app.js's renderGroupNode recurses through to
-// nest a page under its parent's row in the list, at any depth.
+// Recursively wraps an entry with its own children (via parentId) — the
+// shape buildGroupTree's `pages` arrays hold, and what app.js's
+// renderGroupNode recurses through to nest a page under its parent at any
+// depth.
 function buildPageNode(entry, childrenOf) {
   const children = (childrenOf.get(entry.id) || []).map((child) => buildPageNode(child, childrenOf));
   return { entry, children };
 }
 
 // A page can carry more than one group: tag — it appears once per group.
-// Groups nest via "/" in the tag's own value (e.g. "group:Sessions/Arc 1"),
-// split here into a real tree; a page with no group: tag at all sits under
-// the synthetic root key "". Independently, a page with a parentId is
-// nested under its parent's own page node (see buildPageNode) instead of
-// being placed directly in a group folder — the two mechanisms compose: a
-// parent page still lands wherever its own group: tag (or lack of one)
-// puts it, and its children ride along nested underneath it there.
+// Groups nest via "/" in the tag's own value ("group:Sessions/Arc 1"), split
+// into a real tree; a page with no group: tag sits under the synthetic root
+// key "". Independently, a page with a parentId nests under its parent's own
+// page node (buildPageNode) instead of a group folder — the two mechanisms
+// compose: a parent still lands wherever its own group: tag puts it, with
+// its children riding along nested underneath.
 export function buildGroupTree(entries) {
   const list = entries || [];
   const { childrenOf, parented } = buildChildrenIndex(list);
@@ -97,8 +94,8 @@ export function buildGroupTree(entries) {
   return root;
 }
 
-// Every display: tag's own value, for the small pills next to a page's
-// title in the list — a page can have more than one.
+// Every display: tag's own value, for the small pills next to a page's title
+// in the list — a page can have more than one.
 export function getDisplayPills(entry) {
   const tags = entry?.payload?.tags || [];
   return tags

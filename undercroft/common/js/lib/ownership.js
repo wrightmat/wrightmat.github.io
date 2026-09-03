@@ -57,41 +57,25 @@ export function allowsDeleteForRecord(metadata, { dataManager } = {}) {
   return ownerOrAdminAllows(metadata, { dataManager });
 }
 
-// Ownership metadata comes from a dedicated dataManager.list() call (not the
-// full fetched body of each record) — cheap enough to refresh whenever the
-// picker for `kind` repopulates. Local-only (anonymous, browser-storage)
-// entries are included too and tagged `ownership: "local"` — always
-// deletable, since it's just the current browser's own storage with no real
-// access-control question.
-// The owner-or-admin confirm()-before-delete dialog, repeated at 16 call
-// sites across the suite with slightly varying wording — one shared prompt
-// so the wording stays consistent everywhere, and any future change (a
-// custom modal instead of window.confirm, say) lands in one place. `label`
-// is whatever the caller already uses to identify the record to the user
-// (a name, a title, "this System") — this doesn't invent its own phrasing
-// for that part.
+// The owner-or-admin confirm()-before-delete dialog, repeated across the
+// suite with slightly varying wording — one shared prompt so wording stays
+// consistent, and any future change (a custom modal, say) lands in one
+// place. `label` is whatever the caller already uses to identify the
+// record to the user.
 export function confirmDelete({ label }) {
   return window.confirm(`Delete ${label}? This can't be undone.`);
 }
 
 // Fetch-once-per-id-set, re-render-once-resolved ownership catalog for
-// character-linked map markers — shared by the Dashboard's own map.js and
-// Orrery's app.js, which used to each carry an independent copy of this
-// exact "prime on every render pass, re-render once the fetch resolves"
-// shape. Confirmed real bug this fixes, present identically in BOTH copies:
-// the re-render triggered once a fetch resolved (needed, so newly-known
-// ownership actually takes effect — e.g. a marker becoming draggable) itself
-// called back into the SAME priming function, and since neither copy
-// tracked which id set it had already fetched, that immediately re-issued
-// the identical request — an unconditional infinite loop, bounded only by
-// network round-trip time (a live GET /list/character firing several times
-// a second on a local server, and starving the same page's other
-// in-flight work — live-stream delivery, other polls — of main-thread time
-// in the process). Only re-fetches when the actual SET of character ids
-// changes (a marker added/removed) — ownership/permissions themselves
-// aren't expected to change from render to render, and each caller's own
-// periodic full-map poll already re-renders (and so re-primes) on its own
-// cadence regardless.
+// character-linked map markers — shared by the Dashboard's map.js and
+// Orrery's app.js. Without id-set tracking, the re-render triggered once a
+// fetch resolves (needed so newly-known ownership takes effect) calls back
+// into this same priming function, immediately re-issuing the identical
+// request — an unconditional infinite loop bounded only by network
+// round-trip time. Only re-fetches when the actual SET of character ids
+// changes; ownership/permissions themselves aren't expected to change from
+// render to render, and each caller's own periodic poll already re-primes
+// on its own cadence regardless.
 export function createCharacterOwnershipPrimer(dataManager) {
   let catalog = new Map();
   let pending = null;
@@ -125,6 +109,10 @@ export function createCharacterOwnershipPrimer(dataManager) {
   return { prime, getCatalog };
 }
 
+// Sourced from dataManager.list(), not each record's full fetched body —
+// cheap enough to refresh whenever the picker for `kind` repopulates.
+// Local-only entries are tagged `ownership: "local"` — always deletable,
+// since it's just this browser's own storage with no real access-control question.
 export async function refreshOwnershipCatalog(dataManager, kind, ids) {
   const catalog = new Map();
   if (!dataManager || !ids?.length) return catalog;

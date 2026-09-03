@@ -1,19 +1,13 @@
-// A freeform dice-expression roller for the Dashboard — the exact same
-// quick-dice-button + expression-input tool Workbench's own Play/Edit "Dice"
-// pane uses, not a second copy of it: the quick buttons' expression-building
-// behavior (resolveQuickDice/parseQuickDiceCounts/incrementDieInExpression)
-// and the roll-and-report behavior (rollExpression) both come from dice-roll.js,
-// which workbench-character-view.js's own dice tool imports from too — one
-// implementation of each, referenced here and there rather than duplicated.
-// Only the DOM shell differs, since this mounts into a small dashboard card
-// instead of Workbench's own Tools pane markup.
+// A freeform dice-expression roller for the Dashboard — the same quick-dice-
+// button + expression-input tool Workbench's Play/Edit "Dice" pane uses, not
+// a second copy: the quick-button behavior and roll-and-report behavior both
+// come from dice-roll.js. Only the DOM shell differs (a small dashboard card
+// instead of Workbench's Tools pane markup).
 //
-// This is also the ONE Dashboard home for a System's own Rolls/Moves and
-// Tier-3 symbol-dice pool, mirroring Workbench's own Dice pane — Dashboard's
-// separate Character widget (character-sheet.js) is scoped to a character's
-// combat-bound Role fields (resource/value/tags/modifier) and stays that way;
-// Rolls/symbol dice are a System-level dice-rolling concept, not a
-// combat-binding one, so they belong here, not there.
+// Also the one Dashboard home for a System's own Rolls/Moves and Tier-3
+// symbol-dice pool — Dashboard's separate Character widget stays scoped to a
+// character's combat-bound Role fields; Rolls/symbol dice are a System-level
+// concept, not a combat-binding one.
 import {
   rollExpression,
   resolveActiveDice,
@@ -26,10 +20,6 @@ import {
   rollSymbolPoolExpression,
 } from "./dice-roll.js";
 import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
-// Rollable Journal tables — listRollableTables/describeTableRow feed this
-// widget's own autocomplete and result line; the actual roll goes through
-// rollExpression above exactly like a plain numeric expression does, since
-// rollExpression already knows how to tell the two apart.
 import { listRollableTables, describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
 import { preloadDiceOverlay } from "./dice-overlay.js";
 import { createIconButton, createModeToggleGroup } from "../ui-components.js";
@@ -41,24 +31,18 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     return { destroy() {} };
   }
 
-  // Default/Broadcast/Private — confirmed explicit design call: this is
-  // purely ADDITIVE. "Default" leaves every button's own existing behavior
-  // completely untouched (a Move still auto-broadcasts, a plain expression
-  // roll still stays local-only) — the switcher only has any effect at all
-  // once moved off it. "Broadcast" is GM-only (today's `access === "owner"`
-  // convention, same check Map's own visibility toggle uses) — everyone
-  // else never sees it as a selectable option. "Private" is a self-whisper
-  // (recipientIds: [currentUserId]) — the exact same server-side mechanism
-  // built for Game Log whispers, just reused here rather than reinvented.
+  // Default/Broadcast/Private is purely additive: "Default" leaves every
+  // button's existing behavior untouched (a Move still auto-broadcasts, a
+  // plain roll stays local). "Broadcast" is GM-only (`access === "owner"`,
+  // same convention as Map's visibility toggle). "Private" is a self-whisper
+  // (recipientIds: [currentUserId]), reusing Game Log's whisper mechanism.
   let mode = "default";
   const currentUserId = dataManager?.session?.user?.id ?? null;
   const isGm = groupContext?.access === "owner";
 
-  // Resolves what a given roll action's own broadcast/recipientIds should
-  // be, given the widget's current mode — `defaultBroadcast` is whatever
-  // that SPECIFIC action already does today (true for Move buttons, false
-  // for the plain expression Roll and the symbol-pool Roll), preserved
-  // byte-for-byte when mode is "default".
+  // `defaultBroadcast` is whatever this specific action already does today
+  // (true for Moves, false for plain/symbol rolls) — preserved byte-for-byte
+  // when mode is "default".
   function resolveVisibility(defaultBroadcast) {
     if (mode === "private") {
       return { broadcast: false, recipientIds: currentUserId != null ? [currentUserId] : undefined };
@@ -69,21 +53,13 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     return { broadcast: defaultBroadcast, recipientIds: undefined };
   }
 
-  // Fires the "show this on everyone's screen" broadcast (Part 2) after a
-  // successful roll — separate from resolveVisibility above, which only
-  // controls the group-log entry's own visibility, since the result isn't
-  // known until the roll itself has resolved. `dieResults` are the REAL
-  // physically-rolled per-die values (dice-roll.js's own tryOverlayRoll) —
-  // required, not optional: confirmed dice-box can't force a remote roll to
-  // land on a chosen result, so without these there's nothing for
-  // dice-reveal.js's tiles to actually display (a roll that fell through to
-  // the plain Math.random path — e.g. a keep/drop/reroll expression too
-  // complex for the 3D overlay — has none, and simply can't broadcast a
-  // visual reveal; the log entry itself still posts normally either way).
-  // Best-effort: a failed broadcast still leaves the roll and its
-  // (already-posted) log entry intact, same "don't let this side-channel
-  // block the real action" reasoning every other broadcast in this suite
-  // follows.
+  // Fires the "show this on everyone's screen" broadcast after a successful
+  // roll (separate from resolveVisibility, which only controls the log
+  // entry's own visibility, since the result isn't known until the roll
+  // resolves). `dieResults` are the real physically-rolled per-die values —
+  // required, since dice-box can't force a remote roll onto a chosen result;
+  // a roll that fell through to the plain Math.random path has none and
+  // simply can't broadcast a visual reveal (the log entry still posts).
   function maybeBroadcastRoll(label, total, dieResults) {
     if (mode !== "broadcast" || !isGm || !dataManager || !groupContext?.groupId) return;
     if (!Array.isArray(dieResults) || !dieResults.length) return;
@@ -116,34 +92,22 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     });
   }
 
-  // This widget being mounted at all means dice rolling is imminent-ish —
-  // warm up the 3D overlay (and the user's chosen theme, via dataManager)
-  // now instead of waiting for the first actual Roll click.
   preloadDiceOverlay(dataManager);
 
-  // Section 2's active-System resolution — the Dashboard has no single
-  // "current character" of its own (unlike Character Sheet/Workbench), so
-  // only the active campaign Group's own System (if any) can override the
-  // standard 7 here; resolved once on mount, same "one fetch, then render"
-  // shape as populateTableAutocomplete below.
+  // The Dashboard has no single "current character" (unlike Workbench), so
+  // only the active campaign Group's own System can override the standard 7.
   let activeDice = [];
-  // Section 1.3/4's named Rolls/Moves — same resolution as activeDice above.
   let activeSystemRolls = [];
-  // Section 1.4/3.4's Tier-3 symbol dice (Phase 5) — same resolution too. A
-  // System whose "dice" are ALL symbol dice (Genesys) makes extractSystemDice
-  // return empty, which resolveQuickDice then falls back to the standard 7
-  // for — wrong for a narrative dice-pool System, so this widget swaps to
-  // the symbol-pool stepper instead of showing that incorrect fallback grid
-  // (see toggleSymbolMode below).
+  // A System whose dice are ALL symbol dice (Genesys) makes extractSystemDice
+  // return empty, which resolveQuickDice would fall back to the standard 7
+  // for — wrong for a narrative dice-pool System, so this widget swaps to the
+  // symbol-pool stepper instead (see toggleSymbolMode below).
   let activeSymbolDice = [];
   const symbolPoolCounts = new Map();
 
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
 
-  // Unique per mount (not a fixed id) — nothing stops a second copy of this
-  // widget existing at once (the catalog entry doesn't declare `multiple`
-  // today, but nothing here should silently break if that ever changes).
   const tableListId = `diceroller-tables-${Math.random().toString(36).slice(2, 8)}`;
   const tableDatalist = document.createElement("datalist");
   tableDatalist.id = tableListId;
@@ -188,17 +152,12 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       ...resolveVisibility(false),
     });
     if (!rolled) return;
-    // Table rolls skip the "pageTitle (dN) →" prefix — the expression
-    // that was rolled is already sitting right there in the input above,
-    // so just the number/result is what's actually new information.
     resultLine.textContent = rolled.isTable ? describeTableRow(rolled.row) : `${rolled.expression} → ${rolled.total}`;
-    // Table rolls have no physical dice at all to broadcast a reveal for.
     if (!rolled.isTable) maybeBroadcastRoll("", rolled.total, rolled.result?.dieResults);
   }
 
-  // Clear (red eraser icon, no text) — always the FIRST control in the row,
-  // ahead of the dice buttons that follow it, since it acts on all of them
-  // (whatever's currently in the expression input).
+  // Clear is always first in the row, ahead of the dice buttons, since it
+  // acts on all of them.
   const clearButton = createIconButton({
     icon: "tabler:eraser",
     label: "Clear dice expression",
@@ -210,17 +169,15 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     },
   });
 
-  // Quick-dice buttons mutate `input.value` directly and re-sync their own
+  // Quick-dice buttons mutate input.value directly and re-sync their own
   // active/"× N" state in place — never a full re-render — so the input
-  // never loses focus/caret position while the user is mid-typing an
-  // expression, same as Workbench's own syncQuickDiceButtons.
+  // never loses focus/caret while the user is mid-typing.
   const quickGrid = el("div", "d-flex flex-wrap gap-1");
   const quickButtons = new Map();
   quickGrid.appendChild(clearButton);
 
-  // Rebuilt whenever the resolved active System's dice change (see
-  // loadActiveDice below) — a System's own dice (Section 1.1) replace the
-  // standard 7 entirely rather than appending to them (Section 5).
+  // A System's own dice replace the standard 7 entirely rather than
+  // appending to them.
   function renderQuickButtons() {
     quickButtons.forEach((button) => button.remove());
     quickButtons.clear();
@@ -242,21 +199,13 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   const inputRow = el("div", "d-flex gap-2");
   inputRow.append(input, rollButton);
 
-  // Named Rolls/Moves (Section 1.3/4) — a SEPARATE row below the expression
-  // input/Roll button, not mixed in with the quick-dice grid above it: a
-  // quick-dice button only ever edits the expression string (nothing rolls
-  // until Roll is clicked), while a Move button is a one-click roller in its
-  // own right — visually grouping it with the input it has nothing to do
-  // with was confusing. Hidden entirely (nothing rendered) for the common
-  // case of a System with no "rolls" field.
+  // A separate row below the expression input — a quick-dice button only
+  // edits the expression string, while a Move button is a one-click roller
+  // in its own right. Hidden entirely for a System with no "rolls" field.
   const movesRow = el("div", "d-flex flex-wrap gap-1");
   const moveButtons = new Map();
 
   function renderMoveButtons() {
-    // Disposed before removal, not after — see tooltips.js's own BUG CLASS
-    // 2. Scoped to movesRow (not the whole widget container) since this
-    // rebuilds independently of the rest of the widget, on every
-    // activeSystemRolls change.
     disposeTooltips(movesRow);
     moveButtons.forEach((button) => button.remove());
     moveButtons.clear();
@@ -276,11 +225,9 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     setElementVisible(movesRow, activeSystemRolls.length > 0, "flex");
   }
 
-  // Rolls a System-defined Move (Section 1.3/4) — broadcasts to the active
-  // campaign's Game Log via rollSystemMove's own built-in broadcast, same as
-  // Workbench's/Character Sheet's own Moves: a Move is a meaningful, named
-  // action the rest of the group cares about, unlike this widget's own
-  // freeform commitRoll above (which never broadcasts).
+  // Broadcasts to the active campaign's Game Log via rollSystemMove's own
+  // built-in broadcast — a Move is a meaningful, named action the group
+  // cares about, unlike commitRoll's freeform roll, which never broadcasts.
   async function rollMove(move) {
     const rolled = await rollSystemMove(move, {
       status,
@@ -295,18 +242,13 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     maybeBroadcastRoll(move.label, rolled.total, rolled.result?.dieResults);
   }
 
-  // Everything above (quick-dice grid, expression input/Roll, Moves) is the
-  // "standard" numeric-dice UI — grouped so toggleSymbolMode below can swap
-  // the whole thing out at once for a System whose dice are all Tier-3
-  // symbol dice (Section 1.4/3.4), same approach Workbench's own Dice pane
-  // uses.
+  // Quick-dice grid, expression input/Roll, and Moves are the "standard"
+  // numeric-dice UI — grouped so toggleSymbolMode can swap the whole thing
+  // out for a System whose dice are all Tier-3 symbol dice.
   const standardSection = el("div", "d-flex flex-column gap-2");
   standardSection.append(quickGrid, inputRow, movesRow);
 
-  // Tier-3 symbol-dice pool (Section 1.4/3.4/6.3, Phase 5) — replaces
-  // standardSection entirely (toggleSymbolMode below) for a System whose
-  // dice are all symbol dice. Never broadcast, matching this widget's own
-  // plain-expression rolls (commitRoll above).
+  // Never broadcast, matching this widget's own plain-expression rolls.
   const symbolLabel = el("span", "small text-body-secondary", "Dice Pool");
   const symbolSteppers = el("div", "d-flex flex-column gap-2");
   const symbolRollButton = el("button", "btn btn-outline-primary btn-sm align-self-start", "Roll pool");
@@ -315,9 +257,6 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   symbolSection.append(symbolLabel, symbolSteppers, symbolRollButton);
 
   function renderSymbolPool() {
-    // Disposed before the wipe — each stepper's own -/+ button carries a
-    // real tooltip now, and this reruns on every System-resolution refresh.
-    // See tooltips.js's own BUG CLASS 2.
     disposeTooltips(symbolSteppers);
     symbolSteppers.innerHTML = "";
     activeSymbolDice.forEach((die) => {
@@ -351,13 +290,10 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     refreshTooltips(symbolSteppers);
   }
 
-  // Swaps standardSection <-> symbolSection — NOT via `.hidden`, which
-  // silently does nothing here: both containers carry Bootstrap's `.d-flex`
-  // (declared `!important`), which always beats the `[hidden]` UA rule
-  // regardless of specificity, so the "hidden" side never actually
-  // collapsed (this is exactly why Roll and Roll pool could both show at
-  // once for a plain-numeric System like Daggerheart). See dom.js's own
-  // setElementVisible for the real fix.
+  // Swaps standardSection <-> symbolSection via setElementVisible, never
+  // `.hidden` — both containers carry Bootstrap's `.d-flex` (`!important`),
+  // which always beats the `[hidden]` UA rule regardless of specificity, so
+  // a plain `.hidden` toggle wouldn't actually collapse either side.
   function toggleSymbolMode() {
     const symbolMode = activeSymbolDice.length > 0;
     setElementVisible(standardSection, !symbolMode, "flex");
@@ -385,10 +321,8 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       ...resolveVisibility(false),
     });
     resultLine.textContent = formatSymbolPoolResult(rolled.net);
-    // No visual reveal here — symbol-dice faces (icons/symbols, not
-    // numbers) don't fit dice-reveal.js's plain numeric tile shape; the
-    // log entry above still posts normally regardless (resolveVisibility
-    // already handled that), just without the animated table-wide reveal.
+    // No visual reveal — symbol-dice faces don't fit dice-reveal.js's plain
+    // numeric tile shape; the log entry above still posts normally.
   }
   symbolRollButton.addEventListener("click", executeSymbolPoolRoll);
 
@@ -408,10 +342,6 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   toggleSymbolMode();
   void loadActiveDice();
 
-  // Populated once on mount — a table named after this widget was already
-  // showing wouldn't appear until the next mount either way, same "not
-  // live-updated" tradeoff every other one-shot autocomplete in this suite
-  // accepts (e.g. Handout's own picker lists).
   async function populateTableAutocomplete() {
     if (!dataManager) return;
     const tables = await listRollableTables(dataManager).catch(() => []);
@@ -434,9 +364,6 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   });
   rollButton.addEventListener("click", () => void commitRoll());
 
-  // Above both standardSection/symbolSection — applies identically to
-  // whichever one is currently showing (toggleSymbolMode swaps between
-  // them, this control doesn't).
   renderModeToggle();
   wrap.append(modeToggleContainer, standardSection, symbolSection, resultLine, tableDatalist);
   container.appendChild(wrap);
@@ -450,11 +377,8 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   };
 }
 
-// --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
-// rollExpression is already standalone given just dataManager — no mounted
-// Dice Roller widget instance required. `announce` just flips on
-// rollExpression's own broadcast option (see dice-roll.js).
-
+// rollExpression is standalone given just dataManager — no mounted Dice
+// Roller widget instance required.
 export const DICEROLLER_MACRO_ACTIONS = {
   roll: { label: "Roll an expression", params: ["expression", "announce"] },
 };

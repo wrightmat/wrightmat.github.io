@@ -1,34 +1,22 @@
 // A locked-down, sidebar-free viewer for a saved Map — the "player/table"
 // half of Orrery's own pan/zoom/layer-rendering surface. Reuses
-// BaseMapManager (orrery/js/lib/base-maps.js) for the actual base map +
-// pan/zoom, and orrery/js/lib/map-viewer.js's renderMapLayers — the exact
-// same top-level render loop Orrery's own app.js now also calls — so every
-// layer type (grid, raster, vector, marker) a map has renders identically
-// here, not just markers. Nothing in this file is a parallel reimplementation
-// of Orrery's own rendering.
+// BaseMapManager for the base map + pan/zoom, and map-viewer.js's
+// renderMapLayers — the same top-level render loop Orrery's own app.js
+// calls — so every layer type renders identically here, not just markers.
 //
 // This widget passes no `selection`/`activeGroup`/interactive callbacks to
-// renderMapLayers, which is the whole opt-out mechanism — Orrery-only
-// concerns (grid-cell click-selection, "click empty space to place a new
-// marker," whole-layer drag, undo-stack recording) simply never run when
-// those options are absent. The interactive affordances this widget DOES
-// supply (drag a character marker you own, open/close a door, and — for
-// this specific map's own owner/admin, via the hasMapOwnerAccess option —
-// drag/click-to-edit ANY marker, not just a character one) come from
-// map-viewer.js's own buildRestrictedMapOptions — the exact same policy
-// Orrery's own app.js uses for a non-owner viewer reaching Orrery directly
-// (Orrery's own call site doesn't pass hasMapOwnerAccess, since a viewer in
-// THAT branch is by definition not the map's owner already). This widget is
-// ALWAYS that restricted view (a player's dashboard never gets full Orrery-
-// style authoring — grid/layer editing, undo, ...), which is why it always
-// builds those options, never the full-access ones; hasMapOwnerAccess is a
-// narrower carve-out within that restricted view, not full authoring. NOT
-// gated on the dashboard's separate "pinned
-// character" concept at all — that's a different feature (which character a
-// widget like Character Summary/Combat Tracker is currently showing), and
-// previously, incorrectly, gated dragging here too: a player who owned a
-// character but hadn't explicitly pinned it via the Character Summary
-// widget saw zero drag controls for their own token, confirmed real bug.
+// renderMapLayers, which is the opt-out mechanism — Orrery-only concerns
+// (grid-cell selection, whole-layer drag, undo recording) simply never run
+// when those options are absent. The interactive affordances this widget
+// DOES supply (drag a character marker you own, open/close a door, and —
+// via hasMapOwnerAccess — a map owner/admin dragging/editing ANY marker)
+// come from map-viewer.js's own buildRestrictedMapOptions, the same policy
+// Orrery's app.js uses for a non-owner viewer. This widget is ALWAYS that
+// restricted view (a player's dashboard never gets full Orrery-style
+// authoring); hasMapOwnerAccess is a narrower carve-out within it, not full
+// authoring. NOT gated on the dashboard's separate "pinned character"
+// concept — a player who owned a character but hadn't pinned it via
+// Character Summary previously saw zero drag controls for their own token.
 import { BaseMapManager } from "../../../../orrery/js/lib/base-maps.js";
 import {
   renderMapLayers,
@@ -77,10 +65,9 @@ import {
 import { claimMarkerContentEntry, describeMarkerContentEntry, resolveGiveToOptions } from "../marker-contents.js";
 import { disposeTooltips, initTooltip, setDisabledTooltip, updateTooltipContent } from "../tooltips.js";
 
-// 10s (was 30s) — same reasoning as combat-tracker.js's own
-// POLL_INTERVAL_MS, kept a bit more conservative here since a map's own
-// content (layers/markers) typically changes less often mid-session than
-// combat or a clock does.
+// 10s — same reasoning as combat-tracker.js's own POLL_INTERVAL_MS, kept a
+// bit more conservative since map content typically changes less often
+// mid-session than combat or a clock does.
 const POLL_INTERVAL_MS = 10000;
 
 export function initMapWidget(
@@ -97,16 +84,13 @@ export function initMapWidget(
     setRightAction,
     canToggleVisibility = false,
     editing = false,
-    // (refKind, refId, linkedCombatantId) => void — dashboard.js's own
-    // caller wires this to findActiveWidgetInstance("combat")?.
-    // selectCombatantByRef(...), the same cross-widget "read a live sibling
-    // on this dashboard" mechanism this widget's own mapId/isVisible
-    // already back for combat-tracker.js's own resolveActiveMapId. Only
-    // ever called for the map's own owner/admin clicking a marker that
-    // actually references something (refKind+refId) — a player clicking
-    // their own token has no business driving a Combat Tracker widget's
-    // selection, and a decorative marker with no reference has nothing to
-    // select in the first place.
+    // (refKind, refId, linkedCombatantId) => void — dashboard.js wires this
+    // to findActiveWidgetInstance("combat")?.selectCombatantByRef(...), the
+    // same cross-widget "read a live sibling" mechanism this widget's own
+    // mapId/isVisible back for combat-tracker.js's resolveActiveMapId. Only
+    // called for the map owner/admin clicking a marker that references
+    // something — a player clicking their own token shouldn't drive Combat
+    // Tracker's selection, and a decorative marker has nothing to select.
     onMarkerSelected,
   } = {}
 ) {
@@ -116,10 +100,9 @@ export function initMapWidget(
   }
 
   // mapId/shareToken are fixed for this widget instance's whole lifetime (a
-  // new map means a new instance, not a change to this one — see Card's own
-  // comment on contentRef), so unlike the map's own name (only known once
-  // `load()` fetches it, see onTitleChange below) this can be set once, right
-  // away, rather than re-derived on every poll.
+  // new map means a new instance, not a change to this one), so unlike the
+  // map's own name (only known once load() fetches it) this can be set
+  // once, right away, rather than re-derived on every poll.
   const orreryParams = new URLSearchParams({ map: mapId });
   if (shareToken) orreryParams.set("share", shareToken);
   setHeaderAction?.({
@@ -136,32 +119,25 @@ export function initMapWidget(
   let watcher = null;
   let conditionLiveStream = null;
   let visible = false;
-  // Set true for the duration of a marker drag (buildRestrictedMapOptions'
-  // own onDragStateChange) — onMapChanged below skips an incoming poll/
-  // live-stream update while this is true, so it can't rebuild the marker
-  // layer's DOM (and tear out the very dot element being dragged) mid-
-  // gesture. See that function's own comment for the confirmed "drag pops
-  // straight to the final position instead of tracking the cursor" bug this
-  // fixes.
+  // Set true for the duration of a marker drag — onMapChanged below skips
+  // an incoming poll/live-stream update while this is true, so it can't
+  // rebuild the marker layer's DOM (and tear out the dot being dragged)
+  // mid-gesture — otherwise a drag pops straight to the final position
+  // instead of tracking the cursor.
   let isDraggingMarker = false;
 
-  // Player toolbar tool state — instance-scoped (not local to
-  // buildZoomPanel) since the panel itself gets rebuilt whenever the base
-  // map changes (onMapChanged's own zoomPanel = null reset); a tool a
-  // viewer already had armed shouldn't silently disarm just because an
-  // unrelated base-map edit landed. One at a time, unlike Orrery's own
-  // independent per-tool booleans — a GM's own toolbar never enforced
-  // mutual exclusion either, but a player toolbar with two tools armed at
-  // once (a click ambiguously either pings or starts measuring) is a worse
-  // experience for less benefit, and costs nothing extra to prevent here.
+  // Player toolbar tool state — instance-scoped, not local to
+  // buildZoomPanel, since the panel gets rebuilt whenever the base map
+  // changes; a tool already armed shouldn't disarm on an unrelated edit.
+  // One at a time, unlike Orrery's own independent per-tool booleans — a
+  // player toolbar with two tools armed at once (a click ambiguously
+  // either pings or starts measuring) is worse for less benefit.
   let activeTool = null; // null | "ping" | "measure" | "draw" | "shape"
 
-  // One shared "pencil color" for both Draw and Shape (a shape's fillColor
-  // AND strokeColor both come from this single value — there's no separate
-  // "outline" concept, a drawn path/shape only ever has one visible color)
-  // — matching Orrery's own identical drawColor concept (orrery/js/app.js),
-  // rather than each tool hardcoding its own default. Instance-scoped, same
-  // "survives a zoomPanel rebuild" reasoning as activeTool above.
+  // One shared "pencil color" for both Draw and Shape — a shape's
+  // fillColor AND strokeColor both come from this single value, no
+  // separate "outline" concept, matching Orrery's own drawColor. Instance-
+  // scoped, same "survives a zoomPanel rebuild" reasoning as activeTool.
   let drawColor = "#0f172a";
 
   // Rebuilt fresh by buildZoomPanel every time the base map changes — these
@@ -219,22 +195,19 @@ export function initMapWidget(
     }
   }
 
-  // Called on every buildZoomPanel AND every onMapChanged (not just when the
-  // panel itself gets rebuilt) — a GM configuring Scale/Unit mid-session
-  // shouldn't leave Measure stuck disabled until some unrelated base-map
-  // edit happens to rebuild the panel. Shape only needs a grid layer now
-  // (Size is authored in cells, not converted through Scale/Unit — matches
-  // Orrery's own updateShapeAvailability, app.js); Measure genuinely still
-  // needs the full Scale per cell/Scale unit configuration, since its whole
-  // job is converting cells to a real-world distance.
+  // Called on every buildZoomPanel AND every onMapChanged, not just when
+  // the panel gets rebuilt — a GM configuring Scale/Unit mid-session
+  // shouldn't leave Measure stuck disabled until some unrelated edit
+  // rebuilds the panel. Shape only needs a grid layer (Size is authored in
+  // cells, matching Orrery's own updateShapeAvailability); Measure needs
+  // the full Scale per cell/Scale unit, since its job is converting cells
+  // to a real-world distance.
   function refreshToolAvailability() {
     const measureConfigured = hasMapMeasurementConfigured(map);
     const shapeAvailable = Boolean(findPrimaryGridLayer(map));
     // setDisabledTooltip owns `disabled` itself — a real `disabled` on the
-    // SAME element as the explanatory tooltip blocks the hover that would
-    // ever show it (see tooltips.js's own BUG CLASS 1); the old
-    // `.disabled = ...` + `.title = ...` pair here silently never showed
-    // the "ask the GM..." explanation for exactly that reason.
+    // same element as the tooltip blocks the hover that would show it (see
+    // tooltips.js's own BUG CLASS 1).
     if (measureButtonEl) {
       if (measureConfigured) {
         setDisabledTooltip(measureButtonEl, "");
@@ -261,8 +234,7 @@ export function initMapWidget(
 
   // A screen-space (position: fixed) ruler line, appended to <body> rather
   // than the map overlay — identical to Orrery's own createMeasureLine,
-  // reusing its exact `.orrery-measure-line-overlay` CSS class (already
-  // loaded on this page).
+  // reusing its `.orrery-measure-line-overlay` CSS class.
   function createMeasureLine(startX, startY) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "orrery-measure-line-overlay");
@@ -290,9 +262,9 @@ export function initMapWidget(
   }
 
   // Fetch-fresh/append/save, same immediacy as a marker move — this widget
-  // has no Save button/local-dirty-state concept at all. Resolves (creating
-  // if needed) an ordinary vector layer itself, so this widget never needs
-  // to know or track that layer's id.
+  // has no Save button/local-dirty-state concept. Resolves (creating if
+  // needed) an ordinary vector layer itself, so this widget never needs to
+  // know or track that layer's id.
   async function persistDrawing(element) {
     try {
       const freshMap = await persistPlayerDrawing({ dataManager, mapId, shareToken, element });
@@ -306,10 +278,9 @@ export function initMapWidget(
   }
 
   // Tags a player-placed path/shape with who drew it (id first, username as
-  // a fallback — same two-step match ownership.js's own matchesOwner uses
-  // for every other kind of record in the suite) — `createVectorPathElement`/
-  // `createVectorShapeElement` don't declare these fields, but nothing stops
-  // a plain extra property on the returned object.
+  // fallback — same two-step match ownership.js's matchesOwner uses) —
+  // createVectorPathElement/createVectorShapeElement don't declare these
+  // fields, but nothing stops a plain extra property on the returned object.
   function tagAsOwnDrawing(element) {
     element.authorId = dataManager.session?.user?.id ?? null;
     element.authorUsername = dataManager.session?.user?.username || "";
@@ -322,29 +293,23 @@ export function initMapWidget(
     return Boolean(username) && element.authorUsername === username;
   }
 
-  // The map's OWN owner (the GM, in the common case) can also manage any
-  // player's drawing/shape, not just their own — fetched once via the same
-  // generic ownership.js helper every other kind of record's owner-check
-  // already uses (kind-agnostic: `map` works exactly like `character`
-  // does). Deliberately matchesOwner()/admin-tier ONLY, not allowsDelete()'s
-  // broader "or an edit-permission share" rule — every campaign member
-  // already holds an edit share on a spotlighted map (that's what lets
-  // players save their OWN marker moves/drawings at all), so allowsDelete()
-  // would let any player manage any other player's drawing too, not just
-  // the GM. Confirmed real bug this fixes: a GM viewing this same widget
-  // (not full Orrery) couldn't drag/delete a player-authored shape at all.
+  // The map's OWN owner (the GM, typically) can also manage any player's
+  // drawing/shape, not just their own — fetched once via the same generic
+  // ownership.js helper every other record's owner-check uses. Deliberately
+  // matchesOwner()/admin-tier ONLY, not allowsDelete()'s broader "or an
+  // edit-permission share" rule — every campaign member already holds an
+  // edit share on a spotlighted map (that's what lets players save their
+  // OWN marker moves/drawings), so allowsDelete() would let any player
+  // manage any other player's drawing too.
   let mapOwnerMetadata = null;
   async function loadMapOwnership() {
     const catalog = await refreshOwnershipCatalog(dataManager, "map", [mapId]);
     mapOwnerMetadata = catalog.get(mapId) || null;
-    // Wasn't needed while this only gated canManageDrawing (evaluated fresh
-    // on each click, never baked into the initial render) — now that
-    // isMarkerDraggable (map-viewer.js) also reads isMapOwnerOrAdmin() at
-    // RENDER time (it sets a marker dot's pointer-events/cursor), the very
-    // first renderLayers() pass — which fires before this async fetch
-    // resolves — would otherwise draw every Monster/NPC marker as
-    // non-draggable for the map's own owner until some unrelated later
-    // render happened to run.
+    // isMarkerDraggable also reads isMapOwnerOrAdmin() at RENDER time (sets
+    // a marker dot's pointer-events/cursor) — the very first renderLayers()
+    // pass fires before this async fetch resolves, so without this refresh
+    // every marker would draw non-draggable for the owner until some
+    // unrelated later render happened to run.
     renderLayers();
   }
   void loadMapOwnership();
@@ -371,23 +336,17 @@ export function initMapWidget(
     }
   }
 
-  // One color swatch (no separate "outline" concept — a drawing/shape has
-  // just one visible color, same drawColor unification the toolbar's own
-  // picker follows) + (shapes only) opacity, plus a small red × to delete —
-  // anchored BELOW the actual clicked shape/path (event.target is the
-  // invisible "hit" element map-viewer.js draws directly over the visible
-  // geometry, so its own bounding rect matches what's on screen), same
-  // below-anchor idiom openMarkerEditor already uses off its own dotEl.
-  // Confirmed real complaint with the older click-point anchor (event.
-  // clientX/Y directly): it landed the popover square on top of whatever
-  // was just clicked, which for a shape is typically its own visible
-  // center — right where you'd want to actually SEE it while editing.
-  // Explicit `width` below is load-bearing, not cosmetic: `.orrery-floating-
-  // panel` also sets `right: 1.5rem` (its own default corner-docked
-  // position) — leaving width unset alongside an explicit `left` here made
-  // the browser stretch the box to fill the whole gap between them, which
-  // is why this used to render as a huge, nearly page-wide bar instead of a
-  // small popover.
+  // One color swatch (no separate "outline" concept, same drawColor
+  // unification as the toolbar) + (shapes only) opacity, plus a small red ×
+  // to delete — anchored BELOW the clicked shape/path (event.target is the
+  // invisible "hit" element map-viewer.js draws over the visible geometry,
+  // so its bounding rect matches what's on screen), same below-anchor idiom
+  // openMarkerEditor uses off its own dotEl. The older click-point anchor
+  // landed the popover on top of the clicked shape's own visible center —
+  // right where you'd want to see it while editing. Explicit `width` is
+  // load-bearing: `.orrery-floating-panel` also sets `right: 1.5rem`, and
+  // leaving width unset alongside an explicit `left` stretched the box to
+  // fill the whole gap between them.
   function openDrawingEditor(layer, element, event) {
     closeMarkerEditor();
     const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-1");
@@ -412,8 +371,7 @@ export function initMapWidget(
     colorInput.value = element.strokeColor || element.fillColor || "#0f172a";
     colorInput.addEventListener("change", () => {
       // A shape's fillColor and strokeColor stay locked together (one
-      // shared color, see drawColor's own declaration comment); a path has
-      // no meaningful fillColor to update at all.
+      // shared color); a path has no meaningful fillColor to update.
       const patch =
         element.kind === "shape"
           ? { strokeColor: colorInput.value, fillColor: colorInput.value }
@@ -440,9 +398,8 @@ export function initMapWidget(
     topRow.appendChild(deleteButton);
     popover.appendChild(topRow);
 
-    // Opacity only exists on a shape's own data (createVectorShapeElement) —
-    // a drawn path has no such field, same as Orrery's own inspector never
-    // shows one for a path either.
+    // Opacity only exists on a shape's data — a drawn path has no such
+    // field, same as Orrery's own inspector.
     if (element.kind === "shape") {
       const opacityInput = document.createElement("input");
       opacityInput.type = "range";
@@ -465,11 +422,9 @@ export function initMapWidget(
   }
 
   // One persistent listener on viewerHost (never rebuilt, unlike zoomPanel)
-  // covering every tool — mirrors Orrery's own mapContainer-level
-  // pointerdown listeners for these exact four tools. A marker's own dot
-  // already calls stopPropagation() on its pointerdown (map-viewer.js's
-  // createMarkerDot), so dragging/clicking a token never reaches this
-  // handler at all — no conflict between the two.
+  // covering every tool — mirrors Orrery's mapContainer-level pointerdown
+  // listeners. A marker's own dot already calls stopPropagation() on its
+  // pointerdown, so dragging/clicking a token never reaches this handler.
   function handleToolPointerDown(event) {
     if (event.button !== 0 || !baseMapManager || !map) return;
     if (activeTool === "ping") {
@@ -482,8 +437,8 @@ export function initMapWidget(
       const position = resolveClickPosition(baseMapManager, map, event, overlay);
       if (!position) return;
       // Rendered locally right away, same reasoning as Orrery's own
-      // setupPingTool — the full SSE round-trip is a lot of links to depend
-      // on for feedback on your OWN click.
+      // setupPingTool — the full SSE round-trip is too much to depend on
+      // for feedback on your own click.
       overlay.appendChild(createPingMarker(baseMapManager, map, position, dataManager.session?.user?.username || "You"));
       void dataManager.postMapPing({ groupId, position }).catch((error) => {
         status?.show(error.message || "Unable to send ping.", { type: "error", timeout: 3000 });
@@ -549,8 +504,7 @@ export function initMapWidget(
         if (points.length > 1) {
           void persistDrawing(tagAsOwnDrawing(createVectorPathElement({ points, strokeColor: drawColor })));
           // Single-shot — placing one stroke disarms the tool, same as
-          // Shape below, rather than staying armed for another click to
-          // immediately start a second one with no way to just stop.
+          // Shape below, rather than staying armed with no way to stop.
           setActiveTool("draw");
         }
       };
@@ -570,13 +524,11 @@ export function initMapWidget(
       const presetId = getPresetById(shapeTypeSelectEl?.value)?.category === "shapes" ? shapeTypeSelectEl.value : "circle";
       const startClientX = event.clientX;
       const startClientY = event.clientY;
-      // No target layer yet (the target vector layer only gets resolved/
-      // created server-side, at commit time, by persistPlayerDrawing) —
-      // getMarkerLayerOffset needs SOME layer shape to read a position
-      // offset from, but every vector layer's own default position is
-      // {x:0,y:0} (map-model.js's createLayer) and nothing here ever lets a
-      // player author a layer with a non-zero one, so a plain zero offset is
-      // exactly as correct as fetching the real (also-zero) layer would be.
+      // No target layer yet (only resolved/created server-side, at commit
+      // time, by persistPlayerDrawing) — every vector layer's default
+      // position is {x:0,y:0} and nothing here lets a player author one
+      // with a non-zero offset, so a plain zero offset is exactly as
+      // correct as fetching the real (also-zero) layer would be.
       const offset = { x: 0, y: 0 };
       const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       preview.style.position = "absolute";
@@ -588,14 +540,11 @@ export function initMapWidget(
       overlay.appendChild(preview);
       let sizeCells = 0;
       let angleDeg = 0;
-      // One shared color for fill AND stroke (drawColor — see its own
-      // declaration comment): a shape has no separate "outline" concept.
-      // Not read from any layer's own settings — renderShapeElement's own
-      // `layer` parameter is never actually referenced inside it (confirmed
-      // by reading it: every stroke/fill/width comes from the element
-      // passed in, 4th argument), and a player-placed shape has no
-      // "selected vector layer" to read defaults from in the first place
-      // (unlike Orrery's own GM tool).
+      // One shared color for fill AND stroke (drawColor): a shape has no
+      // separate "outline" concept. Not read from any layer's settings —
+      // renderShapeElement's `layer` parameter is never referenced inside
+      // it, and a player-placed shape has no "selected vector layer" to
+      // read defaults from (unlike Orrery's own GM tool).
       const values = { fill: drawColor, stroke: drawColor };
       const strokeWidth = 2;
       function drawPreview() {
@@ -634,11 +583,9 @@ export function initMapWidget(
         }
         sizeCells = snapCellsToWholeUnit(map, cells);
         angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-        // Real-world distance only shown when the map actually has one
-        // configured — the Shape tool itself no longer requires Scale per
-        // cell/Scale unit (refreshToolAvailability's own comment), so this
-        // readout has to degrade to cells-only instead of assuming a scale
-        // that might not exist.
+        // Real-world distance only shown when the map has one configured —
+        // the Shape tool no longer requires Scale per cell/Scale unit, so
+        // this readout degrades to cells-only instead of assuming a scale.
         setShapeReadout(
           hasMapMeasurementConfigured(map)
             ? `${Math.round(sizeCells * map.measurement.scale)} ${map.measurement.unit} (${sizeCells.toFixed(1)} cells)`
@@ -665,7 +612,7 @@ export function initMapWidget(
               })
             )
           );
-          // Single-shot — see the Draw tool's own identical comment above.
+          // Single-shot — see the Draw tool's identical comment above.
           setActiveTool("shape");
         }
       };
@@ -676,9 +623,8 @@ export function initMapWidget(
 
   // Same direct spotlightToGroup/clearSpotlight toggle Handout's own
   // visibility button uses — no modal, just an eye icon. `LINK_ONLY_KINDS`
-  // already covers "map" (spotlight.js) since a map is a link back into
-  // Orrery, not a rendered card, but the visibility CONCEPT — "is this
-  // currently the thing shown to the table" — is identical either way.
+  // already covers "map" since it's a link back into Orrery, not a
+  // rendered card, but the visibility concept is identical either way.
   function updateVisibilityAction() {
     if (!canToggleVisibility) return;
     setRightAction?.({
@@ -695,7 +641,7 @@ export function initMapWidget(
       return;
     }
     // Per-instance, not just per-kind — a second Map must stay
-    // independently toggleable, see resolveIsSpotlighted's own comment.
+    // independently toggleable.
     visible = await resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "map", id: mapId });
     updateVisibilityAction();
   }
@@ -737,28 +683,21 @@ export function initMapWidget(
     return button;
   }
 
-  // Same zoom in/out/reset controls as Orrery's own floating panel
-  // (orrery/index.html's data-zoom-in/-out/-reset, wired in orrery/js/app.js
-  // to these exact BaseMapManager methods), plus the Ping/Measure toggles
-  // added alongside them below — just the compact cluster itself, not
-  // Orrery's draggable/collapsible panel chrome, which has no room to mean
-  // anything in an 18rem-tall widget. Hidden while the Dashboard is in edit
-  // mode (data-map-zoom-panel — see dashboard.js's own applyEditingState)
-  // so it doesn't clutter the layout-editing view.
+  // Same zoom in/out/reset controls as Orrery's own floating panel, plus
+  // the Ping/Measure toggles alongside them — just the compact cluster
+  // itself, not Orrery's draggable/collapsible panel chrome, which has no
+  // room to mean anything in an 18rem-tall widget. Hidden while the
+  // Dashboard is in edit mode so it doesn't clutter the layout view.
   function buildZoomPanel() {
-    // Reuses Orrery's own `.orrery-floating-panel` class (orrery/css/styles.css,
-    // already loaded on this page) rather than a bare `.btn-group` — that
-    // class is what actually gives Orrery's real zoom panel its opaque
-    // background/border/padding, which a plain outline btn-group doesn't
-    // have on its own (nothing but thin button borders, easy to lose against
-    // map tiles). It also sets z-index: 1035, comfortably above Leaflet's own
-    // panes (base-maps.js forces overlayPane to 650, and others climb from
-    // there) — those are siblings in this same viewerHost stacking context,
-    // so anything lower gets painted over regardless of DOM order.
+    // Reuses Orrery's own `.orrery-floating-panel` class rather than a bare
+    // `.btn-group` — that class gives the zoom panel its opaque
+    // background/border/padding (a plain outline btn-group has only thin
+    // button borders, easy to lose against map tiles) and sets z-index:
+    // 1035, above Leaflet's own panes in this same stacking context.
     const panel = el("div", "orrery-floating-panel");
     panel.dataset.mapZoomPanel = "";
-    // Tighter inset than Orrery's own 1.5rem default — this panel floats
-    // over an 18rem-tall widget, not a full-page map.
+    // Tighter inset than Orrery's 1.5rem default — this panel floats over
+    // an 18rem-tall widget, not a full-page map.
     panel.style.top = "0.5rem";
     panel.style.right = "0.5rem";
     panel.style.padding = "0.375rem";
@@ -791,10 +730,9 @@ export function initMapWidget(
     buttonGroup.append(zoomOutButton, zoomResetButton, zoomInButton);
 
     // Ping/Measure/Draw/Shape — same four tools, same icons/tooltips as
-    // Orrery's own toolbar (index.html's data-ping-toggle/-measure-toggle/
-    // -draw-toggle/-shape-toggle), just this widget's own compact
-    // toggle-button shape above instead of Orrery's larger wrapped/
-    // tooltipped span markup. One armed at a time — see setActiveTool.
+    // Orrery's own toolbar, just this widget's compact toggle-button shape
+    // instead of Orrery's larger wrapped span markup. One armed at a time —
+    // see setActiveTool.
     const toolGroup = el("div", "btn-group btn-group-sm mt-1");
     toolGroup.setAttribute("role", "group");
     toolGroup.setAttribute("aria-label", "Map tools");
@@ -823,14 +761,13 @@ export function initMapWidget(
     panel.appendChild(toolGroup);
 
     // Color swatch + Shape type, one row — the swatch shown while either
-    // Draw or Shape is armed, the select only for Shape (see setActiveTool's
-    // own toggles above), but grouped together in the DOM/layout regardless
-    // so Shape's own picker always lands directly right of the color it'll
-    // use, matching Orrery's own toolbar ordering (index.html).
+    // Draw or Shape is armed, the select only for Shape, but grouped
+    // together so Shape's picker always lands right of the color it'll
+    // use, matching Orrery's own toolbar ordering.
     const toolOptionsRow = el("div", "d-flex align-items-center gap-1 mt-1");
 
     // Shared Draw/Shape color swatch — same drawColor concept as Orrery's
-    // own toolbar (index.html's data-draw-color).
+    // own toolbar.
     drawColorInputEl = document.createElement("input");
     drawColorInputEl.type = "color";
     drawColorInputEl.className = "form-control form-control-color form-control-sm flex-shrink-0 p-1 d-none";
@@ -843,11 +780,10 @@ export function initMapWidget(
     toolOptionsRow.appendChild(drawColorInputEl);
 
     // AoE shape type — same "shapes" category options as Orrery's own
-    // data-shape-type select, shown only while the Shape tool is armed.
-    // Player-placed annotations stay scoped to plain geometric shapes only
-    // (not the "effects" category too) — unchanged from this tool's own
-    // existing behavior, this widget just now reads the same shared
-    // registry Orrery does instead of a separately hand-maintained list.
+    // select, shown only while the Shape tool is armed. Player-placed
+    // annotations stay scoped to plain geometric shapes only (not the
+    // "effects" category), reading the same shared registry Orrery does
+    // instead of a separately hand-maintained list.
     shapeTypeSelectEl = document.createElement("select");
     shapeTypeSelectEl.className = "form-select form-select-sm flex-grow-1 d-none";
     shapeTypeSelectEl.setAttribute("aria-label", "AoE shape type");
@@ -865,9 +801,9 @@ export function initMapWidget(
     shapeReadoutEl = el("span", "small text-body-secondary d-block mt-1 d-none");
     panel.appendChild(shapeReadoutEl);
 
-    // Re-apply whichever tool (if any) was already armed before this panel
-    // got rebuilt — activeTool itself survives a rebuild (instance-scoped),
-    // but the fresh buttons above all start unpressed until this runs.
+    // Re-apply whichever tool was already armed before this panel got
+    // rebuilt — activeTool survives a rebuild (instance-scoped), but the
+    // fresh buttons above all start unpressed until this runs.
     if (activeTool) {
       const armed = activeTool;
       activeTool = null;
@@ -878,35 +814,25 @@ export function initMapWidget(
     return panel;
   }
 
-  // Deliberately NOT the `.orrery-map` class — that rule is
-  // `position: fixed; inset: 0`, meant for Orrery's own full-page host
-  // element, and would blow this widget out to cover the whole viewport.
-  // BaseMapManager only needs a normal positioned container with real
-  // dimensions; it builds its own `.orrery-map-stage`/`.orrery-map-content`
-  // children inside whatever's passed in (orrery/css/styles.css, loaded on
-  // this page too, styles those).
+  // Deliberately NOT the `.orrery-map` class — that rule is `position:
+  // fixed; inset: 0`, meant for Orrery's full-page host, and would blow
+  // this widget out to cover the whole viewport. BaseMapManager only needs
+  // a normal positioned container with real dimensions.
   const viewerHost = el("div");
   viewerHost.style.position = "relative";
   viewerHost.style.width = "100%";
-  // Always fills the widget's own mount point (a flex column sized to this
-  // grid cell's own colSpan/rowSpan-driven footprint) in both dimensions,
-  // not just in forcePlayerView — every card gets a real, resizable grid
-  // cell now (dashboard.js's renderWidgetGrid), GM view included, so there's
-  // no longer a context where a fixed fallback height makes sense; a fixed
-  // 18rem here previously meant resizing a Map widget's grid cell taller
-  // never actually grew the visible map (confirmed directly). Tracks live on
-  // resize via plain CSS (the ResizeObserver below is still needed
-  // separately, for Leaflet's own internal canvas — see its own comment).
+  // Always fills the widget's own mount point in both dimensions, not just
+  // in forcePlayerView — every card gets a real, resizable grid cell now,
+  // GM view included, so a fixed fallback height never makes sense here.
+  // Tracks live on resize via plain CSS (the ResizeObserver below is still
+  // needed separately, for Leaflet's own internal canvas).
   viewerHost.style.flex = "1 1 0";
   viewerHost.style.minHeight = "0";
   viewerHost.style.borderRadius = "0.5rem";
   viewerHost.style.overflow = "hidden";
   // Leaflet caches its container's pixel size at mount and doesn't notice a
-  // CSS-only size change on its own (a well-known Leaflet gotcha) — without
-  // this, resizing the grid cell (via the width/height steppers, or the
-  // Widget Inspector pane narrowing/widening this same column in normal use)
-  // would leave the map canvas at its stale original size, cut off or with
-  // dead space around it.
+  // CSS-only size change on its own — without this, resizing the grid cell
+  // would leave the map canvas at its stale original size.
   const resizeObserver =
     typeof ResizeObserver !== "undefined"
       ? new ResizeObserver(() => baseMapManager?.getMap?.()?.invalidateSize?.())
@@ -914,8 +840,7 @@ export function initMapWidget(
   resizeObserver?.observe(viewerHost);
   // Registered once, on the persistent viewerHost — not inside
   // buildZoomPanel, which gets discarded/rebuilt whenever the base map
-  // changes. See handleToolPointerDown's own comment for why this never
-  // conflicts with marker dragging/clicking.
+  // changes.
   viewerHost.addEventListener("pointerdown", handleToolPointerDown);
 
   function renderError(message) {
@@ -923,20 +848,15 @@ export function initMapWidget(
     container.appendChild(el("p", "text-danger small mb-0", message));
   }
 
-  // Same synchronous, cache-backed lookup Orrery's own app.js keeps (see
-  // that file's own header comment on why a live Vision Range Binding can't
-  // just be fetched inline inside the synchronous render pipeline) — a
-  // separate instance here since this widget has its own dataManager/
-  // lifetime, but both ultimately resolve identically (map-viewer.js's own
-  // resolveMarkerVisionRangeCells/resolveBinding), so a player's own fog
-  // view matches the GM's.
-  // Also backs this widget's own condition-icon resolution (see
-  // resolveMarkerConditionIconsForMarker below) — same staleness fix as
-  // orrery/js/app.js's own CHARACTER_PAYLOAD_STALE_MS (see that file's
-  // comment for the confirmed "cached forever, a condition added mid-session
-  // never appeared" bug this closes): a plain fetch-once cache never picks
-  // up a condition added via Combat Tracker while a player already has this
-  // widget open.
+  // Same synchronous, cache-backed lookup Orrery's own app.js keeps (a live
+  // Vision Range Binding can't be fetched inline inside the synchronous
+  // render pipeline) — a separate instance here since this widget has its
+  // own dataManager/lifetime, but both resolve identically, so a player's
+  // fog view matches the GM's.
+  // Also backs this widget's own condition-icon resolution below — same
+  // staleness fix as orrery/js/app.js's CHARACTER_PAYLOAD_STALE_MS: a plain
+  // fetch-once cache would never pick up a condition added via Combat
+  // Tracker while a player already has this widget open.
   const CHARACTER_PAYLOAD_STALE_MS = 8000;
   const characterPayloadCache = new Map();
   const characterPayloadFetchedAt = new Map();
@@ -959,12 +879,10 @@ export function initMapWidget(
       })
       .catch(() => {
         // Still stamp the timestamp on failure (a 401/403 for a reference
-        // this viewer will never gain access to, or a character deleted
-        // elsewhere, is not a transient blip that's about to resolve on the
-        // next render) — confirmed real bug this fixes: leaving
-        // characterPayloadFetchedAt unset on failure meant the staleness
-        // window never applied, so a permanently-inaccessible marker refetched
-        // on literally every renderLayers() call with no backoff at all.
+        // this viewer will never gain, or a character deleted elsewhere, is
+        // not a transient blip about to resolve) — otherwise the staleness
+        // window never applies, and a permanently-inaccessible marker
+        // refetches on every renderLayers() call with no backoff.
         characterPayloadFetchedAt.set(refId, Date.now());
         pendingCharacterFetches.delete(refId);
       });
@@ -972,12 +890,9 @@ export function initMapWidget(
 
   // Condition-icon resolution — same "two independent cache instances, one
   // shared algorithm" split as resolveMarkerVisionRangeCells above:
-  // map-viewer.js's own resolveMarkerConditionIcons (imported above) is the
-  // ONE place the actual resolution logic lives; this widget just supplies
-  // its own cache-backed getters (orrery/js/app.js keeps a parallel, but
-  // independent, set of the same caches — see that file's own
-  // resolveMarkerConditionIconsForMarker for why the algorithm itself isn't
-  // duplicated here).
+  // map-viewer.js's resolveMarkerConditionIcons is the one place the actual
+  // resolution logic lives; this widget just supplies its own cache-backed
+  // getters (orrery/js/app.js keeps a parallel, independent set).
   const characterSystemIdCache = new Map();
   function getCachedCharacterSystemId(refId) {
     return characterSystemIdCache.get(refId) || "";
@@ -1021,11 +936,10 @@ export function initMapWidget(
       });
   }
   // A character's own System, resolved via its Template (refId -> template
-  // -> schema), same two-hop lookup orrery/js/app.js's own
-  // ensureCharacterSystemFieldsCached makes — trimmed here to just the
-  // systemId (this widget has no @-autocomplete needing the full field
-  // list), populating both this cache and systemConditionsCache from the
-  // one fetch.
+  // -> schema), same two-hop lookup orrery/js/app.js's
+  // ensureCharacterSystemFieldsCached makes — trimmed to just the systemId
+  // (no @-autocomplete needing the full field list here), populating both
+  // this cache and systemConditionsCache from the one fetch.
   const pendingCharacterSystemIdFetches = new Set();
   function ensureCharacterSystemIdCached(refId, characterPayload, onLoaded) {
     if (!refId || !characterPayload) return;
@@ -1053,15 +967,12 @@ export function initMapWidget(
   }
 
   // The campaign's currently active/spotlighted Encounter — same shape and
-  // reasoning as orrery/js/app.js's own activeEncounterCache (see that
-  // file's comment): a Monster/NPC combatant's live conditions only exist
-  // per-instance on the Encounter record, never on the shared Monster/NPC
-  // record itself. groupId is fixed for this widget's whole lifetime (an
-  // init option, not derived), unlike Orrery's own per-campaign-switch
-  // cache keyed by groupId — a single slot is enough here.
-  // Same "cached forever, never actually re-fetched" bug as
-  // characterPayloadCache above, and the same fix — see
-  // orrery/js/app.js's ACTIVE_ENCOUNTER_STALE_MS comment.
+  // reasoning as orrery/js/app.js's own activeEncounterCache: a Monster/NPC
+  // combatant's live conditions only exist per-instance on the Encounter
+  // record, never the shared record itself. groupId is fixed for this
+  // widget's whole lifetime, unlike Orrery's per-campaign-switch cache
+  // keyed by groupId — a single slot is enough here. Same staleness fix as
+  // characterPayloadCache above.
   const ACTIVE_ENCOUNTER_STALE_MS = 8000;
   let activeEncounterCacheValue = null;
   let activeEncounterFetchedAt = 0;
@@ -1096,8 +1007,8 @@ export function initMapWidget(
     })();
   }
 
-  // Thin wrapper around map-viewer.js's own shared resolveMarkerConditionIcons
-  // — see this widget's own caches just above.
+  // Thin wrapper around map-viewer.js's shared resolveMarkerConditionIcons —
+  // see this widget's own caches just above.
   function resolveMarkerConditionIconsForMarker(markerElement) {
     return resolveMarkerConditionIcons(markerElement, {
       getCharacterPayload: getCachedCharacterPayload,
@@ -1108,9 +1019,8 @@ export function initMapWidget(
   }
 
   // A System's own `resource`-role combatBindings names — same shape as
-  // systemConditionsCache just above, a second independent thing this
-  // widget needs to know about a System's fields (see orrery/js/app.js's
-  // own systemResourceBarConfigCache for why this can't just reuse
+  // systemConditionsCache above, a second independent thing this widget
+  // needs to know about a System's fields (can't just reuse
   // systemConditionsCache's own fetch/cache).
   const systemResourceBarConfigCache = new Map();
   function getCachedSystemResourceBarConfig(systemId) {
@@ -1136,14 +1046,13 @@ export function initMapWidget(
       });
   }
 
-  // Reads Orrery's own per-System "which resource is the Marker Resource Bar"
-  // preference straight out of its `orrery-settings` localStorage bucket —
-  // same precedent as the Dashboard's own Encounter Difficulty calculator
-  // widget reading Crucible's `crucible-settings` bucket directly
-  // (calculator.js) — rather than this widget owning a second, independent
-  // copy of that setting. Read-only here (only Orrery's own Settings modal
-  // ever writes it); falls back to the same guessBarResourceName heuristic
-  // Orrery itself falls back to when nothing's explicitly set yet.
+  // Reads Orrery's own per-System "which resource is the Marker Resource
+  // Bar" preference straight out of its `orrery-settings` localStorage
+  // bucket — same precedent as the Dashboard's Encounter Difficulty
+  // calculator widget reading Crucible's `crucible-settings` bucket
+  // directly, rather than owning a second, independent copy of the
+  // setting. Read-only here; falls back to the same guessBarResourceName
+  // heuristic Orrery uses when nothing's explicitly set yet.
   function resolveEffectiveBarResourceName(systemId) {
     if (!systemId) return "";
     const explicit = dataManager?.getLocal?.("orrery-settings", systemId)?.barResourceName || "";
@@ -1244,8 +1153,7 @@ export function initMapWidget(
 
   // Doors persist immediately (fresh fetch-patch-save via
   // persistElementUpdate, same as a marker move below) — this widget has no
-  // Save button/local-dirty-state concept at all, unlike Orrery's own
-  // authoring surface.
+  // Save button/local-dirty-state concept, unlike Orrery's authoring surface.
   async function toggleDoor(layer, elementId) {
     try {
       const freshMap = await persistElementUpdate({
@@ -1268,16 +1176,14 @@ export function initMapWidget(
   }
 
   // A small popover for re-icon/re-coloring a marker the viewer controls —
-  // opened by a plain click (not a drag) on that marker, same
-  // isMarkerDraggable ownership gate buildRestrictedMapOptions already makes
-  // for dragging it (see onMarkerClicked below). Appended to viewerHost, a
-  // sibling of the overlay renderLayers() rebuilds on every poll/live-stream
-  // update — not a child of it — so an incoming update while this is open
-  // doesn't tear it out from under the viewer.
+  // opened by a plain click (not a drag), same isMarkerDraggable ownership
+  // gate buildRestrictedMapOptions makes for dragging it. Appended to
+  // viewerHost, a sibling of the overlay renderLayers() rebuilds on every
+  // poll/live-stream update — not a child of it — so an incoming update
+  // while this is open doesn't tear it out from under the viewer.
   let markerEditorPopover = null;
   function closeMarkerEditor() {
-    // Disposed before removal, not left to be garbage-collected — this
-    // popover's own color/opacity/icon inputs all carry real tooltips now,
+    // Disposed before removal — this popover's inputs carry real tooltips,
     // any of which could still be open the moment this runs. See
     // tooltips.js's own BUG CLASS 2.
     if (markerEditorPopover) disposeTooltips(markerEditorPopover);
@@ -1290,20 +1196,17 @@ export function initMapWidget(
       closeMarkerEditor();
     }
   }
-  // Same fetch-fresh/patch/save immediacy as a marker drag/door toggle —
-  // this widget has no Save button/local-dirty-state concept at all. Field-
-  // agnostic and element-kind-agnostic on purpose: used for a marker's own
-  // outlineColor/overlayIcons (the click-to-edit popover) AND a player-owned
-  // shape's own origin (drag-to-move) — both are just "patch one field on
-  // one element," nothing marker-specific about the mechanism itself.
+  // Same fetch-fresh/patch/save immediacy as a marker drag/door toggle.
+  // Field-agnostic and element-kind-agnostic on purpose: used for a
+  // marker's outlineColor/overlayIcons AND a player-owned shape's own
+  // origin (drag-to-move) — both are just "patch one field on one element."
   async function persistElementField(layer, elementId, field, value) {
     return persistElementFields(layer, elementId, { [field]: value });
   }
-  // Same fetch-fresh/patch/save shape as persistElementField, generalized to
-  // a multi-key patch object — used for the drawing color swatch, which
-  // writes fillColor AND strokeColor together (one shared color, see
-  // drawColor's own declaration comment) as a single round trip rather than
-  // two sequential fetch-fresh/save calls racing each other.
+  // Same shape as persistElementField, generalized to a multi-key patch —
+  // used for the drawing color swatch, which writes fillColor AND
+  // strokeColor together as a single round trip rather than two racing
+  // fetch-fresh/save calls.
   async function persistElementFields(layer, elementId, patch) {
     try {
       const freshMap = await persistElementUpdate({
@@ -1322,13 +1225,12 @@ export function initMapWidget(
       status?.show(error.message || "Unable to save that change.", { type: "error" });
     }
   }
-  // Re-reads the layer/marker from the CURRENT `map` (post-persistElementField,
-  // which already replaced it) and rebuilds the popover in place — needed
-  // for overlayIcons specifically, since each add/remove has to build its
-  // next array off the latest server-confirmed list, not whatever was
-  // captured in this popover's own closure when it first opened (two
-  // additions in a row would otherwise each compute from the SAME stale
-  // starting array and silently drop one of them).
+  // Re-reads the layer/marker from the CURRENT `map` (post-
+  // persistElementField, which already replaced it) and rebuilds the
+  // popover in place — needed for overlayIcons specifically, since each
+  // add/remove has to build its next array off the latest server-confirmed
+  // list, not the popover's own stale closure (two additions in a row
+  // would otherwise each compute from the same stale array and drop one).
   function reopenMarkerEditor(layerId, elementId, dotEl) {
     const freshLayer = map?.layers?.find((entry) => entry.id === layerId);
     const freshMarker = freshLayer?.elements?.find((entry) => entry.id === elementId);
@@ -1337,18 +1239,16 @@ export function initMapWidget(
 
   // Color + icons only — no image field. A player can recolor/re-icon their
   // own token the same way they can already move it, but replacing its
-  // portrait is map-design work, not a quick in-play touch-up. Kept as
-  // compact as possible: no field labels beyond a title attribute, a single
-  // small color swatch, and one icon-add input with existing badges shown
-  // as small removable chips below it only when there are any.
+  // portrait is map-design work, not a quick in-play touch-up. Kept
+  // compact: no field labels beyond a title attribute, a small color
+  // swatch, and one icon-add input with existing badges as removable chips.
   function openMarkerEditor(layer, markerElement, dotEl) {
     closeMarkerEditor();
     const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-1");
     popover.style.position = "fixed";
-    // Wider than the bare minimum the color swatch + icon input need —
-    // the icon search dropdown's own width is tied to its parent's (w-100,
-    // icon-picker.js), so a narrow popover meant a narrow, hard-to-read
-    // results list too.
+    // Wider than the bare minimum the color swatch + icon input need — the
+    // icon search dropdown's width is tied to its parent's (w-100), so a
+    // narrow popover meant a narrow, hard-to-read results list too.
     popover.style.width = "16rem";
     popover.style.zIndex = "1040";
     const rect = dotEl?.getBoundingClientRect?.();
@@ -1359,8 +1259,7 @@ export function initMapWidget(
     popover.style.left = `${Math.max(hostRect.left + 4, left)}px`;
 
     // One row: color swatch, icon picker directly beside it. No visible
-    // labels — tooltips carry that instead, per the "as compact as
-    // possible" brief.
+    // labels — tooltips carry that instead.
     const mainRow = el("div", "d-flex align-items-center gap-1");
     const colorInput = document.createElement("input");
     colorInput.type = "color";
@@ -1377,10 +1276,9 @@ export function initMapWidget(
     mainRow.appendChild(colorInput);
 
     // createIconPickerField's own wrapper is label-on-top; only its inner
-    // `.input-group` (preview + search input) is reused here so it can sit
-    // directly beside the color swatch in one row instead — the label
-    // itself is simply never appended anywhere, `title`/aria-label below
-    // carry its meaning instead.
+    // `.input-group` (preview + search input) is reused here so it sits
+    // directly beside the color swatch — the label is never appended,
+    // `title`/aria-label below carry its meaning instead.
     const iconField = createIconPickerField({
       onSelect: (value) => {
         if (!value) return;
@@ -1430,22 +1328,18 @@ export function initMapWidget(
 
     viewerHost.appendChild(popover);
     markerEditorPopover = popover;
-    // Capture phase — a click on the marker's own dot that opened this
-    // popover has already fired by the time this listener is attached
-    // (openMarkerEditor runs synchronously from that same click), so it
-    // never immediately closes itself.
+    // Capture phase — a click on the marker's dot that opened this popover
+    // has already fired by the time this listener is attached (this runs
+    // synchronously from that same click), so it never closes itself.
     document.addEventListener("pointerdown", onOutsidePointerDown, true);
   }
 
   // A minimal sibling of openMarkerEditor above, for a marker this viewer
-  // can't drag (not their own character token) but that still references a
-  // real Library record — a plain click on one of those used to do nothing
-  // at all. Just the marker's own label and a link out to wherever that
-  // record actually lives (Vault, Forge, Repository, ...), reusing the same
-  // markerEditorPopover/closeMarkerEditor/onOutsidePointerDown lifecycle
-  // (only one floating panel open at a time either way).
-  // One shared roster fetch for the lifetime of this widget instance (not
-  // one per popover/entry) — see resolveGiveToOptions' own header comment.
+  // can't drag but that still references a real Library record — a plain
+  // click on one of those used to do nothing. Just the marker's label and a
+  // link out to wherever that record lives, reusing the same
+  // markerEditorPopover/closeMarkerEditor/onOutsidePointerDown lifecycle.
+  // One shared roster fetch for the lifetime of this widget instance.
   let giveToRosterPromise = null;
   function loadGiveToRoster() {
     if (!giveToRosterPromise) {
@@ -1457,10 +1351,9 @@ export function initMapWidget(
   function openMarkerLinkPopover(layer, markerElement, dotEl) {
     const target = resolveMarkerLinkTarget(markerElement);
     const contents = markerElement.contents || [];
-    // Opens for a real reference (the pre-existing "Open in <Tool>" case) OR
-    // a marker carrying unclaimed Contents — see marker-contents.js's own
-    // header comment for the full claim mechanism, shared as-is with
-    // Orrery's own identical addition to openRestrictedMarkerLinkPopover.
+    // Opens for a real reference ("Open in <Tool>") OR a marker carrying
+    // unclaimed Contents — see marker-contents.js's own claim mechanism,
+    // shared as-is with Orrery's identical openRestrictedMarkerLinkPopover.
     if (!target && !contents.length) return;
     closeMarkerEditor();
     const popover = el("div", "orrery-floating-panel d-flex flex-column gap-1 p-2");
@@ -1524,13 +1417,10 @@ export function initMapWidget(
 
       // GM-only "Give to" — delivers this entry to a specific player's
       // Character (or the Party) instead of "Claim" always taking it for
-      // the GM's own account. Not every player has this widget open, and
-      // the GM should always be able to complete the delivery regardless.
-      // Same claimMarkerContentEntry, just with an explicit recipient
-      // override — see marker-contents.js's own resolveGiveToOptions
-      // header comment. This popover (unlike Orrery's own split
-      // restricted/full-access views) is shown to every viewer, so the
-      // tier check genuinely gates this, not just hides it.
+      // the GM's own account. Same claimMarkerContentEntry, just with an
+      // explicit recipient override. This popover (unlike Orrery's split
+      // restricted/full-access views) is shown to every viewer, so the tier
+      // check genuinely gates this, not just hides it.
       if (dataManager?.meetsTier?.("gm")) {
         const giveToSelect = document.createElement("select");
         giveToSelect.className = "form-select form-select-sm";
@@ -1596,13 +1486,11 @@ export function initMapWidget(
   }
 
   // Fires the fetch for every character-linked marker whose Vision Range is
-  // actually Bound/Formula (a plain literal Text value needs no fetch at
-  // all — resolveMarkerVisionRangeCells only ever calls getCharacterPayload
-  // when there's a real binding/formula string to resolve). Fire-and-forget,
-  // same "populate cache, re-render once it resolves" shape as app.js's own
-  // — called every renderLayers() pass, but ensureCharacterPayloadCached
-  // itself is a no-op once cached/in-flight, so this is cheap after the
-  // first pass.
+  // actually Bound/Formula (a plain literal Text value needs no fetch —
+  // resolveMarkerVisionRangeCells only calls getCharacterPayload when
+  // there's a real binding/formula string). Fire-and-forget, called every
+  // renderLayers() pass, but ensureCharacterPayloadCached is a no-op once
+  // cached/in-flight, so this is cheap after the first pass.
   function primeCharacterPayloadCache() {
     (map.layers || []).forEach((layer) => {
       if (layer.type !== "marker") return;
@@ -1619,18 +1507,14 @@ export function initMapWidget(
     const overlay = baseMapManager?.getOverlayContainer();
     if (!overlay || !map) return;
     // A drag tracks the cursor via direct style mutation on its own dot
-    // element (beginMarkerDrag, map-viewer.js), entirely outside this
-    // function — it needs nothing from a re-render until the gesture ends
-    // (onMarkerDragEnd handles that explicitly). ANY render triggered while
-    // a drag is in flight would rebuild the marker layer's DOM and tear out
-    // that exact dot from under the pointer-capture driving the gesture —
-    // confirmed real bug, and not just from the poll (onMapChanged's own
-    // isDraggingMarker guard already covered that): the ownership-catalog/
-    // vision-payload caches just below each kick off their own fire-and-
-    // forget fetch-then-render-again the FIRST time this runs after a
-    // fresh page load, i.e. almost exactly when a first, freshly-loaded
-    // test drag is most likely to be in progress. One guard here covers
-    // every trigger uniformly instead of chasing each one individually.
+    // element, entirely outside this function — it needs nothing from a
+    // re-render until the gesture ends. ANY render triggered mid-drag would
+    // rebuild the marker layer's DOM and tear out that exact dot from under
+    // the pointer capture — not just from the poll (onMapChanged's own
+    // guard covers that): the ownership/vision-payload caches below each
+    // kick off their own fetch-then-render-again the first time this runs,
+    // right when a first, freshly-loaded test drag is most likely
+    // in-flight. One guard here covers every trigger uniformly.
     if (isDraggingMarker) return;
     primeCharacterPayloadCache();
     primeConditionIconCache();
@@ -1639,16 +1523,14 @@ export function initMapWidget(
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
       // Every vector layer opts into click/drag for a restricted viewer —
-      // there's no dedicated "Player Drawings" layer anymore (a drawing/
-      // shape just lands on whichever ordinary vector layer Draw/Shape
-      // resolve via persistPlayerDrawing, same as any GM-authored one).
-      // Harmless for a GM's own decorative shapes too: per-element
-      // ownership (can THIS viewer actually act on THIS one drawing) is
-      // checked inside onVectorPathClick/onShapeDragEnd below, not here —
-      // this only controls whether a hit target exists at all. Walls/lights
-      // stay non-interactive regardless (createVectorLayerElement only
-      // wires their own onWallDragEnd off isSelected, which this widget
-      // never sets or passes a handler for).
+      // there's no dedicated "Player Drawings" layer (a drawing/shape lands
+      // on whichever ordinary vector layer Draw/Shape resolve via
+      // persistPlayerDrawing, same as any GM-authored one). Harmless for a
+      // GM's own decorative shapes too: per-element ownership is checked
+      // inside onVectorPathClick/onShapeDragEnd below, not here — this only
+      // controls whether a hit target exists. Walls/lights stay
+      // non-interactive regardless (their onWallDragEnd is wired off
+      // isSelected, which this widget never sets).
       isVectorLayerInteractive: () => true,
       onVectorPathClick: (layer, elementId, event) => {
         if (activeTool) return; // mid-placement — a click here is the NEXT point/shape, not a selection
@@ -1686,21 +1568,20 @@ export function initMapWidget(
         onDragStateChange: (dragging) => {
           isDraggingMarker = dragging;
         },
-        // Same map-owner check canManageDrawing already uses for player-
-        // drawn shapes — gives the GM full drag/click-to-edit parity on
-        // Monster/NPC markers too, not just the character-ownership path
-        // every other viewer is limited to.
+        // Same map-owner check canManageDrawing uses for player-drawn
+        // shapes — gives the GM full drag/click-to-edit parity on
+        // Monster/NPC markers too, not just character-ownership.
         hasMapOwnerAccess: isMapOwnerOrAdmin,
       }),
     });
   }
 
-  // Shapes & Effects plan, Part 5 — finds a placed, non-looping particle
-  // effect by its own label, or (if it has none) by the label of the marker
-  // it's attachedMarkerId-attached to ("a named trap" and "whatever's on the
-  // Ancient Red Dragon" both resolve through the same lookup). Resolved
-  // fresh against the currently-loaded `map` every call, never cached —
-  // an attached effect's target can move/rename between macro runs.
+  // Finds a placed, non-looping particle effect by its own label, or (if
+  // it has none) by the label of the marker it's attachedMarkerId-attached
+  // to ("a named trap" and "whatever's on the Ancient Red Dragon" both
+  // resolve through the same lookup). Resolved fresh against the
+  // currently-loaded `map` every call, never cached — an attached effect's
+  // target can move/rename between macro runs.
   function findEffectElementByLabel(target) {
     if (!map || !target) return null;
     const norm = String(target).trim().toLowerCase();
@@ -1729,19 +1610,18 @@ export function initMapWidget(
   }
 
   // Replays a placed effect's run() cycle locally by resetting its
-  // "already played" state (map-viewer.js's own particleEffectPlayedOnce)
-  // and forcing a re-render — renderMapLayers rebuilds every element fresh,
-  // so the particle canvas simply gets created again and plays through.
+  // "already played" state and forcing a re-render — renderMapLayers
+  // rebuilds every element fresh, so the particle canvas gets created
+  // again and plays through.
   function triggerEffect(layer, element) {
     resetParticleEffectPlayState(element.id);
     renderLayers();
   }
 
-  // Local, macro-driven trigger (macro-runner.js's runEffectsMacroAction) —
-  // replays locally and returns the resolved element's id so the caller can
-  // broadcast it to the rest of the table; throws a clear error on no match,
-  // same "fail loudly to the macro's own toast" precedent runDeckMacroAction
-  // already follows, rather than silently doing nothing.
+  // Local, macro-driven trigger — replays locally and returns the resolved
+  // element's id so the caller can broadcast it to the rest of the table;
+  // throws a clear error on no match, same "fail loudly to the macro's own
+  // toast" precedent runDeckMacroAction follows, rather than doing nothing.
   function triggerByLabel(target) {
     const found = findEffectElementByLabel(target);
     if (!found) {
@@ -1751,11 +1631,11 @@ export function initMapWidget(
     return found.element.id;
   }
 
-  // Remote broadcast delivery (dashboard.js's effectTrigger subscription) —
-  // finds the exact element by id in the already-loaded map data and
-  // replays it. Silently does nothing on no match (map out of date, or this
-  // viewer's copy hasn't caught up yet) — same accepted tradeoff pings
-  // already have, not an error worth surfacing to a viewer who did nothing.
+  // Remote broadcast delivery — finds the exact element by id in the
+  // already-loaded map data and replays it. Silently does nothing on no
+  // match (map out of date, or this viewer hasn't caught up yet) — same
+  // accepted tradeoff pings already have, not an error worth surfacing to
+  // a viewer who did nothing.
   function triggerElementById(elementId) {
     if (!map || !elementId) return;
     for (const layer of map.layers || []) {
@@ -1767,13 +1647,12 @@ export function initMapWidget(
     }
   }
 
-  // Read-modify-write against a *fresh* fetch (preferLocal: false), not the
-  // in-memory `map` this widget last loaded — the GM could have changed the
-  // map (new marker, layer visibility, ...) in the moments since, and a
-  // stale full-object save would silently clobber that. Same reasoning as
-  // combat-tracker.js's writeThroughToCharacter. Delegates to
+  // Read-modify-write against a *fresh* fetch, not the in-memory `map` this
+  // widget last loaded — the GM could have changed the map in the moments
+  // since, and a stale full-object save would silently clobber that. Same
+  // reasoning as combat-tracker.js's writeThroughToCharacter. Delegates to
   // map-live-sync.js's shared helper — Orrery's own authoring surface uses
-  // the exact same one for the same reason.
+  // the same one.
   async function persistMarkerMove(layerId, elementId, nextPosition) {
     try {
       const freshMap = await persistMarkerMoveShared({ dataManager, mapId, shareToken, layerId, elementId, nextPosition });
@@ -1788,77 +1667,61 @@ export function initMapWidget(
 
   // onMapChanged has two independent triggers (the poll timer and the live
   // stream) that can overlap — watchMapForChanges single-flights its own
-  // underlying fetch, but this handler itself still isn't reentrant-safe
-  // once inside the `!baseMapManager` branch: a second trigger arriving
-  // mid-construction could build a SECOND BaseMapManager (a second Leaflet
-  // map instance) on top of the first, whose own overlay would silently
-  // keep rendering its own copy of every marker underneath/alongside the
-  // one from whichever instance won last — a real "second marker" a viewer
-  // would see, with no code path that ever cleans up the orphaned instance.
-  // watchMapForChanges' own single-flighting is enough here since this
-  // handler has no further `await` inside it (unlike the old inline
-  // doLoad, which awaited its own fetch) — nothing can interleave partway
-  // through a single call.
+  // fetch, but a second trigger arriving mid-construction inside the
+  // `!baseMapManager` branch could build a SECOND BaseMapManager on top of
+  // the first, whose overlay would keep rendering its own copy of every
+  // marker with no code path that ever cleans up the orphan. Safe here
+  // since this handler has no `await` inside it — nothing can interleave
+  // partway through a single call.
   function onMapChanged(nextMap) {
-    // isDraggingMarker — see buildRestrictedMapOptions' own onDragStateChange
-    // comment; applying an incoming update mid-drag would rebuild the
-    // marker layer's DOM out from under the pointer-capture driving that
-    // gesture.
+    // Applying an incoming update mid-drag would rebuild the marker
+    // layer's DOM out from under the pointer capture driving that gesture.
     if (destroyed || !nextMap || isDraggingMarker) return;
     map = nextMap;
     onTitleChange?.(map.name || "");
     if (!baseMapManager) {
       container.innerHTML = "";
       container.appendChild(viewerHost);
-      // onViewChange re-renders layers on every Leaflet moveend/zoomend (see
-      // base-maps.js's TileBaseMap.emitChange) — exactly what Orrery's own
-      // app.js does with its own render function. Without this, a marker's
-      // on-screen position (computed via leafletMap.latLngToLayerPoint —
-      // see map-viewer.js's own comment on why that's zoom-relative) is only
-      // ever correct as of whenever renderLayers() last ran; zooming without
-      // it left every marker's pixel position stale until the next 30s poll.
+      // onViewChange re-renders layers on every Leaflet moveend/zoomend,
+      // exactly what Orrery's own app.js does. Without this, a marker's
+      // on-screen position (zoom-relative) is only correct as of whenever
+      // renderLayers() last ran — zooming without it left every marker's
+      // pixel position stale until the next poll.
       baseMapManager = new BaseMapManager({ container: viewerHost, onViewChange: () => renderLayers() });
     }
-    // Only resets pan/zoom (setBaseMap) when the base map itself actually
-    // changed — a live-triggered reload from an unrelated edit (a moved
-    // marker, a renamed layer) shouldn't yank a player's view back to the
-    // default every 30 seconds.
+    // Only resets pan/zoom when the base map itself actually changed — a
+    // live-triggered reload from an unrelated edit shouldn't yank a
+    // player's view back to default every poll.
     const signature = JSON.stringify(map.baseMap);
     if (signature !== baseMapSignature) {
       baseMapSignature = signature;
       baseMapManager.setBaseMap(map.baseMap, map.view);
-      // setBaseMap()'s own mount() clears `viewerHost` entirely (see
-      // base-maps.js's clearContainer) — the zoom panel has to be (re)built
-      // AFTER that, never before, or it's wiped out the instant this runs.
+      // setBaseMap()'s own mount() clears `viewerHost` entirely — the zoom
+      // panel has to be (re)built AFTER that, never before.
       zoomPanel = null;
     }
     if (!zoomPanel) {
       zoomPanel = buildZoomPanel();
       viewerHost.appendChild(zoomPanel);
     }
-    // Also covers the case where the panel WASN'T rebuilt this pass (base
-    // map unchanged) — a GM configuring Scale/Unit mid-session shouldn't
-    // leave Measure stuck disabled until some unrelated base-map edit.
+    // Also covers the panel-not-rebuilt case — a GM configuring Scale/Unit
+    // mid-session shouldn't leave Measure stuck disabled until some
+    // unrelated base-map edit.
     refreshToolAvailability();
     renderLayers();
   }
 
-  // Condition icons only actually change on an "encounter" or "character"
-  // record save — Combat Tracker (combat-tracker.js) already subscribes to
-  // exactly these same two live-stream kinds for the same reason (per the
-  // "check for existing transport before inventing a new mechanism"
-  // principle, reusing it rather than adding a second one). Without this,
-  // a just-added condition only ever appeared once CHARACTER_PAYLOAD_STALE_MS/
-  // ACTIVE_ENCOUNTER_STALE_MS's own staleness window happened to lapse —
-  // confirmed real gap: technically correct eventually, but a GM watching
-  // the table live saw a multi-second lag with no way to force it sooner.
-  // This reuses the SAME pooled EventSource connectLiveStream/
-  // watchMapForChanges below already opens for this group (poolKey is
-  // (dataManager, groupId, shareToken) — a second connectLiveStream call
-  // for the same triple is a ref-counted subscribe, not a new connection),
-  // so this costs nothing extra on the wire; it just adds two more
-  // listeners on it, each collapsing the relevant cache entry and
-  // re-rendering immediately instead of waiting out the staleness window.
+  // Condition icons only change on an "encounter" or "character" record
+  // save — Combat Tracker already subscribes to these same two live-stream
+  // kinds, reused here rather than inventing a second mechanism. Without
+  // this, a just-added condition only appeared once the staleness window
+  // happened to lapse — technically correct eventually, but a GM watching
+  // live saw a multi-second lag. Reuses the SAME pooled EventSource
+  // connectLiveStream/watchMapForChanges already opens for this group (a
+  // second call for the same (dataManager, groupId, shareToken) triple is
+  // a ref-counted subscribe, not a new connection), so this costs nothing
+  // extra on the wire — just two more listeners, each collapsing the
+  // relevant cache entry and re-rendering immediately.
   if (groupId) {
     conditionLiveStream = connectLiveStream({ dataManager, groupId, kinds: ["encounter", "character"], shareToken });
     conditionLiveStream.subscribe("encounter", () => {
@@ -1877,9 +1740,8 @@ export function initMapWidget(
 
   // watchMapForChanges owns the poll (createReliableInterval, not plain
   // window.setInterval — a Map popped out onto a physical second screen
-  // sits unfocused for the whole session; plain setInterval was confirmed
-  // to stall there until the window was manually refocused, see
-  // reliable-interval.js's own header) plus the live-stream "wake sooner"
+  // sits unfocused for the whole session, and plain setInterval stalls
+  // there until manually refocused) plus the live-stream "wake sooner"
   // subscription.
   watcher = watchMapForChanges({
     dataManager,
@@ -1892,7 +1754,7 @@ export function initMapWidget(
       if (!destroyed) renderError("Unable to load this map.");
     },
     // Orrery's click-to-ping tool — this widget IS the "table" a GM pings,
-    // so it only ever needs to render one, never send one.
+    // so it only ever renders one, never sends one.
     onPing: ({ position, by }) => {
       const overlay = baseMapManager?.getOverlayContainer();
       if (!overlay || !map || !position) return;
@@ -1906,32 +1768,25 @@ export function initMapWidget(
       void refreshVisibility();
     },
     // Lets a sibling widget on the SAME dashboard discover "which map is
-    // this card showing" without needing it spotlighted to players at all —
-    // dashboard.js's own findActiveWidgetInstance("map") reads this (via
-    // its own isVisible gate just below) to resolve combat-tracker.js's own
-    // "active map" for a GM who's prepping a map before revealing it. Fixed
-    // for this widget instance's whole lifetime (this file's own header
-    // comment — a new map means a new instance), so a plain property is
-    // enough; no need for a live getter.
+    // this card showing" without needing it spotlighted to players —
+    // dashboard.js's findActiveWidgetInstance("map") reads this to resolve
+    // combat-tracker.js's "active map" for a GM prepping before revealing
+    // it. Fixed for this widget instance's whole lifetime, so a plain
+    // property is enough — no need for a live getter.
     mapId,
-    // Shapes & Effects plan, Part 5 — see triggerByLabel/triggerElementById's
-    // own comments just above.
     triggerByLabel,
     triggerElementById,
     // Map has no per-card show/hide toggle of its own (unlike Clock/
-    // Calendar, which findActiveWidgetInstance's own isVisible gate was
-    // originally written for) — always true once mounted, so the FIRST
-    // Map card in layout order wins when a dashboard has more than one
-    // (multiple: true), same accepted "which of several" tradeoff Clock/
-    // Calendar's own callers already live with.
+    // Calendar) — always true once mounted, so the FIRST Map card in
+    // layout order wins when a dashboard has more than one, same accepted
+    // tradeoff Clock/Calendar's own callers live with.
     isVisible: () => true,
     // `removed` (dashboard.js's removeWidget passes true) — this instance's
-    // own spotlight (if any) needs clearing, same bug/fix as handout.js's
-    // own destroy(removed): without this, removing a currently-shown Map
-    // orphans that spotlight entry as still "active," so adding a fresh Map
-    // widget for the same record later finds it via resolveIsSpotlighted and
-    // shows "Show to Table" already ON even though nothing new was ever
-    // actually posted for players to be notified about.
+    // own spotlight (if any) needs clearing, same fix as handout.js's own
+    // destroy(removed): without it, removing a currently-shown Map orphans
+    // that spotlight entry as still "active," so a fresh Map widget for
+    // the same record later shows "Show to Table" already ON even though
+    // nothing new was posted for players to be notified about.
     async destroy(removed) {
       destroyed = true;
       watcher.stop();

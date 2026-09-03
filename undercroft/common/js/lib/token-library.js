@@ -1,18 +1,13 @@
 // A shared, server-persisted library of GM-added token image links (links
-// only — no file hosting by this app) for map tokens/portraits (Orrery
-// marker images, Forge NPC / Crucible Monster portraits) — same pattern
-// audio-clip-library.js/font-library.js already established: a flat JSON
-// file (common/data/token-library.json), not a Library kind, since there's
-// no per-token ownership/sharing to model, just one shared catalog everyone
-// reads from and gm+ can add to. Framework-free (no DataManager import) on
-// purpose, same reasoning those two give — callers pass whatever auth token
-// they already have.
+// only — no file hosting) for map tokens/portraits — same pattern as
+// audio-clip-library.js/font-library.js: a flat JSON file, not a Library
+// kind, since there's no per-token ownership/sharing, just one shared
+// catalog gm+ can add to. Framework-free (no DataManager import) — callers
+// pass whatever auth token they already have.
 export const BUILTIN_TOKENS = [];
 
-// Tokens added at runtime (via the picker's own "Save to library" form) or
-// loaded from the server on mount — starts empty, grows in-memory
-// immediately on add (optimistic) and is repopulated from the server via
-// loadTokenLibrary.
+// Starts empty, grows in-memory immediately on add (optimistic), and is
+// repopulated from the server via loadTokenLibrary.
 let customTokens = [];
 
 export function getAllTokens() {
@@ -23,10 +18,8 @@ export function getTokenById(id) {
   return customTokens.find((token) => token.id === id) ?? null;
 }
 
-// Upserts by id — re-registering an id that already exists (this GM's own
-// optimistic add landing again after the server round-trip, or two people
-// adding the same token independently) replaces it in place rather than
-// duplicating the list.
+// Upserts by id — re-registering an existing id (an optimistic add landing
+// again after the server round-trip) replaces it in place, not duplicated.
 export function registerToken(token) {
   if (!token?.id || !token.url) return null;
   const index = customTokens.findIndex((entry) => entry.id === token.id);
@@ -38,9 +31,7 @@ export function registerToken(token) {
   return token;
 }
 
-// Removes it from the in-memory list only — callers pair this with
-// deleteToken for the server-persisted removal, same "update immediately,
-// persist async" shape as adding one.
+// In-memory only — callers pair this with deleteToken for the persisted removal.
 export function removeTokenLocally(id) {
   customTokens = customTokens.filter((token) => token.id !== id);
 }
@@ -53,11 +44,8 @@ async function loadJson(url) {
   return response.json();
 }
 
-// Mirrors audio-clip-library.js's own loadClipLibrary exactly — same
-// server-persisted, shared-across-everyone pattern, same "register
-// immediately in-memory, persist async" flow. No internal caching guard — a
-// picker mounted more than once in one session just re-fetches and
-// re-registers, harmless.
+// Mirrors audio-clip-library.js's loadClipLibrary. No internal caching guard
+// — a picker mounted more than once just re-fetches/re-registers, harmless.
 export async function loadTokenLibrary() {
   try {
     const url = new URL("../../data/token-library.json", import.meta.url);

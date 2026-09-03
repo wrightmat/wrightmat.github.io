@@ -1,6 +1,6 @@
-// Loom's declarative mapping engine: interprets a "mapping definition" (a JSON
-// tree) against a raw source object and produces a standardized target JSON
-// value. Every node produces a JSON value (unlike press/js/template-renderer.js,
+// Loom's declarative mapping engine: interprets a "mapping definition" (a
+// JSON tree) against a raw source object and produces a standardized target
+// JSON value. Every node produces a JSON value (unlike template-renderer.js,
 // which interprets a similar tree shape but produces DOM).
 //
 // Node types:
@@ -8,52 +8,37 @@
 //   field    { type:"field", bind:"@path" | "=formula" }           -> scalar value
 //   pipeline { type:"pipeline", source, steps:[...] }              -> array or object
 //   custom   { type:"custom", fn:"name", args:{...} }              -> whatever fn returns
-//   with     { type:"with", bindings:{name:node,...}, body:node }  -> body evaluated with
-//                                                                     each binding's result
-//                                                                     merged into context first
-//                                                                     (sequential: later bindings
-//                                                                     can reference earlier ones) —
-//                                                                     for shared subcomputations
-//                                                                     (e.g. resolved modifiers,
-//                                                                     ability scores) multiple
-//                                                                     sibling fields need without
-//                                                                     recomputing per field.
+//   with     { type:"with", bindings:{name:node,...}, body:node }  -> body evaluated with each
+//                                                                     binding's result merged into
+//                                                                     context first (sequential —
+//                                                                     later bindings can reference
+//                                                                     earlier ones), for shared
+//                                                                     subcomputations multiple
+//                                                                     sibling fields need
 //
-// Pipeline steps operate on the current value (coerced to an array unless it's
+// Pipeline steps operate on the current value (coerced to an array unless
 // already an object, for group-by/flatten's object-of-arrays case):
 //   { step:"map", item: node }                    - apply `item` to every element
 //   { step:"filter", bind }                        - keep elements where bind is truthy
 //   { step:"flatten" }                              - array-of-arrays or object-of-arrays -> one array
 //   { step:"group-by", bind }                       - -> { [bind result]: [elements...] }
-//   { step:"entries", keyName, valueName }           - object-of-arrays (e.g. group-by's own
-//                                                       output) -> [{[keyName]:k, [valueName]:v}, ...],
-//                                                       one entry per own key, in the same order
-//                                                       Object.entries would give (ascending
-//                                                       numeric order for integer-like string
-//                                                       keys — exactly group-by's own key shape —
-//                                                       regardless of insertion order, per the
-//                                                       JS spec). Needed whenever a template author
-//                                                       needs to loop over the GROUPS themselves
-//                                                       (e.g. a Repeater-of-Repeaters over spell
-//                                                       levels) rather than reach into one already-
-//                                                       known key directly (@spells.3) — a plain
-//                                                       object has no length/index a Repeater's own
-//                                                       binding can iterate. keyName/valueName
-//                                                       default to "key"/"value"; a numeric-looking
-//                                                       key is coerced back to a real number (group-
-//                                                       by's own key is always a string) so a bound
-//                                                       @level reads as 3, not "3".
+//   { step:"entries", keyName, valueName }           - group-by's own output -> [{[keyName]:k,
+//                                                       [valueName]:v}, ...] — needed to loop over
+//                                                       the GROUPS themselves (a plain object has no
+//                                                       length/index a Repeater can iterate);
+//                                                       defaults "key"/"value", numeric-looking keys
+//                                                       coerced back to real numbers
 //   { step:"sort", bind, direction:"asc"|"desc" }   - order by bind result
 //   { step:"dedup", bind }                          - keep first element per distinct bind result
 //   { step:"custom", fn, args }                     - escape hatch: fn(currentValue, context, args, env)
 //
 // A `source` (on `pipeline`) is either a bind string ("@raw.array") or a
-// `{ fn, args }` custom-function reference, for cases where the starting array
-// has to be assembled from several bespoke places before declarative steps apply.
+// `{ fn, args }` custom-function reference, for a starting array assembled
+// from several bespoke places before declarative steps apply.
 //
-// Inside `map`/`filter`/`sort`/`dedup`, the current element is exposed to bindings
-// both spread directly (so `@name` reaches an object element's own `name` field)
-// and under the reserved key `value` (so `@value` reaches a primitive element,
+// Inside `map`/`filter`/`sort`/`dedup`, the current element is exposed to
+// bindings both spread directly (`@name` reaches an object element's own
+// field) and under the reserved key `value` (reaches a primitive element,
 // or an object element as a whole).
 
 import { resolveBinding } from "./bindings.js";

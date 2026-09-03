@@ -155,11 +155,9 @@ export function initShareModal({ dataManager, status = null } = {}) {
   };
 
   function buildShareUrl(bucket, id, token = "") {
-    // Workbench's own bootstrap (workbench.js) is what actually reads
-    // ?record=<bucket>:<id>&share=<token> to pick a view and load the shared
-    // record — only Characters and Templates have a Workbench view that
-    // consumes this, so every other kind falls back to the current page
-    // (there's no other public "click this link" viewer for it yet).
+    // workbench.js reads ?record=<bucket>:<id>&share=<token> to load the
+    // shared record — only Characters/Templates have a Workbench view for
+    // this, so every other kind falls back to the current page.
     const pageMap = {
       character: "../workbench/index.html",
       template: "../workbench/index.html",
@@ -233,11 +231,10 @@ export function initShareModal({ dataManager, status = null } = {}) {
     renderShareModal();
   }
 
-  // The datalist-driven text input holds one merged namespace of typeable
-  // values — usernames and campaign group names — since a group is just
-  // another kind of share target. Group options are visually distinguished
-  // by a "(Campaign Group)" label suffix; findEligibleShareEntry below
-  // resolves whichever matched by checking `type`.
+  // The datalist input holds one merged namespace — usernames and campaign
+  // group names — since a group is just another share target. Group options
+  // get a "(Campaign Group)" suffix; findEligibleShareEntry below resolves
+  // whichever matched by checking `type`.
   function updateShareUsernameOptions() {
     if (!elements.shareUsernameOptions) return;
     const options = Array.isArray(shareState.eligibleUsers) ? shareState.eligibleUsers : [];
@@ -308,9 +305,8 @@ export function initShareModal({ dataManager, status = null } = {}) {
     }
   }
 
-  // One click instead of picking the same campaign from the full list every
-  // time — only shown once a GM has an active campaign (auth-ui.js's header
-  // control) and only makes sense once a record is actually selected here.
+  // Only shown once a GM has an active campaign (auth-ui.js's header
+  // control) and a record is selected.
   function renderShareQuickButton() {
     if (!elements.shareQuick || !elements.shareQuickButton) return;
     const active = dataManager.getActiveGroup();
@@ -553,10 +549,9 @@ export function initShareModal({ dataManager, status = null } = {}) {
     shareState.link = null;
     shareState.loading = true;
     shareState.eligibleUsers = null;
-    // Pre-select the permission a fresh share of THIS record will actually
-    // need — a Map needs "edit" for a player to move their own token, every
-    // other kind defaults to "view" as before. Still just a default; the GM
-    // can still pick the other option from the dropdown before submitting.
+    // A Map needs "edit" by default so a player can move their own token;
+    // every other kind still defaults to "view". Just a default — the GM
+    // can still pick the other option before submitting.
     if (elements.sharePermission) {
       elements.sharePermission.value = contentTypeFromBucket(record.bucket) === "map" ? "edit" : "view";
     }
@@ -628,11 +623,9 @@ export function initShareModal({ dataManager, status = null } = {}) {
       const contentType = contentTypeFromBucket(shareState.record.bucket);
       elements.shareQuickButton.disabled = true;
       try {
-        // "map" is the one shareable kind a player is ever expected to write
-        // back to (their own character's token position — see map.js's own
-        // isMarkerDraggable/ownership check and data-manager.js's identical
-        // reasoning in spotlightToGroup) — every other kind stays "view"
-        // here, same as that other call site.
+        // "map" is the one shareable kind a player writes back to (their own
+        // token position — see map.js's isMarkerDraggable and
+        // data-manager.js's spotlightToGroup, same reasoning).
         const quickSharePermissions = contentType === "map" ? "edit" : "view";
         await dataManager.shareWithGroup({ contentType, contentId: shareState.record.id, groupId: active.groupId, permissions: quickSharePermissions });
         if (status) status.show(`Shared with ${active.name || "active campaign"}.`, { type: "success", timeout: 1800 });
@@ -689,10 +682,8 @@ export function initShareModal({ dataManager, status = null } = {}) {
     elements.shareUsername.addEventListener("change", handler);
   }
 
-  // Keep the "Share with [active campaign]" quick button in sync if the
-  // active campaign changes elsewhere (the header's signed-in menu) while
-  // this modal happens to be open — self-contained so no caller needs to
-  // wire this up itself.
+  // Keeps the quick-share button in sync if the active campaign changes
+  // elsewhere while this modal is open.
   window.addEventListener("workbench:active-group-changed", () => {
     renderShareQuickButton();
   });

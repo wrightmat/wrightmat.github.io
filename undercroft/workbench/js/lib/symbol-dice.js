@@ -1,33 +1,22 @@
-// A Tier-3 symbol die's roll (Phase 5, Section 1.4/3.4 of the System-Defined
-// Dice plan) — no numeric total, no keep/drop/success, just a multiset of
-// symbols per face. Deliberately NOT inside rollDiceExpression/DiceParser: a
-// Genesys-style result is a vector of independent symbol counts with
-// cancellation, not a summable number — there's no meaningful `ast.value`,
-// and jamming it into the numeric-AST model would need a fragile synthetic
-// numeric encoding for no benefit. Reachable only from a dedicated stepper
-// UI (never the text-expression input), since there's no sensible way to
-// type "assemble this ad hoc pool" as a formula string.
+// A Tier-3 symbol die's roll — no numeric total, no keep/drop/success, just
+// a multiset of symbols per face. Deliberately NOT inside
+// rollDiceExpression/DiceParser: a Genesys-style result is a vector of
+// independent symbol counts with cancellation, not a summable number.
+// Reachable only from a dedicated stepper UI, never the text-expression
+// input — there's no sensible way to type an ad hoc pool as a formula.
 
-// Symbols that cancel 1:1 against each other — success/failure narrate the
-// same axis (did it work), advantage/threat the same axis (complication),
-// per Genesys's real rules. Triumph/Despair never cancel — a face carrying
-// one already always carries its matching success/failure too (see
-// sys.genesys.json's own face data), so no special-casing is needed here.
+// Symbols that cancel 1:1 — success/failure share an axis (did it work),
+// advantage/threat share another (complication), per Genesys's real rules.
+// Triumph/Despair never cancel — a face carrying one always also carries
+// its matching success/failure (see sys.genesys.json's face data).
 const CANCEL_PAIRS = [
   ["success", "failure"],
   ["advantage", "threat"],
 ];
 
-// `poolCounts`: [{ dieId, count }, ...] — how many of each registered
-// symbol die to roll. `diceById`: Map<lowercased id, dieDefinition>, same
-// shape extractSystemSymbolDice (dice-roll.js) returns, keyed the same way
-// rollDiceExpression's own named-die map already is. `random` defaults to
-// Math.random — injectable the same way rollSingleDie's own `random` param
-// already is.
-// Shared by rollSymbolDicePool (below) and buildSymbolPoolFromDiceBoxValues
-// (dice-overlay.js's own physically-rolled path) — whichever produced the
-// raw per-die `symbols` arrays, counting and cancellation work identically,
-// so there's exactly one place that math lives.
+// Shared by rollSymbolDicePool below and dice-overlay.js's physically-rolled
+// path (buildSymbolPoolFromDiceBoxValues) — whichever produced the raw
+// per-die `symbols` arrays, counting/cancellation work identically.
 function aggregateSymbolRolls(rolls) {
   const counts = {};
   rolls.forEach((roll) => {
@@ -56,10 +45,8 @@ export function rollSymbolDicePool(poolCounts, { random = Math.random, diceById 
     }
     const rollCount = Math.max(0, Math.floor(Number(count) || 0));
     for (let i = 0; i < rollCount; i += 1) {
-      // Same RNG-call shape as workbench/js/lib/dice.js's own rollSingleDie
-      // (`Math.floor(random() * sides) + 1` there) — a 0-based face INDEX
-      // here rather than a 1-based numeric value, since a symbol die's
-      // faces have no inherent order/magnitude to count from 1.
+      // 0-based face INDEX (unlike dice.js's rollSingleDie, 1-based) since
+      // a symbol die's faces have no inherent order/magnitude.
       const faceIndex = Math.floor(random() * die.sides.length);
       const face = die.sides[faceIndex] || { symbols: [] };
       rolls.push({ dieId: die.id, faceIndex, symbols: Array.isArray(face.symbols) ? face.symbols : [] });
@@ -68,20 +55,13 @@ export function rollSymbolDicePool(poolCounts, { random = Math.random, diceById 
   return aggregateSymbolRolls(rolls);
 }
 
-// dice-roll.js's own physically-rolled counterpart to rollSymbolDicePool —
-// `entries`: [{ dieId, value }, ...], one per individual die actually
-// rolled, where `value` is dice-box's own already-resolved per-die result
-// for a custom/symbolic die: a string, an array of two strings (a face
-// carrying two symbols), or "" for a blank face. Confirmed against
-// dice-box's real source (Dice.js) that a custom die's `value` is set
-// directly from its theme's colliderFaceMap entry for the landed physics
-// face — i.e. the REAL symbol content already, not an index — so there's no
-// second lookup against this System's own `sides` face list here at all
-// (and there couldn't correctly be one: dice-box's own collider mesh has
-// more physics faces per logical symbol than this System's own face list
-// does, so the two aren't index-aligned even though they describe the same
-// physical die). `faceIndex` (see rollSymbolDicePool's own rolls above) is
-// simply absent from these rolls — nothing downstream reads it.
+// dice-roll.js's physically-rolled counterpart to rollSymbolDicePool.
+// `value` is dice-box's already-resolved per-die result for a custom die
+// (a string, an array of two strings for a two-symbol face, or "" for
+// blank) — the real symbol content already, not a face index, so there's
+// no second lookup against this System's own `sides` list (dice-box's
+// collider mesh has more physics faces per logical symbol than this
+// System's face list does, so the two aren't index-aligned anyway).
 export function buildSymbolPoolFromDiceBoxValues(entries) {
   const rolls = (Array.isArray(entries) ? entries : []).map(({ dieId, value }) => ({
     dieId,
@@ -99,11 +79,8 @@ const SYMBOL_LABELS = {
   despair: "Despair",
 };
 
-// Fixed display order (the headline success/failure axis first, then the
-// advantage/threat complication axis, then the rare Triumph/Despair) so the
-// formatted result reads consistently regardless of which symbols happen to
-// be present. A zero-count symbol is skipped entirely — "0 Success" is just
-// noise.
+// Fixed display order so the result reads consistently regardless of which
+// symbols are present; a zero-count symbol is skipped ("0 Success" is noise).
 const SYMBOL_ORDER = ["success", "failure", "advantage", "threat", "triumph", "despair"];
 
 export function formatSymbolPoolResult(net) {

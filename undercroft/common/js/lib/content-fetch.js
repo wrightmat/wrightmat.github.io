@@ -17,19 +17,16 @@ const DDB_CHARACTER_URL = "https://character-service.dndbeyond.com/character/v5/
 // which is what fetchDdbMonster below actually goes through.
 const DDB_MONSTER_URL = "https://monster-service.dndbeyond.com/v1/Monster/";
 const CORS_PROXY = "https://corsproxy.io/?url=";
-// The DDB-import pipeline is inherently D&D-5e-specific (D&D Beyond only ever
-// has 5e content) — hardcoding which System record to derive lookup tables
-// from is the same degree of specificity loadCharacterMappingDefinition
-// below already has for ddb-character.json.
+// The DDB-import pipeline is inherently D&D-5e-specific (D&D Beyond only
+// has 5e content) — same specificity loadCharacterMappingDefinition below
+// has for ddb-character.json.
 const DND5E_SYSTEM_ID = "sys.dnd5e";
 
-// The two mapping-driven sources Loom's own Import tab (and Workbench's
-// player-facing Import Character flow) offer a picker for — narrower than
-// loadSourceData/loadSourceDataRaw's own dispatch below, which also handles
-// "library"/"json"/"manual" for other pickers (Press's own source picker)
-// that have no mapping/$source concept at all. Extracted from Loom's local
-// SOURCES array (identical shape/values) so both tools share one list
-// instead of two copies that could drift.
+// The two mapping-driven sources Loom's Import tab (and Workbench's Import
+// Character flow) offer a picker for — narrower than loadSourceData's
+// dispatch below, which also handles "library"/"json"/"manual" for pickers
+// with no mapping/$source concept. Shared with Loom's own SOURCES array so
+// both tools use one list instead of two that could drift.
 export const SOURCES = [
   {
     id: "ddb",
@@ -86,13 +83,10 @@ export const SOURCES = [
   },
 ];
 
-// The browser's own SyntaxError for malformed JSON only ever gives a
-// position/line/column — never which fetch it came from. Every
-// response.json() call in this
-// file goes through here instead so that context (a URL, or a
-// kind/id.json label for library entries — the ones most likely to be
-// hand-edited and actually break) gets attached to the error every
-// consumer (Press's status toasts, Loom, console) ultimately shows.
+// The browser's SyntaxError for malformed JSON only gives a position/line/
+// column, never which fetch it came from. Every response.json() call here
+// goes through this instead, so that context (a URL, or a kind/id.json
+// label) gets attached to the error every consumer ultimately shows.
 async function parseJsonResponse(response, sourceLabel) {
   const text = await response.text();
   try {
@@ -142,14 +136,10 @@ export function extractDdbId(value) {
 
 // Same local-proxy-first, public-CORS-proxy-fallback shape as
 // fetchDdbContentPage below — character-service.dndbeyond.com is an allowed
-// /ddb-proxy host (server/config.py's ddb_proxy_allowed_hosts) for exactly
-// the same reason monster-service is: a public third-party CORS proxy
-// (corsproxy.io) is an external dependency outside this suite's control —
-// confirmed to reject this endpoint outright even for a character verified
-// reachable directly, unrelated to that character's own DDB privacy
-// setting. The local route also means a private/gated character resolves
-// fully via the same session-cookie mechanism monster-service/class pages
-// already use, not just a public one.
+// /ddb-proxy host, since corsproxy.io rejects this endpoint outright even
+// for a character reachable directly. The local route also lets a
+// private/gated character resolve via the same session-cookie mechanism
+// monster-service/class pages use, not just a public one.
 export async function fetchDdbCharacter(id) {
   const url = `${DDB_CHARACTER_URL}${id}`;
   const localResponse = await fetch(`/ddb-proxy?url=${encodeURIComponent(url)}`).catch(() => null);
@@ -171,15 +161,11 @@ export async function fetchDdbCharacter(id) {
   return payload?.data ?? payload;
 }
 
-// Goes through fetchDdbContentPage's own local-proxy-first path (same shape
-// fetchDdbCharacter above now also uses directly, since its own JSON
-// response isn't scraped HTML) — monster-service is an allowed host on
-// server/app.py's /ddb-proxy route, and a non-SRD monster (per this suite's
-// own loom.source.ddb-monster help topic) may only resolve in full with the
-// session cookie that local proxy attaches, same reasoning as a gated
-// class/background/species page. Falls back to the public CORS proxy
-// exactly like every other content-page fetch when the local server isn't
-// available.
+// Goes through fetchDdbContentPage's local-proxy-first path — monster-
+// service is an allowed /ddb-proxy host, and a non-SRD monster may only
+// resolve in full with the session cookie that local proxy attaches, same
+// reasoning as a gated class/background/species page. Falls back to the
+// public CORS proxy when the local server isn't available.
 export async function fetchDdbMonster(id) {
   const text = await fetchDdbContentPage(`${DDB_MONSTER_URL}${id}`);
   let payload;
@@ -202,24 +188,18 @@ export async function loadDdbMonsterRawData(value) {
   return fetchDdbMonster(id);
 }
 
-// Vendored the same way dice-overlay.js already vendors @3d-dice/dice-box —
-// a version-pinned dynamic import() straight from unpkg, no build step. No
-// YAML parser existed anywhere in this codebase before Fantasy Statblocks
-// import needed one. Confirmed js-yaml@4.1.0's own package.json "exports"
-// field maps "import" to this exact dist/js-yaml.mjs, a real ESM build.
+// Vendored the same way dice-overlay.js vendors @3d-dice/dice-box — a
+// version-pinned dynamic import() straight from unpkg, no build step.
 const FANTASY_STATBLOCK_YAML_MODULE_URL = "https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.mjs";
 
 // Obsidian's Fantasy Statblocks plugin stores 100% of a creature's actual
-// data inside a ```statblock fenced YAML block — the YAML frontmatter above
-// it (`statblock: inline`) is just a plugin marker, and the `#monster` tag
-// line is irrelevant; both are ignored. Everything AFTER the closing fence
-// (an optional "### Description" heading + prose, then a "### References"
-// heading + source citations — confirmed against undercroft/test/*.md, the
-// 3 real reference files this format was reverse-engineered from) is folded
-// into one `_postFenceNotes` string on the returned object rather than
-// parsed further — heading presence and bullet style both vary between real
-// files, with nothing else worth modeling separately.
-// fantasy-statblocks-monster.json's own `notes` field binds straight to it.
+// data inside a ```statblock fenced YAML block — the frontmatter above it
+// and the `#monster` tag line are both ignored. Everything AFTER the
+// closing fence (an optional Description + References section) is folded
+// into one `_postFenceNotes` string rather than parsed further — heading
+// presence and bullet style vary between real files, nothing else worth
+// modeling separately. fantasy-statblocks-monster.json's `notes` field
+// binds straight to it.
 export async function loadFantasyStatblockData(text) {
   const source = String(text || "");
   const fenceMatch = source.match(/```statblock\r?\n([\s\S]*?)```/);
@@ -241,19 +221,12 @@ export async function loadFantasyStatblockData(text) {
 }
 
 // Bulk counterpart to loadFantasyStatblockData above — `files` is a
-// FileList/array of Files from either bulk file input Loom offers (plain
-// multi-select, or a whole folder via `webkitdirectory`; this function
-// doesn't care which one produced the list). Runs the exact same per-file
-// parser, so a bulk import produces byte-identical per-record shape to a
-// single manual import — just looped. `_bulkFileName` is stamped onto each
-// result (not something loadFantasyStatblockData itself produces) since
-// Fantasy Statblocks data has no `index`-style canonical slug the way SRD
-// does — the bulk-import checklist and auto-id derivation both need
-// *some* per-item label, and the source filename is the only one
-// available. A single file that fails to parse (e.g. a non-statblock .md
-// swept up in a folder select) is skipped with its error attached rather
-// than aborting the whole batch — same "one bad record doesn't kill the
-// import" reasoning the bulk-save loop itself uses.
+// FileList/array of Files from either bulk file input Loom offers. Runs
+// the same per-file parser, so a bulk import produces byte-identical
+// per-record shape to a single manual import, just looped. `_bulkFileName`
+// is stamped on each result since Fantasy Statblocks data has no
+// canonical slug the way SRD does. A file that fails to parse is skipped
+// with its error attached rather than aborting the whole batch.
 export async function loadFantasyStatblockDataBulk(files, onProgress) {
   const list = Array.from(files || []);
   const results = [];
@@ -271,18 +244,12 @@ export async function loadFantasyStatblockDataBulk(files, onProgress) {
 }
 
 // Strips the three markdown-noise shapes that show up inside Obsidian vault
-// prose but never inside the 5e API's own desc text: a piped link
-// `[label](url)` (Staff of the Gatekeeper's own spell-menu links) collapses
-// to its own label, a bare wikilink `[[Page Name]]` collapses to the page
-// name, and an inline Dice Roller span `` `dice:8d6` ``/`` `dice:1d4 + 1` ``
-// (confirmed live: 6 of the _srd/spells files use this instead of writing
-// their own damage dice as plain text — Fireball's own "takes `dice:8d6`
-// fire damage" was silently unmatched by every damage-clause regex before
-// this) collapses to its own bare formula. All three so downstream regexes
-// (spell-menu parsing, clause recognizers, parseMarkdownSpellMechanic) see
-// the same plain "cure wounds"/"Nymm, the Crown"/"8d6" text the SRD's own
-// desc fields already give them, not markup they were never written to
-// expect.
+// prose but never in the 5e API's own desc text: a piped link
+// `[label](url)` collapses to its label, a bare wikilink `[[Page Name]]`
+// collapses to the page name, and an inline Dice Roller span `` `dice:8d6` ``
+// collapses to its bare formula. All three so downstream regexes (spell-
+// menu parsing, clause recognizers) see the same plain text the SRD's own
+// desc fields already give them.
 function stripMarkdownNoise(text) {
   return String(text || "")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -291,18 +258,13 @@ function stripMarkdownNoise(text) {
 }
 
 // A `**Label.**`/`**Label**.`/`**_Label._**` bold lead-in at the very START
-// of a paragraph — this Obsidian vault's own real convention for a named
-// sub-ability (Staff of the Gatekeeper's own "**Druidic Ritual**. After
-// successfully...", Orb of Dragonkind's own "**Spells.** The orb has 7
-// charges...", Dragon Mask's own "**_Damage Absorption._** You have
-// resistance..." — all 3 real shapes confirmed live) — normalized to the
-// `***Label.***` triple-star shape vault-feature-matching.js's own
-// extractBoldLabel already recognizes (that shape comes from the 5e API's
-// own desc text instead, e.g. "***Curse.*** This armor is cursed..."), so a
-// markdown-sourced candidate unit's own named lead-in is recognized exactly
-// like a JSON-sourced one, with zero changes needed to the shared clause-
-// recognizer pipeline. A paragraph with no such lead-in is returned
-// unchanged.
+// of a paragraph — this Obsidian vault's own convention for a named
+// sub-ability. Normalized to the `***Label.***` triple-star shape
+// vault-feature-matching.js's extractBoldLabel already recognizes (from
+// the 5e API's own desc text), so a markdown-sourced lead-in is recognized
+// exactly like a JSON-sourced one with zero changes to the shared
+// clause-recognizer pipeline. A paragraph with no such lead-in is
+// returned unchanged.
 function normalizeBoldLeadIn(paragraph) {
   const match = paragraph.match(/^[*_]{2,4}\s*([^*_]+?)\s*[*_]{2,4}\.?\s*/);
   if (!match) return paragraph;
@@ -314,25 +276,17 @@ function normalizeBoldLeadIn(paragraph) {
 
 // The general markdown structural scanner behind the "markdown-wonder"
 // source: reads an Obsidian vault note (a magic item or spell, one per
-// file — confirmed live against ~70 real files under dnd-eberron/other and
-// dnd-eberron/_srd/spells) for its own structural markers — a leading
-// `#tag` line, an italic type/rarity-or-level line, bold "**Label:**
-// value"/"**Label**: value" stat-block lines (both real: a spell's own
-// Casting Time/Range/Components/Duration always use the colon-inside form
-// and always lead the body; a mundane-equipment item's own Damage/Damage
-// Type/Properties/Range/Weight fields use colon-OUTSIDE instead, and — a
-// real, confirmed difference — TRAIL the description rather than leading
-// it, so these are recognized WHEREVER they appear in the body, not just
-// in a fixed leading block), then body paragraphs, tables, and a trailing
-// "### References" section — WITHOUT any 5e-specific interpretation of what
-// those markers mean. That interpretation (item rarity/attunement/charges,
-// spell level/school) is markdownItemStats/markdownSpellStats's own job
+// file) for its structural markers — a leading `#tag` line, an italic
+// type/rarity-or-level line, bold "**Label:** value"/"**Label**: value"
+// stat-block lines (a spell's Casting Time/Range/etc. lead the body; a
+// mundane item's Damage/Weight fields use colon-outside and TRAIL the
+// description instead, so these are recognized WHEREVER they appear), then
+// body paragraphs, tables, and a trailing "### References" section —
+// WITHOUT any 5e-specific interpretation of what those markers mean. That
+// interpretation is markdownItemStats/markdownSpellStats's own job
 // (mapping-custom-functions.js), the same layering loadFantasyStatblockData
-// above already establishes (raw structural parse here, meaning built on
-// top of it there). Neither of these real files ever states its own
-// name inline — the filename is the only name available, so `fileName` is
-// threaded through explicitly (mirroring loadFantasyStatblockDataBulk's own
-// `_bulkFileName` stamp, but available even for a single-file import here).
+// establishes. Neither file type states its own name inline, so `fileName`
+// is threaded through explicitly.
 export function parseMarkdownWonderSource(text, fileName) {
   const rawLines = String(text || "").replace(/\r\n/g, "\n").split("\n");
   let i = 0;
@@ -351,13 +305,11 @@ export function parseMarkdownWonderSource(text, fileName) {
     i++;
   }
 
-  // 2. Header/type line — the next non-blank line, ONLY when it's entirely
-  // wrapped in a single pair of `*…*` or `_..._` markers (an item's own
-  // "*Wondrous item, very rare (requires attunement)*", a spell's own
-  // "*3rd-level evocation*"). A genuinely mundane/lore item (Cloak of Many
-  // Fashions, Speaking Stone — confirmed real, no stat block at all) simply
-  // has no line matching this shape, and headerLine correctly stays null
-  // rather than misreading its first prose paragraph as one.
+  // 2. Header/type line — the next non-blank line, ONLY when entirely
+  // wrapped in a single pair of `*…*` or `_..._` markers (an item's
+  // "*Wondrous item, very rare (requires attunement)*", a spell's
+  // "*3rd-level evocation*"). A mundane/lore item with no stat block has
+  // no line matching this shape, and headerLine correctly stays null.
   let headerLine = null;
   i = nextNonBlank(i);
   if (i < rawLines.length) {
@@ -416,13 +368,10 @@ export function parseMarkdownWonderSource(text, fileName) {
         continue;
       }
       inReferences = false;
-      // Any OTHER heading (a variant sub-item like Dragon Mask's own
-      // "### Black Dragon Mask", or an aside like Orb of Dragonkind's own
-      // "#### Destroying an Orb") is folded back into the paragraph stream
-      // as its own short paragraph rather than dropped — real mechanical
-      // text sometimes follows it, and the heading text itself is at worst
-      // an inert extra candidate unit (never classified as a Feature, no
-      // clause recognizer matches a bare name).
+      // Any OTHER heading (a variant sub-item, or an aside) is folded back
+      // into the paragraph stream as its own short paragraph rather than
+      // dropped — real mechanical text sometimes follows it, and the
+      // heading text itself is at worst an inert extra candidate unit.
       paragraphs.push(headingText);
       continue;
     }
@@ -433,12 +382,10 @@ export function parseMarkdownWonderSource(text, fileName) {
     }
 
     // A bold stat-block field line, either convention (see this function's
-    // own module comment). Checked on every line, not just a fixed leading
-    // block — Alchemist's Fire's own fields trail its description instead
-    // of leading it. Neither shape can ever also match a bold ABILITY
-    // lead-in (step 4's own normalizeBoldLeadIn territory below): that
-    // shape's own closing `**` is followed by a period or nothing at all,
-    // never a bare `:`.
+    // module comment). Checked on every line, not just a leading block —
+    // some items' fields trail the description instead. Neither shape can
+    // match a bold ABILITY lead-in (normalizeBoldLeadIn): that shape's
+    // closing `**` is followed by a period or nothing, never a bare `:`.
     const fieldMatch = trimmed.match(/^\*\*([^*:]+):\*\*\s*(.+)$/) || trimmed.match(/^\*\*([^*:]+)\*\*:\s*(.+)$/);
     if (fieldMatch) {
       flushParagraph();
@@ -462,9 +409,8 @@ export function parseMarkdownWonderSource(text, fileName) {
       continue;
     }
 
-    // An Obsidian dice-roller embed ("`dice: [[Page^block]]`", Trinkets of
-    // the Planes' own shape) or a standalone image embed — neither is
-    // prose, both dropped rather than becoming a nonsense candidate unit.
+    // An Obsidian dice-roller embed or a standalone image embed — neither
+    // is prose, both dropped rather than becoming a nonsense candidate unit.
     if (/^`dice:/i.test(trimmed) || /^!\[.*\]\(.*\)$/.test(trimmed)) {
       continue;
     }
@@ -496,11 +442,10 @@ export async function loadMarkdownWonderDataBulk(files, onProgress) {
 }
 
 // D&D Beyond content pages (classes/backgrounds/species) have no API — unlike
-// the character endpoint, this fetches and parses the actual rendered HTML page.
-// Parsing lives in a separate classic script (common/ddb-content-parser.js,
-// mirroring ddb-parser.js's pattern) so the page-structure-dependent part can be
-// swapped out independently if DDB's markup changes or this approach needs to
-// change entirely.
+// the character endpoint, this fetches and parses the actual rendered HTML
+// page. Parsing lives in a separate classic script
+// (common/ddb-content-parser.js) so the page-structure-dependent part can
+// be swapped out independently if DDB's markup changes.
 export const DDB_CONTENT_TYPES = [
   { type: "class", pattern: /\/classes\/[\w-]+/ },
   { type: "background", pattern: /\/backgrounds\/[\w-]+/ },
@@ -522,12 +467,11 @@ export function resolveDdbContentUrl(value) {
 }
 
 export async function fetchDdbContentPage(url) {
-  // Prefer the shared server's local proxy (server/app.py's /ddb-proxy): it can
-  // attach a session cookie read from a local, gitignored file so gated content
-  // (e.g. non-free subclasses) resolves fully, and never routes that cookie
-  // through a third party. Falls back to the public CORS proxy (same one used
-  // for characters) if the local proxy route isn't available at all — e.g.
-  // Press hosted without the Python backend.
+  // Prefer the shared server's local proxy: it can attach a session cookie
+  // read from a local, gitignored file so gated content (e.g. non-free
+  // subclasses) resolves fully, never routing that cookie through a third
+  // party. Falls back to the public CORS proxy when the local route isn't
+  // available — e.g. Press hosted without the Python backend.
   const localResponse = await fetch(`/ddb-proxy?url=${encodeURIComponent(url)}`).catch(() => null);
   if (localResponse) {
     if (localResponse.ok) {
@@ -578,13 +522,11 @@ export async function loadDdbRawData(value) {
   return fetchDdbCharacter(id);
 }
 
-// Any named mapping definition (undercroft/loom/mappings/{id}.json), fetched
-// once per id and cached — a mapping doesn't change mid-session, and both
-// loadCharacterMappingDefinition below and reimportViaMapping (the "url"/
-// "mapping" re-import path — see that function's own comment) would
-// otherwise each re-fetch the same file repeatedly. A failed fetch is NOT
-// cached — a transient network blip shouldn't permanently poison every
-// later attempt for the rest of the page's lifetime.
+// Any named mapping definition, fetched once per id and cached — a mapping
+// doesn't change mid-session, and both loadCharacterMappingDefinition below
+// and reimportViaMapping would otherwise each re-fetch the same file
+// repeatedly. A failed fetch is NOT cached — a transient network blip
+// shouldn't permanently poison every later attempt.
 const mappingDefinitionCache = new Map();
 export function loadMappingDefinition(mappingId) {
   const id = String(mappingId || "").trim();
@@ -607,13 +549,11 @@ export function loadMappingDefinition(mappingId) {
   return mappingDefinitionCache.get(id);
 }
 
-// Every saved mapping's own filename (sans extension) — mappings are served
-// as a plain static directory listing (server.config.json's own
-// "loom-mappings" mount), not a Library kind, so this is a bare GET rather
-// than dataManager.list(...). Extracted from Loom's own local listMappings()
-// (identical implementation) so Workbench's player-facing Import Character
-// flow (listCharacterMappings below) can share it instead of duplicating
-// this fetch.
+// Every saved mapping's filename (sans extension) — mappings are served as
+// a plain static directory listing, not a Library kind, so this is a bare
+// GET rather than dataManager.list(...). Shared with Loom's own
+// listMappings() so Workbench's Import Character flow
+// (listCharacterMappings below) doesn't duplicate this fetch.
 export async function listAvailableMappings() {
   try {
     const response = await fetch("/list/loom-mappings");
@@ -625,15 +565,13 @@ export async function listAvailableMappings() {
   }
 }
 
-// Every mapping a GM has tagged "Character" in Loom's own Import tab
-// ($dataType — see enterMappingMode/the Save handler in loom/js/app.js) —
-// what Workbench's player-facing "Import Character" picker offers, so a
-// player only ever sees mappings meant to produce a standalone character,
-// never the sub-entity ones (backgrounds/classes/species/...) Loom's own
-// multi-entity Import tab consumes. loadMappingDefinition's own promise
-// cache means a mapping fetched here to check its $dataType costs nothing
-// extra when the same mapping gets loaded again moments later to actually
-// run the import.
+// Every mapping a GM has tagged "Character" in Loom's Import tab
+// ($dataType) — what Workbench's "Import Character" picker offers, so a
+// player only sees mappings meant to produce a standalone character, never
+// the sub-entity ones Loom's multi-entity Import tab consumes.
+// loadMappingDefinition's promise cache means a mapping fetched here to
+// check its $dataType costs nothing extra when loaded again to run the
+// import.
 export async function listCharacterMappings() {
   const ids = await listAvailableMappings();
   const definitions = await Promise.all(
@@ -647,18 +585,17 @@ export async function listCharacterMappings() {
 
 // The ddb-character.json mapping definition is the single source of truth
 // for how a raw D&D Beyond character normalizes — authored and editable in
-// Loom, applied here so Press (and anything else) consumes the exact same
-// transformation instead of a separately maintained hand-written parser.
+// Loom, applied here so Press (and anything else) consumes the same
+// transformation instead of a separately maintained parser.
 function loadCharacterMappingDefinition() {
   return loadMappingDefinition("ddb-character");
 }
 
 // The System's fields don't change mid-session, so — same reasoning as
-// loadCharacterMappingDefinition above — fetched once and cached rather than
-// re-fetched on every character/monster import. `{ preferLocal: false }`:
-// a Loom edit to sys.dnd5e's fields (adding/renaming a condition, alignment,
-// skill, ...) must be visible immediately, not hidden behind a stale local
-// cache — same convention as combat-tracker.js's System reads.
+// loadCharacterMappingDefinition above — fetched once and cached rather
+// than re-fetched on every import. `{ preferLocal: false }`: a Loom edit
+// to sys.dnd5e's fields must be visible immediately, not hidden behind a
+// stale local cache.
 let ddbLookupTablesPromise = null;
 function loadDdbLookupTables(dataManager) {
   if (!dataManager) return Promise.resolve(deriveLookupTables(null));
@@ -681,21 +618,15 @@ export async function loadDdbData(value, dataManager) {
 
 // The general form of loadDdbData above — re-fetches `value` and re-applies
 // a mapping identified by id, rather than hardcoding ddb-character.json.
-// Backs the "Re-import" affordance on a character record that was originally
-// saved with top-level `url`/`mapping` fields (see loom/js/app.js's own
-// saveEntity, which is what sets them): re-running the exact same
-// fetch+transform this character was originally imported with, without
-// having to reopen Loom at all. Which underlying fetch mechanism to use
-// isn't stored separately — the mapping definition's own top-level
-// `$source` (e.g. "ddb") already declares that, so a mapping and the source
-// it expects can never drift apart from what's actually stored.
+// Backs the "Re-import" affordance on a character record originally saved
+// with top-level `url`/`mapping` fields: re-running the exact same
+// fetch+transform without reopening Loom. Which fetch mechanism to use
+// isn't stored separately — the mapping's own top-level `$source` (e.g.
+// "ddb") already declares that.
 // Lookup-table/custom-function context is only meaningful for D&D-5e-backed
-// sources today (loadDdbLookupTables' own dnd5e-specific tables, same as
-// loadDdbData's own identical assumption) — "ddb" (characters) and
-// "ddb-monster" both resolve against the same sys.dnd5e lookup tables
-// (lookup('creatureTypes', ...), lookup('challengeRatings', ...), etc. —
-// see ddb-monster.json's own mapping); a future non-DDB mapping would need
-// its own equivalent branch here.
+// sources today — "ddb" and "ddb-monster" both resolve against the same
+// sys.dnd5e lookup tables; a future non-DDB mapping needs its own
+// equivalent branch here.
 export async function reimportViaMapping(mappingId, value, dataManager) {
   const trimmedId = String(mappingId || "").trim();
   const trimmedValue = String(value || "").trim();
@@ -712,35 +643,23 @@ export async function reimportViaMapping(mappingId, value, dataManager) {
   return applyMapping(definition, raw, { lookupTables, customFunctions });
 }
 
-// A character mapping (ddb-character.json, or any future one) only ever
-// produces character *content* (identity, stats, abilities, ...) — it has
-// no concept of which Workbench template/system(s) a character is assigned
-// to, the `data` bucket Workbench's own sheet fields write into (see
-// workbench-character-view.js's persistDraft), or which source/mapping this
-// character itself came from. A plain overwrite — on first import, or a
-// later re-import refreshing an existing character's mapped fields — would
-// silently wipe all of that. Preserves whatever the existing record already
-// had for these keys; the fresh mapped content still wins for everything
-// the mapping actually produces. Shared by loom/js/app.js's own saveEntity
-// (which then explicitly re-sets url/mapping to whatever's currently loaded
-// in Loom's own UI, since those two are the one pair a fresh import DOES
-// mean to change) and Workbench's own "Re-import" handler (which doesn't —
-// a refresh keeps coming from the same place, so leaving them preserved
-// here is exactly right for that caller with no extra step needed).
+// A character mapping only ever produces character *content* (identity,
+// stats, abilities, ...) — it has no concept of which Workbench
+// template/system(s) a character is assigned to, the `data` bucket
+// Workbench's own sheet fields write into, or which source/mapping this
+// character came from. A plain overwrite would silently wipe all of that.
+// Preserves whatever the existing record already had for these keys; the
+// fresh mapped content still wins for everything the mapping actually
+// produces. Shared by loom/js/app.js's saveEntity (which then explicitly
+// re-sets url/mapping to whatever's loaded in Loom's UI) and Workbench's
+// "Re-import" handler (which doesn't — a refresh keeps coming from the
+// same place).
 export function mergeImportedCharacterData(freshData, priorPayload) {
   const prior = priorPayload || {};
   return {
-    // No `id` in this preserve list — a record's own id is filename/
-    // library_items metadata, never body content (see
-    // workbench-character-view.js's own persistDraft, the one place that
-    // now enforces this: it strips `.id` off the save payload unconditionally
-    // right before writing, regardless of how it got onto state.draft). This
-    // preserve list used to carry `id: prior.id` — a targeted fix for a real
-    // prior bug (a re-import silently dropping an already-embedded id) — but
-    // that only ever papered over the actual problem: some characters
-    // embedded id and some didn't. Every character file has since been
-    // cleaned up to match Location/Setting/Journal's own convention (id
-    // never in the body at all), so there's nothing left here to preserve.
+    // No `id` in this preserve list — a record's id is filename/
+    // library_items metadata, never body content (persistDraft strips
+    // `.id` off the save payload unconditionally before writing).
     template: prior.template,
     systemIds: prior.systemIds,
     data: prior.data,
@@ -802,23 +721,19 @@ export async function loadSrdData(value, onProgress) {
   const data = await fetchSrdJson(url);
   if (Array.isArray(data?.results)) {
     // An index listing (e.g. /api/2024/classes) — recursively fetch every
-    // linked item's full detail and return them as one array, so a repeat-based
-    // template can print one card per entry.
+    // linked item's full detail and return them as one array, so a
+    // repeat-based template can print one card per entry.
     const entries = data.results.filter((entry) => entry?.url);
     if (!entries.length) {
       throw new Error("That index listing has no items to fetch.");
     }
-    // Per-item failures are caught and tagged (`_bulkError`, same shape
-    // loadFantasyStatblockDataBulk already uses — Loom's own checklist
-    // already renders these disabled-with-error-text) rather than thrown —
-    // confirmed live: a plain 429 partway through a ~330-entry list used to
-    // reject mapWithConcurrency's whole Promise.all, silently discarding
-    // every already-fetched item with no error surfaced anywhere but the
-    // browser console. Once ANY item hits a 429 specifically, `rateLimited`
-    // stops dispatching new requests entirely (the API's cooldown applies
-    // to the whole client, so retrying the rest immediately would just
-    // rack up more 429s) — every not-yet-started entry is tagged
-    // accordingly instead of actually re-fetched.
+    // Per-item failures are caught and tagged (`_bulkError`) rather than
+    // thrown — a 429 partway through a large list used to reject
+    // mapWithConcurrency's whole Promise.all, silently discarding every
+    // already-fetched item. Once ANY item hits a 429, `rateLimited` stops
+    // dispatching new requests entirely (the API's cooldown applies to the
+    // whole client) — every not-yet-started entry is tagged instead of
+    // re-fetched.
     let rateLimited = false;
     const results = await mapWithConcurrency(
       entries,
@@ -845,20 +760,12 @@ export async function loadSrdData(value, onProgress) {
   return data;
 }
 
-// The original, fixed set of kinds Loom's one-to-many save workflow wrote to
-// undercroft/common/data/<kind>/ — kept as Press's synchronous default for
-// its Library source picker (building that list can't wait on a fetch at
-// page load). Loom itself no longer treats this as the authoritative kind
-// list: see loadLibraryKinds() below, which reads the real, extensible
-// registry (undercroft/common/data/kind/*.json — a kind is just another
-// library entity, editable the same way as everything else). Named
-// LIBRARY_KINDS (not DATA_KINDS) because "library" is still the user-facing
-// concept — Loom's Entities pane, Press's Library source — even though the
-// files themselves live under common/data/ alongside help-topics.json rather
-// than a dedicated common/library/ directory. Kept in sync with every kind
-// registered under undercroft/common/data/kind/*.json as of this writing —
-// a creator-defined 13th kind still needs loadLibraryKinds() to actually
-// resolve for its picker to appear, same as before.
+// The original, fixed set of kinds — kept as Press's synchronous default
+// for its Library source picker (can't wait on a fetch at page load). Loom
+// itself no longer treats this as authoritative: see loadLibraryKinds()
+// below, which reads the real, extensible registry
+// (common/data/kind/*.json). A creator-defined kind beyond this list still
+// needs loadLibraryKinds() to resolve for its picker to appear.
 export const LIBRARY_KINDS = [
   "class",
   "background",
@@ -871,16 +778,13 @@ export const LIBRARY_KINDS = [
   "monster",
 ];
 
-// Every Library kind is DB-backed now (ownership, sharing, is_public — see
-// server/storage.py's library_items table) via the same /content/{kind}/{id}
-// and /list/{kind} routes the characters/templates/systems buckets already
-// used, instead of the old wide-open, unauthenticated /library/{kind}
-// routes. These two helpers stay deliberately anonymous (no session token) —
-// callers needing to see their own private/shared entries too (Loom, which
-// is always signed in behind its own creator-tier gate) should go through
-// their own DataManager instance instead; Forge and Press's read-only
-// reference-data consumption is exactly "public content only," which is
-// what an unauthenticated fetch naturally returns.
+// Every Library kind is DB-backed (ownership, sharing, is_public) via the
+// same /content/{kind}/{id} and /list/{kind} routes the other buckets use.
+// These two helpers stay deliberately anonymous (no session token) —
+// callers needing their own private/shared entries too (Loom) should go
+// through their own DataManager instance; Forge and Press's read-only
+// consumption is exactly "public content only," what an unauthenticated
+// fetch naturally returns.
 export async function fetchLibraryEntry(kind, id) {
   const response = await fetch(`/content/${kind}/${encodeURIComponent(id)}`, { cache: "no-store" });
   if (!response.ok) {
@@ -913,44 +817,27 @@ export async function listLibraryKind(kind) {
 
 // List-then-fetch-each-entry-by-id — pairs a kind's ids (the generic listing
 // route only returns ids/filenames, not full bodies) with each entry's full
-// JSON body. Promoted here after being independently duplicated in both
-// Forge's tables.js and Loom's app.js's Places panel; Crucible needed the
-// exact same helper a third time, which is what surfaced the duplication.
+// JSON body. Shared after being independently duplicated in Forge, Loom,
+// and Crucible.
 //
-// Takes `dataManager` rather than using the anonymous fetchLibraryEntry/
-// listLibraryKind above: Loom's original copy of this helper deliberately
-// used DataManager so a signed-in creator sees their own private/shared
-// entries while building out Places, not just published ones — collapsing
-// onto the anonymous-only path would have been a real regression for Loom.
-// DataManager degrades gracefully for an unauthenticated caller (Forge has
-// no whole-tool login gate) — list()/get() just return public-only content
-// when there's no session, so this one implementation is correct for every
-// caller regardless of whether they're signed in.
-// One HTTP request per entry (the /list endpoint only returns metadata —
-// the actual body lives in a separate per-id file, see server/storage.py's
-// library_items schema) — fine at the scale this was written for, but a
-// large kind (the Feature library crossed ~1,500 entries after this
-// session's SRD monster import) means firing that many requests through
-// Promise.all AT ONCE, fully unthrottled. Confirmed live as the real cause
-// of two separate "should have matched an existing Feature but silently
-// created a duplicate one-off instead" reports (Unusual Nature, Pack
-// Tactics) — convertStatBlockToFeatures' own matching logic was verified
-// correct by hand for both (well above its match threshold); the actual
-// defect was this function's candidate pool silently missing entries
-// because their individual fetch failed under the concurrent load and got
-// swallowed here with NO logging at all, so the resulting duplicate gave no
-// hint anything had gone wrong. Fixed two ways: batched instead of fully
-// concurrent (kinder to the local dev server, matches the deliberate
-// sequential-per-monster reasoning already documented in Loom's own bulk
-// import loop above this file), and every failure is now logged instead of
-// silently discarded, so a REAL recurring gap becomes visible in the
-// console immediately instead of manifesting as a mystery duplicate.
+// Takes `dataManager` rather than the anonymous fetchLibraryEntry/
+// listLibraryKind above so a signed-in creator sees their own
+// private/shared entries, not just published ones. DataManager degrades
+// gracefully for an unauthenticated caller (Forge has no login gate) —
+// list()/get() just return public-only content when there's no session.
+// One HTTP request per entry (the /list endpoint only returns metadata) —
+// fine at moderate scale, but a large kind firing that many requests
+// through Promise.all AT ONCE, fully unthrottled, silently dropped entries
+// whose individual fetch failed under load with NO logging — the real
+// cause of a Feature matcher silently creating duplicate one-offs instead
+// of matching existing ones. Fixed two ways: batched instead of fully
+// concurrent, and every failure is now logged instead of silently
+// discarded.
 const FETCH_KIND_ENTRIES_BATCH_SIZE = 12;
 
-// `{ id, entity }[]` — the exact shape every existing caller already expects
-// (`entries.map((entry) => ({ id: entry.id, ...entry.entity }))`, Vault/
-// Crucible/Sanctum's own tables.js), regardless of which path fetched the
-// body. Kept as its own helper so both the bulk path and the fallback path
+// `{ id, entity }[]` — the exact shape every existing caller expects
+// (Vault/Crucible/Sanctum's tables.js), regardless of which path fetched
+// the body. Kept as its own helper so both the bulk and fallback paths
 // below produce identical output.
 function toKindEntry(kind, id, body) {
   if (!body) return null;
@@ -959,15 +846,12 @@ function toKindEntry(kind, id, body) {
 
 // Cross-visit cache for the bulk fetch below — a tool re-opened, or a
 // System re-selected, in the SAME tab within one session no longer repeats
-// the request at all. Keyed by kind + systemId (unscoped fetches use ""),
-// caching the in-flight PROMISE (not just the resolved value) so two
-// callers racing for the same kind within one tick (a real shape — Vault's
-// own Feature and Wonder pickers both load on the same page) share one
-// request instead of firing two. Invalidated on the two events DataManager
-// already emits on any real write (save() at data-manager.js's own
-// "workbench:content-saved", delete()'s "workbench:content-deleted") —
+// the request. Keyed by kind + systemId, caching the in-flight PROMISE (not
+// just the resolved value) so two callers racing for the same kind within
+// one tick (Vault's Feature and Wonder pickers both load on the same page)
+// share one request. Invalidated on DataManager's own save/delete events —
 // whole-kind, not just the touched id, since a save can change which
-// entries match a systemId filter, not only one entry's own content.
+// entries match a systemId filter.
 const bulkFetchCache = new Map();
 
 function bulkCacheKey(kind, systemId) {
@@ -1004,16 +888,13 @@ function cachedBulkFetch(kind, systemId, fetchFn) {
   return promise;
 }
 
-// One request instead of N (server/app.py's POST /content/{bucket}/bulk,
-// DataManager's own getBulk) — this used to fetch a kind's id list, then
-// fire one full HTTP GET per entry (batched 12 at a time; see the fallback
-// path below, kept only for when the bulk endpoint itself errors). At
-// Vault's real scale (Feature crossed 1,500 entries) that was ~120
-// sequential request batches just to open the tool; this is one. The
-// systemIds filter is Orrery/Vault-tools-facing only through the dedicated
-// fetchKindEntriesForSystem below — this function's own contract (fetch
-// EVERY accessible entry) is unchanged, so every existing caller keeps
-// working with zero call-site changes.
+// One request instead of N (DataManager's getBulk) — this used to fetch a
+// kind's id list, then fire one full HTTP GET per entry (batched 12 at a
+// time; see the fallback path below, kept only for when the bulk endpoint
+// errors). At Vault's real scale that was ~120 sequential request batches
+// just to open the tool; this is one. This function's own contract (fetch
+// EVERY accessible entry) is unchanged, so every caller keeps working with
+// zero call-site changes.
 export async function fetchKindEntriesWithIds(dataManager, kind) {
   if (!dataManager) return [];
   return cachedBulkFetch(kind, "", () => fetchKindEntriesWithIdsUncached(dataManager, kind));
@@ -1023,15 +904,11 @@ async function fetchKindEntriesWithIdsUncached(dataManager, kind) {
   try {
     const { items } = await dataManager.getBulk(kind);
     // Each item is `{id, body}` — the id is the LIST ROW's authoritative
-    // one (server/storage.py's get_items_bulk), not assumed to be embedded
-    // in the body itself. Plenty of kinds never duplicate their own id
-    // inside the JSON (it's the filename/library_items row instead — same
-    // convention Forge's own Location loader comment describes). Confirmed
-    // real regression from an earlier version of this that read `body?.id`
-    // directly: any record without a self-embedded id came back as
-    // `{id: undefined, ...}`, breaking every consumer that reads `.id`
-    // (Crucible's Locked Features checklist crashed outright; Forge's own
-    // Setting auto-select silently stopped matching anything).
+    // one, not assumed to be embedded in the body itself. Plenty of kinds
+    // never duplicate their own id inside the JSON (it's the
+    // filename/library_items row instead). An earlier version that read
+    // `body?.id` directly broke on any record without a self-embedded id
+    // (`{id: undefined, ...}`), crashing consumers that read `.id`.
     return items.map((item) => toKindEntry(kind, item?.id, item?.body)).filter(Boolean);
   } catch (error) {
     console.warn(`fetchKindEntriesWithIds: bulk fetch failed for ${kind}, falling back to per-item fetch`, error);
@@ -1046,16 +923,12 @@ async function fetchKindEntriesWithIdsUncached(dataManager, kind) {
     const results = await Promise.all(
       batch.map(async (id) => {
         try {
-          // preferLocal: false — the id list above is already forced fresh
-          // (refresh: true, includeLocal: false), but each entry's own body
-          // fetch defaults to preferring a local cache; without this override
-          // that default silently served a stale per-entry snapshot even
-          // though the list itself was current. Confirmed real bug this
-          // fixes: an NPC's locationId, corrected server-side, kept resolving
-          // to its old value here (this function backs every "list every X
-          // for filtering" helper — Forge's NPCs/Locations, Crucible's
-          // Monsters, Vault's Wonders, Sanctum's Features/Resources/...),
-          // making it disappear from the Setting it now actually belongs to.
+          // preferLocal: false — the id list above is already forced fresh,
+          // but each entry's own body fetch defaults to preferring a local
+          // cache; without this override that default silently served a
+          // stale per-entry snapshot even though the list itself was
+          // current (an NPC's locationId, corrected server-side, kept
+          // resolving to its old value).
           return toKindEntry(kind, id, (await dataManager.get(kind, id, { preferLocal: false }))?.payload);
         } catch (error) {
           console.warn(`fetchKindEntriesWithIds: failed to fetch ${kind}/${id}`, error);
@@ -1069,14 +942,11 @@ async function fetchKindEntriesWithIdsUncached(dataManager, kind) {
 }
 
 // Same output shape as fetchKindEntriesWithIds, but asks the server to
-// filter by systemIds BEFORE reading any file (get_items_bulk, server/
-// storage.py) instead of fetching a kind's entire cross-tool library and
-// filtering client-side afterward — the piece that keeps Vault/Crucible/
-// Sanctum's own tables.js fast as more Systems get built, since the
+// filter by systemIds BEFORE reading any file instead of fetching a kind's
+// entire cross-tool library and filtering client-side — keeps Vault/
+// Crucible/Sanctum's tables.js fast as more Systems get built, since the
 // fetched set shrinks instead of growing with total library size. Falls
-// back to the unfiltered fetch (then client-side filtering, same as
-// before this existed) if the bulk endpoint errors, same resilience
-// fetchKindEntriesWithIds itself has.
+// back to the unfiltered fetch if the bulk endpoint errors.
 export async function fetchKindEntriesForSystem(dataManager, kind, systemId) {
   if (!dataManager) return [];
   if (!systemId) return fetchKindEntriesWithIds(dataManager, kind);
@@ -1086,8 +956,8 @@ export async function fetchKindEntriesForSystem(dataManager, kind, systemId) {
 async function fetchKindEntriesForSystemUncached(dataManager, kind, systemId) {
   try {
     const { items } = await dataManager.getBulk(kind, { systemIds: [systemId] });
-    // {id, body} per item — see fetchKindEntriesWithIdsUncached's own
-    // comment on why the id has to come from the item wrapper, not body?.id.
+    // {id, body} per item — see fetchKindEntriesWithIdsUncached's comment
+    // on why the id has to come from the item wrapper, not body?.id.
     return items.map((item) => toKindEntry(kind, item?.id, item?.body)).filter(Boolean);
   } catch (error) {
     console.warn(`fetchKindEntriesForSystem: bulk fetch failed for ${kind}, falling back to unfiltered fetch`, error);
@@ -1096,28 +966,19 @@ async function fetchKindEntriesForSystemUncached(dataManager, kind, systemId) {
 }
 
 // {id, name}, straight off the /list response — ZERO per-record fetches,
-// unlike fetchKindEntriesWithIds above. The list endpoint's own rows already
-// carry the record's own title (server/storage.py's library_items table has
-// a real `title` column, populated at save time — see _title_from_payload)
-// alongside id/ownership, with no separate per-id GET needed at all. Only
-// good for callers that need a name-sorted list or a name->id lookup and
-// NOTHING else about the record (findKindReferenceRecord below is the
-// motivating case) — anything that needs the record's own tags/fields to
-// FILTER (matchesSystem, matchesCategory, ...) still has to fall back to
-// fetchKindEntriesWithIds, since those fields only exist in each record's
-// own full payload, not on its /list row. Confirmed real fix, not a
-// micro-optimization: a kind with hundreds of saved entries (`wonder`
-// crossed 700, `feature` crossed 1,500 after this session's SRD bulk
-// imports) made every name lookup against it — a kind-reference chip's
-// hover preview, its click-to-navigate, a wiki-link-to-reference
-// conversion — cost that many individual HTTP round trips just to check
-// one name.
-// `properties` (only ever populated for a kind whose own kind.json declares
-// it in metadataFields — today just "wonder", see that file's own comment)
-// rides along for free (list_bucket's own _flatten_metadata_rows already
-// puts it on every row server-side) — findKindReferenceRecord's own
-// optional `filter` is what actually uses it, to tell a same-named spell
-// and piece of equipment apart.
+// unlike fetchKindEntriesWithIds above. The list endpoint's rows already
+// carry the record's title alongside id/ownership, no separate per-id GET
+// needed. Only good for callers that need a name-sorted list or a
+// name->id lookup and NOTHING else (findKindReferenceRecord below is the
+// motivating case) — anything that needs the record's tags/fields to
+// FILTER still has to fall back to fetchKindEntriesWithIds. A kind with
+// hundreds of saved entries made every name lookup against it (a
+// kind-reference chip's hover preview, click-to-navigate) cost that many
+// individual HTTP round trips just to check one name.
+// `properties` (populated for a kind whose kind.json declares it in
+// metadataFields — today just "wonder") rides along for free —
+// findKindReferenceRecord's optional `filter` uses it to tell a
+// same-named spell and piece of equipment apart.
 export async function fetchKindEntrySummaries(dataManager, kind) {
   if (!dataManager) return [];
   const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
@@ -1126,16 +987,14 @@ export async function fetchKindEntrySummaries(dataManager, kind) {
     .map((entry) => ({ id: entry.id, name: entry.title || entry.id, properties: entry.properties }));
 }
 
-// Every Location belonging to `settingId` — shared by Sanctum (its own
-// Location editor) and Forge (its Location picker for NPC generation), which
-// used to each carry an identical, independently-maintained copy of this
-// exact function. `settingIds` is a plural array (same "empty/absent =
-// universal, non-empty = restricted" convention as systemIds); unlike a
-// Resource's optional scoping, a Location with an EMPTY settingIds
-// genuinely belongs to no Setting yet, so this deliberately checks
+// Every Location belonging to `settingId` — shared by Sanctum's Location
+// editor and Forge's Location picker, which used to each carry an
+// identical, independently-maintained copy. `settingIds` is a plural array;
+// unlike a Resource's optional scoping, a Location with an EMPTY
+// settingIds genuinely belongs to no Setting yet, so this checks
 // `includes` only, not an empty-array-matches-everything shortcut. Falls
-// back to a pre-migration scalar `settingId` for any not-yet-resaved record
-// — same precedent as the `system` → `systemIds` character migration.
+// back to a pre-migration scalar `settingId` for any not-yet-resaved
+// record.
 export async function listLocationsForSetting(dataManager, settingId) {
   if (!settingId) return [];
   const entries = await fetchKindEntriesWithIds(dataManager, "location");
@@ -1163,27 +1022,20 @@ export async function listLocationsForSetting(dataManager, settingId) {
     }));
 }
 
-// `value` is "kind/id" for a single saved entry, or "kind/*" (or bare "kind")
-// for every entry of that kind — mirroring loadSrdData's list-endpoint
-// expansion so a "whole directory" selection produces one array, letting
-// Press's existing repeat-template handling print one card per entry exactly
-// like it already does for a 5e API list endpoint.
+// `value` is "kind/id" for a single saved entry, or "kind/*" (or bare
+// "kind") for every entry of that kind — mirroring loadSrdData's
+// list-endpoint expansion so a "whole directory" selection produces one
+// array, letting Press's repeat-template handling print one card per entry.
 //
-// `dataManager` is optional: when given (Press always has one), listing/
-// fetching goes through it instead of the anonymous listLibraryKind/
-// fetchLibraryEntry pair above, so a signed-in user's own private/shared
-// entries are included, not just public ones — the same "an owned but
-// not-yet-public record shouldn't just vanish from this exact same tool"
-// reasoning that fetchKindEntriesWithIds already applies elsewhere. Falls
-// back to the anonymous path when no dataManager is passed, so this stays a
-// non-breaking addition for any other caller.
-// `shareToken` is optional and only meaningful for the single kind/id case —
-// it lets an anonymous (unauthenticated) visitor read a private record via a
-// share link (e.g. a campaign group's public share page fetching whatever's
-// currently spotlighted): forwarded straight through to
-// dataManager.get(kind, id, { shareToken }), which turns into ?share=token
-// on the request so the server's narrower share-token-scoped access checks
-// (server/storage.py's get_item) can grant it.
+// `dataManager` is optional: when given, listing/fetching goes through it
+// instead of the anonymous listLibraryKind/fetchLibraryEntry pair above,
+// so a signed-in user's own private/shared entries are included, not just
+// public ones. Falls back to the anonymous path when no dataManager is
+// passed.
+// `shareToken` is optional and only meaningful for the single kind/id case
+// — it lets an unauthenticated visitor read a private record via a share
+// link, forwarded to dataManager.get(kind, id, { shareToken }) so the
+// server's narrower share-token-scoped access checks can grant it.
 export async function loadLibraryData(value, dataManager, shareToken = "") {
   const [kind, id] = String(value || "").split("/");
   if (!kind) {

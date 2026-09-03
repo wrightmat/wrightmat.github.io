@@ -1,37 +1,22 @@
 // A private GM reference/macro board — buckets (columns) of cards, each
-// card carrying its own {icon, color, text} — generalized enough to cover
-// two use cases that used to be two separate widgets:
-//   1. A hand-curated reference board (buckets of short "wiki-link style"
-//      cards — an external URL, a `[[Journal Page]]`, a `` `npc:Name` ``
-//      Library reference, or just plain text).
-//   2. A grid of one-click macro-runner buttons (the old, now-retired Macro
-//      board widget — macro-board.js). A card whose ENTIRE text is a single
-//      `` `macro:Name` `` reference renders as a big icon+color button that
-//      runs it, same visual/behavioral shape the old widget's own
-//      renderMacroButton had; see isPureMacroCard/renderMacroButtonCard
-//      below. Everything else renders through the same shared markdown
-//      pipeline a plain reference card uses, where a `macro:` reference
-//      embedded in longer text still becomes a (smaller, inline) runnable
-//      chip — see journal-macro.js's own buildMacroChip.
-// Deliberately NOT a Library kind of its own, same reasoning clocks.js's
-// own header comment gives: {name, buckets:[{id, title, cards:[{id, icon,
-// color, text}]}]} is small enough to live entirely in this widget
-// instance's own persisted contentRef. `multiple: true` in the dashboard
-// catalog — add the widget again for another board.
-//
-// Never shown on the second-screen table mirror — this widget type is
-// absent from dashboard.js's own TABLE_WIDGET_TYPES on purpose. It's a
-// private GM tool, not something meant to be spotlighted to players, so it
+// carrying its own {icon, color, text}. Generalizes two former widgets:
+// hand-curated reference cards (a URL, `[[Journal Page]]`, `` `npc:Name` ``,
+// or plain text) and one-click macro buttons (the old, retired Macro board
+// widget) — a card whose ENTIRE text is a single `` `macro:Name` `` renders
+// as a big icon+color button (see isPureMacroCard/renderMacroButtonCard);
+// a `macro:` reference embedded in longer text renders as a smaller inline
+// chip through the normal markdown pipeline instead.
+// Deliberately NOT a Library kind — {name, buckets:[{id, title, cards:[{id,
+// icon, color, text}]}]} is small enough to live in this widget instance's
+// own contentRef (same reasoning as clocks.js). `multiple: true` in the
+// dashboard catalog lets a GM add more than one board.
+// Never shown on the second-screen table mirror — absent from
+// dashboard.js's TABLE_WIDGET_TYPES on purpose; a private GM tool, so it
 // carries none of Clock's/Handout's visibility-toggle/follower machinery.
-//
-// Card text renders through Repository's own shared markdown pipeline
-// (renderMarkdown) with every interactive feature that pipeline offers
-// turned on — `[[Journal Page]]` wiki-links, `` `dice:1d6` `` rollers,
-// `` `encounter:...` `` starters, `` `macro:Name` `` runners, and
-// `` `kindId:Name` `` Library references — so this widget never needs to
-// know or care which kind of reference a card actually holds. Cross-tool
-// import (repository/js/lib/*), same established pattern handout.js's own
-// Journal-kind rendering already uses.
+// Card text renders through Repository's shared markdown pipeline
+// (renderMarkdown) with every interactive feature on — wiki-links, dice,
+// encounters, macros, Library references — so this widget never needs to
+// know which kind of reference a card holds.
 import { el } from "../dom.js";
 import { createSortable } from "../dnd.js";
 import { refreshTooltips, disposeTooltips } from "../tooltips.js";
@@ -43,18 +28,11 @@ import { buildTitleIndex } from "../../../../repository/js/lib/journal-links.js"
 import { startEncounter, deterministicEncounterId } from "../../../../repository/js/lib/journal-encounter.js";
 import { findKindReferenceRecord, EXCLUDED_KINDS } from "../library-reference.js";
 import { findMacro, runMacroReference } from "../../../../repository/js/lib/journal-macro.js";
-// Same `` `macro:`/`encounter:`/`dice:`/`kindId:` `` filtered autocomplete
-// dropdown Repository's own Journal body editor uses — attached to both the
-// bucket's quick "Add a card" input and the edit modal's own text field
-// (below) so this widget never needs a bespoke "pick a macro" control of
-// its own; typing `` `macro: `` just works the same way it does in a
-// Journal page, here or anywhere else in the suite.
+// Same filtered `` `macro:`/`encounter:`/`dice:`/`kindId:` `` autocomplete
+// Repository's Journal editor uses — attached to both the "Add a card"
+// input and the edit modal's text field, so this widget needs no bespoke picker.
 import { attachCodeBlockAutocomplete } from "../../../../repository/js/lib/code-block-autocomplete.js";
-// Same `[[Page Title]]` filtered autocomplete Journal's own body editor
-// uses — a card is just as likely to be a plain wiki-link as a macro/dice/
-// kind reference, so both autocompletes attach to the same inputs
-// side by side (below), matching Journal exactly rather than only covering
-// the backtick-prefixed half of it.
+// Same `[[Page Title]]` autocomplete Journal's body editor uses, attached alongside the one above.
 import { attachWikiLinkAutocomplete } from "../../../../repository/js/lib/wiki-link-autocomplete.js";
 
 function randomId() {
@@ -64,19 +42,14 @@ function randomId() {
   return `${Math.random().toString(16).slice(2)}-${Date.now()}`;
 }
 
-// A function, not a static object — a shared literal would hand every
-// brand-new board the exact same bucket id (module-load-time evaluation),
-// same pitfall this suite's own createMarkerElement-style factories all
-// avoid by generating ids inside the factory call itself.
+// A function, not a shared literal — a static object would hand every new board the same bucket id.
 function createDefaultConfig() {
   return { name: "New Board", buckets: [{ id: randomId(), title: "New Bucket", cards: [] }] };
 }
 
-// A card whose entire trimmed text is ONE `` `macro:Name` `` code span and
-// nothing else — the "this card IS a macro button" case, rendered as a big
-// icon+color button (renderMacroButtonCard) instead of the normal small
-// reference-card body. A macro reference embedded alongside other text
-// still renders as the smaller inline chip via the normal markdown path.
+// A card whose entire trimmed text is one `` `macro:Name` `` span and
+// nothing else — rendered as a big button (renderMacroButtonCard) instead
+// of the normal small reference-card body.
 const PURE_MACRO_CARD_PATTERN = /^`\s*macro:\s*(.+?)\s*`$/i;
 function isPureMacroCard(text) {
   const match = PURE_MACRO_CARD_PATTERN.exec((text || "").trim());
@@ -95,9 +68,7 @@ export function initBoardWidget(
     instanceId = "",
     ensureWidget,
     isEditing,
-    // Optional — see macro-runner.js's own runMacro header comment. Only
-    // meaningful for a caller (dashboard.js) that keeps its own live copy
-    // of the WLED device list around; undefined everywhere else.
+    // Only meaningful for a caller (dashboard.js) keeping its own live WLED device list — see macro-runner.js.
     onWledDevicesChange,
   } = {}
 ) {
@@ -108,30 +79,19 @@ export function initBoardWidget(
   let config = { ...createDefaultConfig(), ...(contentRef || {}) };
   let destroyed = false;
   let activeSortables = [];
-  // attachCodeBlockAutocomplete's own destroy handles (the "Add a card"
-  // input, and whichever's currently attached to the edit modal's text
-  // field) — torn down and re-attached fresh every render, same lifecycle
-  // activeSortables already follows.
   let activeAutocompletes = [];
   let pendingFocusBucketId = null;
 
-  // Own Sortable "group" name per widget INSTANCE — cards must be able to
-  // drag between any bucket within THIS board, but never leap into a
-  // different Board widget sitting elsewhere on the same dashboard.
+  // Own Sortable group per widget INSTANCE — cards drag between buckets within THIS board only.
   const cardGroupName = `board-cards-${instanceId || randomId()}`;
 
-  // Resolved once at mount (journal titles for wiki-links, valid Library
-  // kind ids + labels for `` `kindId:Name` `` chips) — a brief "chips/links
-  // just don't resolve yet" window on the very first render, same grace
-  // period repository/js/app.js's own ensureLibraryKinds already accepts,
-  // rather than blocking the first paint on two fetches.
+  // Resolved once at mount; a brief "chips/links don't resolve yet" window
+  // on first render is accepted rather than blocking first paint on two fetches.
   let titleIndex = null;
   let validKindIds = new Set();
   let kindLabelsMap = {};
-  // {id, payload} shape attachWikiLinkAutocomplete's own getEntries expects
-  // — the exact same list titleIndex is built from just below, kept around
-  // separately since buildTitleIndex only returns a resolver, not the raw
-  // list back out.
+  // {id, payload} shape attachWikiLinkAutocomplete's getEntries expects — kept separately since
+  // buildTitleIndex only returns a resolver, not the raw list.
   let journalEntriesForAutocomplete = [];
 
   async function loadReferenceData() {
@@ -151,11 +111,9 @@ export function initBoardWidget(
     if (!destroyed) render();
   }
 
-  // Opens in a new tab rather than navigating this tab away (Repository's
-  // own equivalent handler uses a same-tab redirect — right there, since
-  // Repository IS the browsing tool; wrong here, since the whole point of a
-  // reference board is to look something up WITHOUT losing the dashboard
-  // you're running the game from).
+  // New tab, not same-tab navigation — unlike Repository (which IS the
+  // browsing tool), the point of a reference board is looking something up
+  // without losing the dashboard you're running the game from.
   function handleWikiLinkNavigate(target) {
     if (target.missing) {
       status?.show(`No journal page named "${target.title}" yet.`, { type: "warning", timeout: 3000 });
@@ -171,9 +129,6 @@ export function initBoardWidget(
       status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error", timeout: 3000 });
       return;
     }
-    // Same special case Repository's own handleOpenReference makes — a map
-    // has real content worth opening, not just a name/description worth a
-    // toast.
     if (kindId === "map") {
       window.open(`${resolveToolHref("orrery", resolveToolContextPath())}?map=${encodeURIComponent(record.id)}`, "_blank", "noopener");
       return;
@@ -209,13 +164,11 @@ export function initBoardWidget(
     });
   }
 
-  // The old Macro board widget's own big-button rendering, generalized —
-  // icon/color now come from the card's own authored properties instead of
-  // the referenced macro's `.icon` field, and clicking while the dashboard
-  // is in Edit-layout mode redirects to Loom's macro editor instead of
-  // running it for real, exactly matching that widget's own click handler
-  // (real lights/sound/handouts firing while the GM is just rearranging
-  // cards would be surprising, not helpful).
+  // The old Macro board widget's button rendering, generalized: icon/color
+  // now come from the card's own authored properties instead of the
+  // macro's own `.icon`. Clicking in Edit-layout mode opens Loom's macro
+  // editor instead of running it, matching that widget's old click handler
+  // (real lights/sound firing while just rearranging cards would surprise).
   function renderMacroButtonCard(card, macroRef) {
     const button = el("button", "btn btn-outline-secondary d-flex flex-column align-items-center gap-1 p-2 w-100");
     button.type = "button";
@@ -223,10 +176,7 @@ export function initBoardWidget(
       button.style.borderColor = card.color;
       button.style.color = card.color;
     }
-    // Read live by dashboard.js's own applyEditingState (queries
-    // [data-macro-run-button] on every Edit-layout toggle) to keep this
-    // title in sync without needing a full widget re-render — same
-    // convention the old Macro board widget's own button used.
+    // Read live by dashboard.js's applyEditingState on every Edit-layout toggle to keep this title in sync.
     button.dataset.macroRunButton = "";
     button.setAttribute("data-bs-toggle", "tooltip");
     button.setAttribute("data-bs-title", isEditing?.() ? "Edit in Loom" : "Run macro");
@@ -262,14 +212,10 @@ export function initBoardWidget(
     updateBucket(bucketId, (bucket) => ({ ...bucket, cards: bucket.cards.map((card) => (card.id === cardId ? { ...card, ...patch } : card)) }));
   }
 
-  // A modal, not an inline in-card form — a card in a 14rem-wide bucket
-  // column has nowhere near enough room to usably hold an icon picker,
-  // color swatch, and text field at once. Singleton element (like
-  // content-picker.js's own ensureModal), lives outside `container`
-  // entirely — every field commit below re-renders the WHOLE widget (same
-  // persist()->render() every other field in this widget already goes
-  // through), but that only touches `container`'s own subtree, so the
-  // modal stays open and undisturbed across edits.
+  // A modal, not an inline in-card form — a 14rem bucket column has no room
+  // for an icon picker + color swatch + text field at once. Singleton
+  // element outside `container`, so it stays open across the persist()->
+  // render() every field commit triggers (that only touches `container`).
   const CARD_EDIT_MODAL_ID = "undercroft-board-card-edit-modal";
   function ensureCardEditModal() {
     let modal = document.getElementById(CARD_EDIT_MODAL_ID);
@@ -309,27 +255,18 @@ export function initBoardWidget(
     const deleteButton = modalElement.querySelector("[data-board-card-edit-delete]");
     body.innerHTML = "";
 
-    // Re-reads the live card from `config` rather than trusting the `card`
-    // argument — every field commit below re-renders this whole widget
-    // (rebuilding a fresh `bucket`/`card` object each time), so the
-    // ORIGINAL closure argument goes stale the instant the GM changes a
-    // second field.
+    // Re-reads the live card from `config` rather than the closure argument
+    // — every field commit rebuilds a fresh bucket/card, so the original
+    // argument goes stale after the first change.
     function currentCard() {
       const liveBucket = config.buckets.find((entry) => entry.id === bucket.id);
       return liveBucket?.cards.find((entry) => entry.id === card.id) || card;
     }
 
     const propsRow = el("div", "d-flex gap-2 align-items-end");
-    // sources: ["tabler"] — this card's `icon` is a `tabler:*` Iconify
-    // identifier (the same convention every other icon in this widget, and
-    // the macro kind's own `.icon` field authored in Loom, already use),
-    // not the bi-*/ddb-* CSS-class vocabulary this shared field searches by
-    // default (Press/Workbench's own content-icon convention). Restricting
-    // the search is what makes both the dropdown suggestions AND the
-    // preview swatch actually match what this field can render — see
-    // icon-picker.js's own header comment for why the default excludes
-    // "tabler" (a bi-*/ddb-* suggestion here would be a value nothing in
-    // this widget's own render pipeline could ever display).
+    // sources: ["tabler"] — this card's icon is a tabler:* Iconify id, not
+    // the bi-*/ddb-* vocabulary this field searches by default; restricting
+    // the search keeps suggestions matching what this widget can render.
     const iconField = createIconPickerField({
       label: "Icon",
       value: currentCard().icon || "",
@@ -359,11 +296,9 @@ export function initBoardWidget(
     textInput.placeholder = "[[Journal Page]], a URL, `macro:Name`, `dice:1d6`, `npc:Name`…";
     const commitText = () => updateCardField(bucket.id, card.id, { text: textInput.value.trim() });
     textInput.addEventListener("blur", commitText);
-    // Attached BEFORE this input's own keydown listener below, same
-    // ordering (and same reason) as the "Add a card" input in renderBucket
-    // — each autocomplete's own keydown handler needs to run FIRST so
-    // event.defaultPrevented is already set by the time this input's own
-    // Enter-to-commit handler checks it.
+    // Attached before this input's own keydown listener, same ordering as
+    // the "Add a card" input below — each autocomplete's handler must run
+    // first so event.defaultPrevented is set by the time Enter-to-commit checks it.
     const codeAutocomplete = attachCodeBlockAutocomplete(textInput, { dataManager });
     const wikiAutocomplete = attachWikiLinkAutocomplete(textInput, { getEntries: () => journalEntriesForAutocomplete });
     modalElement.addEventListener(
@@ -374,10 +309,6 @@ export function initBoardWidget(
       },
       { once: true }
     );
-    // Same defer-to-the-autocomplete guard the "Add a card" input uses —
-    // Enter here both selects a candidate (either autocomplete) AND would
-    // commit the field (this handler); event.defaultPrevented means one of
-    // them already claimed this keystroke.
     textInput.addEventListener("keydown", (event) => {
       if (event.defaultPrevented) return;
       if (event.key === "Enter" && !event.shiftKey) {
@@ -396,8 +327,7 @@ export function initBoardWidget(
     if (modal) {
       modal.show();
     } else {
-      // No Bootstrap JS on the page (shouldn't happen anywhere in this
-      // suite, but stay defensive rather than silently doing nothing).
+      // No Bootstrap JS on the page — shouldn't happen, but stay defensive.
       modalElement.classList.add("show");
       modalElement.style.display = "block";
     }
@@ -413,10 +343,7 @@ export function initBoardWidget(
     persist({ ...config, buckets });
   }
 
-  // Reads stable ids off the dragged item/source/destination rather than
-  // trusting raw index math across two independently-managed lists — safe
-  // regardless of how SortableJS's own oldIndex/newIndex line up with this
-  // widget's own array indices.
+  // Reads stable ids off the dragged item/source/destination rather than trusting SortableJS's raw index math.
   function handleCardSortEnd(event) {
     const cardId = event.item.dataset.cardId;
     const fromBucketId = event.from.dataset.bucketId;
@@ -473,9 +400,6 @@ export function initBoardWidget(
       createIconButton({
         icon: "tabler:pencil",
         label: "Edit card",
-        // A modal, not an inline swap — the card itself is far too small to
-        // usably hold an icon picker + color swatch + text field + preview
-        // all at once (confirmed real complaint, not a hypothetical).
         onClick: () => openCardEditModal(bucket, card),
       })
     );
@@ -542,19 +466,11 @@ export function initBoardWidget(
       pendingFocusBucketId = bucket.id;
       updateBucket(bucket.id, (b) => ({ ...b, cards: [...b.cards, { id: randomId(), icon: "", color: "", text }] }));
     };
-    // Both autocompletes attached BEFORE this input's own keydown listener
-    // — see event.defaultPrevented below. Only ever one of the two open at
-    // once (mutually exclusive trigger patterns: an unclosed backtick vs.
-    // an unclosed double-open-bracket), so there's no conflict between
-    // them, just between whichever's open and this input's own
-    // Enter-to-add behavior.
+    // Both attached before this input's own keydown listener, same ordering
+    // reason as the edit modal's text field — only one dropdown is ever
+    // open at once (mutually exclusive trigger patterns).
     activeAutocompletes.push(attachCodeBlockAutocomplete(addInput, { dataManager }));
     activeAutocompletes.push(attachWikiLinkAutocomplete(addInput, { getEntries: () => journalEntriesForAutocomplete }));
-    // event.defaultPrevented is only ever true here when one of the two
-    // dropdowns above is open and just consumed this exact keypress
-    // (selecting a candidate, navigating, or closing itself) — this
-    // input's own Enter-to-add-the-card behavior must NOT also fire on
-    // that same keystroke.
     addInput.addEventListener("keydown", (event) => {
       if (event.defaultPrevented) return;
       if (event.key === "Enter") {
@@ -622,9 +538,7 @@ export function initBoardWidget(
 
   render();
   setTitle?.(config.name);
-  // First mount with nothing saved yet — persist the default immediately so
-  // a reload doesn't silently regenerate/lose it (same reasoning clocks.js's
-  // own equivalent line documents).
+  // First mount with nothing saved yet — persist the default immediately so a reload doesn't lose it.
   if (!contentRef) setContentRef?.(config);
   void loadReferenceData();
 

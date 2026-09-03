@@ -1,16 +1,10 @@
-// Obsidian-plugin-style inline macro triggers, same shape as journal-dice.js
-// — `` `macro: Haunted Forest` `` is ordinary CommonMark inline code from
-// marked's own parser (nothing special taught to it); this module finds
-// those after the fact and swaps each one for a clickable chip. Resolution
-// (name/id -> the actual `macro` Library record) and execution both go
-// through the exact same machinery the Dashboard's own Macro board widget
-// uses (common/js/lib/widgets/macro-runner.js's runMacro) — a Journal note
-// is just another trigger surface for the one Macro system, not a second
-// implementation of it. No page-specific context is needed to run a macro
-// (unlike `` `encounter:...` ``, which needs this page's own id — see
-// journal-encounter.js's own startEncounter/deterministicEncounterId), so
-// this stays fully self-contained rather than routing through an
-// onRunMacro callback the way encounter blocks have to.
+// Obsidian-style inline macro triggers — `` `macro: Haunted Forest` `` is
+// ordinary CommonMark inline code; this finds those after the fact and
+// swaps each for a clickable chip. Resolution and execution both go through
+// the same runMacro (macro-runner.js) the Dashboard's Macro board uses — a
+// Journal note is just another trigger surface, not a second implementation.
+// Unlike `` `encounter:...` ``, no page-specific context is needed to run a
+// macro, so this stays self-contained instead of routing through a callback.
 import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
 import { runMacro } from "../../../common/js/lib/widgets/macro-runner.js";
 import { fetchWledDevices } from "../../../common/js/lib/widgets/wled.js";
@@ -18,14 +12,9 @@ import { el } from "../../../common/js/lib/dom.js";
 
 const MACRO_CODE_PATTERN = /^macro:\s*(.+)$/i;
 
-// Case-insensitive match against either the macro's own id or its display
-// name — same "no fuzzy matching" convention journal-encounter.js's own
-// findMatch establishes; an author references a macro by whichever's more
-// convenient to type in a note, and an unmatched reference just fails
-// clearly (see runMacroReference below) rather than guessing. Exported for
-// journal-kind-reference.js's own extractContentReferences, which resolves
-// a `macro:` block's own reference the exact same way when building the
-// Related panel's list.
+// Case-insensitive match against id or display name — no fuzzy matching, an
+// unmatched reference just fails clearly (see runMacroReference below).
+// Exported for journal-kind-reference.js's Related-panel resolution too.
 export async function findMacro(dataManager, ref) {
   const entries = await fetchKindEntriesWithIds(dataManager, "macro");
   const normalized = ref.trim().toLowerCase();
@@ -44,44 +33,22 @@ export async function runMacroReference(ref, { dataManager, groupContext, status
     status?.show?.(`No macro named "${ref}".`, { type: "error", timeout: 3000 });
     return;
   }
-  // Confirmed real bug otherwise: a WLED action resolves its `target` alias
-  // against wledDevices, which runMacro() defaults to `[]` when a caller
-  // doesn't have one to pass — every alias looked "unconfigured" even
-  // though the same macro ran fine from the Dashboard's own Macro board
-  // widget (which passes its live list through). fetchWledDevices does its
-  // own fresh fetch, same account-wide local+server setting the Dashboard
-  // itself reads, since a Journal page (Repository directly, or the
-  // Handout widget rendering one inside a Dashboard) has no
-  // already-loaded dashboard settings blob to read it out of instead.
-  // Fetched unconditionally (even when `ensureWidget` is also given) — a
-  // live widget instance found/added via ensureWidget handles its own
-  // device resolution internally, but the standalone fallback inside each
-  // action handler still needs this if ensureWidget doesn't end up finding
-  // one.
+  // Without this, a WLED action's `target` alias resolves against runMacro's
+  // own `[]` default and looks "unconfigured" — fetch fresh here since a
+  // Journal page has no already-loaded dashboard settings blob to read it
+  // from otherwise.
   const wledDevices = await fetchWledDevices(dataManager);
-  // `ensureWidget` (optional) is handout.js's own — set only when this
-  // macro is running from a Journal page rendered INSIDE the Handout
-  // widget on a real Dashboard (dashboard.js's own ensureWidgetForMacroAction,
-  // threaded through initHandoutWidget -> renderMarkdown -> here), giving
-  // Journal-triggered macros the exact same "auto-add/reuse a live control
-  // surface so the widget actually reflects what just happened" behavior
-  // the Macro board widget already gets — confirmed real gap otherwise:
-  // the lights/sound genuinely changed but nothing on screen showed it.
-  // Left undefined for Repository's own standalone editor/preview, which
-  // has no widget grid to add to at all — runMacro()'s own per-action
-  // standalone fallbacks (each action handler's own module-level runner)
-  // are what still make the macro's real-world effects happen there.
-  // onWledDevicesChange (optional) — see macro-runner.js's own runMacro
-  // header comment; only meaningful for a caller that keeps its own live
-  // copy of the device list around (dashboard.js's Board widget wiring),
-  // left undefined everywhere else with no such copy to keep in sync.
+  // `ensureWidget` (handout.js's own) is set only when this macro runs from
+  // a Journal page rendered inside a Dashboard's Handout widget, so a
+  // Journal-triggered macro can auto-add/reuse a live control surface the
+  // same way the Macro board widget does — otherwise the lights/sound
+  // change but nothing on screen shows it. Left undefined for Repository's
+  // own standalone editor, which has no widget grid to add to.
   await runMacro(macro, { dataManager, groupContext, status, wledDevices, ensureWidget, onWledDevicesChange });
 }
 
-// Inline styles (not just a CSS class) for the same reason markdown.js's
-// own wiki-link styling and journal-dice.js's own chip use them — this can
-// render inside handout.js's Dashboard widget, a page that never loads
-// Repository's own stylesheet.
+// Inline styles, not a CSS class — this can render inside handout.js's
+// Dashboard widget, which never loads Repository's own stylesheet.
 function styleAsChip(button, interactive) {
   button.style.display = "inline-flex";
   button.style.alignItems = "center";
@@ -96,11 +63,9 @@ function styleAsChip(button, interactive) {
   button.style.cursor = interactive ? "pointer" : "default";
 }
 
-// The chip always renders (a readable "Macro: Name" summary), but only
-// gets a click handler when `interactive` is true — firing a macro (WLED
-// commands, broadcasting sound/handouts to the table, ...) is a GM-only
-// action, same reasoning journal-encounter.js's own chip withholds
-// starting combat from a player viewing a shown-to-the-table page.
+// Only gets a click handler when `interactive` is true — firing a macro is
+// GM-only, same as journal-encounter.js withholding combat-start from a
+// player viewing a shown-to-the-table page.
 function buildMacroChip(ref, { status, interactive, dataManager, groupContext, ensureWidget, onWledDevicesChange }) {
   const button = el("button", "repository-macro-chip");
   button.type = "button";

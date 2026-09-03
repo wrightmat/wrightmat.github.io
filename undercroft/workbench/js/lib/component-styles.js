@@ -46,20 +46,14 @@ export function applyComponentStyles(element, component) {
   }
   element.style.color = component.textColor || "";
   element.style.backgroundColor = component.backgroundColor || "";
-  // Every border property is set directly, unconditionally, from its own
-  // data field — no "if borderStyle then apply the rest" branch. CSS
-  // itself already treats border-style: none/unset as no visible border
-  // regardless of what border-color/border-width say, so there's no need
-  // for JS to separately decide whether these should apply — just reflect
-  // whatever's stored, on every property, independently. (setProperty with
-  // an empty string is equivalent to removeProperty, so an unset
-  // borderColor/borderStyle correctly clears back to the browser's own
-  // default here, not "".)
+  // Every border property is set unconditionally from its own data field —
+  // CSS already treats border-style:none as no visible border regardless of
+  // color/width, so nothing here needs an "if borderStyle" branch.
+  // setProperty("") == removeProperty, so an unset value clears to default.
   const borderColor = component.borderColor || "";
   const borderStyle = component.borderStyle || "";
-  // Safety fallback, not a business default — CSS needs a real number to
-  // draw a border with at all. Only visible once borderStyle is actually a
-  // real value; harmless otherwise (a width with no style renders nothing).
+  // Fallback so CSS has a real number to draw with; harmless when there's
+  // no borderStyle (a width with no style renders nothing).
   const width = Number.isFinite(Number(component.borderWidth)) ? Number(component.borderWidth) : 1;
   const sides = component.borderSides && typeof component.borderSides === "object" ? component.borderSides : null;
   BORDER_SIDES.forEach((side) => {
@@ -68,16 +62,12 @@ export function applyComponentStyles(element, component) {
     element.style.setProperty(`border-${side}-width`, enabled ? `${width}px` : "0");
     element.style.setProperty(`border-${side}-style`, enabled ? borderStyle : "none");
   });
-  // Corner rounding is independent of whether a border line renders at all
-  // — it also shapes the card's own background/shadow (see
-  // workbench/css/styles.css's .workbench-canvas-card comment) — so it's
-  // read directly here too, not gated on border state.
+  // Corner rounding also shapes the card's own background/shadow, so it's
+  // applied independently of whether a border line renders at all.
   const radius = Number(component.borderRadius);
   element.style.borderRadius = `${Number.isFinite(radius) && radius > 0 ? radius : 0}px`;
-  // Raw CSS shorthand, straight through — see workbench-template-view.js's
-  // createSpacingControls. Empty means "no opinion", letting whatever
-  // default padding/margin the element's own CSS class provides show
-  // through (see workbench/css/styles.css's .workbench-canvas-card rule).
+  // Raw CSS shorthand (see workbench-template-view.js's createSpacingControls).
+  // Empty means "no opinion" — the element's own CSS class default shows through.
   if (typeof component.padding === "string" && component.padding.trim()) {
     element.style.padding = component.padding.trim();
   } else {
@@ -88,15 +78,11 @@ export function applyComponentStyles(element, component) {
   } else {
     element.style.removeProperty("margin");
   }
-  // Freeform "Classes" (Advanced) field — matches Press's own Classes
-  // field exactly (common/js/lib/class-name-picker.js's suggestion list,
-  // e.g. text-shadow-dark/text-shadow-light for a drop shadow). Diffed
-  // against whatever THIS function applied last time (tracked via a data
-  // attribute) rather than just classList.add-ing the new tokens, so
-  // editing or clearing the field doesn't leave stale tokens behind — the
-  // element's other classes (card chrome, Bootstrap utilities) are never
-  // touched, since only tokens this function itself previously added are
-  // ever removed.
+  // Freeform "Classes" (Advanced) field — matches Press's Classes field
+  // (class-name-picker.js's suggestion list). Diffed against what this
+  // function applied last time (tracked via a data attribute), so editing
+  // or clearing the field doesn't leave stale tokens on top of the
+  // element's other classes (card chrome, Bootstrap utilities).
   const previousClassTokens = (element.dataset.workbenchClassName || "").split(/\s+/).filter(Boolean);
   if (previousClassTokens.length) {
     element.classList.remove(...previousClassTokens);
@@ -109,36 +95,24 @@ export function applyComponentStyles(element, component) {
   } else {
     delete element.dataset.workbenchClassName;
   }
-  // Align Items — CSS align-self, how THIS component positions itself
-  // within its own parent's cross axis (a Container zone, most commonly;
-  // a no-op wherever the parent isn't flex/grid). Deliberately a separate
-  // field/property from component.align (Text Align, plain text-align,
-  // "Text" section) — the two used to be easy to conflate for Container
-  // specifically, whose own zone-level alignment derives align-items AND
-  // text-align from that one field; this is a distinct per-component
-  // concept, not a replacement for that. Blank means CSS's own real
-  // default (align-self: auto, i.e. inherit the parent's align-items) —
-  // no inline style at all, same "blank = no override" convention as
-  // fontFamily/padding/margin above.
+  // Align Items — how THIS component positions itself in its parent's
+  // cross axis (a Container zone; a no-op outside flex/grid). Deliberately
+  // separate from component.align (plain text-align) — a Container's own
+  // zone alignment derives both align-items AND text-align from one field,
+  // but this is a distinct per-component concept. Blank = CSS default
+  // (align-self: auto), same "blank = no override" convention as above.
   const alignSelf = ALIGN_SELF_MAP[component.alignSelf] || "";
   if (alignSelf) {
     element.style.alignSelf = alignSelf;
   } else {
     element.style.removeProperty("align-self");
   }
-  // align-self only ever repositions a flex item that's narrower than its
-  // available space — but every component's own wrapper (.template-component/
-  // .workbench-canvas-card, workbench/css/styles.css) is unconditionally
-  // width:100% *in that stylesheet rule* (needed there for the Container-
-  // column flex-shrink chain, see that rule's own comment), so with no
-  // override the wrapper always fills its cell and there's nothing left
-  // for Start/Center/End to visibly move. removeProperty alone can't touch
-  // this — nothing here has ever set an inline width, so there's nothing
-  // to remove; a real inline value is needed to actually outrank the class
-  // rule. Only overridden for a real, non-stretch alignSelf choice —
-  // Auto/blank and Stretch both still want the default full-width
-  // behavior, so their branch clears any previously-set inline override
-  // instead (this component's OWN past selection, not the stylesheet's).
+  // align-self only repositions a flex item narrower than its available
+  // space, but every component wrapper is width:100% in its stylesheet
+  // rule (needed for the Container-column flex-shrink chain) — with no
+  // override there's nothing left for Start/Center/End to visibly move.
+  // A real inline width is needed to outrank that class rule; Auto/blank
+  // and Stretch clear it back to the default full-width behavior.
   if (alignSelf && alignSelf !== "stretch") {
     element.style.width = "fit-content";
   } else {
@@ -151,18 +125,12 @@ export function applyTextFormatting(element, component) {
     return;
   }
   const classes = [];
-  // Precedence matches Press's own resolveTextSizePx exactly: an explicit
-  // Font Size (pt) override always wins over the Text Size preset, which
-  // wins over the "md" component default. "auto" (no custom size set)
-  // means no explicit CSS override at all — the component inherits
-  // whatever size is natural for its role/context (e.g. a normal input vs.
-  // body text) — Workbench doesn't have Press's own shrink-to-fit
-  // measurement pass "auto" otherwise implies there (deliberately: that
-  // only makes sense against a fixed-size print box, which Workbench's
-  // fluid layouts don't have).
-  // component.fontSizeCustom != null first, not just Number.isFinite(Number(...))
-  // on its own — Number(null) coerces to 0, a "finite number", which would
-  // wrongly treat "explicitly cleared" the same as "set to 0pt".
+  // Precedence matches Press's resolveTextSizePx: explicit Font Size (pt)
+  // wins over Text Size preset, which wins over the "md" default. "auto"
+  // means no CSS override — Workbench has no Press-style shrink-to-fit
+  // pass, since that only makes sense against a fixed-size print box.
+  // `!= null` first — Number(null) coerces to 0 (a "finite number"), which
+  // would wrongly treat "explicitly cleared" as "set to 0pt".
   const customPx =
     component.fontSizeCustom != null && Number.isFinite(Number(component.fontSizeCustom))
       ? ptToPx(Number(component.fontSizeCustom))
@@ -178,13 +146,10 @@ export function applyTextFormatting(element, component) {
   if (typeof component.fontFamily === "string" && component.fontFamily.trim()) {
     const family = component.fontFamily.trim();
     element.style.fontFamily = family;
-    // Loading a font is otherwise only ever triggered by opening the Font
-    // dropdown (see font-picker.js) — a component using a Google Font
-    // that's never been re-selected in this session (a freshly loaded
-    // template, or the same one rendering in Play/Edit view, which has no
-    // Font field at all) would silently fall back to its CSS fallback
-    // font without this. ensureFontLoaded no-ops for a plain/non-Google
-    // family (findFontOptionByFamily won't match one anyway).
+    // Loading a font is otherwise only triggered by opening the Font
+    // dropdown (font-picker.js) — a Google Font never re-selected this
+    // session (a freshly loaded template, or Play/Edit view with no Font
+    // field) would silently fall back to its CSS fallback without this.
     const matchedOption = findFontOptionByFamily(family);
     if (matchedOption) {
       ensureFontLoaded(matchedOption);
@@ -192,18 +157,12 @@ export function applyTextFormatting(element, component) {
   } else {
     element.style.removeProperty("font-family");
   }
-  // component.lineHeight != null first, not just Number.isFinite(Number(...))
-  // on its own — Number(null) coerces to 0, a "finite number", which set
-  // line-height:0 (collapsing the text to zero height, effectively
-  // invisible) on every component by default, since lineHeight was null
-  // until a component explicitly set one. Same bug shape, same fix, as
-  // fontSizeCustom above. No hidden fallback constant here on purpose: the
-  // Line Height field is the one source of truth (createComponent now
-  // seeds new components with an explicit, visible 1.3 — see
-  // workbench-template-view.js) — an unset/null value (only reachable on
-  // templates saved before that field existed) means "no override", same
-  // as fontFamily above, and genuinely falls back to the browser's own
-  // default rather than a value invisible in the inspector.
+  // Same `!= null` bug shape/fix as fontSizeCustom above — Number(null)
+  // coercing to 0 would set line-height:0 (collapsing text to zero height)
+  // by default. No hidden fallback constant: Line Height is seeded
+  // explicitly (workbench-template-view.js's createComponent, 1.3); an
+  // unset value (only on pre-existing templates) means "no override" and
+  // falls back to the browser default, not an inspector-invisible constant.
   if (component.lineHeight != null && Number.isFinite(Number(component.lineHeight))) {
     element.style.lineHeight = String(Number(component.lineHeight));
   } else {
@@ -219,18 +178,11 @@ export function applyTextFormatting(element, component) {
     classes.push("text-decoration-underline");
   }
   element.classList.add(...classes);
-  // "start" (the default — every component's own align field is seeded
-  // with "start", so there's no way to tell "explicitly chosen" apart from
-  // "never touched") deliberately adds no class at all, rather than
-  // Bootstrap's .text-start. .text-start/.text-center/.text-end are all
-  // generated with !important, so forcing .text-start here unconditionally
-  // defeated a Container's own Alignment setting (an inherited text-align
-  // on an ancestor zone — see workbench-template-view.js's
-  // resolveContainerZoneTextAlign) for every Text component nested inside
-  // it, since "start" is also every component's default. Leaving it unset
-  // is a no-op outside a Container (browser's own default text-align is
-  // already "start"/left) and correctly lets the inherited value through
-  // when nested.
+  // "start" (every component's own default) deliberately adds no class —
+  // Bootstrap's .text-start/.text-center/.text-end are !important, so
+  // forcing .text-start unconditionally would defeat a Container's own
+  // inherited Alignment (resolveContainerZoneTextAlign in
+  // workbench-template-view.js) for every nested Text component.
   if (component.align === "center") {
     element.classList.add("text-center");
   } else if (component.align === "end") {

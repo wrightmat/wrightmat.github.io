@@ -1,32 +1,24 @@
 // Kind-agnostic core of the Feature-library import/matching pipeline —
-// extracted from monster-feature-matching.js (Crucible's own monster
-// importer, built and hardened across a long SRD monster-import cleanup:
-// false merges, id fragmentation, options-array destruction, dangling
-// featureParams keys, ...) so a SECOND importer (Vault's own spell/item
-// import, see vault-feature-matching.js) gets every one of those same
-// guarantees from its first import instead of re-discovering each bug the
-// hard way. Nothing here knows what a "monster" or a "spell" is — every
-// function takes its category/slug/substitution behavior as a parameter
-// from the caller, which owns the content-shape-specific knowledge
-// (5e stat-block prose vs 5e API spell/magic-item JSON).
+// shared by monster-feature-matching.js (Crucible) and vault-feature-
+// matching.js (Vault spell/item import). Nothing here knows what a
+// "monster" or a "spell" is — every function takes its category/slug/
+// substitution behavior as a parameter from the caller, which owns the
+// content-shape-specific knowledge.
 //
-// monster-feature-matching.js keeps everything that's genuinely about
-// PARSING 5e monster stat-block prose (parseWeaponAttack, parseSaveEffect,
-// Multiattack extraction, knownNameSubstitute's monster-name genericizing) —
-// only the matching/dedup/tiering/options machinery around that lives here.
+// monster-feature-matching.js keeps everything genuinely about PARSING 5e
+// monster stat-block prose (parseWeaponAttack, parseSaveEffect, Multiattack
+// extraction, name genericizing) — only matching/dedup/tiering/options
+// machinery lives here.
 
-// See NAME_MATCH_SIMILARITY_THRESHOLD's own comment in monster-feature-
-// matching.js's git history for the full reasoning — two bars for the two
-// ways a name CAN relate without being identical (exact vs partial overlap),
-// no name relation at all never qualifies regardless of description
-// similarity.
+// Two bars for the two ways a name CAN relate without being identical (exact
+// vs partial overlap); no name relation at all never qualifies regardless of
+// description similarity.
 export const NAME_MATCH_SIMILARITY_THRESHOLD = 0.25;
 export const PARTIAL_NAME_MATCH_SIMILARITY_THRESHOLD = 0.5;
 
 // Domain words common enough across nearly every trait/action/spell/item
-// description (creature, damage, target, ...) that including them in the
-// similarity score would wash out what actually distinguishes one mechanic
-// from another — excluded the same way a search engine excludes stopwords.
+// description that including them would wash out what actually distinguishes
+// one mechanic from another — excluded like a search engine's stopwords.
 export const STOPWORDS = new Set([
   "a", "an", "the", "of", "to", "and", "or", "its", "it", "is", "are", "this", "that", "with", "on", "in", "at",
   "as", "by", "if", "for", "from", "when", "while", "can", "must", "not", "no", "one", "target", "targets",
@@ -34,25 +26,21 @@ export const STOPWORDS = new Set([
   "melee", "ranged", "weapon", "spell", "attack", "hit", "reach",
 ]);
 
-// A short, boilerplate-heavy one-liner only ever has a handful of
-// significant tokens once the template itself is subtracted out — too few
-// for a jaccard ratio to be trustworthy at either match bar. Below this
-// token count, on either side, the required threshold jumps to near-total
-// agreement regardless of how closely the names relate.
+// A short, boilerplate-heavy one-liner only has a handful of significant
+// tokens once the template is subtracted out — too few for a jaccard ratio
+// to be trustworthy. Below this token count, the required threshold jumps
+// to near-total agreement regardless of how closely the names relate.
 export const MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH = 8;
 export const SHORT_TEXT_SIMILARITY_THRESHOLD = 0.85;
 
-// Heavily-templated "roll against a number" boilerplate (a weapon attack's
-// "+N to hit", an area/save effect's "DC N <ability> saving throw") pads a
-// short ability's significant-token count without actually distinguishing
-// it from an unrelated one sharing the same boilerplate — forces the strict
-// short-text threshold even when the raw token count alone wouldn't.
+// Heavily-templated "roll against a number" boilerplate ("+N to hit", "DC N
+// <ability> saving throw") pads a short ability's token count without
+// actually distinguishing it from an unrelated one — forces the strict
+// short-text threshold even when raw token count alone wouldn't.
 export const TEMPLATED_MECHANICAL_TEXT_PATTERN = /\+\d+\s+to hit|\bDC\s*\d+\s+\w+\s+saving throw\b/i;
 
-// Feature ids and display names are used as filesystem-adjacent storage
-// keys (dataManager.save writes a file keyed by id) and shown as labels —
-// malformed source data (a name field holding an entire paragraph) can
-// otherwise produce an id hundreds of characters long that fails to save.
+// Feature ids/display names are used as storage keys and labels — malformed
+// source data can otherwise produce an id hundreds of characters long.
 export const MAX_SLUG_LENGTH = 60;
 export const MAX_DISPLAY_NAME_LENGTH = 100;
 
@@ -65,8 +53,8 @@ export function slugify(text) {
 }
 
 // Strips a trailing "(N/Day)"-style frequency count and trailing period(s)
-// before comparing — the one systematic per-record variation a 5e source's
-// own templated names carry (e.g. "Legendary Resistance (3/Day).").
+// before comparing — the one systematic per-record naming variation 5e
+// source data carries (e.g. "Legendary Resistance (3/Day).").
 export function normalizeName(name) {
   return String(name || "")
     .trim()
@@ -76,9 +64,9 @@ export function normalizeName(name) {
     .trim();
 }
 
-// Only strips the trailing period(s) source data tends to carry on a name —
-// keeps any "(N/Day)" count, since a freshly-created one-off feature is
-// scoped to just this one record and that count is genuinely useful detail.
+// Only strips trailing period(s) — keeps any "(N/Day)" count, since a
+// freshly-created one-off feature is scoped to just this record and that
+// count is genuinely useful.
 export function displayName(name) {
   return String(name || "").trim().replace(/\.+$/, "");
 }
@@ -106,20 +94,14 @@ export function cappedDisplayName(name) {
   return `${display.slice(0, MAX_DISPLAY_NAME_LENGTH - 1).trimEnd()}…`;
 }
 
-// A generated shared-template id (`feat.<slug(name)>`) can coincidentally
-// collide with an EXISTING Feature that isn't actually a valid match for
-// THIS caller's own category pool at all — a different System, or a totally
-// unrelated kind of content (a monster's "Fire Breath" vs a Vault spell/item
-// Feature that happens to slugify to the same id) sharing this same
-// `feature` Library kind. The caller's own candidatePool already filters
-// those out for MATCHING purposes, but that does nothing to protect a
-// CREATE — `dataManager.save` writes unconditionally by id, so creating a
-// new template at a colliding id would silently overwrite that unrelated
-// Feature's own content instead of coexisting with it. `allowedCategories`
-// is the caller's own reusable-template category set (`["monster"]` for
-// Crucible, `["spell", "item"]` for Vault) — checked against the FULL
-// unfiltered `existingFeatures` (not candidatePool) specifically so it also
-// catches a collision candidatePool itself already excluded from view.
+// A generated shared-template id can coincidentally collide with an
+// existing Feature from a different System or unrelated content category
+// sharing the same `feature` Library kind. The caller's candidatePool
+// already filters those out for MATCHING, but `dataManager.save` writes
+// unconditionally by id, so a CREATE at a colliding id would silently
+// overwrite unrelated content. `allowedCategories` is checked against the
+// full unfiltered `existingFeatures`, not candidatePool, so it also catches
+// a collision candidatePool already excluded from view.
 export function isReusableTemplateCandidate(feature, allowedCategories) {
   const categories = feature.tags?.categories;
   return !Array.isArray(categories) || !categories.length || categories.some((c) => allowedCategories.includes(c));
@@ -134,11 +116,9 @@ export function resolveTemplateId(baseId, existingFeatures, allowedCategories, s
   if (!collision || isReusableTemplateCandidate(collision, allowedCategories)) return baseId;
   let suffix = 2;
   let candidateId = `${baseId}-${suffixWord}`;
-  // Each bumped candidate slot needs the SAME reusability check the base id
-  // just got above it — not just "is this id already taken". Confirmed
-  // live (monster import): treating "already exists" alone as blocking
-  // fragmented one shared ability across several different ids instead of
-  // reusing an already-good candidate slot further down the bump chain.
+  // Each bumped candidate slot needs the same reusability check the base id
+  // got above — treating "already exists" alone as blocking fragments one
+  // shared ability across several ids instead of reusing a good slot.
   let occupant = pool.find((feature) => feature.id === candidateId);
   while (occupant && !isReusableTemplateCandidate(occupant, allowedCategories)) {
     candidateId = `${baseId}-${suffixWord}-${suffix}`;
@@ -153,11 +133,9 @@ export function significantTokens(text) {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    // A bare number (attack bonus, total damage, a dice count like "2d8") is
-    // kept regardless of length — a coincidentally-shared dice notation
-    // alone shouldn't be the only differentiator left once real numbers are
-    // filtered out as "too short" noise. Alphabetic words still need
-    // length>2 to exclude real stopword-shaped noise ("to", "by", "if", ...).
+    // A bare number (attack bonus, dice count) is kept regardless of length
+    // — real numbers shouldn't be filtered out as "too short" noise.
+    // Alphabetic words still need length>2 to exclude stopword-shaped noise.
     .filter((word) => (word.length > 2 || /^\d+$/.test(word)) && !STOPWORDS.has(word));
   return new Set(words);
 }
@@ -176,13 +154,11 @@ export function jaccardSimilarity(textA, textB) {
   return jaccardFromTokens(significantTokens(textA), significantTokens(textB));
 }
 
-// True when two texts are IDENTICAL once every digit run is masked out, but
-// their actual digit runs (in order) differ — i.e. "the exact same sentence
-// shape, with different numbers plugged in." A purely mechanical check (no
-// grammar/sentence-structure guessing), so it can't misfire on genuinely
-// different wording — only on genuinely identical wording with different
-// numbers, which is exactly the case findMatch's own jaccard threshold can't
-// reliably catch on its own.
+// True when two texts are identical once every digit run is masked out, but
+// their actual digit runs differ — "the exact same sentence shape, with
+// different numbers plugged in." Purely mechanical (no grammar guessing), so
+// it only misfires on genuinely identical wording with different numbers —
+// exactly the case findMatch's jaccard threshold can't reliably catch alone.
 export function sameShapeDifferentNumbers(a, b) {
   const digitsA = (String(a || "").match(/\d+/g) || []).join(",");
   const digitsB = (String(b || "").match(/\d+/g) || []).join(",");
@@ -191,50 +167,33 @@ export function sameShapeDifferentNumbers(a, b) {
 }
 
 // Best-scoring qualifying candidate as `{feature, tierId}` (tierId null
-// unless the winning representation was a tier's own text), or null
-// (meaning: create a new one-off feature for this entry instead). Scores a
-// candidate's own base description AND every one of its `tiers` (when
-// present) as separate representations, keeping whichever one scores best —
-// a tiered Feature's base text is deliberately generic/parameter-free, so
-// comparing only against it would make a re-imported record whose exact
-// ability is already captured as a tier fail to match and spawn a
-// duplicate.
+// unless the winning representation was a tier's own text), or null (create
+// a new one-off feature instead). Scores a candidate's base description AND
+// every `tiers` entry as separate representations, keeping whichever scores
+// best — a tiered Feature's base text is deliberately generic/parameter-
+// free, so comparing only against it would miss a re-import whose exact
+// ability is already captured as a tier.
+//
 // `nameMatchThreshold` — overrides NAME_MATCH_SIMILARITY_THRESHOLD for an
-// EXACT name match only (partial-name-overlap and short-text thresholds
-// below are unaffected). Default (omitted) preserves this function's
-// original lenient behavior, which Monster's own callers rely on — SRD
-// monster traits genuinely reuse identical text verbatim by convention, so
-// an exact name match there really does mean "the same ability, at most
-// reworded/reparametrized." content-feature-matching.js's own Character/
-// Class/Species/Variant promotion passes a much stricter override instead:
-// D&D class features deliberately reuse names ("Spellcasting," "Fighting
-// Style," "Channel Divinity," ...) across classes/subclasses for
-// CONCEPTUALLY DIFFERENT mechanics, so the same assumption doesn't hold —
-// confirmed real risk, not hypothetical: a Wizard's own Spellcasting and a
-// Cleric's own Spellcasting share enough D&D-mechanic vocabulary ("spell
-// slots," "spellcasting ability," "prepare," "known spells") to likely
-// clear 0.25 despite being genuinely different abilities.
+// exact name match only. Default preserves lenient behavior Monster's
+// callers rely on (SRD monster traits reuse identical text verbatim by
+// convention, so an exact name match really does mean the same ability).
+// content-feature-matching.js's Class/Species promotion passes a stricter
+// override: D&D class features reuse names ("Spellcasting," "Channel
+// Divinity") across classes for conceptually different mechanics, so the
+// same assumption doesn't hold.
+//
 // `requireExactName` — when true, disables the `nameOverlaps` fallback
-// entirely (only an exact normalized-name match is ever considered for
-// merging at all, regardless of description similarity). Monster's own
-// callers leave this off — a partial name overlap ("Legendary Resistance"
-// vs "Legendary Resistance (3/Day)") legitimately signals the same ability
-// there. content-feature-matching.js's own domain has the opposite pattern:
-// D&D subclasses routinely name a LATER upgrade of an earlier feature with
-// an overlapping-but-different name ("Improved Critical" -> "Superior
-// Critical", "War Magic" -> "Improved War Magic"), and that upgrade's own
-// text is often short and otherwise near-identical to the base feature's
-// (same sentence shape, one changed number) — exactly the shape that
-// crosses SHORT_TEXT_SIMILARITY_THRESHOLD despite being a deliberately
-// DIFFERENT, stronger ability. Confirmed real data loss: Fighter Champion's
-// own "Superior Critical" (crit on 18-20) was silently swallowed into
-// "Improved Critical" (crit on 19-20) this way, and Eldritch Knight's own
-// "Improved War Magic" into "War Magic" the same way — both within the
-// SAME subclass's own single import pass, so class/subclass id-scoping
-// couldn't have caught either. An exhaustive check of every currently-
-// imported subclass found zero cases where the looser nameOverlaps path
-// was actually needed for a correct match — every legitimate multi-tier
-// class feature already stayed separate on description length alone.
+// entirely. Monster's callers leave this off (a partial overlap like
+// "Legendary Resistance" vs "Legendary Resistance (3/Day)" legitimately
+// signals the same ability there). content-feature-matching.js needs it on:
+// D&D subclasses routinely name a later upgrade with an overlapping-but-
+// different name ("Improved Critical" -> "Superior Critical"), and that
+// upgrade's text is often short and near-identical to the base feature's —
+// exactly the shape that crosses SHORT_TEXT_SIMILARITY_THRESHOLD despite
+// being a deliberately different, stronger ability. Confirmed real data
+// loss without this: Fighter Champion's own "Superior Critical" was
+// silently swallowed into "Improved Critical" this way.
 export function findMatch(trait, candidates, { nameMatchThreshold = NAME_MATCH_SIMILARITY_THRESHOLD, requireExactName = false } = {}) {
   const traitName = normalizeName(trait.name);
   const traitDescription = trait.description || "";
@@ -247,7 +206,7 @@ export function findMatch(trait, candidates, { nameMatchThreshold = NAME_MATCH_S
     const featureName = normalizeName(feature.name);
     const nameMatches = Boolean(traitName) && traitName === featureName;
     const nameOverlaps = !requireExactName && !nameMatches && jaccardSimilarity(traitName, featureName) > 0;
-    if (!nameMatches && !nameOverlaps) return; // names aren't even close — never merge, regardless of description
+    if (!nameMatches && !nameOverlaps) return; // names aren't close — never merge, regardless of description
     const representations = [{ tierId: null, text: feature.description || feature.mechanics?.text || "" }];
     if (Array.isArray(feature.tiers)) {
       feature.tiers.forEach((tier) => {
@@ -255,21 +214,16 @@ export function findMatch(trait, candidates, { nameMatchThreshold = NAME_MATCH_S
       });
     }
     representations.forEach(({ tierId, text }) => {
-      // Only guards the BASE description (tierId === null) — matching
-      // against an EXISTING tier's own text already requires it, verbatim;
-      // this never blocks that. That's precisely the shape Tiers exist to
-      // capture (same mechanic, a real differing parameter), never
-      // something safe to silently collapse onto one shared value.
+      // Only guards the base description (tierId === null) — matching
+      // against an existing tier's own text already requires it verbatim.
+      // Same-shape-different-numbers is precisely what Tiers exist to
+      // capture, never something to silently collapse onto one shared value.
       if (tierId === null && sameShapeDifferentNumbers(traitDescription, text)) return;
       const featureTokens = significantTokens(text);
       const similarity = jaccardFromTokens(traitTokens, featureTokens);
-      // An EXACT name match always uses the (caller-selectable) name-match
-      // threshold, even for short/templated text — once the name has
-      // already confirmed a match, sameShapeDifferentNumbers above is what
-      // actually protects against a false merge on TOP of that threshold,
-      // not a replacement for it (see this function's own `nameMatchThreshold`
-      // param comment for why that threshold isn't always the lenient
-      // default).
+      // An exact name match always uses the name-match threshold, even for
+      // short/templated text — sameShapeDifferentNumbers above is what
+      // protects against a false merge on top of that, not a replacement for it.
       const requiredThreshold = nameMatches
         ? nameMatchThreshold
         : traitLooksTemplated || TEMPLATED_MECHANICAL_TEXT_PATTERN.test(text) || Math.min(traitTokens.size, featureTokens.size) < MIN_SIGNIFICANT_TOKENS_FOR_LOOSE_MATCH
@@ -285,16 +239,12 @@ export function findMatch(trait, candidates, { nameMatchThreshold = NAME_MATCH_S
   return best ? { feature: best, tierId: bestTierId } : null;
 }
 
-// Written generically (any "Base Name (N/Day)" or "Base Name (Recharge
-// N[-6])" ability) — a shared Feature whose incoming entry name carries one
-// of these suffixes represents a genuinely SCALING ability (how often it's
-// available, or — once a caller adds its own patterns — a rarity/level
-// variant), not a flavor variant. `[\d\-‐-―]` in the Recharge pattern
-// tolerates any dash-like character (plain hyphen, en dash, em dash) a
-// copy-pasted source might use — confirmed live: a genuine Unicode en dash
-// silently failed to match plain ASCII `\-` alone, leaving one sibling's
-// suffix unstripped while its others matched fine, fragmenting one shared
-// ability across different template ids.
+// Written generically for any "Base Name (N/Day)" or "Base Name (Recharge
+// N[-6])" ability — a shared Feature carrying one of these suffixes
+// represents a genuinely scaling ability, not a flavor variant. `[\d\-‐-―]`
+// in the Recharge pattern tolerates any dash-like character a copy-pasted
+// source might use (plain hyphen, en dash, em dash) — a plain ASCII `\-`
+// alone missed a Unicode en dash and fragmented one shared ability across ids.
 export const NAMED_TIER_PATTERNS = [
   { pattern: /\((\d+)\/Day\)\s*$/i, tierId: (m) => `${m[1]}-day`, shortName: (m) => `${m[1]}/Day` },
   { pattern: /\(Recharge\s*([\d‐-―\-]+)\)\s*$/i, tierId: (m) => `recharge-${m[1].replace(/[‐-―\-]/g, "to")}`, shortName: (m) => `Recharge ${m[1]}` },
@@ -302,13 +252,9 @@ export const NAMED_TIER_PATTERNS = [
 
 // Strips the same trailing "(Recharge N-M)"/"(N/Day)" suffix
 // NAMED_TIER_PATTERNS matches, but for computing a weapon-attack/save-effect
-// shared TEMPLATE's own id/slug — those branches match/create purely by
-// NAME, so without this a record whose source data happens to keep the
-// frequency suffix in the name would never collapse into the same template
-// as another otherwise-identical record whose source dropped it. The
-// template itself carries no numbers of its own either way, so there's
-// nothing frequency-specific to preserve here — the two abilities really
-// are the exact same template regardless of source-text spelling.
+// shared TEMPLATE's id/slug — those branches match/create purely by name, so
+// without this a record whose source keeps the frequency suffix in the name
+// would never collapse into the same template as one whose source dropped it.
 export function baseAbilityName(name) {
   let stripped = String(name || "");
   for (const { pattern } of NAMED_TIER_PATTERNS) stripped = stripped.replace(pattern, "");
@@ -316,12 +262,10 @@ export function baseAbilityName(name) {
 }
 
 // Only ever called once findMatch has already found a same-mechanic match —
-// this never changes WHETHER something matches, only what happens once it
-// has: instead of silently discarding the frequency difference (or letting
-// the SAME base ability at different frequencies proliferate into separate
-// one-off Features), it's recorded as a tier on the ONE shared Feature.
-// Returns the tier id to record on the caller's own record.featureTiers, or
-// null if the entry's name doesn't carry a recognized suffix at all.
+// never changes WHETHER something matches, only what happens once it has:
+// the frequency difference is recorded as a tier on the one shared Feature
+// rather than discarded or spawning a separate one-off. Returns the tier id
+// to record on the caller's record.featureTiers, or null if no recognized suffix.
 export async function resolveNamedTier(trait, match, dataManager, substitutedDescription) {
   const name = String(trait.name || "");
   let tierMatch = null;
@@ -347,35 +291,23 @@ export async function resolveNamedTier(trait, match, dataManager, substitutedDes
 }
 
 // A small, narrowly-anchored set of real phrasings for "this ability
-// resolves into one of several named sub-effects, listed as SEPARATE
-// {name, desc} entries in the raw source" — Iron Cobra's own "...or suffer
-// one random poison effect:" (followed by "1. Poison Damage:"/"2.
-// Confusion:"/etc. as their own numbered entries) and Gem Stalker's own
-// "...one of the following effects occurs..." (followed by plain-named
-// entries) are the two confirmed real monster-stat-block shapes; a spell/
-// item source may add its own lead-in phrasing to this same pattern later.
-// Deliberately NOT a loose "ends with a colon" heuristic — that would risk
-// swallowing a genuinely unrelated NEXT ability whenever a source happens
-// to end a sentence with one for other reasons.
+// resolves into one of several named sub-effects, listed as separate
+// {name, desc} entries in the raw source" (e.g. "...or suffer one random
+// poison effect:" followed by numbered entries). Deliberately not a loose
+// "ends with a colon" heuristic — that would risk swallowing a genuinely
+// unrelated next ability whenever a source ends a sentence with one.
 export const CHOICE_LEAD_IN_PATTERN = /(?:suffer one random [\w\s]+ effect|one of the following effects occurs(?:,\s*determined by [^:.]+)?)\s*:?\s*$/i;
 export const NUMBERED_SUB_EFFECT_NAME_PATTERN = /^(\d+)\.\s*(.+?):?\s*$/;
 
-// Detects the multi-ENTRY choice shape above, starting at
+// Detects the multi-entry choice shape above, starting at
 // `entries[startIndex]`. Returns `{consumedCount, options: [{name, text}]}`
-// — `consumedCount` is how many FOLLOWING entries were absorbed as this one
-// ability's own `options` (the caller skips past them, they never become
-// their own standalone Features) — or `null` when this entry isn't a choice
-// lead-in, or when fewer than 2 qualifying sub-effect entries follow it (a
-// "choice" of one thing isn't a choice; falls through to being treated as
-// an ordinary standalone trait instead, same safe-fallback discipline as
-// every pattern in this module: never guess, never partially match).
-// `isIndependentAbility(description)` tells this where a plain-named list
-// (no numbering marker) stops — the monster importer passes a check for
-// "starts a fresh Melee/Ranged Attack line"; a caller with a different
-// content shape (a spell/item source) can pass its own boundary check
-// instead. A numbered list keeps consuming as long as the numbering stays
-// sequential — an unambiguous, self-terminating signal that doesn't need
-// this check at all.
+// — `consumedCount` is how many following entries were absorbed as this
+// ability's own `options` (the caller skips past them) — or `null` when this
+// isn't a choice lead-in, or fewer than 2 sub-effects follow (never guess,
+// never partially match). `isIndependentAbility(description)` tells this
+// where a plain-named list (no numbering) stops; a numbered list keeps
+// consuming as long as the numbering stays sequential, an unambiguous,
+// self-terminating signal that doesn't need this check.
 export function detectChoiceEffectGroup(entries, startIndex, isIndependentAbility) {
   const lead = entries[startIndex];
   if (!lead?.description || !CHOICE_LEAD_IN_PATTERN.test(lead.description)) return null;
@@ -404,14 +336,12 @@ export function detectChoiceEffectGroup(entries, startIndex, isIndependentAbilit
   return { consumedCount: i - startIndex - 1, options };
 }
 
-// The OTHER real choice shape: already ONE entry's own multi-paragraph text
-// ("...uses one of the following breath weapons.\nFire Breath. ...\n
-// Weakening Breath. ...") rather than split across separate {name, desc}
-// entries. Anchored on literal embedded newlines (this pipeline's own
-// sources always preserve them verbatim) so an ordinary single-paragraph
-// entry (the overwhelming majority) never matches at all. A single non-
-// conforming line anywhere in the tail bails the WHOLE split (never a wrong
-// partial structure), same discipline as detectChoiceEffectGroup.
+// The other real choice shape: one entry's own multi-paragraph text (e.g.
+// "...uses one of the following breath weapons.\nFire Breath. ...") rather
+// than split across separate {name, desc} entries. Anchored on literal
+// embedded newlines so an ordinary single-paragraph entry never matches. A
+// single non-conforming line anywhere in the tail bails the whole split
+// (never a wrong partial structure), same discipline as detectChoiceEffectGroup.
 export function splitEmbeddedEffectOptions(description) {
   const raw = String(description || "");
   if (!raw.includes("\n")) return null;
@@ -431,23 +361,17 @@ export function splitEmbeddedEffectOptions(description) {
   return { intro, options };
 }
 
-// A THIRD real choice shape, distinct from the numbered/embedded-newline
+// A third real choice shape, distinct from the numbered/embedded-newline
 // ones above: a literal markdown table of randomized outcomes (a magic
-// item's own "roll a d100, consult this table" content — confirmed live
-// against the real 5e API: Wand of Wonder/Deck of Many Things both give
-// their own random-effect list as `| d100 | Effect |` / `|---|---|` rows,
-// not prose). Detected purely structurally (2+ consecutive `|...|` lines
-// with a header row and a `|---|...` separator row) — no lead-in phrase
-// needed, and none of this pipeline's other option-detectors could
-// mistake an ordinary paragraph for a table, so this never needs to run
-// conditionally after them. Each DATA row (after the header+separator)
-// becomes one option: the first column is the option's own name/roll
-// range, every remaining column is joined into that option's own text.
-// Exported so a caller can recognize a BARE table row/separator line on its
-// own (vault-feature-matching.js's own residual-clause path uses this to
-// never mint a Feature from an isolated stat-block table fragment — see its
-// own `isNonMechanicalUnit`), not just as part of this file's own whole-
-// table detection below.
+// item's "roll a d100, consult this table" content — the 5e API gives Wand
+// of Wonder/Deck of Many Things as `| d100 | Effect |` rows, not prose).
+// Detected purely structurally (2+ consecutive `|...|` lines with a header
+// and `|---|...` separator) — no lead-in phrase needed. Each data row
+// becomes one option: first column is the name/roll range, remaining
+// columns join into the text. Exported so a caller can also recognize a
+// bare table row/separator line on its own (vault-feature-matching.js's
+// residual-clause path uses this to avoid minting a Feature from an
+// isolated stat-block table fragment).
 export const TABLE_ROW_PATTERN = /^\|(.+)\|$/;
 export const TABLE_SEPARATOR_PATTERN = /^\|?[\s:|-]+\|?$/;
 
@@ -460,10 +384,9 @@ export function splitMarkdownTableOptions(description) {
   });
   if (rowIndexes.length < 3) return null; // header + separator + at least 1 data row
 
-  // A table is a contiguous run of `|...|` lines — find the longest such
-  // run rather than assuming the whole text is nothing but the table
-  // (a table is usually preceded by ordinary prose paragraphs describing
-  // the ability itself, e.g. Wand of Wonder's own charges/DC intro text).
+  // A table is a contiguous run of `|...|` lines — find the longest run
+  // rather than assuming the whole text is the table (usually preceded by
+  // ordinary prose describing the ability itself).
   let bestStart = rowIndexes[0];
   let bestLength = 1;
   let runStart = rowIndexes[0];
@@ -500,10 +423,8 @@ export function splitMarkdownTableOptions(description) {
     }));
   if (options.length < 2) return null;
 
-  // Everything before the table's own first line is the ability's real
-  // intro/mechanical text (charges, DC, trigger, ...) — joined back into
-  // one string the same way the rest of this pipeline treats prose,
-  // rather than losing it.
+  // Everything before the table's first line is the ability's real intro/
+  // mechanical text (charges, DC, trigger) — joined back rather than lost.
   const intro = lines
     .slice(0, bestStart)
     .filter(Boolean)
@@ -512,16 +433,13 @@ export function splitMarkdownTableOptions(description) {
   return { intro, options, header };
 }
 
-// Shared by both detectChoiceEffectGroup's and splitEmbeddedEffectOptions'
-// own call sites: creates (or, on re-import, refreshes) the ONE Feature
-// representing a choice-effect trait, always a record-specific one-off
-// (`feat.<recordSlug>-<trait-slug>`, matched content is never shared across
-// records) with `mechanics.scope: "unique"` and `options` populated.
-// `ctx.category` is this caller's own single Feature category
-// ("monster"/"spell"/"item"/...); `ctx.substitute(text)` is the caller's own
-// name-genericizing step (monster's own `knownNameSubstitute`, or identity
-// for a source with nothing to genericize) applied to both the intro and
-// every option's own text. Returns the saved Feature's own id.
+// Shared by detectChoiceEffectGroup's and splitEmbeddedEffectOptions' call
+// sites: creates (or, on re-import, refreshes) the one Feature representing
+// a choice-effect trait, always a record-specific one-off
+// (`feat.<recordSlug>-<trait-slug>`, never shared across records) with
+// `mechanics.scope: "unique"` and `options` populated. `ctx.substitute(text)`
+// is the caller's name-genericizing step, applied to the intro and every
+// option's text. Returns the saved Feature's id.
 export async function saveOptionsFeature(trait, intro, options, ctx) {
   const { candidatePool, recordSlug, systemId, actionCost, category, substitute, dataManager, result } = ctx;
   const substitutedIntro = substitute(intro);

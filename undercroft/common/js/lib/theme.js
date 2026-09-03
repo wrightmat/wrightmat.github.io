@@ -86,19 +86,15 @@ export function getThemePackPreference() {
 function resolvePackStylesheetUrl(packId) {
   const relativeHref =
     packId === "default" ? "vendor/bootstrap/bootstrap.min.css" : `vendor/bootswatch/${packId}/bootstrap.min.css`;
-  // common/js/lib/theme.js -> ../../ -> common/ — same base every
-  // page-relative <script src> path (common/js/theme-init.js's own
-  // document.currentScript-based resolution) ultimately lands on too.
+  // Same common/ base theme-init.js's own document.currentScript resolution lands on.
   const commonBase = new URL("../../", import.meta.url);
   return new URL(relativeHref, commonBase).href;
 }
 
 // Swaps the page's ONE Bootstrap stylesheet at runtime — the <link> itself
-// is written once by common/js/theme-init.js (document.write, before first
-// paint; see that file's own comment for why it can't consult this same
-// manifest). This only ever runs after a user click, so a visible swap/
-// reflow is expected, not a bug — the FOUC-avoidance concern only applies
-// to page load, which theme-init.js already owns.
+// is written once by theme-init.js (document.write, before first paint).
+// Only runs after a user click, so a visible swap/reflow is expected; the
+// FOUC-avoidance concern only applies to page load, which theme-init.js owns.
 export function applyThemePack(packId) {
   const id = typeof packId === "string" && PACK_ID_PATTERN.test(packId) ? packId : "default";
   const link = document.querySelector("link[data-undercroft-bootstrap-link]");
@@ -118,14 +114,10 @@ export function applyThemePack(packId) {
 }
 
 // Wires a batch of already-built palette-option elements (one per
-// common/data/theme-packs.json entry, each carrying `data-theme-pack-option`
-// set to that pack's id — see app-shell.js's palette dropdown, the only
-// caller today). Click applies + persists the clicked pack and refreshes
-// every button's active state together, same shape as initThemeControls'
-// own [data-theme-option] wiring just below, but exported separately since
-// the palette list is built asynchronously (after loadThemePacks resolves,
-// well after initThemeControls' own single synchronous pass has already
-// run) rather than existing in the DOM up front.
+// common/data/theme-packs.json entry, `data-theme-pack-option` set to that
+// pack's id — see app-shell.js's palette dropdown). Exported separately
+// from initThemeControls' own [data-theme-option] wiring below since the
+// palette list is built asynchronously, after loadThemePacks resolves.
 export function wireThemePackOptions(buttons) {
   const packPreference = getThemePackPreference();
   const setActive = (selected) => {
@@ -145,12 +137,10 @@ export function wireThemePackOptions(buttons) {
   });
 }
 
-// Fetched once per page load and cached — every caller (the header's own
-// palette dropdown being the only one today) shares the same in-flight/
-// resolved promise rather than re-fetching. Mirrors font-library.js's own
-// loadCustomFonts() shape (common/js/lib/font-library.js:108-124): same
-// new URL(..., import.meta.url) resolution against this module's own path,
-// same non-fatal "log and return []" failure handling.
+// Fetched once per page load and cached — every caller shares the same
+// in-flight/resolved promise. Mirrors font-library.js's loadCustomFonts()
+// shape: same import.meta.url resolution, same non-fatal "log and return []"
+// failure handling.
 export function loadThemePacks() {
   if (!themePacksPromise) {
     themePacksPromise = (async () => {

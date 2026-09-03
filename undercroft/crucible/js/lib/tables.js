@@ -1,29 +1,20 @@
 // Data loading for Crucible's reference kinds — monster-archetype,
 // monster-role, feature — all managed in Loom's generic Library tab, not
-// authored here. Mirrors Forge's tables.js: fetchKindEntriesForSystem
-// (common/js/lib/content-fetch.js) lists a kind's saved entries, already
-// narrowed to the active System server-side, and pairs each with its id.
-// Creature Type is NOT one of these — see listCreatureTypesForSystem below.
+// authored here. Creature Type is NOT one of these — see
+// listCreatureTypesForSystem below.
 import { fetchKindEntriesForSystem } from "../../../common/js/lib/content-fetch.js";
-// loadCombatScalingLevels moved to common/js/lib/combat-scaling.js once the
-// Dashboard's Encounter Difficulty & XP calculator needed the exact same
-// System-reading logic — re-exported below so every existing importer of
-// this module keeps working unchanged. slugify moved with it since
-// loadCombatScalingLevels (and this file's other lookups) depend on it.
+// Re-exported: loadCombatScalingLevels/guessCombatScalingFieldKey live in
+// combat-scaling.js (shared with the Dashboard's XP calculator);
+// loadAbilityFieldDefs lives in generator-kit.js (shared with Vault) — kept
+// re-exported here so existing importers of this module still work.
 import { slugify, loadCombatScalingLevels, guessCombatScalingFieldKey } from "../../../common/js/lib/combat-scaling.js";
-// loadAbilityFieldDefs moved to common/js/lib/generator-kit.js once Vault
-// needed the exact same System-ability-reading logic (its own feature-
-// params-editor ability select) — re-exported below so every existing
-// importer of this module keeps working unchanged.
 import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
 
 export { loadCombatScalingLevels, loadAbilityFieldDefs, guessCombatScalingFieldKey };
 
-// fetchKindEntriesForSystem asks the server to filter by systemId before
-// reading any file (get_items_bulk, server/storage.py) rather than fetching
-// a kind's whole cross-tool library and filtering client-side — the
-// `.filter()` below stays regardless, as the correctness guarantee for the
-// case fetchKindEntriesForSystem itself falls back to an unfiltered fetch.
+// fetchKindEntriesForSystem filters by systemId server-side; the `.filter()`
+// below stays as the correctness guarantee for when it falls back to an
+// unfiltered fetch.
 async function listKindForSystem(dataManager, kind, systemId) {
   const entries = await fetchKindEntriesForSystem(dataManager, kind, systemId);
   return entries
@@ -34,37 +25,24 @@ async function listKindForSystem(dataManager, kind, systemId) {
     });
 }
 
-// Unlike Archetype/Role/Feature (Crucible-authored reference data, shared
-// across every System), Creature Type is System-defined game-rule
-// vocabulary — what "creature type" even means, and the full taxonomy of
-// them, is a per-system rules concept the same way Languages or Classes
-// are, not something Crucible should own one shared Library-kind list of.
-// Reads straight off the active System's own array field (Loom's Properties
-// editor) — same mechanism as loadCombatScalingLevels below, including
-// "values returned close to as-authored, just adding a slugified `id`
-// fallback" so existing content (Features tagged by creature-type id, e.g.
-// "beast") keeps resolving correctly. Absent on a System means no creature
-// types defined, which callers should treat as "nothing eligible" rather
-// than an error.
+// Unlike Archetype/Role/Feature, Creature Type is System-defined game-rule
+// vocabulary — a per-system rules concept like Languages or Classes, not a
+// shared Library-kind list Crucible owns. Reads straight off the active
+// System's own array field, same mechanism as loadCombatScalingLevels below
+// (values returned close to as-authored, plus a slugified `id` fallback so
+// content tagged by creature-type id, e.g. "beast", keeps resolving).
+// Absent on a System means "nothing eligible", not an error.
 //
 // Which field supplies this data is Crucible's own tool preference, not
-// System data — different systems use different nomenclature for this
-// concept (5e's "Creature Type" vocabulary, another game's "Kind"/"Origin"/
-// whatever it calls its own version) — so it's configurable exactly like
-// combatScalingField below (see getCreatureTypeFieldPreference in app.js).
-// `creatureTypeField` is the GM's own explicit preference, if stored —
-// empty/omitted falls through to guessCreatureTypeFieldKey's own name-
-// preference guess, then the literal "creatureTypes" key as the last
-// resort, so existing Systems keep working without needing to set anything.
+// System data (systems name this concept differently) — configurable like
+// combatScalingField below. `creatureTypeField` is the GM's stored
+// preference; empty falls through to guessCreatureTypeFieldKey's guess,
+// then the literal "creatureTypes" key.
 const CREATURE_TYPE_FIELD_NAME_PREFERENCE = ["creatureTypes"];
 
-// See guessCombatScalingFieldKey's own comment (common/js/lib/combat-
-// scaling.js) for why this is name-preference only, not shape-detected —
-// "creatureTypes" is overwhelmingly the real convention across this suite's
-// own Systems (every one surveyed that has this concept at all, as of
-// 2026-08-30, uses that exact name), so the list is short today, but kept
-// as a real preference list (not a single hardcoded string) so a future
-// System's own alternate name has an obvious place to be added.
+// Name-preference only, not shape-detected — "creatureTypes" is the
+// overwhelming real convention across this suite's own Systems today, but
+// kept as a list (not a hardcoded string) so an alternate name has a place.
 export function guessCreatureTypeFieldKey(fields) {
   const arrayFieldKeys = new Set((Array.isArray(fields) ? fields : []).filter((f) => f?.type === "array").map((f) => f.key));
   return CREATURE_TYPE_FIELD_NAME_PREFERENCE.find((name) => arrayFieldKeys.has(name)) || "";
@@ -73,8 +51,6 @@ export function guessCreatureTypeFieldKey(fields) {
 export async function listCreatureTypesForSystem(dataManager, systemId, creatureTypeField = "") {
   if (!dataManager || !systemId) return [];
   try {
-    // preferLocal: false — a Loom edit to the System's fields must be
-    // visible immediately, not hidden behind a stale local cache.
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
     const key = creatureTypeField || guessCreatureTypeFieldKey(fields) || "creatureTypes";
@@ -102,24 +78,18 @@ export async function listFeaturesForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "feature", systemId);
 }
 
-// Crucible's own generated-output kind — lets the Monster picker (app.js)
-// offer every previously-saved monster for the active System, the same way
-// Sanctum's Location picker lists saved Locations for the active Setting.
+// Lets the Monster picker offer every previously-saved monster for the
+// active System, same as Sanctum's Location picker.
 export async function listMonstersForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "monster", systemId);
 }
 
 // Every top-level array field, so Crucible's "Combat scaling field"/
-// "Creature type field" tool preference dropdowns can list all real
-// candidates — deliberately not filtered by shape (unlike Vault's
-// cost/targetBudget-based isGeneratorPropertyField) since a scaling field's
-// own shape is whatever stats this System's generator actually needs, not a
-// fixed set this function could check for. `guessedCombatScalingKey`/
-// `guessedCreatureTypeKey` ride along (computed here, in the same fetch,
-// rather than a second round trip) so each settings dropdown can pre-select
-// its own guess and label it as auto-detected — mirrors
-// listObjectFieldOptions's own `guessedKey` (common/js/lib/generator-kit.js)
-// for abilityField.
+// "Creature type field" preference dropdowns can list all real candidates —
+// not filtered by shape (unlike Vault's cost/targetBudget-based check) since
+// a scaling field's shape varies per System. `guessedCombatScalingKey`/
+// `guessedCreatureTypeKey` ride along in the same fetch so each dropdown can
+// pre-select its own guess and label it auto-detected.
 export async function listArrayFieldOptions(dataManager, systemId) {
   if (!dataManager || !systemId) return { options: [], guessedCombatScalingKey: "", guessedCreatureTypeKey: "" };
   try {
@@ -138,10 +108,8 @@ export async function listArrayFieldOptions(dataManager, systemId) {
   }
 }
 
-// damageTypes reads exactly like Combat Tracker's `conditions` field
-// (common/js/lib/widgets/combat-tracker.js#loadConditionsPropertyType) — a
-// plain tag-suggestion list, not a generator property (no cost/targetBudget
-// on its values).
+// damageTypes reads like Combat Tracker's `conditions` field — a plain
+// tag-suggestion list, not a generator property (no cost/targetBudget).
 export async function loadDamageTypesPropertyType(dataManager, systemId) {
   if (!dataManager || !systemId) return [];
   try {

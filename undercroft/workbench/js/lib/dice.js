@@ -961,9 +961,9 @@ function buildDetailText(ast) {
   return diceParts.join("; ");
 }
 
-// `dice` is a System's own dice array (Section 1.1's `System.dice`, e.g.
-// Daggerheart's hopeDie/fearDie) — optional and empty by default, so every
-// existing caller that doesn't pass it sees no behavior change whatsoever.
+// `dice` is a System's own named-dice array (e.g. Daggerheart's
+// hopeDie/fearDie) — optional and empty by default, so a caller that
+// doesn't pass it sees no behavior change.
 export function rollDiceExpression(expression, { context = {}, random = Math.random, dice = [] } = {}) {
   if (typeof expression !== "string") {
     throw new Error("Enter a dice expression like 2d6 + 3.");
@@ -988,11 +988,8 @@ export function rollDiceExpression(expression, { context = {}, random = Math.ran
   }
   return {
     total: ast.value,
-    // The RESOLVED expression (any "@path" already substituted with its
-    // live value, e.g. "2d6 kh1 t>=6" not "@actions.insight.hunt d6 kh1
-    // t>=6") — this is what every caller displays (toast, Game Log, table
-    // roll breakdown) as "what was actually rolled," and `trimmed` here
-    // silently echoed back the unsubstituted template instead.
+    // The RESOLVED expression (any "@path" already substituted), not
+    // `trimmed` — what every caller displays as "what was actually rolled."
     notation: substituted,
     detailHtml: buildDetailHtml(ast),
     detailText: buildDetailText(ast),

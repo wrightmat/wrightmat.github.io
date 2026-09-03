@@ -1,25 +1,17 @@
 // A Bootstrap-modal-based confirm() replacement — same "resolve true once
 // confirmed, false otherwise" contract as window.confirm(), but with a real
-// title, a rich HTML body (a bulleted diff list, a warning icon, whatever a
-// caller needs — not plain text mangled through \n line breaks), and
-// suite-consistent button styling instead of the browser's own unstyled,
-// unstyleable native dialog. ownership.js's own confirmDelete() intentionally
-// stays on window.confirm() for its one narrow, suite-wide-consistent use —
-// this is for callers that need to show the user something richer than a
-// yes/no sentence can carry (see workbench-character-view.js's own
-// reimportCurrentCharacter for the case this was built for).
+// title, a rich HTML body, and suite-consistent button styling.
+// ownership.js's confirmDelete() intentionally stays on window.confirm()
+// for its one narrow use; this is for callers needing something richer
+// than a yes/no sentence (see workbench-character-view.js's
+// reimportCurrentCharacter).
 //
-// Built and torn down fresh per call (appended to document.body, removed
-// once resolved) rather than a static per-page element some HTML file has
-// to pre-declare — any page can call this with zero markup of its own.
-// `extraLabel` (optional) adds a THIRD footer button, between Cancel and
-// Confirm, for a caller with a genuine three-way choice (e.g. "Sell
-// one"/"Sell all"/"Cancel" — see the Shop widget's own Sell confirm). Its
-// own click resolves the promise with the literal string `"extra"` — NOT
-// `true` — so an existing caller that never passes `extraLabel` (the
-// button then never renders at all) keeps its exact original two-way
-// `true`/`false` contract unchanged; only a caller that explicitly opts in
-// needs to check for the third value at all.
+// Built and torn down fresh per call rather than a static per-page element
+// — any page can call this with zero markup of its own. `extraLabel`
+// (optional) adds a THIRD footer button for a genuine three-way choice
+// (e.g. Shop's Sell one/Sell all/Cancel). Its click resolves the promise
+// with the literal string `"extra"`, not `true` — an existing caller that
+// never passes `extraLabel` keeps its original two-way contract unchanged.
 export function showConfirmModal({
   title = "Are you sure?",
   bodyHtml = "",
@@ -31,11 +23,9 @@ export function showConfirmModal({
 } = {}) {
   return new Promise((resolve) => {
     if (!window.bootstrap || typeof window.bootstrap.Modal !== "function") {
-      // Bootstrap not loaded (shouldn't happen in practice — every page
-      // loads it before this could ever be reachable) — fail safe to a
-      // plain confirm() rather than silently resolving one way or the other.
-      // No three-way equivalent for the native dialog — a caller relying on
-      // `extraLabel` in this fallback path just never sees that option.
+      // Bootstrap not loaded — fail safe to a plain confirm() rather than
+      // silently resolving one way or the other. No three-way equivalent
+      // here — a caller relying on `extraLabel` never sees that option.
       resolve(window.confirm(bodyHtml.replace(/<[^>]+>/g, "") || title));
       return;
     }
@@ -84,11 +74,10 @@ export function showConfirmModal({
     confirmButton.addEventListener("click", () => finish(true));
     extraButton.addEventListener("click", () => finish("extra"));
     cancelButton.addEventListener("click", () => finish(false));
-    // Escape/backdrop click/the header's own close button all dismiss via
-    // Bootstrap directly, none of which route through the two explicit
-    // handlers above — this is what actually catches every one of those and
-    // treats each exactly like Cancel. Also where the overlay itself gets
-    // torn down, regardless of which path got here.
+    // Escape/backdrop click/the header's close button all dismiss via
+    // Bootstrap directly, not the two explicit handlers above — this
+    // catches all of those and treats each like Cancel, and tears down
+    // the overlay regardless of which path got here.
     overlay.addEventListener("hidden.bs.modal", () => {
       finish(false);
       overlay.remove();

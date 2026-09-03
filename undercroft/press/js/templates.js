@@ -82,12 +82,8 @@ async function loadJson(url) {
   try {
     return JSON.parse(text);
   } catch (error) {
-    // The browser's own SyntaxError message (position/line/column only)
-    // never says which of potentially a dozen fetched files it's actually
-    // about — loadTemplates() alone can load a whole directory of them in
-    // parallel. Re-thrown with the URL prefixed so whatever eventually
-    // shows this to the user (a status toast, console) can actually say
-    // which file needs fixing.
+    // The browser's own SyntaxError never says which of a dozen parallel-
+    // fetched files it's about — re-thrown with the URL prefixed instead.
     throw new Error(`${url}: ${error.message}`);
   }
 }
@@ -242,13 +238,10 @@ function hasBleed(insets) {
 }
 
 // A root `layer` node can opt out of the default safe-inset padding via
-// `origin: "trim" | "bleed"` — "trim" fills the tile/circle exactly (no
-// padding), "bleed" extends past it using the same per-edge insets the
-// bleed color/image layer itself uses (computeBleedInsets). Flow-based root
-// layouts (stack/row, or a layer with no `origin`/`origin:"safe"`) are
-// unaffected — this only changes how the *root* layout is mounted; nested
-// layers (children of a stack, not the root) always size to their own
-// parent's content box regardless of this template-level setting.
+// `origin: "trim" | "bleed"` — "trim" fills the tile/circle exactly, "bleed"
+// extends past it using the same per-edge insets the bleed layer itself
+// uses. Only affects how the root layout mounts — nested layers always size
+// to their own parent's content box regardless of this setting.
 function applyRootLayoutOrigin(container, layout, { safeInset = 0, insets } = {}) {
   const origin = layout?.type === "layer" ? layout.origin || "safe" : "safe";
   if (origin === "bleed" && insets) {
@@ -325,21 +318,13 @@ function renderCardGrid(template, side, context) {
     }
     const contentWrapper = document.createElement("div");
     contentWrapper.className = "card-tile-content";
-    // Clips content to the same real corner radius as the tile itself, so a
-    // full-bleed background/image visually matches what the die cut will
-    // actually leave rather than showing square corners under a rounded
-    // trim guide.
+    // Clips to the tile's own corner radius, so a full-bleed background
+    // matches what the die cut will actually leave.
     contentWrapper.style.borderRadius = `${cornerRadius}in`;
-    // Always clipped, not just when the card has rounded corners — content
-    // that overflows a card's own box (usually a long bound text field)
-    // otherwise spills visually into whichever card sits below it in the
-    // print grid. Safe unconditionally: intentional bleed content is a
-    // sibling (createBleedLayer, appended to `tile` not `contentWrapper`)
-    // or, for a root layer with origin:"bleed", this element's own box is
-    // what gets enlarged via negative insets (applyRootLayoutOrigin below)
-    // — either way nothing that's SUPPOSED to extend past the trim line is
-    // a descendant overflowing contentWrapper's own box, so clipping here
-    // only ever catches genuine overflow.
+    // Always clipped — overflow content otherwise spills into the card
+    // below in the print grid. Safe unconditionally: intentional bleed
+    // content is a sibling of contentWrapper (createBleedLayer, appended to
+    // `tile`), never a descendant of it.
     contentWrapper.style.overflow = "hidden";
     const layout = pageConfig.layout ?? null;
     applyRootLayoutOrigin(contentWrapper, layout, { safeInset, insets });
@@ -445,12 +430,9 @@ function renderSheet(template, side, context) {
 }
 
 // How many physical pages a side needs to print every repeated item — 1 for
-// a sheet template (no per-item grid to overflow) or for a card/chip
-// template whose data already fits in one grid (columns*rows). `context` is
-// the same {data, page, ...} shape passed to template.createPage; the
-// cardPageIndex it may itself carry is irrelevant here (this counts total
-// pages, not which one), and getRepeatData's own resolution is reused
-// as-is so this always agrees with what createPage will actually render.
+// a sheet template, or for a card/chip template whose data already fits one
+// grid (columns*rows). Reuses getRepeatData's own resolution so this always
+// agrees with what createPage will actually render.
 export function getCardPageCount(template, side, context = {}) {
   if (template.type !== "card" && template.type !== "chip") return 1;
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
@@ -461,10 +443,8 @@ export function getCardPageCount(template, side, context = {}) {
   return Math.max(1, Math.ceil(data.length / pageSize));
 }
 
-// The Grid View's own navigator counts individual repeated items, not
-// physical pages (unlike getCardPageCount above) — same data resolution,
-// reused so it always agrees with what a singleCardIndex render will
-// actually show.
+// The Grid View's navigator counts individual repeated items, not physical
+// pages (unlike getCardPageCount above), reusing the same data resolution.
 export function getRepeatItemCount(template, side, context = {}) {
   if (template.type !== "card" && template.type !== "chip") return 1;
   const pageConfig = context.page ?? template.pages?.[side] ?? {};
@@ -527,13 +507,11 @@ function resolveLayoutBindings(node, context) {
 
   if (node.type === "field" && node.component === "repeater") {
     // Legacy list/table nodes are already normalized to `repeater` by
-    // normalizeLegacyLayoutNode before this function ever sees them (see
-    // buildTemplatePreview below), so this is the only branch needed here.
-    // `cells` is always exactly the one item template row — cloned/resolved
-    // once per resolved array item — and `headerCells`, when present, is a
-    // fully independent literal row resolved once against the outer
-    // context, never per-item. See template-renderer.js's renderRepeater
-    // for the render-time counterpart of this same shape.
+    // normalizeLegacyLayoutNode before this function sees them. `cells` is
+    // always the one item template row, cloned/resolved once per array
+    // item; `headerCells`, when present, is a literal row resolved once
+    // against the outer context, never per-item. See template-renderer.js's
+    // renderRepeater for the render-time counterpart.
     const rawItems = resolveBinding(node.itemsBind, context) ?? node.items ?? [];
     const items = asArray(rawItems);
     const templateRow = Array.isArray(node.cells) && Array.isArray(node.cells[0]) ? node.cells[0] : [];
@@ -635,14 +613,12 @@ export function buildTemplatePreview(template, data) {
   };
 }
 
-// Templates are now Library-backed data shared with Workbench (a Loom "template"
-// kind, DB-indexed by category so Press only ever loads its own "print" templates,
-// never a Workbench character template). The bucket listing only carries metadata
-// (id/title/category/etc, not the full layout), so each print template still needs
-// its own follow-up fetch for the actual body. Exported (not just used
-// internally by loadTemplates) so a "Show to table" template picker in
-// another tool (Sanctum/Forge/Crucible/Vault) can list print templates by
-// id/title without loading every template's full body up front.
+// Templates are Library-backed data shared with Workbench (a Loom "template"
+// kind, DB-indexed by category so Press only loads its own "print" ones).
+// The bucket listing only carries metadata, so each template still needs a
+// follow-up fetch for its body. Exported separately from loadTemplates so a
+// "Show to table" picker elsewhere can list templates without loading every
+// full body up front.
 export async function listPrintTemplateEntries(dataManager) {
   const listing = await dataManager.list("templates", { refresh: true });
   const entries = dataManager.collectListEntries(listing.remote, ["owned", "shared", "public", "items"]);
@@ -656,16 +632,12 @@ export async function loadTemplates(dataManager) {
     entries.map(async (entry) => {
       try {
         const { payload } = await dataManager.get("templates", entry.id, { preferLocal: false });
-        // get_item() only ever returns the raw file body — ownership lives on
-        // the list row, not the file — so it's carried over here rather than
-        // lost. Delete-button gating (app.js) needs it to tell "yours" from
-        // "someone else's public template" apart. `id` is carried over the
-        // same way, and LAST (so it always wins over any stray payload.id) —
-        // a template's own id is filename/library_items metadata, never
-        // body content (every Library kind now follows this convention),
-        // so the body itself may not carry one at all; trusting `entry.id`
-        // (the list row's own, already-known id) is what Forge's own NPC
-        // loader already does for this identical reason.
+        // get_item() only returns the raw file body — ownership lives on the
+        // list row, not the file — so it's carried over here; app.js's
+        // delete-button gating needs it to tell "yours" from "someone
+        // else's public template". `id` is carried the same way, and LAST
+        // so it always wins over a stray payload.id — a record's id is
+        // library_items metadata, never body content.
         return {
           ...payload,
           ownerId: entry.owner_id ?? entry.ownerId ?? null,

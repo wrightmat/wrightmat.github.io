@@ -1,38 +1,16 @@
-// The shared "Binding / Formula / Text" input control — relocated verbatim
-// from Workbench's own workbench-template-view.js (createBindingFormulaInput
-// was previously a local, unexported function there) so a second tool
-// (Orrery's own marker Vision Range field) could reuse the exact same
-// control instead of a smaller, narrower duplicate. See
-// undercroft/README.md's Code Conventions section, Component Inspector
-// standards, and the project's own "Binding / Text vs Source" convention —
-// exactly two field concepts populate a component from external data, and
-// this is the one shared implementation of the Binding/Text (here extended
-// with Formula) half.
+// The shared "Binding / Formula / Text" input control, used by both
+// Workbench's template editor and Orrery's marker Vision Range field — the
+// one shared implementation of the "Binding/Text" half of the project's
+// Binding/Text vs Source convention (see undercroft/README.md's Component
+// Inspector standards), extended here with Formula.
 //
-// Only two real Workbench-specific couplings existed in the original and
-// are generalized into caller-supplied options here — everything else
-// (category-filtered @-suggestions, =formula/@binding/literal-text
-// precedence, the live preview line) is unchanged:
-//   1. Committing a change used to call Workbench's own
-//      `updateComponent(component.uid, mutator, {rerenderCanvas:true})`
-//      directly — replaced by a required `onCommit(mutator)` callback,
-//      invoked with a draft object to mutate exactly the same way
-//      updateComponent's own draft callback already worked.
-//   2. The @-suggestion list used to read a closed-over Workbench page-state
-//      array (`state.bindingFields`) directly — replaced by a
-//      `getSystemFields()` callback, called fresh on every keystroke/open
-//      (not a static snapshot), matching the original's own "always reads
-//      the live list" behavior for a field that stays open while its
-//      backing System selection changes elsewhere.
-//
-// A third, smaller generalization: the live "Preview: X" feedback line used
-// to evaluate against Workbench's own template-authoring sample data
-// (state.systemPreviewData). That's now `evaluateFormulaPreview`/
-// `resolveBindingPreview` callbacks — Workbench passes wrappers around its
-// existing sample-data evaluators; a caller with a REAL live record to
-// preview against (Orrery, previewing a marker's actually-linked Character)
-// can pass one that resolves against real data instead of synthetic sample
-// data, which is a strictly better preview, not a compromise.
+// Kept generic via caller-supplied callbacks rather than Workbench-specific
+// coupling: `onCommit(mutator)` replaces a direct updateComponent call;
+// `getSystemFields()` is called fresh on every keystroke/open instead of
+// reading a closed-over field array, so a live System-selection change
+// elsewhere is picked up without refocus; `evaluateFormulaPreview`/
+// `resolveBindingPreview` let a caller preview against real data (Orrery's
+// linked Character) instead of only synthetic sample data.
 import { attachFormulaAutocomplete } from "./formula-autocomplete.js";
 import { categorizeFieldType } from "./system-schema.js";
 import { listFormulaFunctionMetadata } from "./formula-metadata.js";
@@ -152,12 +130,9 @@ export function createBindingFormulaInput(
     allowedFieldCategories = [],
     getSystemFields = () => [],
     hasSchemaSelected = true,
-    // Off for a caller whose own field never has a real "select a system"
-    // step of its own to point at (Orrery's marker Vision Range field, for
-    // instance — there's no system picker anywhere near it, only a linked
-    // Character that may or may not exist yet) — the default (Workbench's
-    // own template editor, which DOES have a real System select right
-    // there) stays on unchanged.
+    // Off for a caller with no "select a system" step of its own to point at
+    // (Orrery's marker Vision Range, only a linked Character) — Workbench's
+    // template editor (a real System select right there) keeps this on.
     showEmptyFieldsHint = true,
     helperText = null,
     afterCommit = null,
@@ -165,15 +140,10 @@ export function createBindingFormulaInput(
     evaluateFormulaPreview,
     resolveBindingPreview,
     idSeed = "binding-formula",
-    // Matches common/js/lib/inspector-fields.js's own createHalfWidthNumberField
-    // exactly (same wrapper/label/input classes) rather than the default
-    // Bootstrap form-floating look — for a caller pairing this field in a
-    // createFieldRow alongside an ordinary compact number field (Orrery's
-    // marker Vision Range sitting next to Size), where the two need to
-    // actually look like the same kind of control, not two different
-    // Bootstrap field conventions side by side. Workbench's own callers
-    // (the richer template-editor context this control was originally
-    // built for) leave this off and keep the floating-label look.
+    // Matches inspector-fields.js's createHalfWidthNumberField exactly, for
+    // a caller pairing this field alongside an ordinary compact number
+    // field (Orrery's Vision Range next to Size). Workbench leaves this off
+    // and keeps the floating-label look.
     compact = false,
   } = {}
 ) {
@@ -204,11 +174,9 @@ export function createBindingFormulaInput(
   label.textContent = labelText;
 
   if (compact) {
-    // Same shape createHalfWidthNumberField itself builds — label ABOVE the
-    // input (not form-floating's own required input-before-label DOM
-    // order, which its sibling-selector CSS depends on), position:relative
-    // set explicitly (form-floating's own utility class normally supplies
-    // this for the suggestions dropdown below to anchor against).
+    // Label above the input (not form-floating's required input-before-
+    // label order); position:relative set explicitly since form-floating's
+    // utility class normally supplies it for the suggestions dropdown.
     wrapper.className = "d-flex flex-column gap-1";
     wrapper.style.position = "relative";
     label.className = "form-label extra-small text-body-secondary mb-0";

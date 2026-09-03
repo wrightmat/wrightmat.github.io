@@ -1,10 +1,8 @@
 // The shared "Relationships" list editor — one row per `relationship`
 // Library record touching the current record (either direction), plus an
-// "Add a relationship" row. Backs Forge's NPCs first, then every other tool
-// relationship-graph.js's own header comment lists. Rebuilt fresh on every
-// render() call, same "no diffing" convention every generator tool in this
-// suite already follows for its own reference lists (Sanctum's Assets/Needs,
-// Crucible's recipe slots, ...).
+// "Add a relationship" row. Rebuilt fresh on every render() call, same
+// "no diffing" convention every other generator tool's reference list
+// (Sanctum's Assets/Needs, Crucible's recipe slots) already follows.
 import { createListRow, createIconButton } from "./ui-components.js";
 import { openContentPicker } from "./widgets/content-picker.js";
 import { buildKindToolUrl, kindToolLabel } from "./kind-tool-route.js";
@@ -102,13 +100,10 @@ export async function renderRelationshipEditor({
 
   // --- Add a relationship -------------------------------------------------
   // Three rows: [target kind] [search icon] [Type input] [picked-target
-  // feedback] genuinely all on the first line (flex-nowrap — every element
-  // that needs to give up space gets an explicit min-width: 0, since a flex
-  // item's default min-width is its own content size, which is what was
-  // forcing Type/the picked-target label onto their own line before), then
-  // [Note] [Value] each exactly half width on the second row, then the Add
-  // button on its own third row. Same layout in every tool that mounts this
-  // editor.
+  // feedback] on the first line (flex-nowrap — every shrinking element gets
+  // an explicit min-width: 0, since a flex item's default min-width is its
+  // own content size, which forces wrapping otherwise), [Note] [Value] each
+  // half width on the second row, then Add on its own third row.
   const addWrap = document.createElement("div");
   addWrap.className = "d-flex flex-column gap-2 mt-2";
 

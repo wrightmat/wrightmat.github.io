@@ -1,174 +1,70 @@
-// =============================================================================
 // CANONICAL TOOLTIP SYSTEM — the ONE module every Bootstrap tooltip in this
 // suite goes through. No file anywhere else may call `new bootstrap.Tooltip`,
-// `bootstrap.Tooltip.getInstance`, or `bootstrap.Tooltip.getOrCreateInstance`
-// directly — always call one of the functions exported here instead, even
-// when the need seems trivial or one-off. This was a hard suite-wide rule
-// established 2026-08-30 after the same two bug classes below were
-// independently reintroduced at least 6 times across the codebase (shop.js,
-// generator-kit.js, orrery.js, combat-tracker.js, spotlight-panel.js,
-// workbench-character-view.js, both Workbench canvases, clipboard.js,
-// press.js — see the audit that produced this module for the full list).
+// `getInstance`, or `getOrCreateInstance` directly. Established 2026-08-30
+// after the two bug classes below were independently reintroduced 6+ times
+// across the codebase.
 //
-// -----------------------------------------------------------------------
-// The two bug classes every function here exists to prevent
-// -----------------------------------------------------------------------
+// BUG CLASS 1 — "tooltip never shows": a native `disabled` attribute (or a
+// `pointer-events: none` class approximating one) blocks ALL pointer events,
+// including the ones Bootstrap's Tooltip needs to show at all. A tooltip
+// trigger on the SAME element you're disabling silently never works. Fix:
+// keep `control` genuinely disabled, put the tooltip trigger on a separate,
+// never-disabled wrapper — see setDisabledTooltip, the one place this
+// pattern is allowed.
 //
-// BUG CLASS 1 — "the tooltip never shows" (disabled blocks hover)
-// A native `disabled` attribute — and, just as much, a CSS class meant to
-// visually approximate one via `pointer-events: none` — blocks ALL pointer
-// events on that element per the HTML/CSS spec, not just clicks. That
-// includes the mouseenter/mouseleave/focus/blur events Bootstrap's Tooltip
-// needs to ever show at all. Putting a tooltip trigger on the SAME element
-// you're disabling silently never works, regardless of how correct the
-// data-bs-toggle/data-bs-title attributes look. This is confirmed real, not
-// a guess — Bootstrap's own docs call it out and recommend the fix used
-// here: keep the control genuinely `disabled`, and put the tooltip trigger
-// on a separate, never-disabled wrapper around it. See setDisabledTooltip
-// below — this is the ONE place that pattern is allowed to exist.
+// BUG CLASS 2 — "tooltip lingers after hover exits": Bootstrap renders the
+// popup as a <body> sibling (via Popper), not inside the trigger. Two ways
+// this orphans a popup: (a) wiping a container's innerHTML without disposing
+// tooltips inside it first — always disposeTooltips(container) BEFORE the
+// wipe, not refreshTooltips() after; (b) mutating/removing a trigger's
+// data-bs-toggle/data-bs-title BEFORE disposing — disposal only finds
+// elements still carrying that attribute. Always: dispose → then mutate.
 //
-// BUG CLASS 2 — "the tooltip lingers after hover exits" (dispose-after-mutate)
-// Bootstrap renders a tooltip's actual popup as a sibling appended to
-// <body> (via Popper), not inside the trigger element. Two ways this leaves
-// a popup orphaned, still visible, with nothing left to hide it:
-//   (a) Wiping out a trigger's container (innerHTML = "", a full re-render)
-//       WITHOUT disposing every tooltip inside it first. The old popup(s)
-//       never get torn down; only the fresh content's own tooltips (if any)
-//       get created going forward. ALWAYS call disposeTooltips(container)
-//       (or disposeTooltip(element) for one specific element) immediately
-//       BEFORE the wipe/removal — not refreshTooltips() after, which only
-//       re-arms whatever's still present, not what's already gone.
-//   (b) Removing/changing a trigger's data-bs-toggle/data-bs-title AFTER
-//       disposing is fine; doing it BEFORE disposing is not — disposal only
-//       ever finds elements that still carry data-bs-toggle="tooltip"
-//       (root-scoped sweeps query for that attribute; single-element calls
-//       still need the instance to exist). Mutate/remove the attribute
-//       first and the disposal call that would have cleaned it up finds
-//       nothing to clean up. Always: dispose → then mutate/remove.
+// Which function to use:
+// - One element, tooltip live now: initTooltip(element, {title, placement?, html?})
+// - Many elements in a loop: set data-bs-toggle/data-bs-title on each, then
+//   refreshTooltips(container) ONCE after the loop.
+// - About to wipe/replace a container: disposeTooltips(container) BEFORE the
+//   wipe, refreshTooltips(container) after the new content exists.
+// - One element, no risk to sibling tooltips: disposeTooltip(element) /
+//   refreshTooltip(element) — prefer over the root-scoped pair when you
+//   already have a direct reference.
+// - Disabled control that still needs an explanatory hover: setDisabledTooltip(control, reason, {wrapper?}).
+// - Live-updating an existing tooltip's text with no flicker: updateTooltipContent(element, title).
+// - Temporary confirmation flash ("Copied!"): flashTooltipMessage(element, message, {duration?}).
 //
-// -----------------------------------------------------------------------
-// Which function to use
-// -----------------------------------------------------------------------
-// - Building ONE element and want its tooltip live right now?
-//     initTooltip(element, { title, placement?, html? })
-// - Building MANY elements in a loop, then done?
-//     Set data-bs-toggle="tooltip" / data-bs-title on each yourself (or via
-//     initTooltip with no immediate need — either is fine), then call
-//     refreshTooltips(containerYouJustBuilt) ONCE after the loop. Cheaper
-//     than instantiating one at a time.
-// - About to wipe/replace a container's content (innerHTML = "", a
-//   re-render, hiding then rebuilding)?
-//     disposeTooltips(container) — BEFORE the wipe. Then, once the new
-//     content exists, refreshTooltips(container) to arm it.
-// - Own exactly ONE element directly and don't want to risk touching any
-//   sibling tooltip that happens to be open?
-//     disposeTooltip(element) / refreshTooltip(element) — single-element,
-//     zero collateral scope. Prefer this over the root-scoped pair whenever
-//     you're not actually sweeping a whole container.
-// - Need to disable a control but still show an explanatory tooltip on
-//   hover (a Generate button with insufficient data, a toggle that's
-//   temporarily unavailable, ...)?
-//     setDisabledTooltip(control, reason, { wrapper? }) — THE canonical
-//     disabled-but-hoverable pattern. Never hand-build this yourself.
-// - Need to live-update an EXISTING tooltip's displayed text frequently
-//   (a byte count, a live preview value, a computed label) without the
-//   visible flicker a dispose+recreate cycle causes?
-//     updateTooltipContent(element, title)
-// - Need a temporary confirmation flash ("Copied!", "Saved!", ...) that
-//   reverts back to the resting tooltip text after a moment?
-//     flashTooltipMessage(element, message, { duration? })
+// Deliberately out of scope: help.js's data-help-topic system sets the same
+// data-bs-toggle="tooltip" declaratively and calls refreshTooltips from here
+// — already in scope. library-reference.js's hover preview is a fully
+// custom pointer-events:none popup, a different system on purpose.
+// property-schema-editor.js takes refreshTooltips as an injected callback
+// (stays host-app-agnostic) but the one real caller supplies this module's
+// function — still funnels through the same implementation.
 //
-// -----------------------------------------------------------------------
-// Deliberately out of scope
-// -----------------------------------------------------------------------
-// - `common/js/lib/help.js`'s data-help-topic trigger system is NOT a
-//   separate implementation — it sets the same data-bs-toggle="tooltip"
-//   declaratively and calls refreshTooltips(root) from this module at the
-//   end of initHelpSystem(). Already fully in scope, nothing to change.
-// - `common/js/lib/library-reference.js`'s hover preview is NOT a Bootstrap
-//   tooltip at all — it's a fully custom, hand-positioned `pointer-events:
-//   none` popup div with its own show/hide/positioning logic, serving a
-//   genuinely different purpose (a rich content preview, not a short
-//   text label). Not migrated here; a different system on purpose.
-// - `common/js/lib/property-schema-editor.js` takes refreshTooltips as an
-//   injected `ctx` callback rather than importing this module directly, by
-//   deliberate design (the module stays host-app-agnostic). The one real
-//   caller (loom/js/app.js) supplies the genuine function from here, so
-//   this still funnels through the same single implementation — the
-//   injection is a wiring detail, not a duplicate.
-//
-// -----------------------------------------------------------------------
-// Confirmed exceptions — deliberately NOT converted, NOT bugs
-// -----------------------------------------------------------------------
-// The suite-wide rule is every hover explanation goes through this module —
-// no bare `title` attribute, and no icon-only control left aria-label-only
-// (screen-reader-visible but never shown on hover), as an oversight. Two
-// narrow categories are legitimate exceptions to that rule. Every exception
-// must be:
-//   1. Confirmed with the user first (AskUserQuestion) — never assumed
-//      unilaterally just because a spot "looks like" one of the categories
-//      below.
-//   2. Listed here, so a future audit doesn't flag it as a miss.
-//
-// Category 1 — scale/performance (plain native `title`, not a real tooltip):
-// a real Bootstrap tooltip is a live `MutationObserver`+Popper instance per
-// element, and at large-N (dozens to hundreds of instances, rebuilt on a hot
-// render path) that cost is real, while the content is purely informational
-// (never a button, never interactive) — so a plain native `title` is the
-// CORRECT choice there, not a gap.
-// - `orrery/js/lib/map-viewer.js`'s map marker/badge hover text — a map can
-//   have dozens to hundreds of markers; user confirmed keeping native title
-//   over converting to real tooltip instances (2026-08-30).
-// - `press/js/template-renderer.js`'s applyOverflowIndicators (the
-//   "content overflows this card" warning on a card/chip tile) — reruns on
-//   every auto-width/font-sizing layout pass, potentially across many tiles
-//   per page, purely informational; user confirmed keeping native title
-//   over converting (2026-08-30).
-// If a new spot looks like this shape (many instances, hot rebuild path,
-// non-interactive/informational only) — ask before assuming; converting is
-// still the default for everything else, including bare titles on actual
-// buttons/controls regardless of how many exist.
-//
-// Category 2 — standardized platform idiom (aria-label only, no tooltip at
-// all): a control so universally recognized by its own shape/position that
-// a hover explanation adds nothing a user doesn't already know — the same
-// reasoning a browser's own native window-close button needs no tooltip.
-// - Bootstrap's own `.btn-close` modal-dismiss button (confirm-modal.js,
-//   share-modal.js, connection-modal.js, auth-ui.js, tool-settings.js,
-//   content-picker.js, and every other modal built from the same markup
-//   shape) — the "×" in a modal's own top-right corner, `data-bs-dismiss=
-//   "modal"` + `aria-label="Close"` is Bootstrap's own complete, documented
-//   treatment for this exact component; user confirmed keeping it
-//   tooltip-free over converting every instance suite-wide (2026-08-30).
-// This category is narrow — it's for a genuinely standardized third-party
-// component idiom, not an excuse to skip a bespoke icon button just because
-// it "seems obvious." When in doubt, ask.
+// Confirmed exceptions (native title/aria-label-only, NOT bugs) — any new
+// exception must be confirmed with the user first (AskUserQuestion), then
+// listed here:
+// - map-viewer.js's map marker/badge hover text and template-renderer.js's
+//   applyOverflowIndicators — both rerun on a hot render path across
+//   potentially hundreds of non-interactive elements; user confirmed native
+//   `title` over a real Tooltip instance per element (2026-08-30).
+// - Bootstrap's own `.btn-close` modal-dismiss button (used across every
+//   modal in the suite) — `aria-label="Close"` is Bootstrap's own complete,
+//   documented treatment for this standardized idiom; user confirmed
+//   keeping it tooltip-free (2026-08-30).
 
-// Bootstrap renders a tooltip's actual popup as a sibling appended to
-// <body> (via Popper) — see BUG CLASS 2 above for why disposal ordering
-// matters. A tooltip whose trigger was just clicked (this codebase's own
-// toolbar toggle buttons, e.g. Orrery's "hidden from players" and
-// combat-tracker.js's visibility switches, re-render — and so
-// dispose/recreate their own tooltips — from inside their own click
-// handler) can still be mid-hide-transition when dispose() runs here:
-// Bootstrap's own internal _isWithActiveTrigger reads `this._activeTrigger`
-// via Object.values(), which a transition callback firing after dispose()
-// has already nulled out throws on (confirmed real console error: "Cannot
-// convert undefined or null to object" at tooltip.js's own
-// _isWithActiveTrigger). Bootstrap's public API gives no way to
-// await/cancel that in-flight transition first — try/catch is the only way
-// to make a best-effort teardown call safe against a timing race entirely
-// inside a UI library nothing here controls, same "don't let this crash
-// the render for a purely cosmetic cleanup step" reasoning as the
-// no-raw-server-errors-in-toasts convention elsewhere.
+// A tooltip whose trigger was just clicked (a toolbar toggle re-rendering
+// from inside its own click handler) can still be mid-hide-transition when
+// dispose() runs — Bootstrap's internal _isWithActiveTrigger throws on a
+// transition callback firing after dispose() nulls out `_activeTrigger`
+// (confirmed console error, no public API to await/cancel it first).
+// try/catch makes this best-effort teardown safe against that timing race.
 function safeDispose(instance) {
   try {
     instance?.dispose();
   } catch (error) {
-    // Best-effort — the tooltip's own popup element still gets torn down
-    // along with its trigger by the caller's own innerHTML replacement
-    // either way; this only ever fails on Bootstrap's own internal
-    // bookkeeping, never in a way that leaves something visibly orphaned.
+    // Best-effort — the popup element is torn down with its trigger by the
+    // caller's own innerHTML replacement regardless.
   }
 }
 
@@ -195,12 +91,9 @@ export function refreshTooltips(root = document) {
 }
 
 // --- Single-element pair — one specific trigger, zero collateral scope ---
-// Prefer these over the root-scoped pair above whenever you already have a
-// direct reference to the one element you care about — using the
-// root-scoped versions for a single element means passing some ancestor as
-// `root`, which also disposes/recreates every OTHER tooltip inside that
-// ancestor: real risk of tearing down (and not reliably rebuilding, per BUG
-// CLASS 2) an unrelated tooltip that happens to be open at that moment.
+// Prefer over the root-scoped pair whenever you have a direct reference to
+// one element — passing an ancestor as `root` also disposes/recreates every
+// OTHER tooltip inside it, risking an unrelated open tooltip (BUG CLASS 2).
 
 export function disposeTooltip(element) {
   if (!element || !hasBootstrapTooltip()) return;
@@ -239,18 +132,12 @@ export function initTooltip(element, { title, placement, html = false } = {}) {
 }
 
 // --- Live content update, no dispose/recreate ---
-// For a tooltip whose text changes frequently (a live byte count, a
-// computed preview value, ...) where a dispose+recreate cycle on every
-// change would cause visible flicker (and briefly hide an open tooltip).
-// Safe to call before any tooltip has been created yet for this element —
-// getOrCreateInstance makes one on first call. Always also sets
-// data-bs-toggle="tooltip"/data-bs-title (not just content) — getOrCreate
-// works without the attribute (Bootstrap's JS API doesn't need it), but a
-// LATER root-scoped disposeTooltips(ancestor)/refreshTooltips(ancestor)
-// sweep from some unrelated re-render only ever finds elements THAT carry
-// it; without it, this element's instance would be invisible to that sweep
-// — never disposed, a stale duplicate risk if something else later tries
-// to create a fresh one on the same element.
+// For text that changes frequently (a live byte count) where dispose+
+// recreate would cause visible flicker. Safe before any tooltip exists yet
+// — getOrCreateInstance makes one on first call. Always also sets
+// data-bs-toggle/data-bs-title (not just content) — without it, a LATER
+// root-scoped disposeTooltips/refreshTooltips sweep from an unrelated
+// re-render can't find this element's instance to dispose it.
 export function updateTooltipContent(element, title) {
   if (!element || !title) return;
   element.setAttribute("data-bs-toggle", "tooltip");
@@ -261,14 +148,10 @@ export function updateTooltipContent(element, title) {
 
 // --- Temporary confirmation flash ---
 // Swaps data-bs-title/title/aria-label to `message`, forces the tooltip to
-// show immediately (this is feedback for an action just taken, not
-// something waiting on the next hover), then reverts to whatever the
-// resting title actually was — captured fresh at the START of this call,
-// before it gets overwritten, not a value cached once at bind time, since
-// the resting title can itself be live (e.g. a byte count that changes
-// while the flash is showing). A second call before the first one's timer
-// fires (rapid double-click) cancels and restarts the timer rather than
-// stacking two reverts.
+// show immediately, then reverts to the resting title — captured fresh at
+// the START of this call since the resting title can itself be live (e.g. a
+// byte count). A second call before the first timer fires restarts it
+// rather than stacking two reverts.
 export function flashTooltipMessage(element, message, { duration = 1500 } = {}) {
   if (!element || !message) return;
   const restoreTitle = element.getAttribute("data-bs-title") || element.getAttribute("title") || "";
@@ -292,29 +175,19 @@ export function flashTooltipMessage(element, message, { duration = 1500 } = {}) 
 }
 
 // --- THE canonical disabled-but-hoverable control ---
-// See BUG CLASS 1 at the top of this file for why a tooltip can never live
-// on the same element you're disabling. The fix: `control` keeps a REAL
-// `disabled` attribute (correct, fully-inert semantics — no click, no
-// keyboard activation, no focus) while a separate, never-disabled wrapper
-// around it carries the tooltip trigger instead. The wrapper still
-// receives hover/focus even though the disabled control inside it doesn't.
+// See BUG CLASS 1 — `control` keeps a REAL `disabled` attribute while a
+// separate, never-disabled wrapper carries the tooltip trigger instead.
 //
-// `reason` — falsy marks `control` ready (enabled; wrapper's tooltip
-// removed). A non-empty string marks it blocked (disabled; wrapper's
-// tooltip shows that string).
+// `reason` — falsy marks `control` ready (enabled, wrapper's tooltip
+// removed); a non-empty string marks it blocked (disabled, wrapper shows it).
 //
-// `wrapper` (optional) — pass an element that's ALREADY sitting in static
-// HTML around `control` (e.g. a `<span data-draw-toggle-wrap>` authored
-// directly in a tool's own index.html) to use it as-is instead of building
-// one. Omit it to lazily create-and-reuse a `<span class="d-inline-block">`
-// automatically. The auto-created wrapper only ever exists in the DOM
-// while `reason` is truthy — `control` gets moved back out and the wrapper
-// removed the moment it isn't — so a control that's never actually
-// disabled never gains a second, permanently-focusable tab stop sitting on
-// top of it once re-enabled, and one that toggles disabled/enabled
-// repeatedly doesn't accumulate garbage wrapper elements either. A
-// caller-provided wrapper is never removed/unwrapped (it's not this
-// function's to delete) — only its tooltip attributes get toggled.
+// `wrapper` (optional) — pass an element already sitting in static HTML
+// around `control` to use as-is; omit to lazily create-and-reuse a
+// `<span class="d-inline-block">`. The auto-created wrapper only exists in
+// the DOM while `reason` is truthy, so a re-enabled control doesn't gain a
+// second permanent tab stop and toggling doesn't accumulate wrapper
+// elements. A caller-provided wrapper is never removed — only its tooltip
+// attributes toggle.
 export function setDisabledTooltip(control, reason, { wrapper: providedWrapper } = {}) {
   if (!control) return;
   const autoWrap = !providedWrapper;

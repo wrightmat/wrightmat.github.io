@@ -1,13 +1,11 @@
 // Shared "edit an array of typed, arbitrarily-nested property definitions"
-// UI — extracted from Loom's System editor (undercroft/loom/js/app.js) so
-// Group Properties (Loom's Group tab) can reuse the exact same recursive
-// row editor, type-cycling, drag-to-reorder, and value-list machinery
-// instead of a hand-duplicated second copy. Every function here is
-// undo/dirty-tracking-agnostic — callers thread that through via the `ctx`
-// object each function takes, so System keeps participating in Loom's
-// whole-tab undo stack (SNAPSHOT_HANDLERS.system) exactly as before, while
-// Group (which has no such stack) just re-renders/marks itself dirty
-// instead. See each function's own `ctx` fields below.
+// UI — extracted from Loom's System editor so Group Properties can reuse
+// the exact same recursive row editor, type-cycling, drag-to-reorder, and
+// value-list machinery instead of a hand-duplicated second copy. Every
+// function here is undo/dirty-tracking-agnostic — callers thread that
+// through via the `ctx` object each function takes, so System keeps
+// participating in Loom's whole-tab undo stack exactly as before, while
+// Group (no such stack) just re-renders/marks itself dirty instead.
 import { escapeHtml } from "./auth-ui.js";
 import { createSortable } from "./dnd.js";
 import { initHelpSystem } from "./help.js";
@@ -710,21 +708,15 @@ export function wirePropertyContainerEvents(container, ctx = {}) {
 
 // --- Property Inspector (right pane) ---------------------------------------
 // A second, more spacious editing surface for whichever property row is
-// currently selected in the Properties list — the list itself is untouched,
-// this is purely additive. Extracted from Loom's own System Property
-// Inspector so Group Properties can reuse the identical mechanism (New/
-// Delete/Duplicate/Required toolbar, per-type field proxies, Up/Down
-// keyboard navigation) instead of a hand-duplicated second copy — see
-// createPropertyInspector below. Every control here proxies the selected
-// row's own real input: it reads that input's current value, and on
-// interaction writes back to it and dispatches the same native event that
-// input already listens for (see renderPropertyRow's own wireUndoTracking-
-// equivalent hookup and its syncTypeSections/syncArrayModeSections/
-// syncValueColumns) — so editing here IS editing the row, not a separate
-// copy of its data that could drift out of sync. Type is the one exception
-// (see createInspectorTypeSelect) since the row's own Type control is a
-// click-to-cycle button with no "set to exactly this value" event of its
-// own to proxy.
+// currently selected in the Properties list — purely additive, the list
+// itself is untouched. Extracted from Loom's System Property Inspector so
+// Group Properties can reuse the identical mechanism. Every control here
+// proxies the selected row's own real input: reads its current value, and
+// on interaction writes back and dispatches the same native event that
+// input already listens for — so editing here IS editing the row, not a
+// separate copy that could drift out of sync. Type is the one exception
+// (createInspectorTypeSelect) since the row's Type control is a
+// click-to-cycle button with no "set to exactly this value" event to proxy.
 
 function inspectorFieldWrap(labelText, controlEl) {
   const wrap = document.createElement("div");

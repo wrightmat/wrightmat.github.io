@@ -1,28 +1,16 @@
 // A generic force-directed relationship diagram — SVG nodes/edges, a small
 // hand-rolled deterministic spring simulation, click/hover/selection, and
-// pan/zoom (common/js/lib/pan-zoom.js) — originally extracted from Sanctum's
-// own Location Graph (since removed — every tool's relationship graph is
-// reached through its own Relationships mode now, see relationship-graph.js/
-// relationship-editor.js) once a second consumer (Repository's Relationships
-// view, repository/js/lib/relationships-graph.js) needed the exact same
-// engine over a completely different kind of node/edge data. This module
-// has NO domain knowledge at all — it takes a plain `{nodes: [{id, label,
-// radius?}], edges: [{a, b, type}]}` shape and a couple of small callbacks;
-// every caller owns turning its own real data (a Location's parentId/
-// connectedTo, an NPC/Monster/Wonder's own relationship edges, or
-// Repository's wikilinks/references) into that shape itself. A force layout
-// (not a tree/org-chart) is the right shape here since node position carries
-// no meaning beyond "roughly near its related neighbors" — none of this
-// suite's relationship data is inherently hierarchical or spatial.
+// pan/zoom (pan-zoom.js). Shared by every tool's Relationships mode
+// (relationship-graph.js/relationship-editor.js) plus Repository's own
+// Relationships view. No domain knowledge at all: takes a plain
+// `{nodes: [{id, label, radius?}], edges: [{a, b, type}]}` shape and a few
+// callbacks; every caller turns its own real data into that shape itself.
+// A force layout, not a tree/org-chart, since node position carries no
+// meaning beyond "roughly near its related neighbors."
 //
-// `classPrefix` (default "graph") namespaces every CSS class this renders
-// (`<prefix>-node`, `<prefix>-edge`, ...) — each caller's OWN stylesheet
-// still owns the actual look, matching this suite's "handout.js/dashboard
-// widgets can't rely on a tool's own CSS file" convention (chips/callouts
-// elsewhere in the suite solve the same problem with inline styles instead;
-// a graph's per-node/edge styling is complex enough that CSS classes stay
-// the right tool here, just kept from colliding across tools via the
-// prefix).
+// `classPrefix` (default "graph") namespaces every rendered CSS class — each
+// caller's own stylesheet owns the actual look, kept from colliding across
+// tools via the prefix.
 import { PanZoomController } from "./pan-zoom.js";
 import { createEmptyStateCard } from "./ui-components.js";
 
@@ -62,17 +50,12 @@ function truncateLabel(name, max = 16) {
   return name.length > max ? `${name.slice(0, max - 1)}…` : name;
 }
 
-// BFS depth from every root, used only to seed initial ring positions
-// before the simulation refines them — never meaningful on its own.
-// `resolveParent(node, idSet) => parentId|null` is the ONE piece of domain
-// knowledge a caller can optionally supply, for a hierarchical dataset (a
-// single-parent tree like Region→Settlements) that wants a sensible starting
-// shape instead of every node seeding as its own root; omitted entirely
-// (every current consumer — Relationships' own adapter has no single-parent
-// hierarchy to speak of), every node is simply its own root — the
-// simulation's own repulsion/spring/centering forces still do the real
-// clustering work either way, this only affects how good the FIRST frame
-// looks before it settles.
+// BFS depth from every root, used only to seed initial ring positions before
+// the simulation refines them. `resolveParent(node, idSet) => parentId|null`
+// is the one piece of domain knowledge a caller can optionally supply for a
+// hierarchical dataset; omitted, every node is its own root — the
+// simulation's own forces do the real clustering work either way, this only
+// affects how good the first frame looks before it settles.
 export function computeDepths(nodes, idSet, resolveParent) {
   const childrenOf = new Map(nodes.map((node) => [node.id, []]));
   const roots = [];
@@ -207,20 +190,12 @@ function applySelectionClasses(svg, selectedId, classPrefix) {
   });
 }
 
-// `getNodeRadius(node) => number` — required, every caller has SOME notion
-// of node sizing (every Relationships graph across the suite: a node's own
-// kind, sized up for the record centered on). `getNodeIcon(node) =>
+// `getNodeRadius(node) => number` — required. `getNodeIcon(node) =>
 // iconName|null` — optional; when supplied, an iconify glyph renders
-// centered in the node (via a small <foreignObject> — the only practical
-// way to place an HTML custom element like <span class="iconify"> inside
-// SVG), letting Relationships show an NPC/Location/Page/... icon per node
-// using each kind's own already-registered icon (loadLibraryKinds())
-// rather than a new hardcoded lookup table; omitted, nodes render as plain
-// circles exactly as they always have. `getEdgeLabel(edge) => string|null`
-// — optional; when supplied, a small text label renders at each edge's own
-// midpoint (the relationship-graph.js consumers' own edge `type`, e.g.
-// "Member of") — omitted (Repository's own existing adapter, unchanged),
-// edges render exactly as they always have with no label text at all.
+// centered in the node via a small <foreignObject> (the only practical way
+// to place an HTML custom element inside SVG); omitted, nodes render as
+// plain circles. `getEdgeLabel(edge) => string|null` — optional; when
+// supplied, a text label renders at each edge's midpoint; omitted, no label.
 function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNodeIcon, getEdgeLabel, onSelect, classPrefix }) {
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   const edgeGroup = svgEl("g", { class: `${classPrefix}-edges` });
@@ -313,13 +288,9 @@ function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNo
     });
     label.textContent = truncateLabel(node.label);
     g.appendChild(label);
-    // Stops this pointerdown from ever reaching `container`'s own listener
-    // (PanZoomController's drag-to-pan handler) — confirmed real bug
-    // without this: the container calls setPointerCapture on every
-    // pointerdown regardless of target, which hijacks the subsequent
-    // synthesized "click" event before it ever reaches this node, so
-    // clicking a node silently did nothing. A plain click (no drag) on the
-    // node itself never needs to pan anyway.
+    // Stops this from reaching container's own PanZoomController listener —
+    // it calls setPointerCapture on every pointerdown regardless of target,
+    // which would otherwise hijack the click before it reaches this node.
     g.addEventListener("pointerdown", (event) => event.stopPropagation());
     const select = () => onSelect?.(node.id);
     g.addEventListener("click", select);
@@ -333,20 +304,13 @@ function render(svg, nodes, edges, positions, { selectedId, getNodeRadius, getNo
   });
 }
 
-// `container`/`content`/`svg` — the pan-zoom stage trio (see this module's
-// own PanZoomController import, and its own header comment for the CSS
-// this requires: `content` positioned `left:50%; top:50%;` inside
-// `container`). `emptyMount` — a sibling slot shown instead of `container`
-// when there's nothing to graph. `onSelect(id)` — called on node
-// click/Enter. `resolveParent(node, idSet) => parentId|null` — optional,
-// see computeDepths' own comment.
-// `edgeLabelZoomThreshold` — only meaningful alongside `getEdgeLabel`; a
-// relationship-graph.js consumer's own edge-type text (e.g. "Member of")
-// stays hidden until zoomed in at least this far, so a graph with many
-// edges doesn't read as a wall of overlapping text at the default zoom —
-// see the `${classPrefix}-content` class this toggles, and the CSS rule
-// each caller's own stylesheet defines for it (shell.css's own
-// `.relationship-graph-content` block is the one real consumer today).
+// `container`/`content`/`svg` — the pan-zoom stage trio (see PanZoomController
+// for the CSS this requires). `emptyMount` — a sibling slot shown instead of
+// `container` when there's nothing to graph. `onSelect(id)` — called on node
+// click/Enter. `resolveParent` — optional, see computeDepths' comment.
+// `edgeLabelZoomThreshold` — only meaningful alongside `getEdgeLabel`; edge
+// labels stay hidden until zoomed in at least this far, so a graph with many
+// edges doesn't read as a wall of overlapping text at the default zoom.
 export function createForceGraph({
   container,
   content,
@@ -398,10 +362,8 @@ export function createForceGraph({
   }
 
   // Full rebuild (re-seed + re-simulate) only when the node-id SET itself
-  // changes — an edge-only change among already-visible nodes (or an
-  // unrelated field edit) still redraws correctly (edges/labels rebuild
-  // every call) without ever repositioning anything, so the graph never
-  // visibly jumps for a change that isn't structural.
+  // changes — an edge-only change still redraws correctly without ever
+  // repositioning anything, so the graph never jumps for a non-structural change.
   function setGraph({ nodes, edges } = {}) {
     currentNodes = Array.isArray(nodes) ? nodes : [];
     currentEdges = Array.isArray(edges) ? edges : [];

@@ -72,11 +72,9 @@ export function resolveBinding(binding, context, formulaOptions) {
   if (!trimmed) {
     return binding;
   }
-  // Deliberately no coerceValue here, unlike formula-engine.js's own getter —
-  // a resolved binding can be a string/array/boolean (e.g. a Tags-role
-  // value, an Object field) where coercing a missing path to 0 would be
-  // wrong; formula-engine.js's coercion only makes sense because it's always
-  // a math context.
+  // No coerceValue here, unlike formula-engine.js's getter — a resolved
+  // binding can be non-numeric (a Tags value, an Object field), where
+  // coercing a missing path to 0 would be wrong.
   const resolvePath = (path) => resolveDottedPath(context, path.slice(1));
   if (shouldEvaluateFormula(trimmed)) {
     try {
@@ -98,14 +96,11 @@ export function resolveBinding(binding, context, formulaOptions) {
   return resolvePath(trimmed);
 }
 
-// The write-side companion to resolveBinding()'s plain-path case (a formula
-// binding like "=@a+@b" has no single cell to write back to, so only a
-// simple "@a.b.c" binding is settable — anything else is a no-op). Mutates
-// `context` in place, auto-vivifying intermediate objects the same way
-// Workbench's own (now-retired) private setValueAtPath() did, so every
-// consumer of a binding path — Press's read-only rendering, Workbench's
-// editable sheet, Combat Tracker's write-through to a character record —
-// shares one implementation instead of three copies of dotted-path walking.
+// The write-side companion to resolveBinding()'s plain-path case — a
+// formula binding has no single cell to write back to, so only a simple
+// "@a.b.c" path is settable. Mutates `context` in place, auto-vivifying
+// intermediate objects, so every consumer (Press, Workbench, Combat
+// Tracker) shares one implementation instead of three.
 export function setAtBinding(binding, context, value) {
   if (typeof binding !== "string" || !context || typeof context !== "object") {
     return false;
@@ -134,14 +129,10 @@ function normalizeLookupKey(value) {
   return value === undefined || value === null ? "" : String(value).trim().toLowerCase();
 }
 
-// An entry matches a lookup key by whichever of these it actually has —
-// a raw sourceId/id (System field metadata's own numbering), the last
-// segment of a dotted `key` ("abilities.strength" -> "strength"), or a
-// name/shortName/label a template author would more naturally type
-// ("strength", "STR", "Strength"). A bare scalar array entry (no object)
-// matches directly on its own value, so a plain string/number list works
-// as a lookup table too, not just System-shaped {sourceId, name, ...}
-// objects.
+// An entry matches a lookup key by whichever field it has — sourceId/id,
+// the last dotted segment of `key`, or name/shortName/label. A bare
+// scalar entry matches directly, so a plain string/number list works as a
+// lookup table too, not just System-shaped objects.
 function lookupEntryMatches(entry, key) {
   if (entry === undefined || entry === null) return false;
   if (typeof entry !== "object") {
@@ -164,27 +155,15 @@ function findInLookupTable(table, key) {
   return undefined;
 }
 
-// The generic `lookup(table, key)` formula function — one implementation
-// shared by every tool, not a family of one-off ability/skill/whatever
-// functions. `table` is a name, resolved two ways depending on what this
-// caller has available:
-//  1. `fieldDefinitions` (a System's own `fields` array, when the caller
-//     has one — Workbench does via state.systemDefinition, Press
-//     deliberately never will; see this function's own call sites) — a
-//     field whose `key` matches `table` has its `children` or `values`
-//     reshaped into a searchable list, the same reshaping already used for
-//     DDB-import's own lookup tables (system-lookup-tables.js).
-//  2. Failing that, `table` is resolved as a plain dotted path against
-//     `context` — the exact same data any other @binding already reads,
-//     whatever shape that happens to be for the calling tool. This is
-//     what makes `lookup` work identically in Press (no System, only
-//     whatever's in the sample data) and Workbench without either one
-//     needing its own bespoke lookup logic — the underlying data source
-//     differs, the function doesn't.
-// Returns the whole matched entry (or undefined, never an invented
-// placeholder) so a formula can read any of its properties —
-// `lookup("abilities","str").color`, `lookup("skills","athletics").ability`,
-// etc. — not just a single hardcoded field.
+// The generic `lookup(table, key)` formula function, shared by every tool.
+// `table` resolves two ways: (1) against `fieldDefinitions` (a System's
+// `fields` array, when the caller has one) — a field whose `key` matches
+// `table` has its `children`/`values` reshaped into a searchable list; (2)
+// failing that, as a plain dotted path against `context`, the same data any
+// @binding reads. This is what makes `lookup` work identically in Press (no
+// System) and Workbench with no tool-specific lookup logic.
+// Returns the whole matched entry (never an invented placeholder), so a
+// formula can read any of its properties, e.g. `lookup("abilities","str").color`.
 export function createLookupFn(context, fieldDefinitions) {
   return (table, key) => {
     if (typeof table !== "string" || !table.trim()) return undefined;
@@ -205,25 +184,15 @@ export function createLookupFn(context, fieldDefinitions) {
   };
 }
 
-// `lookup(table, key)` only ever matches an entry's identity-ish fields
-// (sourceId/id/key-suffix/name/shortName/label — see lookupEntryMatches
-// above), so it can't find e.g. a limitedUses entry by its `level`, or any
-// other arbitrary field a template author's own array happens to use as its
-// match key. `lookupField(table, matchField, matchValue, targetField)` is
-// the generic version — caller names which field to match on and which one
-// to read back, same shape runButtonComponentAction's own adjustField
-// lookup already uses (lookupBinding/matchField/matchValue/targetField,
-// workbench-character-view.js) for the WRITE side, now available to any
-// Visible/Locked/Editable-in-Play/etc. formula for the READ side too.
-// `rootContext` — unlike `lookup`, which resolves `table` against whatever
-// `context` the calling formula itself is scoped to (the item, inside a
-// Repeater) — is always the TOP-LEVEL record regardless of the calling
-// formula's own scope, same "a lookup table lives outside any one row"
-// convention the button action's own lookupBinding already established
-// (always getBindingContext(), never itemContext). `targetField` omitted
-// returns the whole matched entry, same as `lookup`. No match returns
-// undefined, never an invented 0/false a Locked/Visible formula could
-// silently misread as a real answer.
+// `lookup` only matches an entry's identity-ish fields, so it can't find
+// e.g. an entry by an arbitrary field like `level`. `lookupField(table,
+// matchField, matchValue, targetField)` is the generic version — caller
+// names which field to match and which to read back, mirroring the WRITE
+// side's adjustField lookup shape (workbench-character-view.js).
+// `rootContext` is always the TOP-LEVEL record regardless of the calling
+// formula's scope (a lookup table lives outside any one Repeater row).
+// `targetField` omitted returns the whole entry; no match returns
+// undefined, never an invented 0/false a formula could misread as real.
 export function createLookupFieldFn(rootContext) {
   return (table, matchField, matchValue, targetField) => {
     if (typeof table !== "string" || !table.trim()) return undefined;
@@ -239,32 +208,22 @@ export function createLookupFieldFn(rootContext) {
 }
 
 // Every reserved-key System field (dice, combatBindings, derivedFormulas,
-// buildSteps, ...) is an entry INSIDE the System record's own `fields`
-// array — `{type, key, label, default|values|children}` — never a flat
-// top-level property of the record itself (a System payload's only real
-// top-level keys are `title`/`version`/`fields`). Reading
-// `systemDefinition.derivedFormulas` directly is always undefined,
-// regardless of what the System actually declares; this is the one place
-// that does the correct lookup, matching system-lookup-tables.js's own
-// (previously unexported, now-duplicate) private copy. A scalar field's
-// value lives at `fieldByKey(fields, key)?.default`, an array field's at
-// `?.values`, an object field's nested values at `?.children` (each child
-// keyed like "parent.child", its own `.default`).
+// ...) is an entry INSIDE the System's own `fields` array, never a flat
+// top-level property — `systemDefinition.derivedFormulas` directly is
+// always undefined. A scalar field's value lives at
+// `fieldByKey(fields, key)?.default`, an array field's at `?.values`, an
+// object field's nested values at `?.children`.
 export function fieldByKey(fields, key) {
   return (Array.isArray(fields) ? fields : []).find((entry) => entry?.key === key) || null;
 }
 
 const ROLE_BOUND_ROLES = new Set(["resource", "value", "tags", "modifier"]);
 
-// A System's live play-state (health, AC, conditions, initiative, or
-// whatever else a game tracks) lives on an ordinary array field — not a
-// dedicated field type or a special marker checkbox — identified purely by
-// its values carrying a `role`. Role is a generic structural vocabulary a
-// value can use for any purpose (see Loom's "Role" help topic), not
-// something reserved for combat; this just finds whichever field happens to
-// use it. Combat Tracker and Workbench's character view both resolve the
-// same field this way, so a System only has to author Role/Binding once for
-// both to pick it up — see their own comments for how each one consumes it.
+// A System's live play-state (HP, AC, conditions, initiative) lives on an
+// ordinary array field, identified purely by its values carrying a `role`
+// — a generic vocabulary (Loom's "Role" help topic), not combat-specific.
+// Combat Tracker and Workbench's character view both resolve it this way,
+// so a System only authors Role/Binding once for both to pick it up.
 export function findRoleBoundField(fields) {
   const list = Array.isArray(fields) ? fields : [];
   return (
@@ -277,23 +236,17 @@ export function findRoleBoundField(fields) {
   );
 }
 
-// Finds the one entry of a given role (resource/value/tags/modifier) within
-// a role-bound field's own `.values` (the array findRoleBoundField above
-// locates) — combat-tracker.js and character-sheet.js both resolve HP/AC/
-// Conditions/Initiative this same way, so it lives here rather than as two
-// identical local copies.
+// Finds one entry of a given role within a role-bound field's `.values`
+// (findRoleBoundField above) — shared by combat-tracker.js and
+// character-sheet.js rather than duplicated in each.
 export function findBindingByRole(bindings, role) {
   return (bindings || []).find((entry) => entry && entry.role === role) || null;
 }
 
-// Plural sibling — several Systems define more than one binding sharing a
-// role (Daggerheart's Hope/Stress/HP all tagged "resource"; GURPS' HP/FP;
-// CoC's HP/Magic Points/Sanity), which findBindingByRole above always
-// silently reduced to just the first. Existing single-resource consumers
-// (Combat Tracker, character-sheet.js) are a genuinely one-slot UI today —
-// migrating them to render every resource/value binding is a separate,
-// larger UI change, not a data-lookup fix — so this exists for a caller
-// that already knows how to handle more than one.
+// Plural sibling — several Systems share a role across multiple bindings
+// (Daggerheart's Hope/Stress/HP all "resource"), which findBindingByRole
+// silently reduces to just the first. For a caller that already handles
+// more than one; existing single-resource UIs stay on the singular version.
 export function findBindingsByRole(bindings, role) {
   return (bindings || []).filter((entry) => entry && entry.role === role);
 }

@@ -1,19 +1,15 @@
 // Shared client-side plumbing for the Home Assistant integration — every
-// call goes through the server's proxy routes (server/app.py's own
+// call goes through the server's proxy routes (server/app.py's
 // /home-assistant/* routes), never straight to HA from the browser the way
-// wled.js's own widget calls a WLED device directly: HA doesn't send CORS
-// headers by default, and the access token is stored encrypted server-side
-// (server/integrations.py) and never sent back to this client after the
-// connect step below saves it.
+// wled.js calls a WLED device directly: HA doesn't send CORS headers by
+// default, and the access token is stored encrypted server-side and never
+// sent back to this client after the connect step below saves it.
 //
-// One connection per account, unlike WLED's own per-device list — HA
-// already has a single stable entity-id namespace, so there's no "which
-// device does this alias mean" resolution step the way wled.js needs;
-// runHaMacroAction below calls straight through with no alias/target lookup
-// at all. Consumed today by ha-light.js (the Lighting widget's HA-light
-// driver) and the Macro system (HA_MACRO_ACTIONS/runHaMacroAction below) —
-// no dedicated "Home Assistant" widget of its own, by design (see the plan
-// this was built from).
+// One connection per account, unlike WLED's per-device list — HA already
+// has a single stable entity-id namespace, so there's no alias-resolution
+// step the way wled.js needs. Consumed by ha-light.js (the Lighting
+// widget's HA-light driver) and the Macro system below — no dedicated "Home
+// Assistant" widget of its own, by design.
 
 export async function getHaConnection(dataManager) {
   try {
@@ -25,33 +21,20 @@ export async function getHaConnection(dataManager) {
 
 // Trimmed {entityId, domain, friendlyName}[] — see app.py's own
 // handle_ha_entities for why the full HA state payload never reaches here.
-// `domainFilter` narrows to one domain or a list of domains (e.g. the
-// Lighting widget's device picker wants BOTH "light" and "group" — a Light
-// Group helper's own entity can land in either domain depending on how it
-// was created in HA, and there's no reliable way to tell which a GM meant
-// without just offering both); omitted for the Macro editor's own picker,
-// which can target any domain. `status`, if given, surfaces a failure as a
-// toast — without it, a failed fetch silently returns [] and a caller
-// showing a populated select has nothing to tell the GM WHY it's still
-// empty (confirmed real gap: a bad token or an unreachable Home Assistant
-// instance left the "Add an HA light" picker stuck on "Loading…" forever
-// with zero feedback anywhere in the app). Note that DataManager._request
-// sanitizes any 5xx message before it gets here (see its own comment — raw
-// server exception text never reaches a toast), so a network/auth failure
-// shows a generic "something went wrong" toast rather than the specific
-// reason; the real reason is in the browser console (DataManager's own
-// console.warn) and, as of this route's own error branches, the server's
-// terminal output.
+// `domainFilter` narrows to one domain or a list (e.g. the Lighting
+// widget's picker wants both "light" and "group" — a Light Group helper's
+// entity can land in either depending on how it was created in HA); omitted
+// for the Macro editor's picker, which can target any domain. `status`, if
+// given, surfaces a failure as a toast — without it a failed fetch silently
+// returns [] and the caller has no way to tell the GM why the picker is
+// stuck on "Loading…" forever (a bad token or unreachable HA instance).
 export async function listHaEntities(dataManager, { domainFilter, status } = {}) {
   try {
     const result = await dataManager.listHaEntities();
     const entities = Array.isArray(result?.entities) ? result.entities : [];
-    // HA's own /api/states order is essentially registration/discovery
-    // order, not anything a human would want to scan — confirmed a real
-    // usability problem: a real account's own light entity sorted to the
-    // very bottom of several hundred unrelated entities. Sorted once, here,
-    // so every caller (this widget's own picker, the Macro editor's) gets
-    // an alphabetized list for free rather than each re-sorting its own copy.
+    // HA's /api/states order is registration/discovery order, not anything
+    // a human would want to scan — sorted once here so every caller gets an
+    // alphabetized list for free.
     const sorted = entities.slice().sort((a, b) => a.friendlyName.localeCompare(b.friendlyName));
     if (!domainFilter) return sorted;
     const allowedDomains = Array.isArray(domainFilter) ? domainFilter : [domainFilter];
@@ -67,8 +50,8 @@ export async function callHaService(dataManager, { domain, service, entityId, da
 }
 
 // One entity's live state, for ha-light.js's own render — never throws, same
-// "empty/null on failure, let the caller show its own error" convention
-// getHaConnection/listHaEntities above already follow.
+// "empty/null on failure, let the caller show its own error" convention as
+// getHaConnection/listHaEntities above.
 export async function fetchHaEntityState(dataManager, entityId) {
   try {
     return await dataManager.getHaEntityState(entityId);
@@ -78,17 +61,12 @@ export async function fetchHaEntityState(dataManager, entityId) {
 }
 
 // Always opens the connect/edit modal, pre-filled with the current base URL
-// (never the token — see connection-modal.js's own comment on why) — the
-// explicit "manage this connection" entry point (a gear icon next to the
-// Lighting widget's HA device picker), for fixing a wrong URL or
-// disconnecting entirely. Confirmed a real gap without this: the only
-// previous entry point (ensureHaConnection below) silently no-ops once
-// already configured, so a typo'd/wrong base URL (e.g. localhost used where
-// a real LAN IP was needed) had no way to be corrected short of clearing the
-// row directly in the database. Leaving the token field blank on an edit
-// keeps whatever's already saved (server/app.py's own
-// handle_save_ha_connection) — no need to re-paste a long-lived access
-// token just to fix the URL.
+// (never the token) — the explicit "manage this connection" entry point (a
+// gear icon next to the Lighting widget's HA device picker), for fixing a
+// wrong URL or disconnecting entirely: ensureHaConnection below silently
+// no-ops once already configured, so without this a bad base URL had no way
+// to be corrected short of clearing the row directly in the database.
+// Leaving the token field blank on an edit keeps whatever's already saved.
 export async function manageHaConnection({ dataManager, status }) {
   const existing = await getHaConnection(dataManager);
   return promptConnectionModal({
@@ -107,13 +85,11 @@ export async function manageHaConnection({ dataManager, status }) {
   });
 }
 
-// Prompts to connect only if not already configured; resolves true the
-// moment a connection exists (already configured, or just saved this run),
-// false if the GM cancelled. Every entry point that just needs SOME
-// connection to exist (the Lighting widget's "Add an HA light," the Macro
-// editor's entity picker) calls this rather than each keeping its own "are
-// we connected yet" gate. Use manageHaConnection above instead when the
-// intent is specifically to view/edit/disconnect an existing one.
+// Prompts to connect only if not already configured; resolves true once a
+// connection exists, false if the GM cancelled. Every entry point that just
+// needs SOME connection to exist calls this rather than keeping its own
+// gate; use manageHaConnection above when the intent is specifically to
+// view/edit/disconnect an existing one.
 export async function ensureHaConnection({ dataManager, status }) {
   const existing = await getHaConnection(dataManager);
   if (existing.configured) return true;
@@ -122,18 +98,13 @@ export async function ensureHaConnection({ dataManager, status }) {
 
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---------
 //
-// Generic enough to cover both "control a device" and "trigger a routine":
-// turnOn/turnOff/toggle call HA's own domain-agnostic homeassistant.*
-// services (works across lights, switches, scripts, scenes — running a
-// script or activating a scene IS "turn on" in HA's own model), and
-// callService is the escape hatch for anything domain-specific (a
-// media_player command, automation.trigger, a climate temperature set) —
-// same "basic controls + an Advanced JSON path for everything else" split
-// wled.js's own widget already uses. No widget instance to route through
-// (unlike wled/soundboard/combat's own macro actions) — HA has no on-screen
-// card of its own whose state would need refreshing after a command, so
-// this is a plain standalone call every time, same shape as
-// runBrowserMacroAction/runGamelogMacroAction in macro-runner.js.
+// turnOn/turnOff/toggle call HA's domain-agnostic homeassistant.* services
+// (works across lights, switches, scripts, scenes — running a script IS
+// "turn on" in HA's model); callService is the escape hatch for anything
+// domain-specific, same "basic controls + Advanced JSON" split wled.js
+// uses. No widget instance to route through — HA has no on-screen card
+// whose state would need refreshing after a command, so this is a plain
+// standalone call every time.
 export const HA_MACRO_ACTIONS = {
   turnOn: { label: "Turn on / Run", params: ["entityId"] },
   turnOff: { label: "Turn off", params: ["entityId"] },

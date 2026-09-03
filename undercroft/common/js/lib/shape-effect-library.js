@@ -1,76 +1,52 @@
-// Unified shape/effect preset registry — mirrors pattern-library.js's own
-// shape exactly (flat array, {id, category, label, colorSlots[], params[]}),
-// just swapping that file's `buildSvg(values) => svgString` for a
-// per-preset render function, since these render into a live SVG/Canvas
-// element instead of producing a static image. Two kinds of preset:
+// Unified shape/effect preset registry — mirrors pattern-library.js's shape
+// (flat array, {id, category, label, colorSlots[], params[]}), swapping that
+// file's `buildSvg(values) => svgString` for a per-preset render function
+// since these render into a live SVG/Canvas element. Two kinds of preset:
 //
-// - `kind: "geometry"` ("shapes" category — circle/cone/line/square,
-//   migrated in from the old standalone AOE_SHAPE_TYPES array/dispatch-
-//   on-type-string renderer, orrery/js/lib/map-viewer.js). `draw(cx, cy,
-//   sizePx, element)` returns the SVG element describing just the shape's
-//   OWN geometry (no fill/stroke/opacity applied — that stays common code
-//   in renderShapeElement, identical for every geometry preset). Renders
-//   once; re-drawn only when a property changes.
-// - `kind: "particles"` ("effects" AND "weather" categories — burst/beam/
-//   cone-blast/pulse/campfire/fountain, and rain/snow/dust/embers/petals/
-//   bubbles — same `kind`, same rendering pipeline, same Loop/Label/Play
-//   capability throughout; "weather" is a separate CATEGORY purely for
-//   picker organization, not a different render path). Every preset also
-//   declares a fixed `duration` (ms) and a `seed(sizePx)` — called ONCE
-//   when a cycle starts, returning whatever per-particle random state that
-//   preset needs (an array of angle/speed/size, for the scatter-based
-//   presets) or `null` for presets with no persistent random state. The
-//   caller holds onto whatever `seed()` returned and passes it back into
-//   every `run()` call for that cycle as `particles`, so a burst's
-//   individual particles don't re-randomize every single frame.
-//   `run(ctx, cx, cy, sizePx, elapsedMs, values, particles, element)` draws
-//   one animation frame into a 2D canvas context and returns `true` while
-//   the cycle should keep animating, `false` once `elapsedMs` has passed
-//   its own `duration` — driven by requestAnimationFrame in the caller
-//   (orrery/js/lib/map-viewer.js and common/js/lib/widgets/map.js). The
-//   canvas itself is always a square of `cx * 2` (== `cy * 2`) pixels on a
-//   side (map-viewer.js's own `Math.max(120, sizePx * 3)`) — a "weather"
-//   preset covering the WHOLE canvas (rain/snow/etc, particles spawned
-//   across the full area and wrapping at the edges) rather than radiating
-//   from the center is just a different `run()` shape reading `cx * 2`/
-//   `cy * 2` as its own width/height, not a structurally different kind of
-//   thing: it's still placed, sized, dragged, and triggered exactly like a
-//   Burst — a GM drags it out LARGE to cover a whole battle map, or small
-//   for a localized patch of dust in one corner.
-//   Looping is entirely the CALLER's job, not any individual preset's:
-//   when a `loop: true` element's `run()` returns false, the caller calls
-//   `seed()` again and resets elapsedMs to 0 to start the next cycle; a
-//   `loop: false` element just stops. `cone-blast`, not `cone`, to avoid
-//   colliding with the shapes category's own "cone" id in the same picker.
+// - `kind: "geometry"` ("shapes" category — circle/cone/line/square).
+//   `draw(cx, cy, sizePx, element)` returns the SVG element describing just
+//   the shape's OWN geometry (no fill/stroke/opacity — that's common code
+//   in renderShapeElement). Renders once; re-drawn only when a property changes.
+// - `kind: "particles"` ("effects" AND "weather" categories — same kind,
+//   same rendering pipeline, same Loop/Label/Play capability; "weather" is
+//   a separate CATEGORY purely for picker organization). Each declares a
+//   fixed `duration` (ms) and a `seed(sizePx)`, called ONCE per cycle,
+//   returning whatever per-particle random state the preset needs (or
+//   `null`). The caller holds what `seed()` returned and passes it back
+//   into every `run()` call as `particles`, so particles don't re-randomize
+//   every frame. `run(ctx, cx, cy, sizePx, elapsedMs, values, particles,
+//   element)` draws one frame and returns `true` while the cycle should
+//   keep animating, `false` once `elapsedMs` passes `duration` — driven by
+//   requestAnimationFrame in the caller (map-viewer.js/widgets/map.js). The
+//   canvas is a square of `cx*2` px (map-viewer.js's `Math.max(120, sizePx
+//   * 3)`) — a "weather" preset fills the WHOLE canvas (particles spawned
+//   across the full area, wrapping at the edges) instead of radiating from
+//   center, but is otherwise placed/sized/dragged/triggered like a Burst.
+//   Looping is the CALLER's job, not the preset's: when a `loop: true`
+//   element's `run()` returns false, the caller calls `seed()` again and
+//   resets elapsedMs; `loop: false` just stops. `cone-blast`, not `cone`,
+//   to avoid colliding with the shapes category's own "cone" id.
 //
 // Geometry (position/size/angle/spread/width) lives on the ELEMENT itself
-// (orrery/js/lib/map-model.js's createVectorShapeElement) for every preset,
-// shape or effect alike — placed via the exact same drag-to-place gesture
-// either way. colorSlots/params are the only PER-PRESET customization.
+// (map-model.js's createVectorShapeElement) for every preset — placed via
+// the same drag-to-place gesture either way. colorSlots/params are the only
+// PER-PRESET customization.
 //
-// `run()` reads `this.duration` — always call it as `preset.run(...)`
-// (method-call form), never destructured into a bare function reference,
-// or `this` won't be bound to the preset and `this.duration` breaks.
+// `run()` reads `this.duration` — always call as `preset.run(...)`, never
+// destructured into a bare function reference, or `this` breaks.
 
 function polygonAttr(el, points) {
   el.setAttribute("points", points.map((point) => `${point.x},${point.y}`).join(" "));
   return el;
 }
 
-// Scales a preset's own particle count so DENSITY stays roughly constant
-// as sizePx grows, instead of a fixed count spreading thinner and thinner
-// across a bigger area — confirmed real complaint: a large effect looked
-// far sparser than a small one dragged from the same preset. Most presets
-// scatter particles across a 2D area (radiating outward from center, or —
-// for weather — the whole canvas), so count scales with AREA (sizePx²,
-// `exponent`'s default) — Beam is the one exception, scattering along a
-// LINE instead, so it passes `exponent: 1` (length, not area). `base` is
-// the count this preset already looks right at `referenceSizePx` (100px —
-// roughly a 2-cell/10ft placement at the default 50px/cell, which is what
-// every existing preset's own original hardcoded count was actually tuned
-// against). min/max keep a degenerate sizePx (0, or a map-spanning drag)
-// from collapsing to nothing or exploding into thousands of draw calls per
-// frame.
+// Scales particle count so DENSITY stays roughly constant as sizePx grows,
+// instead of a fixed count spreading thinner across a bigger area. Most
+// presets scatter across a 2D area, so count scales with AREA (sizePx²,
+// `exponent`'s default) — Beam scatters along a LINE instead, so it passes
+// `exponent: 1`. `base` is the count that looks right at `referenceSizePx`
+// (100px, ~2-cell/10ft at the default 50px/cell). min/max keep a degenerate
+// sizePx from collapsing to nothing or exploding into thousands of draws.
 function scaledParticleCount(sizePx, { base, referenceSizePx = 100, exponent = 2, min = 4, max = 500 } = {}) {
   const scale = Math.pow(Math.max(1, sizePx) / referenceSizePx, exponent);
   return Math.max(min, Math.min(max, Math.round(base * scale)));
@@ -222,20 +198,13 @@ export const SHAPE_EFFECT_PRESETS = [
     colorSlots: [{ key: "color", label: "Color", default: "#38bdf8" }],
     params: [],
     duration: 700,
-    // Was a single gradient-stroke line — replaced with an actual stream of
-    // particles flying from origin toward angleDeg, per the user's own
-    // "is it possible to use actual particles instead" ask. Same id/
-    // colorSlots/duration as before (an already-placed Beam element's own
-    // data needs no migration), just a different `run()`.
     seed(sizePx) {
-      // Length-based, not area — a beam's width barely grows with sizePx
-      // (halfWidth below stays capped near a small fraction of it), so its
-      // own density concern is particles-per-unit-LENGTH along the bolt.
+      // Length-based, not area — a beam's width barely grows with sizePx,
+      // so density is particles-per-unit-LENGTH along the bolt.
       const count = scaledParticleCount(sizePx, { base: 26, exponent: 1 });
       return Array.from({ length: count }, () => ({
-        // Staggered emission within the first half of the cycle, not all at
-        // once — reads as a continuous bolt made of individual particles
-        // rather than one big blob launching together.
+        // Staggered emission within the first half of the cycle reads as a
+        // continuous bolt rather than one blob launching together.
         startT: Math.random() * 0.5,
         jitter: (Math.random() - 0.5) * 2,
         jitterSeed: Math.random() * Math.PI * 2,
@@ -317,15 +286,6 @@ export const SHAPE_EFFECT_PRESETS = [
       return null;
     },
     run(ctx, cx, cy, sizePx, elapsedMs, values) {
-      // Same uniform contract every preset follows: one expanding ring per
-      // `duration`, done (returns false) once elapsedMs reaches it. Looping
-      // is entirely the CALLER's concern (Part 4) — when a loop:true
-      // element's run() returns false, the caller resets elapsedMs to 0
-      // and keeps animating; a loop:false element just stops. Keeping that
-      // logic out of every individual preset (rather than each one having
-      // to special-case "am I looping") is what lets every preset — this
-      // one included — use the exact same "duration-based, false when
-      // done" shape.
       const t = Math.min(1, elapsedMs / this.duration);
       const radius = sizePx * t;
       ctx.save();
@@ -349,33 +309,20 @@ export const SHAPE_EFFECT_PRESETS = [
       { key: "smokeColor", label: "Smoke", default: "#94a3b8" },
     ],
     params: [],
-    // Long duration, loop:true by default — the canonical "burning
-    // campfire" ambient case (see this registry's own header, and Part 4's
-    // "a particle effect could definitely loop and be persistent at a
-    // location" origin story). Every particle's own motion is computed from
-    // `((elapsedMs / duration) + phase) % 1`, staggering each one to a
-    // different point in its own single life-cycle — every particle
-    // completes exactly one cycle across one `duration` window, so however
-    // this preset happens to get re-seeded on loop (Part 4, caller-driven),
-    // there's no visible "reset" moment, just continuous flicker.
+    // loop:true by default — the canonical ambient "burning campfire" case.
+    // Each particle's motion is `((elapsedMs / duration) + phase) % 1`,
+    // staggering each to a different point in one life-cycle, so however
+    // this gets re-seeded on loop there's no visible "reset," just
+    // continuous flicker.
     duration: 2200,
-    // Redesigned from an original side-view take (flames/smoke rising
-    // straight up) to match Orrery's actual top-down camera, the same
-    // radiate-from-center language Fountain already establishes: flame
-    // licks flicker and jitter close around the center point (no single
-    // "up" direction to rise toward when you're looking straight down at
-    // the fire), while smoke drifts and expands OUTWARD in every direction
-    // as it thins with distance, the same way Fountain's own ripples
-    // expand outward from its spray.
+    // Top-down (matches Orrery's camera): flame licks flicker/jitter close
+    // around the center (no "up" to rise toward from directly above), while
+    // smoke drifts/expands OUTWARD in every direction as it thins, the same
+    // way Fountain's ripples expand from its spray.
     seed(sizePx) {
-      // Doubled again to 1000 (from 500). Separately: the reason 500 barely
-      // looked different from 180 wasn't the count itself — it was that
-      // `particles` never actually got re-randomized between loop cycles
-      // (map-viewer.js's own renderParticleEffectElement, now fixed), so
-      // every cycle replayed the EXACT same frozen pattern, making it read
-      // as static "wallpaper" the eye tunes out rather than a busier,
-      // denser flicker. max raised to match, so a large placement keeps
-      // scaling density up instead of getting capped right at 1000.
+      // particles must be re-randomized between loop cycles (see
+      // map-viewer.js's renderParticleEffectElement) or a high count reads
+      // as static "wallpaper" instead of a dense flicker.
       const flameCount = scaledParticleCount(sizePx, { base: 1000, max: 3000 });
       const smokeCount = scaledParticleCount(sizePx, { base: 24 });
       return {
@@ -384,8 +331,7 @@ export const SHAPE_EFFECT_PRESETS = [
           angle: Math.random() * Math.PI * 2,
           wobbleSeed: Math.random() * Math.PI * 2,
           reach: sizePx * (0.1 + Math.random() * 0.3),
-          // Shrunk a third time (halved again) — small embers/licks read
-          // as fire, big dots don't.
+          // Small embers/licks read as fire; big dots don't.
           size: sizePx * (0.011 + Math.random() * 0.01),
         })),
         smoke: Array.from({ length: smokeCount }, () => ({
@@ -399,8 +345,8 @@ export const SHAPE_EFFECT_PRESETS = [
     },
     run(ctx, cx, cy, sizePx, elapsedMs, values, particles, element) {
       ctx.save();
-      // Soft ember glow at the very center, flickering independently of the
-      // particles' own longer stagger cycle.
+      // Soft ember glow at center, flickering independently of the
+      // particles' longer stagger cycle.
       const glowT = (elapsedMs % 400) / 400;
       const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(1, sizePx * 0.4));
       glow.addColorStop(0, values.flameColor);
@@ -411,21 +357,13 @@ export const SHAPE_EFFECT_PRESETS = [
       ctx.arc(cx, cy, Math.max(1, sizePx * 0.4), 0, Math.PI * 2);
       ctx.fill();
 
-      // Flame — drawn BEFORE smoke now (was after). Confirmed real bug:
-      // smoke spawns at dist=0, the exact same point flame occupies, and
-      // flame's own alpha (0.55-1.0) is high enough that drawing it SECOND
-      // painted straight over smoke's own most-opaque moment, making it
-      // effectively invisible — smoke only ever got a chance to show once
-      // it had drifted far enough out to clear flame's own radius, by
-      // which point its old fade curve (peak alpha right at spawn, only
-      // fading down from there) had already faded it to nothing.
+      // Flame drawn BEFORE smoke — smoke spawns at dist=0, the same point
+      // flame occupies, and flame's high alpha would otherwise paint
+      // straight over smoke's most-opaque moment.
       particles.flame.forEach((p) => {
         const localT = (elapsedMs / this.duration + p.phase) % 1;
-        // 0.03 (~4.8Hz) read as a strobe, not a flame — slowed to roughly
-        // one flicker per second per particle; each one's own wobbleSeed
-        // already keeps them out of phase with each other, so the SLOWER
-        // per-particle rate still reads as a chaotic, organic flicker in
-        // aggregate rather than everything pulsing in lockstep.
+        // ~1 flicker/sec per particle; each one's wobbleSeed keeps them out
+        // of phase, so the aggregate still reads as chaotic, not lockstep.
         const flicker = 0.5 + Math.sin(elapsedMs * 0.005 + p.wobbleSeed) * 0.5;
         const dist = p.reach * (0.4 + flicker * 0.6);
         const angle = p.angle + localT * Math.PI * 0.6;
@@ -438,12 +376,9 @@ export const SHAPE_EFFECT_PRESETS = [
         ctx.fill();
       });
 
-      // Smoke — drawn on top of flame now, and its own alpha curve fades
-      // IN over the first stretch of its journey (instead of starting at
-      // peak opacity right where flame would cover it) before fading back
-      // out as it thins with distance — so it actually becomes visible
-      // only once it's cleared flame's own radius, not while buried under
-      // it.
+      // Smoke's alpha fades IN over the first stretch of its journey
+      // (rather than starting at peak opacity) before fading out with
+      // distance, so it becomes visible only once clear of flame's radius.
       particles.smoke.forEach((p) => {
         const localT = (elapsedMs / this.duration + p.phase) % 1;
         const wobble = Math.sin(localT * Math.PI * 3 + p.wobbleSeed) * sizePx * 0.1;
@@ -460,19 +395,12 @@ export const SHAPE_EFFECT_PRESETS = [
         ctx.fill();
       });
       ctx.restore();
-      // Continuous simulation, not a discrete replayed cycle — while
-      // looping (the common, ambient case), this NEVER signals "done," so
-      // the caller (map-viewer.js) never resets elapsedMs back to 0.
-      // Confirmed real bug this fixes: even with the particles themselves
-      // re-seeded on loop restart, forcibly resetting elapsedMs made every
-      // particle's own `(elapsedMs / duration + phase) % 1` term jump back
-      // toward 0 in lockstep — a hard, visible "everything snaps back"
-      // seam every `duration`. That modulo math already produces a
-      // perfectly smooth, seamless sawtooth on its own as long as
-      // elapsedMs is simply allowed to keep growing — the discontinuity
-      // was never the math itself, only the caller's own periodic reset of
-      // it. A one-shot (loop: false) placement still uses the normal
-      // bounded/duration contract every other preset follows.
+      // While looping, this never signals "done" so the caller never resets
+      // elapsedMs — resetting it would snap every particle's own `(elapsedMs
+      // / duration + phase) % 1` term back toward 0 in lockstep, a visible
+      // seam every `duration`; letting elapsedMs keep growing keeps the
+      // modulo math a seamless sawtooth. A one-shot (loop: false) placement
+      // still uses the normal bounded/duration contract.
       if (element?.loop) return true;
       const t = Math.min(1, elapsedMs / this.duration);
       return t < 1;
@@ -485,15 +413,13 @@ export const SHAPE_EFFECT_PRESETS = [
     kind: "particles",
     colorSlots: [{ key: "color", label: "Water", default: "#38bdf8" }],
     params: [],
-    // As seen from above (Orrery's own top-down view): a bubbling central
-    // spray, droplets arcing out and landing, and expanding surface ripples
-    // — same staggered-phase continuous-loop technique as Fire/Smoke above.
+    // Top-down: a bubbling central spray, droplets arcing out and landing,
+    // expanding surface ripples — same staggered-phase loop as Fire/Smoke.
     duration: 1600,
     seed(sizePx) {
-      // Ripples stay fixed at 3 — that's staggered TIMING (three rings
-      // offset in their own expansion cycle), not spatial density, so
-      // scaling it with area wouldn't mean anything. Droplets genuinely
-      // scatter across the spray's own area, so those scale.
+      // Ripples stay fixed at 3 — staggered TIMING (three offset expansion
+      // cycles), not spatial density. Droplets scatter across the spray's
+      // area, so those scale.
       const dropletCount = scaledParticleCount(sizePx, { base: 14 });
       const rippleCount = 3;
       return {
@@ -546,12 +472,8 @@ export const SHAPE_EFFECT_PRESETS = [
   },
 
   // --- Weather (kind: "particles", category: "weather") ---
-  // Same `kind`/rendering pipeline/Loop-Label-Play capability as any other
-  // particle preset above — the only real difference is these fill the
-  // WHOLE canvas (spawned across the full `cx*2` x `cy*2` area, wrapping at
-  // the edges) instead of radiating from the center, so a GM drags one out
-  // LARGE to cover a whole battle map, or small for a localized patch. See
-  // this file's own header for the full reasoning.
+  // Same pipeline as any other particle preset above — these fill the WHOLE
+  // canvas instead of radiating from center (see this file's header).
   {
     id: "rain",
     category: "weather",
@@ -560,14 +482,11 @@ export const SHAPE_EFFECT_PRESETS = [
     colorSlots: [{ key: "color", label: "Color", default: "#93c5fd" }],
     params: [],
     duration: 1400,
-    // Weather fills the whole CANVAS (cx*2 x cy*2, i.e. canvasSize — see
-    // this category's own header), not a sizePx-radius disc, so density
-    // scales off that same canvasSize map-viewer.js's own renderer computes
-    // — recomputed here identically (a pure function of sizePx) since
-    // seed() only receives sizePx itself. referenceSizePx=400 (rather than
-    // the default 100) reflects that a weather patch is typically dragged
-    // out much larger than a point effect — scaling against the smaller
-    // default would hit the count cap almost immediately.
+    // Weather fills the whole CANVAS (cx*2 x cy*2), not a sizePx-radius
+    // disc, so density scales off that canvasSize (recomputed here as a
+    // pure function of sizePx, since seed() only receives sizePx).
+    // referenceSizePx=400 (not the default 100) reflects that a weather
+    // patch is typically dragged out much larger than a point effect.
     seed(sizePx) {
       const canvasSize = Math.max(120, sizePx * 3);
       const count = scaledParticleCount(canvasSize, { base: 90, referenceSizePx: 400, max: 600 });

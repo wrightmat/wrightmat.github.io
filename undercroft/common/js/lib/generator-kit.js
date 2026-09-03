@@ -1,22 +1,11 @@
 // Shared plumbing for Crucible/Vault/Sanctum's near-identical "generate a
-// record from Library reference data, then save/export/note it" one-shot
-// flow — Forge doesn't participate in most of this (no feature/recipe
-// concept, and its own listAllSystems merges in dataManager.listBuiltins()
-// for a legacy-builtin-Location case none of these three have, so it stays a
-// local function there rather than being forced into this shared shape).
-// Each function here takes whatever per-tool state it needs explicitly (a
-// list, a DOM element, an export-shaping function) instead of closing over
-// module-level state, so one shared copy works for all three tools' own
-// module-scoped variables.
-//
-// renderRequiredSelectOptions/renderOptionalSelectOptions below are the one
-// exception — Forge uses those two too, since they're about rendering a
-// <select>'s options a specific, now suite-wide way, not about how the
-// underlying list gets fetched. setGenerateButtonReadiness further below is
-// the same kind of exception — Forge's Generate NPC button needs the exact
-// same disabled-but-hoverable mechanism as Crucible/Sanctum/Vault's own
-// Generate buttons, even though Forge doesn't share the rest of this file's
-// generate/save/export/note flow.
+// record from Library reference data, then save/export/note it" flow. Forge
+// mostly doesn't participate (no feature/recipe concept), except
+// renderRequiredSelectOptions/renderOptionalSelectOptions and
+// setGenerateButtonReadiness below, which Forge shares too since those are
+// about rendering conventions, not the generate/save/export/note flow itself.
+// Each function takes whatever per-tool state it needs explicitly rather than
+// closing over module-level state, so one copy works for all callers.
 
 import { setDisabledTooltip, disposeTooltips, refreshTooltips } from "./tooltips.js";
 
@@ -34,15 +23,10 @@ export async function listAllSystems(dataManager) {
 }
 
 // Renders a "you must pick one of these before anything else works" select
-// (System, today; any future required picker) — a disabled placeholder first
-// so the browser never silently defaults to whichever entry happens to sort
-// first (the bug this replaced: every tool used to auto-select the
-// alphabetically-first System, e.g. "Blades in the Dark", with no
-// indication that was even a default rather than a deliberate choice).
-// `entries` need an `id` and either a `title` or a `name`. Once a real entry
-// is chosen the placeholder can't be reselected (it's `disabled`, not just
-// blank) — the caller only ever gets back to "nothing chosen" by this
-// function being called again with no matching `previousValue`.
+// (System, today) — a disabled placeholder first, so the browser never
+// silently defaults to whichever entry sorts first. `entries` need an `id`
+// and either a `title` or a `name`. Once a real entry is chosen the
+// placeholder can't be reselected (it's `disabled`, not just blank).
 export function renderRequiredSelectOptions(select, entries, { placeholder = "Select…", previousValue } = {}) {
   if (!select) return;
   const previous = previousValue !== undefined ? previousValue : select.value;
@@ -62,14 +46,9 @@ export function renderRequiredSelectOptions(select, entries, { placeholder = "Se
     select.value = previous;
   } else if (entries.length === 1) {
     // The placeholder is disabled — never a valid resting state for a
-    // required field — so when there's exactly one real choice, there's
-    // nothing left to decide; land on it directly instead of making the
-    // user click the one option that was always going to be picked anyway.
-    // Always on (no opt-in) since this holds for every current caller
-    // (System everywhere, Setting in Forge) and any future required
-    // picker built on this same primitive — unlike
-    // renderOptionalSelectOptions's own equivalent below, a required
-    // field's blank state was never a legitimate choice to preserve.
+    // required field — so with exactly one real choice, land on it directly.
+    // Always on, unlike renderOptionalSelectOptions's opt-in equivalent
+    // below, since a required field's blank state is never legitimate.
     select.value = entries[0].id;
   } else {
     placeholderOption.selected = true;
@@ -77,24 +56,15 @@ export function renderRequiredSelectOptions(select, entries, { placeholder = "Se
 }
 
 // Renders a "pick an existing saved record, or leave this to start fresh"
-// select (Sanctum's Location picker; Crucible's Monster picker, Vault's
-// Wonder picker, Forge's NPC picker) — unlike renderRequiredSelectOptions
-// above, the leading option here is a real, always-selectable choice ("New /
-// unsaved"), not a disabled placeholder: starting a brand new record is a
-// perfectly valid thing to want, not a state to force the user out of.
-// `autoSelectSingle` (opt-in, default off) — unlike renderRequiredSelectOptions
-// above, blank is a genuinely valid resting state at every existing call site
-// of this function (Sanctum's Setting/Location, Crucible's Monster picker,
-// Vault's Wonder picker, Forge's own NPC picker all mean "start fresh" when
-// blank, not "nothing chosen yet"), so auto-landing on a sole option isn't
-// safe as a blanket default the way it is for the required picker — it would
-// silently reopen a saved record instead of the fresh one a tool opens on by
-// default. Forge's Location picker is the one caller that opts in: its own
-// blank state ("No Location") is a real fallback-to-Setting-level-weights
-// choice, but landing on the only real Location when one exists gives a more
-// specific NPC (its own narrower species mix) with nothing lost, so this
-// caller wants the same "nothing left to decide" behavior a required field
-// gets automatically.
+// select — unlike renderRequiredSelectOptions above, the leading option is a
+// real, always-selectable "New / unsaved" choice, not a disabled placeholder.
+// `autoSelectSingle` (opt-in, default off): blank is a genuinely valid
+// resting state at every call site of this function, so auto-landing on a
+// sole option isn't safe as a blanket default the way it is for the required
+// picker — it would silently reopen a saved record instead of starting
+// fresh. Forge's Location picker opts in: its own blank state is a real
+// fallback choice, but landing on the only real Location gives a more
+// specific NPC with nothing lost.
 export function renderOptionalSelectOptions(select, entries, { blankLabel = "New / unsaved", previousValue, autoSelectSingle = false } = {}) {
   if (!select) return;
   const previous = previousValue !== undefined ? previousValue : select.value;
@@ -125,11 +95,9 @@ export function featureLabel(features, id) {
   return feature ? feature.name || feature.id : id;
 }
 
-// `container` is the element createSearchableCheckList's `dataAttr` marks
-// (e.g. `[data-locked-features]`) — the search input + scrollable checkbox
-// list it wraps, not a bare `<select multiple>` (that shape was retired
-// suite-wide in favor of this one; see ui-components.js's own comment on
-// createSearchableCheckList for why).
+// `container` is the element createSearchableCheckList's `dataAttr` marks —
+// the search input + scrollable checkbox list it wraps, not a bare
+// `<select multiple>` (retired suite-wide in favor of this shape).
 export function readLockedFeatureIds(container) {
   if (!container) return [];
   const listBox = container.querySelector("[data-checklist-options]");
@@ -138,10 +106,7 @@ export function readLockedFeatureIds(container) {
 }
 
 // Rebuilds a createSearchableCheckList's checkbox rows from `features`,
-// preserving whichever were already checked and re-applying whatever search
-// query is already typed into the box — the checkbox-list equivalent of the
-// old `populateLockedFeaturesSelect` each of Crucible/Vault/Sanctum used to
-// hand-roll identically for a `<select multiple>`.
+// preserving whichever were already checked and re-applying any typed search.
 export function populateLockedFeaturesCheckList(container, features) {
   if (!container) return;
   const listBox = container.querySelector("[data-checklist-options]");
@@ -168,11 +133,8 @@ export function populateLockedFeaturesCheckList(container, features) {
     input.value = feature.id;
     input.checked = previouslyChecked.has(feature.id);
     const labelEl = document.createElement("label");
-    // d-block — a bare <label> is inline by default, which lets a long name
-    // just overflow the row instead of wrapping OR truncating; text-truncate
-    // (overflow:hidden/ellipsis/nowrap) only actually clips once the element
-    // has a real block-level width to clip against. title carries the full
-    // name for hover, since the visible text may now be cut off.
+    // d-block — a bare <label> is inline by default, so text-truncate has no
+    // block width to clip against without it. Tooltip carries the full name.
     labelEl.className = "form-check-label small text-truncate d-block";
     labelEl.htmlFor = checkboxId;
     labelEl.textContent = name;
@@ -185,23 +147,15 @@ export function populateLockedFeaturesCheckList(container, features) {
 }
 
 // Same rebuild as populateLockedFeaturesCheckList above, generalized from a
-// Library-feature id/name list to a plain string vocabulary (a System's own
-// tag words — behaviors/roles/creatureTypes/recipeSlots) — Loom's structured
-// Feature tag editor (Workstream E) uses this for all four of a Feature's
-// own `tags.*` arrays. readLockedFeatureIds above already works unchanged
-// for this shape too (it just reads checked checkbox `.value`s either way).
+// Library-feature id/name list to a plain string vocabulary (a System's tag
+// words). readLockedFeatureIds above works unchanged for this shape too.
 //
-// `items` is either a plain string array (value === label, the common case
-// for a self-descriptive word like "damage"/"control") or a `{value, label}`
-// array (needed whenever the stored value and the human-readable label
-// genuinely differ — e.g. a Role/Creature Type's own lowercase id vs its
-// display name). `selected` is the caller's own authoritative list of
-// currently-checked values, passed explicitly rather than inferred from
-// whatever's already checked in the DOM — inferring from the DOM conflates
-// "the previous entity's checked state" with "this entity's own", and can't
-// know which of `items` should start checked on a fresh render. Checked
-// items sort to the top (each group alphabetical by label) so a Feature's
-// existing tags are immediately visible without scrolling/searching.
+// `items` is either a plain string array (value === label) or a
+// `{value, label}` array (when the stored value and display label differ,
+// e.g. a Role's lowercase id vs its display name). `selected` is passed
+// explicitly rather than inferred from the DOM, since the DOM can't
+// disambiguate the previous entity's checked state from this one's. Checked
+// items sort to the top so a Feature's existing tags are visible immediately.
 export function populateStringChecklist(container, items, selected) {
   if (!container) return;
   const listBox = container.querySelector("[data-checklist-options]");
@@ -232,9 +186,7 @@ export function populateStringChecklist(container, items, selected) {
     input.value = value;
     input.checked = selectedSet.has(value);
     const labelEl = document.createElement("label");
-    // Same d-block/text-truncate/title fix as populateLockedFeaturesCheckList
-    // above — see that function's own comment for why plain text-truncate
-    // alone doesn't clip a bare (inline) <label>.
+    // Same d-block fix as populateLockedFeaturesCheckList above.
     labelEl.className = "form-check-label small text-truncate d-block";
     labelEl.htmlFor = checkboxId;
     labelEl.textContent = label;
@@ -246,9 +198,8 @@ export function populateStringChecklist(container, items, selected) {
   refreshTooltips(listBox);
 }
 
-// `toPressExportShape` is each tool's own record-shaping function (monster/
-// wonder/location schema) — the only genuinely tool-specific piece; the
-// Blob/anchor/download mechanics around it are what were actually duplicated.
+// `toPressExportShape` is each tool's own record-shaping function — the only
+// tool-specific piece; the Blob/anchor/download mechanics are shared.
 export function exportRecordAsJson(record, toPressExportShape) {
   const shaped = toPressExportShape(record);
   const blob = new Blob([JSON.stringify(shaped, null, 2)], { type: "application/json" });
@@ -260,18 +211,14 @@ export function exportRecordAsJson(record, toPressExportShape) {
   URL.revokeObjectURL(url);
 }
 
-// The "generate a note via LLM" flow (spinner swap, call the tool's own
-// generate-note endpoint, write name/notes back onto the record and its
-// inputs, restore the button) is identical across Crucible/Vault/Sanctum —
-// only the request body sent to the LLM genuinely differs per tool, so
-// that's the one thing callers provide as a closure. `record` is mutated in
-// place (record.name/record.notes) rather than returned, since callers hold
-// their own reference to the same object and expect it updated directly,
-// matching what each tool's local version already did.
+// The "generate a note via LLM" flow (spinner swap, call the endpoint, write
+// name/notes back, restore the button) is identical across Crucible/Vault/
+// Sanctum — only the request body differs, so callers provide it as a
+// closure. `record` is mutated in place since callers hold the same
+// reference and expect it updated directly.
 //
-// Forge doesn't use this: its own note flow doesn't suggest/overwrite a
-// name (Forge's NPCs already have a rolled name), it's a genuinely different
-// shape, not just a different request body.
+// Forge doesn't use this — its NPCs already have a rolled name, so its note
+// flow is a genuinely different shape, not just a different request body.
 export async function generateNoteForRecord({ record, elements, status, generateNote, buildRequestBody }) {
   if (!record) return false;
   record.name = elements.nameInput?.value || "";
@@ -301,34 +248,17 @@ export async function generateNoteForRecord({ record, elements, status, generate
 }
 
 // Proactive "insufficient reference data" state for a Generate button
-// (Forge/Sanctum/Crucible/Vault all have one). Previously each tool started
-// its Generate button real-`disabled` and only found out reference data was
-// insufficient reactively, inside the click handler, throwing a toast after
-// the click. This makes that check run wherever the button's enabled state
-// already gets recomputed (System/Setting/Location change, reference-data
-// load) and disables it proactively instead, with a tooltip explaining why.
-//
-// Thin, Generate-specific name over tooltips.js's own canonical
-// setDisabledTooltip (the disabled-but-hoverable wrapper mechanism itself
-// lives there now, alongside every other tooltip primitive in the suite —
-// see that module's header for the full system). Kept as its own export
-// rather than inlining the call at every one of the four Generate buttons'
-// own call sites purely for the more legible name at each of those sites.
+// (Forge/Sanctum/Crucible/Vault), run wherever the button's enabled state
+// already gets recomputed rather than reactively inside the click handler.
+// Thin, Generate-specific name over tooltips.js's canonical setDisabledTooltip.
 export function setGenerateButtonReadiness(button, reason) {
   setDisabledTooltip(button, reason);
 }
 
-// The active System's own ability/stat-block object field's children (key +
-// shortName) — read here instead of every caller carrying its own copy.
-// Previously duplicated verbatim between Crucible's and Forge's own
-// lib/tables.js (both re-export from here now, unchanged call sites);
-// Vault imports it directly for its own feature-params-editor ability
-// select (see vault/js/app.js). Not one of the three-tool "generate/save/
-// export/note" flow functions above (this module's own header comment) —
-// it's a narrower, independently reusable helper any tool reading System
-// ability data needs, which is why Forge already had its own copy too.
-// Falls back to the standard six-ability D&D set if the System defines no
-// matching field, so a System with none authored yet still works.
+// The active System's ability/stat-block object field's children (key +
+// shortName) — shared by Crucible, Forge, and Vault's ability selects rather
+// than each carrying its own copy. Falls back to the standard six-ability
+// D&D set if the System defines no matching field.
 const DEFAULT_ABILITY_FIELD_DEFS = [
   { key: "strength", label: "STR" },
   { key: "dexterity", label: "DEX" },
@@ -339,13 +269,11 @@ const DEFAULT_ABILITY_FIELD_DEFS = [
 ];
 
 // Best-effort guess for which object field IS the ability/stat block, used
-// only to pre-fill the abilityField settings preference below when a GM
-// hasn't explicitly chosen one yet for this System — never the sole source
-// of truth (see feedback_settings_preference_with_guessed_default). Shape-
-// detects an object field whose children are uniformly number-typed (the
-// actual stat-block shape — a field like "hitPoints" with {current, max}
-// children wouldn't qualify), preferring one of the conventional names below
-// when more than one candidate happens to qualify.
+// only to pre-fill the abilityField settings preference when a GM hasn't
+// explicitly chosen one — never the sole source of truth. Shape-detects an
+// object field whose children are uniformly number-typed (so e.g. "hitPoints"
+// with {current, max} children doesn't qualify), preferring a conventional
+// name below when more than one candidate qualifies.
 const ABILITY_FIELD_NAME_PREFERENCE = ["abilities", "characteristics", "attributes", "stats"];
 
 function isStatBlockShaped(field) {
@@ -365,16 +293,11 @@ export function guessAbilityFieldKey(fields) {
 }
 
 // Every top-level object-type field the active System defines — the
-// candidate list for the abilityField settings preference below. An
-// ability/stat block is always authored as an object field (e.g.
-// sys.dnd5e's "abilities" — {strength, dexterity, ...}, sys.coc7e's
-// "characteristics"), unlike Combat Scaling/Archetype/Budget Ceiling, which
-// are always array fields (see listArrayFieldOptions in Forge's/Crucible's
-// own lib/tables.js) — a separate list, not a shared one. `guessedKey`
-// (guessAbilityFieldKey's own result, computed here in the same fetch
-// rather than a second round trip) rides along so the settings dropdown can
-// pre-select it and label it as auto-detected, instead of the field list
-// alone.
+// candidate list for the abilityField settings preference. An ability/stat
+// block is always an object field, unlike Combat Scaling/Archetype/Budget
+// Ceiling, which are always array fields (a separate list, see
+// listArrayFieldOptions). `guessedKey` rides along in the same fetch so the
+// settings dropdown can pre-select and label it as auto-detected.
 export async function listObjectFieldOptions(dataManager, systemId) {
   if (!dataManager || !systemId) return { options: [], guessedKey: "" };
   try {
@@ -387,14 +310,11 @@ export async function listObjectFieldOptions(dataManager, systemId) {
   }
 }
 
-// `preferredKey` — the GM's own configured ability-field preference (each
-// tool's own per-System settings bucket, mirroring archetypeField/
-// combatScalingField/budgetCeilingField exactly). Falls back to
-// guessAbilityFieldKey's own shape-based guess, then the literal
-// "abilities" key (the pre-existing hardcoded assumption, kept as the very
-// last resort for a System with no better candidate at all) — never
-// hardcoded as the only option, since a System like CoC authors its stat
-// block under a completely different key ("characteristics").
+// `preferredKey` — the GM's own configured ability-field preference (mirrors
+// archetypeField/combatScalingField/budgetCeilingField). Falls back to
+// guessAbilityFieldKey's shape-based guess, then the literal "abilities" key
+// as a last resort — never hardcoded as the only option, since a System like
+// CoC authors its stat block under a completely different key.
 export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey = "") {
   if (!dataManager || !systemId) return DEFAULT_ABILITY_FIELD_DEFS;
   try {
@@ -407,21 +327,16 @@ export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey =
         const raw = String(child.key || "");
         return {
           key: raw.startsWith(`${key}.`) ? raw.slice(key.length + 1) : raw,
-          // Full name preferred over the abbreviation whenever the System
-          // declares one — "Strength," not "STR," same for every System,
-          // not just the ones that happen to only have a short form.
+          // Full name preferred over the abbreviation whenever declared.
           label: child.label || child.shortName || "",
-          // The abbreviation itself, carried through SEPARATELY (not just
-          // folded into `label`'s own fallback above) — some consumers
-          // (Workbench's Build Character wizard matching a D&D background's
-          // own short-code `ability_scores` candidates) need the short form
-          // specifically, not whichever text `label` prefers to display.
+          // Carried separately from `label` — Workbench's Build Character
+          // wizard needs the short form specifically (matching a
+          // background's short-code candidates), not whichever text `label`
+          // displays.
           shortName: child.shortName || "",
-          // Carried through (when authored) for Forge's own independent-roll
-          // fallback (loadIndependentStatRanges in forge/js/lib/tables.js) —
-          // a System whose ability children define a real range (e.g.
-          // sys.coc7e.json's characteristics, 15-90) can have them rolled
-          // directly instead of only ever coming from an Archetype entry.
+          // When authored, lets Forge's independent-roll fallback roll a
+          // characteristic directly (e.g. CoC's 15-90 range) instead of only
+          // ever coming from an Archetype entry.
           ...(typeof child.minimum === "number" && typeof child.maximum === "number"
             ? { minimum: child.minimum, maximum: child.maximum }
             : {}),
@@ -434,12 +349,9 @@ export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey =
   }
 }
 
-// Raw `values` of a single named array-type System field (e.g. sys.dnd5e's
-// own "skills" list — {name, ability, sourceId} entries) — a generic
-// lookup, not a skills-specific one, since nothing here depends on what the
-// entries look like. Empty for a System with no field by that key (a
-// System with no Skills concept at all, e.g. Blades in the Dark), same
-// graceful-degradation convention every other loader in this file follows.
+// Raw `values` of a single named array-type System field — a generic
+// lookup, not skills-specific. Empty for a System with no field by that key,
+// same graceful-degradation convention every loader in this file follows.
 export async function loadArrayFieldValues(dataManager, systemId, key) {
   if (!dataManager || !systemId || !key) return [];
   try {
