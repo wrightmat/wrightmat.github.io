@@ -67,40 +67,26 @@ import {
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
-// Repository's own markdown renderer (dice/task-list/callout/wiki-link
-// awareness, degrading gracefully without any of that for a plain note) —
-// reused as-is for the Note field's View mode, same as Crucible/Vault/
-// Sanctum's own identical Notes preview.
+// Repository's own markdown renderer — reused as-is for the Note field's
+// View mode, same as Crucible/Vault/Sanctum's own identical Notes preview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
-// Built and mounted before any of the querySelector("[data-*-npc]") lines
-// below, so every existing selector/disabled-state call site elsewhere in
-// this file keeps working unchanged.
+// Mounted before any of the querySelector("[data-*-npc]") lines below, so
+// every selector/disabled-state call site elsewhere in this file keeps working.
 createToolbarButtonGroup([
-  // Starts disabled — Generate needs `tables` (loadForgeTables, init()
-  // below) loaded first; re-enabled there once that actually resolves.
+  // Starts disabled — Generate needs `tables` (init() below) loaded first.
   { action: "generate", icon: "tabler:users", label: "Generate NPC", disabled: true, attrs: { "data-generate-npc": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-npc": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-npc": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-npc": true } },
 ]).forEach((button) => document.querySelector("[data-npc-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — same physical Undo/Redo
-// buttons, just their own little two-button group with a gap before it
-// (`ms-2` on the mount div), same convention every other tool's toolbar
-// now uses.
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-undo-npc": true } },
   { action: "redo", label: "Redo", attrs: { "data-redo-npc": true } },
 ]).forEach((button) => document.querySelector("[data-npc-undo-toolbar-mount]")?.appendChild(button));
-// A genuinely new, cross-tool action, not a 5th slot on the primary
-// Generate/Save/Duplicate/Delete cluster above (that cluster, plus its own
-// Undo/Redo pair, is already at the documented 6-button ceiling — see
-// ui-components.js's own createToolbarButtonGroup header comment) — but
-// also NOT a second row bolted onto that same left-pane toolbar, which
-// still reads as part of the primary action bar regardless of how it's
-// grouped. Lives in its own "NPC Properties" section in the right-pane
-// Inspector instead (mounted below, alongside inspectorSection), collapsed
-// until an NPC is actually generated/selected.
+// A genuinely new, cross-tool action — not a 5th slot on the primary
+// cluster above (already at the 6-button ceiling), and not a second toolbar
+// row either. Lives in its own "NPC Properties" Inspector section instead.
 createToolbarButtonGroup([
   {
     icon: "tabler:user-plus",
@@ -125,17 +111,11 @@ document.querySelector("[data-npc-empty-state]")?.appendChild(
   })
 );
 
-// Named data-field-mount (not data-inspector-mount) — this file's own
-// [data-inspector-mount] selector below is a single bare marker for the
-// Component Properties collapsible wrapper; a keyed attribute of the same
-// name would collide with it (attribute selectors match on presence, not
-// value, so the bare querySelector could pick up one of these instead).
-// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
-// for why: an appended-into wrapper stays an empty-but-in-flow flex item
-// even while its field is conditionally hidden, silently spending a full
-// gap-3 on both sides of it. Any class the static mount div itself carried
-// is merged onto the built field first so removing the wrapper doesn't
-// lose that layout.
+// replaceWith, not appendChild — an appended-into wrapper stays an
+// empty-but-in-flow flex item even while its field is conditionally hidden,
+// silently spending a full gap-3 on both sides. Any class the static mount
+// div carried is merged onto the built field first so removing the wrapper
+// doesn't lose that layout.
 function mountField(key, element) {
   const mount = document.querySelector(`[data-field-mount="${key}"]`);
   if (!mount) return;
@@ -235,19 +215,17 @@ const npcEmptyState = document.querySelector("[data-npc-empty-state]");
 const npcDisplay = document.querySelector("[data-npc-display]");
 const identityFields = document.querySelector("[data-identity-fields]");
 // Name renders here instead of inside identityFields' own grid — its own
-// row, inline with Image (see renderNpc) — same "Name+Image inline, image
-// on the right" layout Crucible/Vault/Sanctum's own Identity sections use.
+// row, inline with Image, same layout Crucible/Vault/Sanctum's Identity
+// sections use.
 const nameMount = document.querySelector("[data-name-mount]");
 const npcImageMount = document.querySelector('[data-field-mount="npc-image"]');
 const fourDFields = document.querySelector("[data-fourd-fields]");
 const statsFields = document.querySelector("[data-stats-fields]");
-// The whole Stats card (Identity/4D/Note each have their own sibling
-// card too) — hidden entirely rather than shown with an explanatory
-// message when there's nothing to display, see renderStats below.
+// The whole Stats card — hidden entirely rather than shown with an
+// explanatory message when there's nothing to display, see renderStats below.
 const statsCard = statsFields?.closest(".card") || null;
 // Present only for a System with a skillGeneration config authored (Call of
-// Cthulhu today) — hidden entirely for every other System, same convention
-// as statsCard above, see renderSkills below.
+// Cthulhu today) — hidden for every other System, see renderSkills below.
 const skillsFields = document.querySelector("[data-skills-fields]");
 const skillsCard = skillsFields?.closest(".card") || null;
 const generateNoteButton = document.querySelector("[data-generate-note]");
@@ -293,11 +271,10 @@ const selectionsSection = createCollapsibleSection({
 });
 document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 
-// NPC Properties — currently just the Convert to Character action, but its
-// own named section (not the Inspector's) since it's about the generated
-// NPC itself, not whatever the Inspector below happens to be showing
-// (Location/Species editing). Starts collapsed; expandNpcPropertiesSection
-// (below) opens it whenever a new NPC is generated or selected.
+// NPC Properties — currently just Convert to Character, but its own section
+// (not the Inspector's) since it's about the generated NPC itself, not
+// whatever the Inspector happens to be showing. Starts collapsed;
+// expandNpcPropertiesSection opens it on generate/select.
 const npcPropertiesSection = createCollapsibleSection({
   label: "NPC Properties",
   collapsed: true,
@@ -316,15 +293,11 @@ const inspectorSection = createCollapsibleSection({
 });
 document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
 
-// Adopts each section's existing static `[data-xxx-panel]` markup (its own
-// content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as createCollapsibleSection's content — same pattern Sanctum's
-// own initCollapsibles/Crucible's own module-top-level block use. Every
-// section here is expanded by default (collapsed: false), unlike Crucible's
-// own Recipe Fulfillment — Forge has nothing that warrants starting
-// collapsed. Note keeps its "Generate Note" sibling button in static HTML
-// (a shape createCollapsibleSection would clobber by rebuilding the whole
-// header), so only its toggle button is built and mounted.
+// Adopts each section's existing static `[data-xxx-panel]` markup (content
+// stays hand-authored HTML — only the header+chevron wrapper is JS-built).
+// Every section here is expanded by default — Forge has nothing that
+// warrants starting collapsed. Note keeps its "Generate Note" sibling
+// button in static HTML, so only its toggle is built and mounted.
 document.querySelector("[data-identity-mount]")?.appendChild(
   createCollapsibleSection({
     label: "Identity",
@@ -361,11 +334,8 @@ document.querySelector("[data-skills-mount]")?.appendChild(
   }).section
 );
 
-// Manual Feature Add/Remove — Crucible/Vault's own "just like monsters and
-// other resources" parity (see content-feature-matching.js's own header
-// comment for the fuller reasoning). Collapsed by default, unlike Identity/
-// 4D/Stats above — an NPC without any Features attached is the common case,
-// so this shouldn't compete for attention until the GM actually wants it.
+// Manual Feature Add/Remove — Crucible/Vault parity. Collapsed by default,
+// unlike Identity/4D/Stats — an NPC without any Features is the common case.
 document.querySelector("[data-features-mount]")?.appendChild(
   createCollapsibleSection({
     label: "Features",
@@ -426,39 +396,29 @@ let performUndo = null;
 let performRedo = null;
 let tables = null;
 let currentLocation = null;
-// The active Setting's own full record (not just its id) — needed for its
-// general Species Weights (effectiveSpeciesLocation below), the fallback a
-// Location without its own falls back to. Only Location used to be fetched
-// in full; Setting was previously tracked purely by settingSelect.value.
+// The active Setting's own full record — needed for its general Species
+// Weights (effectiveSpeciesLocation below), the fallback a Location without
+// its own falls back to.
 let currentSetting = null;
-// Every Location belonging to the currently selected Setting — {id, name,
-// parentId} pairs (listLocationsForSetting's own shape), refreshed by
-// populateLocationSelectOptions. Kept globally (not just on the left-pane
-// <select>) so the Identity Location field's own editable select
-// (renderNpc's identityFields loop) can source its options without a
-// second fetch.
+// Every Location belonging to the currently selected Setting, refreshed by
+// populateLocationSelectOptions. Kept globally so the Identity Location
+// field's own editable select can source its options without a second fetch.
 let locationsInSetting = [];
-// The active System's own eligible Feature pool — same "just like monsters
-// and other resources" parity Crucible's own `features` module var already
-// has, refreshed alongside every other System-scoped vocabulary
-// (refreshSystemVocabulary). Manual Add/Remove only here — no auto-matching
-// module the way Character/Species/Variant/Class get, since Forge NPCs are
-// procedurally generated from the 4D tables, not imported from prose with
-// anything to convert.
+// The active System's own eligible Feature pool, refreshed alongside every
+// other System-scoped vocabulary. Manual Add/Remove only here — no
+// auto-matching module, since Forge NPCs are procedurally generated from
+// the 4D tables, not imported from prose with anything to convert.
 let features = [];
 let currentRecord = null;
-// Gates Save (dirty relative to the last save) and Delete (only a record
-// that's actually been saved, not just generated/rerolled locally, can be
-// deleted) — see common/js/lib/dirty-gate.js. currentRecord is kept live
-// (every edit/reroll patches it directly, unlike Crucible's separate input
-// fields), so the snapshot is just its own export shape.
+// Gates Save (dirty relative to last save) and Delete (only an actually-
+// saved record can be deleted). currentRecord is kept live (every
+// edit/reroll patches it directly), so the snapshot is just its own export shape.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => (currentRecord ? toPressExportShape(currentRecord) : null) });
 
-// Whole-record snapshot undo — same shape/reasoning as Repository's own
-// recordHistory/field-commit-debounce pair (repository/js/app.js): snapshot
-// currentRecord before a mutation, apply it, push an undo entry only if the
-// JSON actually changed. Coarser than field-level diffing, consistent with
-// this file's existing "patch currentRecord directly, no diffing" style.
+// Whole-record snapshot undo: snapshot currentRecord before a mutation,
+// apply it, push an undo entry only if the JSON actually changed. Coarser
+// than field-level diffing, consistent with this file's "patch
+// currentRecord directly, no diffing" style.
 function recordHistory(label, applyChange) {
   if (!currentRecord) {
     applyChange();
@@ -476,11 +436,9 @@ function applyRecordSnapshot(json) {
 }
 
 // Debounced commit for live-typed fields (Identity/4D/Stats/Note inputs,
-// which patch currentRecord directly on every keystroke without a full
-// renderNpc) — one undo entry per burst of typing, not one per keystroke.
-// See Repository's own FIELD_COMMIT_DEBOUNCE_MS comment for why the keydown
-// flush listener is needed (app-shell's global Ctrl+Z handler would
-// otherwise fire before an in-flight debounce window commits).
+// which patch currentRecord directly on every keystroke) — one undo entry
+// per burst of typing. The keydown flush listener exists since app-shell's
+// global Ctrl+Z handler would otherwise fire before an in-flight debounce commits.
 const FIELD_COMMIT_DEBOUNCE_MS = 600;
 let fieldCommitTimer = 0;
 let fieldCommitLabel = "";
@@ -508,18 +466,14 @@ function flushFieldCommitOnUndoRedo(event) {
 }
 
 let selectedFieldKey = null;
-// Guards the Location inspector's own async fetch (updateInspector below)
-// against a race: if the GM selects a different field (or a different
-// Location) before an in-flight fetch resolves, the stale response must not
-// overwrite whatever the inspector should show now.
+// Guards the Location inspector's async fetch against a race: if the GM
+// selects a different field (or Location) before an in-flight fetch
+// resolves, the stale response must not overwrite what should show now.
 let locationInspectorRequestId = 0;
 let dataManager = null;
-// Every saved NPC at the currently selected Location (NPC picker options)
-// plus its ownership metadata — same role/shape as Crucible's
-// monstersInSystem/monsterCatalog, Vault's wondersInSystem/wonderCatalog,
-// Sanctum's locationsInSetting/locationCatalog. currentNpcId is tracked
-// separately from currentRecord for the same reason those tools track their
-// own current*Id separately.
+// Every saved NPC at the currently selected Location plus its ownership
+// metadata. currentNpcId is tracked separately from currentRecord, same as
+// every other tool's own current*Id.
 let npcsAtLocation = [];
 let npcCatalog = new Map();
 let currentNpcId = null;
@@ -544,54 +498,37 @@ const FOURD_FIELD_DEFS = [
 ];
 
 // Both read from the active System's own "alignments"/"abilities" fields
-// (loadAlignmentFaces/loadAbilityFieldDefs in lib/tables.js) rather than a
-// second hardcoded copy — refreshed by refreshSystemVocabulary() whenever
-// the System select changes, so switching Systems immediately reflects that
-// System's own vocabulary instead of always showing D&D 5e's.
+// rather than a hardcoded copy — refreshed by refreshSystemVocabulary()
+// whenever the System select changes.
 let ABILITY_FIELD_DEFS = [];
 let ABILITY_KEYS = new Set();
 
-// Every top-level array field the active System defines — refreshed
-// alongside everything else in refreshSystemVocabulary, used to populate
-// the Settings modal's Archetype field/Attitude field pickers below.
-// archetypeFieldGuess/attitudeFieldGuess are which one guessArchetypeFieldKey/
-// guessAttitudeFieldKey would auto-pick, so each dropdown can pre-select
-// and label it instead of offering a separate "Auto-detect" placeholder
-// option — same "ride along, no second round trip" shape as
-// abilityFieldGuess below.
+// Every top-level array field the active System defines, used to populate
+// the Settings modal's Archetype/Attitude field pickers. The guess values
+// are which field guessArchetypeFieldKey/guessAttitudeFieldKey would
+// auto-pick, so each dropdown can pre-select and label it.
 let arrayFieldOptions = [];
 let archetypeFieldGuess = "";
 let attitudeFieldGuess = "";
 
-// Every top-level object field the active System defines — refreshed
-// alongside everything else in refreshSystemVocabulary, used to populate
-// the Settings modal's Ability field picker below. A separate list from
-// arrayFieldOptions above since an ability/stat block is always authored as
-// an object field (e.g. {strength, dexterity, ...}), never an array one.
-// abilityFieldGuess is which one guessAbilityFieldKey would auto-pick, so
-// the dropdown can pre-select and label it instead of offering a separate
-// "Auto-detect" placeholder option.
+// Every top-level object field the active System defines, used to populate
+// the Settings modal's Ability field picker. Separate from arrayFieldOptions
+// since an ability/stat block is always authored as an object field, never
+// an array one.
 let objectFieldOptions = [];
 let abilityFieldGuess = "";
 
 // Every key (besides `name`) present on any entry of the currently-resolved
-// Archetype table — refreshed alongside arrayFieldOptions, used to populate
-// the Settings modal's Stats picker (which of those keys should actually be
-// generated/shown as Stats). Empty for a System whose archetype entries
-// carry nothing but a name (Blades in the Dark) — so the Stats picker has
-// nothing to offer, exactly matching "Stats is not a concept this System
-// has."
+// Archetype table, used to populate the Settings modal's Stats picker.
+// Empty for a System whose archetype entries carry nothing but a name.
 let archetypeStatKeyOptions = [];
 
 // Which array field on the active System supplies the Archetype roll table
-// (name *and* Stats both live on the same entries — see loadArchetypeTable
-// in lib/tables.js) — same "per-tool preference, not System data" pattern
-// Crucible uses for its own Combat Scaling field/Creature Type field
-// settings (crucible/js/app.js), mirrored here: one merged per-System
-// record (dataManager.getLocal/saveLocal replaces the whole record for a
-// given (bucket, id), so writing one setting straight through would
-// silently wipe the other one's already-saved value), removed entirely
-// once both preferences are back to their unset state.
+// — a per-tool preference, not System data, mirroring Crucible's own
+// Combat Scaling/Creature Type field settings: one merged per-System record
+// (saveLocal replaces the whole record for a (bucket, id), so writing one
+// setting straight through would wipe the other's value), removed entirely
+// once both preferences are unset.
 const FORGE_SETTINGS_BUCKET = "forge-settings";
 
 function getForgeSystemSettings(systemId) {
@@ -602,9 +539,8 @@ function getForgeSystemSettings(systemId) {
 function setForgeSystemSetting(systemId, key, value) {
   if (!dataManager || !systemId) return;
   const next = { ...getForgeSystemSettings(systemId), [key]: value };
-  // An empty statsKeys carries no information (see getStatsKeysPreference
-  // below — it's treated the same as never having set it), so it doesn't
-  // keep this record alive on its own.
+  // An empty statsKeys carries no information (treated the same as never
+  // having set it), so it doesn't keep this record alive on its own.
   if (!next.archetypeField && !next.attitudeField && !next.abilityField && !(next.statsKeys && next.statsKeys.length)) {
     dataManager.removeLocal(FORGE_SETTINGS_BUCKET, systemId);
   } else {
@@ -621,8 +557,7 @@ function setArchetypeFieldPreference(systemId, fieldKey) {
 }
 
 // Which array field on the active System supplies NPC Attitude levels —
-// same "per-tool preference, not System data" pattern as Archetype's own
-// npcTypes field preference above.
+// same per-tool preference pattern as Archetype's own field preference above.
 function getAttitudeFieldPreference(systemId) {
   return getForgeSystemSettings(systemId).attitudeField || "";
 }
@@ -631,12 +566,10 @@ function setAttitudeFieldPreference(systemId, fieldKey) {
   setForgeSystemSetting(systemId, "attitudeField", fieldKey || "");
 }
 
-// Which object field is this System's ability/stat block — same per-System,
-// per-browser tool preference shape as archetypeField/attitudeField above,
-// feeding loadAbilityFieldDefs' own preferredKey param instead of it always
-// assuming a field literally named "abilities" (see
-// feedback_settings_preference_with_guessed_default). Empty/unset falls
-// through to loadAbilityFieldDefs' own shape-based guess.
+// Which object field is this System's ability/stat block — same per-System
+// preference shape as archetypeField/attitudeField, feeding
+// loadAbilityFieldDefs' preferredKey instead of assuming a field literally
+// named "abilities". Empty falls through to its own shape-based guess.
 function getAbilityFieldPreference(systemId) {
   return getForgeSystemSettings(systemId).abilityField || "";
 }
@@ -647,16 +580,10 @@ function setAbilityFieldPreference(systemId, fieldKey) {
 
 // An empty selection is treated exactly like "never configured" — both
 // default to every key the active System's archetype entries happen to
-// carry (so D&D shows all 6 abilities + AC + HP with zero configuration).
-// There's no way to deliberately mean "show zero Stats for a System that
-// has them" here on purpose — and there shouldn't be: the Stats picker is
-// a native <select multiple>, where a single plain click (no ctrl/cmd)
-// deselects every other option, so "nothing checked" is far more likely to
-// be an accidental slip than a real decision. Treating it as "not
-// configured" instead of "permanently disabled" is what actually matches
-// the Settings modal's own behavior elsewhere (Archetype field's "None" is
-// a real, deliberate choice from a single-select dropdown — a fundamentally
-// safer gesture than emptying a multiselect).
+// carry. There's no way to deliberately mean "show zero Stats" here, and
+// there shouldn't be: the Stats picker is a native <select multiple>, where
+// a single plain click deselects every other option, so "nothing checked"
+// is far more likely an accidental slip than a real decision.
 function getStatsKeysPreference(systemId) {
   const stored = getForgeSystemSettings(systemId).statsKeys;
   return Array.isArray(stored) && stored.length ? stored : null;
@@ -667,13 +594,9 @@ function setStatsKeysPreference(systemId, keys) {
 }
 
 // Every array field the active System defines, for the Archetype/Attitude
-// field pickers — "None" is a real, deliberate choice (a System with no
-// archetype table/attitude scale authored yet). `guessedKey`/`rawPreference`
-// parameterize which of the two settings this call is for, so each gets its
-// own "(auto-detected)" labeling on whichever option guessArchetypeFieldKey/
-// guessAttitudeFieldKey picked — same convention as abilityField below, and
-// as Crucible's own fieldPreferenceOptions (crucible/js/app.js) for its
-// Combat Scaling/Creature Type field pickers.
+// field pickers — "None" is a real, deliberate choice. `guessedKey`/
+// `rawPreference` parameterize which setting this call is for, so each gets
+// its own "(auto-detected)" labeling on whichever option was guessed.
 function fieldPreferenceOptions(guessedKey, rawPreference) {
   return [
     { value: "", label: "None" },
@@ -688,10 +611,9 @@ function fieldPreferenceOptions(guessedKey, rawPreference) {
 }
 
 // Every key (besides `name`) present on any archetype entry, nice-labeled —
-// reuses the exact same labeling renderStats uses (a System's own ability
-// short names where they match, else Title Case), so the Settings modal's
-// checklist and the generated Stats card always agree on what a key is
-// called.
+// reuses the same labeling renderStats uses (a System's own ability short
+// names where they match, else Title Case), so the Settings modal's
+// checklist and the generated Stats card always agree.
 function statsKeyOptionsFrom(statsByName) {
   const abilityDefByKey = new Map(ABILITY_FIELD_DEFS.map((def) => [def.key, def]));
   const keys = new Set();
@@ -769,32 +691,23 @@ async function refreshSystemVocabulary(systemId) {
     tables.archetype = { entries: archetypeTable.entries };
     tables.stats = resolveArchetypeStats(archetypeTable.statsByName, systemId);
     tables.npcAttitudes = npcAttitudes;
-    // Threaded through to getStatsForArchetype (lib/tables.js, via
-    // generator.js's own resolveStats) so it can tell an ability score
-    // apart from any other kind of stat and bundle it into stats.<key> — the
-    // System's own resolved ability-block field key (e.g. "abilities" for
-    // D&D, "traits" for Daggerheart), never a hardcoded literal.
+    // Threaded through to getStatsForArchetype so it can tell an ability
+    // score apart from any other stat and bundle it into stats.<key> — the
+    // System's own resolved ability-block field key, never hardcoded.
     tables.abilityKeys = ABILITY_KEYS;
     tables.abilityFieldKey = getAbilityFieldPreference(systemId) || abilityFieldGuess || "abilities";
     // The System's own live-play-state bindings (HP/AC/Initiative/...) —
     // getStatsForArchetype writes each one through setAtBinding against
-    // whatever path THIS System's own combatBindings declare, never a
-    // hardcoded "stats.hitPoints"-shaped assumption. null for a System with
-    // no Role-bound field at all (e.g. Blades in the Dark) — every
-    // combatBindings-driven write below is then simply skipped.
+    // whatever path THIS System's combatBindings declare, never a hardcoded
+    // "stats.hitPoints" assumption. null for a System with no Role-bound
+    // field at all — every combatBindings-driven write is then skipped.
     tables.combatBindings = deriveCombatBindings(systemFields);
-    // Reserved-key array field (dice/combatBindings/levelUpBindings' own
-    // convention), read the same plain way — [] for a System with none
-    // authored, same graceful-degradation every optional System field here
-    // already follows. Threaded through to getStatsForArchetype so
-    // Initiative's own ability-modifier math resolves via the System's own
-    // authored formula (derived-formulas.js) instead of a hardcoded D&D one.
+    // Threaded through so Initiative's ability-modifier math resolves via
+    // the System's own authored formula, not a hardcoded D&D one.
     tables.derivedFormulas = (systemFields || []).find((entry) => entry?.key === "derivedFormulas")?.values || [];
-    // Both optional, System-defined fallbacks resolveStats/generateNpc
-    // (lib/generator.js) use for a System whose stats/skills genuinely
-    // don't come from the Archetype table entry (see each helper's own
-    // comment in lib/tables.js) — empty/null for every System that doesn't
-    // define them, which is every System except Call of Cthulhu today.
+    // Optional, System-defined fallbacks resolveStats/generateNpc use for a
+    // System whose stats/skills don't come from the Archetype table entry —
+    // empty/null for every System except Call of Cthulhu today.
     tables.independentStatRanges = independentStatRanges;
     tables.skillGeneration = skillGenerationConfig;
   }
@@ -808,21 +721,15 @@ function formatIdentityValue(key, value) {
   return String(value ?? "");
 }
 
-// A field's own vocabulary as <select> options ({value, label} pairs), or
-// null for a field that's still a free-typed text box (Relationship — a
-// combined status+orientation string with no single fixed vocabulary of its
-// own). Species/Archetype/Alignment/Age are all label strings stored as-is
-// on the record (value === label, same convention every one of these
-// already used before becoming selects); Gender's own fixed table has
-// weighted duplicate faces (Male x3 for the roll, but only one "Male"
-// *choice*), so it's deduped for display; Attitude is the one numeric-valued
-// field, sourced from the active System's own npcAttitudes data (see
-// loadNpcAttitudes/refreshSystemVocabulary) instead of a hardcoded label
-// list. Location is the one id-valued field (record.locationId, not
-// record.identity.location — see renderNpc's own identityFields loop) and
-// the one field with a real, always-present blank choice: unlike every
-// other axis here, "no Location" is a normal, valid state (Location is
-// optional), not just a display fallback for a value that doesn't match.
+// A field's own vocabulary as <select> options, or null for a field that's
+// still a free-typed text box (Relationship — a combined status+orientation
+// string with no single fixed vocabulary). Species/Archetype/Alignment/Age
+// are label strings stored as-is (value === label); Gender's fixed table
+// has weighted duplicate faces (Male x3 for the roll, one "Male" choice),
+// so it's deduped for display; Attitude is the one numeric-valued field,
+// sourced from the active System's own npcAttitudes data. Location is the
+// one id-valued field and the one with a real, always-present blank choice
+// — "no Location" is a normal, valid state, not just a display fallback.
 function identitySelectOptions(key) {
   switch (key) {
     case "species":
@@ -852,13 +759,11 @@ function uniqueLabelOptions(labels) {
 }
 
 // A generated NPC's current value for a select-backed Identity field isn't
-// always guaranteed to be among that field's "normal" candidate options
-// (Species can resolve to "Other" with zero location weights; Archetype can
-// resolve to "Unknown"; System vocabulary can change after generation) —
-// silently defaulting the <select> to whatever its first option happens to
-// be, while the record still holds the real value underneath, would
-// misrepresent the record. Appending the current value as its own option
-// when missing keeps the select honest.
+// always among that field's "normal" candidate options (Species can resolve
+// to "Other"; System vocabulary can change after generation) — silently
+// defaulting the <select> to its first option would misrepresent the
+// record. Appending the current value as its own option when missing keeps
+// the select honest.
 function ensureOptionIncludesValue(options, value) {
   if (value === "" || value === null || value === undefined || options.some((option) => option.value === value)) {
     return options;
@@ -871,17 +776,14 @@ function abilityModifierText(score) {
   return `(${modifier >= 0 ? "+" : ""}${modifier})`;
 }
 
-// Forge's own field-box implementation, originally hand-rolled here, is now
-// the shared createFieldBox (common/js/lib/ui-components.js) — Crucible's
-// Stats/Identity fields and Vault's Identity fields render the exact same
-// box today. Kept as a thin local alias so every call site below (Name/
-// Identity/4D/Stats) needs no changes.
+// Thin local alias for the shared createFieldBox, so every call site below
+// (Name/Identity/4D/Stats) needs no changes.
 const buildFieldCard = createFieldBox;
 
 // "strength" -> "Strength", "attackModifier" -> "Attack Modifier" — used for
 // any stats key with no matching ABILITY_FIELD_DEFS short name, so a
-// System's own archetypeStats keys (whatever shape it happens to use) still
-// get a readable label with zero per-System UI code.
+// System's own archetypeStats keys still get a readable label with zero
+// per-System UI code.
 function titleCaseKey(key) {
   return String(key || "")
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -889,22 +791,13 @@ function titleCaseKey(key) {
     .trim();
 }
 
-// Forge's own generation (getStatsForArchetype, lib/tables.js) always nests
-// ability scores under stats.abilities — the same shape Crucible's monsters
-// and Characters both already use (see crucible/js/lib/stats.js#deriveStats,
-// sys.dnd5e.json's own "abilities" object field) — confirmed the actual
-// suite-wide standard, not a Forge-specific choice, after this shape's own
-// bug report. A saved NPC with one or more ability scores sitting FLAT on
-// `stats` instead (an inconsistency from earlier in this tool's own
-// development, since corrected on both existing saved records directly —
-// see undercroft/common/data/npc/*.json) would render as a jumble of
-// unlabeled ability-score boxes mixed in among armorClass/hitPoints/etc.,
-// each missing its own (+N) modifier suffix. This is a pure failsafe, not
-// something normal generation/editing relies on — it folds any of the
-// active System's own ability keys (ABILITY_KEYS) found sitting flat on
-// `stats` back into `stats.abilities` (merging with whatever's already
-// nested there, if anything) at load time, so a record in that shape,
-// however it got there, still renders correctly.
+// Forge's own generation always nests ability scores under stats.abilities
+// — the same shape Crucible's monsters and Characters both use. A saved NPC
+// with ability scores sitting FLAT on `stats` instead would render as a
+// jumble of unlabeled boxes with no (+N) suffix. This is a pure failsafe,
+// not something normal generation/editing relies on — it folds any active
+// System ability key found sitting flat on `stats` back into
+// `stats.abilities` at load time.
 function normalizeStats(stats) {
   if (!stats) return stats;
   const flatAbilityKeys = Array.from(ABILITY_KEYS).filter((key) => stats[key] !== undefined);
@@ -920,22 +813,16 @@ function normalizeStats(stats) {
 
 // Schema-driven: renders whatever keys are actually present on the resolved
 // stats object instead of assuming D&D's fixed "6 abilities + AC + HP"
-// shape (see getStatsForArchetype in lib/tables.js) — a different System's
-// archetypeStats field can carry an entirely different set of keys (or
-// none at all). `abilities` and `hitPoints` are the two keys still
-// special-cased: `abilities` (a nested object — the active System's own
-// ability keys, e.g. strength/dexterity/...) renders as one box per
-// ability, each with its field's short label and a live (+N) modifier
+// shape — a different System's archetypeStats field can carry an entirely
+// different set of keys. `abilities` and `hitPoints` are the two keys still
+// special-cased: `abilities` renders one box per ability with a live (+N)
 // suffix, ahead of everything else; `hitPoints` as a max/current pair.
 // Every other key gets a plain title-cased label. A string-valued entry
 // (e.g. a Daggerheart Adversary's Feature text) renders full-width instead
 // of jammed into the compact number-box grid.
 //
-// No stats at all — whether this System has no Stats bound (Blades in the
-// Dark) or this particular archetype has no block within a System that
-// otherwise does (D&D's Wildcard/setting-specific rolls) — hides the whole
-// card rather than showing it with an explanatory message; there's nothing
-// useful to look at either way.
+// No stats at all hides the whole card rather than showing an explanatory
+// message; there's nothing useful to look at either way.
 function renderStats(stats) {
   statsFields.innerHTML = "";
   if (!stats) {
@@ -945,12 +832,9 @@ function renderStats(stats) {
   statsCard?.classList.remove("d-none");
 
   // Abilities render first, in the active System's own field order (not
-  // raw object insertion order) — stats.abilities is the suite-wide nested
-  // shape Crucible's monsters and Characters both already use (see
-  // getStatsForArchetype, lib/tables.js), not a Forge-specific flat one.
-  // The compound "abilities.<key>" carried in data-editable-field (and its
-  // suffix's matching data-editable-suffix) is what tells the write-back
-  // listener below to patch the nested object, not a flat stats.<key>.
+  // raw object insertion order). The compound "abilities.<key>" carried in
+  // data-editable-field is what tells the write-back listener below to
+  // patch the nested object, not a flat stats.<key>.
   if (stats.abilities && typeof stats.abilities === "object") {
     ABILITY_FIELD_DEFS.forEach(({ key, label }) => {
       const value = stats.abilities[key];
@@ -974,12 +858,9 @@ function renderStats(stats) {
   const wideEntries = [];
   Object.entries(stats).forEach(([key, value]) => {
     // hitPoints/abilities get their own dedicated boxes below. `initiative`
-    // is a `{bonus, advantage?, disadvantage?}` object now (this suite's
-    // one shared initiative shape — see the monster-data-alignment plan),
-    // not a flat number — Combat Tracker already reads it generically via
-    // the System's own combatBindings, and there's no dedicated box for it
-    // here (same "combat-only, no static-editor UI needed" reasoning Temp
-    // HP uses), so it's excluded here rather than rendered as a raw object.
+    // is a `{bonus, advantage?, disadvantage?}` object, not a flat number —
+    // Combat Tracker reads it generically via combatBindings, with no
+    // dedicated box needed here, so it's excluded rather than rendered raw.
     if (key === "hitPoints" || key === "abilities" || key === "initiative") return;
     (typeof value === "string" && value.length > 12 ? wideEntries : compactEntries).push([key, value]);
   });
@@ -1035,13 +916,10 @@ function renderStats(stats) {
   });
 }
 
-// Only ever non-empty for a System with a skillGeneration config authored
-// (see rollSkills in lib/generator.js, tables.skillGeneration in
-// refreshSystemVocabulary) — hidden entirely otherwise, same "d-none when
-// nothing to show" convention as renderStats above. Real labels come from
-// tables.skillGeneration.skillKeys (the System's own skill vocabulary, not
-// a Forge-side guess); Key Expertise Skills get a "Key" suffix so they read
-// as distinct from the rest at a glance.
+// Only ever non-empty for a System with a skillGeneration config authored —
+// hidden entirely otherwise, same convention as renderStats above. Real
+// labels come from tables.skillGeneration.skillKeys, not a Forge-side
+// guess; Key Expertise Skills get a "Key" suffix.
 function renderSkills(skills) {
   skillsFields.innerHTML = "";
   const values = skills?.values;
@@ -1076,9 +954,8 @@ function refreshActionButtons() {
   saveButton.disabled = !currentRecord || !dirtyGate.isDirty();
   duplicateButton.disabled = !currentRecord;
   deleteButton.disabled = !currentRecord || !dirtyGate.hasSaved() || !npcAllowsDelete(currentNpcId);
-  // Not saved-gated like Delete — a freshly generated, not-yet-saved NPC can
-  // convert too (mirrors Duplicate's own gate). Does need a System to filter
-  // the Template picker against.
+  // Not saved-gated like Delete — a freshly generated, not-yet-saved NPC
+  // can convert too. Does need a System to filter the Template picker.
   if (convertToCharacterButton) {
     setDisabledTooltip(
       convertToCharacterButton,
@@ -1110,9 +987,7 @@ function renderNpc(record) {
 
   // Its own small card rather than an IDENTITY_FIELD_DEFS entry — image
   // isn't reroll-able like the rest of Identity, it's a picked/inherited
-  // link (see forge/js/lib/generator.js's `image` field and the Token
-  // Library picker, common/js/lib/token-picker.js). Rebuilt on every render
-  // like the rest of Identity/4D — safe because createTokenImageField only
+  // link. Rebuilt on every render — safe because createTokenImageField only
   // commits on blur/select, never mid-keystroke, so there's no cursor-jump
   // risk the identity "input" listener below has to dodge.
   if (npcImageMount) {
@@ -1121,9 +996,7 @@ function renderNpc(record) {
       createTokenImageField({
         id: "forgeNpcImage",
         label: "Image",
-        // Matches the Name field box it sits inline beside — per explicit
-        // feedback that Image looking visually different from every other
-        // field box (including Forge's own) was the thing to fix.
+        // Matches the Name field box it sits inline beside.
         boxed: true,
         value: record.image || "",
         dataManager,
@@ -1138,10 +1011,8 @@ function renderNpc(record) {
     );
   }
 
-  // Name renders on its own, inline with Image (see nameMount above) —
-  // excluded from the grid loop below, which now only covers the other 8
-  // identity fields (Species/Archetype/Alignment/Gender/Age/Relationship/
-  // Attitude/Location).
+  // Name renders on its own, inline with Image — excluded from the grid
+  // loop below, which covers the other 8 identity fields.
   if (nameMount) {
     nameMount.innerHTML = "";
     nameMount.appendChild(
@@ -1159,17 +1030,10 @@ function renderNpc(record) {
 
   identityFields.innerHTML = "";
   IDENTITY_FIELD_DEFS.filter(({ key }) => key !== "name").forEach(({ key, label }) => {
-    // Location lives at record.locationId (a top-level field, not nested
-    // under record.identity like every other Identity axis) since it's a
-    // real id reference to a Location entity, not a rolled/typed value —
-    // same reason its stored value is an id rather than a label, unlike
-    // every other field here. Never rerollable (there's no random-Location
-    // mechanic), but editable like everything else — picking a different
-    // Location (or "No Location") here only changes this record's own
-    // reference, the same restrained "no cascading side effects" behavior
-    // every other Identity field's edit already has. Relationship stays
-    // free text (see identitySelectOptions). Every other field is a select
-    // over its own real vocabulary.
+    // Location lives at record.locationId (top-level, not nested under
+    // record.identity) since it's a real id reference, not a rolled/typed
+    // value. Never rerollable, but editable — picking a different Location
+    // only changes this record's own reference, no cascading side effects.
     const value = key === "location" ? record.locationId || "" : record.identity[key];
     const options = identitySelectOptions(key);
     identityFields.appendChild(
@@ -1226,15 +1090,11 @@ function renderNpc(record) {
 
 // --- Features ---------------------------------------------------------
 // Manual Add/Remove parity with Crucible/Vault's own Feature list — same
-// interaction pattern (a plain select + Add button, a row per attached
-// Feature with a Remove button, feature-params-editor.js for anything with
-// real mechanics), deliberately without Crucible's own budget/signature/
-// action-cost machinery — Forge NPCs aren't budget-costed combat stat
-// blocks, so none of that has an equivalent here. No mechanics.type-
-// specific description renderer either (Crucible's own weapon-attack/save-
-// effect/multiattack text builders are monster-combat-specific) — a
-// Feature's own plain `description` is shown as-is; the params editor below
-// covers anything that needs its own per-NPC numbers filled in.
+// interaction pattern, deliberately without Crucible's own budget/
+// signature/action-cost machinery, since Forge NPCs aren't budget-costed
+// combat stat blocks. No mechanics.type-specific description renderer
+// either — a Feature's own plain `description` is shown as-is; the params
+// editor below covers anything needing its own per-NPC numbers.
 function createPlaceholderFeatureOption(label = "Select…") {
   const option = document.createElement("option");
   option.value = "";
@@ -1248,9 +1108,8 @@ function findFeatureById(id) {
 
 function renderFeatureList(record) {
   if (!featureList) return;
-  // Disposed before the wipe — each row's own Remove button carries a real
-  // tooltip now, and this reruns on every feature add/remove. See
-  // tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — each row's Remove button carries a real
+  // tooltip, and this reruns on every feature add/remove.
   disposeTooltips(featureList);
   featureList.innerHTML = "";
   (record.featureIds || []).forEach((featureId) => {
@@ -1261,8 +1120,7 @@ function renderFeatureList(record) {
 
     const info = document.createElement("div");
     info.className = "flex-grow-1";
-    // Hover-preview chip (library-reference.js), same suite-wide "displayed
-    // inline wherever needed" primitive Crucible/Vault/Sanctum's own
+    // Hover-preview chip — same primitive Crucible/Vault/Sanctum's own
     // Feature lists use.
     const name = document.createElement("div");
     name.className = "fw-semibold";
@@ -1347,15 +1205,14 @@ function removeFeature(featureId) {
 
 // Which feature row (by id) is currently selected — drives the params
 // editor below it, same "click a row to edit its own mechanics" pattern
-// Crucible/Vault's own Feature list already uses.
+// Crucible/Vault use.
 let selectedFeatureId = null;
 function selectFeatureRow(featureId) {
   selectedFeatureId = featureId;
   featureList?.querySelectorAll("[data-feature-row]").forEach((row) => {
     row.classList.toggle("border-primary", row.dataset.featureRow === featureId);
   });
-  // renderFeatureParamsEditor owns showing/hiding its own container
-  // (setElementVisible, not classList — see that function's own comment) —
+  // renderFeatureParamsEditor owns showing/hiding its own container —
   // always called, a feature/type with nothing to edit just hides itself.
   const feature = featureId ? findFeatureById(featureId) : null;
   featureParamsEditor.renderFeatureParamsEditor(feature, featureParamsEditorMount);
@@ -1386,11 +1243,10 @@ addFeatureButton?.addEventListener("click", () => {
 // --- Relationships ---------------------------------------------------------
 //
 // Forge's own target-kind whitelist and type-suggestion vocabulary for the
-// shared relationship-editor.js/relationship-graph.js modules (see that
-// pair's own header comments for the full suite-wide mechanism). No
-// "Organization" concept lives here at all — an NPC other NPCs point at
-// with "Member of" edges just shows those rows in ITS OWN Relationships
-// list too, the reverse direction of the exact same query every NPC runs.
+// shared relationship-editor.js/relationship-graph.js modules. No
+// "Organization" concept lives here — an NPC other NPCs point at with
+// "Member of" edges just shows those rows in ITS OWN Relationships list
+// too, the reverse direction of the same query every NPC runs.
 const RELATIONSHIP_TARGET_KINDS = [
   { id: "npc", label: "NPC" },
   { id: "location", label: "Location" },
@@ -1410,24 +1266,17 @@ const RELATIONSHIP_TYPE_SUGGESTIONS = [
   "Rival of",
 ];
 
-// "npc" (the existing Identity/4D/Stats/Notes card stack) or
-// "relationships" (a full-pane List/Graph view over this NPC's own
-// relationship edges) — mutually exclusive Modes, switched by the
-// suite-wide Mode toggle group (createModeToggleGroup) in the header row
-// above the main pane, exactly mirroring Repository's own Page-vs-
-// Relationships split. Relationships is no longer a collapsible card
-// inside NPC mode — see setMode/renderModeToggle below.
+// "npc" (the Identity/4D/Stats/Notes card stack) or "relationships" (a
+// full-pane List/Graph view over this NPC's own relationship edges) —
+// mutually exclusive Modes, switched by the suite-wide Mode toggle group in
+// the header row above the main pane.
 let mode = "npc";
 let relationshipsForceGraph = null;
 
 function renderModeToggle() {
   if (!modeToggleMountEl) return;
   // Nothing to relate until an NPC exists — disabled (not hidden) until
-  // then, via createButtonCheckGroup's own disabled/tooltip option support
-  // (ui-components.js), the same mechanism every other tool's Relationships
-  // option now uses too (previously each hand-rolled an identical
-  // post-render querySelector('input[value="relationships"]').disabled
-  // patch — consolidated onto this one shared mechanism instead).
+  // then, via createModeToggleGroup's own disabled/tooltip option support.
   createModeToggleGroup({
     container: modeToggleMountEl,
     ariaLabel: "Forge view",
@@ -1526,10 +1375,9 @@ async function refreshRelationshipsGraph() {
   }
 }
 
-// currentRecord.id is always set by the time this is reachable — renderNpc
-// only calls this from its own post-record-loaded path, and createNpcRecord/
-// the load-existing-NPC path (js/lib/npc-schema.js) both always stamp one,
-// even for a freshly generated, not-yet-saved NPC.
+// currentRecord.id is always set by the time this is reachable —
+// createNpcRecord/the load-existing-NPC path both always stamp one, even
+// for a freshly generated, not-yet-saved NPC.
 async function refreshRelationshipsSection() {
   await refreshRelationshipsList();
   void refreshRelationshipsGraph();
@@ -1540,11 +1388,10 @@ renderModeToggle();
 // --- Manual overrides ----------------------------------------------------
 // Blank ("Random") is the default in every select; a non-blank value is
 // passed straight through to generateNpc, which uses it instead of rolling
-// that one attribute. Species/Archetype options depend on the selected
-// Location and get repopulated whenever it changes; Alignment/Gender are
-// fixed tables, populated once. Options may be plain strings (value===label)
-// or {value, label} pairs (Species, where the value is a speciesId but the
-// label shown is the profile's own display name).
+// that attribute. Species/Archetype options depend on the selected Location
+// and get repopulated whenever it changes; Alignment/Gender are fixed
+// tables, populated once. Options may be plain strings or {value, label}
+// pairs (Species, where the value is a speciesId).
 function populateSelectOptions(selectEl, options, { blankLabel = "Random" } = {}) {
   const previous = selectEl.value;
   selectEl.innerHTML = "";
@@ -1583,16 +1430,11 @@ function populateLocationOverrides(location) {
   populateSelectOptions(archetypeOverrideSelect, archetypeNames);
 }
 
-// The Location a GM picks is optional and, per its own design, only ever
-// contributes naming/species context — but a Location with no Species
-// Weights of its own (or no Location at all) used to always fall through
-// straight to "Other," even when the active Setting has a perfectly good
-// general population defined (Setting Properties' own Species Weights,
-// right pane in Sanctum). This resolves which speciesWeights list actually
-// applies: the Location's own when it has one, else the Setting's, else
-// neither (still "Other," same as before) — a plain, real Location object
-// otherwise so every other field it carries (archetypeOverrides, id, ...)
-// keeps working exactly as it already did.
+// A Location with no Species Weights of its own (or no Location at all)
+// falls through to the active Setting's general population (Species
+// Weights, right pane in Sanctum) instead of straight to "Other" — a plain,
+// real Location object otherwise so every other field it carries keeps
+// working as before.
 function effectiveSpeciesLocation() {
   const locationWeights = currentLocation?.speciesWeights;
   if (Array.isArray(locationWeights) && locationWeights.length) return currentLocation;
@@ -1604,11 +1446,8 @@ function effectiveSpeciesLocation() {
 }
 
 // Re-derives everything that depends on "what Species can be rolled/picked
-// right now" — the Species Name Profile cache (needed for both the roll AND
-// the override select's own labels) and the override selects themselves —
-// against effectiveSpeciesLocation()'s resolved population. Called whenever
-// System, Setting, or Location changes, since any of the three can change
-// which population is actually in effect.
+// right now" against effectiveSpeciesLocation()'s resolved population.
+// Called whenever System, Setting, or Location changes.
 async function refreshSpeciesContext() {
   const location = effectiveSpeciesLocation();
   tables.speciesProfiles = await loadSpeciesProfilesForLocation(location);
@@ -1634,9 +1473,8 @@ async function listAllSystems() {
   const merged = new Map();
   // Workbench ships sys.dnd5e as a "builtin" (a static JSON file, not a row
   // in the systems DB table), so it never shows up in dataManager.list()
-  // below on its own — without this, the picker only shows Systems a
-  // creator has actually saved, hiding the one every seed Location/Setting
-  // already points at.
+  // on its own — without this, the picker hides the System every seed
+  // Location/Setting already points at.
   try {
     const builtins = await dataManager.listBuiltins();
     (builtins?.systems || []).forEach((entry) => {
@@ -1661,14 +1499,10 @@ async function listAllSystems() {
 }
 
 // System/Setting are "pick one of these existing, required things" selects
-// — no in-place creation exists for either in Forge (they're authored in
-// Sanctum now, see this file's own System>Setting>Location comment above) —
-// so both get the disabled-placeholder, forced-choice treatment System
-// already used. Location is NOT required to generate (it only contributes
-// naming/species-weighting context — generateNpc and everything it calls
-// tolerate a null Location), so it gets the same "New/unsaved"-style
-// always-selectable blank the NPC picker below uses, minus the red
-// required-field border.
+// — no in-place creation exists for either in Forge (authored in Sanctum) —
+// so both get the disabled-placeholder, forced-choice treatment. Location
+// is NOT required (generateNpc tolerates a null Location), so it gets the
+// same always-selectable blank the NPC picker below uses.
 async function populateSystemSelect() {
   const systems = await listAllSystems();
   renderRequiredSelectOptions(systemSelect, systems, { placeholder: systems.length ? "Select a System" : "No Systems yet" });
@@ -1678,9 +1512,8 @@ async function populateSystemSelect() {
 
 async function populateSettingSelect(systemId) {
   const settings = await listSettingsForSystem(dataManager, systemId);
-  // listSettingsForSystem itself returns server order, not name order —
-  // alphabetized here the same way Sanctum's own populateSettingSelect
-  // sorts its (otherwise-identical) list.
+  // listSettingsForSystem returns server order, not name order —
+  // alphabetized here the same way Sanctum's populateSettingSelect does.
   const sortedSettings = [...settings].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
   renderRequiredSelectOptions(settingSelect, sortedSettings, { placeholder: settings.length ? "Select a Setting" : "No Settings yet" });
   markRequiredControl(settingSelect, Boolean(settingSelect.value));
@@ -1691,10 +1524,8 @@ async function populateLocationSelectOptions(settingId) {
   const locations = await listLocationsForSetting(dataManager, settingId);
   locationsInSetting = locations;
   // autoSelectSingle: true — a single available Location gives a more
-  // specific NPC (its own narrower species mix) than falling back to the
-  // whole Setting's, with nothing lost by landing on it automatically. See
-  // renderOptionalSelectOptions's own comment for why this is opt-in rather
-  // than the default for every "optional" picker built on it.
+  // specific NPC than falling back to the whole Setting's, with nothing
+  // lost by landing on it automatically.
   renderOptionalSelectOptions(locationSelect, locations, {
     blankLabel: locations.length ? "No Location" : "No Locations yet",
     autoSelectSingle: true,
@@ -1703,10 +1534,8 @@ async function populateLocationSelectOptions(settingId) {
 }
 
 // Ownership metadata comes from the list response, not the full fetched
-// body — mirrors Sanctum's refreshLocationCatalog/Crucible's
-// refreshMonsterCatalog/Vault's refreshWonderCatalog exactly. Local-only
-// (anonymous, browser-storage) entries are always deletable, since it's
-// just this browser's own storage.
+// body. Local-only (anonymous, browser-storage) entries are always
+// deletable, since it's just this browser's own storage.
 async function refreshNpcCatalog(ids) {
   npcCatalog = await refreshOwnershipCatalog(dataManager, "npc", ids);
 }
@@ -1715,16 +1544,12 @@ function npcAllowsDelete(id) {
   return allowsDelete(npcCatalog, id, { dataManager });
 }
 
-// Every saved NPC at the currently selected Location — same picker pattern
-// as Sanctum's Location/Crucible's Monster/Vault's Wonder: "New / unsaved"
-// as the default so a fresh Generate NPC keeps working exactly as before.
-// With no Location selected (it's optional now), falls back to every NPC
-// belonging to the whole Setting (via its own settingIds — see
-// listNpcsForSetting/generateNpc, lib/tables.js and lib/generator.js)
-// instead of an empty list — confirmed real bug this fixes: a campaign's
-// auto-selected System/Setting (see init()'s own active-group default)
-// never auto-selects a Location, so a GM's own previously-saved NPCs never
-// showed up until that exact Location was reselected by hand.
+// Every saved NPC at the currently selected Location — "New / unsaved" as
+// the default so a fresh Generate NPC keeps working as before. With no
+// Location selected, falls back to every NPC belonging to the whole
+// Setting instead of an empty list — a campaign's auto-selected
+// System/Setting never auto-selects a Location, so without this a GM's
+// previously-saved NPCs wouldn't show up until reselecting it by hand.
 async function populateNpcSelect() {
   if (!npcSelect) return;
   if (currentLocation) {
@@ -1740,10 +1565,9 @@ async function populateNpcSelect() {
   updateGenerationFieldsVisibility();
 }
 
-// Species/Archetype/Alignment/Gender overrides only matter for generating
-// something new — once an existing NPC is loaded they're just clutter (same
-// convention Sanctum/Crucible/Vault's own generation fields follow). Purely
-// visual: hiding never clears an override's underlying value.
+// The generation overrides only matter for generating something new — once
+// an existing NPC is loaded they're just clutter. Purely visual: hiding
+// never clears an override's underlying value.
 function updateGenerationFieldsVisibility() {
   generationFields?.classList.toggle("d-none", Boolean(npcSelect?.value));
 }
@@ -1760,12 +1584,9 @@ async function selectLocation(id) {
     }
   }
   locationSelect.value = id;
-  // Reset which saved NPC (if any) the picker points at — a different
-  // Location has its own distinct set of saved NPCs — but deliberately
-  // don't clear whatever NPC is currently displayed: Forge already left a
-  // generated/loaded NPC on screen across a Location change before this
-  // change, and forcing it away here would risk losing an unsaved NPC the
-  // GM didn't ask to discard just for browsing a different Location.
+  // Reset which saved NPC the picker points at, but deliberately don't
+  // clear whatever NPC is currently displayed — forcing it away here would
+  // risk losing an unsaved NPC just for browsing a different Location.
   currentNpcId = null;
   await populateNpcSelect();
   await refreshSpeciesContext();
@@ -1836,9 +1657,8 @@ function toggleSpeciesLastNamesVisibility() {
   speciesLastNamesGroup.hidden = speciesLastNameFormSelect.value === "none";
 }
 
-// Pool entries may be a bare string or {name, weight} (see
-// name-generator.js's normalizeNamePool) — this read-only summary only
-// needs the name itself, one per line.
+// Pool entries may be a bare string or {name, weight} — this read-only
+// summary only needs the name itself, one per line.
 function namePoolLines(pool) {
   return (pool || []).map((entry) => (typeof entry === "string" ? entry : entry?.name || "")).filter(Boolean).join("\n");
 }
@@ -1853,11 +1673,10 @@ function populateSpeciesForm(profile) {
 }
 
 // --- Identity/4D box selection / inspector ------------------------------
-// Standard Undercroft select-then-inspect convention: clicking an Identity
-// or 4D box selects it and surfaces its details in the right-pane inspector.
-// Location and Species get their existing full editors; everything else
-// gets a read-only dump of the JSON data driving it, alongside this NPC's
-// current rolled value.
+// Clicking an Identity or 4D box selects it and surfaces its details in the
+// right-pane inspector. Location and Species get their existing full
+// editors; everything else gets a read-only dump of the JSON data driving
+// it, alongside this NPC's current rolled value.
 
 function selectField(key) {
   selectedFieldKey = selectedFieldKey === key ? null : key;
@@ -1873,11 +1692,9 @@ function updateFieldSelectionUI() {
   });
 }
 
-// Setting `.hidden` alone silently does nothing here: these panels carry
-// Bootstrap's `.d-flex` (declared `!important`), which beats the `[hidden]`
-// UA rule regardless of the property. Toggling `.d-none` (also `!important`,
-// and generated after `.d-flex` in Bootstrap's own stylesheet, so it wins
-// the tie) is what actually hides them — same convention as setCollapsibleState.
+// Setting `.hidden` alone does nothing here: these panels carry Bootstrap's
+// `.d-flex` (`!important`), which beats the `[hidden]` UA rule. Toggling
+// `.d-none` is what actually hides them.
 function setInspectorSectionVisible(section, visible) {
   section.hidden = !visible;
   section.classList.toggle("d-none", !visible);
@@ -1894,11 +1711,9 @@ function updateInspector() {
 
   if (!selectedFieldKey) return;
 
-  // Both queried live, not as module-top-level consts — the toggle button
-  // lives in the header and the pane <aside> itself is now also JS-built
-  // (initAppShell()'s buildPaneShell), both later than this module's own
-  // top-level code runs; an eager query for either here would have
-  // captured null permanently.
+  // Both queried live, not as module-top-level consts — the pane <aside>
+  // and its toggle button are JS-built later than this module's own
+  // top-level code runs; an eager query would capture null permanently.
   const rightPane = document.querySelector('[data-pane="right"]');
   const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
   if (rightPane && rightPaneToggle) {
@@ -1906,12 +1721,10 @@ function updateInspector() {
   }
 
   if (selectedFieldKey === "location") {
-    // Reflects THIS record's own locationId — not necessarily the left
-    // pane's currentLocation, which the record's own Location field is no
-    // longer tied to (see renderNpc's identityFields loop and
-    // handleIdentityFieldInput). Reuses the already-loaded currentLocation
-    // object when it happens to be the same Location (the common case —
-    // no extra fetch); otherwise loads the record's own Location fresh.
+    // Reflects THIS record's own locationId, not necessarily the left
+    // pane's currentLocation. Reuses the already-loaded currentLocation
+    // object when it's the same Location (no extra fetch); otherwise loads
+    // the record's own Location fresh.
     const locationId = currentRecord?.locationId || "";
     if (!locationId) {
       populateLocationForm(null);
@@ -1945,8 +1758,8 @@ function updateInspector() {
   inspectorRollJson.textContent = JSON.stringify(getFieldTableData(selectedFieldKey), null, 2);
 }
 
-// This NPC's own resolved value for a given field — Identity attributes
-// live under `record.identity`, 4D attributes under `record.fourD`.
+// This NPC's resolved value for a given field — Identity attributes live
+// under `record.identity`, 4D attributes under `record.fourD`.
 function getFieldCurrentValue(key) {
   if (FOURD_FIELD_DEFS.some((entry) => entry.key === key)) {
     return currentRecord?.fourD?.[key] ?? "";
@@ -1954,10 +1767,9 @@ function getFieldCurrentValue(key) {
   return formatIdentityValue(key, currentRecord?.identity?.[key]);
 }
 
-// The full JSON backing each field — a static table for most (the same data
-// getArchetypeOptions/rollAlignment/rollFourD/etc. already draw from), or,
-// for Name, the Species Name Profile(s) exemplar-interpolation actually used
-// for this specific NPC (there's no fixed table behind Name anymore).
+// The full JSON backing each field — a static table for most, or, for
+// Name, the Species Name Profile(s) exemplar-interpolation actually used
+// for this specific NPC (there's no fixed table behind Name).
 function getFieldTableData(key) {
   switch (key) {
     case "archetype":
@@ -1994,10 +1806,9 @@ function getFieldTableData(key) {
 // --- Event wiring ------------------------------------------------------
 
 generateButton.addEventListener("click", () => {
-  // No Setting-selected guard needed here — setGenerateButtonReadiness
-  // gives the button a real `disabled` attribute whenever none is picked,
-  // and a disabled button's click listener never fires at all (mouse or
-  // keyboard), so this handler only ever runs once a Setting is chosen.
+  // No Setting-selected guard needed — setGenerateButtonReadiness gives the
+  // button a real `disabled` attribute whenever none is picked, and a
+  // disabled button's click listener never fires.
   if (!tables) return;
   try {
     const overrides = readOverrides();
@@ -2006,8 +1817,7 @@ generateButton.addEventListener("click", () => {
     );
     dirtyGate.markDirty();
     // Freshly generated content is always unsaved, regardless of whichever
-    // saved NPC the picker previously pointed at — mirrors Crucible/Vault/
-    // Sanctum's own Generate handlers resetting the same way.
+    // saved NPC the picker previously pointed at.
     currentNpcId = null;
     if (npcSelect) npcSelect.value = "";
     updateGenerationFieldsVisibility();
@@ -2042,15 +1852,10 @@ generateButton.addEventListener("click", () => {
 });
 
 // Typing directly into an editable field keeps the record in sync without
-// re-running renderNpc — same reasoning as the note textarea below:
-// resetting .value mid-edit would jump the cursor. Name lives at the
-// record's top level (see undercroft/forge/js/lib/generator.js) and renders
-// in its own container (nameMount, inline with Image); every other Identity
-// field lives under record.identity; 4D fields under record.fourD — one
-// shared handler covers all three containers. Attitude is the one special
-// case: its stored value is the raw 1-6 number, displayed with a derived
-// label suffix (see renderNpc's identityFields loop), so its suffix span
-// needs the same live-update-on-edit treatment Stats' ability scores get.
+// re-running renderNpc — resetting .value mid-edit would jump the cursor.
+// Name lives at the record's top level and renders in its own container
+// (nameMount); every other Identity field lives under record.identity; 4D
+// fields under record.fourD — one shared handler covers all three containers.
 function handleIdentityFieldInput(event) {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord) return;
@@ -2059,17 +1864,15 @@ function handleIdentityFieldInput(event) {
   if (field === "name") {
     currentRecord = { ...currentRecord, name: input.value };
   } else if (field === "location") {
-    // A top-level id reference, not part of `identity` — see renderNpc's
-    // own identityFields loop. Blank ("No Location") stores null, same
-    // "absent means unset" convention locationId already used everywhere
-    // else in this file.
+    // A top-level id reference, not part of `identity`. Blank ("No
+    // Location") stores null.
     currentRecord = { ...currentRecord, locationId: input.value || null };
   } else if (FOURD_FIELD_DEFS.some((entry) => entry.key === field)) {
     currentRecord = { ...currentRecord, fourD: { ...currentRecord.fourD, [field]: input.value } };
   } else if (IDENTITY_FIELD_DEFS.some((entry) => entry.key === field)) {
-    // Attitude is the one numeric-valued Identity field (a <select> whose
-    // option values are real numbers, but <select>.value always reads back
-    // as a string) — every other field stores its label string as-is.
+    // Attitude is the one numeric-valued Identity field (<select>.value
+    // always reads back as a string) — every other field stores its label
+    // string as-is.
     const nextValue = field === "attitude" ? Number(input.value) || 0 : input.value;
     currentRecord = { ...currentRecord, identity: { ...currentRecord.identity, [field]: nextValue } };
   }
@@ -2087,13 +1890,11 @@ fourDFields.addEventListener("change", () => commitFieldEdit());
 nameMount?.addEventListener("change", () => commitFieldEdit());
 
 // Typing directly into a Stats field keeps the record in sync the same way
-// — ability scores also live-update their (+N) modifier suffix alongside,
-// since that's derived rather than stored. `abilities.<key>` (renderStats'
-// own compound data-editable-field for an ability box) patches the nested
-// stats.abilities object; hitPoints stays the other special-cased key (a
-// max/current pair); every other key is a flat stats[field] write, coerced
-// to a number only if it already held one (so a text stat like a
-// Daggerheart Adversary's Feature line doesn't get silently zeroed).
+// — ability scores also live-update their (+N) suffix, since that's
+// derived rather than stored. `abilities.<key>` patches the nested
+// stats.abilities object; hitPoints is a max/current pair; every other key
+// is a flat stats[field] write, coerced to a number only if it already held
+// one (so a text stat doesn't get silently zeroed).
 statsFields.addEventListener("input", (event) => {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord?.stats) return;
@@ -2126,10 +1927,9 @@ statsFields.addEventListener("input", (event) => {
 statsFields.addEventListener("keydown", flushFieldCommitOnUndoRedo);
 statsFields.addEventListener("change", () => commitFieldEdit());
 
-// Same live-edit shape as statsFields' own listener above, scoped to the
-// separate skillsFields container (Skills isn't nested inside stats — see
-// rollSkills' own `{keySkills, values}` shape) — every skill field is a
-// flat, always-numeric write into skills.values[key].
+// Same live-edit shape as statsFields' listener above, scoped to the
+// separate skillsFields container — every skill field is a flat,
+// always-numeric write into skills.values[key].
 skillsFields.addEventListener("input", (event) => {
   const input = event.target.closest("[data-editable-field]");
   if (!input || !currentRecord?.skills?.values) return;
@@ -2180,22 +1980,16 @@ noteText.addEventListener("input", () => {
 noteText.addEventListener("keydown", flushFieldCommitOnUndoRedo);
 noteText.addEventListener("change", () => commitFieldEdit());
 
-// View/Edit toggle for the Note box itself — same button as Repository's
-// own Edit/View button (undercroft/repository/js/app.js#applyMode) for the
-// identical concept, and the same behavior Crucible/Vault/Sanctum's own
-// Notes toggle uses (this suite's one shared Notes-field convention).
-// Icon/label always describe what clicking will switch TO, not the current
-// state. Defaults to "view" — a freshly-loaded record's note is read far
-// more often than edited, and a note written with markdown in mind
-// (headings, lists, callouts) reads better rendered than as raw source by
-// default.
+// View/Edit toggle for the Note box — same shared Notes-field convention
+// Crucible/Vault/Sanctum use. Icon/label always describe what clicking will
+// switch TO, not the current state. Defaults to "view" — a freshly-loaded
+// note is read far more often than edited.
 let noteMode = "view";
 
 function renderNotePreview() {
   if (!notePreview) return;
-  // Disposed before the wipe — a `` `date:...` `` reference or a missing
-  // wiki-link inside the note both carry real tooltips now, and this
-  // reruns on every edit. See tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — a date/wiki-link reference inside the note
+  // carries a real tooltip, and this reruns on every edit.
   disposeTooltips(notePreview);
   notePreview.innerHTML = "";
   notePreview.appendChild(renderMarkdown(currentRecord?.note || ""));
@@ -2207,9 +2001,8 @@ function applyNoteMode(mode) {
   const isView = mode === "view";
   noteText.classList.toggle("d-none", isView);
   notePreview?.classList.toggle("d-none", !isView);
-  // Showing the eye while in Edit mode (the icon describes what clicking
-  // switches TO, not the current state) and vice versa — same convention
-  // Repository's own toggle uses.
+  // Showing the eye while in Edit mode (icon describes what clicking
+  // switches TO) and vice versa.
   noteModeEyeIcon?.classList.toggle("d-none", isView);
   noteModePencilIcon?.classList.toggle("d-none", !isView);
   if (noteModeLabel) noteModeLabel.textContent = isView ? "Edit" : "View";
@@ -2314,9 +2107,8 @@ undoButton.addEventListener("click", () => performUndo());
 redoButton.addEventListener("click", () => performRedo());
 
 // --- Convert to Character ---------------------------------------------
-// Mirrors workbench-character-view.js's own generateCharacterId shape
-// exactly, so a converted NPC's new id looks identical to one Workbench
-// itself would have generated.
+// Mirrors workbench-character-view.js's own generateCharacterId shape, so a
+// converted NPC's new id looks identical to one Workbench would generate.
 function generateCharacterId(name) {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return `cha_${crypto.randomUUID()}`;
@@ -2329,10 +2121,7 @@ function generateCharacterId(name) {
 let convertToCharacterModalInstance = null;
 
 // Every real Template whose own `schema` matches one of this NPC's
-// `systemIds` — same filter workbench-character-view.js#
-// refreshImportTemplateOptions already applies for DDB imports, just
-// against fetchKindEntriesWithIds instead of Workbench's own live
-// templateCatalog (Forge has no such cache of its own).
+// `systemIds`.
 async function loadConvertTemplateOptions(systemIds) {
   const entries = await fetchKindEntriesWithIds(dataManager, "template").catch(() => []);
   return entries
@@ -2419,11 +2208,9 @@ convertCharacterForm?.addEventListener("submit", async (event) => {
     status?.show(error?.message || "Unable to create the character.", { type: "error" });
     return;
   }
-  // The NPC itself was never saved this session (only converted-and-saved
-  // as a Character instead) — without this, beforeunload's own dirty check
-  // below still sees the NPC as unsaved and throws up a "leave unsaved
-  // changes?" browser prompt on the very next line's navigation, even
-  // though nothing is actually about to be lost.
+  // The NPC itself was never saved (only converted-and-saved as a
+  // Character) — without this, beforeunload's dirty check still sees it as
+  // unsaved and throws up a prompt on the next line's navigation.
   dirtyGate.markClean();
   convertToCharacterModalInstance?.hide();
   status?.show(`Converted to ${name}.`, { type: "success", timeout: 2000 });
@@ -2433,12 +2220,7 @@ convertCharacterForm?.addEventListener("submit", async (event) => {
 
 // Proactive "insufficient reference data" state for Generate NPC — a
 // Setting is the one hard requirement (generateNpc degrades gracefully to
-// "Other"/generic fallbacks for everything else, per this System's own
-// documented minimum-requirements convention). Previously the button stayed
-// enabled with no Setting picked and only warned reactively, inside the
-// click handler, after the click — same class of bug as Crucible/Sanctum/
-// Vault's own Generate buttons, fixed the same way via the shared
-// setGenerateButtonReadiness helper.
+// "Other"/generic fallbacks for everything else).
 function updateGenerateButtonReadiness() {
   const reason = settingSelect.value ? "" : "Select a Setting first.";
   setGenerateButtonReadiness(generateButton, reason);
@@ -2453,30 +2235,21 @@ async function handleSystemSelectChange() {
   currentSetting = null;
   currentNpcId = null;
   // Settings returned (not just awaited) so the init flow's own active-group
-  // auto-default can check the Setting it wants against what actually loaded
-  // for this System, without a second, redundant fetch.
+  // auto-default can check the Setting it wants without a second fetch.
   const [, settings] = await Promise.all([refreshSystemVocabulary(systemId), populateSettingSelect(systemId)]);
   updateGenerateButtonReadiness();
   if (settingSelect.value) {
-    // A single Setting for this System just auto-selected itself (see
-    // renderRequiredSelectOptions) — continue the cascade exactly as if the
-    // GM had picked it by hand, instead of leaving Location/NPC/Archetype
-    // stuck on "nothing chosen" underneath an already-resolved Setting.
+    // A single Setting for this System just auto-selected itself — continue
+    // the cascade exactly as if the GM had picked it by hand.
     await handleSettingSelectChange();
     return settings;
   }
   await populateLocationSelectOptions("");
   await populateNpcSelect();
   // Archetype's own table is System-wide, not Location-dependent (only its
-  // 22/23 "Setting Specific" overrides are — see getArchetypeOptions), so
-  // its override select needs to populate here too, not only inside
-  // selectLocation — otherwise, now that picking a Location is optional,
-  // a GM who generates without ever selecting one sees an empty Archetype
-  // override list even though nothing about it actually needed a Location.
-  // currentLocation/currentSetting are both null at this point (reset
-  // above), so effectiveSpeciesLocation() resolves to null too — this also
-  // correctly leaves the Species override empty until a Setting or Location
-  // is picked.
+  // "Setting Specific" overrides are), so its override select needs to
+  // populate here too — otherwise a GM who generates without picking a
+  // Location sees an empty Archetype override list for no reason.
   await refreshSpeciesContext();
   return settings;
 }
@@ -2496,21 +2269,14 @@ async function handleSettingSelectChange() {
   }
   await populateLocationSelectOptions(settingId);
   if (locationSelect.value) {
-    // A single Location for this Setting just auto-selected itself (see
-    // populateLocationSelectOptions's own autoSelectSingle) — selectLocation
-    // continues the cascade (NPC list, Species context) exactly as if the
-    // GM had picked it by hand, same reasoning as the Setting auto-select
-    // in handleSystemSelectChange above. Otherwise (no Location, or more
-    // than one to choose from) land on the explicit "nothing chosen yet"
-    // state and let the GM pick deliberately, same as ever.
+    // A single Location for this Setting just auto-selected itself —
+    // selectLocation continues the cascade as if the GM had picked it.
     await selectLocation(locationSelect.value);
     return;
   }
   await populateNpcSelect();
   // The Setting's own Species Weights become the fallback the moment it's
-  // picked (effectiveSpeciesLocation) — refresh here too, not just on
-  // Location change, so the Species override select reflects it right away
-  // even before any Location is selected.
+  // picked — refresh here too, not just on Location change.
   await refreshSpeciesContext();
 }
 settingSelect.addEventListener("change", handleSettingSelectChange);
@@ -2531,10 +2297,9 @@ npcSelect?.addEventListener("change", async () => {
       status?.show("Unable to load that NPC.", { type: "error", timeout: 4000 });
       return;
     }
-    // Not createNpcRecord — that function always stamps a fresh id and
-    // createdAt (see npc-schema.js), which is right for a NEW generation
-    // but would silently rewrite an existing record's real creation time
-    // on every load.
+    // Not createNpcRecord — that always stamps a fresh id/createdAt, right
+    // for a NEW generation but would rewrite an existing record's real
+    // creation time on every load.
     renderNpc({ ...result.payload, id });
     dirtyGate.markClean(toPressExportShape(currentRecord));
     expandNpcPropertiesSection();
@@ -2563,26 +2328,15 @@ exportLocationTemplateButton.addEventListener("click", async () => {
 
 speciesLastNameFormSelect.addEventListener("change", () => toggleSpeciesLastNamesVisibility());
 
-// `?npc=<id>` — a cross-tool deep link (Repository's own kind-reference
-// chips route here via KIND_TOOL_ROUTE, see repository/js/app.js), same
-// `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and Loom's
-// own `?feature=` already establish. An npc record only carries its own
-// System/Setting (systemIds/settingIds — never a locationId, confirmed
-// against the real schema), so the cascade here only needs those two levels,
-// not a third for Location the way Sanctum's own deep link does.
+// `?npc=<id>` — a cross-tool deep link (Repository's kind-reference chips
+// route here). An npc record only carries its own System/Setting, never a
+// locationId, so the cascade here needs only two levels, not a third for
+// Location the way Sanctum's own deep link does.
 //
-// Two-phase, not one straight-line await chain — same "show the linked
-// record first, load everything else in the background" fix Sanctum's own
-// deep link needed once a campaign had enough saved NPCs/Locations for the
-// full cascade to be genuinely slow. Phase 1 (awaited, blocks return):
-// render THIS npc directly (reusing renderNpc + the same dirty-baseline
-// call npcSelect's own change handler makes — not that handler itself,
-// since it reads the id off npcSelect.value, which has no matching
-// <option> yet this early). Phase 2 (fired but not awaited): the System/
-// Setting cascade populates npcSelect's own option list (scoped by
-// Setting) and species/archetype reference data; a real "change" event
-// re-dispatched at the end both puts the picker's own displayed selection
-// in sync and re-renders with anything reference-data-dependent resolved.
+// Two-phase, not one straight-line await chain — Phase 1 (awaited): render
+// THIS npc directly, fast. Phase 2 (fired but not awaited): the
+// System/Setting cascade populates npcSelect's option list and
+// species/archetype reference data, then re-dispatches "change" to sync.
 async function applyDeepLinkParams() {
   const params = new URLSearchParams(window.location.search);
   const npcId = params.get("npc");
@@ -2616,8 +2370,7 @@ async function applyDeepLinkParams() {
         }
       } catch (error) {
         // Phase 1 already succeeded — a background failure here just
-        // leaves the picker under-populated, not worth an error toast on
-        // top of a page that's already showing real content.
+        // leaves the picker under-populated, not worth an error toast.
       }
     })();
     return true;
@@ -2655,12 +2408,9 @@ async function init() {
   dataManager = auth.dataManager;
 
   // Archetype field picker + Stats key checklist, in a gear-icon Settings
-  // modal (upper-left of the header) — same shared module and visual
-  // pattern Crucible's own Settings button already uses. Each definition's
-  // getValue/setValue defers straight to the per-System
+  // modal. Each definition's getValue/setValue defers to the per-System
   // dataManager.getLocal/saveLocal helpers above rather than this module's
-  // own flat store, since the value is genuinely scoped per-System, not
-  // per-tool (see tool-settings.js's own comment on that option).
+  // own flat store, since the value is scoped per-System, not per-tool.
   initToolSettings({
     toolId: "forge",
     dataManager,
@@ -2695,12 +2445,9 @@ async function init() {
           key: "abilityField",
           type: "select",
           label: "Ability field",
-          // No separate "Auto-detect" option — the guessed field (whichever
-          // Object property guessAbilityFieldKey picked) IS the selected
-          // value until the GM actually picks a different one, with " (auto-
-          // detected)" on its own option label as the only indicator. Once a
-          // real preference is stored (even re-picking the same field
-          // explicitly), that suffix drops — see getValue below.
+          // No separate "Auto-detect" option — the guessed field IS the
+          // selected value until the GM picks a different one, with
+          // "(auto-detected)" as the only indicator.
           options: objectFieldOptions.map((field) => ({
             value: field.key,
             label:
@@ -2719,9 +2466,7 @@ async function init() {
           type: "multiselect",
           label: "Stats",
           // Every key the active System's own Archetype entries carry
-          // (besides name) — empty for a System with no Stats concept at
-          // all (Blades in the Dark), so this picker has nothing to offer
-          // instead of a misleading always-populated list.
+          // (besides name) — empty for a System with no Stats concept at all.
           options: archetypeStatKeyOptions,
           getValue: () => getStatsKeysPreference(systemId) ?? archetypeStatKeyOptions.map((option) => option.value),
           setValue: (values) => {
@@ -2738,31 +2483,22 @@ async function init() {
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
   // The static markup only carries `hidden` on the Location/Species/Roll
-  // panels, which Bootstrap's `!important` `.d-flex` beats on its own (see
-  // setInspectorSectionVisible) — run the real visibility logic once up
-  // front so nothing but the empty state shows before anything is selected.
+  // panels, which Bootstrap's `!important` `.d-flex` beats on its own — run
+  // the real visibility logic once up front.
   updateInspector();
 
   tables = await loadForgeTables();
   populateFixedOverrides();
-  // tables loading is resolved for every path below, including a deep
-  // link's own Phase 1 (applyDeepLinkParams runs after this line) — but a
-  // Setting still needs to be picked before Generate can actually produce
-  // anything (see updateGenerateButtonReadiness), so this only makes the
-  // button clickable, not necessarily ready.
+  // tables loading is resolved for every path below, but a Setting still
+  // needs to be picked before Generate can produce anything, so this only
+  // makes the button clickable, not necessarily ready.
   updateGenerateButtonReadiness();
 
-  // No blanket auto-selected defaults (previously always sys.dnd5e /
-  // forgotten-realms / sword-coast, regardless of who was signed in) — the
-  // GM picks System, then Setting, then Location explicitly, same
-  // forced-choice convention Sanctum/Crucible/Vault's own System select
-  // uses. The one exception: if a campaign group is active (the header's
-  // Campaign dropdown) and that group has its own System/Setting assigned,
-  // default to THOSE specifically — a real, GM-chosen fact about the
-  // campaign being played, not a guess — to make mid-campaign generation
-  // faster. Falls through to the original "nothing chosen yet" placeholders
-  // whenever there's no active group, or its System/Setting isn't one this
-  // tool's own lists actually contain.
+  // No blanket auto-selected defaults — the GM picks System, then Setting,
+  // then Location explicitly, same forced-choice convention Sanctum/
+  // Crucible/Vault use. The one exception: if a campaign group is active and
+  // has its own System/Setting assigned, default to THOSE. Falls through to
+  // the "nothing chosen yet" placeholders otherwise.
   const systems = await populateSystemSelect();
   const deepLinked = await applyDeepLinkParams();
   if (!deepLinked) {

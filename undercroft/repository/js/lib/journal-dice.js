@@ -1,16 +1,11 @@
-// Obsidian-plugin-style inline dice rollers. The syntax is just ordinary
-// CommonMark inline code — `` `dice:1d4` `` renders as an unremarkable
-// `<code>dice:1d4</code>` from marked's own parser, nothing special has to
-// be taught to it — this module simply finds those after the fact and
-// swaps each one for a live "3 (1d4) [dice icon]" widget. Both the silent
-// starting value and every click-triggered reroll go through the exact same
-// dice engine (dice-roll.js's rollExpression) the Dice Roller dashboard
-// widget and Character Sheet's Initiative button already use — one engine,
-// not a second copy of it.
+// Obsidian-style inline dice rollers — `` `dice:1d4` `` is ordinary
+// CommonMark inline code; this finds those after the fact and swaps each
+// for a live "3 (1d4) [dice icon]" widget. Both the silent starting value
+// and every click-triggered reroll go through the same rollExpression
+// (dice-roll.js) the Dice Roller widget and Initiative button use.
 //
-// `` `dice:[[Page#^blockId]]` `` — the same syntax, but a rollable named
-// table reference (journal-tables.js) instead of a numeric expression;
-// rollExpression itself already knows how to tell the two apart.
+// `` `dice:[[Page#^blockId]]` `` is the same syntax but a rollable named
+// table reference (journal-tables.js) — rollExpression tells them apart.
 import { rollExpression } from "../../../common/js/lib/widgets/dice-roll.js";
 import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
 import { rollDiceExpression } from "../../../workbench/js/lib/dice.js";
@@ -19,13 +14,10 @@ import { el } from "../../../common/js/lib/dom.js";
 
 const DICE_CODE_PATTERN = /^dice:\s*(.+)$/i;
 
-// The chip's starting number, before anyone's clicked it — a real random
-// roll of the expression (same engine as an actual click), just silent: no
-// status toast, no visible "roll" moment, it just *starts* already rolled.
-// Falls back to 0 for an expression the engine can't parse rather than
-// throwing and breaking the whole render. Only ever called for a plain
+// The chip's starting number — a real roll, just silent (no toast). Falls
+// back to 0 rather than throwing and breaking the render. Only for a plain
 // numeric expression — a table reference has no synchronous starting value
-// (it needs a fetch), see buildDiceRoller's own async resolution instead.
+// (needs a fetch), see buildDiceRoller's async resolution instead.
 function rollSilently(expression) {
   try {
     return rollDiceExpression(expression).total;
@@ -35,16 +27,11 @@ function rollSilently(expression) {
 }
 
 // Same "starts already rolled, no toast" convention as rollSilently above,
-// just async (a table reference needs to fetch the referenced Journal page
-// — see this file's own top-of-file comment on why table refs couldn't just
-// reuse rollSilently directly). Confirmed real bug this fixes: the initial
-// table resolution used to go through rollExpression (dice-roll.js), which
-// always shows a status toast with the rolled result — meaning every viewer
-// who merely loaded a page (or had a spotlighted Handout render one) got an
-// unsolicited "roll result" toast the instant it appeared, not from any
-// action they took. The click-to-reroll handler in buildDiceRoller below
-// still goes through performRoll/rollExpression (and its toast) — that one
-// IS a deliberate action and should stay loud.
+// just async (a table reference needs to fetch the referenced Journal
+// page). Deliberately bypasses rollExpression here — going through it would
+// toast on every page load, not just on an actual click. The click-to-reroll
+// handler in buildDiceRoller below still goes through performRoll/
+// rollExpression — that one is a deliberate action and should stay loud.
 async function resolveTableSilently(dataManager, tableRef) {
   if (!dataManager) return null;
   try {
@@ -54,9 +41,8 @@ async function resolveTableSilently(dataManager, tableRef) {
   }
 }
 
-// Inline styles (not just a CSS class) for the same reason markdown.js's
-// own wiki-link styling uses them — this can render inside handout.js's
-// Dashboard widget, a page that never loads Repository's own stylesheet.
+// Inline styles, not a CSS class — this can render inside handout.js's
+// Dashboard widget, which never loads Repository's own stylesheet.
 function styleAsChip(button, interactive) {
   button.style.display = "inline-flex";
   button.style.alignItems = "center";
@@ -71,19 +57,15 @@ function styleAsChip(button, interactive) {
   button.style.cursor = interactive ? "pointer" : "default";
 }
 
-// The chip always renders and always resolves to a real value (not raw
-// `dice:` code text) — only the click-to-reroll handler is conditional on
-// `interactive`. Rolling dice is otherwise harmless for anyone to trigger,
-// but Handout's read-only Dashboard rendering still needs to withhold it for
-// a player/shared viewer for the same reason it withholds `encounter:`
-// blocks: consistency ("only the GM should be able to ... roll dice"), not
-// because a re-roll itself is unsafe.
+// The chip always renders resolved (not raw `dice:` text) — only the
+// click-to-reroll handler is conditional on `interactive`. Rolling dice is
+// harmless, but Handout's read-only rendering withholds it from a shared
+// viewer for consistency with `encounter:` blocks, not because a reroll is
+// unsafe.
 //
-// A table reference (`tableRef` non-null) has no synchronous starting value
-// the way a plain expression does — resolving one means fetching the
-// referenced Journal page, so the chip mounts showing "…" and resolves once
-// via the same rollExpression path a click would use, then behaves like any
-// other chip from then on.
+// A table reference has no synchronous starting value — resolving one means
+// fetching the referenced Journal page, so the chip mounts showing "…" and
+// resolves once, then behaves like any other chip.
 function buildDiceRoller(expression, { status, interactive, dataManager }) {
   const tableRef = parseTableReferenceExpression(expression);
   const button = el("button", "repository-dice-roller");

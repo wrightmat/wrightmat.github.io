@@ -1,12 +1,11 @@
 // The canonical "what does this action type/action pair mean to a human"
 // registry for the Macro system — every widget type that exports its own
 // *_MACRO_ACTIONS constant is reused verbatim; Handout/Map/Browser/Game Log
-// have no widget file of their own to pull one from (macro-runner.js
-// handles those inline, no live widget instance involved), so their entries
-// are hand-written here to match macro-runner.js's own action/param names
-// exactly. Both loom/js/app.js's Macro editor (Type/Action pickers, per-
-// field labels) and macro-runner.js's per-step toasts read from this ONE
-// place, so a label can't drift between "what you authored" and "what ran."
+// have no widget file of their own (macro-runner.js handles those inline),
+// so their entries are hand-written here to match macro-runner.js's action/
+// param names exactly. Both loom's Macro editor and macro-runner.js's
+// per-step toasts read from this one place, so a label can't drift between
+// "what you authored" and "what ran."
 import { WLED_MACRO_ACTIONS } from "./wled.js";
 import { HA_MACRO_ACTIONS } from "./home-assistant.js";
 import { SOUNDBOARD_MACRO_ACTIONS } from "./soundboard.js";
@@ -60,9 +59,8 @@ export const MACRO_ACTION_CATALOG = {
   calendar: { label: "Calendar", actions: CALENDAR_MACRO_ACTIONS },
 };
 
-// "WLED: Apply preset" / "Soundboard: Play a clip" — used for the per-step
-// toast (macro-runner.js) and anywhere else a single action needs a short,
-// human description rather than its raw {type, action} shape.
+// "WLED: Apply preset" / "Soundboard: Play a clip" — a short, human
+// description for a single action rather than its raw {type, action} shape.
 export function describeMacroAction(action) {
   const typeDef = MACRO_ACTION_CATALOG[action?.type];
   const actionDef = typeDef?.actions?.[action?.action];

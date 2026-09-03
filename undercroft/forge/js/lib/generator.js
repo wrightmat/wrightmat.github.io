@@ -12,14 +12,11 @@ import {
 import { generateSpeciesName } from "./name-generator.js";
 
 // A key this archetype's own entry doesn't already carry gets independently
-// rolled within the System's own authored range (tables.independentStatRanges
-// — see loadIndependentStatRanges's own comment in lib/tables.js) instead of
-// being left out — CoC's real case: Occupation entries only ever carry
-// creditRatingMin/Max, so every ability key (Characteristics) and any other
-// ranged field (Hit Points, Move) rolls independently every time. A System
-// whose Archetype entries already carry everything (D&D's own Monster
-// Manual copy) never has anything left for this to fill in, since
-// existingKeys already covers it — inert there, not a second source.
+// rolled within the System's own authored range (tables.independentStatRanges)
+// instead of being left out — CoC's real case: Occupation entries only ever
+// carry creditRatingMin/Max, so Characteristics and Hit Points/Move roll
+// independently every time. A System whose entries already carry everything
+// (D&D) has nothing left for this to fill in.
 function rollIndependentStats(ranges, existingKeys, random) {
   const result = {};
   (ranges || []).forEach(({ key, min, max }) => {
@@ -29,16 +26,11 @@ function rollIndependentStats(ranges, existingKeys, random) {
   return result;
 }
 
-// Distinguishes "this System has no Stats concept bound at all" (Blades in
-// the Dark: no archetypeStats field, tables.stats resolves to an empty
-// map, and no independentStatRanges either — Stats is genuinely omitted
-// from the record, not just null) from "this System has Stats, but not for
-// this particular archetype, and nothing to independently roll either"
-// (stays a real `stats: null`, rendered as "No stat block available for
-// this archetype" rather than silently disappearing). undefined (not null)
-// is a deliberate choice for the first case: JSON.stringify already drops
-// undefined-valued keys on its own, so a saved/exported record for an
-// unbound System has no `stats` key at all.
+// Distinguishes "this System has no Stats concept bound at all" (Stats
+// genuinely omitted from the record — undefined, since JSON.stringify drops
+// undefined-valued keys) from "this System has Stats, but not for this
+// particular archetype" (a real `stats: null`, rendered as "No stat block
+// available" rather than silently disappearing).
 function resolveStats(tables, archetypeName, random) {
   const hasStatsTable = tables.stats && Object.keys(tables.stats).length > 0;
   const independentRanges = tables.independentStatRanges || [];
@@ -59,14 +51,9 @@ function resolveStats(tables, archetypeName, random) {
 }
 
 // A System-defined "Key Expertise Skills roll higher, everything else rolls
-// lower" NPC skill generation (see loadSkillGenerationConfig's own comment
-// in lib/tables.js) — a real, common piece of CoC-style NPC generation
-// advice, but genuinely data-driven: the ranges and which System field
-// supplies the skill vocabulary all come from the System's own
-// skillGeneration field, never hardcoded here. undefined for a System with
-// no skillGeneration config authored (every System except CoC today), same
-// "key genuinely absent, not present-but-empty" convention as resolveStats'
-// own undefined case above.
+// lower" NPC skill generation — genuinely data-driven: the ranges and skill
+// vocabulary all come from the System's own skillGeneration field, never
+// hardcoded here. undefined for a System with no config authored.
 function rollSkills(skillGeneration, random) {
   if (!skillGeneration) return undefined;
   const { skillKeys, keyCount, keyMin, keyMax, otherMin, otherMax } = skillGeneration;
@@ -86,19 +73,11 @@ function rollSkills(skillGeneration, random) {
 
 // Composes one full NPC roll (Identity + 4D) from a Location config and the
 // loaded table set. `tables.speciesProfiles` must already be populated for
-// this Location (see loadSpeciesProfilesForLocation in tables.js) since a
-// single generation may need to resolve any blend partner in the
-// population, not just the rolled primary species. `overrides` (species,
-// archetype, alignment, gender) come from the left pane's manual-pick
-// selects — any attribute set there is used as-is instead of rolled.
-// `systemId`/`settingId` stamp systemIds/settingIds the same plural-array
-// way every other generated-output kind in this suite already does
-// (Crucible's monster, Vault's wonder, Sanctum's location) — previously
-// never stamped here at all, meaning an NPC generated with no Location
-// selected (Location is optional) had no way to be found again once the
-// active Setting changed. Location is still the more specific reference
-// when present (see listNpcsForLocation in tables.js); settingIds is what
-// lets an NPC with no Location at all still show up under the right Setting.
+// this Location, since a single generation may need to resolve any blend
+// partner in the population, not just the rolled primary species.
+// `overrides` come from the left pane's manual-pick selects. `systemId`/
+// `settingId` stamp systemIds/settingIds so an NPC generated with no
+// Location (optional) can still be found under the right Setting.
 export function generateNpc(location, tables, { overrides = {}, random = Math.random, systemId = null, settingId = null } = {}) {
   const species = rollWeightedSpecies(location, tables.speciesProfiles, { random, override: overrides.species });
   const archetype = rollArchetype(tables.archetype, location, { random, override: overrides.archetype });
@@ -115,9 +94,7 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
     settingIds: settingId ? [settingId] : [],
     locationId: location?.id ?? null,
     name: nameResult.name,
-    // Never rolled/generated — set manually afterward (Orrery's own marker
-    // editor copies this into a placed marker's own image once, when the
-    // marker references this NPC — see map-model.js's createMarkerElement).
+    // Never rolled/generated — set manually afterward.
     image: "",
     identity: {
       species: species.label,
@@ -135,9 +112,8 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
       direction: fourD.direction.label,
     },
     stats: resolveStats(tables, archetype.name, random),
-    // Present only for a System with a skillGeneration config authored
-    // (see rollSkills' own comment) — omitted (undefined) entirely for
-    // every other System, same convention as `stats` above.
+    // Present only for a System with a skillGeneration config authored —
+    // omitted entirely for every other System, same as `stats` above.
     skills: rollSkills(tables.skillGeneration, random),
     note: null,
     rolls: {
@@ -155,11 +131,10 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
 }
 
 // Rerolls a single Identity/4D attribute in place, returning a new record
-// (rolls + resolved value both updated) without touching anything else —
-// backs the per-attribute reroll buttons in the generator UI. Species and
-// Name are linked (a name is generated *for* a species) so rerolling
-// Species also regenerates Name, the same way rerolling Archetype also
-// recomputes Stats — otherwise the two could end up visibly mismatched.
+// without touching anything else. Species and Name are linked (a name is
+// generated *for* a species) so rerolling Species also regenerates Name,
+// same as rerolling Archetype also recomputes Stats — otherwise the two
+// could end up visibly mismatched.
 export function rerollAttribute(record, tables, location, attribute, { random = Math.random } = {}) {
   const next = {
     ...record,

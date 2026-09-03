@@ -1,16 +1,12 @@
 // Generic "pick one of my/shared/public records of a given Library kind"
 // modal — used by the Dashboard's Add-widget toolbar for widget types that
 // need a specific record chosen before they can be added (Map, Character
-// sheet), since neither has anything meaningful to show from a blind
-// "add one" click the way Combat/Game Log/Character-summary do. Uses
-// fetchKindEntrySummaries (content-fetch.js), not fetchKindEntriesWithIds —
-// this picker only ever needs a name to show and an id to return, never a
-// record's own fields to filter on, so there's no reason to pull every
-// candidate's full body (irrelevant for `kind` values like `feature`/
-// `wonder`, which can run into the thousands) just to populate a <select>.
-// Works for any kind unconditionally, since a record's title (what the
-// summary's `name` comes from) is a real library_items column populated at
-// save time, not something a kind has to opt into via metadataFields.
+// sheet). Uses fetchKindEntrySummaries, not fetchKindEntriesWithIds — this
+// picker only needs a name to show and an id to return, never a record's
+// full fields, so there's no reason to pull every candidate's full body
+// (irrelevant for `kind` values like `feature`/`wonder`, which can run into
+// the thousands). Works for any kind unconditionally, since a record's
+// title is a real library_items column populated at save time.
 import { fetchKindEntrySummaries } from "../content-fetch.js";
 
 const MODAL_ID = "undercroft-content-picker-modal";
@@ -46,11 +42,10 @@ function ensureModal() {
   return element;
 }
 
-// Handles every list shape this picker's two sources return: fetchKindEntrySummaries'
-// own flat `{id, name}` (remote), listLocalEntries' `{payload}` (local), and
-// both name conventions records in this suite use (a flat `name`, or
-// Workbench characters' nested `data.name`), falling back to the id itself
-// so nothing renders blank.
+// Handles every list shape this picker's two sources return: fetchKindEntrySummaries's
+// flat `{id, name}` (remote), listLocalEntries's `{payload}` (local), and
+// both name conventions records use (flat `name`, or Workbench characters'
+// nested `data.name`), falling back to the id so nothing renders blank.
 function nameOf(entry) {
   const record = entry?.payload ?? {};
   return record?.data?.name || record?.name || record?.title || entry?.name || entry?.id || "Untitled";
@@ -58,9 +53,7 @@ function nameOf(entry) {
 
 // openContentPicker({dataManager, kind, title, emptyMessage, excludeIds}) =>
 // Promise resolving the chosen record's id, or null if cancelled/nothing to
-// pick. `excludeIds` (optional) leaves specific ids out of the list entirely
-// — e.g. a record that can't reference itself, like Repository's own
-// "choose a parent page" picker excluding the page being edited.
+// pick. `excludeIds` leaves specific ids out — e.g. Repository's "choose a parent page" picker excluding the page being edited.
 export async function openContentPicker({
   dataManager,
   kind,

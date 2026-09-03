@@ -50,10 +50,8 @@ import {
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 import { openShop, closeShop, locationIsShop } from "../../common/js/lib/shop-transactions.js";
-// Repository's own markdown renderer (dice/task-list/callout/wiki-link
-// awareness, degrading gracefully without any of that for a plain note) —
-// reused as-is for the Notes field's View mode, same as Crucible/Forge/
-// Vault's own identical Notes preview.
+// Repository's own markdown renderer, reused for the Notes View mode — same
+// as Crucible/Forge/Vault's own Notes preview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
 const ASSET_NEED_KINDS = ["resource", "npc", "monster", "wonder"];
@@ -76,43 +74,33 @@ let locationsInSetting = [];
 let currentSettingId = null;
 let currentLocationId = null;
 let currentRecord = null;
-// View/Edit toggle for the Notes box — same button as Repository's own
-// Edit/View button (undercroft/repository/js/app.js#applyMode) for the
-// identical concept, and the same behavior Crucible/Forge/Vault's own
-// Notes toggle uses (this suite's one shared Notes-field convention).
-// Icon/label always describe what clicking will switch TO, not the current
-// state. Defaults to "view" — a freshly-loaded record's notes are read far
-// more often than edited, and a note written with markdown in mind
-// (headings, lists, callouts) reads better rendered than as raw source by
-// default.
+// View/Edit toggle for the Notes box — same convention as Repository/
+// Crucible/Forge/Vault's Notes toggle. Icon/label always describe what
+// clicking switches TO. Defaults to "view" — read far more than edited,
+// and markdown reads better rendered by default.
 let notesMode = "view";
 // Ownership metadata for Settings in the active System, used only for the
-// Delete button's access gate (owner-or-admin) — same rule and shape as
-// Loom's systemAllowsDelete/libraryEntryAllowsDelete. Keyed by setting id.
+// Delete button's access gate — same rule/shape as Loom's
+// systemAllowsDelete/libraryEntryAllowsDelete. Keyed by setting id.
 let settingCatalog = new Map();
-// "Clean" baseline for the Setting form (name/description at last load/save)
-// — Save only lights up once the current fields actually differ from it,
-// mirroring Loom's isDirty/markClean pattern for Systems.
+// "Clean" baseline for the Setting form — Save only lights up once the
+// current fields actually differ from it, mirroring Loom's isDirty/
+// markClean pattern for Systems.
 let settingCleanSnapshot = null;
-// Same idea for the Location record — established after loading an existing
-// Location or right after a successful save, NOT after generating (freshly
-// generated content is always unsaved/savable until proven otherwise).
+// Same idea for the Location record — established after loading an
+// existing Location or right after a successful save, NOT after
+// generating (freshly generated content is always unsaved/savable).
 let locationCleanSnapshot = null;
 // Ownership metadata for Locations in the current Setting, same role/shape
-// as settingCatalog above — used only for the Delete button's access gate.
+// as settingCatalog above.
 let locationCatalog = new Map();
 
-// Whole-record snapshot undo — same shape/reasoning as Repository's own
-// recordHistory/field-commit-debounce pair (repository/js/app.js), reusing
-// buildLocationSnapshot() (defined below, referenced here since function
-// declarations hoist) so a Name/Notes edit — not synced onto currentRecord
-// until Save/Export, same as Crucible's buildRecordForSave — is captured
-// too. Restoring goes through renderLocation, which already writes record.
-// name/record.notes back into their live input fields. Generate Multi-Room
-// (handleGenerateMultiRoom) is deliberately NOT wrapped — it's a bulk save
-// of several NEW records straight to the server, not an edit to the
-// currently open one, so there's nothing in-memory for undo to meaningfully
-// step back through.
+// Whole-record snapshot undo — same shape as Repository's own
+// recordHistory/field-commit-debounce pair, reusing buildLocationSnapshot()
+// (hoisted) so a Name/Notes edit (not synced onto currentRecord until Save/
+// Export) is captured too. Generate Multi-Room is deliberately NOT wrapped
+// — it's a bulk save of several NEW records straight to the server,
+// nothing in-memory for undo to step through.
 function recordSnapshot() {
   return JSON.stringify(buildLocationSnapshot());
 }
@@ -159,10 +147,8 @@ function flushFieldCommitOnUndoRedo(event) {
   if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
 }
 
-// Built and mounted before `elements` below queries for these buttons by
-// their data-*-setting/data-*-location attributes, so every existing
-// selector/disabled-state call site elsewhere in this file keeps working
-// unchanged.
+// Built and mounted before `elements` below queries for these buttons, so
+// every selector/disabled-state call site elsewhere keeps working unchanged.
 createToolbarButtonGroup([
   { action: "new", icon: "tabler:map-plus", label: "New Setting", attrs: { "data-new-setting": true } },
   { action: "save", label: "Save Setting", attrs: { "data-save-setting": true } },
@@ -170,27 +156,16 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-setting-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   // One Generate button, not two — a room-count prompt (default 1) picks
-  // which of the two underlying flows runs (see handleGenerateAction): 1
-  // room behaves exactly like the old single-location button always did
-  // (one unsaved record generated straight into the editor for the GM to
-  // review/rename/Save themselves), more than 1 runs the bulk multi-room
-  // flow (auto-named parent + connected child rooms, all saved immediately
-  // — see handleGenerateMultiRoom). Two separate "New"-slot buttons here,
-  // where every other tool in this pass has one, made the toolbar wider
-  // than its neighbors for a difference that's really just a room count.
+  // which flow runs (handleGenerateAction): 1 room behaves like the old
+  // single-location button, more than 1 runs the bulk multi-room flow
+  // (auto-named parent + connected children, all saved immediately).
   // Starts disabled — nothing to generate FROM until the reference-data
-  // load (init's own populateSystemSelect/reloadReferenceData cascade)
-  // finishes; clicking it before then threw straight out of
-  // generateLocation (locationTypes/features/etc. still their initial
-  // empty arrays). Re-enabled by init() once that cascade actually
-  // resolves — see this file's own enableGenerateOnceReady.
+  // load resolves; re-enabled by init() once that resolves.
   { action: "generate", icon: "tabler:map-2", label: "Generate", disabled: true, attrs: { "data-generate-location": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-location": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-location": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-location": true } },
 ]).forEach((button) => document.querySelector("[data-location-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — same convention every other
-// tool's toolbar now uses (see forge/js/app.js's own comment).
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-undo-location": true } },
   { action: "redo", label: "Redo", attrs: { "data-redo-location": true } },
@@ -202,17 +177,13 @@ document.querySelector("[data-location-empty-state]")?.appendChild(
   })
 );
 
-// Named data-field-mount (not data-inspector-mount) — this file's own
-// [data-inspector-mount] selector below is a single bare marker for the
-// Detail Inspector's collapsible wrapper; a keyed attribute of the same
-// name would collide with it (attribute selectors match on presence, not
-// value).
-// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
-// for why: an appended-into wrapper stays an empty-but-in-flow flex item
-// even while its field is conditionally hidden, silently spending a full
-// gap-3 on both sides of it. Any class the static mount div itself carried
-// is merged onto the built field first so removing the wrapper doesn't
-// lose that layout.
+// Named data-field-mount (not data-inspector-mount) — that name is a
+// separate bare marker for the Detail Inspector's collapsible wrapper; a
+// keyed attribute of the same name would collide.
+// replaceWith, not appendChild — an appended-into wrapper stays an
+// empty-but-in-flow flex item even while hidden, silently spending a gap-3
+// on both sides. Any class the static mount div carried is merged onto the
+// built field first.
 function mountField(key, element) {
   const mount = document.querySelector(`[data-field-mount="${key}"]`);
   if (!mount) return;
@@ -240,8 +211,7 @@ mountField(
   })
 );
 // Same field-box style as Identity below (and Crucible's/Vault's/Forge's
-// own Name box) — per explicit, repeated feedback that every tool's
-// center-pane properties should look and act the same, Sanctum included.
+// own Name box) — every tool's center-pane properties look and act the same.
 mountField("location-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-location-name" }));
 mountField("setting-name", createCompactField({ type: "text", id: "sanctumSettingName", label: "Name", dataAttr: "data-setting-name" }));
 mountField("setting-description", createCompactField({ type: "textarea", id: "sanctumSettingDescription", label: "Description", dataAttr: "data-setting-description", rows: 2 }));
@@ -363,9 +333,7 @@ function currentSystemId() {
 async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
   // Disabled, not just blank — a real System is required before anything
-  // else in this tool is usable, so the picker shouldn't silently fall back
-  // to whichever System happens to sort first (previously "Blades in the
-  // Dark"). Once a real System is chosen this option can't be reselected.
+  // else here is usable. Once chosen this option can't be reselected.
   renderRequiredSelectOptions(elements.systemSelect, systems, { placeholder: "Select a System" });
   markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect?.value));
   return systems;
@@ -381,37 +349,26 @@ async function populateSettingSelect(systemId) {
     return [];
   }
   const settings = await listSettingsForSystem(dataManager, systemId);
-  // Alphabetized the same way populateSystemSelect's own listAllSystems
-  // result already is — listSettingsForSystem itself returns server order,
-  // not name order.
   const sortedSettings = [...settings].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
-  // autoSelectSingle: true — same reasoning as Forge's Location picker
-  // (generator-kit.js's renderOptionalSelectOptions): a single available
-  // Setting for this System gives a more specific generation context with
-  // nothing lost by landing on it automatically, so there's no reason to
-  // make the GM pick it by hand.
+  // autoSelectSingle: true — a single available Setting gives a more
+  // specific generation context with nothing lost by landing on it
+  // automatically.
   renderOptionalSelectOptions(elements.settingSelect, sortedSettings, { autoSelectSingle: true });
   markRequiredControl(elements.settingSelect, Boolean(elements.settingSelect.value));
   await refreshSettingCatalog(settings.map((setting) => setting.id));
-  // Returned (not just awaited) so the init flow's own active-group
-  // auto-default can check the Setting it wants against what actually
-  // loaded for this System, without a second, redundant fetch.
+  // Returned (not just awaited) so init's active-group auto-default can
+  // check the Setting it wants against what loaded, with no second fetch.
   return sortedSettings;
 }
 
 // Ownership metadata comes from the list response, not the full fetched
-// body — a second, lightweight dataManager.list() call (only entries in
-// this System's already-correct id set are kept), mirroring exactly how
-// Loom's listAllSystems/populateLibraryEntrySelect cache owner_id/
-// owner_username/permissions for their own delete-gating. Local-only
-// (anonymous, browser-storage) entries are included too and tagged
-// `ownership: "local"` — those are always deletable, since it's just the
-// current browser's own storage with no real access-control question.
+// body — same shape as Loom's own owner_id/owner_username/permissions
+// cache for delete-gating. Local-only (anonymous, browser-storage) entries
+// are always deletable.
 async function refreshSettingCatalog(ids) {
   settingCatalog = await refreshOwnershipCatalog(dataManager, "setting", ids);
 }
 
-// Owner-or-admin, same rule as Loom's systemAllowsDelete/libraryEntryAllowsDelete.
 function settingAllowsDelete(id) {
   return allowsDelete(settingCatalog, id, { dataManager });
 }
@@ -420,8 +377,8 @@ function createSettingSnapshot() {
   return {
     name: elements.settingNameInput?.value || "",
     description: elements.settingDescriptionInput?.value || "",
-    // Cheap deep-compare via serialization — same idea as the plain string
-    // fields above, just for a structured value.
+    // Cheap deep-compare via serialization, same as the plain string fields
+    // above, just for a structured value.
     calendar: JSON.stringify(collectCalendarFromForm()),
     speciesWeights: JSON.stringify(collectSettingSpeciesWeightsFromForm()),
   };
@@ -474,16 +431,10 @@ async function loadSettingIntoForm(id) {
     return;
   }
   try {
-    // preferLocal: false (now redundant for a signed-in user — get()'s
-    // default is itself auth-aware — kept explicit for clarity/resilience
-    // regardless of sign-in state) — a Setting's own Species Weights (and
-    // everything else edited here) must be visible immediately, not hidden
-    // behind a stale local cache. Confirmed real bug this fixed under the
-    // old flat `preferLocal: true` default: served a browser-cached copy of
-    // Eberron from before its Species Weights were seeded, while other
-    // Settings that had never been locally cached correctly showed fresh
-    // data — same class of staleness Vault's/Crucible's own System reads
-    // already guard against.
+    // preferLocal: false — a Setting's own Species Weights (and everything
+    // else edited here) must be visible immediately, not hidden behind a
+    // stale local cache, same class of staleness Vault's/Crucible's own
+    // System reads already guard against.
     const result = await dataManager.get("setting", id, { preferLocal: false });
     populateSettingForm(result?.payload || null);
   } catch (error) {
@@ -493,13 +444,12 @@ async function loadSettingIntoForm(id) {
 
 // Every "Parent of"/"Connected to" `relationship` record touching a
 // location:* id, PLUS any not-yet-migrated legacy value still sitting on a
-// location's own raw parentId/connectedTo fields (see location-schema.js's
-// own header comment) turned into real relationship records the first time
-// they're seen. Idempotent — checked against the current edge set before
-// creating anything, so running this on every Setting load never creates a
-// duplicate, and a Setting with nothing left to migrate does zero writes.
-// This is what makes "no separate Sanctum relationship concept" true for
-// EXISTING campaign data, not just newly authored ones.
+// location's own raw parentId/connectedTo fields, turned into real
+// relationship records the first time they're seen. Idempotent — checked
+// against the current edge set before creating anything, so a Setting with
+// nothing left to migrate does zero writes. This is what makes "no
+// separate Sanctum relationship concept" true for EXISTING campaign data,
+// not just newly authored ones.
 async function migrateLegacyLocationRelationships(rawLocations) {
   const edges = await fetchAllRelationships(dataManager).catch(() => []);
   const existingKeys = new Set(
@@ -519,8 +469,7 @@ async function migrateLegacyLocationRelationships(rawLocations) {
     (location.connectedTo || []).forEach((otherId) => {
       if (!otherId || otherId === location.id) return;
       // Connected To was always checked bidirectionally (A→B and B→A treated
-      // as the same tie) — a single "Connected to" edge, either direction,
-      // satisfies both sides, same as the old field's own dedup convention.
+      // as the same tie) — a single edge, either direction, satisfies both.
       if (existingKeys.has(`${location.id}|${otherId}|Connected to`) || existingKeys.has(`${otherId}|${location.id}|Connected to`)) return;
       existingKeys.add(`${location.id}|${otherId}|Connected to`);
       toCreate.push({ fromKind: "location", fromId: location.id, toKind: "location", toId: otherId, type: "Connected to" });
@@ -532,12 +481,11 @@ async function migrateLegacyLocationRelationships(rawLocations) {
   return [...edges, ...toCreate];
 }
 
-// Attaches DERIVED parentId/connectedTo onto each location — the ONLY
+// Attaches DERIVED parentId/connectedTo onto each location — the only
 // source of truth for both, now that they're `relationship` records rather
 // than fields on the Location itself. Every existing consumer
 // (collectDescendantLocations, renameChildRoomsIfConfirmed) reads these two
-// properties off a `locationsInSetting` entry exactly as before and needs
-// no changes — only WHERE the values come from changed.
+// properties exactly as before; only WHERE the values come from changed.
 function applyDerivedLocationHierarchy(rawLocations, edges) {
   const idSet = new Set(rawLocations.map((location) => location.id));
   return rawLocations.map((location) => {
@@ -576,14 +524,11 @@ async function reloadLocationsForSetting(settingId) {
   updateActionButtons();
 }
 
-// Same shape/reasoning as refreshSettingCatalog above: ownership metadata
-// comes from the list response (owned/shared/public + local), not the full
-// fetched body, and local-only entries are always deletable.
+// Same shape/reasoning as refreshSettingCatalog above.
 async function refreshLocationCatalog(ids) {
   locationCatalog = await refreshOwnershipCatalog(dataManager, "location", ids);
 }
 
-// Owner-or-admin, same rule as settingAllowsDelete/Loom's systemAllowsDelete.
 function locationAllowsDelete(id) {
   return allowsDelete(locationCatalog, id, { dataManager });
 }
@@ -594,24 +539,19 @@ function canDeleteLocation() {
 
 // The Type/Purpose/Environment/Locked Features overrides only matter for
 // generating something new — once an existing Location is loaded they're
-// just clutter (per-tool "feel the same" convention shared with Crucible/
-// Forge/Vault's own generation fields). Purely visual: hiding never clears
-// an override's underlying value, so a pinned override still applies the
-// next time the GM hits Generate — handleGenerate always resets the
-// Location select back to blank once it runs (see its own comment), which
-// is what brings this section back into view afterward.
+// just clutter. Purely visual: hiding never clears an override's
+// underlying value, so a pinned override still applies next time Generate
+// runs (handleGenerate always resets the Location select back to blank,
+// which is what brings this section back into view afterward).
 function updateGenerationFieldsVisibility() {
   elements.generationFields?.classList.toggle("d-none", Boolean(elements.locationSelect?.value));
 }
 
 function populateLocationSelect() {
   // Deliberately NOT autoSelectSingle, unlike populateSettingSelect above
-  // and Forge's own Location picker — Location is what Sanctum GENERATES,
-  // not just a scoping/context picker. Auto-loading the sole existing
-  // Location the moment its Setting resolves broke the "pick your System/
-  // Setting, hit Generate" flow: the center pane silently pre-filled with
-  // an existing saved Location (e.g. Duskvol) instead of staying blank and
-  // ready for a fresh Generate. Confirmed real, reported regression.
+  // — Location is what Sanctum GENERATES, not just a scoping/context
+  // picker. Auto-loading the sole existing Location the moment its Setting
+  // resolves broke the "pick your System/Setting, hit Generate" flow.
   renderOptionalSelectOptions(elements.locationSelect, locationsInSetting);
   updateGenerationFieldsVisibility();
 }
@@ -631,32 +571,28 @@ async function reloadReferenceData() {
     listWondersForSystem(dataManager, systemId),
     listSpeciesForSystem(dataManager, systemId),
   ]);
-  // The shared `feature` kind also holds Crucible's monster features and
-  // Vault's spell/item features (tagged accordingly) — filtered here, once,
-  // so every consumer of the module-level `features` array (generateLocation,
-  // and the Locked/Add-feature selects below) only ever sees Sanctum's own
-  // location ones. generateLocation already applied this same matchesCategory
-  // filter internally, so this was only ever visible in the two UI pickers —
-  // confirmed the identical bug already fixed in Crucible's/Vault's own
-  // equivalents.
+  // The shared `feature` kind also holds Crucible's/Vault's own features —
+  // filtered here, once, so every consumer of the module-level `features`
+  // array only ever sees Sanctum's own location ones (generateLocation
+  // applies the same filter internally; this was only visible in the two
+  // UI pickers below).
   features = fetchedFeatures.filter(matchesCategory);
   environmentPropertyType = await loadEnvironmentPropertyType(systemId);
   populateOverrideSelect(elements.typeOverride, locationTypes, "Random");
   populateOverrideSelect(elements.purposeOverride, locationPurposes, "Random");
   populateEnvironmentSelect(elements.environmentOverride, "Random");
   // Identity's own Type/Purpose/Environment (renderIdentity below) rebuild
-  // their options fresh every render from these same locationTypes/
-  // locationPurposes/environmentPropertyType lists — no separate static
-  // population needed, unlike the override selects above.
+  // their options fresh every render from these same lists — no separate
+  // static population needed, unlike the override selects above.
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
   populateAssetNeedKindSelects();
 }
 
 // Environment is just the "environment"-keyed array field on the active
-// System's `fields` (Loom's "Properties" editor) — no separate propertyTypes
-// concept exists anymore. Translated to the legacy {id, label, values:
-// [{id, label}]} shape so the rest of this file needs no changes.
+// System's `fields` (Loom's Properties editor) — no separate propertyTypes
+// concept. Translated to the legacy {id, label, values: [{id, label}]}
+// shape so the rest of this file needs no changes.
 async function loadEnvironmentPropertyType(systemId) {
   if (!systemId) return null;
   try {
@@ -734,9 +670,8 @@ function populateAddFeatureSelect() {
 }
 
 // Every kind an Asset/Need entry can reference is cached up front (mirroring
-// how Features/Resources already are), so the entity picker and the
-// label/description lookups for already-added entries never need a
-// separate on-demand fetch.
+// how Features/Resources already are), so the entity picker and label/
+// description lookups never need a separate on-demand fetch.
 function entityListForKind(kind) {
   return { resource: resources, npc: npcs, monster: monsters, wonder: wonders }[kind] || [];
 }
@@ -759,10 +694,8 @@ function populateAssetNeedKindSelects() {
 }
 
 // Shared by the Add-Feature/Add-Asset/Add-Need selects — an unselected
-// leading option so the first real entry doesn't look pre-chosen (and thus
-// like part of the Location's identity) before the GM has actually picked
-// one. addFeature/addAssetOrNeed already no-op on an empty value, so this
-// needs no extra guard at the "Add" button.
+// leading option so the first real entry doesn't look pre-chosen before
+// the GM has actually picked one.
 function createPlaceholderOption(label = "Select…") {
   const option = document.createElement("option");
   option.value = "";
@@ -785,10 +718,9 @@ function populateAddEntitySelect(kind, select) {
 // --- Location Properties (optional; ported verbatim from Loom's Places panel) ----
 // rowsEl/totalEl are parameters (not always elements.speciesWeightRows/
 // elements.speciesWeightTotal) so this same row editor backs both the
-// per-Location Species Weights (Location Properties, more specific) and the
-// per-Setting Species Weights (Setting Properties, the general default a
-// Location without its own weights falls back to — see Forge's own
-// effectiveSpeciesLocation, forge/js/app.js).
+// per-Location Species Weights (more specific) and the per-Setting Species
+// Weights (the general default a Location without its own weights falls
+// back to — see Forge's own effectiveSpeciesLocation, forge/js/app.js).
 function renderSpeciesWeightRow(rowsEl, totalEl, entry = { entityId: "", weight: 0 }) {
   if (!rowsEl) return;
   const row = document.createElement("div");
@@ -912,9 +844,8 @@ function collectNpcConfigFromForm() {
   };
 }
 
-// --- Setting Properties: Species Weights (general default a Location -----
-// without its own Species Weights falls back to — see Forge's own
-// effectiveSpeciesLocation, forge/js/app.js) -------------------------------
+// --- Setting Properties: Species Weights (the general default a Location ---
+// without its own weights falls back to — see Forge's effectiveSpeciesLocation)
 function populateSettingSpeciesWeights(record) {
   if (!elements.settingSpeciesWeightRows) return;
   elements.settingSpeciesWeightRows.innerHTML = "";
@@ -930,11 +861,10 @@ function collectSettingSpeciesWeightsFromForm() {
 
 // --- Calendar (optional; read by the Dashboard Calendar widget) -------------
 // Same row-editor shape as NPC Generation Config just above (editable
-// per-row inputs, not the read-only createListRow used for Features/Assets/
-// Needs, since these are freely-typed values, not references to other
-// entities). A GM who never opens this section — or opens it and leaves it
-// blank — saves a Setting with no `calendar` key at all; see
-// hasCalendarContent below, checked at save time, not here.
+// per-row inputs, since these are freely-typed values, not references to
+// other entities). A GM who never opens this section — or leaves it blank —
+// saves a Setting with no `calendar` key at all; see hasCalendarContent
+// below, checked at save time.
 function renderWeekdayNameRow(name = "") {
   if (!elements.weekdayNameRows) return;
   const row = document.createElement("div");
@@ -976,14 +906,11 @@ function renderMoonCycleRow(entry = { name: "", days: 29 }) {
   elements.moonCycleRows.appendChild(row);
 }
 
-// Same shape/reasoning as renderMonthRow/renderMoonCycleRow just above —
-// a season is purely descriptive, the same "day-index-based cyclical
-// concept" every other Calendar row already is: a name plus a length in
+// Same shape as renderMonthRow/renderMoonCycleRow — a name plus a length in
 // days, cycling through the YEAR total (all Seasons' own `days` summed)
-// rather than any one Month's or Moon's own cycle. Default length (91)
-// is a plain quarter-of-a-360-day-year guess, same spirit as Month's own
-// 30-day/Moon's own 29-day defaults — just a reasonable starting number
-// for a new row, never enforced.
+// rather than any one Month's or Moon's own cycle. Default length (91) is a
+// plain quarter-of-a-360-day-year guess, same spirit as Month's/Moon's own
+// defaults — just a starting number for a new row, never enforced.
 function renderSeasonRow(entry = { name: "", days: 91 }) {
   if (!elements.seasonRows) return;
   const row = document.createElement("div");
@@ -1022,8 +949,8 @@ function populateCalendarForm(calendar) {
 
 // Always returns a fully-shaped object (even all-empty) — that's what lets
 // createSettingSnapshot diff it cheaply via JSON.stringify. Whether it's
-// actually worth persisting on save is hasCalendarContent's own question,
-// not this function's.
+// actually worth persisting is hasCalendarContent's own question, not this
+// function's.
 function collectCalendarFromForm() {
   return {
     daysPerWeek: Number(elements.daysPerWeekInput?.value) || 0,
@@ -1065,19 +992,14 @@ function hasCalendarContent(calendar) {
   );
 }
 
-// Features/Assets/Needs all look and function the same, per explicit design
-// feedback (including select-to-inspect) — via ui-components.js's own
-// shared createListRow (imported above), not a local duplicate; that
-// shared version is also what correctly renders a Node title (a Feature's
-// own hover-preview reference chip, see renderFeatureList below) instead of
-// stringifying it — a local copy without that check is exactly how a
-// Feature's own title once rendered as "[object HTMLButtonElement]".
+// Features/Assets/Needs all look and function the same (including
+// select-to-inspect) via ui-components.js's own shared createListRow, not
+// a local duplicate — that shared version correctly renders a Feature's
+// own hover-preview reference chip instead of stringifying it.
 //
-// Clears the selected-row highlight across every selectable list (Features,
-// Assets, Needs — only one thing is ever inspected at a time) and shows the
-// given entity's full JSON in the right pane, or the empty state if there's
-// nothing to show (a removed entry, or a reference whose entity couldn't be
-// found).
+// Clears the selected-row highlight across every selectable list (only one
+// thing is ever inspected at a time) and shows the given entity's full
+// JSON in the right pane, or the empty state if there's nothing to show.
 function selectInspectorEntry(row, entity) {
   [elements.featureList, elements.assetList, elements.needList].forEach((container) => {
     container?.querySelectorAll(".sanctum-row-selected").forEach((el) => el.classList.remove("sanctum-row-selected"));
@@ -1098,12 +1020,10 @@ function featureLabel(id) {
   return sharedFeatureLabel(features, id);
 }
 
-// Type/Purpose/Environment as field boxes (createFieldBox, same shared
-// look Forge's/Crucible's/Vault's own Identity fields use) — editable
-// selects, each with its own reroll button, rebuilt fresh every render the
-// same way Crucible's/Vault's own renderIdentity work (this tool has no
-// static-mount alternative anymore; per explicit, repeated feedback, every
-// tool's center-pane properties look and act the same now).
+// Type/Purpose/Environment as field boxes (same shared look Forge's/
+// Crucible's/Vault's own Identity fields use) — editable selects, each with
+// its own reroll button, rebuilt fresh every render the same way Crucible's/
+// Vault's own renderIdentity work.
 function renderIdentity(record) {
   if (!elements.identityFields) return;
   elements.identityFields.innerHTML = "";
@@ -1148,8 +1068,6 @@ function renderFeatureList(record) {
   elements.featureList.innerHTML = "";
   record.featureIds.forEach((featureId) => {
     const feature = findById(features, featureId);
-    // Hover-preview chip (library-reference.js), same suite-wide "displayed
-    // inline wherever needed" primitive Character's own Features tab uses.
     const row = createListRow({
       title: createReferenceChip({ kind: "feature", id: featureId, name: feature?.name || featureId, dataManager }),
       description: feature?.description || "",
@@ -1188,29 +1106,25 @@ function referenceDescription(kind, refId) {
 }
 
 // `listKey` ("assets"|"needs") is which array on currentRecord the optional
-// quantity input (below) actually mutates — both lists can carry one now
-// (a GM might just as well want to know how much of a lacking Resource a
-// place is short by, not only how much of a held one it has), left
-// undefined/blank on every entry a GM doesn't touch either way. Sanctum's
-// own stated "broad strokes, not a ledger" design (this tool's own
-// CLAUDE.md) stays the default for every entry except the ones a GM
-// explicitly quantifies (shop stock, mainly — see shop-transactions.js's
-// own openShop, which only ever materializes quantified Assets into a
-// shop's live inventory).
+// quantity input (below) mutates — both lists can carry one (a GM might
+// want to know how much of a lacking Resource a place is short by, not
+// only how much of a held one it has), left undefined/blank on any entry a
+// GM doesn't touch. Sanctum's own "broad strokes, not a ledger" default
+// (this tool's own CLAUDE.md) stays the norm except for entries a GM
+// explicitly quantifies (shop stock — see shop-transactions.js's openShop,
+// which only materializes quantified Assets into a shop's live inventory).
 function renderReferenceList(container, entries, onRemove, { listKey } = {}) {
   if (!container) return;
   container.innerHTML = "";
   entries.forEach((entry, index) => {
     const entity = findById(entityListForKind(entry.kind), entry.refId);
     const description = entry.description || referenceDescription(entry.kind, entry.refId);
-    // A Resource's own `price` (a documented freeform-JSON convention, not a
-    // schema field — see undercroft/README.md's Code Conventions section) is
-    // worth surfacing right here,
-    // so a Shop-Feature Location's Asset list shows cost at a glance instead
-    // of requiring the GM to open the Resource record itself. Folded into
-    // the shared description text rather than a new createListRow column —
-    // Features/NPCs/Monsters/Wonders share this same row primitive and have
-    // no price concept, so it's not a slot worth adding there.
+    // A Resource's own `price` (a documented freeform-JSON convention, see
+    // undercroft/README.md's Code Conventions) is worth surfacing here so a
+    // Shop-Feature Location's Asset list shows cost at a glance. Folded
+    // into the shared description text rather than a new createListRow
+    // column — the other kinds this row primitive renders have no price
+    // concept.
     const price = entry.kind === "resource" ? entity?.price : null;
     const row = createListRow({
       title: `${entry.label || referenceLabel(entry.kind, entry.refId)} (${entry.kind})`,
@@ -1240,8 +1154,7 @@ function renderReferenceList(container, entries, onRemove, { listKey } = {}) {
         });
       });
       // Inserted before the row's own last child (createListRow's own
-      // button group, holding Remove) rather than appended — so Remove
-      // stays the rightmost control instead of getting pushed past it.
+      // button group, holding Remove) so Remove stays rightmost.
       row.insertBefore(quantityInput, row.lastChild);
     }
     container.appendChild(row);
@@ -1287,12 +1200,10 @@ function addAssetOrNeed(listKey, kind, refId) {
 //
 // A shop's live inventory lives on the campaign Group as a Group Property
 // (shop-transactions.js's own openShop/closeShop), not on the Location
-// record — so these controls just need to know which group is "active" for
-// this Sanctum session. There's no dedicated per-tool concept for that here
-// (unlike Orrery's getActiveCampaignGroupId) — resolveGroupContext is
-// Sanctum's own existing mechanism (used above for default System/Setting
-// picks), reused as-is and cached, since it resolves to the same one group
-// for the whole session.
+// record — these controls just need to know which group is "active" for
+// this session. resolveGroupContext is Sanctum's own existing mechanism
+// (used above for default System/Setting picks), reused as-is and cached
+// since it resolves to the same one group for the whole session.
 let shopGroupIdPromise = null;
 function loadShopGroupId() {
   if (!shopGroupIdPromise) {
@@ -1304,11 +1215,10 @@ function loadShopGroupId() {
 }
 
 // Shown only when the selected Location carries feat.shop AND the viewer is
-// a GM — a player (or a non-shop Location) never sees this row at all,
-// matching every other GM-only control in the suite (dataManager.meetsTier
-// convention). Sub-type Features (feat.shop-weapons, etc.) narrow what a
-// shop sells, they don't gate whether Open/Close appears — only feat.shop
-// itself does, per the plan's own "tagged alongside, not instead of".
+// a GM — matching every other GM-only control in the suite (dataManager.
+// meetsTier convention). Sub-type Features (feat.shop-weapons, etc.) narrow
+// what a shop sells, they don't gate whether Open/Close appears — only
+// feat.shop itself does.
 async function renderShopControls(record) {
   const controls = elements.shopControls;
   if (!controls) return;
@@ -1374,8 +1284,8 @@ elements.closeShopButton?.addEventListener("click", async () => {
 // --- Relationships (Parent / Connected To / Children) -----------------------
 
 // Every location in the current Setting whose parentId chain leads back to
-// `locationId`, however many levels deep — used by the delete handler below
-// to offer removing the whole subtree at once, not just direct children.
+// `locationId`, however deep — used by the delete handler to offer removing
+// the whole subtree at once, not just direct children.
 function collectDescendantLocations(locationId) {
   const descendants = [];
   const queue = [locationId];
@@ -1394,18 +1304,15 @@ function collectDescendantLocations(locationId) {
 // --- Relationships -----------------------------------------------------
 //
 // The suite-wide relationship graph — same shared relationship-editor.js/
-// relationship-graph.js pair Forge/Crucible/Workbench use (see that pair's
-// own header comments for the full mechanism). Containment ("Parent of")
-// and adjacency ("Connected to") are just two of this tool's own suggested
-// types now, not a separate bespoke concept — Children needs no dedicated
-// list either, since an incoming "Parent of" edge from another Location
-// already shows up in THIS Location's own list automatically, the exact
-// same mechanism that makes Forge's Factions work with no special flag.
-// locationsInSetting's own derived parentId/connectedTo (see
-// reloadLocationsForSetting's own migrateLegacyLocationRelationships/
-// applyDerivedLocationHierarchy) still back the dungeon-rename cascade —
-// this section is a separate, GENERIC editor over the same underlying
-// `relationship` records, not a competing source.
+// relationship-graph.js pair Forge/Crucible/Workbench use. Containment
+// ("Parent of") and adjacency ("Connected to") are just two of this tool's
+// own suggested types now, not a separate bespoke concept — Children needs
+// no dedicated list, since an incoming "Parent of" edge from another
+// Location already shows up in THIS Location's own list automatically,
+// the same mechanism that makes Forge's Factions work with no special
+// flag. locationsInSetting's own derived parentId/connectedTo still back
+// the dungeon-rename cascade — this section is a separate, generic editor
+// over the same underlying `relationship` records, not a competing source.
 const RELATIONSHIP_TARGET_KINDS = [
   { id: "npc", label: "NPC" },
   { id: "location", label: "Location" },
@@ -1426,8 +1333,7 @@ const RELATIONSHIP_TYPE_SUGGESTIONS = [
 // "location" (the existing Identity/Features/Assets & Needs/NPC Config/
 // Notes card stack) or "relationships" (a full-pane List/Graph view over
 // this Location's own relationship edges) — mutually exclusive Modes,
-// switched by the suite-wide Mode toggle group (createModeToggleGroup) in
-// the header row above the main pane, exactly mirroring Forge/Crucible/
+// switched by the suite-wide Mode toggle group, mirroring Forge/Crucible/
 // Repository's own split.
 let mode = "location";
 let relationshipsForceGraph = null;
@@ -1435,12 +1341,9 @@ let relationshipsIconByKind = {};
 
 function renderModeToggle() {
   if (!elements.modeToggleMount) return;
-  // Nothing to relate until a Location exists — disabled (not hidden) until
-  // then, via createButtonCheckGroup's own disabled/tooltip option support
-  // (ui-components.js), the same mechanism every other tool's Relationships
-  // option now uses too (previously each hand-rolled an identical
-  // post-render querySelector('input[value="relationships"]').disabled
-  // patch — consolidated onto this one shared mechanism instead).
+  // Nothing to relate until a Location exists — disabled (not hidden)
+  // until then, the same shared mechanism every other tool's Relationships
+  // option now uses.
   createModeToggleGroup({
     container: elements.modeToggleMount,
     ariaLabel: "Sanctum view",
@@ -1495,8 +1398,7 @@ function ensureRelationshipsForceGraph() {
 async function refreshRelationshipsList() {
   if (!elements.relationshipsListMount) return;
   // No Location loaded — clear rather than leave a stale prior Location's
-  // own relationships on screen (confirmed real bug pattern this session:
-  // the same gap in Workbench's own equivalent, fixed the same way there).
+  // relationships on screen.
   if (!currentRecord?.id) {
     elements.relationshipsListMount.innerHTML =
       '<p class="small text-body-secondary mb-0">Select or generate a Location to see its relationships.</p>';
@@ -1514,8 +1416,7 @@ async function refreshRelationshipsList() {
       void refreshRelationshipsList();
       void refreshRelationshipsGraph();
       // A "Parent of"/"Connected to" edge just changed — re-derive so the
-      // dungeon-generation rename cascade stays in sync immediately, not
-      // just after the next Setting reload.
+      // dungeon-generation rename cascade stays in sync immediately.
       void refreshLocationHierarchyFromRelationships();
     },
   });
@@ -1542,11 +1443,9 @@ async function refreshRelationshipsSection() {
 
 // Re-derives locationsInSetting's own parentId/connectedTo from the current
 // `relationship` records without a full Setting reload — cheap (one
-// fetchAllRelationships call, no migration pass needed since nothing new
-// legacy is ever introduced after the first load) and keeps
-// collectDescendantLocations/renameChildRoomsIfConfirmed correct the moment
-// a GM adds or removes a "Parent of"/"Connected to" edge through the
-// generic Relationships editor above, not just after the next reload.
+// fetchAllRelationships call) and keeps collectDescendantLocations/
+// renameChildRoomsIfConfirmed correct the moment a GM edits an edge through
+// the generic Relationships editor above, not just after the next reload.
 async function refreshLocationHierarchyFromRelationships() {
   if (!locationsInSetting.length) return;
   const edges = await fetchAllRelationships(dataManager).catch(() => []);
@@ -1558,12 +1457,11 @@ renderModeToggle();
 // --- Full render / refresh ---------------------------------------------------
 
 // The full "current state" of the Location, combining currentRecord's own
-// live-mutated fields (typeId/purposeId/environment/featureIds/assets/needs/
-// connectedTo — all updated directly wherever they're edited) with whatever
-// isn't synced into currentRecord until save time (Name/Notes/Setting/
-// Parent/NPC config). Building this without mutating currentRecord lets the
-// dirty-check compare "what would be saved right now" against the last
-// saved/loaded baseline without actually performing a save.
+// live-mutated fields with whatever isn't synced into currentRecord until
+// save time (Name/Notes/Setting/Parent/NPC config). Building this without
+// mutating currentRecord lets the dirty-check compare "what would be saved
+// right now" against the last saved/loaded baseline without actually
+// performing a save.
 function buildLocationSnapshot() {
   if (!currentRecord) return null;
   return {
@@ -1599,9 +1497,8 @@ function markLocationClean() {
 
 function renderNotesPreview() {
   if (!elements.notesPreview) return;
-  // Disposed before the wipe — a `` `date:...` `` reference or a missing
-  // wiki-link inside Notes both carry real tooltips now, and this reruns on
-  // every edit. See tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — a date reference or missing wiki-link inside
+  // Notes carries a real tooltip, and this reruns on every edit.
   disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
   elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
@@ -1613,9 +1510,8 @@ function applyNotesMode(mode) {
   const isView = mode === "view";
   elements.notesText?.classList.toggle("d-none", isView);
   elements.notesPreview?.classList.toggle("d-none", !isView);
-  // Showing the eye while in Edit mode (the icon describes what clicking
-  // switches TO, not the current state) and vice versa — same convention
-  // Repository's own toggle uses.
+  // Icon describes what clicking switches TO, not the current state — same
+  // convention as Repository's own toggle.
   elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
   elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
   if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
@@ -1678,17 +1574,14 @@ function readLockedFeatureIds() {
 // --- Generate / Save / Export / Note ----------------------------------------
 
 // The Generate button's own entry point — prompts for a room count (default
-// "1", matching the old single-location button's own behavior when nothing
-// else is entered) and routes to whichever of the two underlying flows that
-// count actually calls for, rather than the GM ever picking between two
-// separate buttons for what's really one decision. 1 room runs handleGenerate
-// itself unchanged (a single unsaved record, generated straight into the
-// editor for review/rename/Save) — NOT handleGenerateMultiRoom with
-// roomCount=1, which would still produce a separate auto-saved parent shell
-// plus one auto-saved, auto-named child room and a "Parent of" relationship
-// between them: a real behavior change from what a GM generating one simple
-// Location has always gotten, not just the same result reached a different
-// way.
+// "1", matching the old single-location button's behavior) and routes to
+// whichever underlying flow that count calls for, rather than the GM
+// picking between two separate buttons for what's really one decision.
+// 1 room runs handleGenerate itself unchanged — NOT handleGenerateMultiRoom
+// with roomCount=1, which would still produce a separate auto-saved parent
+// shell plus one auto-saved, auto-named child room and a "Parent of" edge:
+// a real behavior change from what a GM generating one simple Location has
+// always gotten, not just the same result reached a different way.
 function handleGenerateAction() {
   const roomCountInput = window.prompt("How many rooms should this generate?", "1");
   if (roomCountInput === null) return;
@@ -1705,11 +1598,10 @@ function handleGenerateAction() {
 }
 
 function handleGenerate() {
-  // No Setting-selected guard needed here — setGenerateButtonReadiness
-  // gives the button a real `disabled` attribute whenever none is picked
-  // (or saved), and a disabled button's click listener never fires at all
-  // (mouse or keyboard), so this handler only ever runs once a Setting is
-  // in effect.
+  // No Setting-selected guard needed — setGenerateButtonReadiness gives the
+  // button a real `disabled` attribute whenever none is picked, and a
+  // disabled button's click listener never fires, so this only runs once a
+  // Setting is in effect.
   const settingId = currentSettingId || elements.settingSelect?.value;
   try {
     const generated = generateLocation(locationTypes, locationPurposes, features, resources, {
@@ -1722,13 +1614,11 @@ function handleGenerate() {
       lockedFeatureIds: readLockedFeatureIds(),
     });
     // A fresh id, never the previously loaded Location's own — reusing it
-    // here (a leftover "regenerate in place" behavior) was silently turning
-    // a Save right after Generate into an overwrite of whatever was loaded
-    // before, and left the Location select stuck showing that old entry
-    // instead of resetting to "New / Unsaved". Freshly generated content is
-    // always unsaved, regardless of whatever baseline a previously loaded/
-    // saved Location left behind — same principle as `locationCleanSnapshot`
-    // below, now actually applied to the id and the picker too.
+    // (a leftover "regenerate in place" behavior) silently turned a Save
+    // right after Generate into an overwrite of whatever was loaded before,
+    // and left the Location select stuck on that old entry instead of
+    // resetting to "New / Unsaved". Freshly generated content is always
+    // unsaved regardless of whatever baseline a prior Location left behind.
     const record = createLocationRecord(generated, null);
     currentLocationId = null;
     if (elements.locationSelect) elements.locationSelect.value = "";
@@ -1743,21 +1633,16 @@ function handleGenerate() {
 
 // Generates a parent Location plus a series of child Locations ("rooms" —
 // could be a Complex's chambers, a Settlement's districts, or a market's
-// stalls, depending on what Type/Purpose resolve to) and saves all of it
-// immediately — every piece here is an existing Sanctum primitive
-// (generateLocation/createLocationRecord run once per room, parentId/
-// connectedTo are already real Location relationship fields), just
-// orchestrated in a loop rather than the single, unsaved-into-the-editor
-// record handleGenerate produces. Purpose is left free to vary per room (a
-// dungeon's rooms, or a city's districts, plausibly serve different
-// Purposes) — Environment is NOT: every room is pinned to the parent's own
-// resolved Environment below, since one physical place doesn't span
-// multiple climates/terrains. An explicit Type/Purpose/Environment
-// override, if the GM set one, applies to every room the same way it would
-// to a plain handleGenerate() call, which is an intentional consequence of
-// it being a deliberate pin, not a bug. `roomCount` is always >= 2 here —
-// handleGenerateAction routes a count of 1 to handleGenerate() instead, so
-// this never needs to special-case a single-room call itself.
+// stalls) and saves all of it immediately — every piece here is an
+// existing Sanctum primitive, just orchestrated in a loop rather than the
+// single, unsaved-into-the-editor record handleGenerate produces. Purpose
+// is left free to vary per room — Environment is NOT: every room is pinned
+// to the parent's own resolved Environment, since one physical place
+// doesn't span multiple climates/terrains. An explicit Type/Purpose/
+// Environment override, if set, applies to every room the same way it
+// would to a plain handleGenerate() call — a deliberate pin, not a bug.
+// `roomCount` is always >= 2 here — handleGenerateAction routes a count of
+// 1 to handleGenerate() instead.
 async function handleGenerateMultiRoom(roomCount) {
   const settingId = currentSettingId || elements.settingSelect?.value;
   if (!settingId) {
@@ -1783,7 +1668,7 @@ async function handleGenerateMultiRoom(roomCount) {
     );
     // Purpose + Type, e.g. "Industry Settlement" — a real, descriptive
     // default tied to what was actually generated, rather than a fixed
-    // literal string implying every multi-room result is a dungeon.
+    // literal implying every multi-room result is a dungeon.
     parentRecord.name =
       [findById(locationPurposes, parentRecord.purposeId)?.name, findById(locationTypes, parentRecord.typeId)?.name]
         .filter(Boolean)
@@ -1792,18 +1677,16 @@ async function handleGenerateMultiRoom(roomCount) {
 
     // Rooms share the parent's own resolved Environment — pinned explicitly
     // here rather than left to each generateLocation call's own random
-    // resolution (genOptions.environment stays blank/random for Type and
-    // Purpose), which is what previously let every room end up with an
-    // unrelated Environment from the parent and from each other.
+    // resolution, which previously let every room end up with an unrelated
+    // Environment from the parent and from each other.
     const roomGenOptions = { ...genOptions, environment: parentRecord.environment || genOptions.environment };
 
     // A room's Type is also kept plausible relative to the parent's — see
-    // the `scale` convention documented in undercroft/README.md's Location
-    // Type conventions: a Region/Environment parent can have Complex/
-    // Structure/Settlement rooms, but a Complex parent can't have a Region
-    // room. Skipped entirely (falls back to the full, unfiltered list) when
-    // the parent's own Type has no `scale` set, so an unscaled/custom Type
-    // taxonomy sees no behavior change.
+    // the `scale` convention in undercroft/README.md's Location Type
+    // conventions: a Region/Environment parent can have Complex/Structure/
+    // Settlement rooms, but a Complex parent can't have a Region room.
+    // Skipped when the parent's own Type has no `scale` set, so an
+    // unscaled/custom Type taxonomy sees no behavior change.
     const parentTypeScale = findById(locationTypes, parentRecord.typeId)?.scale;
     const roomLocationTypes =
       typeof parentTypeScale === "number"
@@ -1813,16 +1696,15 @@ async function handleGenerateMultiRoom(roomCount) {
     // Type + Purpose + Feature set identifies a room as a duplicate of
     // another sibling — two rooms with the exact same identity read as a
     // generation mistake, not a deliberate "twin rooms" choice. Assets/
-    // Needs aren't part of this signature; only Type/Purpose/Features make
-    // a room feel like the same room.
+    // Needs aren't part of this signature.
     function roomSignature(generated) {
       return `${generated.typeId || ""}|${generated.purposeId || ""}|${(generated.featureIds || []).slice().sort().join(",")}`;
     }
     const usedRoomSignatures = new Set();
     // Capped retries, not a guarantee — a small enough Type/Purpose/Feature
     // pool (or a large enough room count) can genuinely run out of distinct
-    // combinations; this re-rolls when it easily can, and just accepts a
-    // repeat rather than looping forever once it can't.
+    // combinations; this re-rolls when it easily can, and accepts a repeat
+    // rather than looping forever once it can't.
     const MAX_ROOM_REROLLS = 8;
 
     const rooms = [];
@@ -1840,13 +1722,11 @@ async function handleGenerateMultiRoom(roomCount) {
       // than one multi-room Location exists in the same Setting.
       room.name = `${parentRecord.name} - Room ${index + 1}`;
       await dataManager.save("location", room.id, toPressExportShape(room));
-      // Containment/adjacency are `relationship` records now (see
-      // location-schema.js's own header comment), not fields on the room
-      // itself — created AFTER the room's own save succeeds, since a
-      // `relationship` record referencing an id that was never actually
-      // persisted would be an orphan. `room.id` is already stable at this
-      // point (createLocationRecord stamps it up front), so this is safe
-      // even though the room record was just written moments ago.
+      // Containment/adjacency are `relationship` records now, not fields on
+      // the room itself — created AFTER the room's own save succeeds, since
+      // a `relationship` record referencing a never-persisted id would be
+      // an orphan. `room.id` is already stable (createLocationRecord stamps
+      // it up front), so this is safe.
       await saveRelationship(dataManager, {
         fromKind: "location",
         fromId: parentRecord.id,
@@ -1857,7 +1737,7 @@ async function handleGenerateMultiRoom(roomCount) {
       if (rooms.length) {
         // Branching-tree layout: mostly connects to the room just placed
         // (a snaking path), occasionally branches back to an earlier one —
-        // simple to reason about, and swappable for a different layout
+        // simple to reason about, swappable for a different layout
         // algorithm later without touching room generation at all.
         const connectToPrevious = rooms.length === 1 || Math.random() < 0.6;
         const targetIndex = connectToPrevious ? rooms.length - 1 : Math.floor(Math.random() * (rooms.length - 1));
@@ -1885,19 +1765,18 @@ async function handleGenerateMultiRoom(roomCount) {
     status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
   } finally {
     // Not a plain `disabled = false` — restores the button through the same
-    // readiness check every other path uses, so the `.disabled` class/
-    // tooltip state stays correct even in the (unlikely) case a Setting
-    // stopped being valid mid-operation.
+    // readiness check every other path uses, so `.disabled`/tooltip state
+    // stays correct even if a Setting stopped being valid mid-operation.
     updateGenerateButtonReadiness();
   }
 }
 
 // If `parentId`'s Location has direct children still following the
 // "[Parent Name] - Room [n]" convention the multi-room Generate flow gives
-// them (see handleGenerateMultiRoom), offers to re-prefix them to match a
-// just-renamed parent. Only children whose name still starts with the OLD
-// parent name are touched — a room the GM already renamed to something else
-// no longer looks like it belongs to this convention, so it's left alone.
+// them, offers to re-prefix them to match a just-renamed parent. Only
+// children whose name still starts with the OLD parent name are touched —
+// a room the GM already renamed to something else no longer looks like it
+// belongs to this convention.
 async function renameChildRoomsIfConfirmed(parentId, previousName, newName) {
   const prefix = `${previousName} - `;
   const matchingChildren = locationsInSetting.filter(
@@ -1910,10 +1789,10 @@ async function renameChildRoomsIfConfirmed(parentId, previousName, newName) {
   if (!rename) return;
   for (const child of matchingChildren) {
     try {
-      // preferLocal: false — this reads-then-saves the child right back;
-      // a stale local read here wouldn't just display wrong data, it would
-      // silently overwrite that child's real, current server data (e.g.
-      // Species Weights edited elsewhere) with the stale snapshot.
+      // preferLocal: false — this reads-then-saves the child right back; a
+      // stale local read here wouldn't just display wrong data, it would
+      // silently overwrite that child's real, current server data with the
+      // stale snapshot.
       const result = await dataManager.get("location", child.id, { preferLocal: false });
       const childRecord = createLocationRecord(result?.payload || {}, child.id);
       childRecord.name = `${newName} - ${child.name.slice(prefix.length)}`;
@@ -1936,22 +1815,19 @@ async function handleSave() {
     status?.show("Enter a Location name first.", { type: "warning", timeout: 2500 });
     return;
   }
-  // Captured before currentRecord.name is overwritten below — Name is one
-  // of the fields not live-synced into currentRecord until save time (see
-  // buildLocationSnapshot's own comment), so this is still the last-saved/
-  // loaded value. Only an existing (already-saved) Location can have
-  // children to rename.
+  // Captured before currentRecord.name is overwritten below — Name isn't
+  // live-synced into currentRecord until save time, so this is still the
+  // last-saved/loaded value. Only an existing (already-saved) Location can
+  // have children to rename.
   const previousName = currentRecord.name;
   const renaming = Boolean(currentLocationId) && previousName && previousName !== name;
   currentRecord.name = name;
   currentRecord.notes = elements.notesText?.value || "";
   // systemIds/settingIds (both plural) are the only System/Setting
-  // association fields — matches every other Library kind's convention (and
-  // what Loom's generic "Assigned Systems"/"Assigned Settings" checkboxes
-  // read), rather than a separate singular systemId/settingId. A Location
-  // only ever belongs to whichever one Setting is currently selected in this
-  // editor, so the array always holds exactly one entry today — plural just
-  // future-proofs a place reachable from more than one Setting.
+  // association fields, matching every other Library kind's convention. A
+  // Location only ever belongs to whichever one Setting is currently
+  // selected here, so the array always holds exactly one entry today —
+  // plural just future-proofs a place reachable from more than one Setting.
   currentRecord.systemIds = currentSystemId() ? [currentSystemId()] : [];
   currentRecord.settingIds = settingId ? [settingId] : [];
   Object.assign(currentRecord, collectNpcConfigFromForm());
@@ -2029,17 +1905,13 @@ async function handleGenerateNote() {
 
 // --- Wiring ------------------------------------------------------------------
 // Each section below adopts its own existing static `[data-xxx-panel]`
-// markup (its own content stays hand-authored HTML — only the
-// header+chevron wrapper is JS-built) as createCollapsibleSection's
-// content; the factory's own internal bindCollapsibleToggle replaces every
-// standalone call this function used to make. Notes keeps its "Generate
-// Note" sibling button in static HTML (a shape createCollapsibleSection
-// would clobber by rebuilding the whole header), so only its toggle button
-// is built and mounted, the same way Orrery's own toggle-only sections do.
-// Calendar is built before Setting Properties on purpose: Setting
-// Properties adopts the whole `[data-setting-panel]` div, which contains
-// Calendar's own mount point — Calendar has to already be migrated in
-// place before that adoption happens.
+// markup (only the header+chevron wrapper is JS-built) as
+// createCollapsibleSection's content. Notes keeps its "Generate Note"
+// sibling button in static HTML (a shape createCollapsibleSection would
+// clobber), so only its toggle button is built and mounted. Calendar is
+// built before Setting Properties on purpose: Setting Properties adopts
+// the whole `[data-setting-panel]` div, which contains Calendar's own
+// mount point — Calendar has to already be migrated in place first.
 function initCollapsibles() {
   document.querySelector("[data-inspector-mount]")?.appendChild(
     createCollapsibleSection({
@@ -2086,10 +1958,7 @@ function initCollapsibles() {
       // looking to edit a Location's own settings couldn't find this
       // section under its old, narrower-sounding name. Content is
       // unchanged (still exactly the fields Forge reads to generate NPCs
-      // here); only the label/framing changed. Briefly moved to the right
-      // pane (alongside Setting Properties) and back — the Location being
-      // edited lives in the center pane along with everything else about
-      // it, so this belongs there too.
+      // here).
       label: "Properties",
       helpTopic: "sanctum.npcConfig",
       collapsed: true,
@@ -2170,16 +2039,13 @@ async function init() {
   initCollapsibles();
 
   // Generate starts disabled (see its own toolbar definition above) —
-  // recomputed once the reference-data load has actually resolved, from
-  // every path that can reach "loading is done" below (the plain init
-  // cascade, handleSystemSelectChange/handleSettingSelectChange, or
-  // applyDeepLinkParams' own background Phase 2). A Setting is the one hard
-  // requirement (generateLocation degrades gracefully otherwise — a zero-
-  // synergy Feature/Resource pick is never forced, per this tool's own
-  // design). Previously the button stayed enabled with no Setting picked and
-  // only warned reactively, inside handleGenerate, after the click — same
-  // class of bug as Crucible/Vault/Forge's own Generate buttons, fixed the
-  // same way via the shared setGenerateButtonReadiness helper.
+  // recomputed once the reference-data load resolves. A Setting is the one
+  // hard requirement (generateLocation degrades gracefully otherwise — a
+  // zero-synergy Feature/Resource pick is never forced, per this tool's
+  // own design). Previously the button stayed enabled with no Setting
+  // picked and only warned reactively inside handleGenerate — same class
+  // of bug as Crucible/Vault/Forge's own Generate buttons, fixed the same
+  // way via the shared setGenerateButtonReadiness helper.
   function updateGenerateButtonReadiness() {
     const settingId = currentSettingId || elements.settingSelect?.value;
     const reason = settingId ? "" : "Select or save a Setting first.";
@@ -2199,10 +2065,9 @@ async function init() {
   elements.notesText?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
   elements.notesText?.addEventListener("change", () => commitFieldEdit());
   elements.notesModeToggle?.addEventListener("click", () => {
-    // Notes isn't written back into currentRecord until Save/Export — see
-    // buildRecordForSave-equivalent call sites (handleSave/handleExport) —
+    // Notes isn't written back into currentRecord until Save/Export —
     // switching to View needs the live textarea value, not whatever was
-    // last saved, so it's synced here the same way those already do.
+    // last saved.
     if (currentRecord) currentRecord.notes = elements.notesText?.value || "";
     applyNotesMode(notesMode === "view" ? "edit" : "view");
   });
@@ -2225,10 +2090,9 @@ async function init() {
   });
 
   // Per-field reroll button (createFieldBox's own `rerollable` option) —
-  // same convention Forge's/Crucible's/Vault's own Identity fields use.
-  // Rebuilds the whole Identity grid (not just this one box) since
-  // renderIdentity is the single source of truth for it now, matching
-  // Crucible's own reroll listener.
+  // same convention Forge's/Crucible's/Vault's Identity fields use.
+  // Rebuilds the whole Identity grid since renderIdentity is the single
+  // source of truth for it now, matching Crucible's own reroll listener.
   elements.identityFields?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord) return;
@@ -2351,41 +2215,33 @@ async function init() {
   elements.seasonRows?.addEventListener("input", updateSettingToolbarState);
 
   // Delegated live-dirty-check: any text/number/range/select edit anywhere
-  // in the Location display (Name, Notes, Identity selects,
-  // NPC Generation Config fields) re-evaluates whether Save should light
-  // up, without needing an individual listener wired to every single field.
-  // Add/remove actions (Features/Assets/Needs) are button clicks, not
-  // input/change events, so they already call updateActionButtons()
-  // explicitly at their own call sites above. Relationships (Parent of/
-  // Connected to included) are handled entirely by the shared
-  // relationship-editor.js component and never touch currentRecord/
-  // isLocationDirty at all — they're their own `relationship` records,
-  // saved independently the moment they're added or removed.
+  // in the Location display re-evaluates whether Save should light up,
+  // without needing an individual listener wired to every field.
+  // Add/remove actions (Features/Assets/Needs) are button clicks, so they
+  // already call updateActionButtons() explicitly at their own call sites.
+  // Relationships are handled entirely by the shared relationship-editor.js
+  // component and never touch currentRecord/isLocationDirty — they're
+  // their own `relationship` records, saved independently the moment
+  // they're added or removed.
   elements.display?.addEventListener("input", updateActionButtons);
   elements.display?.addEventListener("change", updateActionButtons);
 
   // Named (not an inline listener) so the init flow below can also call
-  // this directly when auto-selecting the active campaign group's own
-  // System.
+  // this directly when auto-selecting the active campaign group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     currentLocationId = null;
     // Independent fetches, run concurrently — reloadReferenceData's 8-kind
-    // Promise.all (including the two largest kinds in the whole suite,
-    // feature and monster) used to run to completion BEFORE the Setting
-    // picker's own fetch even started, needlessly gating "which Setting can
-    // I pick" behind data Settings never reads. Confirmed real, reported
-    // slowness: the Setting dropdown sat empty for the full reference-data
-    // fetch's duration even though its own fetch is comparatively tiny.
+    // Promise.all (including the two largest kinds in the suite, feature
+    // and monster) used to run to completion BEFORE the Setting picker's
+    // own fetch even started, needlessly gating "which Setting can I pick"
+    // behind data Settings never reads.
     const [, settings] = await Promise.all([reloadReferenceData(), populateSettingSelect(currentSystemId())]);
     // populateSettingSelect (via renderOptionalSelectOptions) keeps the
     // picker's own value selected whenever the previously-loaded Setting is
-    // still in the new System's list (e.g. a multi-System Setting like
-    // Forgotten Realms) — mirror that here instead of unconditionally
-    // clearing, so the picker and the right-pane content never disagree.
-    // Confirmed real bug this fixes: switching System left the Setting
-    // picker still showing the Setting selected while Setting Properties
-    // silently blanked out.
+    // still in the new System's list (e.g. a multi-System Setting) —
+    // mirrored here instead of unconditionally clearing, so the picker and
+    // the right-pane content never disagree.
     const settingId = elements.settingSelect?.value || "";
     currentSettingId = settingId || null;
     updateGenerateButtonReadiness();
@@ -2393,12 +2249,11 @@ async function init() {
     await reloadLocationsForSetting(currentSettingId);
     // reloadLocationsForSetting -> populateLocationSelect never auto-selects
     // a Location (unlike Setting above) — Location is what Sanctum
-    // GENERATES, not a scoping/context picker, so the center pane should
-    // stay blank and ready for Generate rather than silently pre-filling
-    // with an existing saved Location. This only re-selects when
-    // renderOptionalSelectOptions' own "keep the previous value if it's
-    // still valid" behavior left the picker non-blank (e.g. switching
-    // System while the same Location stays valid under it).
+    // GENERATES, so the center pane should stay blank and ready for
+    // Generate. This only re-selects when renderOptionalSelectOptions' own
+    // "keep the previous value if it's still valid" behavior left the
+    // picker non-blank (e.g. switching System while the same Location
+    // stays valid under it).
     if (elements.locationSelect?.value) {
       await selectLocation(elements.locationSelect.value);
     } else {
@@ -2437,8 +2292,8 @@ async function init() {
   });
 
   // Same dirty checks the Save buttons already use — Sanctum had no guard
-  // at all against navigating/closing away from unsaved edits (unlike
-  // Workbench, which already had this).
+  // against navigating/closing away from unsaved edits (unlike Workbench,
+  // which already had this).
   window.addEventListener("beforeunload", (event) => {
     if (!canSaveSetting() && !canSaveLocation()) return;
     event.preventDefault();
@@ -2509,10 +2364,9 @@ async function init() {
       return;
     }
     try {
-      // preferLocal: false — same reason loadSettingIntoForm needs it
-      // (this file, above): a Location's own Species Weights/Properties
-      // must be visible immediately, not hidden behind a stale local
-      // cache from an earlier load in this browser.
+      // preferLocal: false — same reason loadSettingIntoForm needs it: a
+      // Location's own Species Weights/Properties must be visible
+      // immediately, not hidden behind a stale local cache.
       const result = await dataManager.get("location", id, { preferLocal: false });
       renderLocation(createLocationRecord(result?.payload || {}, id));
       markLocationClean();
@@ -2530,9 +2384,8 @@ async function init() {
     if (!confirmDelete({ label: `location "${currentLocationId}"` })) return;
     const settingId = currentSettingId || elements.settingSelect?.value || null;
     // Every descendant (not just direct children) — a grandchild would be
-    // orphaned just the same if only its own parent (one of these children)
-    // gets deleted, so "delete the children too" has to mean the whole
-    // subtree.
+    // orphaned just the same if only its own parent gets deleted, so
+    // "delete the children too" has to mean the whole subtree.
     const descendants = collectDescendantLocations(currentLocationId);
     const deleteDescendants =
       descendants.length > 0 &&
@@ -2578,27 +2431,21 @@ async function init() {
   });
 
   // `?location=<id>` / `?setting=<id>` — a cross-tool deep link (Repository's
-  // own kind-reference chips route here via KIND_TOOL_ROUTE, see
-  // repository/js/app.js) straight to one specific record, same
-  // `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
-  // Loom's own `?feature=` already establish.
+  // own kind-reference chips route here via KIND_TOOL_ROUTE) straight to
+  // one specific record, same `?param=<id>`-read-at-bootstrap convention
+  // Orrery's `?map=`/Loom's `?feature=` already establish.
   //
-  // Two-phase, not one straight-line await chain — confirmed real
-  // slowness: the original version resolved the location's own System/
-  // Setting and ran the FULL cascade (reloadReferenceData's 8 parallel
-  // fetches for the whole System, then EVERY Location in the Setting for
-  // the picker) before ever calling selectLocation, so a deep link into a
-  // large campaign sat on a blank screen through all of that before
-  // showing the one record it actually linked to.
+  // Two-phase, not one straight-line await chain — the original version
+  // resolved the location's own System/Setting and ran the FULL cascade
+  // (reloadReferenceData's 8 parallel fetches, then EVERY Location in the
+  // Setting for the picker) before ever calling selectLocation, so a deep
+  // link into a large campaign sat on a blank screen through all of that.
   // Phase 1 (awaited, blocks return): fetch just the target Location and
-  // render it — selectLocation's own fetch+render, nothing else touched.
-  // Phase 2 (fired but NOT awaited): the System/Setting cascade + full
-  // picker population, entirely in the background — the record is already
-  // on screen by the time this resolves. Feature/Resource/connected-
-  // location names may briefly show as raw ids (renderLocation tolerates
-  // features/resources/locationsInSetting still being their initial empty
-  // arrays) until this lands and its own final selectLocation call
-  // re-renders with everything resolved.
+  // render it. Phase 2 (fired but NOT awaited): the System/Setting cascade
+  // + full picker population, in the background — the record is already on
+  // screen by the time this resolves. Feature/Resource/connected-location
+  // names may briefly show as raw ids until this lands and its own final
+  // selectLocation call re-renders with everything resolved.
   async function applyDeepLinkParams() {
     const params = new URLSearchParams(window.location.search);
     const locationId = params.get("location");
@@ -2633,17 +2480,15 @@ async function init() {
           }
           // handleSystemSelectChange/handleSettingSelectChange both reset
           // currentLocationId and render the empty state as part of their
-          // own normal cascade (the same thing picking a different System/
-          // Setting by hand would do) — this restores the deep-linked
-          // Location, now with every name/list Phase 1 didn't have yet.
+          // own normal cascade — this restores the deep-linked Location,
+          // now with every name/list Phase 1 didn't have yet.
           if (locationId) await selectLocation(locationId);
           updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
-          // leaves the pickers under-populated, not worth surfacing as an
-          // error toast on top of a page that's already showing real content.
-          // Generate stays disabled in this case — reference data may never
-          // have loaded, and clicking it would just throw straight back out.
+          // leaves the pickers under-populated, not worth an error toast on
+          // top of a page already showing real content. Generate stays
+          // disabled — reference data may never have loaded.
         }
       })();
       return true;
@@ -2653,15 +2498,13 @@ async function init() {
     }
   }
 
-  // If a campaign group is active (the header's Campaign dropdown) and that
-  // group has its own System/Setting assigned, default Sanctum's own
-  // pickers to THOSE specifically — a real, GM-chosen fact about the
-  // campaign being played, not a guess — to make mid-campaign generation
-  // faster. Falls through to the original "nothing chosen yet" sequence
-  // whenever there's no active group, or its System/Setting isn't one this
-  // tool's own lists actually contain. An explicit `?location=`/`?setting=`
-  // deep link always wins over both — a real place to go always beats a
-  // guess.
+  // If a campaign group is active and has its own System/Setting assigned,
+  // default Sanctum's own pickers to THOSE specifically — a real, GM-chosen
+  // fact about the campaign, not a guess — to make mid-campaign generation
+  // faster. Falls through to the original placeholder sequence when
+  // there's no active group, or its System/Setting isn't one this tool's
+  // own lists contain. An explicit `?location=`/`?setting=` deep link
+  // always wins over both.
   const systems = await populateSystemSelect();
   const deepLinked = await applyDeepLinkParams();
   if (!deepLinked) {
@@ -2684,13 +2527,9 @@ async function init() {
       renderLocation(null);
     }
     // Both branches above resolve reference data for whatever System ended
-    // up selected (defaultSystemId's own handleSystemSelectChange, or the
-    // parallel fetch just above) — safe to recompute readiness here
-    // regardless of which one ran (idempotent with the calls already inside
-    // handleSystemSelectChange/handleSettingSelectChange). The deepLinked
-    // === true case updates from inside its own Phase 2 background IIFE
-    // instead (applyDeepLinkParams above), once ITS reference-data load
-    // actually finishes.
+    // up selected — safe to recompute readiness here regardless of which
+    // one ran. The deepLinked case updates from inside its own Phase 2
+    // background IIFE instead, once ITS reference-data load finishes.
     updateGenerateButtonReadiness();
   }
 

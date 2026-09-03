@@ -1,13 +1,9 @@
-// Walks a System record's own field-tree definition (system.fields /
+// Walks a System record's field-tree definition (system.fields /
 // system.schema.fields / system.definition.fields, whichever exists) into a
 // flat, filterable {path, label, type, category, displayField} list — the
 // "which fields can a Binding/Formula point at" list every bindable
-// inspector control in this suite needs (see binding-field.js's own
-// createBindingFormulaInput). Shared across tools (originally Workbench-only,
-// relocated here so Orrery's own marker Vision Range field could reuse the
-// exact same walk instead of a second implementation of "understand a
-// System's field tree") — framework-free, no DOM/fetch, safe to import
-// anywhere.
+// inspector control needs (see binding-field.js's createBindingFormulaInput).
+// Framework-free, no DOM/fetch, safe to import anywhere.
 function normalizeType(type) {
   if (typeof type !== "string") {
     return "";

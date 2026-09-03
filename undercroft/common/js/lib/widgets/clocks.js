@@ -1,24 +1,18 @@
 // A single segmented clock (Blades-in-the-Dark-style progress/countdown
-// tracker) — deliberately NOT a Library kind of its own in the authoring
-// sense. A clock is just {name, segments, filled, direction, autoTick...},
-// small enough to live entirely in this widget instance's own persisted
-// contentRef (the same generic per-instance slot Map/Card use for "which
-// record to show" — dashboard.js's setContentRef repurposes it here as "this
-// instance's own config" instead, since there's nothing to reference) rather
-// than round-tripping through a new server-backed kind for a handful of
-// fields. `multiple: true` in the dashboard catalog — add the widget again
-// for another clock.
+// tracker) — deliberately NOT a Library kind. A clock is just {name,
+// segments, filled, direction, autoTick...}, small enough to live entirely
+// in this widget instance's own persisted contentRef rather than round-
+// tripping through a new server-backed kind. `multiple: true` in the
+// dashboard catalog — add the widget again for another clock.
 //
 // Showing a clock to the table carries this config inline on the spotlight
-// entry itself (server/groups.py's own _INLINE_SPOTLIGHT_KINDS, same design
-// browser.js uses for its own URL) rather than through any Library record —
-// no clock.json kind, nothing for the GM to see or manage in Loom's own
-// Library tab, nothing to clean up when this widget instance is removed
-// beyond clearing its own spotlight (see destroy(removed) below). A player
-// who accepts the spotlight gets a read-only *follower* instance instead
-// (see the `followKind`/`followId` branch below) that just polls/
-// live-watches that same spotlight entry's own `data` — same design
-// browser.js's own follower uses, not a parallel mechanism.
+// entry (server/groups.py's own _INLINE_SPOTLIGHT_KINDS, same design
+// browser.js uses) rather than through any Library record — nothing for
+// the GM to manage in Loom's Library tab, nothing to clean up beyond
+// clearing the spotlight (see destroy(removed) below). A player who
+// accepts the spotlight gets a read-only *follower* instance instead (the
+// `followKind`/`followId` branch below) that polls/live-watches that same
+// spotlight entry's `data` — same design as browser.js's own follower.
 import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
@@ -47,26 +41,20 @@ const DEFAULT_CONFIG = {
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) --------
 // Exported so loom/js/app.js's Macro editor can build the Type/Action
 // pickers from the real registry instead of a second, driftable copy.
-// `target` is deliberately absent everywhere in this suite for this type —
-// there's no portable "which clock" to author into a shared macro record,
-// only "whichever one is currently shown" (see runMacroAction below).
+// `target` is deliberately absent everywhere for this type — there's no
+// portable "which clock" to author into a shared macro record, only
+// "whichever one is currently shown" (see runMacroAction below).
 export const CLOCK_MACRO_ACTIONS = {
   show: { label: "Show to table" },
   hide: { label: "Hide from table" },
   advance: { label: "Advance / retreat", params: ["delta"] },
   set: { label: "Set filled segments", params: ["filled"] },
-  // Unlike the other actions above (which only ever act on whichever clock
-  // is ALREADY visible — see dashboard.js's own findActiveWidgetInstance),
-  // "create" is allowed to add a widget when none exists yet at all; see
-  // dashboard.js's own ensureLiveWidgetInstance for the resolution this
-  // relies on. Handled identically to "show" once a target instance exists.
+  // Unlike the actions above (which only act on whichever clock is ALREADY
+  // visible), "create" is allowed to add a widget when none exists yet.
   create: { label: "Create new & show" },
 };
 
-// 5s (was 30s) — same reasoning as combat-tracker.js's own POLL_INTERVAL_MS:
-// a physical second-screen display wants a clock's own tick to feel live,
-// and single-window background polling is now confirmed reliable.
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 5000; // a physical second-screen display wants a clock's tick to feel live
 
 function icon(name) {
   const span = el("span", "iconify");
@@ -117,14 +105,11 @@ function renderFollowerEmpty(container) {
   container.appendChild(el("p", "text-body-secondary small mb-0", "The GM isn't showing this clock right now."));
 }
 
-// contentRef.followKind === "clock" marks a "follower" instance — created by
-// acceptSpotlight (dashboard.js) when a player accepts a GM's clock
-// spotlight, never by manually adding the Clock widget from the toolbar.
-// Purely a read-only mirror: no name/segments/direction controls, nothing
-// persisted locally, just whatever the GM's own instance last showed — read
-// via resolveSpotlightData (the spotlight entry's own inline `data`), since
-// there's no Library record to fetch. Same shape as browser.js's own
-// initFollowerBrowser.
+// contentRef.followKind === "clock" marks a "follower" instance — created
+// by acceptSpotlight when a player accepts a GM's clock spotlight, never by
+// manually adding the Clock widget. Purely a read-only mirror, read via
+// resolveSpotlightData since there's no Library record to fetch. Same
+// shape as browser.js's own initFollowerBrowser.
 function initFollowerClock(container, { dataManager, groupId = "", shareToken = "", followId, setTitle }) {
   let destroyed = false;
   let pollTimer = 0;
@@ -146,14 +131,9 @@ function initFollowerClock(container, { dataManager, groupId = "", shareToken = 
   }
 
   void refresh();
-  // createReliableInterval (not plain window.setInterval) — a followed clock
-  // popped out onto a physical second screen sits unfocused for the whole
-  // session; plain setInterval was confirmed to stall there until the window
-  // was manually refocused. See reliable-interval.js's own header.
+  // createReliableInterval, not plain setInterval — a followed clock popped onto a second screen must not stall unfocused.
   pollTimer = createReliableInterval(() => void refresh(), POLL_INTERVAL_MS);
-  // The group log itself is the one live channel every inline-kind follower
-  // watches (no dedicated "clock" kind live-stream anymore, since there's no
-  // Library record to key one off of) — matches browser.js's own follower.
+  // The group log is the one live channel every inline-kind follower watches — matches browser.js's own follower.
   const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
   liveStream.subscribe("group_log", () => void refresh());
 
@@ -193,18 +173,11 @@ export function initClockWidget(
   }
 
   // The second-screen mirror window is a completely independent JS context
-  // from the GM's own dashboard tab (window.open, not a shared in-page
-  // render) — the "author" render path below only ever changes `config` via
-  // LOCAL persist() calls from GM interaction in THAT SAME window, so a
-  // forced-player-view instance that used it would just render one static
-  // snapshot of the config at the moment it mounted, forever (confirmed: this
-  // was why an early pop-out prototype of this never updated, even focused —
-  // not a reliable-interval problem at all). Treating it as a follower OF
-  // ITSELF — polling/live-watching the same spotlight data toggleVisibility
-  // already posts/refreshes while this clock is actually shown to the table
-  // — is what makes it a real, live view instead. If the GM has never shown
-  // it, this just reads as "not currently shown," same as any other
-  // follower would.
+  // (window.open, not shared in-page render) — the author render path below
+  // only changes `config` via LOCAL persist() calls in that same window, so
+  // a forced-player-view instance using it would render one static snapshot
+  // forever. Treating it as a follower OF ITSELF — polling the same
+  // spotlight data toggleVisibility posts/refreshes — makes it a real live view instead.
   if (forcePlayerView && instanceId) {
     return initFollowerClock(container, {
       dataManager,
@@ -228,12 +201,8 @@ export function initClockWidget(
   }
 
   // Ticks are driven by the same `direction` the fill color already uses —
-  // "up" advances toward the segmented bar filling completely, "down"
-  // retreats toward empty — so there's just one direction setting to
-  // configure, not a second one specific to auto-ticking. createReliableInterval
-  // (not plain window.setInterval) — this GM-authored clock can itself end up
-  // popped out onto a physical second screen, same reliability need as the
-  // follower poll above.
+  // one setting, not a second one specific to auto-ticking.
+  // createReliableInterval, same reliability need as the follower poll above.
   function startAutoTick() {
     stopAutoTick();
     if (!config.autoTickEnabled) return;
@@ -261,21 +230,13 @@ export function initClockWidget(
       visible = false;
       return;
     }
-    // Per-instance, not just per-kind — every clock is kind "clock"
-    // regardless of which one, so without this a second clock being shown
-    // made the first one's own still-active spotlight invisible to it (see
-    // resolveIsSpotlighted's own comment — this was the exact bug report).
+    // Per-instance, not just per-kind — every clock is kind "clock" regardless of which one.
     visible = await resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "clock", id: instanceId });
     updateVisibilityAction();
   }
 
-  // Keeps a follower's next poll (or live-stream nudge) current with this
-  // clock's config — called after every persist() while this clock is the
-  // one currently visible. A plain spotlight-update (not a fresh `spotlight`
-  // entry) on every tick, not a fresh group-log post each time — a fresh
-  // `spotlight` would re-trigger every other viewer's accept-prompt/Game Log
-  // row on every single tick, which the log is not meant for (see
-  // data-manager.js's own updateSpotlightData).
+  // A plain spotlight-update, not a fresh `spotlight` entry — that would
+  // re-trigger every other viewer's accept-prompt/Game Log row on every single tick.
   async function pushVisibleUpdate() {
     if (!visible || !dataManager || !instanceId || !groupId) return;
     try {
@@ -295,11 +256,9 @@ export function initClockWidget(
         await dataManager.clearSpotlight({ groupId, kind: "clock", id: instanceId });
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } else {
-        // skipShare — there's no Library record to grant view permission on
-        // at all (see this file's own header comment); the server enforces
-        // the same allowance independently for kind "clock". `data` is this
-        // clock's own config — the only "content" a follower or the second
-        // screen needs, carried inline rather than fetched.
+        // skipShare — no Library record to grant view permission on; the
+        // server enforces the same allowance independently for kind
+        // "clock". `data` is this clock's own config, carried inline.
         await dataManager.spotlightToGroup({
           groupId,
           contentType: "clock",
@@ -325,14 +284,10 @@ export function initClockWidget(
   }
 
   // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
-  // Unlike every portable-by-id action type, a Clock has no Library record
-  // and can't be addressed by instance id from a shared macro (see this
-  // file's own header comment) — the only sensible target is "whichever
-  // clock is currently shown to the table," which dashboard.js's own
-  // findActiveWidgetInstance resolves by scanning mounted Clock instances
-  // for the one reporting isVisible() === true. show/hide reuse
-  // toggleVisibility's own logic rather than unconditionally toggling, so a
-  // "show" action run twice in a row is a no-op the second time, not a hide.
+  // No Library record, so no addressable instance id — the only sensible
+  // target is "whichever clock is currently shown," resolved by scanning
+  // mounted instances for isVisible() === true. show/hide reuse
+  // toggleVisibility's logic so running "show" twice is a no-op, not a hide.
   async function runMacroAction(action) {
     const params = action?.params || {};
     if (action?.action === "show" || action?.action === "create") {
@@ -356,21 +311,15 @@ export function initClockWidget(
     throw new Error(`Unknown Clock macro action "${action?.action}".`);
   }
 
-  // Only ever reached for a genuine GM-authoring instance now — a
-  // forcePlayerView instance returns early above (as a follower of itself)
-  // before this closure is even built, so there's no player-view branch to
-  // handle here anymore.
+  // Only ever reached for a genuine GM-authoring instance — forcePlayerView returns early above.
   function render() {
     if (destroyed) return;
     disposeTooltips(container);
     container.innerHTML = "";
     const wrap = el("div", "d-flex flex-column gap-2");
 
-    // Row 1 — name, segment count, direction, and color together, always
-    // one row (no flex-wrap) — the name field is the one that shrinks
-    // (flex-grow *and* the browser's own default flex-shrink) to make room
-    // for the other three, which all have a fixed/intrinsic width, rather
-    // than letting the row wrap and push color onto its own line.
+    // Row 1 — name, segments, direction, color, always one row (no
+    // flex-wrap) — the name field is the one that shrinks to make room for the other three.
     const topRow = el("div", "d-flex gap-2 align-items-end");
     const nameWrap = el("div", "flex-grow-1");
     nameWrap.style.minWidth = "3rem";
@@ -407,12 +356,8 @@ export function initClockWidget(
     directionSelect.appendChild(new Option("Fills up", "up"));
     directionSelect.appendChild(new Option("Counts down", "down"));
     directionSelect.value = config.direction;
-    // Switching direction re-arms the clock at that direction's own natural
-    // starting point — a "Counts down" clock reads as a timer draining from
-    // full, so it should start full; "Fills up" reads as building toward
-    // full from nothing, so it should start empty. Segment count and manual
-    // +/- clicks are untouched otherwise; this only fires on an explicit
-    // direction change.
+    // Switching direction re-arms the clock at its natural starting point —
+    // "Counts down" should start full, "Fills up" should start empty.
     directionSelect.addEventListener("change", () => {
       const nextDirection = directionSelect.value;
       persist({ ...config, direction: nextDirection, filled: nextDirection === "down" ? config.segments : 0 });
@@ -450,9 +395,7 @@ export function initClockWidget(
     plusButton.addEventListener("click", () =>
       persist({ ...config, filled: Math.min(config.segments, config.filled + 1) })
     );
-    // Same natural-start rule as switching direction (see directionSelect's
-    // own handler above) — resets to empty for a "fills up" clock, full for
-    // a "counts down" one, rather than always zeroing out.
+    // Same natural-start rule as switching direction.
     const resetButton = el("button", "btn btn-sm btn-outline-secondary");
     resetButton.type = "button";
     resetButton.setAttribute("aria-label", "Reset");
@@ -503,26 +446,16 @@ export function initClockWidget(
 
   render();
   setTitle?.(config.name);
-  // First mount with nothing saved yet — persist the default immediately so
-  // a reload doesn't silently regenerate/lose it.
-  if (!contentRef) setContentRef?.(config);
+  if (!contentRef) setContentRef?.(config); // first mount — persist the default immediately so a reload doesn't lose it
   startAutoTick();
   void refreshVisibility();
 
   return {
     runMacroAction,
-    // Read by dashboard.js's findActiveWidgetInstance (ensureWidgetForMacroAction)
-    // to find which of possibly several mounted Clock instances a macro's
-    // "active" targeting should actually touch.
+    // Read by dashboard.js's findActiveWidgetInstance to find which mounted Clock instance a macro should touch.
     isVisible: () => visible,
-    // `removed` is only ever true from dashboard.js's removeWidget (as
-    // opposed to a routine re-render's destroyAllWidgets, which never passes
-    // it) — the one moment this instance's own still-active spotlight (if
-    // any) needs clearing. There's no Library record here to make this
-    // automatic (see this file's own header comment) — without this,
-    // removing a currently-shown clock would orphan any follower/second-
-    // screen view on frozen, never-clearable stale data, since nothing could
-    // ever toggle this instance's own id off again.
+    // `removed` is only true from dashboard.js's removeWidget — the one
+    // moment this instance's still-active spotlight needs clearing (no Library record to make this automatic).
     async destroy(removed) {
       destroyed = true;
       stopAutoTick();

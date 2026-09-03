@@ -89,57 +89,29 @@ import {
   DEFAULT_FONT_FAMILY,
 } from "../../common/js/lib/font-library.js";
 
-// Built and mounted before any of the querySelector/getElementById lines
-// below query these buttons (by data-action/data-template-*), so every
-// existing selector/disabled-state call site elsewhere in this file keeps
-// working unchanged. New/Save/Duplicate/Delete Template consolidated here
-// (Duplicate/Delete used to live in their own right-pane toolbar row,
-// data-template-toolbar-mount — now removed) — same New/Save/Duplicate/
-// Delete/Undo/Redo order and single left-pane toolbar cluster every other
-// tool uses. Print moved OUT of this cluster entirely — it's Press's own
-// one true primary action, not a New/Save/Duplicate/Delete/Undo/Redo slot —
-// and is now a standalone static button in the center pane (index.html,
-// id="printButton", queried by id below same as before). Import/Export
-// moved into the JSON Data panel's own onImport/onExport instead of living
-// here as standalone buttons — see jsonDataPanel's own construction below.
+// Built/mounted before any querySelector below queries these buttons. Same
+// New/Save/Duplicate/Delete/Undo/Redo cluster order every tool uses; Print
+// stays its own center-pane button, Import/Export live in JSON Data instead.
 createToolbarButtonGroup([
   { action: "new", label: "New Template", attrs: { "data-action": "new-template" } },
   { action: "save", label: "Save", attrs: { "data-action": "save-layout" } },
   { action: "duplicate", label: "Duplicate Template", attrs: { "data-template-duplicate": true } },
   { action: "delete", label: "Delete Template", visible: false, attrs: { "data-template-delete": true } },
 ]).forEach((button) => document.querySelector("[data-press-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — same convention every other
-// tool's toolbar now uses (see forge/js/app.js's own comment).
+// A small visual break, not a functional one — same convention every other tool's toolbar uses.
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
   { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
 ]).forEach((button) => document.querySelector("[data-press-undo-toolbar-mount]")?.appendChild(button));
 
-// The Component/Template Inspector's individually-toggled property fields
-// (createFormFloatingField/createButtonCheckGroup/createCheckField/
-// createCompactField — common/js/lib/ui-components.js) — built and mounted
-// here, before any of the querySelector/getElementById lines below query
-// them by id or data-component-*/data-template-* attribute, so every
-// existing selector/read/write call site elsewhere in this file keeps
-// working unchanged. Each field here is genuinely one-of-a-kind (not
-// duplicated across the suite, or even within this file) — this exists to
-// turn "one repeated markup shape, many distinct configs" into data, not to
-// introduce a new abstraction the content doesn't need. Left as static HTML
-// on purpose (not migrated): the icon-field and image-url input-groups, the
-// component-type-summary card, and the already JS-generated color fields
-// (data-inspector-color-fields, built separately by createColorPickerField)
-// — none of those are the same repeated shape, forcing them through would
-// be a new abstraction for content that doesn't need one.
+// Inspector fields built/mounted here before any querySelector below reads
+// them by data-* attribute. A few pieces (icon/image-url groups, type-summary
+// card, color fields) stay hand-written since they aren't a repeated shape a
+// factory would help.
 //
-// replaceWith, not appendChild — the built field becomes the flex item
-// itself instead of sitting inside an extra wrapper div. That wrapper used
-// to stay in-flow (0 height, but still a real flex child) even when the
-// field inside it was conditionally hidden, so every hidden field between
-// two visible ones was still spending a full gap-3 on both sides of it —
-// stacked across a dozen conditionally-hidden fields, that's what produced
-// the large dead space users were seeing in the inspector. Any class the
-// static mount div itself carried (grid col-* sizing, mostly) is merged
-// onto the built field so removing the wrapper doesn't lose that layout.
+// replaceWith, not appendChild — a wrapper div left in-flow at 0 height still
+// reserves a flex-child slot when its field is conditionally hidden,
+// producing dead space; the mount div's own classes merge onto the built field.
 function mountInspectorField(key, element) {
   const mount = document.querySelector(`[data-inspector-mount="${key}"]`);
   if (!mount) return;
@@ -147,20 +119,13 @@ function mountInspectorField(key, element) {
   mount.replaceWith(element);
 }
 
-// Template Properties — previously ~30 hand-built label+input pairs across
-// this file's Template/Grid Properties panels and Position/Image-size/
-// Pan-Zoom/Border fields, none backed by any factory (createCompactField
-// didn't exist yet). All read/written externally via the same data-*
-// attribute query convention every other field in this file already uses —
-// these mount calls only build the markup.
-// ID/Name/Description/Type/Base font specifically use createFormFloatingField
-// (the condensed "label folded into the box" shape) rather than
-// createCompactField — matching the identity/metadata fields in Workbench's
-// own Template Properties panel, which made the same switch. The rest of
-// this file's Template/Grid Properties fields (grid-packed pairs like
-// Width/Height, and the Formats/Sources multi-selects createFormFloatingField
-// has no "select-multiple" support for) stay on createCompactField, same as
-// Workbench kept those in the "dense grid-packed field" category.
+// Template Properties fields — all read/written externally via the same
+// data-* attribute query convention every field in this file uses; these
+// mount calls only build the markup. ID/Name/Description/Type/Base font use
+// createFormFloatingField (label folded into the box), matching Workbench's
+// own Template Properties panel; dense grid-packed fields (Width/Height,
+// and the Formats/Sources multi-selects createFormFloatingField has no
+// select-multiple support for) stay on createCompactField.
 mountInspectorField("template-id", createFormFloatingField({ type: "text", id: "templateId", label: "ID", dataAttr: "data-template-id", placeholder: " " }));
 mountInspectorField("template-name", createFormFloatingField({ type: "text", id: "templateName", label: "Name", dataAttr: "data-template-name", placeholder: " " }));
 mountInspectorField(
@@ -846,11 +811,11 @@ const cardPageNav = document.querySelector("[data-card-page-nav]");
 const cardPagePrevButton = document.querySelector("[data-card-page-prev]");
 const cardPageNextButton = document.querySelector("[data-card-page-next]");
 const cardPageLabel = document.querySelector("[data-card-page-label]");
-// Mode toggle (createModeToggleGroup) replaces the old nav-tabs pair —
-// rebuilds fresh on every renderModeToggle() call, so there's no persistent
-// "grid tab button" reference the way the old static nav-link was; the
-// "disabled while this template has no real grid" state (updateGridViewAvailability)
-// is instead re-applied to the freshly-built radio input each render.
+// Mode toggle (createModeToggleGroup) rebuilds fresh on every
+// renderModeToggle() call, so there's no persistent "grid tab button"
+// reference — the "disabled while this template has no real grid" state
+// (updateGridViewAvailability) is re-applied to the freshly-built radio
+// input each render.
 const modeToggleMount = document.querySelector("[data-press-mode-toggle-mount]");
 const viewControlsPreview = document.querySelector('[data-view-controls="preview"]');
 const viewControlsGrid = document.querySelector('[data-view-controls="grid"]');
@@ -868,10 +833,9 @@ const canvasZoomLevelLabel = document.querySelector("[data-canvas-zoom-level]");
 const guideLegendElement = document.querySelector("[data-canvas-guide-legend]");
 const generateButton = document.getElementById("generateButton");
 const printButton = document.getElementById("printButton");
-// selectionToggle/selectionPanel used to be queried here as static markup;
-// the section is now built inside initPressCollapsibles() instead (see
-// there), since createCollapsibleSection needs to run after
-// applySelectionCollapse's own `let` declaration further down this file.
+// selectionToggle/selectionPanel are built inside initPressCollapsibles()
+// instead of queried as static markup, since createCollapsibleSection needs
+// to run after applySelectionCollapse's own `let` declaration further down.
 const newTemplateButton = document.querySelector('[data-action="new-template"]');
 const undoButton = document.querySelector('[data-action="undo-layout"]');
 const redoButton = document.querySelector('[data-action="redo-layout"]');
@@ -880,23 +844,11 @@ const paletteList = document.querySelector("[data-press-palette]");
 const layoutList = document.querySelector("[data-layout-list]");
 const layoutEmptyState = document.querySelector("[data-layout-empty]");
 
-// JSON Data — a plain readonly preview, built via the shared factory (same
-// shape as every other tool's JSON Data panel). getSelectionContext/
-// resolveBasePreviewData are function declarations (hoisted) and
-// buildTemplatePreview is an import, so referencing them here — well before
-// their own definitions further down the file — is safe; this closure only
-// runs when jsonDataPanel.render() is actually called, always well after
-// full module evaluation.
-// The old toolbar's own "Import"/"Export" buttons (data-action="import-
-// layout"/"export-layout") were confirmed dead code before this pass — no
-// click handler existed anywhere for either, in this file or elsewhere.
-// Export gets a real implementation here (same Blob/anchor/download shape
-// every other tool's own JSON export uses, over this panel's own getData
-// output); Import has no well-defined "apply this back" meaning to build
-// against — getData below returns a fully RESOLVED preview (template +
-// bindings + data already merged), not the editable Template/Component
-// source of truth, so there's nothing coherent to round-trip it into. Left
-// out rather than fabricated.
+// JSON Data: readonly preview via the shared factory. getSelectionContext/
+// resolveBasePreviewData are hoisted, so referencing them here before their
+// own definitions is safe — this closure only runs once render() fires. No
+// Import: getData returns a fully RESOLVED preview (template+bindings+data
+// merged), not an editable source of truth to round-trip.
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   id: "press-json",
@@ -973,33 +925,20 @@ const templateFrontDataInput = document.querySelector("[data-template-front-data
 const templateFrontRepeatInput = document.querySelector("[data-template-front-repeat]");
 const templateBackDataInput = document.querySelector("[data-template-back-data]");
 const templateBackRepeatInput = document.querySelector("[data-template-back-repeat]");
-// templateToggle/templatePanel used to be queried here as static markup;
-// the section is now built inside initPressCollapsibles() instead (see
-// there), since it needs to run after applyTemplateCollapse's own `let`
-// declaration further down this file. Page Bindings/Grid Properties now use
-// the same makeInspectorGroupCollapsible mechanism the Component Inspector's
-// own groups do (initPressCollapsibles), which builds its own body wrapper
-// from static markup directly — no separate panel div to query here anymore.
+// templateToggle/templatePanel and componentToggle/componentPanel sections
+// are built inside initPressCollapsibles() (must run after
+// applyTemplateCollapse's own `let` declaration further down this file),
+// using the same makeInspectorGroupCollapsible mechanism the Component
+// Inspector's own groups do — not queried here as static markup.
 const templateSaveButton = document.querySelector("[data-template-save]");
-// Built and mounted before the querySelector lines just below, so every
-// existing selector/disabled-state/title call site elsewhere in this file
-// keeps working unchanged. Clear Uniqueness has no ACTION_PRESETS match, so
-// its icon/variant are both explicit. Both Duplicate's and (further below)
-// Component's tooltip text is longer than their aria-label/visible-hidden
-// text — attrs' own data-bs-title, applied after the label-driven one
-// inside createIconButton, overrides just the tooltip without touching
-// aria-label.
-// Clear all uniqueness itself is now built as one of the Template
-// Properties collapsible section's own header `actions` (see
-// initPressCollapsibles below) rather than a standalone toolbar row — same
-// data-template-clear-uniqueness attribute, so the click listener further
-// below still finds it unchanged.
+// Clear Uniqueness has no ACTION_PRESETS match, so its icon/variant are both
+// explicit; it's built as one of the Template Properties section's own
+// header `actions`, but keeps the same data-template-clear-uniqueness
+// attribute the click listener below finds it by.
 
 const templateDuplicateButton = document.querySelector("[data-template-duplicate]");
 const templateClearUniquenessButton = document.querySelector("[data-template-clear-uniqueness]");
 const templateDeleteButton = document.querySelector("[data-template-delete]");
-// componentToggle/componentPanel (full section migration) are now built
-// inside initPressCollapsibles() instead of queried here — see there.
 const inspectorSection = document.querySelector("[data-component-inspector]");
 const typeSummary = document.querySelector("[data-component-type-summary]");
 let typeIcon = document.querySelector("[data-component-type-icon]");
@@ -1123,17 +1062,11 @@ const textStyleToggles = Array.from(document.querySelectorAll("[data-component-t
 const alignInputs = Array.from(document.querySelectorAll("[data-component-align]"));
 const visibilityToggle = visibleField.switchInput;
 const visibleWhenInput = visibleField.bindingInput;
-// Built and mounted before the querySelector lines just below, so every
-// existing selector/state call site elsewhere in this file keeps working
-// unchanged. Make Unique has no ACTION_PRESETS match (icon/variant explicit)
-// and carries an aria-pressed state the factory doesn't model — set via
-// attrs, then flipped directly by this file's own existing
-// makeUniqueButton.setAttribute("aria-pressed", ...) calls elsewhere, same
-// as before. Delete Component's own visually-hidden label span needs the
-// data-component-delete-label marker this file's deleteButtonLabel relies
-// on for its own textContent updates — createToolbarButtonGroup builds that
-// span internally with no hook to tag it, so it's added as a one-off
-// afterward via a plain DOM query on the built button.
+// Make Unique has no ACTION_PRESETS match (icon/variant explicit) and
+// carries an aria-pressed state the factory doesn't model — set via attrs,
+// flipped later via makeUniqueButton.setAttribute. Delete Component's hidden
+// label needs a data-component-delete-label marker the factory has no hook
+// for, so it's tagged afterward via a plain DOM query.
 const componentToolbarButtons = createToolbarButtonGroup([
   {
     icon: "tabler:fingerprint",
@@ -1171,11 +1104,9 @@ const bindingFieldCache = {
   source: null,
   entries: [],
 };
-// Not a module-top-level const — the <aside> itself is now JS-built by
-// buildPaneShell() (common/js/lib/app-shell.js), inside initAppShell(),
-// which this file only calls later (from initShell(), invoked from
-// initPress()); an eager query here would capture null permanently. Every
-// call site below queries it live instead.
+// Not a module-top-level const — the <aside> is JS-built by buildPaneShell()
+// inside initAppShell(), which this file only calls later; an eager query
+// here would capture null permanently. Every call site queries it live.
 function queryRightPane() {
   return document.querySelector('[data-pane="right"]');
 }
@@ -1183,29 +1114,22 @@ function queryRightPane() {
 const sourceValues = {};
 const sourcePayloads = {};
 let currentSide = "front";
-// 0-based index into a card/chip template's physical pages — how many
-// pages a side needs depends on its repeated data (getCardPageCount,
-// templates.js), so this only ever means anything for those template
-// types; renderPreview clamps it every render rather than trusting it to
-// always already be in range (switching to a template/side with less data
-// than the one currently being viewed, in particular).
+// 0-based index into a card/chip template's physical pages (getCardPageCount,
+// templates.js) — only meaningful for those template types; renderPreview
+// clamps it every render rather than trusting it to stay in range.
 let cardPageIndex = 0;
-// 0-based index into the full repeat data array (not a physical page —
-// see cardPageIndex above for that) for the separate Grid View, which
-// always shows exactly one card at a time regardless of the template's
-// configured columns/rows. Independent state from cardPageIndex since the
-// two views serve different purposes (reviewing the print sheet layout vs.
-// targeting one specific card for a "Make Unique" override) and don't need
-// to stay in sync.
+// 0-based index into the full repeat data array (not a physical page) for
+// Grid View, which always shows exactly one card regardless of configured
+// columns/rows. Independent from cardPageIndex — the two views serve
+// different purposes and don't need to stay in sync.
 let gridViewIndex = 0;
 // Which of the two Live Preview tabs is currently shown — "Make Unique" is
 // only meaningful (and only enabled) while viewing the Grid View, since
 // that's the only place a component selection maps unambiguously to one
 // specific card (the page-grid view can show several cards per page).
 let activeViewTab = "preview";
-// Re-applied to the Mode toggle's own "grid" radio input on every
-// renderModeToggle() rebuild (see updateGridViewAvailability) — the toggle
-// itself has no persistent DOM node the way the old static nav-link did.
+// Re-applied to the Mode toggle's "grid" radio input on every
+// renderModeToggle() rebuild — the toggle has no persistent DOM node.
 let gridViewAvailable = true;
 let selectedNodeId = null;
 let nodeCounter = 0;
@@ -1220,9 +1144,8 @@ let isApplyingHistory = false;
 let pendingUndoSnapshot = null;
 let pendingUndoTarget = null;
 let status = null;
-// Hoisted from initPress() so tier-gated UI (the font library's
-// add/delete controls) can read the current session from the same
-// instance initAuthControls manages, not a separate one.
+// Hoisted from initPress() so tier-gated UI (font library add/delete
+// controls) reads the same session instance initAuthControls manages.
 let dataManager = null;
 let lastSavedLayout = null;
 let isSaving = false;
@@ -1246,36 +1169,24 @@ const COLOR_DEFAULTS = {
   border: "#dee2e6",
 };
 
-// One combined field per color (node.style.colorWhen/backgroundColorWhen/
-// borderColorWhen) — same "single string, @binding or =formula" shape
-// visibleWhen already uses, not Workbench's split Binding+Formula pair
-// (Press always has a concrete getSampleData() record to run a formula
-// against, so there's no need to distinguish the two the way Workbench's
-// preview-only canvas does).
+// One combined field per color (same @binding/=formula string shape as
+// visibleWhen), not Workbench's split Binding+Formula pair — Press always has
+// a concrete getSampleData() record to evaluate against, so there's no
+// ambiguity to resolve.
 //
-// "text" (not "foreground") — matches Workbench's own rename (see that
-// tool's COLOR_FIELD_MAP comment): this only ever colors a node's own
-// text, so the label said what it does instead of a vaguer, easily
-// confused-with-"fill" name. Press has no component with a separate fill
-// concept yet (nothing here needs a 4th color the way Workbench's Toggle
-// does), so unlike Workbench this stays three entries — the vocabulary
-// (prop: "color", same as always) is unaffected, only the key/label.
+// "text" (not "foreground") matches Workbench's rename; Press has no
+// separate fill concept yet, so this stays three entries unlike Workbench's.
 const COLOR_FIELD_MAP = {
   text: { label: "Text", prop: "color", whenProp: "colorWhen", default: COLOR_DEFAULTS.text },
   background: { label: "Background", prop: "backgroundColor", whenProp: "backgroundColorWhen", default: COLOR_DEFAULTS.background },
   border: { label: "Border", prop: "borderColor", whenProp: "borderColorWhen", default: COLOR_DEFAULTS.border },
 };
 
-// Every inspector-side binding/formula preview in this file goes through
-// here instead of resolveBinding directly, for the same reason
-// template-renderer.js's own identically-named wrapper exists: so
-// `lookup(table, key)` (bindings.js's createLookupFn) is available
-// everywhere a template author can type a binding/formula, not just
-// colors. No System field list is passed here either, matching
-// template-renderer.js's own — this inspector's preview should show
-// exactly what the real render would, and the real render only ever
-// searches `context` (see createLookupFn's own comment on why Press never
-// gets a System-schema fallback).
+// Every inspector-side binding/formula preview goes through here instead of
+// resolveBinding directly, same as template-renderer.js's identically-named
+// wrapper, so `lookup(table, key)` is available everywhere a template
+// author can type a binding/formula. No System field list is passed —
+// matches the real render, which only ever searches `context`.
 function resolveBindingWithLookup(raw, context) {
   return resolveBinding(raw, context, {
     functions: { lookup: createLookupFn(context), lookupField: createLookupFieldFn(context) },
@@ -1305,23 +1216,15 @@ function renderColorFields(node) {
     const bindingValue = node.style?.[config.whenProp] || "";
     colorFieldsContainer.appendChild(
       createColorPickerField(config.label, {
-        // The RAW stored color (node.style.color/backgroundColor/
-        // borderColor) — no getComputedStyle, no inferring from what's
-        // currently rendered in previewStage (a prior version resolved the
-        // "real" rendered color off the live preview node, which broke in
-        // practice: previewStage applies its OWN selected-node outline
-        // (.press-component--selected) to the same element a node's own
-        // borderColor renders on, so a selected border-less node's computed
-        // border color was the editor's own selection ring, not the node's
-        // actual, nonexistent border). Also no padding to COLOR_DEFAULTS
-        // when empty — that used to happen here (a removed
-        // resolveEffectiveColor helper) and made a cleared color
-        // indistinguishable from a real, explicitly-chosen default: the
-        // picker's own committedHex/hasManualValue derive straight from
-        // value, so a padded non-empty value always read as "set," and the
-        // unset-X overlay never showed after Clear. defaultValue below
-        // already covers "what hue to start the popover from when nothing's
-        // set" — set means set, empty means unset, full stop.
+        // The RAW stored color, never getComputedStyle/the live preview node
+        // — previewStage's own selected-node outline shares borderColor's
+        // rendering slot, so a selected border-less node's computed border
+        // color would read as the selection ring, not "no border". Also
+        // never padded to COLOR_DEFAULTS when empty: committedHex/
+        // hasManualValue derive straight from value, so a padded value
+        // always reads "set" and the unset-X overlay never shows after
+        // Clear. defaultValue below only seeds the popover's starting hue —
+        // set means set, empty means unset.
         value: node.style?.[config.prop] || "",
         defaultValue: config.default,
         bindingValue,
@@ -1912,11 +1815,9 @@ function resolveNodePreviewContext(node, targetId, context) {
     }
   }
   if (node.type === "field" && node.component === "repeater") {
-    // Unlike the old table, `cells[0]` is always THE item template — no
-    // per-row search needed, it's the only row there is — so this just
-    // resolves item index 0's context and walks that one row, plus
-    // headerCells[0] (if any) walked with the outer context since a header
-    // renders once, never per-item.
+    // `cells[0]` is always THE item template (the only row there is), so
+    // this resolves item index 0's context and walks that row; headerCells[0]
+    // walks with the outer context since a header renders once, never per-item.
     const items = resolveBindingWithLookup(node.itemsBind, context) ?? node.items ?? [];
     const itemContext = createItemContext(context, asArray(items)[0], 0);
     const templateRow = Array.isArray(node.cells) ? node.cells[0] : null;
@@ -2168,12 +2069,9 @@ function updateSaveState() {
   const hasTemplate = Boolean(getActiveTemplate());
   const hasChanges = hasTemplate && !snapshotsEqual(lastSavedLayout, createLayoutSnapshot());
   const enabled = hasChanges && !isSaving;
-  // setDisabledTooltip (tooltips.js) owns real `disabled` + the explanation
-  // together — a real `disabled` attribute blocks hover entirely, so a bare
-  // `title` set alongside it (the previous approach here) could never
-  // actually show; same bug class as every other disabled-button-tooltip
-  // fix in the suite, just missed here since it used native `title` instead
-  // of a Bootstrap tooltip.
+  // setDisabledTooltip owns real `disabled` + its explanation together — a
+  // real `disabled` attribute blocks hover, so a bare `title` alongside it
+  // could never actually show.
   const reason = !hasTemplate
     ? "Select a template before saving."
     : isSaving
@@ -2370,31 +2268,23 @@ function cloneLayoutWithIds(layout) {
   return assignNodeIds(normalizeLegacyLayoutNode(copy));
 }
 
-// assignNodeIds keeps a node's existing uid if it already has one (it's for
-// backfilling ids onto a tree that's missing them, e.g. a freshly loaded
-// template) — a real duplicate needs the opposite: every uid in the
-// subtree stripped first (stripNodeIds, defined above for template-save
-// export, does exactly that), so assignNodeIds is then forced to hand out
-// entirely new ones and the copy can never collide with the original.
+// assignNodeIds keeps a node's existing uid (for backfilling ids onto a tree
+// missing them). A real duplicate needs the opposite: strip every uid first
+// (stripNodeIds) so assignNodeIds is forced to hand out fresh ones that can't
+// collide with the original.
 function cloneNodeWithFreshIds(node) {
   if (!node) return null;
   const copy = typeof structuredClone === "function" ? structuredClone(node) : JSON.parse(JSON.stringify(node));
   return assignNodeIds(stripNodeIds(copy));
 }
 
-// A node's style.fontFamily is already a fully-resolved CSS value (e.g.
-// "'Cinzel', serif") the moment it's loaded from a saved template — the
-// renderer just applies it directly, and the browser silently falls back
-// to the CSS fallback (generic sans-serif, usually) unless the actual
-// Google Fonts stylesheet has been injected via ensureFontLoaded. That
-// injection previously only ever happened as a side effect of the font
-// dropdown rendering its own rows (attachFontFamilyAutocomplete) — which
-// never runs just from loading a template, only from clicking into that
-// specific field — so any font never touched that way stayed on its
-// fallback until someone happened to open the dropdown for it. Walking the
-// whole tree here (same placements/cells shape as findNodeById) at every
-// template (re)hydration fixes it regardless of whether that field is ever
-// interacted with.
+// A saved node's style.fontFamily is a fully-resolved CSS value the renderer
+// applies directly — the browser silently falls back to a generic font
+// unless the Google Fonts stylesheet has actually been injected via
+// ensureFontLoaded, which otherwise only happens as a side effect of opening
+// the font dropdown for that field. Walking the whole tree here on every
+// template (re)hydration loads every font regardless of whether its field is
+// ever interacted with.
 function ensureTemplateFontsLoaded(node) {
   if (!node) return;
   if (node.style?.fontFamily) {
@@ -2419,15 +2309,11 @@ function ensureTemplateFontsLoaded(node) {
   });
 }
 
-// Now that saved templates actually persist node uids (buildTemplatePages
-// no longer strips them — see there for why), nodeCounter can no longer
-// just reset to 0 on every load: nextNodeId() would then be free to hand
-// out "node-1" again for a brand-new node even though a persisted node
-// already owns that uid from a previous save, colliding two nodes onto the
-// same id within one tree. Scanning for the highest existing "node-N"
-// suffix first (same placements/cells shape as assignNodeIds) and starting
-// nodeCounter beyond it guarantees every freshly-minted id is unique,
-// while assignNodeIds itself still leaves already-uid'd nodes untouched.
+// Saved templates persist node uids, so nodeCounter can't just reset to 0 on
+// every load — nextNodeId() would hand out "node-1" again for a new node
+// even though a persisted node already owns that uid, colliding two nodes
+// onto the same id. Scanning for the highest existing "node-N" suffix first
+// and starting nodeCounter beyond it guarantees every fresh id is unique.
 function highestPersistedNodeCounter(node) {
   if (!node || typeof node !== "object") return 0;
   if (Array.isArray(node)) {
@@ -3342,12 +3228,10 @@ function duplicateSelectedNode() {
   updateSaveState();
 }
 
-// The sidebar "Layout" list is a flat, one-row-per-item view — it treats a
-// root grid the same way it used to treat a root stack (one item per row),
-// which is exact for the common single-column root (the default, and what
-// every migrated stack becomes) and shows only the first column for a
-// genuine multi-column root grid — the canvas's per-cell drop slots are the
-// real editing surface for those, this list is just a convenience overview.
+// The sidebar "Layout" list is a flat, one-row-per-item view: exact for the
+// common single-column root grid, but shows only the first column for a
+// genuine multi-column root — the canvas's per-cell drop slots are the real
+// editing surface for those, this list is just a convenience overview.
 function getRootChildren(side) {
   const layout = getLayoutForSide(side);
   if (layout?.type === "grid" && Array.isArray(layout.cells)) {
@@ -3680,13 +3564,11 @@ function resolveTextTransform(node) {
   };
 }
 
-// borderStyle is the border on/off switch — not "any of borderColor/
-// Width/Style/Radius/Sides happens to be present" (the old OR-based
-// check here let a stray borderWidth/Radius with no borderStyle/Color
-// masquerade as "there's a border"). borderRadius is deliberately not
-// checked — it independently shapes a node's own background/shadow
-// rounding even with no border line drawn, so it isn't downstream of
-// this switch the way color/width/sides are.
+// borderStyle is the border on/off switch, not "any of borderColor/Width/
+// Radius/Sides is present" — a stray borderWidth with no borderStyle/Color
+// shouldn't masquerade as "there's a border". borderRadius is deliberately
+// excluded: it shapes background/shadow rounding independent of whether a
+// border line is drawn at all.
 function hasBorderStyles(styles = {}) {
   return Boolean(styles.borderStyle) && styles.borderStyle !== "none";
 }
@@ -4636,10 +4518,9 @@ function updateInspector() {
     borderWidthInput.value = Number.isFinite(node?.style?.borderWidth) ? String(node.style.borderWidth) : "";
   }
   if (borderStyleInput) {
-    // Reads node.style.borderStyle directly — it's the border on/off
-    // switch, not borderColor (a prior version of this had that backwards;
-    // see hasBorderStyles' own comment). Matches Workbench's identical fix
-    // (createBorderControls).
+    // Reads node.style.borderStyle directly — it's the border on/off switch,
+    // not borderColor (see hasBorderStyles' comment). Matches Workbench's
+    // createBorderControls.
     borderStyleInput.value = node?.style?.borderStyle || "none";
   }
   if (borderRadiusInput) {
@@ -4992,17 +4873,14 @@ function applyOverlays(page, template, size, { forPrint = false, singleCard = fa
     }
 
     if (!forPrint) {
-      // Per-card, inset from that card's own edges by card.safeInset —
-      // the same value applyRootLayoutOrigin (templates.js) actually pads
-      // root-layer content by. Previously this drew a single box inset
-      // from the whole page by the page margin, unrelated to safeInset
-      // and wrong on any sheet with more than one card.
+      // Per-card, inset from that card's own edges by card.safeInset — the
+      // same value applyRootLayoutOrigin (templates.js) pads root-layer
+      // content by.
       const safeGuides = document.createElement("div");
-      // Deliberately not the "safe-area" class — that carries CSS
-      // (inset: 0.25in + a border) meant only for the single-box sheet
-      // fallback below, which would shift this whole wrapper (and every
-      // per-card box positioned relative to it) inward before the
-      // per-card left/top offsets are even applied.
+      // Deliberately not the "safe-area" class — that carries CSS (inset:
+      // 0.25in + a border) meant only for the single-box sheet fallback
+      // below, which would shift this whole wrapper and every per-card box
+      // positioned relative to it before the per-card offsets are applied.
       safeGuides.className = "page-overlay safe-area-grid card-guides";
       const safeInset = Math.max(0, card.safeInset ?? 0);
       for (let row = 0; row < rows; row += 1) {
@@ -5267,11 +5145,9 @@ function templateHasGrid(template) {
   return columns > 1 || rows > 1;
 }
 
-// The suite-wide Mode control (createModeToggleGroup) — Live Preview/Grid
-// View replace the old nav-tabs pair, mounted upper-right of the print
-// surface's own header row same as every other tool's own Mode toggle. No
-// View toggle alongside it — these two options ARE the mode, there's no
-// secondary axis within either.
+// The suite-wide Mode control (createModeToggleGroup), mounted upper-right
+// of the print surface's header row like every other tool's Mode toggle. No
+// secondary View toggle — Live Preview/Grid View ARE the mode.
 function renderModeToggle() {
   if (!modeToggleMount) return;
   const gridTooltip = gridViewAvailable
@@ -5702,37 +5578,23 @@ async function handleGeneratePrint() {
   }
 }
 
-// Adds a real collapse/expand toggle to the Component Inspector's own
-// named field groups (Text, Colors, Border, Behavior, Advanced) —
-// previously always-expanded, only ever visibility-TOGGLED (shown/hidden
-// entirely depending on the selected node's type via setGroupVisibility,
-// never individually collapsed). Purely additive: wraps each group's
-// existing content (after its own heading) into a collapsible body and
-// injects a chevron toggle, reusing createCollapseToggleButton — the same
-// shared primitive (common/js/lib/collapsible.js) Workbench's own
-// createCollapsibleSection (common/js/lib/inspector-fields.js) is built
-// on, so both tools' inspectors behave identically. Scoped to groups
-// confirmed to have a clean single "heading div, then content" shape —
-// several OTHER groups in this same panel mix multiple concerns in one
-// visibility-gated container (e.g. the text orientation/decoration div
-// carries both data-inspector-text-settings and data-inspector-text-
-// decoration) and aren't safe to make collapsible sections in their own
-// right without deeper restructuring; that's exactly why data-inspector-
-// text-group exists as an outer wrapper instead of collapsing each text
-// sub-group individually — it only ever touches its own heading + direct
-// children, never reaches into what's mixed together inside them.
-// Orthogonal to setGroupVisibility, which
-// only ever toggles the outer group's own `hidden` — a group hidden as
-// "not applicable to this node type" still hides in full (heading, toggle,
-// and body together); this collapse state only governs the body's
-// visibility while the group itself is shown.
-// Returns a `setCollapsed(next)` the caller can use to drive this group's
-// state programmatically (button chrome + body visibility together) — e.g.
-// setInspectorMode below force-expands/collapses Page Bindings and Grid
-// Properties when switching between Template/Component edit modes. The
-// original 5 Component Inspector groups (Text/Colors/Border/Behavior/
-// Advanced) have no such external driver and simply ignore the return
-// value, same as before this existed.
+// Adds a real collapse/expand toggle to a named Inspector field group by
+// wrapping its content (after its own heading) into a collapsible body and
+// injecting a chevron, reusing createCollapseToggleButton (collapsible.js) —
+// the same primitive Workbench's createCollapsibleSection is built on, so
+// both tools' inspectors behave identically. Scoped to groups with a clean
+// single "heading div, then content" shape; a group mixing multiple concerns
+// in one visibility-gated container (e.g. text orientation + decoration)
+// isn't safe to collapse directly — data-inspector-text-group exists as an
+// outer wrapper for exactly that case, touching only its own heading +
+// direct children.
+// Orthogonal to setGroupVisibility, which toggles the outer group's `hidden`
+// entirely (not applicable to this node type); this collapse state only
+// governs the body's visibility while the group itself is shown.
+// Returns `setCollapsed(next)` for programmatic control — e.g.
+// setInspectorMode force-expands/collapses Page Bindings and Grid Properties
+// when switching Template/Component edit modes. The 5 Component Inspector
+// groups have no such external driver and just ignore the return value.
 function makeInspectorGroupCollapsible(selector, { defaultCollapsed = true } = {}) {
   const group = document.querySelector(selector);
   if (!group) return null;
@@ -5789,10 +5651,8 @@ function initPressCollapsibles() {
   applySelectionCollapse = selectionsSection.setCollapsed;
 
   // Palette — collapsed by default, expanded the moment Selections itself
-  // collapses (same trigger point as applySelectionCollapse(true) below —
-  // the reciprocal Selections-collapses/Palette-expands behavior the user
-  // asked for), rather than staying always-expanded like the old
-  // always-visible left-pane section did.
+  // collapses (reciprocal Selections-collapses/Palette-expands behavior; see
+  // applySelectionCollapse(true) below).
   const paletteSection = createCollapsibleSection({
     label: "Palette",
     helpTopic: "press.palette",
@@ -5806,10 +5666,8 @@ function initPressCollapsibles() {
     label: "Template Properties",
     collapsed: false,
     className: "d-flex flex-column gap-4",
-    // Formerly its own toolbar row (data-template-toolbar-mount, removed
-    // now that New/Save/Duplicate/Delete Template live in the left-pane
-    // toolbar) — Clear Uniqueness is template-scoped, not part of that
-    // six-button set, so it stays here as a header action instead.
+    // Clear Uniqueness is template-scoped, not part of the left-pane
+    // toolbar's six-button set, so it stays here as a header action instead.
     actions: [
       {
         icon: "tabler:eraser",
@@ -5827,16 +5685,11 @@ function initPressCollapsibles() {
   document.querySelector("[data-template-properties-mount]")?.appendChild(templateSection.section);
   applyTemplateCollapse = templateSection.setCollapsed;
 
-  // Template Properties' own sub-groups — same makeInspectorGroupCollapsible
-  // mechanism (and same visual result: no border box, plain uppercase
-  // heading, chevron toggle) the Component Inspector's Text/Colors/Border/
-  // Behavior/Advanced groups already use just below
-  // (initInspectorGroupCollapsibles), rather than the old bordered-box +
-  // <h3> shape Page Bindings/Grid Properties used to have. Text/Formats/
-  // Supported Sources are new groupings (previously always-visible, flat
-  // fields) so they default collapsed, matching that same precedent; Page
-  // Bindings/Grid Properties keep their own prior default of starting
-  // expanded — only their styling changed, not that behavior.
+  // Template Properties' own sub-groups use the same
+  // makeInspectorGroupCollapsible mechanism as the Component Inspector's
+  // Text/Colors/Border/Behavior/Advanced groups below. Text/Formats/
+  // Supported Sources default collapsed; Page Bindings/Grid Properties
+  // default expanded.
   makeInspectorGroupCollapsible("[data-inspector-template-text-group]");
   makeInspectorGroupCollapsible("[data-inspector-template-formats-group]");
   makeInspectorGroupCollapsible("[data-inspector-template-sources-group]");
@@ -7381,10 +7234,9 @@ function wireEvents() {
       renderPreview();
     });
   }
-  // Mode toggle's own click handling lives inside renderModeToggle itself
-  // (createModeToggleGroup's own onChange) — it rebuilds fresh on every
-  // call, so there's no persistent listener to wire here the way the old
-  // static nav-tab buttons needed.
+  // Mode toggle's click handling lives inside renderModeToggle itself
+  // (createModeToggleGroup's onChange) — it rebuilds fresh on every call, so
+  // there's no persistent listener to wire here.
   renderModeToggle();
   if (gridViewPrevButton) {
     gridViewPrevButton.addEventListener("click", () => {
@@ -7687,12 +7539,10 @@ function initPatternModal() {
 
 async function initPress() {
   initShell();
-  // Unified onto the shared "undercroft" local-storage prefix every other
-  // tool already uses by default (DataManager's own DEFAULT_STORAGE_PREFIX)
-  // — Press's own bucket names already fully disambiguate its content, so a
-  // second, tool-specific prefix layer on top was pure redundant
-  // fragmentation (the whole reason suite-search.js needed its own per-kind
-  // local-prefix lookup just to search across tools).
+  // Uses the shared "undercroft" local-storage prefix (DataManager's
+  // DEFAULT_STORAGE_PREFIX) — Press's own bucket names already fully
+  // disambiguate its content, so a tool-specific prefix on top would be
+  // redundant and complicate suite-search.js's cross-tool lookup.
   dataManager = new DataManager({ baseUrl: resolveApiBase() });
   initAuthControls({ root: document, status, dataManager });
   initPressCollapsibles();
@@ -7702,11 +7552,9 @@ async function initPress() {
     await loadTemplates(dataManager);
   } catch (error) {
     console.error("Unable to load templates", error);
-    // Previously silent beyond the console — the whole app is unusable
-    // from here (no templates loaded at all), so this needs to actually
-    // tell the person looking at the page, not just whoever happens to
-    // have devtools open. loadJson (templates.js) already prefixes the
-    // error with which file failed to parse.
+    // The whole app is unusable from here (no templates loaded), so surface
+    // it to the page, not just the console. loadJson (templates.js) already
+    // prefixes the error with which file failed to parse.
     status?.show(error?.message || "Unable to load templates.", { type: "error", timeout: 0 });
     return;
   }

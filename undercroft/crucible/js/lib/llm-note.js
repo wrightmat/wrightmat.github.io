@@ -1,10 +1,5 @@
-// Optional monster-note synthesis (mirrors Forge's llm-note.js) — a GM can
-// generate and save a monster with no LLM involvement whatsoever. Sends the
-// resolved Creature Type/Archetype/Role names and the full feature list to
-// the server-side proxy at POST /crucible/generate-note, which talks to
-// Anthropic directly. `details.name` may be blank (Crucible's Name field has
-// no default) — the server asks Claude to invent one in that case, returned
-// alongside the note so the caller can fill the Name field in too.
+// Optional — a monster can be generated and saved with no LLM involvement.
+// `details.name` may be blank; the server invents one and returns it too.
 export async function generateMonsterNote(details) {
   const response = await fetch("/crucible/generate-note", {
     method: "POST",

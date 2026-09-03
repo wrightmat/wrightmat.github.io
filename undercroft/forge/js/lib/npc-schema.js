@@ -5,9 +5,8 @@ function randomId() {
   return `${Math.random().toString(16).slice(2)}-${Date.now()}`;
 }
 
-// Stamps a freshly generated NPC (from generator.js) with an id + timestamp
-// so it's ready to save — kept separate from generateNpc itself so rerolls
-// (which reuse an existing record) don't get a new id/createdAt each time.
+// Separate from generateNpc so a reroll (which reuses an existing record)
+// doesn't get a new id/createdAt each time.
 export function createNpcRecord(generated) {
   return {
     id: `npc_${randomId()}`,

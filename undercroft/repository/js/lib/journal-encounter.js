@@ -36,12 +36,9 @@ export function parseEncounterBlock(text) {
     .filter((entry) => entry.name);
 }
 
-// Case-insensitive exact-name match only — no fuzzy matching exists
-// anywhere in this suite (Combat Tracker's own "Add Combatant" box is just a
-// native <datalist>), and an unmatched name is meant to fall back to
-// Freeform, not guess at a near-miss. Exported for journal-kind-reference.js's
-// own extractContentReferences, which resolves an `encounter:` block's
-// creature names the exact same way when building the Related panel's list.
+// Case-insensitive exact-name match only — no fuzzy matching exists anywhere
+// in this suite; an unmatched name falls back to Freeform, not a near-miss
+// guess. Also used by journal-kind-reference.js's Related-panel resolution.
 export function findMatch(name, monsters, npcs) {
   const lower = name.trim().toLowerCase();
   const monsterMatch = monsters.find((entry) => (entry.entity?.name || "").trim().toLowerCase() === lower);
@@ -51,15 +48,12 @@ export function findMatch(name, monsters, npcs) {
   return null;
 }
 
-// Appends " 2", " 3", ... only when `name` collides with something already
-// in `existingNames` — never touches any of those existing names themselves.
-// Deliberately asymmetric with uniquifyCombatantName (which *does* rename a
-// pre-existing sibling): combatants are sub-objects of the one encounter
-// being actively edited, but encounters are independent, persisted Library
-// records other things (share links, a GM's own "owned encounters" history)
-// may already reference by name — silently renaming an unrelated, already-
-// saved record as a side effect of creating a different one would be a much
-// bigger surprise than renumbering a combatant row in the same list.
+// Appends " 2", " 3", ... only when `name` collides — never touches an
+// existing name. Deliberately asymmetric with uniquifyCombatantName (which
+// DOES rename a pre-existing sibling): encounters are independent, persisted
+// records other things may already reference by name, so silently renaming
+// one as a side effect of creating another would be a much bigger surprise
+// than renumbering a combatant row in the same list.
 export function uniquifyEncounterName(name, existingNames) {
   const base = String(name || "").trim() || "New Encounter";
   const taken = new Set((existingNames || []).map((n) => String(n || "").trim().toLowerCase()));
@@ -69,11 +63,10 @@ export function uniquifyEncounterName(name, existingNames) {
   return `${base} ${n}`;
 }
 
-// Every encounter this GM can currently see (owned/shared/public) — just
-// list metadata (id + display name), not full payloads, matching Combat
-// Tracker's own loadOwnedEncounters. `excludeId` leaves out whichever
-// encounter is about to be saved under that same id, so re-saving/restarting
-// it isn't treated as colliding with its own previous save.
+// Every encounter this GM can currently see — list metadata only, matching
+// Combat Tracker's own loadOwnedEncounters. `excludeId` leaves out the
+// encounter about to be saved under that id, so restarting it isn't treated
+// as colliding with its own previous save.
 async function loadExistingEncounterNames(dataManager, excludeId) {
   try {
     const listing = await dataManager.list("encounter", { refresh: true });
@@ -86,28 +79,23 @@ async function loadExistingEncounterNames(dataManager, excludeId) {
   }
 }
 
-// A page with many `encounter:` blocks would otherwise produce a run of
-// identically-named encounters ("Room One", "Room One 2", "Room One 3", ...)
-// in Combat Tracker's own list — indistinguishable without opening each one.
-// Appending the block's own creature names (not quantities — the combatant
-// list itself already shows those) gives each one a name that says what it
-// actually is at a glance: "Room One — Giant Shark, Merfolk".
+// Without this, a page with many `encounter:` blocks produces a run of
+// identically-named encounters in Combat Tracker's list. Appending creature
+// names (not quantities — the combatant list already shows those) gives
+// each one a name that says what it is at a glance.
 function creatureNameSummary(creatures) {
   return (creatures || []).map((creature) => creature.name).join(", ");
 }
 
-// Builds a full encounter payload (blankEncounter()'s own shape, see
-// combat-tracker.js) from a parsed creature list — matched entries resolve
-// HP/AC through the same combat-bindings.js Combat Tracker's own manual
-// "Add Combatant" flow uses; unmatched names become Freeform combatants
-// (refKind/refId null, hp/maxHp/ac 0 — the same shape a typed name that
-// doesn't match anything already produces there). Every pushed combatant
-// goes through uniquifyCombatantName, so "4: Sahuagin" becomes
-// "Sahuagin 1".."Sahuagin 4", not four indistinguishable rows.
+// Builds a full encounter payload (blankEncounter()'s shape) from a parsed
+// creature list — matched entries resolve HP/AC through the same
+// combat-bindings.js the manual "Add Combatant" flow uses; unmatched names
+// become Freeform combatants (refKind/refId null, hp/maxHp/ac 0). Every
+// pushed combatant goes through uniquifyCombatantName, so "4: Sahuagin"
+// becomes "Sahuagin 1".."Sahuagin 4".
 //
 // `id`, if given, is used as-is (see startEncounter's deterministic id) so
-// re-clicking the same block updates that same record instead of piling up
-// duplicates; omitted, a fresh random id is generated.
+// re-clicking the same block updates the same record instead of duplicating.
 export async function buildEncounterPayload({ title, creatures, dataManager, id }) {
   const encounterId = id || randomId();
   const [monsters, npcs, existingNames] = await Promise.all([
@@ -116,10 +104,9 @@ export async function buildEncounterPayload({ title, creatures, dataManager, id 
     loadExistingEncounterNames(dataManager, encounterId),
   ]);
   const matches = creatures.map((creature) => ({ creature, match: findMatch(creature.name, monsters, npcs) }));
-  // The whole encounter shares one System (blankEncounter's own shape has a
-  // single systemId) — inferred from the first matched creature that
-  // actually carries one; an all-Freeform block (or matches with no
-  // systemIds) leaves it blank, same as a manually-created blank encounter.
+  // The whole encounter shares one System, inferred from the first matched
+  // creature that carries one; an all-Freeform block leaves it blank, same
+  // as a manually-created blank encounter.
   const systemId = matches.map(({ match }) => match?.payload?.systemIds?.[0]).find(Boolean) || "";
   const fields = await loadSystemFields(dataManager, systemId);
   const combatBindings = deriveCombatBindings(fields);
@@ -167,25 +154,19 @@ export async function buildEncounterPayload({ title, creatures, dataManager, id 
 }
 
 // A stable id derived from which journal page + which encounter block
-// (0-based, among encounter blocks on that page only) was clicked — not a
-// fresh random id — so re-clicking the same chip updates that same
-// encounter record (a "restart," matching what a GM actually expects from
-// clicking the same block twice) instead of piling up look-alike duplicates.
-// Reordering/inserting encounter blocks above an existing one on the same
-// page will shift this — a known, accepted trade-off rather than tracking a
-// stable id per block in the markdown source itself.
+// (0-based) was clicked, so re-clicking the same chip restarts that same
+// record instead of piling up duplicates. Reordering blocks on the page
+// shifts this — an accepted trade-off vs. tracking a stable id per block.
 export function deterministicEncounterId(pageId, blockIndex) {
   return `journalEncounter_${pageId}_${blockIndex}`;
 }
 
-// Orchestrates the whole "click a chip -> real running encounter" flow,
-// shared by Repository's own editor and Handout's dashboard-hosted render.
-// Navigation always ends up as "load a Dashboard URL with ?encounter=<id>" —
-// Dashboard's own boot logic already ensures a Combat Tracker widget exists
-// and retargets it to that id (see dashboard.js), so no Dashboard changes
-// are needed here. The only branch is which URL: a same-page reload when
-// already on the Dashboard (inside a Handout — stays "on this page"), or a
-// real navigation from any other tool (Repository).
+// Orchestrates "click a chip -> real running encounter", shared by
+// Repository's editor and Handout's dashboard-hosted render. Navigation
+// always ends up loading a Dashboard URL with `?encounter=<id>` —
+// dashboard.js's own boot logic ensures a Combat Tracker widget exists and
+// retargets it. The only branch is which URL: same-page reload if already
+// on the Dashboard, or a real navigation from any other tool.
 export async function startEncounter({ dataManager, status, title, creatures, groupId, currentSection, id }) {
   if (!groupId) {
     status?.show("No active campaign to start this in.", { type: "warning" });

@@ -1,25 +1,18 @@
 // Shows one of the signed-in user's own characters — a quick identity card,
-// a live "vitals" section (HP/AC/Initiative/Conditions — see character-
-// sheet.js's initCharacterVitals) for whichever combat-bound fields that
-// character's System defines, and an "Open in Workbench" header action for
-// the rest (the full arbitrary-template sheet engine lives there; duplicating
-// it here would be a second, weaker implementation of the same thing). The
-// picked character is also reported via onPin, since the Dashboard uses
-// "which character is mine" to resolve which campaign group's Game Log/Now
-// Showing/Combat Tracker to show (see group-context.js) — same character-
-// drives-campaign logic Workbench itself already uses.
+// a live "vitals" section (character-sheet.js's initCharacterVitals) for
+// whichever combat-bound fields that character's System defines, and an
+// "Open in Workbench" header action for the rest (the full arbitrary-
+// template sheet engine lives there). The picked character is also
+// reported via onPin, since the Dashboard uses "which character is mine"
+// to resolve which campaign group's Game Log/Now Showing/Combat Tracker to show.
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { initCharacterVitals } from "./character-sheet.js";
 import { el } from "../dom.js";
 
-// A character listing entry is one of two shapes: a *remote* one (from
-// collectListEntries — flat `title`/`name` fields the server's list_bucket
-// already resolved via the kind's own titleFields) or a *local* one (from
-// listLocalEntries — `{id, payload, owner, scope}`, no flat title of its
-// own). Checking both here — instead of just `entry.title || entry.name ||
-// entry.id` — is what was showing a second, bare-id option for every
-// character that existed both remotely and in this browser's local cache
-// (DataManager mirrors every remote save into local too, see save()).
+// A character listing entry is one of two shapes: a *remote* one (flat
+// title/name fields) or a *local* one ({id, payload, owner, scope}, no flat
+// title). Checking both avoids a second, bare-id option for a character
+// that exists both remotely and in the local cache.
 function labelFor(entry) {
   return (
     entry.title ||

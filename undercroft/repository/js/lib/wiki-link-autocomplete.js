@@ -1,13 +1,12 @@
-// A `[[` autocomplete dropdown for the plain <textarea> body editor —
-// lists page titles, `page#Heading` sections, and `page#^blockId` named
-// tables (journal-tables.js), all insertable directly. Vanilla, no rich-text
-// editor dependency (this suite's body editor is a plain textarea — see
-// AGENTS.md's own vanilla-first convention). Caret positioning uses the same
-// mirror-<div> measurement technique app.js's own heading-scroll-sync
-// already proves out (measureTextareaContentHeight) — a small, self-
-// contained duplicate here rather than exporting app.js's private one,
-// since app.js is this page's own bootstrap script, not designed to be
-// imported from.
+// A `[[` autocomplete dropdown for the plain <textarea> body editor — lists
+// page titles, `page#Heading` sections, and `page#^blockId` named tables
+// (journal-tables.js), all insertable directly. Vanilla, no rich-text editor
+// dependency (this suite's body editor is a plain textarea). Caret
+// positioning uses the same mirror-<div> measurement technique app.js's own
+// heading-scroll-sync already proves out (measureTextareaContentHeight) — a
+// small, self-contained duplicate here rather than exporting app.js's
+// private one, since app.js is this page's own bootstrap script, not
+// designed to be imported from.
 import { extractOutline } from "./journal-outline.js";
 import { extractNamedTables } from "./journal-tables.js";
 import { extractQuests } from "./journal-quests.js";
@@ -47,13 +46,12 @@ function ensureMirror() {
   return mirrorEl;
 }
 
-// The caret's own (top, left) within the textarea's own unscrolled content
-// box, found by mirroring everything before it, a marker span, then
-// everything after — the standard technique for this since textareas expose
-// no native "pixel position of character N" API at all. Exported — reused
-// as-is by code-block-autocomplete.js (the `` `macro:`/`encounter:`/`dice:`
-// `` autocomplete), which needs the exact same caret-to-pixel measurement
-// for its own dropdown, not a second copy of this technique.
+// The caret's own (top, left) within the textarea's unscrolled content box,
+// found by mirroring everything before it, a marker span, then everything
+// after — the standard technique since textareas expose no native "pixel
+// position of character N" API. Exported — reused as-is by
+// code-block-autocomplete.js (the `` `macro:`/`encounter:`/`dice:` ``
+// autocomplete), which needs the same caret-to-pixel measurement.
 export function measureCaretPosition(textarea, caretIndex) {
   const mirror = ensureMirror();
   const computed = getComputedStyle(textarea);
@@ -64,16 +62,13 @@ export function measureCaretPosition(textarea, caretIndex) {
   mirror.innerHTML = "";
   mirror.appendChild(document.createTextNode(value.slice(0, caretIndex)));
   const marker = document.createElement("span");
-  // A non-empty marker (not an empty string) — an empty <span> can collapse
-  // to zero width/height in a way that makes its own offsetTop/offsetLeft
-  // unreliable right at a wrapped line boundary. What's actually inside it
-  // is irrelevant (never rendered visibly — the mirror itself is hidden),
-  // only the marker's own start position is read below.
+  // A non-empty marker — an empty <span> can collapse to zero width/height
+  // in a way that makes its own offsetTop/offsetLeft unreliable right at a
+  // wrapped line boundary. Content is irrelevant (never rendered visibly).
   marker.textContent = String.fromCharCode(8203);
   mirror.appendChild(marker);
   // A trailing space so a caret at the very end of the content still
-  // measures correctly (same reasoning measureTextareaContentHeight's own
-  // trailing space gives).
+  // measures correctly (same reasoning measureTextareaContentHeight uses).
   mirror.appendChild(document.createTextNode(value.slice(caretIndex) || " "));
   return {
     top: marker.offsetTop,
@@ -84,11 +79,11 @@ export function measureCaretPosition(textarea, caretIndex) {
 
 // Detects an in-progress `[[...` sequence ending exactly at the cursor —
 // nothing after the LAST unclosed `[[` yet that would mean it's already
-// finished (a `]` closing it) or moved past the target entirely (a `|`
-// starting a custom alias label). Returns null when the cursor isn't
-// inside one. `title`/`heading`/`table` mirror the three insertable pieces
-// this suite's own wiki-link syntax supports (wiki-link-syntax.js,
-// journal-tables.js's own `#^blockId` convention).
+// finished (a `]` closing it) or moved past the target (a `|` starting a
+// custom alias). Returns null when the cursor isn't inside one.
+// `title`/`heading`/`table` mirror the three insertable pieces this suite's
+// wiki-link syntax supports (wiki-link-syntax.js, journal-tables.js's own
+// `#^blockId` convention).
 function parseInProgressLink(textBeforeCursor) {
   const bracketIndex = textBeforeCursor.lastIndexOf("[[");
   if (bracketIndex === -1) return null;
@@ -112,10 +107,9 @@ function findEntryByTitle(entries, title) {
 }
 
 // Case-insensitive substring match, deduped by title (a title collision
-// across owners is rare in one GM's own journal — not worth a
-// disambiguation UI here either, same call journal-links.js's own
-// buildTitleIndex already makes), capped so a large journal doesn't render
-// an unbounded dropdown.
+// across owners is rare enough in one GM's own journal not to need a
+// disambiguation UI, same call journal-links.js's buildTitleIndex makes),
+// capped so a large journal doesn't render an unbounded dropdown.
 function titleCandidates(entries, query) {
   const q = query.trim().toLowerCase();
   const seen = new Set();
@@ -140,12 +134,11 @@ function headingCandidates(entries, title, query) {
     .map((heading) => ({ kind: "heading", label: heading.text, insertText: heading.text }));
 }
 
-// A bare [[Quest Title]] resolves at the same top-level "title" stage a
-// page title does (repository/js/app.js's own resolveWikiLinkTarget falls
-// back to the quest index) — quest titles don't get a separate parse
-// stage, they're a second candidate list merged into "title"/"heading"'s
-// own results. Workspace-wide (every page's own quests), same scope
-// journal-quests.js's own buildQuestIndex uses.
+// A bare [[Quest Title]] resolves at the same top-level "title" stage a page
+// title does (repository/js/app.js's resolveWikiLinkTarget falls back to
+// the quest index) — quest titles aren't a separate parse stage, they're a
+// second candidate list merged into "title"/"heading"'s own results.
+// Workspace-wide, same scope journal-quests.js's buildQuestIndex uses.
 function questTitleCandidates(entries, query) {
   const q = query.trim().toLowerCase();
   const seen = new Set();
@@ -162,8 +155,8 @@ function questTitleCandidates(entries, query) {
   return results.slice(0, 20);
 }
 
-// The [[Page#...]] equivalent — quests scoped to just that one page,
-// alongside headingCandidates' own real headings.
+// The [[Page#...]] equivalent — quests scoped to just that page, alongside
+// headingCandidates' own real headings.
 function questHeadingCandidates(entries, title, query) {
   const entry = findEntryByTitle(entries, title);
   if (!entry) return [];
@@ -185,13 +178,12 @@ function tableCandidates(entries, title, query) {
 }
 
 // "quest" reuses the same icon journal-callouts.js's own CALLOUT_TYPES.quest
-// entry uses, for visual consistency between the callout itself and its
-// autocomplete suggestion.
+// entry uses, for visual consistency with the callout it comes from.
 const KIND_ICON = { title: "tabler:file-text", heading: "tabler:heading", table: "tabler:table", quest: "tabler:map-2" };
 
 // attachWikiLinkAutocomplete(textarea, {getEntries}) — `getEntries` is a
 // callback (not a plain array) since app.js's own `entries` list is
-// reassigned after its own async load; reading it fresh on every keystroke
+// reassigned after its async load; reading it fresh on every keystroke
 // avoids a stale-closure snapshot from whenever this was first attached.
 export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
   if (!textarea) return { destroy() {} };
@@ -231,10 +223,9 @@ export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
       iconSpan.dataset.icon = KIND_ICON[candidate.kind] || "tabler:file-text";
       iconSpan.setAttribute("aria-hidden", "true");
       item.append(iconSpan, document.createTextNode(candidate.label));
-      // mousedown+preventDefault (not click) — stops the textarea from ever
-      // actually losing focus on a selection click, so there's no race with
-      // a separate blur handler having to decide whether this click still
-      // "counts."
+      // mousedown+preventDefault (not click) — stops the textarea from
+      // losing focus on a selection click, so there's no race with a
+      // separate blur handler deciding whether this click still "counts."
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
         selectCandidate(index);
@@ -249,8 +240,7 @@ export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
     const caretTop = rect.top + (caret.top - textarea.scrollTop);
     const caretLeft = rect.left + (caret.left - textarea.scrollLeft);
     dropdown.style.display = "block";
-    // Measured AFTER display:block — needs real layout to know its own
-    // width/height for the clamping below.
+    // Measured AFTER display:block — needs real layout for the clamping below.
     const dropdownRect = dropdown.getBoundingClientRect();
     const clampedLeft = Math.min(caretLeft, window.innerWidth - dropdownRect.width - 8);
     const belowTop = caretTop + caret.lineHeight;
@@ -272,21 +262,19 @@ export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
     const alreadyClosed = after.startsWith("]]");
     const insertText = alreadyClosed ? candidate.insertText : `${candidate.insertText}]]`;
     textarea.value = `${before}${insertText}${after}`;
-    // "title" lands the cursor right before the `]]` (whether it was just
-    // appended or already there) so typing `#` continues straight into the
-    // heading/table stage without navigating back inside the brackets;
-    // "heading"/"table" lands after the (now-guaranteed-present) `]]`,
-    // completing the whole link in one action.
+    // "title" lands the cursor right before the `]]` (whether just appended
+    // or already there) so typing `#` continues straight into the
+    // heading/table stage; "heading"/"table" lands after `]]`, completing
+    // the whole link in one action.
     const cursorOffset = currentParse.stage === "title" ? candidate.insertText.length : insertText.length;
     const newCursor = currentParse.replaceFrom + cursorOffset;
     textarea.setSelectionRange(newCursor, newCursor);
-    // A "title" selection deliberately leaves the cursor still inside an
-    // unclosed `[[Title` (see the offset comment above) — the dispatched
-    // "input" event below would otherwise immediately have refresh() see
-    // that same still-open bracket and reopen the dropdown, now showing
-    // "Title" matched against itself. Suppressed once, since this is only
-    // ever a same-tick echo of the change this function itself just made,
-    // never a real subsequent keystroke.
+    // A "title" selection deliberately leaves the cursor inside an unclosed
+    // `[[Title` (see the offset comment above) — the dispatched "input"
+    // event below would otherwise immediately have refresh() see that same
+    // still-open bracket and reopen the dropdown against itself. Suppressed
+    // once, since this is only ever a same-tick echo of this function's own
+    // change, never a real subsequent keystroke.
     suppressNextRefresh = true;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     hide();
@@ -309,10 +297,10 @@ export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
     }
     const entries = getEntries?.() || [];
     let nextCandidates;
-    // "title"/"heading" each merge in quest titles alongside their own
-    // real candidates — a quest isn't a separate parse stage, it resolves
-    // through the same [[Quest Title]]/[[Page#Quest Title]] syntax pages
-    // and headings already use (see resolveWikiLinkTarget in app.js).
+    // "title"/"heading" each merge in quest titles alongside their own real
+    // candidates — a quest resolves through the same [[Quest Title]]/
+    // [[Page#Quest Title]] syntax pages and headings already use (see
+    // resolveWikiLinkTarget in app.js).
     if (parsed.stage === "title") nextCandidates = [...titleCandidates(entries, parsed.query), ...questTitleCandidates(entries, parsed.query)];
     else if (parsed.stage === "heading")
       nextCandidates = [...headingCandidates(entries, parsed.title, parsed.query), ...questHeadingCandidates(entries, parsed.title, parsed.query)];
@@ -351,9 +339,8 @@ export function attachWikiLinkAutocomplete(textarea, { getEntries } = {}) {
     if (dropdown.style.display !== "none") positionDropdown();
   }
 
-  // `input` (not `keyup`) — fires for typing, paste, and programmatic
-  // value changes alike, same event this page's own body-change handler
-  // already listens for.
+  // `input` (not `keyup`) — fires for typing, paste, and programmatic value
+  // changes alike, same event this page's own body-change handler listens for.
   textarea.addEventListener("input", refresh);
   textarea.addEventListener("keydown", handleKeydown);
   textarea.addEventListener("blur", hide);

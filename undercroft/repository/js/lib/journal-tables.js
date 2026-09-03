@@ -1,9 +1,9 @@
 // Rollable named tables — an ordinary GFM table in a Journal page, named with
-// a `^blockId` marker line directly underneath it (Obsidian's own "block
-// reference" convention), rollable from anywhere dice already work via
+// a `^blockId` marker line directly underneath (Obsidian's "block reference"
+// convention), rollable from anywhere dice already work via
 // `` `dice:[[Page#^blockId]]` `` (Repository's inline chips — journal-dice.js)
 // or the Dashboard Dice Roller widget, through one shared resolver here
-// rather than a per-consumer reimplementation:
+// instead of a per-consumer reimplementation:
 //
 //   | Roll  | Result              |
 //   | ----- | ------------------- |
@@ -11,22 +11,21 @@
 //   | 03-10 | Nothing of note     |
 //   ^northern-sea-encounters
 //
-// Pure parsing/rolling/lookup only — no marked/DOM dependency for the base
-// pieces (same split journal-encounter.js's own parseEncounterBlock uses:
-// that file parses, markdown.js renders). `resolveTableReference`/
-// `listRollableTables` are the one exception (they need dataManager to list
-// journal pages), kept in this same file since they're still pure Repository
-// domain knowledge, not rendering.
+// Pure parsing/rolling/lookup only, no marked/DOM dependency for the base
+// pieces (journal-encounter.js's parseEncounterBlock uses the same split:
+// this parses, markdown.js renders). `resolveTableReference`/
+// `listRollableTables` are the exception (need dataManager to list journal
+// pages) but stay here since they're still pure Repository domain knowledge.
 //
 // NOT the same concept as forge/js/lib/tables.js's own "tables" (procedural
-// NPC-generation weighting tables) — unrelated, nothing here touches Forge.
+// NPC-generation weighting tables) — unrelated.
 import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
 import { wikiLinkPattern } from "./wiki-link-syntax.js";
 
 const BLOCK_ID_LINE_PATTERN = /^\s*\^([A-Za-z0-9_-]+)\s*$/;
 
 // Splits one `| a | b |`-shaped line into trimmed cells, honoring `\|` as a
-// literal escaped pipe (standard GFM table syntax) rather than a delimiter.
+// literal escaped pipe rather than a delimiter.
 function splitTableRow(line) {
   const trimmed = String(line || "").trim();
   const withoutEdges = trimmed.replace(/^\|/, "").replace(/\|$/, "");
@@ -52,8 +51,8 @@ function isTableRowLine(line) {
   return String(line || "").trim().length > 0 && line.includes("|");
 }
 
-// The delimiter row every GFM table has between its header and body — cells
-// made up of only `-`/`:` (`---`, `:--`, `--:`, `:-:`).
+// The delimiter row every GFM table has between header and body — cells made
+// up of only `-`/`:` (`---`, `:--`, `--:`, `:-:`).
 function isSeparatorRowLine(line) {
   const cells = splitTableRow(line);
   return cells.length > 0 && cells.every((cell) => /^:?-+:?$/.test(cell));
@@ -61,16 +60,13 @@ function isSeparatorRowLine(line) {
 
 // One scan of the page, returning every GFM table found (named or not) with
 // enough position info (`markerLine`) for stripNamedTableMarkers to remove
-// just the marker lines, not the tables themselves. Tables with no `^blockId`
-// line immediately after are still detected (so the scan only has to run
-// once) but filtered out by both public functions below — an ordinary,
-// unnamed table is left completely alone.
-// Exported so journal-story-board.js can reuse the exact same GFM
-// table-scanning primitive for its own Nodes/Edges tables — a
-// [!story-board] callout's tables have no `^blockId` marker at all (that's
-// this file's own named-table-specific concept), but the underlying
-// "find every `| a | b |` + separator-row table in this text" scan is
-// identical, and worth having exactly one implementation of.
+// just the marker lines. Tables with no `^blockId` line right after are
+// still detected (so the scan only runs once) but filtered out by both
+// public functions below — an unnamed table is left completely alone.
+// Exported so journal-story-board.js can reuse this exact GFM table-scanning
+// primitive for its own Nodes/Edges tables — a [!story-board] callout's
+// tables have no `^blockId` marker at all, but the underlying "find every
+// `| a | b |` + separator-row table" scan is identical.
 export function scanTables(body) {
   const lines = String(body || "").replace(/\r\n/g, "\n").split("\n");
   const tables = [];
@@ -107,11 +103,9 @@ export function extractNamedTables(body) {
     .map(({ blockId, headers, rows }) => ({ blockId, headers, rows }));
 }
 
-// Removes every `^blockId` marker line this page's own named tables use —
-// CommonMark doesn't know that syntax, so left in, a caret-only line breaks
-// out of the table and renders as a stray paragraph underneath it. The table
-// itself is untouched; only the marker line disappears. Returns the body
-// unchanged (not even CRLF-normalized) if there's nothing to strip.
+// Removes every `^blockId` marker line — CommonMark doesn't know that
+// syntax, so left in, a caret-only line breaks out of the table and renders
+// as a stray paragraph underneath it. The table itself is untouched.
 export function stripNamedTableMarkers(body) {
   const { lines, tables } = scanTables(body);
   const markerLines = new Set(tables.filter((table) => table.markerLine >= 0).map((table) => table.markerLine));
@@ -131,12 +125,11 @@ function parseRangeCell(cell) {
 }
 
 // Rolls against a table's own first column. If every row's first cell parses
-// as a bare number or a range (`03`, `04-06`) — real weighted d100-style
-// tables, not just one-row-per-face lists — the die size is the max value
-// seen and the roll matches by range. Otherwise (a plain list with no
-// numbering at all) falls back to a uniform roll over the row count, one row
-// per face. Returns `{ roll, dieSize, row, headers }`, or null for an empty
-// table.
+// as a bare number or range (`03`, `04-06` — a weighted d100-style table,
+// not one-row-per-face), the die size is the max value seen and the roll
+// matches by range. Otherwise (a plain unnumbered list) falls back to a
+// uniform roll over the row count, one row per face. Returns
+// `{ roll, dieSize, row, headers }`, or null for an empty table.
 export function rollAgainstTable({ headers = [], rows = [] } = {}, { random = Math.random } = {}) {
   if (!rows.length) return null;
   const ranges = rows.map((row) => parseRangeCell(row[0]));
@@ -154,11 +147,10 @@ export function rollAgainstTable({ headers = [], rows = [] } = {}, { random = Ma
 
 // A `dice:`/rollExpression argument shaped like a wiki-link with a block-
 // reference heading (`[[Page#^blockId]]`) — the same [[...]] syntax
-// markdown.js's own wiki-links already parse (the heading-capture group
-// already accepts a leading "^" unchanged; no separate syntax to teach
-// anything). Returns null for a plain numeric expression (`2d6`, `1d20+3`)
-// or an ordinary page link with no `^`-prefixed heading. The whole trimmed
-// expression has to be just the link — not a link embedded in other text.
+// markdown.js's wiki-links already parse (the heading-capture group already
+// accepts a leading "^" unchanged). Returns null for a plain numeric
+// expression (`2d6`, `1d20+3`) or an ordinary page link with no `^`-prefixed
+// heading — the whole trimmed expression has to be just the link.
 export function parseTableReferenceExpression(expression) {
   const trimmed = String(expression || "").trim();
   if (!trimmed) return null;
@@ -173,15 +165,11 @@ export function parseTableReferenceExpression(expression) {
 }
 
 // A short display string for a table roll's own outcome row — used by both
-// journal-dice.js's chip and the Dashboard Dice Roller widget's result line,
-// so table results read consistently everywhere. When the first column is
-// itself a roll number/range (a real ranged table, e.g. "03-10"), it's kept
-// and shown alongside the rest ("03-10: Nothing of note") rather than
-// dropped — seeing which range was actually hit is meaningful on its own,
-// distinct from the abstract die roll shown elsewhere ("d10 → 6"). For a
-// table whose first column ISN'T a roll index (the uniform-fallback case,
-// or any other multi-column table), every column is real content, so
-// nothing gets dropped — just joined in order.
+// journal-dice.js's chip and the Dashboard Dice Roller widget's result line.
+// When the first column is itself a roll number/range (a real ranged table),
+// it's kept and shown alongside the rest ("03-10: Nothing of note") since
+// which range was hit is meaningful on its own. For a table whose first
+// column isn't a roll index, every column is real content, joined in order.
 export function describeTableRow(row) {
   const cells = Array.isArray(row) ? row : [];
   if (!cells.length) return "";
@@ -194,10 +182,10 @@ async function fetchJournalEntries(dataManager) {
 }
 
 // Looks up a named table by page title (case-insensitive, same convention as
-// journal-links.js's own buildTitleIndex) + blockId, and rolls it. Returns
+// journal-links.js's buildTitleIndex) + blockId, and rolls it. Returns
 // `{ pageTitle, blockId, roll, dieSize, row, headers }`, or null if the page
-// or the table within it can't be found — the caller (dice-roll.js's
-// rollExpression) is what turns that into a user-facing error.
+// or table can't be found — dice-roll.js's rollExpression turns that into a
+// user-facing error.
 export async function resolveTableReference(dataManager, { title, blockId } = {}) {
   if (!dataManager || !title || !blockId) return null;
   const targetTitle = String(title).trim().toLowerCase();

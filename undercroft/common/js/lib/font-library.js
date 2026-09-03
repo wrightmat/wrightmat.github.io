@@ -1,44 +1,29 @@
-// Shared font library — used by both Press and Workbench. Moved here from
-// press/js/font-library.js (was Press-only originally, no Press-specific
-// dependency in any of this) so both tools' Font pickers read/write the
-// exact same server-persisted list instead of keeping separate copies.
+// Shared font library — used by both Press and Workbench, so both tools'
+// Font pickers read/write the exact same server-persisted list.
 
-// The only real "built-in" — every other font (including what used to be
-// a hardcoded curated list) now lives in the same server-persisted,
-// admin-deletable list as anything added through the "Add a font…" modal
-// (see custom-fonts.json and registerCustomFont/loadCustomFonts below).
-// Selecting "Default" deletes node.style.fontFamily rather than setting
-// one — matches the "unset means implicit default" convention already
-// used for Image fit / Layer origin — and it's the one entry that can't
-// be deleted, since there needs to always be a way to clear an override.
-// "Default (template font)", not "(theme font)" — a component's own Font
-// left unset now inherits the active Template's own base font (see
-// DEFAULT_FONT_FAMILY below and the Template Properties Font field in each
-// tool), not a hardcoded browser/theme default the way it used to.
+// The only real "built-in" — every other font lives in the same server-
+// persisted, admin-deletable list as anything added through the "Add a
+// font…" modal (see custom-fonts.json, registerCustomFont/loadCustomFonts
+// below). Selecting "Default" deletes node.style.fontFamily rather than
+// setting one, and it's the one entry that can't be deleted, since there
+// needs to always be a way to clear an override — a component's Font left
+// unset inherits the active Template's own base font (DEFAULT_FONT_FAMILY).
 export const FONT_OPTIONS = [{ id: "default", label: "Default (template font)", family: null }];
 
-// The Template-level "base font" field's own runtime fallback when a
-// template hasn't set one (empty/unset, never written into a template's
-// saved JSON just for that — same "empty means fall back" convention every
-// other field this session added uses) — Bootstrap 5.3's own
-// --bs-font-sans-serif stack, the literal font every template already
-// rendered with before this field existed (verified: neither tool's own
-// CSS sets font-family anywhere), so an existing template's font doesn't
-// visibly change until someone deliberately picks something else.
+// The Template-level "base font" field's runtime fallback when unset —
+// Bootstrap 5.3's own --bs-font-sans-serif stack, the literal font every
+// template already rendered with before this field existed, so an existing
+// template's font doesn't visibly change until someone picks something else.
 export const DEFAULT_FONT_FAMILY =
   'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
-// Fonts added at runtime via the "Add a font…" modal (see
-// registerCustomFont) — starts empty, grows in-memory immediately on add
-// and is repopulated from the server on every load via loadCustomFonts.
-// This is also where the previously-hardcoded curated fonts now live,
-// migrated into custom-fonts.json so they're deletable like anything else.
+// Fonts added at runtime via the "Add a font…" modal — starts empty, grows
+// in-memory immediately on add, repopulated from the server via loadCustomFonts.
 let customFontOptions = [];
 
 export function getAllFontOptions() {
-  // FONT_OPTIONS (just "Default") stays pinned first; everything else is
-  // alphabetized by label so the list stays scannable as it grows instead
-  // of ordering by whenever each font happened to be added.
+  // FONT_OPTIONS ("Default") stays pinned first; everything else alphabetized
+  // by label so the list stays scannable as it grows.
   const sortedCustom = [...customFontOptions].sort((a, b) =>
     a.label.localeCompare(b.label, undefined, { sensitivity: "base" })
   );
@@ -55,19 +40,15 @@ export function isCustomFontId(id) {
   return customFontOptions.some((option) => option.id === id);
 }
 
-// Matches a stored node.style.fontFamily value back to a known option (for
-// populating the inspector field), or null if it doesn't match any —
-// callers fall back to showing the raw value in that case (see
-// updateInspector's font block in app.js).
+// Matches a stored node.style.fontFamily back to a known option, or null —
+// callers fall back to showing the raw value in that case.
 export function findFontOptionByFamily(family) {
   if (!family) return null;
   return getAllFontOptions().find((option) => option.family === family) ?? null;
 }
 
-// No-ops (returns the existing entry) if this id is already registered
-// anywhere — adding the same Google Font twice, whether by the same user
-// re-adding it or two different people adding it independently, resolves
-// to the one shared entry instead of duplicating the dropdown.
+// No-ops if this id is already registered — adding the same Google Font
+// twice (same user or two different people) resolves to one shared entry.
 export function registerCustomFont(font) {
   if (!font?.id || !font.family) return null;
   const existing = getAllFontOptions().find((option) => option.id === font.id);
@@ -76,9 +57,8 @@ export function registerCustomFont(font) {
   return font;
 }
 
-// Removes it from the in-memory list only — callers pair this with
-// saveCustomFontDeletion for the server-persisted removal, same
-// "update immediately, persist async" shape as adding one.
+// In-memory only — callers pair this with saveCustomFontDeletion for the
+// server-persisted removal.
 export function deleteCustomFont(id) {
   customFontOptions = customFontOptions.filter((option) => option.id !== id);
 }
@@ -102,9 +82,8 @@ async function loadJson(url) {
   return response.json();
 }
 
-// Mirrors templates.js's loadCustomPageSizes/saveCustomPageSize exactly —
-// same server-persisted, shared-across-everyone pattern, same "register
-// immediately in-memory, persist async" flow.
+// Mirrors templates.js's loadCustomPageSizes/saveCustomPageSize — same
+// server-persisted, shared-across-everyone, register-then-persist-async flow.
 export async function loadCustomFonts() {
   try {
     const url = new URL("../../data/custom-fonts.json", import.meta.url);
@@ -113,22 +92,16 @@ export async function loadCustomFonts() {
     fonts.forEach((font) => registerCustomFont(font));
     return fonts;
   } catch (error) {
-    // Was silent — a fetch/path/JSON failure here means the font list
-    // silently stays empty-but-for-Default with no visible sign anything
-    // is wrong, which is exactly the kind of failure worth logging even
-    // though this stays non-fatal (a missing font library shouldn't block
-    // the rest of the page).
+    // Logged (not silent) — non-fatal, but the font list otherwise stays
+    // empty-but-for-Default with no visible sign anything is wrong.
     console.warn("Unable to load the shared font library:", error);
     return [];
   }
 }
 
-// Both server routes require a session now (creator+ to add, admin to
-// delete) — authToken is the bearer token to send, since this module
-// stays decoupled from DataManager itself (framework-free, per the file
-// header) rather than importing the whole class just for this. Callers
-// pass dataManager.session?.token (a public getter — no need to reach
-// into DataManager's private state for it).
+// Both server routes require a session (creator+ to add, admin to delete).
+// This module stays decoupled from DataManager, so callers pass
+// dataManager.session?.token directly rather than the whole class.
 function authHeaders(authToken) {
   const headers = { "Content-Type": "application/json" };
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
@@ -148,9 +121,8 @@ export async function saveCustomFont(font, authToken) {
   return response.json();
 }
 
-// This server has no true HTTP DELETE wired up anywhere — every deletion
-// in this codebase is POST .../delete instead (see /auth/users/delete and
-// /content/{bucket}/{id}/delete server-side).
+// No true HTTP DELETE anywhere in this server — every deletion is
+// POST .../delete instead.
 export async function saveCustomFontDeletion(id, authToken) {
   const response = await fetch("/custom-fonts/delete", {
     method: "POST",
@@ -165,15 +137,10 @@ export async function saveCustomFontDeletion(id, authToken) {
 }
 
 // Confirms a bare name actually corresponds to something Google Fonts
-// serves, rather than trusting format alone — injects the stylesheet and
-// asks the browser's CSS Font Loading API to resolve the family. An
-// unknown/typo'd name still gets a 200 response from Google (an empty or
-// near-empty stylesheet with no matching @font-face), so the HTTP status
-// isn't the signal; document.fonts.load() resolving to an empty array is.
-// No API key needed, and avoids relying on being able to fetch()-read the
-// cross-origin CSS response (uncertain CORS support for that read) — both
-// <link> loading and document.fonts are native, unauthenticated browser
-// APIs that don't have that limitation.
+// serves, rather than trusting format alone: an unknown/typo'd name still
+// gets a 200 with an empty stylesheet, so the signal is document.fonts.load()
+// resolving to an empty array, not HTTP status. Uses <link>/document.fonts
+// (native, unauthenticated) rather than fetch()-reading the cross-origin CSS.
 export function verifyGoogleFontExists(name, googleFontParam) {
   return new Promise((resolve, reject) => {
     const link = document.createElement("link");
@@ -200,18 +167,12 @@ export function verifyGoogleFontExists(name, googleFontParam) {
   });
 }
 
-// Google's own font-picker metadata — key-free but not CORS-enabled for
-// third-party origins (unlike the CSS2 stylesheet endpoint), so it's routed
-// through this server's own /google-fonts-metadata proxy (server/app.py)
-// rather than a public CORS proxy — corsproxy.io was tried first (same one
-// used for D&D Beyond fetches) but its free tier now rejects non-localhost
-// callers entirely. Listing every family with its category ("serif",
-// "sans-serif", "display", "handwriting", "monospace"), used to label
-// newly-added fonts the same way the old curated list was labeled by hand
-// (e.g. "Georgia (serif)"), automatically, "if known" — this is a
-// best-effort lookup: fetched once and cached, and any failure (network,
-// proxy, or unexpected shape) just means no category suffix, never a hard
-// error, since the font itself is already verified separately via
+// Google's font-picker metadata is key-free but not CORS-enabled for
+// third-party origins, so it's routed through this server's own
+// /google-fonts-metadata proxy. Lists each family's category ("serif",
+// "sans-serif", ...), used to label newly-added fonts automatically. Best-
+// effort, fetched once and cached — any failure just means no category
+// suffix, never a hard error, since the font is verified separately via
 // verifyGoogleFontExists.
 const GOOGLE_FONTS_METADATA_URL = "/google-fonts-metadata";
 let googleFontsMetadataPromise = null;
@@ -221,15 +182,10 @@ function loadGoogleFontsMetadata() {
     const xssiPrefix = ")]}'";
     googleFontsMetadataPromise = fetch(GOOGLE_FONTS_METADATA_URL)
       .then((response) => (response.ok ? response.text() : Promise.reject(new Error("metadata unavailable"))))
-      // The response body is prefixed with a fixed XSSI-protection string
-      // ahead of the actual JSON — stripped by plain prefix check rather
-      // than a regex, so there's no ambiguity from escaping the brackets
-      // that prefix happens to contain.
+      // Response body is prefixed with a fixed XSSI-protection string ahead
+      // of the actual JSON — stripped by plain prefix check, not regex.
       .then((text) => JSON.parse(text.startsWith(xssiPrefix) ? text.slice(xssiPrefix.length) : text))
       .catch((error) => {
-        // Surfaced so this is diagnosable instead of just silently never
-        // showing a category — best-effort lookup either way, so a failure
-        // here still just means no category suffix, never a hard error.
         console.warn("Google Fonts metadata lookup failed:", error);
         return null;
       });

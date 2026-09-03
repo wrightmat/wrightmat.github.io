@@ -15,29 +15,20 @@ import {
   createEmptyStateCard,
 } from "../../../common/js/lib/ui-components.js";
 
-// Orchestrator for Workbench's single unified page (replacing the old
-// separate template.html/character.html/index.html). Owns everything that
-// used to be duplicated per-page: the one initAppShell call (status/undo
-// stack), DataManager, auth, help system, tier gating, and the Template/
-// Character Mode+View switcher. The actual Template Builder and Character
-// Sheet logic lives in workbench-template-view.js/workbench-character-view.js
-// — each relocated near-verbatim from the old per-page scripts and now
-// exposed as initTemplateView/initCharacterView, returning a small hook
-// object this file uses for undo dispatch and dirty-state checks.
-// Deliberately does NOT try to unify the two views' internal rendering/
-// dirty-tracking machinery — only the page shell (nav, panes, toolbars,
-// undo, tier gating) is shared.
+// Orchestrator for Workbench's single unified page. Owns what would
+// otherwise be duplicated per-page: initAppShell (status/undo stack),
+// DataManager, auth, help system, tier gating, and the Template/Character
+// Mode+View switcher. Template Builder and Character Sheet logic live in
+// workbench-template-view.js/workbench-character-view.js, exposed as
+// initTemplateView/initCharacterView returning a small hook object this
+// file uses for undo dispatch and dirty-state checks — their internal
+// rendering/dirty-tracking machinery stays unmixed; only the page shell
+// (nav, panes, toolbars, undo, tier gating) is shared.
 //
-// Mode ("template"/"character", createModeToggleGroup) replaces the old
-// flat 3-tab Template/Edit/Play nav — Edit and Play were never actually
-// independent top-level destinations, just two ways of looking at the same
-// Character content, so they collapse into a single View toggle
-// ("view"/"edit", createCycleToggleButton) that only renders while
-// Mode = Character, exactly mirroring Repository/Forge/Crucible/Sanctum/
-// Vault's own Mode+View header. "View" replaces the old "Play" label; the
-// underlying mechanism is unchanged — workbench-character-view.js's own
-// state.mode already used exactly "view"/"edit" internally, so only the
-// outer terminology/UI changed here, not the state machine.
+// Mode ("template"/"character") plus a View toggle ("view"/"edit", only
+// rendered while Mode = Character) mirrors every other tool's own Mode+View
+// header. "View" replaces the old "Play" label — workbench-character-view.js's
+// state.mode already used "view"/"edit" internally.
 const MODES = ["character", "template"];
 
 async function init() {
@@ -50,11 +41,10 @@ async function init() {
     leftPaneLabel: "Toggle left pane",
     rightPaneLabel: "Toggle right pane",
     rightPane: { size: "lg", initial: "expanded" },
-    // Routed purely by each undo entry's own `type` — template.js's
-    // structural canvas entries ("add"/"move"/"reorder"/"remove"/"clear")
-    // vs. character.js's "binding" value-diff entries — the same
-    // type-tagged-single-stack convention Loom's app.js established for
-    // sharing one stack across multiple independent editors.
+    // Routed by each undo entry's own `type` — template.js's structural
+    // canvas entries vs. character.js's "binding" value-diff entries — the
+    // same type-tagged-single-stack convention Loom's app.js uses to share
+    // one stack across multiple independent editors.
     onUndo: (entry) => {
       const view = entry?.type === "binding" ? characterView : templateView;
       return view ? view.applyUndoEntry(entry) : { applied: false };
@@ -66,42 +56,28 @@ async function init() {
   });
 
   const { status, undoStack, undo, redo } = shell;
-  // Unified onto the shared "undercroft" local-storage prefix every other
-  // tool already uses by default (DataManager's own DEFAULT_STORAGE_PREFIX)
-  // — Workbench's own bucket names (characters, templates) already fully
-  // disambiguate its content, so a second, tool-specific prefix layer on top
-  // was pure redundant fragmentation (the whole reason suite-search.js
-  // needed its own per-kind local-prefix lookup just to search across
-  // tools).
+  // Uses DataManager's shared "undercroft" storage prefix (not a
+  // Workbench-specific one) — the bucket names (characters, templates)
+  // already disambiguate content, and a second prefix layer only
+  // fragmented suite-search.js's cross-tool local lookup.
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
   const auth = initAuthControls({ root: document, status, dataManager });
   initTierVisibility({ root: document, dataManager, status, auth });
   initHelpSystem({ root: document });
 
-  // Built and mounted here (not in workbench-template-view.js/
-  // workbench-character-view.js individually) because this one btn-group
-  // holds buttons both other files query by their own data-action selector
-  // (New/Save/Duplicate/Delete Template in the Template view, New/Save/
-  // Duplicate/Delete Character in the Character view) — creating them all in
-  // the one place that runs before either of those two consumers keeps every
-  // existing selector/disabled-state call site working unchanged, without
-  // needing cross-file mount-order coordination. Using createIconButton
-  // directly (not createToolbarButtonGroup) since these don't cleanly map to
-  // that helper's preset vocabulary — every action name is duplicated once
-  // for Template and once for Character (two different "New" buttons, two
-  // different "Save" buttons, ...). `visible` mirrors each button's original
-  // starting class exactly (present `d-none` -> visible: false); per-mode/
-  // sub-view show/hide after that point is still entirely driven by the
-  // [data-workbench-mode-panel]/[data-workbench-subview-panel] mechanism in
+  // Built here (not in the two view files) since both query these by their
+  // own data-action selector — one mount point avoids cross-file mount-order
+  // coordination. createIconButton directly, not createToolbarButtonGroup,
+  // since each action name is duplicated once per mode (two "New" buttons,
+  // two "Save" buttons). `visible` mirrors each button's starting class
+  // (`d-none` -> false); ongoing show/hide is driven by
+  // [data-workbench-mode-panel]/[data-workbench-subview-panel] in
   // applyPanelVisibility.
   //
-  // DOM order here is [Template's own 4] -> [Character's own 4] — since only
-  // one mode's own 4 are ever visible at once (the other 4 sit d-none), the
-  // VISIBLE sequence in either mode reads correctly as New -> Save ->
-  // Duplicate -> Delete without needing separate physical button sets per
-  // mode. Undo/Redo (mode-agnostic, always visible) are a separate array,
-  // built into their own little two-button group right after — see
-  // workbenchUndoRedoButtons below.
+  // DOM order is [Template's 4] -> [Character's 4] — since only one mode's
+  // 4 are ever visible, the visible sequence always reads New -> Save ->
+  // Duplicate -> Delete. Undo/Redo (mode-agnostic, always visible) get
+  // their own array — workbenchUndoRedoButtons below.
   const workbenchToolbarButtons = [
     { icon: "tabler:file-plus", label: "New Template", variant: "outline-primary", attrs: { "data-action": "new-template", "data-workbench-mode-panel": "template" } },
     {
@@ -129,18 +105,14 @@ async function init() {
       icon: "tabler:file-plus",
       label: "New Character",
       variant: "outline-primary",
-      // Mode-gated (Character mode only) via the generic mechanism, but
-      // deliberately NOT data-workbench-subview-panel="edit" — own JS-
-      // managed visibility instead (syncNewCharacterButtonVisibility below),
-      // same precedent Delete Character already set. The generic Edit-only
-      // gate made sense for Save/Duplicate (nothing to act on without an
-      // already-loaded character), but starting a FIRST character is never
-      // "editing an existing one" — gating it the same way locked a fresh
-      // install with zero characters out of ever creating one at all: the
-      // View/Edit toggle itself only appears once a character is already
-      // active (see renderViewToggle's own gate), so subView could never
-      // reach "edit" to reveal this button in the first place. Confirmed
-      // real — reported directly.
+      // Mode-gated but deliberately NOT data-workbench-subview-panel="edit"
+      // — own JS-managed visibility instead (syncNewCharacterButtonVisibility
+      // below), same precedent as Delete Character. The generic Edit-only
+      // gate works for Save/Duplicate (nothing to act on without an already-
+      // loaded character), but starting a FIRST character isn't "editing an
+      // existing one" — the View/Edit toggle itself only appears once a
+      // character is already active, so subView could never reach "edit" to
+      // reveal this button on a fresh install with zero characters.
       attrs: { "data-action": "new-character", "data-workbench-mode-panel": "character" },
     },
     {
@@ -158,11 +130,9 @@ async function init() {
       attrs: { "data-action": "duplicate-character", "data-workbench-mode-panel": "character", "data-workbench-subview-panel": "edit" },
     },
     {
-      // Delete Character's own visibility is fully JS-managed
-      // (syncCharacterActions' own showDelete) rather than the generic
-      // mode-panel toggle, since it also depends on ownership/dirty state
-      // the generic mechanism can't express — no data-workbench-mode-panel
-      // attr here, same as before this pass.
+      // Delete Character's visibility is fully JS-managed
+      // (syncCharacterActions' showDelete), not the generic mode-panel
+      // toggle, since it also depends on ownership/dirty state.
       icon: "tabler:trash",
       label: "Delete Character",
       variant: "outline-danger",
@@ -170,10 +140,9 @@ async function init() {
       attrs: { "data-action": "delete-character", "data-delete-character": true },
     },
   ];
-  // Undo/Redo get their own little two-button group (a small `ms-2` gap
-  // before it in the static markup) rather than joining the main cluster's
-  // btn-group — a small visual break, not a functional one, same convention
-  // every other tool's toolbar now uses (see forge/js/app.js's own comment).
+  // Undo/Redo get their own small two-button group (a visual break, not a
+  // functional one) rather than joining the main cluster — same convention
+  // every other tool's toolbar uses.
   const workbenchUndoRedoButtons = [
     { icon: "tabler:arrow-back-up", label: "Undo", attrs: { "data-action": "undo" } },
     { icon: "tabler:arrow-forward-up", label: "Redo", attrs: { "data-action": "redo" } },
@@ -199,44 +168,35 @@ async function init() {
   const modeToggleMount = document.querySelector("[data-workbench-mode-toggle-mount]");
   const viewToggleMount = document.querySelector("[data-workbench-view-toggle-mount]");
   const emptyStateMount = document.querySelector("[data-workbench-empty-state-mount]");
-  // Character is the default for every session regardless of tier — it's
-  // where players spend most of their time, unlike Template (gm+ only,
-  // merely disabled/grayed for everyone else rather than removed — see
-  // renderModeToggle). Still a function, not a bare constant, since it's
-  // also the fallback setMode falls back to if a session loses gm+ tier
-  // while on Template (auth-changed listener below).
+  // Character is the default for every session regardless of tier — where
+  // players spend most of their time, unlike Template (gm+ only, disabled
+  // rather than removed for everyone else). A function, not a constant,
+  // since it's also the fallback setMode uses when a session loses gm+
+  // tier while on Template (auth-changed listener below).
   const defaultMode = () => "character";
-  // Declared before the two view modules are constructed below — their own
+  // Declared before the two view modules are constructed — their own
   // onStateChange callback (renderEmptyState) reads `mode`, and Template's
-  // own init can synchronously trigger that callback (a freshly-created
-  // draft template) before this function returns.
+  // init can synchronously trigger that callback before this returns.
   let mode = defaultMode();
-  let subView = "view"; // "view" | "edit" — only meaningful while mode === "character"; matches workbench-character-view.js's own state.mode default
+  let subView = "view"; // "view" | "edit" — only meaningful in character mode
 
   const canvasCard = document.querySelector("[data-workbench-canvas-card]");
   const sheetCard = document.querySelector("[data-workbench-sheet-card]");
 
-  // The Mode/View header's own flush-left empty-state message — "Select a
-  // template/character from the list, or create a new one." — shown only
-  // while the active mode's own record isn't active yet, same inline/
-  // card-free treatment Repository/Forge/Crucible/Sanctum/Vault's own
-  // header uses. Also owns the Canvas/Sheet cards' own visibility — both
-  // stay removed entirely (not just an empty canvas) until their own record
-  // is active, computed independently of the currently active Mode so
+  // The header's flush-left empty-state message, shown only while the
+  // active mode's record isn't active yet — same treatment every other
+  // tool's header uses. Also owns the Canvas/Sheet cards' visibility (fully
+  // removed, not just an empty canvas), computed independently per mode so
   // switching modes never leaves a stale card showing. templateView/
-  // characterView are read via closures (not params) so this stays correct
-  // regardless of which one's onStateChange fired most recently.
+  // characterView are read via closures so this stays correct regardless
+  // of which one's onStateChange fired most recently.
   function renderEmptyState() {
     const hasTemplate = Boolean(templateView?.hasActiveTemplate?.());
     const hasCharacter = Boolean(characterView?.hasActiveCharacter?.());
     canvasCard?.classList.toggle("d-none", !hasTemplate);
     sheetCard?.classList.toggle("d-none", !hasCharacter);
-    // The View/Edit toggle depends on this exact same hasCharacter signal
-    // (see renderViewToggle's own gate) — both templateView and
-    // characterView already funnel every state change through this one
-    // function, so re-running it here (a no-op while mode !== "character")
-    // is the cheapest way to keep the toggle correct on load/unload without
-    // a second onStateChange wire-up.
+    // renderViewToggle depends on this same hasCharacter signal — cheapest
+    // way to keep it correct on load/unload without a second wire-up.
     renderViewToggle();
     syncNewCharacterButtonVisibility();
     if (!emptyStateMount) return;
@@ -256,24 +216,18 @@ async function init() {
     undoStack,
     dataManager,
     onStateChange: renderEmptyState,
-    // Called once, right after Blank/Import/Build creates a brand-new
-    // character — routes through the SAME setSubView the View/Edit toggle
-    // itself uses (not a direct state.mode write on that module's own
-    // side), so subView (this file's own source of truth for the toggle
-    // and for Delete-button visibility) never drifts out of sync with
-    // workbench-character-view.js's own state.mode the way a bypassed
-    // assignment did — confirmed real: Delete stayed visible after
-    // creating a character until a manual View/Edit/View toggle forced
-    // the two back into agreement.
+    // Called right after Blank/Import/Build creates a new character —
+    // routes through the SAME setSubView the toggle itself uses (not a
+    // direct state.mode write), so subView (this file's source of truth
+    // for the toggle and Delete-button visibility) never drifts out of
+    // sync with workbench-character-view.js's own state.mode.
     onRequestEditMode: () => setSubView("edit"),
   });
 
-  // Selections — the Template/Character select, whichever the active Mode
-  // needs (the panel's own inner rows are individually gated by data-
-  // workbench-mode-panel, same mechanism as every other mode-specific
-  // section) — built once both view modules have mounted their own select
-  // fields into the shared panel. Expanded by default, matching every other
-  // tool's own left-pane Selections section.
+  // The Template/Character select for the active Mode — inner rows are
+  // gated by data-workbench-mode-panel like every other mode-specific
+  // section. Expanded by default, matching every other tool's left-pane
+  // Selections section.
   const selectionsSection = createCollapsibleSection({
     label: "Selections",
     collapsed: false,
@@ -283,13 +237,11 @@ async function init() {
 
   function renderModeToggle() {
     if (!modeToggleMount) return;
-    // Template requires gm+ tier — this toggle rebuilds fresh on every
-    // call, so the suite-wide initTierVisibility mechanism (which
-    // snapshots [data-requires-tier] elements once at init) can never
-    // reach it; createButtonCheckGroup's own disabled/tooltip option
-    // support (ui-components.js) is the real equivalent instead of a
-    // manual post-render querySelector patch — same mechanism every
-    // tool's own Relationships-option gate now uses too.
+    // Template requires gm+ tier. This toggle rebuilds fresh on every call,
+    // so the suite-wide initTierVisibility mechanism (which snapshots
+    // [data-requires-tier] elements once at init) can't reach it —
+    // createModeToggleGroup's own disabled/tooltip option support is the
+    // real equivalent, same mechanism every Relationships-option gate uses.
     const isGm = dataManager.meetsTier("gm");
     createModeToggleGroup({
       container: modeToggleMount,
@@ -309,13 +261,11 @@ async function init() {
     });
   }
 
-  // New Character's own visibility, replacing the generic data-workbench-
-  // subview-panel="edit" gate (see its own attrs comment above for why):
-  // visible whenever Character mode is active AND either the sub-view is
-  // actually Edit, OR there's no active character at all yet — the second
-  // clause is what makes starting a character from a completely empty
-  // Workbench possible, since the View/Edit toggle itself doesn't exist
-  // until a character does (renderViewToggle's own gate just below).
+  // New Character's own visibility (see its attrs comment above for why
+  // it's not the generic subview gate): visible in Character mode when
+  // either subView is Edit, or there's no active character yet — the
+  // second clause is what makes starting a character from a completely
+  // empty Workbench possible.
   function syncNewCharacterButtonVisibility() {
     const button = document.querySelector('[data-action="new-character"]');
     if (!button) return;
@@ -325,11 +275,8 @@ async function init() {
 
   function renderViewToggle() {
     if (!viewToggleMount) return;
-    // Meaningless with no character loaded yet (there's nothing to view or
-    // edit) — confirmed real: it stayed visible the instant Character mode
-    // was entered, before ever selecting/creating a character, same gap
-    // renderEmptyState's own Sheet-card visibility already accounts for via
-    // this exact hasActiveCharacter() check.
+    // Meaningless with no character loaded — same hasActiveCharacter()
+    // check renderEmptyState's own Sheet-card visibility already uses.
     if (mode !== "character" || !characterView?.hasActiveCharacter?.()) {
       disposeTooltips(viewToggleMount);
       viewToggleMount.innerHTML = "";
@@ -346,12 +293,10 @@ async function init() {
     });
   }
 
-  // Two independent attributes, since Character mode alone can't tell
-  // apart the handful of elements (New Character/Save) that only make
-  // sense in the Edit sub-view, not the whole of Character mode (matching
-  // Notes/Relationships/Dice/Game Log/Sheet, which show for View AND Edit
-  // alike) — data-workbench-mode-panel gates on Mode, data-workbench-
-  // subview-panel additionally gates on the View/Edit sub-state.
+  // Two independent attributes: data-workbench-mode-panel gates on Mode;
+  // data-workbench-subview-panel additionally gates on View/Edit, for the
+  // handful of elements (New Character/Save) that only make sense in Edit,
+  // unlike Notes/Relationships/Dice/Game Log/Sheet which show for both.
   function applyPanelVisibility() {
     document.querySelectorAll("[data-workbench-mode-panel]").forEach((element) => {
       const panels = (element.dataset.workbenchModePanel || "").split(/\s+/);
@@ -368,11 +313,9 @@ async function init() {
     if (!MODES.includes(nextMode)) return;
     if (nextMode === "template" && !dataManager.meetsTier("gm")) return;
     mode = nextMode;
-    // Read by workbench-character-view.js's Now Showing panel — that
-    // section's own visibility depends on both "is there an active
-    // spotlight" AND "is the current mode Character", two independent
-    // conditions computed in two different modules; this is the one shared
-    // signal between them (see updateNowShowingVisibility's own comment).
+    // Read by workbench-character-view.js's Now Showing panel, whose
+    // visibility depends on both "active spotlight" and "mode = Character"
+    // — this is the shared signal between the two modules.
     document.body.dataset.workbenchMode = mode;
     applyPanelVisibility();
     renderModeToggle();
@@ -381,18 +324,13 @@ async function init() {
     if (characterView) {
       if (mode === "character") void characterView.setMode(subView);
       else {
-        // Switching to Template hits neither branch, so setMode() — and the
-        // toolbar re-check it does internally — never runs at all. Confirmed
-        // real bug (pre-Mode/View redesign): Delete Character, shown while
-        // editing, stayed visible after switching to Template, since nothing
-        // ever re-evaluated it. Cheap and idempotent to call again even when
-        // setMode already just did, so no need to gate this on mode.
+        // Switching to Template needs its own explicit refresh — without
+        // this, Delete Character (shown while editing) stayed visible after
+        // switching modes, since nothing re-evaluated it. Idempotent, so
+        // safe to call even when setMode already just did.
         characterView.refreshToolbar();
-        // Auto-load whichever template the currently-loaded character is
-        // actually built on — selectTemplateById is already a no-op if
-        // that's already the active template (same guard its own <select>'s
-        // change handler relies on), so this is safe on every switch into
-        // Template mode, not just the first one after selecting a character.
+        // Auto-load whichever template the current character is built on —
+        // selectTemplateById no-ops if it's already active.
         if (templateView && characterView.hasActiveCharacter()) {
           const templateId = characterView.getActiveTemplateId();
           if (templateId) void templateView.selectTemplateById(templateId);
@@ -416,18 +354,15 @@ async function init() {
     if (mode === "template" && !dataManager.meetsTier("gm")) {
       setMode(defaultMode());
     } else {
-      // No mode change needed, but the Template option's disabled state
-      // (see renderModeToggle) may still be stale after a tier change.
+      // No mode change needed, but Template's disabled state may be stale.
       renderModeToggle();
     }
   });
 
-  // A save in the Template tab used to leave the Character view silently
-  // rendering a stale copy of that same template until a full page
-  // reload — characterView loads its own copy once, when a character is
-  // loaded, and otherwise never re-fetches it. reloadTemplateIfActive is a
-  // no-op unless the currently-open character actually uses the template
-  // that was just saved.
+  // characterView loads its own copy of a template once and never
+  // re-fetches it — without this, a Template-tab save left Character view
+  // silently rendering a stale copy until a full reload.
+  // reloadTemplateIfActive is a no-op unless the open character uses it.
   window.addEventListener("workbench:template-saved", (event) => {
     void characterView?.reloadTemplateIfActive?.(event.detail?.templateId);
   });
@@ -439,15 +374,11 @@ async function init() {
     event.returnValue = "";
   });
 
-  // ?record=<bucket>:<id>&share=<token> deep links (used by the Admin tool's
-  // share links) pick the initial mode; each view module already loads the
-  // actual record from that same query string on its own
-  // (resolveSharedRecordParam/parseRecordParam) — this only decides which
-  // mode is showing when it does. ?view=template|play|edit is a lighter-
-  // weight alternative for plain "just open this" links (e.g. Admin's own
-  // Quick Links) with no specific record to load — the legacy three values
-  // still map onto the new Mode+View split (template -> Template mode;
-  // edit/play -> Character mode, with the sub-view set accordingly).
+  // ?record=<bucket>:<id>&share=<token> deep links pick the initial mode;
+  // each view module loads the actual record itself
+  // (resolveSharedRecordParam/parseRecordParam). ?view=template|play|edit
+  // is a lighter alternative with no specific record, mapping the legacy
+  // three values onto the Mode+View split.
   let initialMode = defaultMode();
   let initialSubView = "view";
   try {

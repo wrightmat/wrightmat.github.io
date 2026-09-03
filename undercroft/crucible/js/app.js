@@ -34,21 +34,12 @@ import { loadArrayFieldValues } from "../../common/js/lib/generator-kit.js";
 import { createMonsterRecord, toPressExportShape } from "./lib/monster-schema.js";
 import { hasConvertibleStatBlock, convertStatBlockToFeatures } from "../../common/js/lib/monster-feature-matching.js";
 import { createReferenceChip } from "../../common/js/lib/library-reference.js";
-// The weapon-attack/rider/save-effect/`options`-menu editor — extracted
-// from this file into a shared module (feature-params-editor.js) so
-// Vault's own Basic Authoring mode can offer the exact same editing
-// surface once it has its own parameterized spell/item mechanics types,
-// instead of a second hand-rolled copy. Instantiated once below, once
-// every hook it depends on (currentRecord, dataManager, abilityFieldDefs,
-// renderFeatureList) is in scope.
+// The weapon-attack/rider/save-effect/`options`-menu editor — shared with
+// Vault's own Basic Authoring mode rather than a second hand-rolled copy.
 import { createFeatureParamsEditor } from "../../common/js/lib/feature-params-editor.js";
-// Reused as-is from Repository, not reimplemented — the same "never
-// recreate shared code" precedent common/js/lib/widgets/handout.js already
-// set for this exact function. No options passed: Crucible has no page
-// index/wiki-link/dice/macro/encounter context to wire up, and
-// renderMarkdown degrades gracefully without any of that (dice/task-
-// checkbox/callout rendering still work; `[[wiki links]]` just render as
-// "missing" links, which a Notes field never has anyway).
+// Reused as-is from Repository. No options passed — Crucible has no page
+// index/wiki-link/dice/macro/encounter context, and renderMarkdown degrades
+// gracefully without any of that.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 import { generateMonsterNote } from "./lib/llm-note.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
@@ -87,34 +78,24 @@ let features = [];
 let combatScalingLevels = [];
 let arrayFieldOptions = [];
 // Which array field guessCombatScalingFieldKey/guessCreatureTypeFieldKey
-// would auto-pick for the active System — same "ride along with the
-// options fetch, no second round trip" shape as abilityFieldGuess below,
-// so each settings dropdown can pre-select its own guess and label it
-// instead of offering a separate "Auto-detect" placeholder option.
+// would auto-pick — ride along with the options fetch so each settings
+// dropdown can pre-select and label its own guess.
 let combatScalingFieldGuess = "";
 let creatureTypeFieldGuess = "";
-// Candidate list for the abilityField settings preference below — every
-// object-type field the active System defines, since an ability/stat block
-// is always authored as one (unlike arrayFieldOptions' array fields) — plus
-// which one guessAbilityFieldKey would auto-pick, so the dropdown can
-// pre-select and label it instead of offering a separate "Auto-detect"
-// placeholder option.
+// Candidate list for the abilityField preference below — every object-type
+// field the active System defines, plus which one would be auto-picked.
 let objectFieldOptions = [];
 let abilityFieldGuess = "";
-// The active System's own ability key/label list (see stats.js#deriveStats,
-// which reads this same data independently for generation) — kept here too
-// so renderStats' display rows use the System's real ability vocabulary
-// instead of a second hardcoded STR/DEX/CON/INT/WIS/CHA copy.
+// The active System's own ability key/label list, so renderStats' display
+// rows use the System's real vocabulary instead of a hardcoded STR/DEX/...
 let abilityFieldDefs = [];
-// Which of these ability keys the active System actually stores its stat
-// block under — "abilities" for D&D, "traits" for Daggerheart, ... — never
-// hardcoded (see stats.js#deriveStats' own header comment).
+// Which of these ability keys the System stores its stat block under —
+// "abilities" for D&D, "traits" for Daggerheart, ... — never hardcoded.
 let abilityFieldKey = "";
-// The active System's own live-play-state bindings (HP/AC/Initiative/...) —
-// stats.js#deriveStats writes each generated value through setAtBinding
-// against whatever path THIS System's own combatBindings declare, never a
-// hardcoded "stats.hitPoints"-shaped assumption. null for a System with no
-// Role-bound field at all.
+// The active System's own live-play-state bindings (HP/AC/Initiative/...);
+// deriveStats writes each value through setAtBinding against whatever path
+// these declare, never a hardcoded "stats.hitPoints" assumption. null for a
+// System with no Role-bound field at all.
 let combatBindings = null;
 let derivedFormulas = [];
 let currentRecord = null;
@@ -125,41 +106,28 @@ const featureParamsEditor = createFeatureParamsEditor({
   onFeatureSaved: () => renderFeatureList(currentRecord),
   getAbilityFieldDefs: () => abilityFieldDefs,
 });
-// Which row in the Features list the Inspector panel is currently showing —
-// selectFeatureRow's own state, tracked at module level so the Multiattack
-// editor's "Add" button (attached once, at init, like every other button in
-// this file) knows which Feature to edit without needing it threaded through
-// as an argument.
+// Which row in the Features list the Inspector panel is showing — tracked at
+// module level so the Multiattack editor's "Add" button (attached once, at
+// init) knows which Feature to edit without it threaded through as an arg.
 let selectedFeatureId = null;
-// Every saved monster for the active System (Monster picker options) plus
-// its ownership metadata — same role/shape as Sanctum's locationsInSetting/
-// locationCatalog. Tracking currentMonsterId separately from currentRecord
-// mirrors Sanctum's currentLocationId too: currentRecord holds the live,
-// possibly-edited-but-unsaved data, while this is just "which saved id (if
-// any) is the picker currently pointed at."
+// Every saved monster for the active System plus its ownership metadata.
+// currentMonsterId tracks which saved id (if any) the picker points at,
+// separate from currentRecord (the live, possibly-unsaved data).
 let monstersInSystem = [];
 let monsterCatalog = new Map();
 let currentMonsterId = null;
-// Tracks whether the record as last successfully saved differs from a live
-// snapshot — built from currentRecord plus whatever's currently typed into
-// Name/Notes, since those two fields aren't written back into currentRecord
-// until Save/Export actually runs — to gate the Save button the same way
-// Loom/Workbench's editors do, and to know whether Delete has anything real
-// on the server to target (see common/js/lib/dirty-gate.js).
+// Whether the record as last saved differs from a live snapshot — built from
+// currentRecord plus whatever's typed into Name/Notes, since those two only
+// land on currentRecord at Save/Export time — to gate the Save button and
+// know whether Delete has anything real on the server to target.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
-// Whole-record snapshot undo — same shape/reasoning as Repository's own
-// recordHistory/field-commit-debounce pair (repository/js/app.js). Snapshots
-// use buildRecordForSave() (not currentRecord directly) so a Name/Notes edit
-// — which only lands on currentRecord at Save/Export time, see
-// buildRecordForSave's own comment — is still captured; restoring a snapshot
-// goes through renderMonster, which already writes record.name/record.notes
-// back into their live input fields. Feature-params sub-edits (Multiattack/
-// weapon-attack/save-effect, routed through the shared featureParamsEditor)
-// are intentionally NOT wrapped here — that mutation happens inside a shared
-// module this pass isn't touching, consistent with scoping undo to this
-// file's own primary mutation points (reroll, feature add/remove, Generate,
-// Name/Notes/Stats edits) rather than every nested editing surface.
+// Whole-record snapshot undo. Snapshots use buildRecordForSave() (not
+// currentRecord directly) so a Name/Notes edit is still captured; restoring
+// goes through renderMonster, which writes record.name/record.notes back
+// into their live inputs. Feature-params sub-edits (routed through the
+// shared featureParamsEditor) are NOT wrapped here — undo is scoped to this
+// file's own primary mutation points, not every nested editing surface.
 function recordSnapshot() {
   return JSON.stringify(buildRecordForSave());
 }
@@ -206,32 +174,23 @@ function flushFieldCommitOnUndoRedo(event) {
   if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
 }
 
-// Built and mounted before `elements` below queries for these buttons by
-// their data-*-monster attribute, so every existing selector/disabled-state
-// call site elsewhere in this file keeps working unchanged.
+// Mounted before `elements` below queries for these buttons, so every
+// selector/disabled-state call site elsewhere in this file keeps working.
 createToolbarButtonGroup([
   // Starts disabled — nothing to generate FROM until reloadReferenceData
-  // (init()'s own cascade, below) resolves; clicking it before then threw
-  // straight out of generateMonster (creatureTypes/archetypes/etc. still
-  // their initial empty arrays). Re-enabled by init() once that resolves.
+  // resolves; re-enabled by init() once it does.
   { action: "generate", label: "Generate Monster", disabled: true, attrs: { "data-generate-monster": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-monster": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-monster": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-monster": true } },
 ]).forEach((button) => document.querySelector("[data-monster-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — same convention every other
-// tool's toolbar now uses (see forge/js/app.js's own comment).
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-undo-monster": true } },
   { action: "redo", label: "Redo", attrs: { "data-redo-monster": true } },
 ]).forEach((button) => document.querySelector("[data-monster-undo-toolbar-mount]")?.appendChild(button));
-// A genuinely new, cross-tool action, not a 5th slot on the primary
-// Generate/Save/Duplicate/Delete cluster above, and NOT a second row on
-// that same left-pane toolbar either — that still reads as part of the
-// primary action bar regardless of grouping. Lives in its own "Monster
-// Properties" section in the right-pane Inspector instead (mounted below,
-// alongside inspectorSection) — see forge/js/app.js's identical comment
-// for the shared reasoning.
+// A genuinely new, cross-tool action — not a 5th slot on the primary
+// cluster above, and not a second toolbar row either. Lives in its own
+// "Monster Properties" Inspector section instead (mounted below).
 createToolbarButtonGroup([
   {
     icon: "tabler:user-plus",
@@ -259,17 +218,11 @@ document.querySelector("[data-monster-empty-state]")?.appendChild(
   })
 );
 
-// Named data-field-mount (not data-inspector-mount) — this file's own
-// [data-inspector-mount] selector below is a single bare marker for the
-// Detail Inspector's collapsible wrapper; a keyed attribute of the same
-// name would collide with it (attribute selectors match on presence, not
-// value).
-// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
-// for why: an appended-into wrapper stays an empty-but-in-flow flex item
-// even while its field is conditionally hidden, silently spending a full
-// gap-3 on both sides of it. Any class the static mount div itself carried
-// is merged onto the built field first so removing the wrapper doesn't
-// lose that layout.
+// replaceWith, not appendChild — an appended-into wrapper stays an
+// empty-but-in-flow flex item even while its field is conditionally hidden,
+// silently spending a full gap-3 on both sides. Any class the static mount
+// div carried is merged onto the built field first so removing the wrapper
+// doesn't lose that layout.
 function mountField(key, element) {
   const mount = document.querySelector(`[data-field-mount="${key}"]`);
   if (!mount) return;
@@ -316,10 +269,8 @@ mountField(
     dataAttr: "data-convert-character-template", required: true,
   })
 );
-// Same field-box style as Identity/Stats below (and Forge's own Name box) —
-// per explicit feedback that Name/Image standing out with plain
-// Bootstrap form-control styling, instead of matching the boxes around
-// them, was exactly the inconsistency to fix.
+// Same field-box style as Identity/Stats below, so Name/Image match the
+// boxes around them instead of standing out with plain form-control styling.
 mountField("monster-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-monster-name" }));
 
 const elements = {
@@ -391,12 +342,10 @@ const elements = {
   featureBasicBudgetCost: document.querySelector("[data-feature-basic-budget-cost]"),
 };
 
-// Monster Properties — currently just the Convert to Character action, but
-// its own named section (not the Inspector's) since it's about the
-// generated Monster itself, not whatever the Inspector below happens to be
-// showing (Feature detail). Starts collapsed; expandMonsterPropertiesSection
-// (below) opens it whenever a new Monster is generated or selected — see
-// forge/js/app.js's identical npcPropertiesSection.
+// Monster Properties — currently just Convert to Character, but its own
+// section (not the Inspector's) since it's about the Monster itself, not
+// whatever the Inspector happens to be showing (Feature detail). Starts
+// collapsed; expandMonsterPropertiesSection opens it on generate/select.
 const monsterPropertiesSection = createCollapsibleSection({
   label: "Monster Properties",
   collapsed: true,
@@ -407,13 +356,10 @@ function expandMonsterPropertiesSection() {
   monsterPropertiesSection.setCollapsed(false);
 }
 
-// Adopts each section's existing static `[data-xxx-panel]` markup (its own
-// content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as createCollapsibleSection's content — same pattern Sanctum's
-// own initCollapsibles uses. Notes keeps its "Generate Note" sibling button
-// in static HTML (a shape createCollapsibleSection would clobber by
-// rebuilding the whole header), so only its toggle button is built and
-// mounted, the same way Sanctum's own Notes section does.
+// Adopts each section's existing static `[data-xxx-panel]` markup (content
+// stays hand-authored HTML — only the header+chevron wrapper is JS-built).
+// Notes keeps its "Generate Note" sibling button in static HTML, so only
+// its toggle is built and mounted.
 {
   const inspectorSection = createCollapsibleSection({
     label: "Inspector",
@@ -422,15 +368,9 @@ function expandMonsterPropertiesSection() {
   });
   document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
 
-  // The raw JSON dump is a nested collapsible section OF ITS OWN, inside
-  // the Inspector's own already-collapsible content — collapsed by default
-  // (unlike Inspector itself) since it's a diagnostic/power-user detail, not
-  // something a GM needs open by default the way the structured
-  // Multiattack/weapon-attack/save-effect editors above it are. Same
-  // "adopt the existing static element as content" pattern as every other
-  // createCollapsibleSection call here — elements.inspectorJson keeps
-  // working unchanged (its own querySelector ref stays valid after
-  // appendChild relocates the element, same as any DOM move).
+  // Nested collapsible, inside the Inspector's own collapsible content —
+  // collapsed by default since it's a diagnostic/power-user detail, not
+  // something a GM needs open the way the structured editors above it are.
   document.querySelector("[data-inspector-json-mount]")?.appendChild(
     createCollapsibleSection({
       label: "Raw JSON",
@@ -448,10 +388,9 @@ function expandMonsterPropertiesSection() {
     }).section
   );
 
-  // Toggle-only (not the full createCollapsibleSection header) — same
-  // reasoning as Notes below: the Feature budget summary is static HTML in
-  // the header that createCollapsibleSection's own built header would
-  // clobber. Mirrors Vault's own Features section exactly.
+  // Toggle-only (not the full createCollapsibleSection header) — the
+  // Feature budget summary is static HTML in the header that a built
+  // header would clobber.
   const featuresToggle = createIconButton({
     icon: "tabler:chevron-right",
     className: "collapsible-toggle",
@@ -474,9 +413,8 @@ function expandMonsterPropertiesSection() {
     }).section
   );
 
-  // Moved to the bottom of the page and collapsed by default — a
-  // supplementary detail (which slot each feature filled), not something
-  // the GM needs open at a glance every time, unlike Identity/Features/Stats.
+  // Collapsed by default — a supplementary detail (which slot each feature
+  // filled), not something the GM needs open at a glance.
   document.querySelector("[data-recipe-mount]")?.appendChild(
     createCollapsibleSection({
       label: "Recipe Fulfillment",
@@ -517,17 +455,12 @@ function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
 
-// Which array field Crucible treats as combat-scaling data — and, separately,
-// which one it treats as creature-type data — is a Crucible tool preference,
-// not System data: it's not game content, it's "which of this System's
-// fields does Crucible's own generator special-case," so it lives in this
-// browser's local storage (keyed per System), never in the System record
-// edited in Loom. Mirrors Vault's budgetCeilingField preference exactly (see
-// vault/js/app.js). Both settings share one per-System record (read/write
-// through the small helpers below, not saveLocal directly) since
-// dataManager.saveLocal replaces the whole record for a given (bucket, id) —
-// writing one setting straight through saveLocal would silently wipe out
-// the other one's already-saved value for that same System.
+// Which array field Crucible treats as combat-scaling/creature-type data is
+// a Crucible tool preference, not System data — lives in local storage
+// (keyed per System), never in the System record itself. Both settings
+// share one per-System record (via the helpers below, not saveLocal
+// directly) since saveLocal replaces the whole record for a (bucket, id) —
+// writing one setting straight through it would wipe the other's value.
 const CRUCIBLE_SETTINGS_BUCKET = "crucible-settings";
 
 function getCrucibleSystemSettings(systemId) {
@@ -553,12 +486,9 @@ function setCombatScalingFieldPreference(systemId, fieldKey) {
   setCrucibleSystemSetting(systemId, "combatScalingField", fieldKey || "");
 }
 
-// Different Systems use different nomenclature for this concept (5e's own
-// "Creature Type" vocabulary vs. another game's "Kind"/"Origin"/whatever it
-// calls its own version) — see listCreatureTypesForSystem's own comment in
-// lib/tables.js — so which array field supplies it is configurable exactly
-// like combatScalingField above, defaulting to "creatureTypes" there when
-// unset.
+// Different Systems use different nomenclature for this concept, so which
+// array field supplies it is configurable exactly like combatScalingField
+// above, defaulting to "creatureTypes" when unset.
 function getCreatureTypeFieldPreference(systemId) {
   return getCrucibleSystemSettings(systemId).creatureTypeField || "";
 }
@@ -567,14 +497,11 @@ function setCreatureTypeFieldPreference(systemId, fieldKey) {
   setCrucibleSystemSetting(systemId, "creatureTypeField", fieldKey || "");
 }
 
-// Which object field is this System's ability/stat block — same per-System,
-// per-browser tool preference shape as combatScalingField/creatureTypeField
-// above, feeding loadAbilityFieldDefs' own preferredKey param instead of it
-// always assuming a field literally named "abilities" (see
-// feedback_settings_preference_with_guessed_default). Empty/unset falls
-// through to loadAbilityFieldDefs' own shape-based guess, not a fixed
-// conventional default — unlike combatScalingField/creatureTypeField, there
-// isn't one single "usual" key name here worth hardcoding as a fallback.
+// Which object field is this System's ability/stat block — same per-System
+// preference shape as combatScalingField/creatureTypeField, feeding
+// loadAbilityFieldDefs' preferredKey instead of assuming a field literally
+// named "abilities". Empty falls through to its own shape-based guess, not
+// a fixed default — unlike the other two, there's no one "usual" key name.
 function getAbilityFieldPreference(systemId) {
   return getCrucibleSystemSettings(systemId).abilityField || "";
 }
@@ -583,15 +510,12 @@ function setAbilityFieldPreference(systemId, fieldKey) {
   setCrucibleSystemSetting(systemId, "abilityField", fieldKey || "");
 }
 
-// combatScalingField/creatureTypeField share the same candidate list (every
-// top-level array field the active System defines), but each has its own
-// guessed key — `guessedKey`/`rawPreference` parameterize which one this
-// call is for. A real "None" option (unlike abilityField, which has no
-// off-switch) lets a GM explicitly force "no field" for a System that
-// genuinely has neither concept, distinguishing that from "never
-// configured yet". Same "(auto-detected)" labeling convention as
-// abilityField below — the guessed field IS the selected value until the
-// GM picks something else, no separate "Auto-detect" placeholder.
+// combatScalingField/creatureTypeField share the same candidate list, but
+// each has its own guessed key — `guessedKey`/`rawPreference` parameterize
+// which. A real "None" option lets a GM explicitly force "no field" for a
+// System with neither concept, distinguishing that from "never configured".
+// The guessed field IS the selected value until the GM picks something
+// else, labeled "(auto-detected)" rather than a separate placeholder.
 function fieldPreferenceOptions(guessedKey, rawPreference) {
   return [
     { value: "", label: "None" },
@@ -609,16 +533,14 @@ async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
   // Disabled, not just blank — a real System is required before anything
   // else in this tool is usable, so the picker shouldn't silently fall back
-  // to whichever System happens to sort first (previously "Blades in the
-  // Dark"). Once a real System is chosen this option can't be reselected.
+  // to whichever System sorts first. Can't be reselected once chosen.
   renderRequiredSelectOptions(elements.systemSelect, systems, { placeholder: "Select a System" });
   markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect?.value));
   return systems;
 }
 
 // Ownership metadata comes from the list response, not the full fetched
-// body — mirrors Sanctum's refreshSettingCatalog/refreshLocationCatalog
-// exactly. Local-only (anonymous, browser-storage) entries are always
+// body. Local-only (anonymous, browser-storage) entries are always
 // deletable, since it's just this browser's own storage.
 async function refreshMonsterCatalog(ids) {
   monsterCatalog = await refreshOwnershipCatalog(dataManager, "monster", ids);
@@ -628,10 +550,9 @@ function monsterAllowsDelete(id) {
   return allowsDelete(monsterCatalog, id, { dataManager });
 }
 
-// Every saved Monster for the active System — Sanctum's Location picker is
-// the direct precedent (list scoped by the current context, "New / unsaved"
-// as the default so a fresh Generate Monster keeps working exactly as
-// before). Crucible has no Setting concept, so System alone is the scope.
+// Every saved Monster for the active System, scoped by System alone (no
+// Setting concept here). "New / unsaved" is the default so a fresh Generate
+// Monster keeps working as before.
 async function populateMonsterSelect() {
   if (!elements.monsterSelect) return;
   const systemId = currentSystemId();
@@ -642,18 +563,15 @@ async function populateMonsterSelect() {
   updateGenerationFieldsVisibility();
 }
 
-// The Creature Type/Archetype/Role/Combat Scaling/Signature/Locked Features
-// overrides only matter for generating something new — once an existing
-// Monster is loaded they're just clutter (same convention Sanctum/Forge/
-// Vault's own generation fields follow). Purely visual: hiding never clears
-// an override's underlying value.
+// The generation overrides only matter for generating something new — once
+// an existing Monster is loaded they're just clutter. Purely visual: hiding
+// never clears an override's underlying value.
 function updateGenerationFieldsVisibility() {
   elements.generationFields?.classList.toggle("d-none", Boolean(elements.monsterSelect?.value));
 }
 
-// Creature Type / Archetype / Role / signature Feature are all optional
-// overrides — blank = "Random" — exactly like Forge's Species/Archetype/
-// Alignment/Gender selects, not a required cascade.
+// Creature Type/Archetype/Role/signature Feature are all optional overrides
+// — blank = "Random" — not a required cascade.
 function populateOverrideSelect(select, entries, blankLabel) {
   if (!select) return;
   const previous = select.value;
@@ -704,11 +622,8 @@ async function reloadReferenceData() {
   combatScalingFieldGuess = arrayFieldResult.guessedCombatScalingKey;
   creatureTypeFieldGuess = arrayFieldResult.guessedCreatureTypeKey;
   // The shared `feature` kind also holds Sanctum's location features and
-  // Vault's spell/item features (tagged accordingly) — filtered here, once,
-  // right after fetching, so every consumer of the module-level `features`
-  // array (generateMonster, and the Locked/Signature/Add-feature selects
-  // below) only ever sees Crucible's own monster ones. Confirmed real bug
-  // this fixes: unfiltered, all three leaked non-monster features in.
+  // Vault's spell/item features — filtered here, once, so every consumer of
+  // the module-level `features` array only ever sees Crucible's own.
   features = fetchedFeatures.filter(matchesCategory);
   populateOverrideSelect(elements.creatureTypeOverride, creatureTypes, "Random");
   populateOverrideSelect(elements.archetypeOverride, archetypes, "Random");
@@ -725,48 +640,31 @@ function featureLabel(id) {
 }
 
 // The "monster" Library kind isn't exclusively Crucible's own output — an
-// SRD/DDB/Fantasy Statblocks import saves straight to the same shared kind.
-// Provenance (`record.mapping`, stamped by Loom's saveEntity/Crucible's own
-// handleSave on any mapping-driven save — the suite's standard "was this
-// imported?" signal, same field Character already uses), not data shape, is
-// the correct discriminator — shape is deliberately NOT reliable here:
-// Feature-matching (monster-feature-matching.js) normalizes an imported
-// record's traits/actions into `featureIds` the same way native generation
-// does, so a converted import and a native monster are MEANT to end up
-// structurally identical. Checking `featureIds` presence used to conflate
-// "has been feature-matched" with "was generated by Crucible," which is
-// wrong on both counts.
+// SRD/DDB/Fantasy Statblocks import saves to the same shared kind.
+// Provenance (`record.mapping`, the suite's standard "was this imported?"
+// signal), not data shape, is the correct discriminator — feature-matching
+// normalizes an imported record's traits/actions into `featureIds` the same
+// way native generation does, so shape alone can't tell them apart.
 function isImportedStatBlock(record) {
   return Boolean(record?.mapping);
 }
 
-// Field boxes now (createFieldBox, same as Stats below) — per explicit
-// feedback that these needed to be editable, not read-only text.
-// `data-editable-identity` is this section's own write-back attribute (see
-// the identityFields "change" listener below) — distinct from Stats' own
-// `data-editable-stat` since the two sections write into different parts
-// of the record (top-level fields here vs. `record.stats` there).
+// `data-editable-identity` is this section's own write-back attribute,
+// distinct from Stats' own `data-editable-stat` since the two sections
+// write into different parts of the record (top-level here vs. `record.stats`).
 function renderIdentity(record) {
   if (!elements.identityFields) return;
   elements.identityFields.innerHTML = "";
-  // Creature Type is real data every monster carries regardless of
-  // provenance (record.type — a native generation's own vocabulary pick, or
-  // an imported stat block's own genuine type, e.g. "humanoid"), so it
-  // always renders. Archetype/Role are Crucible's own generation axes an
-  // imported record never has (see isImportedStatBlock) — Signature Feature
-  // deliberately isn't a field here either way — it's already shown,
-  // clearly labeled "Signature", on its own Feature's row in the Features
-  // list below (renderFeatureList), so a second control for the same fact
-  // up here was redundant.
-  // blankLabel was always supported here but never actually set on any of
-  // these three fields — an unset/unrecognized value (e.g. a value with no
-  // matching option, like an import whose raw type didn't resolve — see
-  // resolveCreatureType, mapping-custom-functions.js) silently rendered as
-  // whichever real option happens to come first alphabetically ("Aberration"),
-  // reading as a confidently wrong answer instead of "nothing chosen."
-  // Native generation's blank truly means "resolve randomly" (see this
-  // tool's own CLAUDE.md); an imported record has no such reroll-on-save
-  // behavior, so it gets a plainly different label instead of implying one.
+  // Creature Type always renders (every monster carries it regardless of
+  // provenance). Archetype/Role are Crucible's own generation axes an
+  // imported record never has. Signature Feature isn't a field here — it's
+  // already shown, labeled "Signature", on its own row in the Features list.
+  // blankLabel: an unrecognized value (e.g. an import whose raw type didn't
+  // resolve) would otherwise silently render as whichever option sorts
+  // first alphabetically — a confidently wrong answer instead of "nothing
+  // chosen". Native generation's blank truly means "resolve randomly"; an
+  // imported record has no such reroll-on-save behavior, so it gets a
+  // different label.
   const imported = isImportedStatBlock(record);
   const fields = [
     { key: "type", label: "Creature Type", value: record.type, source: creatureTypes, blankLabel: imported ? "— Unset —" : "Random" },
@@ -815,8 +713,7 @@ function selectFeatureRow(featureId) {
   if (elements.inspectorJson) elements.inspectorJson.textContent = JSON.stringify(feature, null, 2);
 }
 
-// Enabled only when mechanics.scope === "unique" — see crucible.feature-
-// basic-info (help-topics.json) for the GM-facing explanation.
+// Enabled only when mechanics.scope === "unique".
 function renderFeatureBasicInfo(feature) {
   if (elements.featureBasicId) elements.featureBasicId.value = feature.id;
   if (elements.featureBasicName) elements.featureBasicName.value = feature.name || "";
@@ -830,15 +727,10 @@ function renderFeatureBasicInfo(feature) {
   if (elements.editFeatureButton) elements.editFeatureButton.disabled = false;
 }
 
-// Saves straight through dataManager.save("feature", ...), same immediate-
-// save path the shared featureParamsEditor's own options editor uses (a
-// Feature-record edit, not a monster-record one, so the monster's own
-// dirtyGate/Save button don't apply). `description` and `mechanics.text` are kept in sync when both
-// are plain strings — this session's own established convention for a
-// one-off passive Feature (every prior migration script this session kept
-// them identical), even though rendering only ever reads `description`
-// for a plain "passive" Feature; leaving `mechanics.text` stale would
-// still read as a real inconsistency in the Raw JSON view.
+// Saves straight through dataManager.save("feature", ...) — a Feature-record
+// edit, not a monster-record one, so the monster's own dirtyGate/Save button
+// don't apply. `description` and `mechanics.text` are kept in sync when both
+// are plain strings, so the Raw JSON view doesn't show a stale duplicate.
 async function updateFeatureBasicInfo(feature, patch) {
   Object.assign(feature, patch);
   if ("description" in patch && feature.mechanics && typeof feature.mechanics.text === "string") {
@@ -864,21 +756,13 @@ elements.featureBasicBudgetCost?.addEventListener("change", () => {
   updateFeatureBasicInfo(feature, { budgetCost: value });
 });
 
-// A shared Feature's own per-monster numbers live in
-// currentRecord.featureParams[feature.id] (monster-feature-matching.js's
-// buildMultiattackParams/parseWeaponAttack/parseSaveEffect — the same
-// "shared, content-free template Feature plus per-monster data on the
-// record" shape every one of Multiattack/weapon-attack/save-effect uses),
-// NOT on the Feature itself. So editing any of them is editing part of the
-// monster record, exactly like add/removeFeature below: marks the record
-// dirty and waits for the monster's own Save button, rather than an
-// independent immediate save. Refreshed together after every edit: the
-// Features list row's own live-computed text (multiattackDescriptionText/
-// weaponAttackDescriptionText/saveEffectDescriptionText all read
-// featureParams fresh every render), the left-pane JSON Data panel, and the
-// Save button's own enabled state. Named generically (not
-// "...MultiattackEdit") since the shared featureParamsEditor's own weapon-
-// attack/save-effect editors share this exact same commit path.
+// A shared Feature's per-monster numbers live in
+// currentRecord.featureParams[feature.id], NOT on the Feature itself. So
+// editing any of them is editing part of the monster record, exactly like
+// add/removeFeature below: marks the record dirty and waits for the
+// monster's own Save button, rather than an independent immediate save.
+// Named generically since the shared featureParamsEditor's weapon-attack/
+// save-effect editors share this exact same commit path.
 function refreshAfterFeatureEdit() {
   dirtyGate.markDirty();
   renderFeatureList(currentRecord);
@@ -886,14 +770,11 @@ function refreshAfterFeatureEdit() {
   updateActionButtons();
 }
 
-// A Multiattack's own attack-reference data has two possible shapes on
-// record.featureParams[featureId], read here as a normalized list of option
-// GROUPS (each an {featureId,count}[] AND-combination) so every caller
-// (editor, renderer) has one shape to reason about: the legacy/common flat
-// `attacks` (a fixed combination, no real choice) is just `options` with one
-// entry. `attacks` is kept as its own key for the common case rather than
-// forced into `options` on every save — see monster-feature-matching.js's
-// buildMultiattackParams — this reader just papers over the two shapes.
+// A Multiattack's attack-reference data has two possible shapes on
+// record.featureParams[featureId] — read here as a normalized list of option
+// GROUPS (each an {featureId,count}[] AND-combination) so every caller has
+// one shape to reason about: the flat `attacks` (a fixed combination, no
+// real choice) is just `options` with one entry.
 function multiattackOptionGroups(params) {
   if (Array.isArray(params?.options)) return params.options;
   if (Array.isArray(params?.attacks)) return [params.attacks];
@@ -1045,11 +926,8 @@ function renderMultiattackRow(feature, groups, groupIndex, group, attack, attack
 
   const name = document.createElement("span");
   name.className = "small flex-grow-1";
-  // A referenced Feature that no longer resolves (removed from this
-  // monster, or deleted outright) is shown in red rather than silently
-  // vanishing from the list — same "never lose information silently"
-  // rule multiattackDescriptionText's own fallback already follows, just
-  // surfaced here instead of just falling back to plain text.
+  // A referenced Feature that no longer resolves is shown in red rather
+  // than silently vanishing from the list.
   name.textContent = referenced?.name || `${attack.featureId} (missing)`;
   if (!referenced) name.classList.add("text-danger");
 
@@ -1083,13 +961,10 @@ function renderMultiattackRow(feature, groups, groupIndex, group, attack, attack
 }
 
 // Every other Feature already on this monster, minus Multiattack itself and
-// any OTHER Multiattack-type Feature (attacking "with" a Multiattack isn't a
-// real 5e concept) — same candidate pool populateAddFeatureSelect draws
-// from (currentRecord.featureIds), just filtered differently. Scoped to ONE
-// option group — adding an already-listed Feature again, within that SAME
-// group, bumps its existing count instead of creating a second entry (a
-// Feature can legitimately appear in more than one option, so this only
-// dedupes within a single group, not across groups).
+// any OTHER Multiattack-type Feature. Scoped to ONE option group — adding an
+// already-listed Feature again within that SAME group bumps its existing
+// count instead of creating a second entry (a Feature can legitimately
+// appear in more than one option, so this dedupes within a group, not across).
 function renderMultiattackAddRow(feature, groups, groupIndex, group) {
   const row = document.createElement("div");
   row.className = "d-flex gap-2 align-items-center";
@@ -1116,11 +991,9 @@ function renderMultiattackAddRow(feature, groups, groupIndex, group) {
   countInput.min = "1";
   countInput.placeholder = "1";
   countInput.setAttribute("aria-label", "Attack count");
-  // Starts blank rather than a real "1" — a pre-filled count next to an
-  // unselected "Select…" placeholder read as if a real attack were already
-  // queued up to add. Once a real Feature is picked, default the count to 1
-  // (still freely editable) rather than leaving it blank at that point,
-  // since a genuine attack-to-add always needs SOME count.
+  // Starts blank — a pre-filled count next to an unselected placeholder read
+  // as if a real attack were already queued up. Defaults to 1 once a real
+  // Feature is picked.
   select.addEventListener("change", () => {
     if (select.value && !countInput.value) countInput.value = "1";
   });
@@ -1147,10 +1020,7 @@ function renderMultiattackAddRow(feature, groups, groupIndex, group) {
 }
 
 // "Add option" promotes the current single fixed combination into the first
-// entry of a real choice, appending a fresh empty group alongside it — used
-// both to start a brand-new choice-structured Multiattack from scratch (both
-// groups start empty) and to add a THIRD+ alternative to an already-choice-
-// structured one.
+// entry of a real choice, appending a fresh empty group alongside it.
 function addMultiattackOption() {
   if (!currentRecord) return;
   const feature = findById(features, selectedFeatureId);
@@ -1163,17 +1033,13 @@ function addMultiattackOption() {
   refreshAfterFeatureEdit();
 }
 
-// weapon-attack/rider/save-effect/options-menu editing now lives in the
-// shared featureParamsEditor instance (feature-params-editor.js) created
-// above — see its own module comment for why this moved out of here.
+// weapon-attack/rider/save-effect/options-menu editing lives in the shared
+// featureParamsEditor instance created above.
 
 // Every free-text ability list an imported stat block can carry, in the
-// order they read most naturally — Traits first (no prefix, they're the
-// "baseline" the rest sit alongside), then Actions, then the situational
-// ones. Each entry's own {name, description} already carries its full
-// content, so these render directly rather than through Crucible's own
-// Feature-lookup/inspector flow (findById(features, ...) has nothing to
-// find here — there's no shared Feature entity behind free-text prose).
+// order they read most naturally. Each entry's own {name, description}
+// already carries its full content, so these render directly rather than
+// through Crucible's own Feature-lookup flow.
 const IMPORTED_STAT_BLOCK_ABILITY_GROUPS = [
   ["traits", ""],
   ["actions", "Action"],
@@ -1183,9 +1049,8 @@ const IMPORTED_STAT_BLOCK_ABILITY_GROUPS = [
   ["lairActions", "Lair Action"],
 ];
 
-// Display labels for a Feature's own `combat.actionCost` (monster-feature-
-// matching.js's ACTION_COST_BY_GROUP_KEY vocabulary) — renderFeatureList's
-// own right-side pill below, not shown at all for a trait (no actionCost).
+// Display labels for a Feature's own `combat.actionCost` — renderFeatureList's
+// right-side pill below, not shown for a trait (no actionCost).
 const ACTION_COST_LABELS = {
   action: "Action",
   "bonus-action": "Bonus Action",
@@ -1196,25 +1061,15 @@ const ACTION_COST_LABELS = {
 
 const COUNT_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight"];
 
-// Multiattack is a single shared `feat.multiattack` Feature (like
-// feat.bite/feat.claw) — this monster's own attack-reference list lives in
-// record.featureParams[feature.id] instead of on the Feature itself (see
-// monster-feature-matching.js's buildMultiattackParams), so this needs
-// `record` the same way weaponAttackDescriptionText below already does.
-// `attacks` is a live reference to this SAME monster's other Features, not
-// stored prose — resolving each referenced Feature's CURRENT name here means
-// renaming/editing e.g. a Bite Feature keeps Multiattack's own displayed
-// text in sync automatically, instead of a static string silently going
-// stale. Falls back to the original imported text (params.text) whenever
-// attacks is absent (extraction failed, or the ability was choice-
-// structured — see extractMultiattackReferences) or any referenced Feature
-// no longer resolves, rather than showing a broken partial sentence.
-// Resolves one option group (an AND-combination) into its own sentence,
-// preserving the EXACT phrasing this function produced before options
-// existed — a single-group Multiattack (the ~200 already-simple cases) must
-// keep rendering identically, not gain new "option" language it doesn't
-// need. Returns null (never a wrong-but-plausible sentence) if any
-// referenced Feature no longer resolves.
+// Multiattack is a single shared `feat.multiattack` Feature — this
+// monster's own attack-reference list lives in
+// record.featureParams[feature.id], not on the Feature itself.
+// `attacks` is a live reference to this SAME monster's other Features, so
+// resolving each referenced Feature's CURRENT name keeps the displayed text
+// in sync automatically instead of going stale. Falls back to the original
+// imported text whenever attacks is absent or a referenced Feature no
+// longer resolves, rather than showing a broken partial sentence.
+// Returns null (never a wrong-but-plausible sentence) on any resolution failure.
 function describeSingleAttackSentence(attacks) {
   if (!Array.isArray(attacks) || !attacks.length) return null;
   const resolved = [];
@@ -1226,11 +1081,7 @@ function describeSingleAttackSentence(attacks) {
     resolved.push({ name: referenced.name, count: attack.count });
   }
   // A single attack type ("makes three Tentacle attacks") reads far more
-  // naturally than the multi-type sentence shape below forced onto it
-  // ("makes three attacks: three with its Tentacle") — confirmed live: this
-  // WAS the general-case phrasing for every single-type Multiattack (the
-  // large majority of them) until caught during a review of the re-import
-  // this whole Multiattack pipeline is meant to withstand.
+  // naturally than the multi-type sentence shape below forced onto it.
   if (resolved.length === 1) {
     const { name, count } = resolved[0];
     return `The creature makes ${COUNT_WORDS[count] || count} ${name} attack${count === 1 ? "" : "s"}.`;
@@ -1241,15 +1092,10 @@ function describeSingleAttackSentence(attacks) {
 }
 
 // A single option's resolved {featureId,count} list is "one of each" of
-// EVERY OTHER option's own distinct attack types — Aartuk Elder's own third
-// option ("two Branch attacks, two Radiant Pellet attacks, or one of
-// each"), which extraction already resolves to a concrete {Branch:1,
-// RadiantPellet:1} list (monster-feature-matching.js's own
-// EACH_OF_PREVIOUS_OPTIONS_PATTERN) so the editor UI has real, editable rows
-// — but rendering that expansion word-for-word ("one Branch attack and one
-// Radiant Pellet attack") loses the much more natural "one of each" the
-// original text actually said. Detected here at render time instead of
-// baked into storage, so the stored shape stays the same simple
+// EVERY OTHER option's own distinct attack types (e.g. "two Branch attacks,
+// two Radiant Pellet attacks, or one of each") — rendering that expansion
+// word-for-word loses the much more natural "one of each" phrasing.
+// Detected here at render time so the stored shape stays the same simple
 // `{featureId,count}[]` every option already uses.
 function isOneOfEachOption(resolved, groups, index) {
   if (!resolved.every((entry) => entry.count === 1)) return false;
@@ -1267,21 +1113,12 @@ function isOneOfEachOption(resolved, groups, index) {
   return true;
 }
 
-// Same AND-combination resolution as describeSingleAttackSentence above,
-// but as a bare fragment (no "The creature makes ..." lead-in, no
-// total-count preamble) — meant to be embedded as one clause of a larger
-// "X, Y, or Z" sentence, never shown on its own. Only reached when there's
-// a genuine choice (2+ options); a single option always goes through
-// describeSingleAttackSentence instead. Each item within the option is its
-// own "N Name attack(s)" phrase (matching the single-item convention, NOT
-// the "N with its Name" shape a real bug here used to produce — confirmed
-// live: Aartuk Elder's own Multiattack rendered "two with its Branch and
-// two with its Radiant Pellet", not "two Branch attacks and two Radiant
-// Pellet attacks"), joined with "and" — "and", not a comma, specifically so
-// a 3+-option Multiattack (Bukavac's own 4-way choice, some of whose
-// options are themselves 2-item combinations) never reads ambiguously
-// where one option ends and the next begins; only multiattackDescriptionText
-// itself (not this function) knows how many top-level options exist.
+// Same AND-combination resolution as describeSingleAttackSentence above, but
+// as a bare fragment (no "The creature makes ..." lead-in) — meant to be
+// embedded as one clause of a larger "X, Y, or Z" sentence. Only reached for
+// a genuine choice (2+ options). Items join with "and" rather than a comma
+// so a 3+-option Multiattack never reads ambiguously about where one option
+// ends and the next begins.
 function describeAttackCombination(attacks, groups, index) {
   if (!Array.isArray(attacks) || !attacks.length) return null;
   const resolved = [];
@@ -1295,18 +1132,12 @@ function describeAttackCombination(attacks, groups, index) {
   return parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
 }
 
-// Extends multiattackDescriptionText's original single-combination
-// rendering to a genuine CHOICE ("two Branch attacks, two Radiant Pellet
-// attacks, or one of each") — record.featureParams["feat.multiattack"]'s
-// `options` field (see monster-feature-matching.js's
-// extractMultiattackReferences/buildMultiattackParams and
-// multiattackOptionGroups above). A single option renders EXACTLY as before
-// this workstream (describeSingleAttackSentence, unchanged); 2+ options
-// join each option's own fragment (describeAttackCombination) with an
-// Oxford-comma-style list ("X, Y, or Z" — used even for exactly 2 options,
-// so "X, or Y" reads consistently whether there are 2 or more alternatives),
-// never attempting DPR/average-damage-across-options math — the value here
-// is correct representation of the choice, not combat math derived from it.
+// Extends describeSingleAttackSentence to a genuine CHOICE ("two Branch
+// attacks, two Radiant Pellet attacks, or one of each"). A single option
+// renders exactly as describeSingleAttackSentence; 2+ options join each
+// fragment with an Oxford-comma-style list, even for exactly 2 (so "X, or
+// Y" reads consistently). Never attempts DPR math across options — the
+// goal is correct representation of the choice, not combat math.
 function multiattackDescriptionText(feature, record) {
   const params = record?.featureParams?.[feature?.id];
   const fallback = params?.text || feature?.mechanics?.text || feature?.description || "";
@@ -1319,47 +1150,32 @@ function multiattackDescriptionText(feature, record) {
   return `The creature makes ${joined}.`;
 }
 
-// A signed "+N"/"-N" fragment for embedding a bare ability modifier inside
-// a dice-expression display string (formula mode's own "1d10 + 4" — literal
-// mode never needs this, its own stored `damageDice` already has the
-// modifier baked in as text).
+// A signed "+N"/"-N" fragment for embedding a bare ability modifier inside a
+// dice-expression display string (literal mode never needs this — its
+// `damageDice` already has the modifier baked in as text).
 function formatDiceModifier(modifier) {
   if (!modifier) return "";
   return modifier > 0 ? ` + ${modifier}` : ` - ${Math.abs(modifier)}`;
 }
 
-// A shared weapon-attack Feature (feat.bite, feat.claw, ... — monster-
-// feature-matching.js's parseWeaponAttack) carries no numbers of its own;
-// this monster's OWN copy's numbers live in record.featureParams instead
-// (parallel to record.featureTiers) — computed into the same sentence
-// shape 5e's own stat blocks use, rather than the shared Feature storing
-// (and every monster re-storing) a static string. Falls back to the
-// Feature's own generic description whenever this monster has no
-// featureParams entry for it — a defensive case that shouldn't happen in
-// practice (every weapon-attack Feature is created WITH a featureParams
-// entry), but never worth a broken/blank row if it somehow does.
+// A shared weapon-attack Feature carries no numbers of its own; this
+// monster's OWN copy's numbers live in record.featureParams instead —
+// computed into the same sentence shape 5e's own stat blocks use. Falls
+// back to the Feature's own generic description if there's no
+// featureParams entry (defensive; shouldn't happen in practice).
 //
-// Two param shapes: LITERAL (today's imported data — `attackBonus`/
-// `damageDice` already have this monster's own numbers, including any
-// ability modifier, baked straight into stored values) and FORMULA
-// (detected by the presence of `ability` instead — `damageDice` is a bare
-// base die with NO modifier embedded, e.g. "1d10", and the attack bonus/
-// damage modifier are computed live from THIS monster's own
-// `stats.abilities[params.ability]` + `stats.proficiencyBonus` via
-// derived-formulas.js's computeAttackBonus/computeAverageDamage). Formula mode is
-// what makes a shared weapon-attack Feature genuinely reusable by a
-// brand-new native-generated monster — no per-monster hand-authored numbers
-// needed, just picking the Feature and setting `ability`/base `damageDice`
-// at selection time.
-// A rider clause tacked onto an otherwise-normal computed attack (Peryton's
-// charge bonus, "plus N acid damage", "or be knocked prone") — the OTHER
-// shape from feature.options above: per-monster data layered on a shared
-// template's own computed sentence, not a feature-level menu. Rider dice
-// are always literal/flat (a secondary damage type or a charge bonus never
-// scales with the attacker's own ability modifier in real 5e design, the
-// same reasoning saveEffectDescriptionText's own damage dice already rely
-// on) — never formula-computed, regardless of whether the base attack
-// itself is in literal or formula mode.
+// Two param shapes: LITERAL (`attackBonus`/`damageDice` already have this
+// monster's own numbers baked in) and FORMULA (detected by `ability` —
+// `damageDice` is a bare base die, and the attack bonus/damage modifier are
+// computed live from this monster's own ability score + proficiency bonus).
+// Formula mode is what makes a shared weapon-attack Feature genuinely
+// reusable by a new native-generated monster.
+//
+// A rider clause tacked onto an otherwise-normal computed attack (a charge
+// bonus, "plus N acid damage", "or be knocked prone") — per-monster data
+// layered on a shared template's computed sentence, not a feature-level
+// menu. Rider dice are always literal/flat, never formula-computed,
+// regardless of whether the base attack itself is literal or formula mode.
 function riderClauseText(rider) {
   if (!rider?.kind) return "";
   if (rider.kind === "secondary-damage") {
@@ -1372,21 +1188,14 @@ function riderClauseText(rider) {
     const duration = rider.duration ? ` for ${rider.duration}` : "";
     const savingAbility = rider.saveAbility.charAt(0).toUpperCase() + rider.saveAbility.slice(1);
     // `targetRestriction` overrides the default "a creature" wording for
-    // the real cases that aren't unconditional — a whole lycanthropy-curse
-    // cluster only triggers "If the target is a humanoid, ...", Ghast/
-    // Ghoul's own Claws only trigger "If the target is a creature other
-    // than an undead, ...". Omitted (default "a creature") is still the
-    // overwhelmingly common case.
+    // cases that aren't unconditional (e.g. "If the target is a humanoid").
     const article = /^[aeiou]/i.test(rider.targetRestriction || "creature") ? "an" : "a";
     return ` If the target is ${article} ${rider.targetRestriction || "creature"}, it must succeed on a DC ${rider.saveDC} ${savingAbility} saving throw or be ${rider.condition}${duration}.`;
   }
-  // A save-based rider that deals BONUS DAMAGE on a failed save (half on a
-  // success) instead of a condition — the same "taking N (dice) TYPE
-  // damage on a failed save, or half as much damage on a successful one"
-  // shape saveEffectDescriptionText's own base sentence uses, just riding
-  // on a single-target weapon attack instead of an area effect (a whole
-  // cluster of venomous Bite/Claw attacks: Giant Poisonous Snake, Giant
-  // Spider, Phase Spider, Guardian Naga, ...).
+  // A save-based rider that deals bonus damage on a failed save (half on
+  // success) instead of a condition — the same shape
+  // saveEffectDescriptionText's own base sentence uses, riding on a
+  // single-target weapon attack instead of an area effect.
   if (rider.kind === "save-or-damage") {
     if (!rider.saveAbility || !rider.saveDC || !rider.dice || !rider.damageType) return "";
     const avg = averageDiceRoll(rider.dice, derivedFormulas);
@@ -1401,22 +1210,16 @@ function riderClauseText(rider) {
     return ` If the creature moved ${rider.triggerDistance}+ feet straight toward the target immediately before the hit, the target takes an extra ${avg} (${rider.dice}) ${rider.damageType} damage.`;
   }
   // A secondary damage bonus whose TYPE isn't a literal fixed value —
-  // "damage of the type to which the creature has resistance" (Dragonsoul,
-  // Orc of the Onyx Scale's own identical Shortsword rider) — a dragon-
-  // blooded/elemental-themed humanoid dealing bonus damage that matches
-  // whatever it's own resistance happens to be, never baked in as a
-  // literal `damageType` the way `secondary-damage` above is.
+  // "damage of the type to which the creature has resistance" — never
+  // baked in as a literal `damageType` the way `secondary-damage` is.
   if (rider.kind === "resistance-type-damage") {
     const avg = averageDiceRoll(rider.dice, derivedFormulas);
     if (avg == null) return "";
     return ` plus ${avg} (${rider.dice}) damage of the type to which the creature has resistance.`;
   }
-  // An UNCONDITIONAL on-hit effect, no saving throw at all — confirmed
-  // live: Blood Lash's own "...it can't regain hit points until the start
-  // of [name]'s next turn" (Murgaxor, Oriq Blood Mage) doesn't fit save-
-  // or-condition (no DC, no save) or either damage-only kind. Genuinely
-  // fixed/non-scaling wording, unlike the other 3 kinds' own varying
-  // dice/DC/distance — `condition` carries the whole trailing clause.
+  // An unconditional on-hit effect, no saving throw — doesn't fit
+  // save-or-condition or either damage-only kind. Fixed/non-scaling
+  // wording; `condition` carries the whole trailing clause.
   if (rider.kind === "condition-no-save") {
     if (!rider.condition) return "";
     return ` If the target is a creature, it ${rider.condition}.`;
@@ -1424,21 +1227,12 @@ function riderClauseText(rider) {
   return "";
 }
 
-// The 5e Versatile weapon property ("or N2 (dice2) TYPE damage if used
-// with two hands") — an alternate damage VALUE for the same hit, not a
-// conditional extra effect, so it's its own field (`params.versatile`)
-// rather than a 5th rider kind: it needs to insert INTO the base "Hit:
-// ..." sentence (before the period), not append after it the way every
-// rider kind does, and it can genuinely coexist with a real rider
-// (confirmed live: 5 of 8 "Longsword" one-offs stacked Versatile AND a
-// secondary-damage rider together — Autumn Eladrin's own "...or 6 (1d10 +
-// 1) slashing damage if used with two hands, plus 22 (5d8) psychic
-// damage." has both). Same literal-vs-formula duality as the base attack:
-// `versatile.damageDice` already has the modifier baked in for literal
-// mode, is a bare base die for formula mode (computed via the SAME
-// ability score/modifier as the primary damage, matching real 5e design
-// — a Versatile weapon's two-handed die is bigger, never a different
-// governing ability).
+// The 5e Versatile weapon property ("or N2 (dice2) TYPE damage if used with
+// two hands") — an alternate damage VALUE for the same hit, not a
+// conditional extra effect, so it's its own field rather than a 5th rider
+// kind: it inserts INTO the base "Hit: ..." sentence (before the period),
+// and can coexist with a real rider. Same literal-vs-formula duality as the
+// base attack, using the SAME ability score/modifier as primary damage.
 function versatileClauseText(params, record) {
   if (!params.versatile?.damageDice) return "";
   let avg;
@@ -1456,12 +1250,9 @@ function versatileClauseText(params, record) {
   return `, or ${avg} (${dice}) ${params.damageType} damage if used with two hands`;
 }
 
-// `kind: "MeleeOrRanged"` (a finesse/thrown weapon usable either way in one
-// combined sentence — parseWeaponAttack's own MELEE_OR_RANGED_PATTERN,
-// monster-feature-matching.js) carries BOTH `meleeDistance`/`rangeDistance`
-// instead of the classic single `distanceLabel`/`distance` pair, so it
-// needs its own distance-clause text rather than the plain
-// "reach/range N ft." every other kind renders.
+// `kind: "MeleeOrRanged"` (a finesse/thrown weapon usable either way) carries
+// BOTH `meleeDistance`/`rangeDistance` instead of the classic single
+// `distanceLabel`/`distance` pair, so it needs its own clause text.
 function distanceClauseText(params) {
   if (params.kind === "MeleeOrRanged") {
     return `reach ${params.meleeDistance} ft. or range ${params.rangeDistance} ft.`;
@@ -1489,43 +1280,25 @@ function weaponAttackDescriptionText(feature, record) {
   }
   const avg = averageDiceRoll(params.damageDice, derivedFormulas);
   if (avg == null) return fallback;
-  // A bare flat damageDice ("1", no "d") — real source text for a handful
-  // of tiny creatures omits the dice parenthetical entirely when the
-  // average is 1 ("Hit: 1 piercing damage.") rather than "(1d4 - 1)".
-  // Rendering "(1)" for that case would be a cosmetic regression from the
-  // real 5e convention, so the parenthetical is dropped whenever there's no
-  // real dice notation to show.
+  // A bare flat damageDice ("1", no "d") — real 5e source text omits the
+  // dice parenthetical entirely when the average is 1, so it's dropped here
+  // whenever there's no real dice notation to show.
   const diceNote = /\d+d\d+/i.test(params.damageDice) ? ` (${params.damageDice})` : "";
   return `${attackLead} ${params.attackKind} Attack: +${params.attackBonus} to hit, ${distanceClause}, one target. Hit: ${avg}${diceNote} ${params.damageType} damage${versatile}.${rider}`;
 }
 
-// weaponAttackDescriptionText's own sibling for `mechanics.type ===
-// "save-effect"` (monster-feature-matching.js's parseSaveEffect — a breath
-// weapon, almost always). Unlike weapon-attack, the damage dice here are
-// NEVER formula-computed — a breath weapon's damage scales with the
-// monster's size/age category in real 5e design, not with an ability
-// modifier — only the DC is: `params.dcAbility` (defaulted to Constitution
-// by parseSaveEffect, 5e's own universal breath-weapon convention) drives
-// computeSaveDC against THIS monster's own ability score, exactly the way
-// weaponAttackDescriptionText's own formula mode computes an attack bonus.
-// `params.ability` (kept separate, always literal) is the TARGET's own
-// saving-throw ability — real per-monster variance read off the original
-// text, nothing to compute since it has nothing to do with this monster's
-// own stats.
-// `params.rider` mirrors weaponAttackDescriptionText's own rider concept,
-// with two kinds specific to the save-effect shape (see
-// SAVE_EFFECT_FAIL_CONDITION_PATTERN's own comment in
-// monster-feature-matching.js for why these store literal per-monster text
-// rather than decomposed fields):
-// - `fail-condition`: the failed/successful-save outcome is more than just
-//   "damage, or half damage" (a push, a condition, a stun) — REPLACES the
-//   base sentence's own damage clause, since the rider text already
-//   contains its own "On a failed save.../On a successful save..." pair
-//   with its own damage numbers baked in.
+// weaponAttackDescriptionText's sibling for `mechanics.type ===
+// "save-effect"` (a breath weapon, almost always). Unlike weapon-attack,
+// the damage dice are NEVER formula-computed — a breath weapon's damage
+// scales with size/age category, not an ability modifier — only the DC is:
+// `params.dcAbility` (defaulted to Constitution) drives computeSaveDC
+// against this monster's own score. `params.ability` (always literal) is
+// the TARGET's own saving-throw ability.
+// `params.rider` mirrors the weapon-attack rider concept, with two kinds:
+// - `fail-condition`: outcome is more than "damage, or half damage" (a
+//   push, a stun) — REPLACES the base sentence's damage clause entirely.
 // - `trailing-note`: a narrative addendum tacked on AFTER the normal
-//   damage/save sentence, which stays intact and unmodified (a creature
-//   slain by the damage rises as undead, a temporary-hit-points side
-//   effect, ...).
+//   damage/save sentence, which stays intact.
 function saveEffectDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   const fallback = feature?.description || "";
@@ -1536,10 +1309,8 @@ function saveEffectDescriptionText(feature, record) {
   const dc = computeSaveDC(dcAbilityScore, proficiencyBonus, derivedFormulas);
   const width = params.lineWidth ? ` that is ${params.lineWidth} feet wide` : "";
   const savingAbility = params.ability.charAt(0).toUpperCase() + params.ability.slice(1);
-  // 5e's own real convention (confirmed against every sample this pattern
-  // was built from): the back-reference always says "that line" for a
-  // line, but "that area" — never "that cone"/"that sphere" — for anything
-  // else.
+  // 5e's own convention: the back-reference always says "that line" for a
+  // line, but "that area" (never "that cone"/"that sphere") otherwise.
   const areaBackref = params.areaShape === "line" ? "line" : "area";
   const lead = `The creature ${params.verb} ${params.substance} in a ${params.areaSize}-foot ${params.areaShape}${width}.`;
   if (params.rider?.kind === "fail-condition" && params.rider.conditionText) {
@@ -1554,21 +1325,13 @@ function saveEffectDescriptionText(feature, record) {
 }
 
 // Feature-level "menu of named sub-effects" (feature.options — an ability
-// that presents several named alternatives, e.g. Iron Cobra's Bite rolling
-// one random poison effect, Gem Stalker's Crystal Dart varying by the kind
-// of dragon that made it, a dragon's own "uses one of the following breath
-// weapons"). Deliberately NOT Tiers: every option always belongs to the
-// ability at once (no record.featureTiers-style single pick) — how
-// resolution actually happens (random roll, fixed per individual, or the
-// attacker's own per-turn choice) is flavor text, not something the data
-// model distinguishes.
+// with several named alternatives). Deliberately NOT Tiers: every option
+// always belongs to the ability at once (no single pick) — how resolution
+// happens (random roll, fixed, per-turn choice) is flavor text, not
+// something the data model distinguishes.
 // Builds the base description plus an indented, bold-headed bulleted list
-// for feature.options directly into `container` — a real DOM structure
-// so the list is actually readable (a plain `.textContent` string with
-// embedded "\n"s, this function's own original shape, renders as one
-// unbroken run-on paragraph in a `<div>` — browsers don't respect literal
-// newlines without `white-space: pre-line`, and even then a bulleted list
-// reads far better than wrapped prose for a genuine menu of alternatives).
+// as a real DOM structure — a plain `.textContent` string with embedded
+// "\n"s renders as one unbroken run-on paragraph without `white-space: pre-line`.
 function renderFeatureOptionsDescription(container, feature) {
   container.textContent = feature.description || "";
   if (!Array.isArray(feature.options) || !feature.options.length) return;
@@ -1588,21 +1351,11 @@ function renderFeatureOptionsDescription(container, feature) {
 }
 
 // `mechanics.type === "legendary-action-reference"` — a legendary action
-// that just re-invokes another already-defined ability by name ("The
-// creature uses its Command Aquatic Creature ability, even if it has not
-// recharged.", "The creature makes one Tentacle attack."), rather than
-// carrying its own real mechanical effect. `legendaryActionReference`
-// lives on the Feature itself (these are already monster-specific one-off
-// content, same as `options` above — no per-monster featureParams
-// indirection needed for something this inherently flavor-named).
-// `referencedFeatureIds` keeps the referenced ability's own NAME in sync
-// automatically if it's ever renamed — a monster whose "Command Aquatic
-// Creature" gets renamed doesn't leave this wrapper's own text stale.
-// Two or more ids join with "or" (Adult Topaz Dragon's own "uses Psychic
-// Step or Spellcasting" shape) — `{names}` in `template` is replaced with
-// that joined list; `template` defaults to a plain generic sentence for a
-// Feature that doesn't need Deep One's own "even if it has not recharged"
-// qualifier.
+// that just re-invokes another already-defined ability by name, rather than
+// carrying its own mechanical effect. `referencedFeatureIds` keeps the
+// referenced ability's NAME in sync automatically if it's ever renamed.
+// Two or more ids join with "or"; `{names}` in `template` is replaced with
+// that joined list.
 function legendaryActionReferenceDescriptionText(feature) {
   const ref = feature?.legendaryActionReference;
   if (!ref?.referencedFeatureIds?.length) return feature?.description || "";
@@ -1612,22 +1365,15 @@ function legendaryActionReferenceDescriptionText(feature) {
 
 function renderFeatureList(record) {
   if (!elements.featureList) return;
-  // Disposed before the wipe — each row's own Remove button carries a real
-  // tooltip now, and this reruns on every feature add/remove. See
-  // tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — each row's Remove button carries a real
+  // tooltip, and this reruns on every feature add/remove.
   disposeTooltips(elements.featureList);
   elements.featureList.innerHTML = "";
-  // NOT isImportedStatBlock — that's a provenance question (did this record
-  // come from an import?) and stays true forever once it does, by design.
-  // This branch is asking a different question: has this record's raw
-  // stat-block content actually been converted into real Feature
-  // references yet? `featureIds` is the right signal for that regardless
-  // of provenance — Feature-matching (monster-feature-matching.js) runs
-  // automatically on every save now (Crucible's own handleSave, or Loom's
-  // saveEntity), so a freshly-imported-and-saved monster has real
-  // featureIds just like a native one; only a record that hasn't been
-  // saved through that path yet (or was imported before this pipeline
-  // existed) still has raw traits/actions/etc. to show read-only here.
+  // NOT isImportedStatBlock — that's a provenance question, stays true
+  // forever once true. This asks whether the record's raw stat-block
+  // content has been converted into real Feature references yet —
+  // `featureIds` is the right signal regardless of provenance, since
+  // feature-matching runs automatically on every save now.
   if (!Array.isArray(record.featureIds)) {
     const stats = record.stats || {};
     IMPORTED_STAT_BLOCK_ABILITY_GROUPS.forEach(([key, groupLabel]) => {
@@ -1655,26 +1401,17 @@ function renderFeatureList(record) {
     }
     return;
   }
-  // Same row shape as Vault's own renderFeatureList (info + a Remove
-  // button) — minus Vault's cost/refund badge, which is Vault's own budget-
-  // economy concept and has no equivalent in Crucible's recipe-slot model.
-  // A feature with real combat mechanics (buildActions, crucible/js/lib/
-  // stats.js — shares its name with the feature it came from) gets its
-  // attackBonus/damageDice line shown right here, instead of a second,
-  // numbers-only entry elsewhere — that duplication (e.g. "Overrun" showing
-  // once in Features with no mechanics and again under Stats with only the
-  // mechanics) was a real, confirmed source of confusion.
+  // Same row shape as Vault's own renderFeatureList (info + Remove button),
+  // minus Vault's cost/refund badge (its own budget-economy concept). A
+  // feature with real combat mechanics gets its attackBonus/damageDice line
+  // shown right here instead of a second, numbers-only entry under Stats.
   const actions = record.stats?.actions || [];
   const matchedActionNames = new Set();
   record.featureIds.forEach((featureId) => {
     const feature = findById(features, featureId);
-    // Which of a shared tiered Feature's own tiers (monster-feature-
-    // matching.js's resolveDayFrequencyTier, e.g. Legendary Resistance's
-    // 1/3/4/5-per-day variants) THIS monster's own copy uses — same
-    // record.featureTiers convention Vault's own wonders already use, just
-    // a per-frequency mechanics.text here instead of Vault's per-tier
-    // budgetCost. Absent entirely for a non-tiered Feature (tier stays
-    // undefined, every ?? below just falls through to the base Feature).
+    // Which of a shared tiered Feature's own tiers (e.g. Legendary
+    // Resistance's 1/3/4/5-per-day variants) THIS monster's copy uses.
+    // Absent entirely for a non-tiered Feature.
     const tier = feature?.tiers?.find((entry) => entry.id === record.featureTiers?.[featureId]);
     const isSignature = featureId === record.signatureFeatureId;
     const action = actions.find((entry) => entry.name === (feature?.name || featureId));
@@ -1689,10 +1426,8 @@ function renderFeatureList(record) {
 
     const header = document.createElement("div");
     header.className = "d-flex align-items-center gap-2 flex-wrap";
-    // Hover-preview chip (library-reference.js), same suite-wide "displayed
-    // inline wherever needed" primitive Character's own Features tab uses —
-    // resolves against the same Feature record regardless of which tier's
-    // own name is shown here.
+    // Hover-preview chip — resolves against the same Feature record
+    // regardless of which tier's name is shown here.
     header.appendChild(
       createReferenceChip({ kind: "feature", id: featureId, name: tier?.name || feature?.name || featureId, dataManager })
     );
@@ -1731,14 +1466,9 @@ function renderFeatureList(record) {
     const side = document.createElement("div");
     side.className = "d-flex align-items-center gap-2 flex-shrink-0";
 
-    // Muted pill — deliberately not badge text-bg-primary like Signature
-    // above, so the two never compete for attention in the same row;
-    // absent entirely for a trait (ACTION_COST_BY_GROUP_KEY has no
-    // "traits" entry — passive, not action-economy-costed, same convention
-    // native generation's own traits-less output already implies).
-    // crucible-action-cost-pill (css/styles.css) — text-bg-light read as
-    // illegible (light grey background, light grey text); a solid darker
-    // grey background with near-black text instead.
+    // Muted pill, not badge text-bg-primary like Signature — the two never
+    // compete for attention in the same row. Absent for a trait (passive,
+    // not action-economy-costed).
     const actionCost = feature?.combat?.actionCost;
     if (actionCost && ACTION_COST_LABELS[actionCost]) {
       const costBadge = document.createElement("span");
@@ -1766,9 +1496,8 @@ function renderFeatureList(record) {
   });
 
   // buildActions falls back to one generic "Attack"/"Multiattack" entry
-  // when nothing selected is combat-tagged — it has no matching Feature by
-  // design, so it wouldn't otherwise show up anywhere. A plain, non-
-  // removable row here keeps it visible instead of silently dropped.
+  // when nothing selected is combat-tagged, with no matching Feature — a
+  // plain, non-removable row here keeps it visible instead of dropped.
   actions
     .filter((action) => !matchedActionNames.has(action.name))
     .forEach((action) => {
@@ -1786,9 +1515,8 @@ function renderFeatureList(record) {
   refreshTooltips(elements.featureList);
 }
 
-// Same small helper Sanctum's own app.js already has — a disabled-looking
-// blank first option so the select doesn't silently read as "the
-// alphabetically-first feature is already chosen" the moment it's populated.
+// A blank first option so the select doesn't silently read as "the
+// alphabetically-first feature is already chosen" once populated.
 function createPlaceholderOption(label = "Select…") {
   const option = document.createElement("option");
   option.value = "";
@@ -1796,16 +1524,13 @@ function createPlaceholderOption(label = "Select…") {
   return option;
 }
 
-// Every compatible Feature not already on this Monster — same convention as
-// Vault's own populateAddFeatureSelect. Only meaningful for a native
-// Crucible record; an imported stat block has no `features` reference pool
-// to add from at all (see isImportedStatBlock/IMPORTED_STAT_BLOCK_ABILITY_GROUPS).
+// Every compatible Feature not already on this Monster. Only meaningful for
+// a native Crucible record; an imported stat block has no `features`
+// reference pool to add from.
 function populateAddFeatureSelect() {
   if (!elements.addFeatureSelect) return;
-  // Same "featureIds presence, not provenance" reasoning as renderFeatureList
-  // above — an imported-and-converted monster can add more Features same as
-  // a native one; only a not-yet-converted record (still showing raw
-  // traits/actions read-only) has nothing to add to yet.
+  // Same "featureIds presence, not provenance" reasoning as
+  // renderFeatureList above.
   if (!currentRecord || !Array.isArray(currentRecord.featureIds)) {
     elements.addFeatureSelect.innerHTML = "";
     return;
@@ -1824,18 +1549,13 @@ function populateAddFeatureSelect() {
 }
 
 // Feature budget summary in the Features header, matching Vault's own
-// Target/Spent/Remaining display exactly. An imported stat block has no
-// budget concept at all (see isImportedStatBlock), so the whole summary
-// stays hidden for those rather than showing zeroes.
+// Target/Spent/Remaining display. An imported stat block has no budget
+// concept, so the whole summary stays hidden rather than showing zeroes.
 function renderFeatureBudget(record) {
   const budget = record && !isImportedStatBlock(record) ? record.stats?.budget : null;
-  // Not `.hidden = !budget` — data-budget-summary carries Bootstrap's own
-  // `.d-flex` (an author-origin display rule), which always beats the
-  // `[hidden]` UA-stylesheet rule regardless of the `hidden` property/
-  // attribute, so setting `.hidden` alone silently no-ops here (confirmed
-  // real bug: switching from a native monster to an imported one left the
-  // stale budget from the previous record visibly on screen).
-  // setElementVisible forces `display` inline instead, which wins.
+  // Not `.hidden = !budget` — data-budget-summary carries Bootstrap's
+  // author-origin `.d-flex`, which beats the `[hidden]` UA rule regardless
+  // of the `hidden` property. setElementVisible forces `display` inline instead.
   if (elements.budgetSummary) setElementVisible(elements.budgetSummary, Boolean(budget), "flex");
   if (!budget) return;
   if (elements.budgetTarget) elements.budgetTarget.textContent = String(budget.target);
@@ -1846,12 +1566,10 @@ function renderFeatureBudget(record) {
   }
 }
 
-// Re-derives spent/remaining from whatever's currently selected — same
-// "recompute fresh, don't trust a stale value" reasoning as Vault's own
-// recomputeBudget, so manual add/remove and the original generation can
-// never disagree about the running total. Target itself doesn't change
-// here — it comes from the resolved Combat Scaling level at generation
-// time, not from feature selection.
+// Re-derives spent/remaining from whatever's currently selected, so manual
+// add/remove and the original generation can never disagree about the
+// running total. Target doesn't change here — it comes from the resolved
+// Combat Scaling level at generation time, not feature selection.
 function recomputeMonsterBudget(record) {
   if (!record?.stats?.budget) return null;
   const target = record.stats.budget.target;
@@ -1860,11 +1578,9 @@ function recomputeMonsterBudget(record) {
   return record.stats.budget;
 }
 
-// Manual add/remove mutate featureIds directly, same as Vault's own
-// add/removeFeature — deliberately NOT re-running recipe-slot matching
-// (recipeFulfillment keeps showing whatever generation originally
-// resolved), same as a manual Vault edit never retroactively changes which
-// Signature Feature was chosen.
+// Manual add/remove mutate featureIds directly — deliberately NOT re-running
+// recipe-slot matching (recipeFulfillment keeps showing whatever generation
+// originally resolved).
 function removeFeature(featureId) {
   if (!currentRecord || !Array.isArray(currentRecord.featureIds)) return;
   const feature = findById(features, featureId);
@@ -1897,14 +1613,9 @@ function addFeature(featureId) {
 }
 
 function renderRecipeSummary(record) {
-  // No Archetype recipe concept at all for an imported stat block — the
-  // whole card is hidden rather than shown with a "not applicable" message
-  // (which is what this used to do). `.card` toggle, not the [data-recipe-
-  // panel]'s own `.hidden` — same reasoning as renderFeatureBudget: Bootstrap's
-  // `.card` component itself sets `display: flex`, an author-origin rule
-  // `.hidden`'s UA-stylesheet rule can't beat, but the `.d-none` utility
-  // class (also author-origin, `!important`) reliably can — same pattern
-  // Forge's own statsCard hide/show already uses.
+  // No Archetype recipe concept for an imported stat block — the whole
+  // card is hidden. `.d-none` toggle, not `.hidden` — Bootstrap's `.card`
+  // sets an author-origin `display: flex` the `[hidden]` UA rule can't beat.
   const imported = isImportedStatBlock(record);
   elements.recipeCard?.classList.toggle("d-none", imported);
   if (!elements.recipeSummary || imported) return;
@@ -1932,16 +1643,10 @@ function renderRecipeSummary(record) {
 
 // `compact` gives the small square number-box (abilities, Challenge/AC/HP/
 // Save DC); non-compact gives a full-width labeled row (the freeform list
-// fields — Resistances/Immunities/Senses).
-// Crucible's own field-box implementation, originally hand-rolled here
-// nearly identically to Forge's, is now the shared createFieldBox (common/
-// js/lib/ui-components.js) — Forge's own fields and Vault's Identity fields
-// render the exact same box today. `data-editable-stat`/
-// `data-editable-stat-suffix` (this tool's own established attribute names,
-// read by the statsFields write-back listener below) are preserved via
-// dataAttr/the suffix element's own dataset, so no other code here needs to
-// change. Crucible's Stats fields are always editable (unlike Forge's
-// Identity/4D, which reuse the same box read-only) — always passed through.
+// fields). Wraps the shared createFieldBox — `data-editable-stat`/
+// `data-editable-stat-suffix` (read by the statsFields write-back listener
+// below) are preserved via dataAttr. Crucible's Stats fields are always
+// editable (unlike Forge's Identity/4D, which reuse the same box read-only).
 function buildStatCard({ key, label, value, compact = true, colClass = "col-4 col-md-2", suffix = "", type = "text", rows }) {
   return createFieldBox({
     key,
@@ -1963,9 +1668,8 @@ function abilityModifierText(score) {
   return `(${modifier >= 0 ? "+" : ""}${modifier})`;
 }
 
-// Same "+N"/"-N" convention as abilityModifierText above, minus the
-// parens — used for Proficiency Bonus, which is always shown/typed with an
-// explicit sign (a bare "2" reads as ambiguous where "+2" doesn't).
+// Same "+N"/"-N" convention as abilityModifierText, minus the parens — used
+// for Proficiency Bonus, always shown/typed with an explicit sign.
 // `Number()` parses a leading "+" back out fine, so this round-trips
 // through the plain-number write-back branch unchanged.
 function formatSignedNumber(value) {
@@ -1975,21 +1679,16 @@ function formatSignedNumber(value) {
   return numeric >= 0 ? `+${numeric}` : String(numeric);
 }
 
-// Comma-joined for both display and editing — the same convention this
-// session's own Fantasy Statblocks/DDB monster mapping work already
-// settled on for these same fields (damageResistances/damageImmunities/
-// senses as plain string arrays); split back into an array on write-back
-// below (statsFields' own "input" listener).
+// Comma-joined for both display and editing; split back into an array on
+// write-back below (statsFields' "input" listener).
 function joinListValue(list) {
   return Array.isArray(list) && list.length ? list.join(", ") : "";
 }
 
 // Shared by renderStats' field list and the statsFields write-back listener
-// below, so the two can't quietly drift apart. Resistances/Immunities/
-// Vulnerabilities all read/write the SAME underlying `stats.proficiencies.
-// defenses` array now (this suite's one shared shape — see the monster-
-// data-alignment plan), filtered/tagged by `type` — this is the type each
-// box's own key maps to.
+// below, so the two can't drift apart. Resistances/Immunities/
+// Vulnerabilities all read/write the SAME `stats.proficiencies.defenses`
+// array, filtered/tagged by `type` — this is the type each box's key maps to.
 const DEFENSE_TYPE_BY_STAT_KEY = {
   damageResistances: "resistance",
   damageImmunities: "immunity",
@@ -1997,16 +1696,12 @@ const DEFENSE_TYPE_BY_STAT_KEY = {
 };
 
 // stats.senses is `{passives:{perception,...}, darkvision, blindsight, ...}`
-// (this suite's one shared senses shape, aligned across every import source
-// and Character — see the monster-data-alignment plan) — but Crucible's own
-// Senses box stays a single plain-text comma list, same UI as every other
-// list-shaped stat, per explicit direction not to build a new structured
-// editor for this. These two functions reshape between the two: display
-// excludes `passives` (Passive Perception has its own separate stat card,
-// reading/writing `senses.passives.perception` directly); parsing re-derives
-// each named sense from the SAME `senses` System vocabulary the mapping
-// layer's own parsers use, and always preserves whatever `passives` the
-// record already had (this box never touches passive scores).
+// — but Crucible's own Senses box stays a single plain-text comma list, same
+// UI as every other list-shaped stat. These two functions reshape between
+// the two: display excludes `passives` (Passive Perception has its own
+// separate stat card); parsing re-derives each named sense from the same
+// `senses` vocabulary the mapping layer's parsers use, always preserving
+// whatever `passives` the record already had.
 function formatSensesValue(senses) {
   if (!senses || typeof senses !== "object") return "";
   return Object.entries(senses)
@@ -2032,18 +1727,12 @@ function parseSensesText(text, existingSenses, sensesVocabulary) {
   return result;
 }
 
-// stats.speed is `{walk, burrow, climb, fly, swim}` (this suite's one
-// shared speed shape, aligned across every import source and Character —
-// see the monster-data-alignment plan), same reshape-underneath approach
-// as senses above — Crucible's own Speed box stays a single plain-text
-// comma list. `walk` renders bare (no "Walk" prefix), matching standard 5e
-// stat-block phrasing; every other mode is prefixed by its own name.
-// `hover` (a sparse boolean, only present when true — the 5e API's own
-// {fly, hover} shape, see mapping-custom-functions.js's
-// formatSpeedFromObject) is a sibling of `fly`, not a numeric speed of its
-// own, so it's excluded from the generic per-key loop and instead appended
-// as a "(hover)" suffix on the fly segment specifically — 5e's own
-// convention always pairs hover with flying, never any other movement type.
+// stats.speed is `{walk, burrow, climb, fly, swim}`, same reshape-
+// underneath approach as senses above. `walk` renders bare (no "Walk"
+// prefix), matching standard 5e phrasing; every other mode is prefixed by
+// its own name. `hover` (a sparse boolean) is a sibling of `fly`, not a
+// numeric speed of its own — excluded from the generic loop and instead
+// appended as a "(hover)" suffix on the fly segment specifically.
 function formatSpeedValue(speed) {
   if (!speed || typeof speed !== "object") return "";
   return Object.entries(speed)
@@ -2088,10 +1777,8 @@ function renderStats(record) {
   const abilities = stats.abilities || {};
   const hitPoints = stats.hitPoints || {};
 
-  // Row 1: every ability the active System defines (see abilityFieldDefs
-  // above) together — col-4 col-md-2 is the same compact-grid sizing
-  // Forge's own buildFieldCard uses for its number boxes, 6-per-row at
-  // md+, so a standard 6-ability System fills exactly one row.
+  // Row 1: every ability the active System defines — 6-per-row at md+, so a
+  // standard 6-ability System fills exactly one row.
   abilityFieldDefs.forEach(({ key, label }) => {
     elements.statsFields.appendChild(
       buildStatCard({
@@ -2103,23 +1790,14 @@ function renderStats(record) {
     );
   });
 
-  // Row 2: Challenge, AC, Current HP, Max HP, Hit Dice, Proficiency — all 1×
-  // the ability score box's own width (default sizing), 6 × 2 = 12 columns,
-  // filling the row exactly at md+ (same 6-per-row fit Row 1 abilities use).
-  // Condensed from two separate rows: Current/Max HP no longer get a wider
-  // box (a wider box around a single short number just left the input tiny
-  // and the rest of the box empty), and Hit Dice/Proficiency moved up here
-  // from the old Row 3 to fill the row out. Save DC moved down to Row 6,
-  // next to Spells — see that row's own comment for why (it's a Crucible-
-  // native generation concept, not real per-monster import data the way
-  // Proficiency genuinely is).
+  // Row 2: Challenge, AC, Current HP, Max HP, Hit Dice, Proficiency — 6 × 2
+  // = 12 columns, filling the row exactly. Save DC moved to Row 6, next to
+  // Spells, since it's a Crucible-native generation concept, not real
+  // per-monster import data the way Proficiency is.
   //
   // The Hit Dice card shows stats.hitPoints.diceString (the full roll
-  // formula, e.g. "18d10+36") in place of the bare stats.hitDice ("18d10")
-  // whenever a source actually provided it — one card, not two, so this
-  // stays a single slot in the row rather than growing/wrapping it.
-  // Editing writes back to whichever one is currently shown (see the
-  // hitPointsDiceString branch below).
+  // formula) in place of the bare stats.hitDice whenever a source provided
+  // it — one card, not two. Editing writes back to whichever is shown.
   const hitDiceValue = hitPoints.diceString || stats.hitDice || "";
   const hitDiceKey = hitPoints.diceString ? "hitPointsDiceString" : "hitDice";
   [
@@ -2133,17 +1811,10 @@ function renderStats(record) {
     elements.statsFields.appendChild(buildStatCard({ key, label, value }));
   });
 
-  // Row 3: Passive Perception, Speed, Size, Alignment — 1× the ability
-  // score box's width each (col-md-2); Languages — 2× (col-md-4), since it
-  // tends to hold more text than a single word/number. 4 × 2 + 4 = 12
-  // columns, filling the row exactly at md+. No "Type" here — an imported
-  // record's own free-text type used to render as a Stats field (a
-  // stand-in for the Creature Type concept it otherwise had none of), but
-  // Identity's own Creature Type select (renderIdentity) is the real,
-  // single home for that now; a second copy down here was just a duplicate
-  // of the same fact. These (and every field through Skills below) fall
-  // through the write-back listener's own generic "any other plain string
-  // stat" branch — no special-casing needed there.
+  // Row 3: Passive Perception, Speed, Size, Alignment (col-md-2 each);
+  // Languages (col-md-4, tends to hold more text). No "Type" here —
+  // Identity's own Creature Type select is the single home for that fact
+  // now, so a second copy down here was just a duplicate.
   [
     ["passivePerception", "Passive Perception", stats.senses?.passives?.perception ?? ""],
     ["speed", "Speed", formatSpeedValue(stats.speed)],
@@ -2161,27 +1832,16 @@ function renderStats(record) {
     })
   );
 
-  // Row 4: Resistances, Immunities, Vulnerabilities — 2× the ability score
-  // box's width each (col-md-4), same 3 × 4 = 12 full-row fit as Row 3's
-  // Languages box.
-  // Always rendered (even empty) now that they're editable — a blank
-  // Resistances field is how a GM adds one that wasn't rolled, same as any
-  // other stat. Vulnerabilities only ever has real values on an imported
-  // record today (see isImportedStatBlock) — Crucible's own generator
-  // doesn't produce it — but it renders unconditionally here too, same
-  // "always show, even blank" convention as the others.
+  // Row 4: Resistances, Immunities, Vulnerabilities (col-md-4 each). Always
+  // rendered, even empty, now that they're editable — a blank field is how
+  // a GM adds one that wasn't rolled.
   //
   // All three read from the single unified `stats.proficiencies.defenses`
-  // array (this suite's one shared shape — matching every import mapping's
-  // own defenses function and Character's own proficiencies.defenses
-  // exactly), filtered by `type`. Immunities also includes condition
-  // immunities — 5.5e no longer distinguishes them, and neither does this
-  // shape (a condition immunity is just `type: "immunity"` too, same as a
-  // damage immunity). Editing a box re-splits ONLY that type's entries and
-  // merges with the other two types' untouched entries (see the
-  // statsFields write-back listener below) — this loses any `condition`/
-  // `value` sub-fields on entries in the edited type, same lossiness plain-
-  // text editing already has for every other list field here.
+  // array, filtered by `type`. Immunities also includes condition
+  // immunities (a condition immunity is just `type: "immunity"` too).
+  // Editing a box re-splits ONLY that type's entries and merges with the
+  // other two types' untouched entries — this loses any `condition`/`value`
+  // sub-fields on edited entries, same lossiness as any other list field here.
   [
     ["damageResistances", "Resistances", "resistance"],
     ["damageImmunities", "Immunities", "immunity"],
@@ -2193,14 +1853,10 @@ function renderStats(record) {
     elements.statsFields.appendChild(buildStatCard({ key, label, value, colClass: "col-8 col-md-4" }));
   });
 
-  // Row 5: Senses, Saving Throws, Skills — 2× the ability score box's width
-  // each (col-md-4), same 3 × 4 = 12 full-row fit as Row 4. Saving
-  // Throws/Skills come off an import as `[{name, value}]` (e.g.
-  // `[{name:"Con", value:5}]`); nothing in Crucible reads that shape
-  // programmatically (deriveStats' own native output has no equivalent
-  // field at all), so monster-feature-matching.js already flattens both to
-  // a plain "Con +5, Wis +3" string during conversion — this just
-  // displays/edits that string directly.
+  // Row 5: Senses, Saving Throws, Skills (col-md-4 each). Saving Throws/
+  // Skills come off an import as `[{name, value}]`; feature-matching
+  // already flattens both to a plain "Con +5, Wis +3" string during
+  // conversion — this just displays/edits that string directly.
   [
     ["senses", "Senses", formatSensesValue(stats.senses)],
     ["savingThrows", "Saving Throws", stats.savingThrows ?? ""],
@@ -2209,20 +1865,13 @@ function renderStats(record) {
     elements.statsFields.appendChild(buildStatCard({ key, label, value, colClass: "col-8 col-md-4" }));
   });
 
-  // Row 6: Save DC, Spells — Save DC lives here, not up in Row 2 with the
-  // rest of the "real" imported stats, because it isn't actually one:
-  // sys.dnd5e.json's own Save DC is a single scalar keyed by Combat
-  // Scaling level, Crucible's own native-generation table (crucible/js/
-  // lib/stats.js) — no import mapping populates it (confirmed: real D&D
-  // monsters don't have one Save DC, they have several, one per ability —
-  // spellcasting, breath weapon, Frightful Presence, ... — each embedded in
-  // that ability's own text). It stays here purely as an optional manual
-  // GM note, positioned small and next to Spells since that's the stat
-  // it's most often actually about. Spells keeps its own genuinely
-  // irregular shape (an intro sentence plus per-frequency spell lists) and
-  // most of the row's width — far longer than any other stat here, so a
-  // 3-row textarea (not a single-line input) keeps it readable/editable in
-  // place instead of scrolling horizontally.
+  // Row 6: Save DC, Spells — Save DC lives here, not with the "real"
+  // imported stats in Row 2, because it isn't actually one: it's a
+  // Crucible-native generation value, no import mapping populates it (real
+  // D&D monsters have several save DCs, one per ability, embedded in text).
+  // It's an optional manual GM note, positioned next to Spells since that's
+  // the stat it's most often about. Spells gets a 3-row textarea (not a
+  // single-line input) since it's far longer than any other stat here.
   elements.statsFields.appendChild(buildStatCard({ key: "saveDC", label: "Save DC", value: stats.saveDC ?? "", colClass: "col-3 col-md-2" }));
   elements.statsFields.appendChild(
     buildStatCard({
@@ -2236,19 +1885,16 @@ function renderStats(record) {
     })
   );
 
-  // Actions (attackBonus/damageDice math) and the Feature budget both moved
-  // out of Stats — see renderFeatureList/renderFeatureBudget. A
-  // Crucible-generated action shares its name with the Feature it came
-  // from (buildActions, crucible/js/lib/stats.js), so it now renders
-  // inline on that Feature's own row instead of duplicated as a second,
-  // numbers-only entry down here.
+  // Actions and the Feature budget both moved out of Stats — see
+  // renderFeatureList/renderFeatureBudget. A Crucible-generated action
+  // shares its name with the Feature it came from, so it renders inline on
+  // that Feature's own row instead of a second entry down here.
 }
 
 // What Save/Export would actually write right now — currentRecord.name/
 // .notes only get synced from their input fields inside handleSave/
-// handleExport themselves, so a live dirty-check needs this instead of
-// reading currentRecord directly (a name/notes edit wouldn't otherwise be
-// visible until the next save).
+// handleExport, so a live dirty-check needs this instead of reading
+// currentRecord directly.
 function buildRecordForSave() {
   if (!currentRecord) return null;
   return {
@@ -2265,9 +1911,8 @@ function updateActionButtons() {
     elements.deleteButton.disabled = !hasRecord || !dirtyGate.hasSaved() || !monsterAllowsDelete(currentMonsterId);
   }
   if (elements.duplicateButton) elements.duplicateButton.disabled = !hasRecord;
-  // Not saved-gated like Delete — a freshly generated, not-yet-saved Monster
-  // can convert too (mirrors Duplicate's own gate). Does need a System to
-  // filter the Template picker against.
+  // Not saved-gated like Delete — a freshly generated, not-yet-saved
+  // Monster can convert too. Does need a System to filter the Template picker.
   if (elements.convertToCharacterButton) {
     setDisabledTooltip(
       elements.convertToCharacterButton,
@@ -2281,21 +1926,15 @@ function updateActionButtons() {
 }
 
 // One button, not a two-way radio group — clicking it steps to the OTHER
-// mode each time, same toggle-not-select idiom Repository's own Edit/View
-// button uses (undercroft/repository/js/app.js#applyMode) for the identical
-// concept. Icon/label always describe what clicking will switch TO, not the
-// current state. Defaults to "view" (same default Forge/Vault/Sanctum's own
-// identical Notes toggle uses) — a freshly-loaded record's Notes are read
-// far more often than edited, and a note written with markdown in mind
-// (headings, lists, callouts) reads better rendered than as raw source by
-// default.
+// mode each time. Icon/label always describe what clicking will switch TO,
+// not the current state. Defaults to "view" — Notes are read far more often
+// than edited.
 let notesMode = "view";
 
 function renderNotesPreview() {
   if (!elements.notesPreview) return;
-  // Disposed before the wipe — a `` `date:...` `` reference or a missing
-  // wiki-link inside Notes both carry real tooltips now, and this reruns on
-  // every edit. See tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — a date/wiki-link reference inside Notes
+  // carries a real tooltip, and this reruns on every edit.
   disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
   elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
@@ -2308,8 +1947,7 @@ function applyNotesMode(mode) {
   elements.notesText?.classList.toggle("d-none", isView);
   elements.notesPreview?.classList.toggle("d-none", !isView);
   // Showing the eye while in Edit mode (the icon describes what clicking
-  // switches TO, not the current state) and vice versa — same convention
-  // Repository's own toggle uses.
+  // switches TO, not the current state) and vice versa.
   elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
   elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
   if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
@@ -2331,19 +1969,16 @@ function renderMonster(record) {
   elements.emptyState?.classList.add("d-none");
   elements.display?.classList.toggle("d-none", mode === "relationships");
   if (elements.nameInput) elements.nameInput.value = record.name || "";
-  // Rebuilt each render, like Identity below — image isn't read from the DOM
-  // at save time the way name/notes are (see buildRecordForSave); it commits
-  // straight to currentRecord.image on blur/library-pick instead, same as
-  // Forge's own NPC Image field.
+  // Rebuilt each render, like Identity below — image isn't read from the
+  // DOM at save time the way name/notes are; it commits straight to
+  // currentRecord.image on blur/library-pick instead.
   if (elements.imageMount) {
     elements.imageMount.innerHTML = "";
     elements.imageMount.appendChild(
       createTokenImageField({
         id: "crucibleMonsterImage",
         label: "Image",
-        // Matches the Name field box (createFieldBox) it sits inline
-        // beside — per explicit feedback that Image looking visually
-        // different from every other field box was the thing to fix.
+        // Matches the Name field box it sits inline beside.
         boxed: true,
         value: record.image || "",
         dataManager,
@@ -2374,10 +2009,8 @@ function renderMonster(record) {
 // --- Relationships -----------------------------------------------------
 //
 // Crucible's own target-kind whitelist and type-suggestion vocabulary for
-// the shared relationship-editor.js/relationship-graph.js modules — see
-// that pair's own header comments for the full suite-wide mechanism, and
-// Forge's own app.js for the first tool this pattern shipped on. Ecology/
-// territory ties, not social ones — a Monster's own suggestions read
+// the shared relationship-editor.js/relationship-graph.js modules. Ecology/
+// territory ties, not social ones — a Monster's suggestions read
 // differently than an NPC's.
 const RELATIONSHIP_TARGET_KINDS = [
   { id: "npc", label: "NPC" },
@@ -2393,11 +2026,10 @@ const RELATIONSHIP_TYPE_SUGGESTIONS = [
   "Shares territory with",
 ];
 
-// "monster" (the existing Identity/Features/Stats/Notes card stack) or
+// "monster" (the Identity/Features/Stats/Notes card stack) or
 // "relationships" (a full-pane List/Graph view over this Monster's own
 // relationship edges) — mutually exclusive Modes, switched by the
-// suite-wide Mode toggle group (createModeToggleGroup) in the header row
-// above the main pane, exactly mirroring Forge/Repository's own split.
+// suite-wide Mode toggle group in the header row above the main pane.
 let mode = "monster";
 let relationshipsForceGraph = null;
 let relationshipsIconByKind = {};
@@ -2405,11 +2037,7 @@ let relationshipsIconByKind = {};
 function renderModeToggle() {
   if (!elements.modeToggleMount) return;
   // Nothing to relate until a Monster exists — disabled (not hidden) until
-  // then, via createButtonCheckGroup's own disabled/tooltip option support
-  // (ui-components.js), the same mechanism every other tool's Relationships
-  // option now uses too (previously each hand-rolled an identical
-  // post-render querySelector('input[value="relationships"]').disabled
-  // patch — consolidated onto this one shared mechanism instead).
+  // then, via createModeToggleGroup's own disabled/tooltip option support.
   createModeToggleGroup({
     container: elements.modeToggleMount,
     ariaLabel: "Crucible view",
@@ -2463,7 +2091,7 @@ function ensureRelationshipsForceGraph() {
 
 async function refreshRelationshipsList() {
   if (!elements.relationshipsListMount) return;
-  // No Monster loaded — clear rather than leave a stale prior Monster's own
+  // No Monster loaded — clear rather than leave a stale prior Monster's
   // relationships on screen.
   if (!currentRecord?.id) {
     elements.relationshipsListMount.innerHTML =
@@ -2511,11 +2139,9 @@ function readLockedFeatureIds() {
 }
 
 async function handleGenerate() {
-  // No readiness guard needed here — setGenerateButtonReadiness gives the
-  // button a real `disabled` attribute whenever this would fail, and a
-  // disabled button's click listener never fires at all (mouse or
-  // keyboard), so this handler only ever runs when generation is genuinely
-  // ready.
+  // No readiness guard needed — setGenerateButtonReadiness gives the button
+  // a real `disabled` attribute whenever this would fail, and a disabled
+  // button's click listener never fires.
   const systemId = currentSystemId() || null;
   try {
     const generated = generateMonster(creatureTypes, archetypes, roles, features, {
@@ -2542,8 +2168,7 @@ async function handleGenerate() {
     const record = createMonsterRecord({ ...generated, stats });
     dirtyGate.markDirty();
     // Freshly generated content is always unsaved, regardless of whichever
-    // saved Monster the picker previously pointed at — mirrors Sanctum's
-    // handleGenerate resetting locationCleanSnapshot the same way.
+    // saved Monster the picker previously pointed at.
     currentMonsterId = null;
     if (elements.monsterSelect) elements.monsterSelect.value = "";
     updateGenerationFieldsVisibility();
@@ -2560,16 +2185,11 @@ async function handleSave() {
   currentRecord.name = elements.nameInput?.value || "";
   currentRecord.notes = elements.notesText?.value || "";
   try {
-    // Every monster save gets its remaining raw stat-block groups (traits/
-    // actions/bonusActions/reactions/legendaryActions/lairActions)
-    // converted into real Feature references, unconditionally — not an
-    // opt-in extra step, no button anywhere for this (see
-    // monster-feature-matching.js's own module comment). Loom's saveEntity
+    // Every monster save gets its remaining raw stat-block groups converted
+    // into real Feature references, unconditionally. Loom's saveEntity
     // already does this for imports made through Loom; Crucible's own save
-    // here bypasses saveEntity entirely (writes straight to
-    // dataManager.save), so it needs the same call directly. Idempotent —
-    // hasConvertibleStatBlock is false once nothing's left to convert, so
-    // this is a safe no-op on every subsequent save of the same record.
+    // bypasses saveEntity entirely, so it needs the same call directly.
+    // Idempotent — a safe no-op once nothing's left to convert.
     let conversionErrors = [];
     if (hasConvertibleStatBlock(currentRecord.stats)) {
       const conversionResult = await convertStatBlockToFeatures(currentRecord, {
@@ -2579,17 +2199,15 @@ async function handleSave() {
       });
       conversionErrors = conversionResult?.errors || [];
     }
-    // Default mode ("auto") matters here exactly like Forge's NPC save: an
-    // anonymous GM saves locally to their own browser, a signed-in user gets
-    // a real owned/shareable record — Crucible has no whole-tool login gate.
+    // Default mode ("auto"): an anonymous GM saves locally to their own
+    // browser, a signed-in user gets a real owned/shareable record.
     const exported = toPressExportShape(currentRecord);
     await dataManager.save("monster", currentRecord.id, exported);
     dirtyGate.markClean(exported);
     currentMonsterId = currentRecord.id;
-    // A monster still saves fine with one or more of its own traits
-    // skipped (see monster-feature-matching.js's own try/catch) — surfaced
+    // A monster still saves fine with one or more traits skipped — surfaced
     // here rather than staying silent, since that's real information loss
-    // a GM would otherwise only discover much later, or never.
+    // a GM would otherwise discover much later, or never.
     if (conversionErrors.length) {
       status?.show(
         `Saved, but ${conversionErrors.length} feature${conversionErrors.length === 1 ? "" : "s"} couldn't be converted (see console).`,
@@ -2649,12 +2267,10 @@ function handleDuplicate() {
 }
 
 // --- Convert to Character -------------------------------------------------
-// Mirrors forge/js/app.js's own identical block — same helper
-// (convertLibraryRecord), same id shape, same Template-picker filter, same
-// navigation. Kept in sync between the two files rather than factored into
-// a shared function, since each tool's own `elements`/`currentRecord`
-// plumbing differs enough that a shared version would need its own
-// adapter layer for little real savings.
+// Mirrors forge/js/app.js's own identical block. Kept in sync between the
+// two files rather than factored out, since each tool's own
+// `elements`/`currentRecord` plumbing differs enough that a shared version
+// would need its own adapter layer for little real savings.
 function generateCharacterId(name) {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return `cha_${crypto.randomUUID()}`;
@@ -2753,11 +2369,9 @@ elements.convertCharacterForm?.addEventListener("submit", async (event) => {
     status?.show(error?.message || "Unable to create the character.", { type: "error" });
     return;
   }
-  // The Monster itself was never saved this session (only converted-and-
-  // saved as a Character instead) — without this, beforeunload's own dirty
-  // check below still sees it as unsaved and throws up a "leave unsaved
-  // changes?" browser prompt on the very next line's navigation, even
-  // though nothing is actually about to be lost.
+  // The Monster itself was never saved (only converted-and-saved as a
+  // Character) — without this, beforeunload's dirty check still sees it as
+  // unsaved and throws up a prompt on the next line's navigation.
   dirtyGate.markClean();
   convertToCharacterModalInstance?.hide();
   status?.show(`Converted to ${name}.`, { type: "success", timeout: 2000 });
@@ -2772,21 +2386,16 @@ async function handleGenerateNote() {
     elements,
     status,
     generateNote: generateMonsterNote,
-    // Leave name blank rather than falling back to record.id here — an id
-    // like "mon_abc123" would look like a real name to the server and stop
-    // it from suggesting one.
+    // Leave name blank rather than falling back to record.id — an id like
+    // "mon_abc123" would look like a real name to the server and stop it
+    // from suggesting one.
     buildRequestBody: (record) => {
       const imported = isImportedStatBlock(record);
-      // Archetype/Role/Signature Feature are genuinely native-generation-
-      // only concepts — an imported record never has these, converted or
-      // not — but `features` uses featureIds whenever they're populated
-      // (regardless of import provenance), same "featureIds presence, not
-      // provenance" reasoning as renderFeatureList/populateAddFeatureSelect
-      // above: Feature-matching runs automatically on every save now, so a
-      // converted import's real Feature references are the accurate thing
-      // to send, not its now-empty raw stats.traits/actions groups. Only a
-      // record that hasn't been converted yet falls back to those raw
-      // groups.
+      // Archetype/Role/Signature Feature are native-generation-only —
+      // imported records never have these. `features` uses featureIds
+      // whenever populated regardless of provenance (feature-matching runs
+      // on every save), so a converted import's real Feature references are
+      // sent; only a not-yet-converted record falls back to raw groups.
       const hasFeatureIds = Array.isArray(record.featureIds) && record.featureIds.length > 0;
       const stats = record.stats || {};
       return {
@@ -2842,23 +2451,17 @@ async function init() {
   });
   dataManager = auth.dataManager;
 
-  // Generate starts disabled (see its own toolbar definition above) —
-  // recomputed once reloadReferenceData has actually resolved, from every
-  // path that can reach "loading is done" below (the plain init cascade,
-  // handleSystemSelectChange, or applyDeepLinkParams' own background Phase
-  // 2). Proactively disables (with an explanatory tooltip, via the shared
-  // setGenerateButtonReadiness helper) instead of unconditionally enabling —
-  // getMonsterGenerationBlockReason mirrors generateMonster's own
-  // Archetype/Role eligibility check exactly, so this can never drift out of
-  // sync with what actually happens on click.
+  // Generate starts disabled — recomputed once reloadReferenceData
+  // resolves. Proactively disables (with an explanatory tooltip) instead of
+  // unconditionally enabling — getMonsterGenerationBlockReason mirrors
+  // generateMonster's own eligibility check exactly, so this can't drift
+  // out of sync with what actually happens on click.
   function updateGenerateButtonReadiness() {
     const reason = getMonsterGenerationBlockReason(creatureTypes, archetypes, roles, { systemId: currentSystemId() });
     setGenerateButtonReadiness(elements.generateButton, reason);
   }
 
-  // Same dirty check updateActionButtons already uses for the Save button —
-  // Crucible had no guard at all against navigating/closing away from
-  // unsaved edits (unlike Workbench, which already had this).
+  // Same dirty check updateActionButtons uses for the Save button.
   window.addEventListener("beforeunload", (event) => {
     if (!currentRecord || !dirtyGate.isDirty()) return;
     event.preventDefault();
@@ -2878,14 +2481,11 @@ async function init() {
   });
   elements.multiattackAddOptionButton?.addEventListener("click", addMultiattackOption);
   // Named (not an inline listener) so the init flow below can also call
-  // this directly when auto-selecting the active campaign group's own
-  // System.
+  // this directly when auto-selecting the active campaign group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     // A different System means any previously loaded Monster (and the
-    // reference data it was built from) is no longer relevant — same
-    // reasoning as Sanctum resetting currentSettingId/currentLocationId on
-    // its own System change.
+    // reference data it was built from) is no longer relevant.
     currentMonsterId = null;
     renderMonster(null);
     await reloadReferenceData();
@@ -2902,23 +2502,14 @@ async function init() {
       return;
     }
     try {
-      // preferLocal: false — this app changed Deep One Priest's own file
-      // directly on disk (a manual conversion, not a save through this
-      // app), and any GM who'd already loaded it once had that pre-
-      // conversion copy sitting in their browser's local cache ever since —
-      // the exact same stale-cache bug class fixed repeatedly elsewhere in
-      // this suite this session (Sanctum/Forge's own Setting/Location
-      // loaders, the shared fetchKindEntriesWithIds). A monster select
-      // should always show what's actually on the server right now.
       const result = await dataManager.get("monster", id, { preferLocal: false });
       if (!result?.payload) {
         status?.show("Unable to load that monster.", { type: "error", timeout: 4000 });
         return;
       }
-      // Not createMonsterRecord — that function always stamps a fresh id
-      // and createdAt (see monster-schema.js), which is right for a NEW
-      // generation but would silently rewrite an existing record's real
-      // creation time on every load.
+      // Not createMonsterRecord — that always stamps a fresh id/createdAt,
+      // right for a NEW generation but would rewrite an existing record's
+      // real creation time on every load.
       renderMonster({ ...result.payload, id });
       dirtyGate.markClean(toPressExportShape(currentRecord));
       expandMonsterPropertiesSection();
@@ -2928,13 +2519,10 @@ async function init() {
     }
   });
 
-  // Combat Scaling/Creature Type field pickers, moved into a gear-icon
-  // Settings modal (upper-left of the header) — same shared module and
-  // visual pattern Repository's own Settings button already uses. Each
-  // definition's getValue/setValue defers straight to the per-System
+  // Combat Scaling/Creature Type field pickers, in a gear-icon Settings
+  // modal. Each definition's getValue/setValue defers to the per-System
   // dataManager.getLocal/saveLocal helpers above rather than this module's
-  // own flat store, since the value is genuinely scoped per-System, not
-  // per-tool (see tool-settings.js's own comment on that option).
+  // own flat store, since the value is scoped per-System, not per-tool.
   initToolSettings({
     toolId: "crucible",
     dataManager,
@@ -3074,12 +2662,8 @@ async function init() {
         .filter(Boolean)
         .map((name) => ({ name, type }));
       // Re-split ONLY this box's own type, merged with the other two
-      // types' entries untouched — this loses any condition/value
-      // sub-fields on entries in the EDITED type (there's no way to tell
-      // which edited name corresponds to which original entry anymore
-      // once they're combined into one comma-separated box), same
-      // lossiness plain-text editing already has for every other list
-      // field here.
+      // types' entries untouched — loses any condition/value sub-fields on
+      // entries in the EDITED type, same lossiness as any other list field here.
       const otherEntries = (stats.proficiencies?.defenses || []).filter((entry) => entry.type !== type);
       currentRecord = {
         ...currentRecord,
@@ -3095,11 +2679,9 @@ async function init() {
   elements.statsFields?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
   elements.statsFields?.addEventListener("change", () => commitFieldEdit());
 
-  // Per-field reroll button (createFieldBox's own `rerollable` option) —
-  // same convention Forge's Identity/4D fields use. Only wired for the
-  // non-imported branch's 4 select boxes (buildStatCard/renderIdentity
-  // never sets `rerollable` on an imported stat block's free-text boxes),
-  // so no isImportedStatBlock guard is needed here.
+  // Per-field reroll button (createFieldBox's `rerollable` option). Only
+  // wired for the non-imported branch's select boxes, so no
+  // isImportedStatBlock guard is needed here.
   elements.identityFields?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord) return;
@@ -3110,9 +2692,8 @@ async function init() {
   });
 
   // Picking a Creature Type/Archetype/Role keeps currentRecord in sync —
-  // "change" (not "input", unlike Stats above) since these are all selects,
-  // and none need Stats' own live per-keystroke recompute. All three are
-  // top-level record fields regardless of provenance (renderIdentity above).
+  // "change" (not "input") since these are all selects, none needing
+  // Stats' own live per-keystroke recompute.
   elements.identityFields?.addEventListener("change", (event) => {
     const target = event.target.closest("[data-editable-identity]");
     if (!target || !currentRecord) return;
@@ -3126,29 +2707,14 @@ async function init() {
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
-  // `?monster=<id>` — a cross-tool deep link (Repository's own kind-
-  // reference chips route here via KIND_TOOL_ROUTE, see repository/js/app.js),
-  // same `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
-  // Loom's own `?feature=` already establish. A monster record only carries
-  // its own System (Crucible has no Setting concept at all — see
-  // populateMonsterSelect's own comment); a bulk-imported bestiary entry may
-  // carry no systemIds at all, in which case the System cascade below is
-  // skipped and reloadReferenceData()'s own current/default System list is
-  // trusted to already include it (the suite-wide "no tag = universal"
-  // convention). Dispatches a real "change" event to actually load the
-  // monster rather than duplicating monsterSelect's own change-handler body.
-  // Two-phase, not one straight-line await chain — same "show the linked
-  // record first, load everything else in the background" fix Sanctum's
-  // own deep link needed once a campaign had enough saved content for the
-  // full System reference-data reload to be genuinely slow. Phase 1
-  // (awaited, blocks return): render THIS monster directly (reusing
-  // renderMonster + the same dirty-baseline call monsterSelect's own
-  // change handler makes — not that handler itself, since it reads the id
-  // off monsterSelect.value, which has no matching <option> yet this
-  // early). Phase 2 (fired but not awaited): the System reference-data
-  // reload populates monsterSelect's own option list; a real "change"
-  // event re-dispatched at the end puts the picker's own displayed
-  // selection in sync.
+  // `?monster=<id>` — a cross-tool deep link (Repository's kind-reference
+  // chips route here). A bulk-imported bestiary entry may carry no
+  // systemIds, in which case the System cascade below is skipped and
+  // reloadReferenceData's own default System list is trusted to include it.
+  // Two-phase, not one straight-line await chain — Phase 1 (awaited): render
+  // THIS monster directly, fast. Phase 2 (fired but not awaited): the System
+  // reference-data reload populates monsterSelect's option list, so the
+  // full reload doesn't block showing the linked record first.
   async function applyDeepLinkParams() {
     const params = new URLSearchParams(window.location.search);
     const monsterId = params.get("monster");
@@ -3164,19 +2730,14 @@ async function init() {
       dirtyGate.markClean(toPressExportShape(currentRecord));
       expandMonsterPropertiesSection();
       updateActionButtons();
-      // Phase 2 — deliberately not awaited here; runs after this function
-      // has already returned `true`. NOT handleSystemSelectChange (which
-      // resets currentMonsterId and calls renderMonster(null) before its
-      // own reloadReferenceData) — that wiped the monster Phase 1 had
-      // ALREADY rendered, leaving the screen blank for however long the
-      // System's own reference-data fetch takes instead of just quietly
-      // finishing in the background behind an already-correct view.
-      // Setting systemSelect's own value directly and calling
-      // reloadReferenceData() straight (same fetch, minus the reset) keeps
-      // Phase 1's render on screen the whole time. monsterSelect's own
-      // value is set without dispatching "change" for the same reason —
-      // the monster is already loaded and correctly shown; re-dispatching
-      // would only re-fetch and re-render it a second time for no benefit.
+      // Phase 2 — deliberately not awaited; runs after this function has
+      // already returned `true`. NOT handleSystemSelectChange, which resets
+      // currentMonsterId and calls renderMonster(null) first — that would
+      // wipe the monster Phase 1 already rendered. Setting systemSelect's
+      // value directly and calling reloadReferenceData straight keeps
+      // Phase 1's render on screen the whole time. monsterSelect's value is
+      // set without dispatching "change" since the monster is already
+      // loaded and shown; re-dispatching would just re-fetch it for nothing.
       void (async () => {
         try {
           if (targetSystemId && elements.systemSelect) {
@@ -3187,10 +2748,8 @@ async function init() {
           updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
-          // leaves the picker under-populated, not worth an error toast on
-          // top of a page that's already showing real content. Generate
-          // stays disabled in this case — reference data may never have
-          // loaded, and clicking it would just throw straight back out.
+          // leaves the picker under-populated, not worth an error toast.
+          // Generate stays disabled since reference data may never have loaded.
         }
       })();
       return true;
@@ -3200,13 +2759,10 @@ async function init() {
     }
   }
 
-  // If a campaign group is active (the header's Campaign dropdown) and that
-  // group has its own System assigned, default Crucible's System select to
-  // it — a real, GM-chosen fact about the campaign being played, not a
-  // guess — to make mid-campaign generation faster. Falls through to the
-  // original "nothing chosen yet" placeholder whenever there's no active
-  // group, or its System isn't one this tool's own list actually contains.
-  // An explicit `?monster=` deep link always wins over both.
+  // If a campaign group is active and has its own System assigned, default
+  // Crucible's System select to it. Falls through to the "nothing chosen
+  // yet" placeholder otherwise. An explicit `?monster=` deep link always
+  // wins over both.
   const systems = await populateSystemSelect();
   const deepLinked = await applyDeepLinkParams();
   if (!deepLinked) {
@@ -3221,11 +2777,8 @@ async function init() {
     renderMonster(null);
     // Both branches above resolve reference data for whatever System ended
     // up selected — safe to recompute readiness here regardless of which one
-    // ran. The deepLinked === true case updates from inside its own Phase 2
-    // background IIFE instead (applyDeepLinkParams above), once ITS
-    // reference-data load actually finishes. (handleSystemSelectChange's own
-    // branch already called this itself, but a second, idempotent call here
-    // costs nothing and keeps this block correct even if that changes.)
+    // ran. The deepLinked === true case updates from its own Phase 2
+    // background IIFE instead, once ITS reference-data load finishes.
     updateGenerateButtonReadiness();
   }
 

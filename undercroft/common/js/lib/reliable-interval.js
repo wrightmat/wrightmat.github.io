@@ -1,40 +1,15 @@
-// A drop-in window.setInterval/clearInterval replacement that keeps firing
-// at its intended cadence even when this window/tab loses focus or is
-// backgrounded — plain setInterval gets aggressively throttled by the
-// browser in that state, which is exactly the problem for the Dashboard's
-// second-screen mirror window (dashboard.js's own renderScreenView) meant to
-// sit unfocused on a physical second screen — confirmed directly as the
-// cause of "content doesn't update unless the window is given focus."
+// A drop-in setInterval/clearInterval replacement that keeps firing at its
+// intended cadence when this window/tab is unfocused/backgrounded — plain
+// setInterval gets throttled by the browser in that state, which broke the
+// Dashboard's second-screen mirror window. A Web Worker's own timers aren't
+// subject to that page-visibility throttling (a worker isn't a "page"), so
+// the real setInterval runs inside one (reliable-ticker.worker.js) and
+// postMessage taps this module on the shoulder each tick to run the actual
+// callback back on the main thread.
 //
-// A dedicated Web Worker's own timers are NOT subject to that same
-// page-visibility-based throttling (a worker isn't a "page" with a
-// visibility state at all), so the actual setInterval runs inside one
-// (reliable-ticker.worker.js) and this just gets tapped on the shoulder
-// (postMessage) each tick to run the real callback back on the main thread,
-// where it can touch the DOM/fetch/etc. One worker per createReliableInterval
-// call — simple, and confirmed reliable for a single window (the mirror,
-// plus whichever widgets it mounts, all share this one window/JS realm)
-// sitting unfocused (but visible) on a second monitor.
-//
-// Known limitation, investigated and NOT resolved: back when the Dashboard
-// popped out one separate window per widget, two or more of those unfocused
-// at once stalled updates in all of them regardless of this file's own
-// approach — tried both this (one dedicated Worker per window) and
-// consolidating onto one SharedWorker shared by every window, plus an
-// audio-priority-boost trick and a meta-refresh fallback; none of it
-// survived multiple simultaneously-unfocused windows. Most likely Chrome
-// budgets CPU/scheduling priority across a whole origin's background
-// renderer processes collectively, not just per-timer-mechanism — a
-// constraint this file can't route around from pure client-side JS. Now
-// moot for the Dashboard itself (the mirror is a single window), but worth
-// knowing before building any other multi-window feature on this module.
-//
-// Deliberately a swap-in-place replacement (same callback, same interval,
-// same {stop()} shape as clearInterval) rather than a new opt-in API each
-// caller has to branch on — every existing caller keeps working exactly as
-// before if a Worker can't be created for any reason (very old browsers,
-// a blocked worker-scripts CSP, ...): it just quietly falls back to plain
-// setInterval, the same behavior it had before this module existed.
+// Same {stop()} shape as clearInterval, and falls back silently to plain
+// setInterval if a Worker can't be created (old browser, blocked CSP) — no
+// caller has to branch on which path is active.
 const WORKER_URL = new URL("./reliable-ticker.worker.js", import.meta.url);
 
 export function createReliableInterval(callback, ms) {

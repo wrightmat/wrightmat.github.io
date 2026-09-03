@@ -1,29 +1,20 @@
 // The suite-wide relationship graph — a `relationship` Library record IS one
 // edge (`{fromKind, fromId, toKind, toId, type, label, value}`), any two
-// records of any kind, `type` free text (never a hard enum: "Member of,"
-// "Prey of," "Reputation with," whatever a GM types). No new schema on
-// npc/monster/location/character — the kind-registry mechanism means
-// dropping common/data/kind/relationship.json in was enough for the generic
-// save/list/get/delete/share routes to support this immediately.
+// records of any kind, `type` free text (never a hard enum). Just another
+// Library kind (common/data/kind/relationship.json), so the generic
+// save/list/get/delete/share routes support it with no per-kind server code.
 //
-// Stored edges are directed (`from`→`to`) even for symmetric-reading types
-// ("Allied with") — direction is kept for consistency, callers don't have to
-// make a visual point of it. A record's own Relationships section shows
-// edges touching it from EITHER direction (fetchEdgesTouching), which is
-// also how "Organizations" fall out for free with no separate flag: an NPC
-// that other NPCs point at with "Member of" edges simply shows those rows in
-// its own list too, the reverse direction of the same query.
+// Edges are directed even for symmetric-reading types ("Allied with") — a
+// record's own Relationships section shows edges touching it from EITHER
+// direction (fetchEdgesTouching), which is also how "Organizations" fall
+// out for free: an NPC other NPCs point at with "Member of" edges shows
+// those rows in its own list too, the reverse direction of the same query.
 //
-// Sanctum's own parentId/connectedTo are DERIVED from this kind, not a
-// second parallel source of truth — "Parent of"/"Connected to" are just two
-// of Sanctum's own suggested relationship types (js/app.js's own
-// RELATIONSHIP_TYPE_SUGGESTIONS); applyDerivedLocationHierarchy recomputes
-// the in-memory parentId/connectedTo shape from real relationship edges on
-// every load, purely for dungeon-generation's own legacy consumers
-// (renameChildRoomsIfConfirmed/collectDescendantLocations) that still expect
-// that shape locally — nothing is persisted in that scalar form anymore. A
-// caller that wants some other non-`relationship`-kind data folded into a
-// graph alongside real relationship records can still pass it in as
+// Sanctum's parentId/connectedTo are DERIVED from this kind, not a second
+// source of truth — applyDerivedLocationHierarchy recomputes that in-memory
+// shape from real relationship edges on every load, only for dungeon-gen's
+// legacy consumers that still expect it locally; nothing persists in that
+// scalar form anymore. A caller can fold in non-`relationship` data as
 // `extraEdges` to buildRelationshipGraph below, tagged `synthetic: true` so
 // the editor UI knows not to offer removing it the generic way.
 import { fetchKindEntrySummaries, loadLibraryKinds } from "./content-fetch.js";
@@ -40,18 +31,14 @@ function nodeKey(kind, id) {
 }
 
 // Every saved `relationship` record, flattened to `{id, fromKind, fromId,
-// toKind, toId, type, label, value}`. Fetch-everything-then-filter-client-
-// side — the same pattern relationships-graph.js already uses for journal
-// pages, and the right scale for this suite's own architecture (no
-// server-side indexed queries anywhere else either).
+// toKind, toId, type, label, value}`. Fetch-everything-then-filter
+// client-side, same pattern used suite-wide (no server-side indexed
+// queries).
 //
-// Deliberately NOT fetchKindEntriesWithIds (content-fetch.js) — that helper
-// is remote-only (includeLocal: false), correct for shared REFERENCE data
-// but wrong here: an anonymous, not-signed-in GM's own relationships are
-// exactly the kind of content the suite's "local-first saving" rule says
-// must keep working with no account at all (same as an anonymous NPC/
-// Location save). Mirrors content-picker.js's own remote+local merge —
-// remote wins on an id collision, same precedent that already establishes.
+// Deliberately NOT fetchKindEntriesWithIds (content-fetch.js) — that's
+// remote-only, but an anonymous GM's own relationships must keep working
+// per the suite's local-first-saving rule. Merges remote+local like
+// content-picker.js — remote wins on an id collision.
 export async function fetchAllRelationships(dataManager) {
   if (!dataManager) return [];
   const { remote } = await dataManager.list("relationship", { refresh: true, includeLocal: false });
@@ -106,13 +93,10 @@ export async function deleteRelationship(dataManager, id) {
 }
 
 // {kindId -> label} — cached module-wide for the session (the kind registry
-// doesn't change mid-session; same "fetch once, reuse" precedent
-// content-fetch.js's own loadDdbLookupTables/loadCharacterMappingDefinition
-// already establish). relationship-editor.js uses this to show a
-// relationship's OTHER end as its entity type ("NPC," "Location") rather
-// than which tool owns it ("Forge," "Sanctum") — kindToolLabel
-// (kind-tool-route.js) stays reserved for the actual "Open in <Tool>"
-// action, a genuinely different label for a genuinely different purpose.
+// doesn't change mid-session). relationship-editor.js uses this to show a
+// relationship's OTHER end as its entity type ("NPC", "Location") rather
+// than which tool owns it — kindToolLabel (kind-tool-route.js) is reserved
+// for the "Open in <Tool>" action, a different label for a different purpose.
 let kindLabelsPromise = null;
 export function loadKindLabels() {
   if (!kindLabelsPromise) {
@@ -123,14 +107,12 @@ export function loadKindLabels() {
   return kindLabelsPromise;
 }
 
-// {"kind:id" -> name} for a small, mixed set of {kind,id} targets. Two
-// sources per kind, merged: fetchKindEntrySummaries (remote /list metadata
-// only, zero per-record fetches — cheap for the common case) PLUS
-// listLocalEntries (already in memory, zero network cost) — an anonymous
-// GM's own local-only NPC/Location/... still gets a real label instead of
-// falling back to its bare id, same "local-first" reasoning
-// fetchAllRelationships above documents. Exported so relationship-editor.js
-// reuses this instead of a second, separately-maintained label resolver.
+// {"kind:id" -> name} for a small, mixed set of {kind,id} targets. Merges
+// fetchKindEntrySummaries (remote /list metadata, no per-record fetches)
+// with listLocalEntries (already in memory) so an anonymous GM's local-only
+// records still get a real label instead of falling back to a bare id.
+// Exported so relationship-editor.js reuses this instead of a second
+// label resolver.
 export async function resolveLabelsForTargets(dataManager, targets) {
   const idsByKind = new Map();
   targets.forEach(({ kind, id }) => {
@@ -155,15 +137,12 @@ export async function resolveLabelsForTargets(dataManager, targets) {
 }
 
 // Assembles `{nodes, edges}` for graph-view.js's createForceGraph, given the
-// PRIMARY node set the caller already has in hand (Forge already lists its
-// own NPCs, Crucible its own Monsters, ...) — this module doesn't own how a
-// caller scopes that (by Setting, by System, whatever), only how edges
-// touching it get resolved and how any OTHER-kind target gets a label.
-// `extraEdges` — synthetic, non-removable edges from a kind's own existing
-// relationship fields (Location's parentId/connectedTo today), same
-// `{fromKind, fromId, toKind, toId, type}` shape, `synthetic: true`.
-// Returns `iconByKind` too, so a caller's own `getNodeIcon` is a one-line
-// lookup rather than a second kind-registry fetch.
+// PRIMARY node set the caller already has (Forge's own NPCs, Crucible's own
+// Monsters, ...) — this module only resolves edges touching it and labels
+// any OTHER-kind target. `extraEdges` are synthetic, non-removable edges
+// from a kind's own existing relationship fields (Location's
+// parentId/connectedTo), same shape plus `synthetic: true`. Also returns
+// `iconByKind` so a caller's `getNodeIcon` is a one-line lookup.
 export async function buildRelationshipGraph(dataManager, { nodes = [], extraEdges = [] } = {}) {
   const primaryKeys = new Set(nodes.map((node) => nodeKey(node.kind, node.id)));
   const stored = await fetchAllRelationships(dataManager);

@@ -7,12 +7,9 @@ import { attachHoverDropdown } from "./dom.js";
 import { initSuiteSearch } from "./suite-search.js";
 import { initTooltip } from "./tooltips.js";
 
-// `icon` is an Iconify `tabler:*` id — same convention used everywhere else
-// across every tool page (`<span class="iconify" data-icon="tabler:...">`).
-// `built` distinguishes real, navigable tools from ones that only exist as
-// a name/spec so far — kept explicit here rather than inferred from
-// whether resolveToolHref happens to return a real path, so adding a new
-// tool to the roadmap doesn't silently produce a dead link.
+// `icon` is an Iconify `tabler:*` id, same convention used suite-wide.
+// `built` distinguishes real tools from roadmap-only entries — kept
+// explicit rather than inferred, so a new tool can't silently dead-link.
 const TOOL_DEFINITIONS = [
   {
     id: "orrery",
@@ -79,12 +76,9 @@ const TOOL_DEFINITIONS = [
   },
 ];
 
-// The suite's own root folder name, hardcoded the same way every other
-// relative path in this file already assumes a fixed layout (e.g.
-// resolveAccountHref's "../common/account.html"). Only the Dashboard
-// (undercroft/index.html) lives directly inside it rather than in its own
-// subfolder, which is what makes it need special-casing everywhere else in
-// this file just treats "one level up" as constant.
+// The suite's own root folder name — every relative path here assumes this
+// fixed layout. The Dashboard alone lives directly inside it rather than
+// its own subfolder, which is why it needs special-casing below.
 const SUITE_ROOT_FOLDER = "undercroft";
 
 export function resolveToolContextPath() {
@@ -96,20 +90,15 @@ export function resolveToolContextPath() {
     return "workbench";
   }
   const section = segments[segments.length - 2];
-  // The Dashboard sits directly under undercroft/ (no subfolder of its own),
-  // so its "section" is the suite root folder itself rather than a real tool
-  // folder name — remap that to "home" so every other resolver below can
-  // treat it as just another section id instead of a one-off case.
+  // The Dashboard has no subfolder, so its "section" is the suite root
+  // folder itself — remap to "home" so every resolver below treats it as
+  // an ordinary section id.
   return section === SUITE_ROOT_FOLDER ? "home" : section;
 }
 
-// Every built tool lives at undercroft/{id}/index.html — same page linking
-// to itself resolves as a bare "index.html", any other tool reaches across
-// via "../{id}/index.html". The Dashboard ("home") is the one exception —
-// it lives at undercroft/index.html directly, one level shallower than
-// every other tool — so both directions of that path math get a branch:
-// linking to it is "../index.html" (not "../home/index.html"), and linking
-// from it descends straight into "{toolId}/index.html" (not "../{toolId}/...").
+// Every built tool lives at undercroft/{id}/index.html; a self-link resolves
+// as bare "index.html", any other tool as "../{id}/index.html". "home" (the
+// Dashboard) is one level shallower, so both directions get a branch.
 export function resolveToolHref(toolId, currentSection) {
   const builtToolIds = [
     "home",
@@ -135,11 +124,9 @@ export function resolveToolHref(toolId, currentSection) {
   return currentSection === toolId ? "index.html" : `../${toolId}/index.html`;
 }
 
-// Account settings/owned-content isn't a "tool" (see TOOL_DEFINITIONS above —
-// Admin was retired as a distinct tool entirely), just a flat page directly
-// under common/ — undercroft/common/account.html, at the same nesting depth
-// as every tool's own index.html, so this mirrors resolveToolHref's exact
-// pattern (including the Dashboard's one-level-shallower special case).
+// Account settings isn't a tool — a flat page at undercroft/common/account.html,
+// same nesting depth as a tool's index.html — so this mirrors resolveToolHref's
+// pattern, including the Dashboard's shallower special case.
 export function resolveAccountHref(currentSection) {
   if (currentSection === "common") {
     return "account.html";
@@ -150,12 +137,9 @@ export function resolveAccountHref(currentSection) {
   return "../common/account.html";
 }
 
-// The same tool-card grid the dropdown builds below — one rendering path for
-// both surfaces. The Dashboard ("home") isn't in TOOL_DEFINITIONS at all (see
-// that array's own history: it used to be, back when the Dashboard had its
-// own dropdown card and nav-list entry — it's reached via the dedicated home
-// icon in initToolNavigation now instead), so there's nothing to exclude here
-// anymore.
+// The same tool-card grid the dropdown builds below — one rendering path
+// for both surfaces. The Dashboard isn't in TOOL_DEFINITIONS; it's reached
+// via the dedicated home icon in initToolNavigation instead.
 export function renderToolGrid(container, { currentSection = resolveToolContextPath() } = {}) {
   if (!container) {
     return;
@@ -175,10 +159,8 @@ export function renderToolGrid(container, { currentSection = resolveToolContextP
   }
 }
 
-// A card for one tool inside the dropdown — a real <a> (built, and not the
-// current tool), or an inert, non-focusable <span>: either "coming soon"
-// (not yet built) or "you are here" (the current tool — full color, just
-// not a link back to the page you're already on).
+// A card for one tool: a real <a> (built, not current), or an inert
+// non-focusable <span> — either "coming soon" or "you are here".
 function buildToolCard(tool, currentSection, built, isCurrent = false) {
   const card = document.createElement(built && !isCurrent ? "a" : "span");
   const classes = [`undercroft-tool-card`, `tool-${tool.id}`];
@@ -211,17 +193,11 @@ function buildToolCard(tool, currentSection, built, isCurrent = false) {
   return card;
 }
 
-// Trigger shows only the CURRENT tool (icon + name) — no permanent space
-// cost beyond what today's single-letter row already used, since it's one
-// compact button instead of one button per tool. Clicking/hovering it
-// (same hover-open + focus-accessible pattern as auth-ui.js's own account
-// dropdown) reveals the other tools as described cards instead of relying
-// on a tooltip per button.
-// Icon/label shown when the current page isn't one of TOOL_DEFINITIONS at
-// all — e.g. undercroft/common/account.html, which is account settings, not
-// a tool. Rather than the trigger going blank (the old behavior: no matching
-// definition meant this function bailed out entirely), it falls back to a
-// generic suite identity, with the full tool grid still available below it.
+// Trigger shows only the current tool (icon + name), one compact button
+// instead of one per tool; hovering/clicking (same pattern as auth-ui.js's
+// account dropdown) reveals the rest as cards.
+// Fallback icon/label for pages with no matching TOOL_DEFINITIONS entry
+// (e.g. account.html) — a generic suite identity instead of a blank trigger.
 const SUITE_ICON = "tabler:building-arch";
 
 function initToolNavigation(root = document) {
@@ -234,10 +210,8 @@ function initToolNavigation(root = document) {
   const activeTool = root.body?.dataset?.undercroftTool;
   const activeDefinition = TOOL_DEFINITIONS.find((tool) => tool.id === activeTool);
   const currentSection = resolveToolContextPath();
-  // Current tool leads the grid (top-left), then the other built tools in
-  // their definition order. When there's no matching definition (account.html
-  // and any other non-tool page), nothing leads — just the plain built-tool
-  // order, none marked current.
+  // Current tool leads the grid, then the rest in definition order. No
+  // matching definition (account.html) means plain order, none marked current.
   const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false);
   const orderedBuilt = activeDefinition
     ? [activeDefinition, ...builtTools.filter((tool) => tool.id !== activeTool)]
@@ -265,16 +239,13 @@ function initToolNavigation(root = document) {
   triggerIcon.dataset.icon = activeDefinition ? activeDefinition.icon : SUITE_ICON;
   triggerIcon.setAttribute("aria-hidden", "true");
   const triggerLabel = document.createElement("span");
-  // Icon-only until shell.css's container query reveals it (see
-  // .workbench-header-middle) — the toggle's own aria-label already
-  // carries this same text for assistive tech, so display:none (not
-  // visually-hidden) is correct here, unlike icon buttons with no other
-  // label source.
+  // Icon-only until shell.css's container query reveals it; aria-label
+  // already carries this text for assistive tech, so display:none (not
+  // visually-hidden) is correct here.
   triggerLabel.className = "undercroft-tool-trigger-label";
-  // "Undercroft" prefix only on the trigger (it's replacing the page's own
-  // "Undercroft {Tool}" title) — dropdown cards just say the tool name,
-  // no need to repeat the suite name on every one of those. No matching
-  // definition (account.html) just shows "Undercroft" alone.
+  // "Undercroft" prefix only on the trigger, replacing the page's own title
+  // — dropdown cards just say the tool name. No match (account.html) shows
+  // "Undercroft" alone.
   triggerLabel.textContent = activeDefinition ? `Undercroft ${activeDefinition.label}` : "Undercroft";
   toggle.append(triggerIcon, triggerLabel);
 
@@ -289,9 +260,8 @@ function initToolNavigation(root = document) {
   menu.appendChild(grid);
 
   if (unbuiltOthers.length) {
-    // No "Coming soon" heading — the built/unbuilt split shifts constantly
-    // as new tools ship, so a muted grid beneath the built one reads fine
-    // without needing a label to explain it.
+    // No "Coming soon" heading needed — a muted grid beneath the built one
+    // reads fine on its own.
     const mutedGrid = document.createElement("div");
     mutedGrid.className = "undercroft-tool-grid undercroft-tool-grid--muted";
     unbuiltOthers.forEach((tool) => mutedGrid.appendChild(buildToolCard(tool, currentSection, false)));
@@ -301,12 +271,9 @@ function initToolNavigation(root = document) {
   dropdown.append(toggle, menu);
   primaryNav.appendChild(dropdown);
 
-  // A small always-present way back to the Dashboard, now that it's not in
-  // TOOL_DEFINITIONS (and so has no card of its own in the dropdown above).
-  // Sits to the right of the switcher. Omitted on the Dashboard itself —
-  // clicking it would just reload the page you're already on, same reasoning
-  // buildToolCard uses to render the current tool as an inert span instead
-  // of a link.
+  // Always-present way back to the Dashboard, since it has no card of its
+  // own in the dropdown. Omitted on the Dashboard itself, same reasoning
+  // buildToolCard uses for the current-tool inert span.
   if (currentSection !== "home") {
     const homeLink = document.createElement("a");
     homeLink.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
@@ -324,16 +291,11 @@ function initToolNavigation(root = document) {
   attachHoverDropdown(dropdown, toggle);
 }
 
-// One pane-toggle button — a fourth, header-only button shape distinct from
-// ui-components.js's "compact"/"toolbar" kinds: default (non-btn-sm, non-p-2)
-// Bootstrap button sizing, a `fs-5` icon, and a visually-hidden label.
-// initPaneToggles (panes.js) owns the pressed/unpressed VISUAL state
-// (solid vs. outline button, via updateToggleAppearance) — a real hover
-// tooltip is still needed on top of that, same as every other icon-only
-// button in the suite; that's a different concern (what does clicking do)
-// from a pressed-state indicator (what's it doing right now). Used only
-// here, twice per page — not worth generalizing into the shared icon-button
-// factory for a shape that appears nowhere else in the suite.
+// One pane-toggle button — a header-only shape distinct from
+// ui-components.js's icon-button kinds. initPaneToggles (panes.js) owns the
+// pressed/unpressed visual state; the tooltip here is a separate concern
+// (what clicking does, not current state). Used only here, not worth
+// generalizing further.
 function buildPaneToggleButton(key, label) {
   const button = document.createElement("button");
   button.type = "button";
@@ -352,10 +314,9 @@ function buildPaneToggleButton(key, label) {
   return button;
 }
 
-// `ariaLabel` and `hiddenLabelText` are deliberately different strings in
-// the original markup this replaces — e.g. aria-label="Use light theme" (an
-// action) vs. the visually-hidden span's "Light theme" (a label) — kept
-// distinct here rather than collapsed into one shared string.
+// `ariaLabel` (an action, e.g. "Use light theme") and `hiddenLabelText` (a
+// label, "Light theme") are deliberately distinct strings, not collapsed
+// into one.
 function buildThemeToggleButton(option, ariaLabel, hiddenLabelText, icon) {
   const button = document.createElement("button");
   button.type = "button";
@@ -375,12 +336,9 @@ function buildThemeToggleButton(option, ariaLabel, hiddenLabelText, icon) {
 }
 
 // One row per common/data/theme-packs.json entry — a swatch dot (the
-// pack's own accent color, so the list previews the palette without
-// loading each theme's CSS) plus its label. Styled as a real Bootstrap
-// dropdown-item so its own .active state (toggled by theme.js's
-// wireThemePackOptions) gets Bootstrap's native highlighted-item look for
-// free, same as the tool-switcher's own dropdown items elsewhere in this
-// file.
+// pack's accent color, previewing the palette without loading its CSS)
+// plus its label, as a real dropdown-item so Bootstrap's .active styling
+// (theme.js's wireThemePackOptions) applies for free.
 function buildThemePackOption(pack) {
   const button = document.createElement("button");
   button.type = "button";
@@ -396,16 +354,11 @@ function buildThemePackOption(pack) {
   return button;
 }
 
-// Replaces the old flat 3-button light/system/dark group with one icon
-// trigger — folds BOTH axes (mode and palette, see common/js/lib/theme.js)
-// into a single dropdown, so this control needs no separate mobile
-// compaction the way the header's other controls do: it's already one
-// small button at every viewport width. Mode row is built eagerly (only
-// ever 3 known, hardcoded options); the palette list below the divider is
-// populated once loadThemePacks() resolves — async, since it's a fetch of
-// common/data/theme-packs.json — via theme.js's own wireThemePackOptions
-// (click handling + active-state bookkeeping lives there, not here, same
-// split as initThemeControls/[data-theme-option] for the mode row).
+// One icon trigger folding both mode and palette (theme.js) into a single
+// dropdown — already compact at every viewport width, no mobile-collapse
+// logic needed. Mode row builds eagerly (3 fixed options); the palette
+// list populates once loadThemePacks() resolves, wired via theme.js's own
+// wireThemePackOptions (click handling lives there, not here).
 function buildThemeSwitcherDropdown() {
   const dropdown = document.createElement("div");
   dropdown.className = "dropdown undercroft-theme-switcher";
@@ -460,16 +413,12 @@ function buildThemeSwitcherDropdown() {
 }
 
 // Builds the entire <header> — pane toggles, tool-switcher mount, auth
-// control mount, theme toggle group — replacing what used to be ~47 lines of
-// byte-identical hand-copied markup duplicated across every tool's own
-// index.html. Purely additive: only runs when a page opts in with a
-// `<div data-app-shell-header></div>` mount point — every page in the suite
-// has that mount today (no page carries its own literal <header> markup any
-// more), but the function still just no-ops safely on one that doesn't.
-// Deliberately NOT touching the theme-flash-prevention inline <script> or
-// the CDN <link>/<script> tags in each page's own <head> — both must
-// run/load synchronously before first paint, which building them here
-// (after this module has loaded and executed) cannot provide.
+// control, theme toggle group — replacing hand-copied markup once
+// duplicated across every tool's index.html. Runs only when a page has a
+// `<div data-app-shell-header></div>` mount point; no-ops otherwise.
+// Deliberately doesn't touch the theme-flash-prevention inline <script> or
+// CDN tags in <head> — both must run synchronously before first paint,
+// which this module (loaded after) can't provide.
 function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr }) {
   const mount = root.querySelector("[data-app-shell-header]");
   if (!mount) {
@@ -481,10 +430,10 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
 
   const grid = document.createElement("div");
   grid.className = "workbench-header-grid pe-2 py-3";
-  // The header's first grid cell is a plain spacer on most tools, but
-  // Vault/Crucible/Repository mount a Settings-gear button here instead
-  // (common/js/lib/tool-settings.js, wired by each tool's own app.js —
-  // this only reserves the slot, it doesn't build the button itself).
+  // The header's first grid cell is a plain spacer on most tools; Vault/
+  // Crucible/Repository mount a Settings-gear button here instead
+  // (tool-settings.js, wired by each tool's own app.js) — this only
+  // reserves the slot.
   if (settingsSlotAttr) {
     const settingsSlot = document.createElement("div");
     settingsSlot.className = "d-flex align-items-center justify-content-end ps-2";
@@ -508,12 +457,9 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   h1.appendChild(nav);
   leftGroup.appendChild(h1);
 
-  // The suite-wide header search — sits in the space between the tool
-  // switcher/Home link (leftGroup) and the auth/theme controls (rightGroup),
-  // which is otherwise just empty flex-grow room. flex-grow-1 + max-width
-  // keeps it a sensible search-box width rather than stretching edge to
-  // edge on a wide viewport; rightGroup's own ms-auto still applies (it
-  // still wins the remaining space once this box hits its max-width).
+  // Suite-wide header search, filling the space between leftGroup and
+  // rightGroup. flex-grow-1 + max-width keeps a sensible width rather than
+  // stretching edge to edge; rightGroup's ms-auto still wins past that cap.
   const searchMount = document.createElement("div");
   searchMount.className = "flex-grow-1 mx-2";
   searchMount.style.maxWidth = "28rem";
@@ -530,9 +476,8 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
 
   rightGroup.appendChild(buildThemeSwitcherDropdown());
 
-  // docs.html is the one page with no right pane at all — pass
-  // rightPaneLabel: null there to omit this button entirely, same as its
-  // hand-written markup already does today.
+  // docs.html has no right pane — pass rightPaneLabel: null to omit this
+  // button entirely.
   if (rightPaneLabel) {
     rightGroup.appendChild(buildPaneToggleButton("right", rightPaneLabel));
   }
@@ -546,33 +491,19 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   return header;
 }
 
-// Builds one left/right `<aside>` pane shell — the border/background/shadow/
-// sizing/`.workbench-pane-content` wrapper every tool used to hand-write
-// (~9 lines × 2 panes × 12 pages, and not even consistently: some pages
-// baked `d-flex`/`d-none` directly into their static class list, others
-// didn't and relied on `.workbench-pane`'s own CSS carrying no `display` at
-// all — a latent flash-of-wrong-layout risk on any page whose pane started
-// collapsed; gap/padding utility classes drifted per tool too, gap-3 vs
-// gap-4, p-3 vs p-4, with no actual reason for the difference). Only `side`,
-// `size`, and `initial` are real per-tool decisions (a pane's width, and
-// whether it starts open) — gap/padding/shadow are hardcoded to one
-// canonical value here on purpose, so a new tool has no knob to drift on.
-// `mountEl` is the page's own `[data-pane-content="left"|"right"]` marker —
-// its CHILDREN (not the marker div itself) are moved wholesale into the
-// freshly-built `.workbench-pane-content`, so whatever tool-specific
-// structure lives inside (a plain sequence of `<section>`s for most tools,
-// a single custom widget container for the Dashboard/account's Help
-// browser) is preserved exactly, unexamined.
+// Builds one left/right `<aside>` pane shell — the border/shadow/sizing/
+// `.workbench-pane-content` wrapper every tool used to hand-write
+// inconsistently. Only `side`/`size`/`initial` are real per-tool decisions;
+// gap/padding/shadow are hardcoded to one canonical value so a new tool has
+// no knob to drift on. `mountEl`'s CHILDREN (not the marker div itself) move
+// wholesale into the new wrapper, preserving whatever structure was inside.
 function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" }) {
   if (!mountEl) {
     return null;
   }
-  // Below md, both panes start collapsed regardless of what each tool
-  // requested — a phone viewport doesn't have room for an 18-20rem pane
-  // plus content. This only overrides the INITIAL load state; the existing
-  // header pane-toggle buttons (initPaneToggles, unchanged) still open/close
-  // them exactly as before. Desktop viewports never hit this branch, so
-  // their behavior is unchanged.
+  // Below md, both panes start collapsed regardless of what was requested —
+  // a phone viewport has no room for an 18-20rem pane. Only overrides the
+  // INITIAL state; the pane-toggle buttons still open/close normally after.
   const isNarrowViewport = window.matchMedia("(max-width: 767.98px)").matches;
   const effectiveInitial = isNarrowViewport ? "collapsed" : initial;
   const aside = document.createElement("aside");
@@ -589,10 +520,8 @@ function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" 
     "flex-shrink-0",
     size === "lg" ? "workbench-sidebar-lg" : "workbench-sidebar",
     "workbench-pane",
-    // Baked in directly (not left for initPaneToggles to apply on first
-    // run) so a pane that starts collapsed never flashes open first — the
-    // exact gap the old per-page markup had whenever it omitted this class
-    // from its own static list.
+    // Baked in directly so a pane that starts collapsed never flashes open
+    // first.
     isCollapsed ? "d-none" : "d-flex",
   ].join(" ");
 
@@ -606,18 +535,13 @@ function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" 
   return { aside, size, effectiveInitial };
 }
 
-// Keeps the header's own left/right spacer-grid columns (which visually
-// align with the pane widths below them) in sync with whether that pane is
-// ACTUALLY expanded or collapsed — not just a static viewport breakpoint.
-// A collapsed pane is 0-width, so its header spacer should be too (`auto`,
-// not a literal 0 — a settings-slot button, when present, still needs to
-// size to its own content rather than being clipped). Called once at build
-// time for each pane's initial state, then again from initPaneToggles's
-// onChange every time a user toggles a pane afterward, at ANY viewport
-// width — this is what fixes the header overlapping/squeezing that showed
-// up on a narrowed desktop window even with both panes collapsed, since
-// previously the header reserved a full 18-20rem for a collapsed pane
-// regardless of viewport.
+// Keeps the header's left/right spacer-grid columns in sync with whether
+// that pane is ACTUALLY expanded or collapsed, not just a viewport
+// breakpoint. A collapsed pane's spacer is `auto` (not 0 — a settings-slot
+// button still needs to size to its content). Called on initial build and
+// again from initPaneToggles's onChange on every toggle, at any viewport
+// width — fixes header squeezing that previously reserved a full 18-20rem
+// for a collapsed pane regardless of viewport.
 function syncHeaderPaneSpacerWidth(headerEl, side, expanded, size) {
   if (!headerEl) {
     return;
@@ -650,13 +574,9 @@ function showFeedback(status, feedback, fallbackMessage) {
 
 // Builds and inserts the real `<header>` into the page's own
 // `[data-app-shell-header]` mount point before anything else here runs.
-// Caution for any code that reads a header-internal element (a pane-toggle
-// button, a settings-slot mount): querying it via a module-top-level `const`
-// only works if that line runs AFTER this function already has — several
-// real bugs (a `const` capturing `null` before the header existed yet) came
-// from exactly this ordering mistake. Prefer a live `document.querySelector`
-// at the point of use, or place the eager query provably after this call in
-// the same synchronous script.
+// Any code reading a header-internal element must query it AFTER this call
+// — a module-top-level `const` capturing it too early has caused real bugs.
+// Prefer a live `document.querySelector` at point of use.
 export function initAppShell({
   root = document,
   namespace = "default",
@@ -664,22 +584,19 @@ export function initAppShell({
   onUndo = null,
   onRedo = null,
   undoLimit,
-  // Defaults match the most common values across the suite (see
-  // buildAppShellHeader) — most tools only need to override one or both to
-  // name their own left/right pane accurately; pass rightPaneLabel: null to
-  // omit the right-pane toggle entirely (docs.html has no right pane).
+  // Defaults match the most common values across the suite; most tools only
+  // override to name their own pane accurately. Pass rightPaneLabel: null
+  // to omit the toggle entirely (docs.html has no right pane).
   leftPaneLabel = "Toggle navigation pane",
   rightPaneLabel = "Toggle details pane",
   // Set for Vault/Crucible/Repository, whose header reserves its first grid
-  // cell for a Settings-gear button instead of leaving it a plain spacer —
-  // e.g. "data-vault-settings-slot". The attribute name only; building and
-  // wiring the actual button is still each tool's own app.js's job (via
-  // common/js/lib/tool-settings.js), same as before this migration.
+  // cell for a Settings-gear button (e.g. "data-vault-settings-slot"). The
+  // attribute name only — each tool's own app.js still builds/wires the
+  // button via tool-settings.js.
   settingsSlotAttr = null,
   // { size: "default"|"lg", initial: "expanded"|"collapsed" } — every tool
-  // has a left pane, so this always builds one (against the page's own
-  // [data-pane-content="left"] marker). Pass leftPane: null only if a page
-  // genuinely has no left pane at all (none currently do).
+  // has a left pane, so this always builds one. Pass leftPane: null only if
+  // a page genuinely has none (none currently do).
   leftPane = { size: "default", initial: "expanded" },
   // Same shape, but pass rightPane: null for a page with no right pane at
   // all (docs.html is the one page in the suite like this).
@@ -706,34 +623,20 @@ export function initAppShell({
 
   initThemeControls(root);
 
-  // Below DUAL_PANE_MIN_WIDTH_REM, .workbench-header-middle doesn't have
-  // room for both panes' spacer columns AND its own content at once — a
-  // FIXED viewport width (what buildPaneShell's own load-time check below
-  // md still uses, unchanged, as a coarser phone-territory floor) can't
-  // coordinate with that: at a typical desktop width with both panes
-  // expanded, middle was already having to wrap (see shell.css's flex-wrap
-  // comment) long before the viewport ever narrowed down to 767.98px.
-  // Can't fix that with CSS alone either — panes live outside middle's own
-  // DOM subtree entirely (siblings at the page level, not descendants),
-  // and a @container query can only style a container's OWN descendants.
+  // Below this width, .workbench-header-middle can't fit both panes' spacer
+  // columns plus its own content — a fixed viewport breakpoint can't
+  // coordinate with that, and CSS alone can't fix it either (panes are
+  // page-level siblings of middle, outside any @container it could query).
   //
-  // Rule, below the threshold: at most ONE pane may be expanded at a time
-  // — not a bidirectional auto-collapse/auto-expand system keyed to width
-  // (an earlier version of this was exactly that, with a 4-threshold
-  // hysteresis dance to avoid oscillating; the real problem it ran into
-  // was that its own width-based logic would immediately re-collapse a
-  // pane the instant after a user manually clicked to expand it, since
-  // expanding it shrank middle right back below that pane's own collapse
-  // threshold — the user could never actually force one open when they
-  // needed it below that width). Instead: a manual click ALWAYS wins,
-  // immediately closing the sibling pane to make room rather than being
-  // fought by width logic afterward (below, in initPaneToggles's own
-  // onChange). The ResizeObserver further down only ever has to step in
-  // for the case a click can't cover — both panes already expanded and the
-  // window narrows past the threshold with no click involved.
-  // Measured: 475px ÷ 16 — the point where fully-compact header content
-  // (every stage in shell.css's @container rules already collapsed)
-  // exactly fills middle with no room left, was 448px/28rem.
+  // Rule below the threshold: at most ONE pane may be expanded at a time.
+  // A manual click always wins, immediately closing the sibling pane
+  // (below, in initPaneToggles's onChange) rather than being fought by
+  // width logic afterward — an earlier bidirectional auto-collapse/expand
+  // version fought the user's own clicks this way. The ResizeObserver
+  // further down only handles the case a click can't cover: both panes
+  // already expanded, window narrows past the threshold with no click.
+  // Measured empirically: fully-compact header content exactly fills
+  // middle at 448px/28rem.
   const DUAL_PANE_MIN_WIDTH_REM = 29.6875;
 
   function remToPx(remValue) {
@@ -762,9 +665,8 @@ export function initAppShell({
     onChange: ({ key, state }) => {
       const size = key === "left" ? leftPane?.size : rightPane?.size;
       syncHeaderPaneSpacerWidth(headerEl, key, state === "expanded", size);
-      // The click that just happened already applied its own pane's new
-      // width to middle's grid track (syncHeaderPaneSpacerWidth above runs
-      // synchronously) — reading middleWidth() here sees that.
+      // syncHeaderPaneSpacerWidth above already ran synchronously, so
+      // middleWidth() here reflects the click's own new width.
       if (state !== "expanded" || middleWidth() >= remToPx(DUAL_PANE_MIN_WIDTH_REM)) {
         return;
       }
@@ -777,14 +679,9 @@ export function initAppShell({
   });
   initToolNavigation(root);
 
-  // Fallback for when both panes are already expanded and the window
-  // narrows past the threshold with no click involved — the onChange path
-  // above only fires on a click, so this is the only way that specific
-  // case gets caught. No hysteresis/re-expand-on-widen here on purpose:
-  // per explicit direction, a pane closed by this system only ever reopens
-  // from an actual user click on its own toggle button (which panes.js's
-  // own togglePane already handles unconditionally — clicking always
-  // works, regardless of width) — never automatically from a resize.
+  // Fallback for both panes expanded + window narrows with no click
+  // involved — onChange above only fires on a click. No re-expand-on-widen
+  // here: a pane this closes only reopens via an actual user click.
   if (typeof ResizeObserver !== "undefined") {
     const middle = root.querySelector(".workbench-header-middle");
     if (middle) {
@@ -795,16 +692,11 @@ export function initAppShell({
         const rightPaneEl = root.querySelector('[data-pane="right"]');
         const leftPaneEl = root.querySelector('[data-pane="left"]');
         if (rightPaneEl?.dataset.state !== "collapsed" && leftPaneEl?.dataset.state !== "collapsed") {
-          // Both open: collapse right first. This resize's own effect
-          // (right's spacer column shrinking) re-triggers this same
-          // observer, so the branch below picks up from there — no manual
-          // re-check needed here.
+          // Both open: collapse right first — shrinking its spacer column
+          // re-triggers this observer, so the branch below picks up.
           setPane("right", false);
         } else if (rightPaneEl?.dataset.state === "collapsed" && leftPaneEl?.dataset.state !== "collapsed") {
-          // Right alone wasn't enough — middle is still under the
-          // threshold even with right already collapsed, so left has to
-          // give up its own space too (same threshold, same as collapsing
-          // right did — not a separate/second number).
+          // Right alone wasn't enough — collapse left too (same threshold).
           setPane("left", false);
         }
       }).observe(middle);

@@ -1,20 +1,18 @@
 // Shared tags/conditions editing UI — badges, an "add a tag" input+datalist
-// row, and the vocabulary lookup behind both. Originally combat-tracker.js's
-// own private renderTagBadges/renderTagDatalist/deriveConditionsPropertyType,
-// factored out here so character-sheet.js can use the exact same UI for a
-// character's own tags-role binding instead of a second, hand-copied version
-// — every function below is a pure operation on whatever list/vocabulary the
+// row, and the vocabulary lookup behind both. Factored out of
+// combat-tracker.js so character-sheet.js can use the exact same UI for a
+// character's own tags-role binding instead of a hand-copied version —
+// every function below is a pure operation on whatever list/vocabulary the
 // caller passes in (an `onAdd`/`onRemove` callback instead of a hardcoded
-// combatant/character shape), so neither caller's own state model leaks in
-// here.
+// combatant/character shape), so neither caller's state model leaks in here.
 import { findBindingByRole } from "../bindings.js";
 import { el } from "../dom.js";
 import { updateTooltipContent } from "../tooltips.js";
 
 // The tags-role binding's own `sourceField` names which other array field on
 // a System supplies the tag vocabulary (default "conditions") — a generic
-// "where do the valid options come from" pointer (see loom/js/app.js's
-// VALUE_COLUMNS), not specific to combat bindings.
+// "where do the valid options come from" pointer, not specific to combat
+// bindings.
 export function deriveConditionsVocabulary(fields, bindings) {
   if (!fields) return null;
   const tagsEntry = findBindingByRole(bindings, "tags");
@@ -32,18 +30,15 @@ export function conditionLabel(vocabulary, id) {
 }
 
 // `removable` shows a per-badge remove button, calling `onRemove(value)` —
-// the caller decides what removing a tag actually does (mutate a combatant's
-// conditions + write through, vs. setAtBinding on a character record).
-// `isLocked(value)` (optional) withholds the remove button for individual
-// tags a caller doesn't want removable right now — e.g. Repository's own
-// group: tag inherited from a page's parent, locked for as long as the
-// parent still carries it. Omitted by every other caller, so `removable`
-// alone still governs every badge exactly as before. `isHidden(value)`
-// (optional) marks a tag with a small eye-off icon — this is purely an
-// informational cue about a tag's own hiddenTags membership (see
-// buildTagInputRow's own visibility toggle and map-viewer.js's
-// resolveMarkerConditionIcons), so a GM can tell at a glance which of their
-// tags don't show up on the map, without a separate place to check.
+// the caller decides what removing a tag actually does. `isLocked(value)`
+// (optional) withholds the remove button for individual tags a caller
+// doesn't want removable right now — e.g. Repository's `group:` tag
+// inherited from a page's parent, locked for as long as the parent still
+// carries it. `isHidden(value)` (optional) marks a tag with a small
+// eye-off icon — an informational cue about a tag's hiddenTags membership
+// (see buildTagInputRow's visibility toggle and map-viewer.js's
+// resolveMarkerConditionIcons), so a GM can tell at a glance which tags
+// don't show up on the map.
 export function renderTagBadges(list, vocabulary, { removable = false, onRemove, isLocked, isHidden } = {}) {
   const wrap = el("div", "d-flex flex-wrap gap-1");
   const values = list || [];
@@ -80,10 +75,9 @@ export function renderTagBadges(list, vocabulary, { removable = false, onRemove,
 }
 
 // One global datalist element per `datalistId` (appended to <body>, same
-// singleton-by-id idiom as spotlight.js/share-modal.js's own modals) — pass a
-// distinct id per caller (combat-tracker.js and character-sheet.js each use
-// their own) so two tag inputs mounted at once on the same Dashboard don't
-// fight over one shared list of suggestions.
+// singleton-by-id idiom as spotlight.js/share-modal.js's modals) — pass a
+// distinct id per caller so two tag inputs mounted at once on the same
+// Dashboard don't fight over one shared list of suggestions.
 export function renderTagDatalist(datalistId, vocabulary) {
   let datalist = document.getElementById(datalistId);
   if (!datalist) {
@@ -101,31 +95,24 @@ export function renderTagDatalist(datalistId, vocabulary) {
 
 // The "add a tag" row itself (text input + datalist + a visibility toggle +
 // Add button, Enter-to-commit) — calls `onAdd(trimmedValue)` and clears the
-// input, leaving what "adding" means (mutate + markDirty + write-through,
-// vs. setAtBinding) up to the caller.
+// input, leaving what "adding" means up to the caller.
 //
 // The visibility toggle (eye/eye-off — whether the tag about to be added
-// should be suppressed from map marker badges, see map-viewer.js's own
+// should be suppressed from map marker badges, see map-viewer.js's
 // resolveMarkerConditionIcons filtering against hiddenTags) is a fully
-// CONTROLLED sub-component: `hidden` is the current state (owned by the
-// caller, not tracked in here), and clicking it only ever calls
-// `onToggleHidden()` — it never mutates its own DOM. This is a deliberate
-// change from an earlier, self-managing version of this toggle: a caller
-// whose own DOM persists across renders (combat-tracker.js's whole
-// edit-panel architecture — see its own buildEditPanel/syncEditPanelValues,
-// which sync stable inputs like nameInput/visibleButton in place rather
-// than rebuilding them) needs to be able to keep THIS button around too and
-// just re-sync its icon/label every render, exactly like visibleButton
-// already does for combatant.hidden — that reliably works today; a
-// self-contained closure here that only updated its OWN DOM on click did
-// not survive combat-tracker's periodic external re-renders reliably.
-// Returns `{ row, input, visibilityButton }` (not just the row) so a caller
-// keeping this DOM stable has a direct ref to sync into (via
-// applyTagVisibilityState below, which re-queries the icon itself — see its
-// own comment for why THAT isn't cached anywhere), the same shape
-// nameInput/hpInput/etc. already are; a caller that just rebuilds this
-// whole row fresh every render (character-sheet.js) can ignore everything
-// but `.row`.
+// CONTROLLED sub-component: `hidden` is owned by the caller, and clicking
+// it only ever calls `onToggleHidden()`, never mutating its own DOM. This
+// matters for a caller whose own DOM persists across renders
+// (combat-tracker.js's edit-panel architecture syncs stable inputs in
+// place rather than rebuilding them) — it needs to keep THIS button around
+// too and just re-sync its icon/label every render, the same way
+// visibleButton already does for combatant.hidden; a self-contained
+// closure that mutated its own DOM on click didn't survive
+// combat-tracker's periodic external re-renders reliably.
+// Returns `{ row, input, visibilityButton }` so a caller keeping this DOM
+// stable has a direct ref to sync into (via applyTagVisibilityState below);
+// a caller that rebuilds this row fresh every render (character-sheet.js)
+// can ignore everything but `.row`.
 export function buildTagInputRow(datalistId, { placeholder = "Add a tag…", onAdd, hidden = false, onToggleHidden } = {}) {
   const row = el("div", "d-flex gap-1 align-items-center");
   const input = el("input", "form-control form-control-sm");
@@ -159,32 +146,22 @@ export function buildTagInputRow(datalistId, { placeholder = "Add a tag…", onA
   return { row, input, visibilityButton };
 }
 
-// Syncs an existing visibility toggle's icon/label from `hidden` — the same
-// operation buildTagInputRow's own initial call runs at construction time,
-// exposed separately so a caller keeping that button's DOM stable across
-// renders (combat-tracker.js) can re-run just this, exactly the way
-// syncEditPanelValues already updates visibleButton's own icon in place on
-// every render without rebuilding visibleButton itself.
+// Syncs an existing visibility toggle's icon/label from `hidden` — the
+// same operation buildTagInputRow's initial call runs at construction
+// time, exposed separately so a caller keeping that button's DOM stable
+// across renders (combat-tracker.js) can re-run just this.
 //
-// Re-queries `.iconify` fresh every call, exactly like that visibleButton
-// code does (`refs.visibleButton.querySelector(".iconify")`) — confirmed
-// (via DevTools, on this exact button) real bug from an earlier version
-// that instead cached the icon <span> once at construction time: Iconify's
-// runtime REPLACES that placeholder span with a rendered <svg> the first
-// time it draws it (the span, and its data-icon attribute, are gone
-// afterward — only an <svg> remains under the button). A cached reference
-// to the original span is therefore stale/detached from that point on;
-// every later `.dataset.icon =` write on it visibly did nothing, since it
-// no longer has anything to do with what's on screen. Re-querying finds
-// whatever's CURRENTLY there (the <svg>, or a fresh placeholder span the
-// next time this runs before Iconify gets to it) instead of trusting a
-// reference captured before Iconify ever touched the DOM.
+// Re-queries `.iconify` fresh every call rather than caching the icon
+// <span> once — Iconify's runtime REPLACES that placeholder span with a
+// rendered <svg> the first time it draws (the span and its data-icon
+// attribute are gone afterward), so a cached reference goes stale and
+// every later `.dataset.icon =` write on it silently does nothing.
 export function applyTagVisibilityState(visibilityButton, hidden) {
   const visibilityIcon = visibilityButton.querySelector(".iconify");
   if (visibilityIcon) visibilityIcon.dataset.icon = hidden ? "tabler:eye-off" : "tabler:eye";
   const label = hidden ? "Hidden from the map — click to show this tag" : "Shown on the map — click to hide this tag";
   updateTooltipContent(visibilityButton, label);
   visibilityButton.setAttribute("aria-label", label);
-  // No highlighted/active styling — that visual language stays reserved for
-  // "Show to table" (combat-tracker.js's own updateVisibilityAction).
+  // No highlighted/active styling — that visual language stays reserved
+  // for "Show to table" (combat-tracker.js's updateVisibilityAction).
 }

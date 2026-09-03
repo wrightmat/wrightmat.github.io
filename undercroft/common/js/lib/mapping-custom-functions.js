@@ -1,14 +1,14 @@
 // Escape-hatch custom functions for Loom mapping definitions, registered by
 // name and invoked from `custom` nodes/steps (see mapping-engine.js).
 //
-// These are the pieces of common/ddb-parser.js's logic that genuinely don't
+// These are the pieces of the old ddb-parser.js logic that genuinely don't
 // fit the declarative object/field/pipeline primitives: getActiveModifiers()
 // cross-references modifiers against inventory equip/attunement state with
-// componentId-based deduplication, and several sections build on it in ways
-// that are reconciliation/classification logic rather than a map/filter/sort/
-// group-by/dedup shape. Ported near-verbatim from ddb-parser.js (not
-// reimplemented) since the escape hatch's whole point is reusing exactly this
-// kind of logic rather than forcing it into primitives that don't fit.
+// componentId-based dedup, and several sections build on it in ways that are
+// reconciliation/classification logic rather than a map/filter/sort/group-by
+// shape. Ported near-verbatim rather than reimplemented, since the escape
+// hatch's whole point is reusing this kind of logic, not forcing it into
+// primitives that don't fit.
 //
 // Every root-level custom function receives (context, args, env); every
 // pipeline-step custom function receives (currentValue, context, args, env).
@@ -17,14 +17,11 @@
 import { resolveDottedPath as resolvePath } from "./dotted-path.js";
 import { evaluateDerivedFormula } from "./derived-formulas.js";
 
-// Factory rather than a static export: ABILITIES/SAVING_THROW_SUBTYPES/
-// SKILLS/SIZES used to be static imports from common/js/lib/lookup-tables.js
-// (a hardcoded module); they're now derived at runtime from the active D&D
-// 5e System record (see common/js/lib/system-lookup-tables.js's
-// deriveLookupTables), so this whole module becomes a factory closing over
-// whatever the caller derived, called once per DDB import (content-fetch.js,
-// loom/js/app.js) rather than a module-level singleton. Every function body
-// below is otherwise unchanged from the previous static-import version.
+// A factory, not a static export: ABILITIES/SAVING_THROW_SUBTYPES/SKILLS/
+// SIZES are derived at runtime from the active D&D 5e System record
+// (system-lookup-tables.js's deriveLookupTables), so this module closes over
+// whatever the caller derived, called once per DDB import rather than a
+// module-level singleton.
 export function createMappingCustomFunctions({
   abilities: ABILITIES,
   savingThrowSubtypes: SAVING_THROW_SUBTYPES,
@@ -37,61 +34,37 @@ export function createMappingCustomFunctions({
   durations: DURATIONS,
   derivedFormulas: DERIVED_FORMULAS = [],
 }) {
-// Best-effort text parsing for D&D Beyond's scraped "Core <Class> Traits"
-// values (plain descriptive strings, e.g. "D12 per Barbarian level" or
-// "Strength and Constitution") into the 5e API's more structured shapes
-// (a bare number; an array of {index, name} ability refs). Not derivable via
-// the formula engine (no string-splitting/regex functions), and fuzzier than
-// a clean rename — hence a custom function rather than a `field` bind.
 // Short 5e API ability-score index ("dex") -> the full lowercase word
-// ("dexterity") vault-feature-matching.js's own featureParams.saveAbility
-// convention expects — mirrors parseSaveEffect's own `ability` field
-// (monster-feature-matching.js), which always stores the full word too. A
-// module-level constant, not a property on the returned custom-functions
-// object below — every custom function is invoked as a bare `fn(...args)`
-// call by mapping-engine.js's own runCustom (`const fn = customFunctions[name];
-// fn(...args)`, never `customFunctions[name](...)`), so `this` inside a
-// shorthand method there is never bound to that object.
+// ("dexterity") vault-feature-matching.js's featureParams.saveAbility
+// convention expects. Module-level, not a property on the returned
+// custom-functions object — every custom function is invoked as a bare
+// `fn(...args)` call by mapping-engine.js's runCustom, so `this` is never
+// bound to that object.
 const ABILITY_INDEX_TO_NAME = { str: "strength", dex: "dexterity", con: "constitution", int: "intelligence", wis: "wisdom", cha: "charisma" };
 
 // A "this X has N charges..."/"...regains M expended charges daily at
-// dawn..." clause is Wonder-level activation data (mirrors Vault's own
-// Activation generator-property field, see vault/CLAUDE.md), never Feature
-// content — extracted here, structurally, so it never becomes a candidate
-// ability unit that vault-feature-matching.js's own clause-recognizers
-// would otherwise have to (mis)classify. Best-effort: a charges clause
-// that doesn't match either pattern just stays in the remaining prose and
-// becomes an ordinary (likely residual/unmatched) candidate unit instead —
-// never a hard failure. Module-level (not a property on the returned
-// custom-functions object) for the same bare-call reason as
-// ABILITY_INDEX_TO_NAME above.
+// dawn..." clause is Wonder-level activation data, never Feature content —
+// extracted structurally so it never becomes a candidate ability unit that
+// vault-feature-matching.js's clause-recognizers would have to misclassify.
+// Best-effort: a charges clause matching neither pattern stays in the
+// remaining prose as an ordinary candidate unit, never a hard failure.
 const WORD_TO_NUMBER = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
 
 function srdExtractCharges(paragraphs) {
   const joined = paragraphs.join(" ");
   const maxMatch = joined.match(/has (\d+) charges/i);
-  // Several real items count their own limited-use resource with a
-  // different noun than "charges" entirely — Necklace of Fireballs' own
-  // "1d6 + 3 beads", Dust of Dryness' own "1d6 + 4 pinches" — and the
-  // count itself is sometimes a DICE FORMULA, not a fixed number (kept as
-  // a string in that case, same convention `rechargeFormula` already
-  // uses, since `Number("1d6 + 3")` is meaningless). Checked only when the
-  // plain "has N charges" pattern above didn't already match.
-  // Anchored near the start of its own sentence — confirmed live (Wand of
-  // Binding) that an unanchored search over the WHOLE joined text can
-  // match a per-option charge cost buried in an unrelated spell-menu
-  // clause ("hold monster (5 charges)") instead of the item's own real
-  // total, which always appears at the very start of its own sentence.
+  // Some items count their limited-use resource with a different noun
+  // entirely ("1d6 + 3 beads", "1d6 + 4 pinches"), and the count is
+  // sometimes a dice formula, not a fixed number (kept as a string, since
+  // `Number("1d6 + 3")` is meaningless). Anchored near the start of its own
+  // sentence — an unanchored search can match a per-option charge cost
+  // buried in an unrelated spell-menu clause instead of the item's real total.
   const qtyMatch = !maxMatch && joined.match(/(?:^|\.\s+)[\w\s]{0,40}?(\d+d\d+(?:\s*\+\s*\d+)?|\d+) (?:charges|beads|pinches|doses)\b/i);
-  // Chime of Opening's own "The chime can be used ten times" — a genuinely
-  // different vocabulary again (uses, not charges/beads/pinches), with a
-  // spelled-out number rather than a digit.
+  // "The chime can be used ten times" — a different vocabulary again (uses,
+  // not charges), with a spelled-out number rather than a digit.
   const usedTimesMatch = !maxMatch && !qtyMatch && joined.match(/can be used (\w+) times\b/i);
-  // "expended" is optional — confirmed real: this vault's own custom items
-  // often phrase the same clause as "regains 1d6 charges daily at dawn"
-  // (Amulet of the Black Skull), never using the 5e API's own "expended"
-  // wording at all. Widening this costs nothing for text that DOES say
-  // "expended" — still matches identically.
+  // "expended" is optional — some items phrase this as "regains 1d6 charges
+  // daily at dawn" without that word at all.
   const rechargeMatch = joined.match(/regains ([\w\s+d]+?) (?:expended )?charges?[^.]*/i);
   if (!maxMatch && !qtyMatch && !usedTimesMatch && !rechargeMatch) return { charges: null, remaining: paragraphs };
   const maxValue = maxMatch
@@ -105,30 +78,16 @@ function srdExtractCharges(paragraphs) {
     ...(maxValue !== null && maxValue !== undefined ? { max: maxValue } : {}),
     ...(rechargeMatch ? { rechargeFormula: rechargeMatch[1].trim() } : {}),
   };
-  // The charges sentence is usually its own paragraph (or two, split
-  // across the granting-paragraph and a later regain-paragraph) — but NOT
-  // always: confirmed live (Helm of Teleportation, and the vast majority of
-  // wand/staff/rod items) that the SAME paragraph very often carries both
-  // the charges grant AND the item's own real ability text in one breath
-  // ("This wand has 7 charges. While holding it, you can use an action to
-  // cast the magic missile spell from it. ..."). Stripping the WHOLE
-  // paragraph whenever it merely CONTAINS a charges clause silently
-  // discarded the real ability text right along with it — confirmed as the
-  // single largest cause of magic items importing with zero Features at
-  // all (26+ items in one real bulk-import sweep). Fixed by stripping only
-  // the matching SENTENCE(S) within each paragraph (naive split on ". ",
-  // good enough here since neither charges phrasing itself ever contains an
-  // internal period), keeping the rest of that paragraph's own sentences as
-  // a real candidate unit.
-  // The beads/pinches/doses/charges-count check below is anchored near the
-  // START of its own sentence (`^.{0,40}?`) — confirmed live (Wand of
-  // Binding) that an UNANCHORED version wrongly stripped an entire real
-  // "cast one of the following spells" clause, because "hold monster (5
-  // charges) or hold person (2 charges)" — each spell's own PER-OPTION
-  // charge cost, deep inside an unrelated sentence — matched the same
-  // bare "N charges" shape as the item's own real total-charges
-  // declaration, which always appears at the very start of its own
-  // sentence in every real example checked.
+  // A wand/staff/rod item's charges clause very often shares a paragraph with
+  // its real ability text ("This wand has 7 charges. While holding it, you
+  // can use an action to cast..."). Stripping the whole paragraph whenever it
+  // merely contains a charges clause silently discarded the real ability
+  // text too — this strips only the matching sentence(s) within each
+  // paragraph (naive split on ". ", fine since neither phrasing contains an
+  // internal period), keeping the rest as a real candidate unit. The
+  // beads/pinches/doses check is anchored near the start of its own sentence
+  // so it doesn't match a per-option charge cost buried in an unrelated
+  // "cast one of the following spells" clause.
   const remaining = paragraphs
     .map((paragraph) =>
       paragraph
@@ -147,31 +106,20 @@ function srdExtractCharges(paragraphs) {
   return { charges, remaining };
 }
 
-// Vault's own generator-property fields (Rarity/Activation/Item Form) are
-// System-agnostic BY DESIGN in Vault's own code (`vault/js/lib/tables.js`'s
-// `getSystemPropertyTypes` has zero hardcoded notion of what "Rarity" even
-// is — it reads whichever of the active System's own fields happen to carry
-// a cost/targetBudget shape) — but THIS file is the 5e-API-specific mapping
-// layer, whose entire job is translating one concrete source's own
-// vocabulary into the target shape. Hardcoding sys.dnd5e's own field KEYS
-// ("rarity"/"form"/"activation" — the property names this function returns)
-// here is correct, not a repeat of the "don't hardcode System concepts"
-// rule — that rule is about the SHARED/generic code (vault-feature-
-// matching.js, tables.js), which still has no idea these concepts exist;
-// only this SRD-specific mapping does, exactly the same way
-// `resolveCreatureType` above already looks up the System's own
-// creatureTypes vocabulary for monster import.
+// Vault's generator-property fields (Rarity/Activation/Item Form) are
+// System-agnostic by design in Vault's own code, but this file is the
+// 5e-API-specific mapping layer, whose entire job is translating one
+// concrete source's vocabulary into the target shape — hardcoding sys.dnd5e's
+// field KEYS here is correct, not a repeat of the "don't hardcode System
+// concepts" rule, which is about the shared/generic code that has no idea
+// these concepts exist.
 //
-// What must NOT be hardcoded here is the System's own DATA — which values
-// actually exist for Rarity/Item Form/Activation, and what their ids are.
-// `slugify(value.name)` (tables.js's own `toLegacyPropertyType`) is
-// duplicated below as a pure algorithm only (matches tables.js's own
-// `slugify` byte for byte); the VALUE NAMES themselves are read live off
-// the System record every time via `resolveLivePropertyValue`, never a
-// second hardcoded copy of that vocabulary — a Loom edit to any of those
-// fields (rename/add/remove a value) takes effect on the very next import
-// with zero code changes here, same guarantee `resolveCreatureType` above
-// already gives monster import for its own `creatureTypes` field.
+// What must NOT be hardcoded is the System's own DATA — which values exist
+// and what their ids are. `slugify(value.name)` is duplicated below as a
+// pure algorithm only (matches tables.js's slugify byte for byte); the VALUE
+// NAMES are read live off the System record every time via
+// resolveLivePropertyValue, so a Loom edit takes effect on the next import
+// with zero code changes here.
 function slugifyPropertyValueName(name) {
   return String(name || "")
     .toLowerCase()
@@ -180,20 +128,11 @@ function slugifyPropertyValueName(name) {
 }
 
 // Matches a raw SRD-sourced name/phrase against the System's own LIVE list
-// of value names for one property field (`env.lookupTables.rarities`/
-// `.itemForms`/`.activationTypes` — system-lookup-tables.js's own
-// `deriveLookupTables`, the exact same live-read mechanism
-// `resolveCreatureType` above already uses for `creatureTypes`). Case-
-// insensitive, with a trailing-"s" fold in EITHER direction so the SRD's
-// own plural category names ("Wondrous Items") resolve against the
-// System's own singular value name ("Wondrous Item") without needing a
-// hardcoded alias table for that one case — confirmed live against every
-// one of the 10 real `equipment_category.name` values the whole 362-item
-// SRD magic-items list actually uses: every one that has a corresponding
-// System value resolves this way; "Ammunition" (5 real items) has no
-// matching System value at all and correctly returns `null` rather than
-// guessing. Returns `null` (never a fabricated id) when nothing in the
-// System's own live list matches.
+// of value names for one property field. Case-insensitive, with a
+// trailing-"s" fold in either direction so the SRD's plural category names
+// ("Wondrous Items") resolve against the System's singular value name
+// ("Wondrous Item") without a hardcoded alias table. Returns `null` (never
+// fabricated) when nothing in the live list matches.
 function resolveLivePropertyValue(candidateName, liveNames) {
   if (!candidateName) return null;
   const target = String(candidateName).trim().toLowerCase();
@@ -207,19 +146,14 @@ function resolveLivePropertyValue(candidateName, liveNames) {
   return match || null;
 }
 
-// Best-effort activation CONCEPT detection from an item's own prose — "use
-// an action to..."/"as a bonus action..."/"as a reaction..." are the three
-// real phrasings confirmed across charged/activated items, checked in
-// specificity order (an item that mentions "as a bonus action" also almost
-// always contains the bare word "action" elsewhere, so the more specific
-// phrasing must win). Returns the raw matched CONCEPT text, not a System
-// value id — resolveLivePropertyValue (called from srdItemProperties
-// below) is what turns this into whichever real Activation value the
-// System actually defines. A genuinely passive item (Ring of Protection,
-// always-on, no activation verb at all in its own text) correctly returns
-// `null` — omitted, not guessed, the same "missing data degrades
-// gracefully" rule `computeBudget` (vault/js/lib/generator.js) already
-// relies on for every property type.
+// Best-effort activation CONCEPT detection from an item's prose — "use an
+// action to..."/"as a bonus action..."/"as a reaction..." checked in
+// specificity order, since an item mentioning "as a bonus action" also
+// usually contains the bare word "action" elsewhere. Returns the raw matched
+// text, not a System value id — resolveLivePropertyValue (in
+// srdItemProperties below) turns this into whichever real Activation value
+// the System defines. A passive item with no activation verb at all
+// correctly returns `null`, omitted rather than guessed.
 function srdDetectActivationConcept(text) {
   if (/\bas a bonus action\b/i.test(text)) return "bonus action";
   if (/\bas a reaction\b/i.test(text)) return "reaction";
@@ -227,18 +161,12 @@ function srdDetectActivationConcept(text) {
   return null;
 }
 
-// Builds the `stats.properties` object `vault-feature-matching.js` copies
-// straight onto `record.properties` — Vault's own native
-// `{[propertyType.id]: valueId}` shape (see generator.js's own
-// `generateWonder` output, and `resolveProperties`), so an imported Wonder
-// looks structurally identical to a hand-generated one, the same
-// "structurally identical to native output" goal `featureIds` already
-// serves. Every value is resolved against the System's own LIVE field
-// data (`lookupTables`, threaded in from mapping-engine.js's own `env` —
-// see resolveCreatureType above for the identical pattern already
-// established for monster import) — never a hardcoded copy of what values
-// exist. Only ever sets a key once its own source value is confidently
-// resolved against that live list — never a partial/guessed entry.
+// Builds the `stats.properties` object vault-feature-matching.js copies onto
+// `record.properties` — Vault's native `{[propertyType.id]: valueId}` shape,
+// so an imported Wonder looks structurally identical to a hand-generated
+// one. Every value is resolved against the System's own live field data
+// (`lookupTables`), never a hardcoded copy — only sets a key once the source
+// value is confidently resolved, never a partial/guessed entry.
 function srdItemProperties(
   { rarityName, categoryName, activationText, weaponCategoryName, armorCategoryName, equipmentCategoryName },
   lookupTables
@@ -251,14 +179,11 @@ function srdItemProperties(
   const activationConcept = activationText ? srdDetectActivationConcept(activationText) : null;
   const activationMatch = activationConcept ? resolveLivePropertyValue(activationConcept, lookupTables?.activationTypes) : null;
   if (activationMatch) properties.activation = slugifyPropertyValueName(activationMatch);
-  // The sub-classification BENEATH one Item Form value — a Weapon's own
-  // Simple/Martial+Melee/Ranged split (sys.dnd5e.json's own
-  // "weaponCategories" field), an Armor's own Light/Medium/Heavy/Shield
-  // split ("armorCategories"), and an ordinary Equipment item's own Tools/
-  // Musical Instrument/Gaming Set/Mounts-and-Vehicles/Ammunition split
-  // ("equipmentCategories") — only srdEquipmentStats (5e-api-equipment.json)
-  // ever passes these three; every other caller (spells, magic items)
-  // leaves them undefined, so this is purely additive.
+  // The sub-classification beneath one Item Form value: Weapon's
+  // Simple/Martial split, Armor's Light/Medium/Heavy/Shield split, an
+  // Equipment item's Tools/Instrument/Gaming-Set/... split. Only
+  // srdEquipmentStats ever passes these three; every other caller leaves
+  // them undefined, so this is purely additive.
   const weaponCategoryMatch = weaponCategoryName ? resolveLivePropertyValue(weaponCategoryName, lookupTables?.weaponCategories) : null;
   if (weaponCategoryMatch) properties.weaponCategory = slugifyPropertyValueName(weaponCategoryMatch);
   const armorCategoryMatch = armorCategoryName ? resolveLivePropertyValue(armorCategoryName, lookupTables?.armorCategories) : null;
@@ -270,11 +195,9 @@ function srdItemProperties(
   return properties;
 }
 
-// Splits a paragraph on its own "* "-prefixed bullet lines (Boots of the
-// Winterlands' own real shape: an intro paragraph immediately followed by
-// 3 separate bulleted abilities) into one candidate unit per bullet —
-// confirmed live against the real 5e API, not a guess. A paragraph with no
-// bullets at all is returned as a single-element array unchanged.
+// Splits a paragraph on its own "* "-prefixed bullet lines (an intro
+// paragraph followed by several bulleted abilities) into one candidate unit
+// per bullet. A paragraph with no bullets is returned unchanged.
 function srdSplitBullets(paragraph) {
   const lines = String(paragraph || "")
     .split("\n")
@@ -295,22 +218,16 @@ function parseLeadingNumber(text) {
   return match ? Number(match[1]) : null;
 }
 
-// `context.coreTraits` (from ddb-content-parser.js's extractInlineCoreTraits
-// — a species page's own inline "<heading>Traits</heading><p><strong>
-// Label.</strong> value...</p>" summary paragraph) is Species' primary
-// source for Speed/Size/Creature Type, but confirmed real: newer species
-// pages (Owlin, Yuan-ti, Water Genasi, all 2024-era) don't render that
-// inline summary at all — every one of Speed/Size/Creature Type is its own
-// <h4>-headed named trait instead, same shape as an actual feature
-// (Darkvision, Flight, ...), which is why they used to silently fall
-// through to `null` instead of populating these dedicated fields. Pulls the
-// FULL combined text of every named-trait entry sharing that exact name
-// (not just the first — DDB's own "Creature Type" heading is duplicated on
-// the page: once as generic rules-glossary boilerplate, once as the
-// species' own "You are a Humanoid." statement, and only searching every
-// occurrence together reliably finds whichever one actually states the
-// fact). A standalone function, not an object-literal method calling a
-// sibling — see buildSkillValues's own comment for why.
+// `context.coreTraits` (a species page's own inline Traits summary
+// paragraph) is Species' primary source for Speed/Size/Creature Type, but
+// newer 2024-era species pages don't render that inline summary — each is
+// its own <h4>-headed named trait instead, same shape as an actual feature.
+// Pulls the full combined text of every named-trait entry sharing that exact
+// name, not just the first — DDB duplicates some headings on the page (once
+// as rules-glossary boilerplate, once as the species' own real statement),
+// and only searching every occurrence together reliably finds the real one.
+// A standalone function, not an object-literal method — see buildSkillValues
+// below for why.
 function speciesNamedTraitText(namedTraits, name) {
   const target = String(name || "").trim().toLowerCase();
   return (Array.isArray(namedTraits) ? namedTraits : [])
@@ -425,16 +342,11 @@ function parseToolProficiencyRefs(text) {
 
 // "Magic Initiate (Cleric)" -> {refKind:"feature", refId:"magic-initiate",
 // name:"Magic Initiate", note:"Cleric"} — same {refKind,refId,name}
-// convention every other Library reference in this suite uses (Character's
-// own subclass/spells[]), `refId` a bare slug matching the id
-// content-feature-matching.js's own promotion step produces once this same
-// Feat is actually promoted off a Character's own feats[] — both sides
-// independently derive the same slug, same "no import-order dependency"
-// pattern the subclass/Variant refId pairing already relies on. `note`
-// isn't part of that convention (Subclass/Spells have no equivalent) but is
-// real, distinct information — which class's own spell list this
-// Background's Origin Feat is flavored for — not decorative, so it stays as
-// its own sibling field.
+// convention every other Library reference uses, `refId` a bare slug
+// matching what content-feature-matching.js's promotion step independently
+// derives for the same Feat, no import-order dependency. `note` is real,
+// distinct information (which class's spell list this Feat is flavored
+// for), not decorative.
 function parseFeatWithNote(text) {
   if (!text) return null;
   const match = /^(.+?)\s*\(([^)]+)\)\s*$/.exec(text.trim());
@@ -452,17 +364,13 @@ function singularizeItemName(name) {
   return name;
 }
 
-// Mirrors the 5e API's equipment-choice shape, minus the per-item `url` (D&D
-// Beyond doesn't give us a 5e API item reference to point at). Three distinct
-// patterns, checked in order: "4 Handaxes" (leading count,
-// name pluralized by the count so it gets singularized); "Parchment (10
-// sheets)" (count embedded in a trailing parenthetical, name NOT pluralized —
-// "Calligrapher's Supplies" also ends in a trailing (paren) but with no
-// digit inside, meaning it's a note like the feat's "(Cleric)", not a count);
-// and a bare name with neither (count 1, name used exactly as written — NOT
-// singularized, since without a leading count there's no reason to assume
-// the DDB text is plural in the first place, e.g. "Calligrapher's Supplies"
-// is the item's actual name, not "several supplies").
+// Mirrors the 5e API's equipment-choice shape, minus the per-item `url` (DDB
+// gives no 5e API item reference). Three patterns, checked in order: "4
+// Handaxes" (leading count, name singularized); "Parchment (10 sheets)"
+// (count in a trailing parenthetical, name not pluralized — "Calligrapher's
+// Supplies" also ends in a paren but with no digit inside, meaning it's a
+// note like the feat's "(Cleric)", not a count); and a bare name with
+// neither (count 1, name used exactly as written, not singularized).
 function parseMoneyOrItem(text) {
   const trimmed = text.trim().replace(/[.,;]+$/, "");
   const moneyMatch = /^(\d+)\s*(gp|sp|cp|pp|ep)$/i.exec(trimmed);
@@ -533,11 +441,10 @@ function formatSigned(value) {
   return `${sign}${value}`;
 }
 
-// Shared by proficiencyBonusFromChallengeRating below — accepts either a
-// decimal number (5e API's own raw `challenge_rating`) or a fraction/whole-
-// number string ("1/8", "1/2", "5" — DDB's/Fantasy Statblocks' own already-
-// resolved challengeRating shortName), same dual-shape input
-// formatChallengeRating already handles.
+// Accepts either a decimal number (5e API's raw `challenge_rating`) or a
+// fraction/whole-number string ("1/8", "1/2", "5" — DDB's already-resolved
+// challengeRating shortName), same dual-shape input formatChallengeRating
+// handles.
 function crToNumber(value) {
   if (typeof value === "number") return value;
   const text = String(value ?? "").trim();
@@ -549,10 +456,9 @@ function crToNumber(value) {
   return Number(text);
 }
 
-// DDB's `actions` bucket groups entries by source (race/class/feat/...),
-// same shape context.spells.{class,race,feat} already gets flattened for
-// (see collectRawSpells below) — one flat list, tagging isn't needed here
-// since attacksTable doesn't care which source an attack came from.
+// DDB's `actions` bucket groups entries by source (race/class/feat/...) —
+// flattened to one list since attacksTable doesn't care which source an
+// attack came from.
 function flattenActions(actions) {
   if (!actions || typeof actions !== "object") return [];
   return Object.values(actions).reduce((all, group) => (Array.isArray(group) ? all.concat(group) : all), []);
@@ -564,11 +470,10 @@ function formatActionDamage(dice) {
   return base || null;
 }
 
-// A small, stable, edition-core vocabulary (10 named 5e fighting styles) —
+// A small, stable, edition-core vocabulary (10 named 5e fighting styles),
 // used only to recognize a feat by its exact PHB name for the
-// attacksPerAction/fightingStyle summary, not a sprawling per-item content
-// table the way weapon classification would be, so kept inline rather than
-// a new System field for this one lookup.
+// attacksPerAction/fightingStyle summary — kept inline rather than a new
+// System field for this one lookup.
 const FIGHTING_STYLES = new Set([
   "archery",
   "blind fighting",
@@ -678,13 +583,10 @@ function getActiveModifiers(rawCharacter, options = {}) {
 }
 
 // True if any modifier matches one of the given subtypes AND type (e.g.
-// advantage/disadvantage on a save or skill) — same subtype-list-matching
-// convention as collectModifiers/determineProficiencyLevel, just a boolean
-// presence check instead of summing/maxing a numeric value. Used to attach
-// advantage/disadvantage directly to the ability/skill it actually applies
-// to (savingThrowsTable, buildSkillValues) instead of a separate generic
-// bucket — see proficienciesTable's own comment on why that bucket no
-// longer catches these at all.
+// advantage/disadvantage on a save or skill) — same subtype-matching
+// convention as collectModifiers, just a boolean presence check. Used to
+// attach advantage/disadvantage directly to the ability/skill it applies to
+// instead of a separate generic bucket.
 function hasModifierOfType(modifiers, subtypes, type) {
   if (!Array.isArray(modifiers)) return false;
   const normalized = (Array.isArray(subtypes) ? subtypes : [subtypes]).map((entry) => (entry || "").toLowerCase()).filter(Boolean);
@@ -848,10 +750,10 @@ function calculateAbilityScores(rawCharacter, modifiers) {
 }
 
 // Shared by skillsTable and sensesTable (passive Perception/Investigation/
-// Insight need the same computed skill values skillsTable itself exposes) —
-// a standalone function rather than sensesTable calling `this.skillsTable`,
-// since these are plain object-literal methods and nothing guarantees the
-// mapping engine invokes them in a way that preserves `this`.
+// Insight need the same computed skill values) — standalone rather than
+// sensesTable calling `this.skillsTable`, since these are plain
+// object-literal methods and nothing guarantees the mapping engine preserves
+// `this` when invoking them.
 function buildSkillValues(rawCharacter) {
   const modifiers = getActiveModifiers(rawCharacter);
   const scores = calculateAbilityScores(rawCharacter, modifiers);
@@ -882,47 +784,32 @@ function determineSpellcastingAbility(classes) {
   return ABILITIES.find((entry) => entry.id === caster.definition?.spellCastingAbilityId) || null;
 }
 
-// A D&D Beyond monster's specialTraitsDescription/actionsDescription (see
-// content-fetch.js's own fetchDdbMonster — confirmed against a real live
-// fetch) are raw HTML, not structured data: one `<p>` per trait/action, the
-// name bolded (`<strong>Name.</strong>`, sometimes also wrapped in `<em>` —
-// an action's own `<em>` sometimes continues past the name to also wrap a
-// type label like "Melee Weapon Attack:", which is why this only anchors on
-// the closing `</strong>`, not on where any surrounding `<em>` happens to
-// end). Uses the DOM (this module only ever runs in a browser) to decode
-// entities/strip nested tags (dice-notation `<span>`s, etc.) rather than a
-// hand-rolled entity table, which real HTML content will eventually break.
+// A D&D Beyond monster's specialTraitsDescription/actionsDescription is raw
+// HTML: one `<p>` per trait/action, name bolded (`<strong>Name.</strong>`,
+// sometimes wrapped in `<em>` too — an action's `<em>` sometimes continues
+// past the name to also wrap a type label, which is why this anchors on the
+// closing `</strong>`, not on where `<em>` ends). Uses the DOM (this module
+// only runs in a browser) to decode entities/strip nested tags rather than a
+// hand-rolled entity table.
 function stripHtmlToText(html) {
   const el = document.createElement("div");
   el.innerHTML = html;
   return (el.textContent || "").replace(/\s+/g, " ").trim();
 }
 
-// A Character-domain feat/feature/racial-trait's own description text
-// (ddb-character.json's own featsTable/featuresTable, sourced straight from
-// feat.definition?.description/feature.definition?.description) is raw
-// HTML too, same as a monster's own specialTraitsDescription above —
-// confirmed real, never actually cleaned before this fix: 41 already-saved
-// Feature records across the whole library still carried literal `<p>`/
-// `<ul>`/`<li>`/`<hr>`/`<h5>` tags in their own stored text. Unlike a
-// monster's own shape (always simple `<p>` paragraphs, which is exactly
-// what parseDdbHtmlTraitBlocks above is built for), a feat/feature's own
-// text can also include `<ul>/<li>` option lists (Eldritch Invocations),
-// `<hr>`/`<h5>` section breaks (same), and plain paragraphs with no bolded
-// name prefix at all (most feats have none). Rather than a second regex-
-// based paragraph splitter for a differently-shaped problem, this walks the
-// parsed DOM's own top-level child nodes directly — the same "trust the
-// DOM, not hand-rolled regex" principle stripHtmlToText already
-// established, just extended to keep block-level structure (paragraph
-// breaks, list bullets) instead of collapsing everything to one line.
-// A close sibling of stripHtmlToText (same DOM-parse, same guard), not a
-// modification of it — stripHtmlToText's other caller (parseDdbHtmlTraitBlocks,
-// Monster's own trait-block splitter) has no Rich Text rendering anywhere
-// downstream of it, so injecting literal "**"/"*" markers into ITS output
-// would show up as stray asterisks on a monster's stat block instead of
-// real emphasis. Bold/italic preserved as CommonMark, same reasoning as
-// ddb-content-parser.js's own markEmphasis (see its comment for the nested-
-// emphasis caveat, identical here).
+// A Character-domain feat/feature/racial-trait's description text is raw
+// HTML too, same as a monster's specialTraitsDescription above. Unlike a
+// monster's shape (always simple `<p>` paragraphs), a feat/feature's text
+// can also include `<ul>/<li>` option lists, `<hr>`/`<h5>` section breaks,
+// and plain paragraphs with no bolded name prefix. Rather than a second
+// regex-based paragraph splitter, this walks the parsed DOM's own top-level
+// child nodes directly, keeping block-level structure (paragraph breaks,
+// list bullets) instead of collapsing to one line.
+// A close sibling of stripHtmlToText, not a modification of it —
+// stripHtmlToText's other caller (Monster's trait-block splitter) has no
+// Rich Text rendering downstream, so injecting "**"/"*" markers there would
+// show up as stray asterisks on a monster's stat block instead of real
+// emphasis.
 function stripHtmlToMarkdown(html) {
   if (typeof html !== "string" || !/<[a-z][\s\S]*>/i.test(html)) {
     return html;
@@ -963,20 +850,16 @@ function htmlBlocksToText(html) {
           });
         return;
       }
-      // A "Core <Class> Traits"-style key/value table (Primary Ability,
-      // Hit Point Die, ...) uses one <th>Label</th><td>Value</td> row per
-      // fact, not the level-gated <td>-only rows ddb-content-parser.js's
-      // own tableToLines handles — a different shape, same "don't silently
-      // drop the table" fix.
+      // A "Core <Class> Traits"-style key/value table uses one
+      // <th>Label</th><td>Value</td> row per fact, a different shape than
+      // ddb-content-parser.js's own tableToLines handles.
       if (tag === "TABLE") {
         const rows = Array.from(child.querySelectorAll("tbody tr"))
           .map((row) => Array.from(row.querySelectorAll("th, td")).map((cell) => stripHtmlToMarkdown(cell.innerHTML)).filter(Boolean))
           .filter((cells) => cells.length);
         if (!rows.length) return;
-        // 2-column case UNCHANGED — see ddb-content-parser.js's own
-        // tableToLines for why this exact convention must keep matching it
-        // byte-for-byte (Character/Class-domain cross-scope de-dup depends
-        // on it).
+        // 2-column case must keep matching ddb-content-parser.js's own
+        // tableToLines byte-for-byte — cross-scope de-dup depends on it.
         if (rows.every((cells) => cells.length === 2)) {
           rows.forEach((cells) => {
             lines.push(/^\d+(st|nd|rd|th)?$/i.test(cells[0]) ? `Level ${cells[0]}: ${cells[1]}` : `${cells[0]}: ${cells[1]}`);
@@ -984,11 +867,9 @@ function htmlBlocksToText(html) {
           return;
         }
         // 3+ columns — a real markdown table, pushed as ONE combined line
-        // (its own rows joined with a single "\n", not one push per row) —
-        // this function's own final `lines.join("\n\n")` would otherwise
-        // insert a blank line between every table row, breaking CommonMark
-        // table syntax entirely. Same shape as ddb-content-parser.js's own
-        // tableToLines upgrade — see its comment for why.
+        // (rows joined with a single "\n") since this function's final
+        // `lines.join("\n\n")` would otherwise insert a blank line between
+        // every row, breaking CommonMark table syntax.
         const headerCells = Array.from(child.querySelectorAll("thead th")).map((th) => stripHtmlToMarkdown(th.innerHTML));
         const columnCount = Math.max(...rows.map((cells) => cells.length));
         const header =
@@ -1001,9 +882,8 @@ function htmlBlocksToText(html) {
         lines.push(tableLines.join("\n"));
         return;
       }
-      // A wrapper DIV is transparent — recurse into its own children rather
-      // than treating it as opaque, same reasoning as ddb-content-parser.js's
-      // own collectWrapperDescriptionLines fix for the identical DDB habit.
+      // A wrapper DIV is transparent — recurse into its children rather than
+      // treating it as opaque (DDB wraps content in these often).
       if (tag === "DIV") {
         walk(child);
         return;
@@ -1017,9 +897,8 @@ function htmlBlocksToText(html) {
 }
 
 // A `<p>` with no leading bolded name is a CONTINUATION of the previous
-// trait's own description, not a new entry — confirmed against real data
-// (Gray Ooze's own "Corrode Metal" trait splits across two `<p>` tags,
-// the second with no name at all).
+// trait's description, not a new entry — some traits split across two `<p>`
+// tags, the second with no name at all.
 function parseDdbHtmlTraitBlocks(html) {
   const text = typeof html === "string" ? html : "";
   if (!text.trim()) return [];
@@ -1047,13 +926,9 @@ function parseDdbHtmlTraitBlocks(html) {
   return entries;
 }
 
-// Extracted from what used to be proficienciesTable's own inline body (that
-// function now just calls this and trims two keys off) — a standalone
-// function, not an object-literal method, so proficiencyDefenses/
-// proficiencyLanguages below can call it directly too without relying on
-// `this` (this file's own established rule — see sensesTable's own comment
-// on why: "nothing guarantees the mapping engine invokes them in a way that
-// preserves `this`").
+// A standalone function, not an object-literal method, so
+// proficiencyDefenses/proficiencyLanguages below can call it directly
+// without relying on `this` (see buildSkillValues above for why).
 function buildProficiencyBuckets(context) {
   const modifiers = getActiveModifiers(context.root);
   const buckets = { armor: [], weapons: [], tools: [], languages: [], defenses: [], senses: [], other: [] };
@@ -1212,31 +1087,20 @@ function splitFantasyStatblockNotes(raw) {
 // Splits a markdown-wonder item's own italic header line ("Weapon (claws),
 // legendary (requires attunement by a monk)", "Wondrous Item, Very Rare,
 // Requires Attunement", "Potion, rare") into the same {category, rarity,
-// requiresAttunement} pieces srdItemStats reads straight off separate 5e
-// API fields. Two real attunement phrasings confirmed live across this
-// vault's own files: parenthesized ("(requires attunement...)", the 5e
-// API's own convention) and a bare trailing comma clause ("..., Requires
-// Attunement", several of this vault's own custom items use this instead).
-// Category/rarity are then just "whatever's left of a two-part comma
-// split" — category itself is allowed its own internal parens (a weapon's
-// own "(claws)"/"(any axe)" qualifier), which is exactly why this splits on
-// the LAST comma rather than the first.
-// This vault's own equipment category names that share zero characters
-// with the matching System Item Form value's own name (so
-// resolveLivePropertyValue's substring-free exact/plural-fold match can
-// never bridge them) — "Adventuring gear (consumable)" (Alchemist's Fire),
-// "Adventuring gear" more generally, confirmed live against sys.dnd5e's own
-// "Equipment" value. Kept here, not vault-feature-matching.js — this is
-// THIS markdown vault's own vocabulary, the same "SRD-specific mapping
-// layer is the sanctioned place for source vocabulary" reasoning
-// resolveCreatureType/srdItemProperties above already follow.
-// Also feeds 5e-api-equipment.json's own srdEquipmentStats — every one of
-// these (Tools and its own 2024-only sub-categories, Ammunition, Mounts
-// and Vehicles) is broad, mundane "Equipment" at the Item Form level, same
-// as "Adventuring gear" above; the actual specific sub-category (which of
-// these it is) is captured separately as its own `properties
-// .equipmentCategory` (see srdItemProperties/srdEquipmentStats), not lost
-// by folding everything into one bucket here.
+// requiresAttunement} pieces srdItemStats reads off separate 5e API fields.
+// Two attunement phrasings: parenthesized (5e API convention) and a bare
+// trailing comma clause (several custom items use this instead).
+// Category/rarity are "whatever's left of a two-part comma split" — category
+// is allowed its own internal parens (a weapon's "(claws)" qualifier), which
+// is why this splits on the LAST comma rather than the first.
+// This vault's equipment category names that share zero characters with the
+// matching System Item Form value's name (so resolveLivePropertyValue's
+// exact/plural-fold match can't bridge them) — "Adventuring gear" against
+// sys.dnd5e's "Equipment". Kept here, not vault-feature-matching.js, since
+// this is this markdown vault's own vocabulary. Also feeds
+// srdEquipmentStats — Tools/Ammunition/Mounts and Vehicles are all broad
+// "Equipment" at the Item Form level; the specific sub-category is captured
+// separately as `properties.equipmentCategory`.
 const MARKDOWN_ITEM_FORM_ALIASES = {
   "adventuring gear": "Equipment",
   tools: "Equipment",
@@ -1248,27 +1112,18 @@ const MARKDOWN_ITEM_FORM_ALIASES = {
   ammunition: "Equipment",
 };
 
-// The bare form-matching hint for an item's own category — strips a
-// trailing parenthetical SUBTYPE qualifier ("Weapon (claws)" -> "Weapon",
-// "Armor (studded leather)" -> "Armor", "Adventuring gear (consumable)" ->
-// "Adventuring gear") before matching against the System's own Item Form
-// vocabulary, then applies the alias table above. The qualifier itself is
-// NOT dropped from `category` (the full string stays in stats.category for
-// display/notes) — it's excluded from the MATCH attempt only, mirroring how
-// the 5e API's own equipment_category.name never carries this kind of
-// suffix at all, so resolveLivePropertyValue's plain exact-match already
-// works for it unmodified.
+// The bare form-matching hint for an item's category — strips a trailing
+// parenthetical SUBTYPE qualifier ("Weapon (claws)" -> "Weapon") before
+// matching against the System's Item Form vocabulary, then applies the
+// alias table above. The qualifier stays in `category` itself (full string
+// kept for display/notes) — excluded from the match attempt only.
 //
-// Also feeds ddb-item.json's own equipment import (ddbParseEquipmentPage,
-// ddb-content-parser.js) — same function, a second source vocabulary. D&D
-// Beyond's own equipment "Type" string prefixes the real Item Form word
-// with its own weapon-proficiency/armor-weight qualifier instead ("Martial
-// Melee Weapon", "Light Armor" — confirmed live against a real Greataxe
-// fetch) rather than this vault's own "Weapon (subtype)" convention above.
-// Once the alias table above finds no exact whole-string match, reducing to
-// a trailing Weapon/Armor word lets resolveLivePropertyValue's own exact
-// match find the System's value without hardcoding every DDB qualifier
-// ("Simple"/"Martial"/"Light"/"Heavy"/...) as its own alias entry.
+// Also feeds ddb-item.json's equipment import — a second source vocabulary.
+// DDB's own equipment "Type" string prefixes the real Item Form word with a
+// weapon-proficiency/armor-weight qualifier instead ("Martial Melee
+// Weapon", "Light Armor"). Once the alias table finds no exact match,
+// reducing to a trailing Weapon/Armor word lets the exact match find the
+// System's value without hardcoding every DDB qualifier as its own alias.
 function resolveMarkdownItemFormHint(category) {
   const bare = String(category || "").replace(/\s*\([^)]*\)\s*$/, "").trim();
   const aliased = MARKDOWN_ITEM_FORM_ALIASES[bare.toLowerCase()];
@@ -1295,8 +1150,8 @@ function parseMarkdownItemHeaderLine(headerLine) {
 
 // Same idea for a spell's own italic header line ("3rd-level evocation",
 // "Evocation cantrip", "1st-level divination (ritual)") — level/school are
-// otherwise only ever given inline in this vault's own markdown, never as
-// separate fields the way the 5e API's own `level`/`school.name` are.
+// only ever given inline in this vault's markdown, never as separate fields
+// the way the 5e API's `level`/`school.name` are.
 function parseMarkdownSpellHeaderLine(headerLine) {
   const raw = String(headerLine || "");
   const ritual = /\(ritual\)/i.test(raw);
@@ -1308,14 +1163,11 @@ function parseMarkdownSpellHeaderLine(headerLine) {
 }
 
 // Expands a "base dice at base level, +increment dice per level above base"
-// slot/character-level scaling clause into the same `{level: diceString}`
-// ladder the 5e API's own damage_at_slot_level/damage_at_character_level
-// already give srdSpellStats — e.g. base level 3, "8d6", increment "1d6" ->
-// {3:"8d6", 4:"9d6", ..., 9:"14d6"}. Falls back to a single-entry ladder
-// (just the base level) when the increment die doesn't match the base die's
-// own size — a real formula this simple arithmetic can't safely guess at,
-// same "degrade gracefully rather than fabricate" rule this whole pipeline
-// already follows for charges/activation detection.
+// scaling clause into the same `{level: diceString}` ladder the 5e API's own
+// damage_at_slot_level already gives srdSpellStats — e.g. base level 3,
+// "8d6", increment "1d6" -> {3:"8d6", 4:"9d6", ..., 9:"14d6"}. Falls back to
+// a single-entry ladder when the increment die doesn't match the base die's
+// size, since that's a real formula this simple arithmetic can't safely guess.
 function expandMarkdownDiceLadder(baseLevel, baseDice, incrementDice, maxLevel) {
   const base = String(baseDice || "").match(/^(\d+)d(\d+)$/i);
   const inc = String(incrementDice || "").match(/^(\d+)d(\d+)$/i);
@@ -1330,14 +1182,11 @@ function expandMarkdownDiceLadder(baseLevel, baseDice, incrementDice, maxLevel) 
   return values;
 }
 
-// A cantrip's own character-level scaling is stated as explicit thresholds
-// in prose ("...when you reach 5th level (2d6), 11th level (3d6), and 17th
-// level (4d6)"), not a uniform per-level formula the way a leveled spell's
-// own higher-level slot scaling is — parsed as literal (level, dice) pairs
-// rather than via expandMarkdownDiceLadder above. Returns null (not a
-// single-entry object) when no such clause is found, so the caller can tell
-// "this spell has no cantrip scaling" apart from "scaling parsed to one
-// entry" and fall through to the slot-scaling check instead.
+// A cantrip's character-level scaling is stated as explicit thresholds in
+// prose ("...when you reach 5th level (2d6), 11th level (3d6)..."), not a
+// uniform per-level formula — parsed as literal (level, dice) pairs rather
+// than via expandMarkdownDiceLadder. Returns null when no such clause is
+// found, so the caller can fall through to the slot-scaling check instead.
 function parseMarkdownCantripScaling(description, baseDice) {
   const matches = [...String(description || "").matchAll(/(\d+)\w{2}\s*level\s*\((\d+d\d+)\)/gi)];
   if (!matches.length) return null;
@@ -1348,21 +1197,14 @@ function parseMarkdownCantripScaling(description, baseDice) {
   return values;
 }
 
-// Best-effort reconstruction of the same `stats.mechanic` shape srdSpellStats
-// reads straight off the 5e API's own structured `damage`/`heal_at_slot_level`
-// fields, but derived from prose instead — this vault's own markdown spells
-// have no such structured fields at all. Three real damage phrasings and one
-// healing phrasing confirmed live across the _srd/spells sample: an attack
-// roll ("Make a ranged spell attack... On a hit, the target takes 1d10 force
-// damage"), a save-for-half ("must make a Dexterity saving throw. A target
-// takes 8d6 fire damage on a failed save, or half as much damage on a
-// successful one"), a binary save ("must succeed on a Dexterity saving throw
-// or take 1d6 acid damage"), and a flat heal ("regains a number of hit points
-// equal to 1d8 + your spellcasting ability modifier"). Deliberately narrower
-// than a full NLP parse — a spell whose own text doesn't match one of these
-// four shapes (the overwhelming majority: buff/utility spells like Bless)
-// correctly returns null, same as srdSpellStats' own `mechanic` for those,
-// falling through to the ordinary candidateUnits clause-recognizer pipeline.
+// Best-effort reconstruction of the `stats.mechanic` shape srdSpellStats
+// reads off the 5e API's structured `damage`/`heal_at_slot_level` fields,
+// but derived from prose — this vault's markdown spells have no structured
+// fields at all. Four phrasings: an attack roll, a save-for-half, a binary
+// save, and a flat heal. Deliberately narrower than a full NLP parse — a
+// spell matching none of these (the majority: buff/utility spells like
+// Bless) correctly returns null, falling through to the ordinary
+// candidateUnits clause-recognizer pipeline.
 function parseMarkdownSpellMechanic(description, higherLevel, level) {
   const baseLevel = level || 1;
   const text = String(description || "");
@@ -1383,18 +1225,13 @@ function parseMarkdownSpellMechanic(description, higherLevel, level) {
     );
   const saveBinaryMatch = !attackMatch && !saveHalfMatch && text.match(/must succeed on an? (\w+) saving throw or takes?\s*(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage/i);
   // Last-resort fallback — the three patterns above all require exact PHB
-  // boilerplate wording; a hand-authored custom spell that just says
-  // something like "the target takes 3d6 fire damage" without that exact
-  // surrounding structure matched NONE of them and silently lost its own
-  // damage entirely (confirmed real bug: the very first non-SRD spell
-  // tested this way came through with no damage at all). This only
-  // requires the dice + damage-type phrase itself to appear ANYWHERE in
-  // the text — it can't reliably tell attack from save-for-half from
-  // save-binary the way the stricter patterns above can (there's no
-  // boilerplate left to read that distinction from), so it defaults to the
-  // single most common real shape (a save for half damage), reading
-  // whichever saving-throw ability is mentioned anywhere in the text if
-  // any. Still far better than attaching no damage at all.
+  // boilerplate wording; a hand-authored custom spell phrased more loosely
+  // matches none of them and would silently lose its damage entirely. This
+  // only requires the dice + damage-type phrase to appear anywhere in the
+  // text — it can't reliably distinguish attack/save-half/save-binary the
+  // way the stricter patterns can, so it defaults to the most common real
+  // shape (save for half), reading whichever saving-throw ability is
+  // mentioned if any. Still better than attaching no damage at all.
   const looseMatch =
     !attackMatch && !saveHalfMatch && !saveBinaryMatch && text.match(/(\d+d\d+(?:\s*\+\s*\d+)?)\s*(\w+) damage/i);
   const damageMatch = attackMatch || saveHalfMatch || saveBinaryMatch || looseMatch;
@@ -1446,17 +1283,13 @@ function parseMarkdownSpellMechanic(description, higherLevel, level) {
   };
 }
 
-// DDB's own `.feats` array carries more than real, player-chosen feats —
-// it's also a generic carrier slot for a class feature's own sub-choice
-// (Weapon Mastery's "which weapons" selection) and GM-narrative hooks from
-// a specific sourcebook/adventure (confirmed live against a real
-// character: "Dark Bargain", "Character Threads", "Runestones" — the last
-// one's own description literally names the "Northlands Sagas" adventure
-// path). DDB's own definition tags every one of these `__DISGUISE_FEAT` —
-// the exact same tag DDB's own web UI uses to hide them from a character's
-// visible Feats list — while a real chosen feat (e.g. "Dual Wielder") is
-// tagged "General" instead. Shared by featsTable AND featuresTable below,
-// which both read this same raw array independently.
+// DDB's `.feats` array carries more than real, player-chosen feats — it's
+// also a generic carrier slot for a class feature's own sub-choice (Weapon
+// Mastery's "which weapons" selection) and GM-narrative hooks from a
+// specific sourcebook/adventure. DDB tags every one of these
+// `__DISGUISE_FEAT`, the same tag DDB's own web UI uses to hide them from a
+// character's visible Feats list, while a real chosen feat is tagged
+// "General" instead. Shared by featsTable and featuresTable below.
 function isRealDdbFeat(feat) {
   return !(feat.definition?.categories || []).some((category) => category?.tagName === "__DISGUISE_FEAT");
 }
@@ -1471,41 +1304,25 @@ return {
   },
 
   // A "<parent>-<own>" compound slug — e.g. Variant records (subclasses,
-  // species subspecies, background variants, ...) whose own bare name
-  // ("Path of the Berserker") isn't guaranteed unique across every other
-  // parent record in the Library the same way it plausibly is within just
-  // one class; a Barbarian's and some homebrew class's own "Path of X"
-  // could otherwise collide. `args.parentPath` defaults to "root.name"
-  // (the enclosing pipeline's own root context — a subclass mapping's
-  // parent class page), `args.path` defaults to "name" (this item's own),
-  // matching slug()'s own defaults so the two stay easy to reason about
-  // side by side. Genuinely generic, not subclass-specific — any mapping
-  // producing a parent-scoped child record can reuse this.
+  // species subspecies, background variants) whose bare name isn't
+  // guaranteed unique across every other parent record in the Library.
+  // `args.parentPath` defaults to "root.name", `args.path` to "name",
+  // matching slug()'s own defaults. Genuinely generic, not subclass-specific.
   compoundSlug(context, args) {
     const parent = slugify(resolvePath(context, args?.parentPath || "root.name"));
     let ownRaw = String(resolvePath(context, args?.path || "name") || "");
-    // `args.stripSourcebookSuffix` — opt-in only, never the default (every
-    // OTHER caller of this same function — ddb-subclass.json/5e-api-
-    // subclass.json's own id generation, ddb-species.json's nested variant
-    // ids, ...  — must keep computing exactly the id it always has).
-    // Confirmed real, repeated pain point: a Character's own
-    // subclassDefinition.name (ddb-character.json's own subclass refId,
-    // the one caller that turns this on) carries a trailing "(SOURCEBOOK)"
-    // tag DDB's character-service API adds ("The Fathomless (TCOE)") that
-    // the Library's own subclass record — scraped straight from the
-    // content page, whose own heading never includes it — never carries.
-    // Left in, the computed refId never matches the real Library variant
-    // at all, silently breaking the character->subclass link on every
-    // single re-import until manually retagged.
+    // `args.stripSourcebookSuffix` — opt-in only. A Character's own
+    // subclassDefinition.name carries a trailing "(SOURCEBOOK)" tag DDB's
+    // character-service API adds ("The Fathomless (TCOE)") that the
+    // Library's own subclass record, scraped from the content page, never
+    // carries — left in, the computed refId never matches the real variant.
     if (args?.stripSourcebookSuffix) {
       ownRaw = ownRaw.replace(/\s*\([^)]*\)\s*$/, "");
     }
     const own = slugify(ownRaw);
     // Both halves required, not filter(Boolean).join("-") — a character
-    // with no subclass chosen yet has an empty subclassDefinition.name,
-    // and "barbarian" (parent alone, own half silently dropped) would be a
-    // real but WRONG id, implying a variant that doesn't exist. No own
-    // name means no real compound id at all.
+    // with no subclass chosen yet has an empty name, and "barbarian" (parent
+    // alone) would be a real but WRONG id implying a variant that doesn't exist.
     if (!parent || !own) return "";
     return `${parent}-${own}`;
   },
@@ -1519,39 +1336,22 @@ return {
     return parseDdbHtmlTraitBlocks(resolvePath(context, args?.path || ""));
   },
 
-  // D&D Beyond's own monster-service payload carries no System reference at
-  // all (there's only ever one game system a DDB monster could belong to) —
-  // a monster imported through ddb-monster.json previously saved with no
-  // `systemIds`, invisible to anything that filters by System. Fixed,
-  // hardcoded "sys.dnd5e" — the DDB-import pipeline is inherently D&D-5e-
-  // specific already (see content-fetch.js's own DND5E_SYSTEM_ID constant,
-  // same reasoning). Dual-tagged with both 5.5e (sys.dnd5e) and 2014 5e
-  // (sys.dnd5e2014) — non-Character content is materially the same across
-  // both editions by default (see project_dnd_5e_5.5e_split), so imports
-  // land visible to either System filter without a separate import pass.
+  // DDB's monster-service payload carries no System reference at all —
+  // there's only ever one game system a DDB monster could belong to.
+  // Hardcoded "sys.dnd5e", dual-tagged with 2014's "sys.dnd5e2014" too, since
+  // non-Character content is materially the same across both editions by
+  // default, so imports land visible to either System filter. Every sibling
+  // *SystemIds function below shares this reasoning and value, kept as
+  // separate functions (not one shared name) so each mapping's own intent
+  // stays legible at the call site.
   ddbMonsterSystemIds() {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
-  // Same reasoning and same hardcoded value as ddbMonsterSystemIds above —
-  // the 5e-API/SRD monster-import pipeline is just as unambiguously D&D-5e-
-  // specific, but had no systemIds field at all before this, so every SRD
-  // monster import landed invisible to anything that filters by System.
-  // Kept as its own function (not a shared name) so each mapping's own
-  // intent stays legible at the call site.
   srdMonsterSystemIds() {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
-  // Same reasoning/hardcoded value as ddbMonsterSystemIds/srdMonsterSystemIds
-  // above, one pair per class/species/background mapping (DDB scraper +
-  // 5e-API SRD) — none of these six mappings had a systemIds field at all
-  // before this, so every class/species/background import (and, via
-  // content-feature-matching.js's own promoteEmbeddedFeatures, every
-  // Feature promoted from one) landed with no System at all, invisible to
-  // anything that filters by one. Kept as their own functions rather than
-  // one shared name, matching this file's own established "each mapping's
-  // own intent stays legible at the call site" convention.
   ddbClassSystemIds() {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
@@ -1576,10 +1376,8 @@ return {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
-  // ddb-subclass.json/5e-api-subclass.json are each their OWN dedicated
-  // mapping (not nested under ddb-class.json/5e-api-class.json — see
-  // loom/js/app.js's own ENTITY_ARRAY_FIELDS comment), so they get their
-  // own pair too, same convention as above.
+  // ddb-subclass.json/5e-api-subclass.json are each their own dedicated
+  // mapping (not nested under class.json), so they get their own pair too.
   ddbSubclassSystemIds() {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
@@ -1588,27 +1386,16 @@ return {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
-  // Case-insensitive/trimmed creature-type resolution, for the two sources
-  // whose own `type` value is free text a human (or a different tool)
-  // typed rather than a clean API-generated slug: the 5e API's own type
-  // string is always already lowercase, but Fantasy Statblocks' is
-  // whatever an author wrote — confirmed live: a real import titled
-  // "Monstrosity" (a completely typical way to write it) silently produced
-  // an EMPTY stats.type, because mapping-engine.js's own `lookup()` formula
-  // function does a strict `===` string compare against
-  // system-lookup-tables.js's derived table (whose own `.name` is
-  // sys.dnd5e.json's lowercase-slug `id`, e.g. "monstrosity") — "Monstrosity"
-  // !== "monstrosity" fails the lookup, `.name` on the resulting `undefined`
-  // throws inside the formula, and bindings.js's own catch swallows that to
-  // "" (see resolveBinding's own comment). Crucible's Creature Type select
-  // then compounded the bug by silently defaulting to whichever option
-  // happens to be first alphabetically ("Aberration") for that empty value
-  // instead of reading as unset (see renderIdentity's own blank-option fix,
-  // crucible/js/app.js) — so the failure was doubly invisible. Falls back
-  // to the raw trimmed input, unmodified, when nothing in the System's own
-  // creatureTypes vocabulary matches at all — an honestly-preserved-but-
-  // unrecognized value beats silently discarding the author's own stated
-  // intent. `args.path` defaults to "type".
+  // Case-insensitive/trimmed creature-type resolution, for sources whose
+  // `type` value is free text a human typed rather than a clean API-generated
+  // slug: the 5e API's type string is always lowercase, but Fantasy
+  // Statblocks' is whatever an author wrote. Without this fold, a strict
+  // `===` lookup against the System's own lowercase-slug table fails silently
+  // (bindings.js's catch swallows the throw to ""), and Crucible's Creature
+  // Type select then defaults to whichever option is first alphabetically for
+  // that empty value — doubly invisible. Falls back to the raw trimmed input,
+  // unmodified, when nothing in the System's own vocabulary matches, rather
+  // than discarding the author's stated intent. `args.path` defaults to "type".
   resolveCreatureType(context, args, env) {
     const raw = String(resolvePath(context, args?.path || "type") || "").trim();
     if (!raw) return "";
@@ -1618,15 +1405,12 @@ return {
     return match ? match.name : raw;
   },
 
-  // The 5e API's own `image`/`url` fields (confirmed via a real live fetch)
-  // are relative paths ("/api/images/monsters/aboleth.png",
-  // "/api/2014/monsters/aboleth"), not fetchable/displayable as-is. Prefixed
-  // with the same SRD base URL content-fetch.js's own SRD_BASE_URL
-  // constant holds — duplicated as a literal here rather than imported,
-  // since content-fetch.js already imports createMappingCustomFunctions
-  // FROM this file, and importing back would be circular. Left alone if
-  // already absolute (defensive — every real response seen so far is
-  // relative). `args.path` defaults to "image".
+  // The 5e API's `image`/`url` fields are relative paths, not
+  // fetchable/displayable as-is. Prefixed with the same SRD base URL
+  // content-fetch.js's SRD_BASE_URL constant holds — duplicated as a literal
+  // here rather than imported, since content-fetch.js already imports this
+  // file, and importing back would be circular. Left alone if already
+  // absolute. `args.path` defaults to "image".
   srdAbsoluteUrl(context, args) {
     const raw = resolvePath(context, args?.path || "image");
     if (!raw) return "";
@@ -1635,33 +1419,24 @@ return {
     return `https://www.dnd5eapi.co${text.startsWith("/") ? text : `/${text}`}`;
   },
 
-  // Same reasoning/hardcoded value as srdMonsterSystemIds above, kept as its
-  // own function per this file's own "each mapping's own intent stays
-  // legible at the call site" convention — used by 5e-api-spell.json/
-  // 5e-api-magic-item.json instead of srdMonsterSystemIds.
+  // Same reasoning/value as srdMonsterSystemIds — used by
+  // 5e-api-spell.json/5e-api-magic-item.json instead.
   srdVaultSystemIds() {
     return ["sys.dnd5e", "sys.dnd5e2014"];
   },
 
-  // Builds Vault's own `stats` shape (see vault-feature-matching.js's own
-  // module comment for the contract) from a raw 5e API spell record in ONE
-  // pass — every field below is read from the SAME raw object, and the
+  // Builds Vault's own `stats` shape from a raw 5e API spell record in ONE
+  // pass — every field is read from the same raw object, and the
   // `mechanic` classification genuinely needs several of them together
-  // (damage vs heal vs neither, attack vs save), which doesn't decompose
-  // cleanly into independent per-field binds the way a flat rename does.
-  // Bound once via a `with` binding (5e-api-spell.json's own top-level
-  // node) and read by every sibling field that needs a piece of it, rather
-  // than recomputed per field.
+  // (damage vs heal, attack vs save), which doesn't decompose cleanly into
+  // independent per-field binds. Bound once via a `with` binding and read by
+  // every sibling field that needs a piece of it.
   //
-  // A spell with no recognized damage/heal shape (the overwhelming
-  // majority — Bless, Hold Person, most buff/utility spells) is NOT left
-  // as one opaque blob anymore: its own desc paragraphs become
-  // `stats.candidateUnits`, one candidate ability unit per paragraph (or
-  // per bullet within a paragraph), for vault-feature-matching.js's own
-  // clause-recognizer library to classify — the same "decompose into
-  // atomic units" treatment a monster's own traits array already gets for
-  // free from its source data, which a spell/item's own prose has to earn
-  // through this segmentation step instead.
+  // A spell with no recognized damage/heal shape (the majority — Bless,
+  // Hold Person, most buff/utility spells) isn't left as one opaque blob:
+  // its desc paragraphs become `stats.candidateUnits`, one candidate unit
+  // per paragraph or bullet, for vault-feature-matching.js's clause-
+  // recognizer library to classify.
   srdSpellStats(context, args, env) {
     const s = context.root || context;
     const descArr = Array.isArray(s.desc) ? s.desc : [];
@@ -1689,34 +1464,22 @@ return {
     }
 
     const candidateUnits = mechanic ? [] : descArr.flatMap((p) => srdSplitBullets(p));
-    // "Spell" is itself one of sys.dnd5e's own real Item Form values (its
-    // own `cost: 0` — a spell effect spends nothing extra for its own
-    // form, unlike a physical Weapon/Wand/Ring) — resolved against the
-    // System's own LIVE Item Form list (same `resolveLivePropertyValue`
-    // mechanism srdItemProperties uses), never hardcoded as a bare "spell"
-    // slug, so a Loom rename of that value is picked up automatically.
-    // Rarity/Activation don't apply to a spell the way they do a physical
-    // item (5e's own rules never assign a spell a rarity or an activation
-    // type distinct from its own casting time), so only `form` is set
-    // here. `level` (the Undercroft-analogue of a "spell tier") is
-    // deliberately left as its own plain `stats.level` field rather than
-    // forced into a Vault property — there is no existing System-level
-    // property for it yet; see this module's own history for the follow-up
-    // this needs once spell import is actually exercised.
+    // "Spell" is one of sys.dnd5e's own real Item Form values — resolved
+    // against the System's live Item Form list, never hardcoded as a bare
+    // "spell" slug, so a Loom rename is picked up automatically. Rarity/
+    // Activation don't apply to a spell, so only `form` is set here.
+    // `level` stays its own plain `stats.level` field rather than forced
+    // into a Vault property — no existing System-level property for it yet.
     const spellFormMatch = resolveLivePropertyValue("Spell", env?.lookupTables?.itemForms);
     const properties = spellFormMatch ? { form: slugifyPropertyValueName(spellFormMatch) } : {};
 
     // Which classes can learn this spell — the suite's ordinary
-    // {refKind, refId, name} ref shape (identity.classes[].subclass
-    // already uses it), so a generic refKind-scanning matcher (see
-    // restrictByCharacterKind, workbench-character-view.js) can cross-
-    // reference this against a character's own identity.classes[]
-    // with zero D&D-specific code. `subclasses` is informational only
-    // — the SRD API's own subclass index (e.g. "land") doesn't match
-    // this repo's own Variant record ids (e.g.
-    // "druid-circle-of-the-sea"), so it's kept as a plain {index, name}
-    // pair rather than a refKind ref that would falsely imply it's
-    // safe to match against.
+    // {refKind, refId, name} ref shape, so a generic refKind-scanning
+    // matcher can cross-reference against a character's identity.classes[]
+    // with zero D&D-specific code. `subclasses` is informational only — the
+    // SRD API's subclass index doesn't match this repo's own Variant record
+    // ids, so it's kept as a plain {index, name} pair rather than a refKind
+    // ref that would falsely imply it's safe to match against.
     const classes = Array.isArray(s.classes)
       ? s.classes.map((c) => ({ refKind: "class", refId: c.index, name: c.name }))
       : [];
@@ -1744,28 +1507,20 @@ return {
     };
   },
 
-  // Same "build the whole thing in one pass" reasoning as srdSpellStats
-  // above, for a raw 5e API magic item. Returns `null` for a variant-GROUP
-  // row (`variant: false` with a non-empty `variants` list, e.g. "Weapon,
-  // +1, +2, or +3") — that row isn't a concrete item a GM would ever hand a
-  // player, its own listed children are (confirmed live against
-  // /api/2014/magic-items/weapon and its own child /weapon-1, /weapon-2,
-  // /weapon-3 rows). 5e-api-magic-item.json's own `kind`/`name` fields both
-  // read `null` here as "skip this row" (see srdItemKindFromStats/
-  // srdItemNameFromStats below) — Loom's bulk-import loop already treats a
-  // missing kind/name as "mapping produced no save-able entity" and moves
-  // on, the same tolerant skip an unrelated malformed row already gets.
+  // Same "build the whole thing in one pass" reasoning as srdSpellStats, for
+  // a raw 5e API magic item. Returns `null` for a variant-GROUP row
+  // (`variant: false` with a non-empty `variants` list, e.g. "Weapon, +1,
+  // +2, or +3") — that row isn't a concrete item a GM would ever hand a
+  // player, its listed children are. srdItemKindFromStats/
+  // srdItemNameFromStats below both read `null` as "skip this row", and
+  // Loom's bulk-import loop already treats a missing kind/name as "no
+  // save-able entity" and moves on.
   //
-  // The flat "+N bonus to X" regex this function used to run itself is
-  // GONE — that was a real design mistake: it always produced an
-  // `item-passive-bonus` Feature no matter what the bonus was actually to,
-  // conflating a Ring of Protection's own "AC and saving throws" grant
-  // (a `feat.protection-bonus` concept) with a weapon/armor's own intrinsic
-  // enhancement bonus (the genuinely different `item-passive-bonus`
-  // concept the variant-family case below still legitimately needs). Any
-  // non-variant item's own remaining prose now goes through the SAME
-  // `candidateUnits` clause-recognizer pipeline spells use, which can tell
-  // those two shapes apart correctly (see vault-feature-matching.js).
+  // A non-variant item's remaining prose goes through the same
+  // `candidateUnits` clause-recognizer pipeline spells use (see
+  // vault-feature-matching.js) rather than a flat "+N bonus to X" regex,
+  // which used to conflate a Ring of Protection's saving-throw grant with a
+  // weapon's intrinsic enhancement bonus — genuinely different concepts.
   srdItemStats(context, args, env) {
     const s = context.root || context;
     const isVariant = Boolean(s.variant);
@@ -1775,20 +1530,18 @@ return {
     const descArr = Array.isArray(s.desc) ? s.desc : [];
     const description = descArr.join("\n\n");
     // Paragraph 0 is always the flavor/category/rarity header line (e.g.
-    // "Wondrous item, uncommon (requires attunement)") — confirmed live
-    // across every real item shape checked, from a single-clause Ring of
-    // Protection to a multi-paragraph Sun Blade. Never candidate Feature
-    // content; already captured below as category/rarity/requiresAttunement.
+    // "Wondrous item, uncommon (requires attunement)") — never candidate
+    // Feature content, already captured below as category/rarity/
+    // requiresAttunement.
     const bodyParagraphs = descArr.slice(1);
 
     let variantGroup = null;
     let variantTier = null;
     let mechanic = null;
     if (isVariant) {
-      // A child row's own `index` carries its parent's own slug as a
-      // prefix ("weapon-1" -> "weapon") — the 5e API gives no more direct
-      // parent back-reference than this on a CHILD row (only the PARENT
-      // lists its own children, never the reverse).
+      // A child row's `index` carries its parent's slug as a prefix
+      // ("weapon-1" -> "weapon") — the 5e API gives no more direct parent
+      // back-reference than this (only the parent lists its children).
       const match = String(s.index || "").match(/^(.*)-(\d+)$/);
       if (match) {
         variantGroup = match[1];
@@ -1834,34 +1587,24 @@ return {
     return context.itemStats?.name;
   },
 
-  // 5e-api-equipment.json's own stats builder — a raw 5e API /equipment
-  // row, NOT /magic-items (srdItemStats above), a genuinely different
-  // shape with no rarity/attunement concept at all but real cost/weight/
-  // mechanical stats magic items never carry. Handles BOTH the 2014 shape
-  // (`desc`, singular `equipment_category`) and the 2024 shape
-  // (`description`, plural `equipment_categories`) — confirmed live
-  // against real fetches of both years for a weapon (Greataxe), armor
-  // (Breastplate/Shield), and adventuring gear (Backpack) — since the
-  // "srd" source itself is year-agnostic (any /api/2014/... or
-  // /api/2024/... URL), one mapping needs to work with whichever the user
-  // points it at.
+  // 5e-api-equipment.json's own stats builder — a raw 5e API /equipment row,
+  // NOT /magic-items (srdItemStats above): no rarity/attunement concept, but
+  // real cost/weight/mechanical stats magic items never carry. Handles both
+  // the 2014 shape (`desc`, singular `equipment_category`) and the 2024
+  // shape (`description`, plural `equipment_categories`), since the "srd"
+  // source is year-agnostic and one mapping needs to work with either.
   srdEquipmentStats(context, args, env) {
     const s = context.root || context;
     const descArr = Array.isArray(s.desc) ? s.desc : Array.isArray(s.description) ? s.description : [];
 
     // Category name CANDIDATES, in the order to try them — 2014 gives
-    // exactly one (`equipment_category.name`); 2024's own
-    // `equipment_categories` array lists several, in NO consistent
-    // generic-first/specific-first order between weapons (specific-first:
-    // "Martial Melee Weapons", ..., "Weapons" LAST) and armor
-    // (generic-first: "Armor", "Medium Armor") — confirmed live against
-    // real Greataxe vs Breastplate fetches. Trying each against the
-    // System's own live Item Form vocabulary and keeping the first that
-    // actually resolves sidesteps needing to know which position is "the
-    // generic one" for either shape — resolveLivePropertyValue's own
-    // trailing-s fold is what makes plural entries like "Weapons" resolve
-    // against the System's own singular "Weapon" value with zero extra
-    // handling here.
+    // exactly one (`equipment_category.name`); 2024's `equipment_categories`
+    // array lists several with no consistent generic-first/specific-first
+    // order between weapons and armor. Trying each against the System's
+    // live Item Form vocabulary and keeping the first that resolves
+    // sidesteps needing to know which position is "the generic one" —
+    // resolveLivePropertyValue's trailing-s fold handles plural entries
+    // like "Weapons" resolving against the singular "Weapon" value.
     const categoryCandidates = s.equipment_category?.name
       ? [s.equipment_category.name]
       : (Array.isArray(s.equipment_categories) ? s.equipment_categories : []).map((c) => c?.name).filter(Boolean);
@@ -1872,16 +1615,12 @@ return {
         break;
       }
     }
-    // The SAME candidate list, tried against the System's own
+    // The SAME candidate list, tried against the System's
     // "equipmentCategories" sub-classification instead (Tools/Musical
-    // Instrument/Gaming Set/Other Tools/Mounts and Vehicles/Ammunition —
-    // sys.dnd5e.json's own new field, added specifically for this: none of
-    // this vocabulary existed in the System before, only Weapon/Armor's own
-    // sibling sub-fields did) — first candidate that resolves wins, same
-    // "more specific beats the generic parent" reasoning as categoryName
-    // above (e.g. Carpenter's Tools' own ["Artisan's Tools", "Tools"]
-    // resolves to the more specific "Artisan's Tools", not the generic
-    // "Tools" every tool-type item also lists).
+    // Instrument/Gaming Set/Other Tools/Mounts and Vehicles/Ammunition) —
+    // first candidate that resolves wins, same "more specific beats the
+    // generic parent" reasoning as categoryName above (Carpenter's Tools'
+    // ["Artisan's Tools", "Tools"] resolves to the more specific one).
     let equipmentCategoryName = "";
     for (const candidate of categoryCandidates) {
       if (resolveLivePropertyValue(candidate, env?.lookupTables?.equipmentCategories)) {
@@ -1889,13 +1628,11 @@ return {
         break;
       }
     }
-    // A weapon's own Simple/Martial + Melee/Ranged split — the 2014 shape
-    // gives it pre-combined as `category_range` ("Martial Ranged" —
-    // confirmed live against Greataxe, a byte-exact match against
-    // weaponCategories' own vocabulary already). 2024 has no such field at
-    // all — it only shows up folded into one of `equipment_categories`'
-    // own entries instead ("Martial Ranged Weapons" — confirmed live
-    // against Longbow, alongside several others), so every candidate is
+    // A weapon's Simple/Martial + Melee/Ranged split — the 2014 shape gives
+    // it pre-combined as `category_range` ("Martial Ranged", a byte-exact
+    // match against weaponCategories' vocabulary already). 2024 has no such
+    // field — it only shows up folded into one of `equipment_categories`'
+    // entries instead ("Martial Ranged Weapons"), so every candidate is
     // tried both as-is and with a trailing "Weapon(s)" suffix stripped.
     const weaponCategoryCandidates = s.category_range
       ? [s.category_range]
@@ -2068,12 +1805,10 @@ return {
       description,
       price,
       weight,
-      // A source's own real tag list (ddb-item.json's own `tags`,
-      // ddbParseEquipmentPage/ddbParseMagicItemPage — see that file's own
-      // header comment) — a plain array, same shape ddb-monster.json's own
-      // `tags` field already reads, never flattened into description
-      // prose. Empty for a markdown vault source, which has no tags
-      // concept of its own.
+      // A source's own real tag list — a plain array, same shape
+      // ddb-monster.json's `tags` field reads, never flattened into
+      // description prose. Empty for a markdown vault source, which has no
+      // tags concept.
       tags: Array.isArray(s.tags) ? s.tags : [],
       charges,
       properties,
@@ -2084,12 +1819,10 @@ return {
     };
   },
 
-  // Same "build the whole thing in one pass" reasoning as srdSpellStats
-  // above, from parseMarkdownWonderSource's own generic parse instead of a
-  // raw 5e API record. `mechanic` is recovered from prose via
-  // parseMarkdownSpellMechanic (best-effort — see that function's own
-  // comment) rather than read off a structured `damage`/`heal_at_slot_level`
-  // field, since this vault's own markdown spells have neither.
+  // Same "build the whole thing in one pass" reasoning as srdSpellStats, from
+  // parseMarkdownWonderSource's own generic parse instead of a raw 5e API
+  // record. `mechanic` is recovered from prose via parseMarkdownSpellMechanic
+  // rather than read off a structured field, since markdown spells have neither.
   markdownSpellStats(context, args, env) {
     const s = context.root || context;
     const { level, school, ritual } = parseMarkdownSpellHeaderLine(s.headerLine);
@@ -2127,17 +1860,12 @@ return {
     };
   },
 
-  // D&D Beyond's own monster-service `senses` (confirmed via a real live
-  // fetch) is `[{senseId, notes}]` — senseId a numeric id resolved through
-  // the SAME `senses` lookup table `lookup('senses', ...)` formula calls
-  // already use (`env.lookupTables`, not `args` — needs the live table),
-  // `notes` a free-text range string ("60 ft.") to regex-extract a plain
-  // number out of. Folds the monster's own separate `passivePerception`
-  // field into `passives.perception`, producing this suite's one shared
-  // senses shape — `{passives:{perception}, darkvision, blindsight, ...}` —
-  // matching Character's own sensesTable output, srdSenses, and
-  // fantasyStatblockSenses exactly. `args.sensesPath`/
-  // `args.passivePerceptionPath` default to "senses"/"passivePerception".
+  // DDB's monster-service `senses` is `[{senseId, notes}]` — senseId a
+  // numeric id resolved through the same `senses` lookup table formula
+  // calls use, `notes` a free-text range string to regex-extract a number
+  // from. Folds the separate `passivePerception` field into
+  // `passives.perception`, producing this suite's one shared senses shape,
+  // matching Character's sensesTable/srdSenses/fantasyStatblockSenses.
   ddbMonsterSenses(context, args, env) {
     const rawSenses = resolvePath(context, args?.sensesPath || "senses");
     const sensesTable = Array.isArray(env?.lookupTables?.senses) ? env.lookupTables.senses : [];
@@ -2155,11 +1883,9 @@ return {
     return result;
   },
 
-  // The 5e API's own raw `senses` (confirmed via a real live fetch) is a
-  // keyed object of already-unit-suffixed strings plus `passive_perception`
-  // — e.g. `{darkvision: "60 ft.", passive_perception: 12}`. Reshapes into
-  // this suite's one shared senses shape, same as ddbMonsterSenses/
-  // fantasyStatblockSenses above.
+  // The 5e API's raw `senses` is a keyed object of already-unit-suffixed
+  // strings plus `passive_perception` — reshaped into this suite's one
+  // shared senses shape, same as ddbMonsterSenses/fantasyStatblockSenses.
   srdSenses(context, args) {
     const raw = resolvePath(context, args?.path || "senses");
     const result = {};
@@ -2177,17 +1903,12 @@ return {
     return result;
   },
 
-  // D&D Beyond's own monster-service `movements` (confirmed via a real live
-  // fetch, content-fetch.js's fetchDdbMonster) is `[{movementId, speed,
-  // notes}, ...]` — resolved into this suite's one shared speed shape,
-  // `{walk, burrow, climb, fly, swim}` (matching Character's own
-  // speedsTable/ddb-character.json's speed shape exactly — see the
-  // monster-data-alignment plan). Resolves each entry's own `movementId`
-  // through the SAME `speeds` lookup table `lookup('speeds', ...)` formula
-  // calls already use (`env.lookupTables`, not `args` — needs the live
-  // table). Falls back to "walk" if a movement has no resolvable name
-  // (DDB's own base-walking-speed entry sometimes has no movementId at
-  // all).
+  // DDB's monster-service `movements` is `[{movementId, speed, notes}, ...]`
+  // — resolved into this suite's one shared speed shape, `{walk, burrow,
+  // climb, fly, swim}` (matching Character's speedsTable exactly), each
+  // `movementId` resolved through the same `speeds` lookup table formula
+  // calls use. Falls back to "walk" if a movement has no resolvable name
+  // (DDB's base-walking-speed entry sometimes has no movementId at all).
   ddbFormatSpeed(context, args, env) {
     const movements = resolvePath(context, args?.path || "movements");
     const speedsTable = Array.isArray(env?.lookupTables?.speeds) ? env.lookupTables.speeds : [];
@@ -2200,18 +1921,14 @@ return {
     return result;
   },
 
-  // Fantasy Statblocks' own `hit_dice` is normally already just the dice
-  // count ("21d20", the plugin's own documented convention), matching the
-  // 5e API's `hit_dice` directly — but real-world source files don't
-  // always follow that (a note pasted from elsewhere can carry the flat
-  // modifier too, e.g. "16d8 + 48"), so this defensively splits either
-  // shape into `{dice, roll}`: `dice` is always just the `NdN` portion for
-  // `stats.hitDice` (this suite's one normalized-across-sources value —
-  // see undercroft/README.md's stats.hitPoints entry); `roll` is the
-  // original full string for `stats.hitPoints.diceString`, but ONLY when
-  // it actually carries more than the bare dice (an unmodified "21d20"
-  // input leaves `roll` unset, so a clean source doesn't grow a redundant
-  // duplicate field). `args.path` defaults to "hit_dice".
+  // Fantasy Statblocks' `hit_dice` is normally already just the dice count
+  // ("21d20"), matching the 5e API's `hit_dice` directly — but real-world
+  // source files sometimes carry the flat modifier too ("16d8 + 48"), so
+  // this defensively splits either shape into `{dice, roll}`: `dice` is
+  // always the bare `NdN` portion for `stats.hitDice`; `roll` is the
+  // original full string for `stats.hitPoints.diceString`, only when it
+  // carries more than the bare dice, so a clean source doesn't grow a
+  // redundant duplicate field. `args.path` defaults to "hit_dice".
   splitHitDice(context, args) {
     const raw = String(resolvePath(context, args?.path || "hit_dice") || "").trim();
     const match = raw.match(/^(\d+d\d+)/i);
@@ -2219,16 +1936,13 @@ return {
     return { dice, roll: raw && raw !== dice ? raw : undefined };
   },
 
-  // Fantasy Statblocks' own `speed` is a single free-text string ("30 ft.,
-  // swim 30 ft.", "fly 60 ft. (hover)") — the first, unprefixed entry is
-  // always walking speed; every other entry is prefixed by its own
-  // movement-type name. Parsed into this suite's one shared speed shape,
-  // same as ddbFormatSpeed above. The trailing "(hover)" this example
-  // itself shows was previously matched-but-discarded (the regex below
-  // only ever captured the leading digits) — now captured as a sparse
-  // `hover: true` sibling, same `stats.speed.hover` shape/convention
-  // formatSpeedFromObject uses for the 5e API. `args.path` defaults to
-  // "speed".
+  // Fantasy Statblocks' `speed` is a single free-text string ("30 ft., swim
+  // 30 ft.", "fly 60 ft. (hover)") — the first, unprefixed entry is always
+  // walking speed; every other entry is prefixed by its movement-type name.
+  // Parsed into this suite's shared speed shape, same as ddbFormatSpeed. A
+  // trailing "(hover)" is captured as a sparse `hover: true` sibling, same
+  // `stats.speed.hover` convention formatSpeedFromObject uses for the 5e
+  // API. `args.path` defaults to "speed".
   fantasyStatblockSpeed(context, args) {
     const raw = String(resolvePath(context, args?.path || "speed") || "");
     const result = {};
@@ -2246,17 +1960,13 @@ return {
     return result;
   },
 
-  // The 5e API's own raw `speed` (confirmed via a real live fetch) is a
-  // keyed object of already-unit-suffixed strings — `{walk: "30 ft.", swim:
-  // "30 ft."}` — parsed into this suite's one shared speed shape, same as
-  // ddbFormatSpeed/fantasyStatblockSpeed above. A flying creature that can
-  // hover carries a sibling `hover: true` boolean on this same object
-  // (confirmed live — Air Elemental's own `{fly: "90 ft.", hover: true}`,
-  // no numeric value, so the generic digit-match below would otherwise
-  // silently drop it) — copied straight through as `stats.speed.hover`,
-  // sparse (omitted, not `false`, when absent — same convention every
-  // other optional stats.* flag already uses), read by Crucible's own
-  // formatSpeedValue/parseSpeedText as a "(hover)" suffix on the fly value.
+  // The 5e API's raw `speed` is a keyed object of already-unit-suffixed
+  // strings — `{walk: "30 ft.", swim: "30 ft."}` — parsed into this suite's
+  // shared speed shape, same as ddbFormatSpeed/fantasyStatblockSpeed. A
+  // flying creature that can hover carries a sibling `hover: true` boolean
+  // with no numeric value (the generic digit-match below would otherwise
+  // silently drop it) — copied through sparse, omitted rather than `false`
+  // when absent, read by Crucible's formatSpeedValue as a "(hover)" suffix.
   formatSpeedFromObject(context, args) {
     const raw = resolvePath(context, args?.path || "speed");
     const result = {};
@@ -2273,12 +1983,11 @@ return {
     return result;
   },
 
-  // Both 5e-API's raw `challenge_rating` (a decimal number, e.g. 0.5) and
-  // Fantasy Statblocks' plugin-authored `cr` (usually already a string, but
-  // not guaranteed) need to converge on the same string shape DDB's own
-  // `lookup('challengeRatings', ...).shortName` already produces (a whole
-  // number or a fraction — "5", "1/2", "1/8") — this suite's one CR
-  // convention. `args.path` defaults to "challenge_rating".
+  // Both 5e API's raw `challenge_rating` (a decimal number) and Fantasy
+  // Statblocks' `cr` (usually a string, not guaranteed) need to converge on
+  // the same string shape DDB's own lookup already produces (a whole number
+  // or fraction — "5", "1/2", "1/8"). `args.path` defaults to
+  // "challenge_rating".
   formatChallengeRating(context, args) {
     const raw = resolvePath(context, args?.path || "challenge_rating");
     if (typeof raw === "string") return raw.trim();
@@ -2289,46 +1998,33 @@ return {
   },
 
   // Standard 5e Proficiency Bonus-by-CR — a fixed rule (PB = 2 +
-  // floor((max(CR,1)-1)/4)), never house-ruled per creature, computed here
-  // from the raw challenge rating rather than trusted to a source-provided
-  // field: only the 5e API actually has one directly (`proficiency_bonus`,
-  // still used as-is in that mapping — this function isn't wired there).
-  // DDB has none at all anywhere in a real monster payload (confirmed via a
-  // live fetch); Fantasy Statblocks' own Proficiency Bonus display is
-  // itself just a CR-based callback in the plugin, never stored frontmatter
-  // data (per the plugin's own docs). Deriving it here for those two
-  // sources guarantees the same value every import produces instead of
-  // "present on some sources, missing on others." `args.path` defaults to
-  // "challenge_rating"; see crToNumber above for the accepted shapes.
+  // floor((max(CR,1)-1)/4)), computed here rather than trusted to a
+  // source-provided field: only the 5e API has one directly
+  // (`proficiency_bonus`, used as-is there, not wired to this function).
+  // DDB has none at all in a real monster payload; Fantasy Statblocks'
+  // display is itself just a CR-based plugin callback, never stored data.
+  // Deriving it here guarantees the same value every import produces.
+  // `args.path` defaults to "challenge_rating"; see crToNumber for shapes.
   proficiencyBonusFromChallengeRating(context, args) {
     const cr = crToNumber(resolvePath(context, args?.path || "challenge_rating"));
     if (!Number.isFinite(cr)) return undefined;
     return 2 + Math.floor((Math.max(cr, 1) - 1) / 4);
   },
 
-  // 5e-API's raw `proficiencies` (confirmed by this mapping's own prior
-  // pipeline step, which this function replaces) is `[{proficiency:{name:
-  // "Saving Throw: DEX"|"Skill: Perception"}, value:{value:N}}, ...]` — one
-  // flat list mixing both concepts, distinguished only by a fixed string
-  // prefix on the label. Splits it into the same two-field convention DDB/
-  // Fantasy Statblocks' own `savingThrows`/`skills` already use (`{name,
-  // value}[]` each), matching this suite's one shared shape for the
-  // concept. `args.path` defaults to "proficiencies"; wire via a `with`
-  // binding (same pairing pattern `fantasyStatblockSenses`'s own comment
-  // documents) so both sibling output fields read this one computed result
-  // instead of each re-parsing the raw list independently.
+  // 5e API's raw `proficiencies` is a flat list mixing saving throws and
+  // skills, distinguished only by a fixed string prefix on the label.
+  // Splits it into the same two-field convention DDB/Fantasy Statblocks'
+  // `savingThrows`/`skills` use. `args.path` defaults to "proficiencies";
+  // wire via a `with` binding so both sibling output fields read this one
+  // computed result instead of each re-parsing the raw list.
   srdSplitProficiencies(context, args) {
     const entries = resolvePath(context, args?.path || "proficiencies");
     const savingThrows = [];
     const skills = [];
     (Array.isArray(entries) ? entries : []).forEach((entry) => {
       const label = entry?.proficiency?.name || "";
-      // A bare number (confirmed via a real live fetch,
-      // https://www.dnd5eapi.co/api/2014/monsters/adult-black-dragon:
-      // `{"value":7,"proficiency":{"name":"Saving Throw: DEX",...}}`) — NOT
-      // `{value:{value:N}}`. The pre-existing pipeline this function
-      // replaced made the same wrong assumption (carried forward
-      // unverified); this is the corrected shape.
+      // A bare number (`{"value":7,"proficiency":{"name":"Saving Throw: DEX"}}`),
+      // not `{value:{value:N}}`.
       const value = entry?.value;
       const saveMatch = label.match(/^Saving Throw:\s*(.+)$/i);
       if (saveMatch) {
@@ -2356,14 +2052,11 @@ return {
     return typeof value === "string" ? value : "";
   },
 
-  // Fantasy Statblocks' own `saves`/`skillsaves` (Obsidian's plugin, see
-  // content-fetch.js's loadFantasyStatblockData) are each a YAML list of
-  // single-key maps — `- Con: 5`, `- Arcana: 4` — the key name itself
-  // varying per entry (an ability abbreviation, or a skill name), so nothing
-  // in the mapping engine's declarative primitives can read "whatever the
-  // one key on this object happens to be." `args.path` names which raw
-  // field to read; returns [{name, value}, ...], the same shape
-  // ddb-monster.json's own savingThrows/skills already use.
+  // Fantasy Statblocks' `saves`/`skillsaves` are each a YAML list of
+  // single-key maps — `- Con: 5`, `- Arcana: 4` — the key varying per entry,
+  // so nothing in the declarative primitives can read "whatever the one key
+  // happens to be." `args.path` names which raw field to read; returns
+  // [{name, value}, ...], same shape ddb-monster.json's savingThrows/skills use.
   fantasyStatblockKeyedList(context, args) {
     const list = resolvePath(context, args?.path || "");
     return (Array.isArray(list) ? list : [])
@@ -2375,15 +2068,11 @@ return {
   },
 
   // Fantasy Statblocks bundles passive Perception into the same free-text
-  // `senses` string as darkvision/blindsight/etc (e.g. "darkvision 120 ft.,
-  // passive Perception 13") — no separate field, confirmed across all 3
-  // reference examples, and always uses standard D&D sense-type names.
-  // Splits/parses it directly into this suite's one shared senses shape —
-  // `{passives:{perception}, darkvision, blindsight, ...}`, matching
-  // ddbMonsterSenses/srdSenses/Character's own sensesTable exactly — sourced
-  // from the SAME `senses` lookup table (`env.lookupTables`, not `args`) so
-  // the sense-name vocabulary lives in one place. `args.path` defaults to
-  // "senses".
+  // `senses` string as darkvision/blindsight/etc ("darkvision 120 ft.,
+  // passive Perception 13") — no separate field. Splits/parses it into this
+  // suite's shared senses shape, matching ddbMonsterSenses/srdSenses/
+  // Character's sensesTable, sourced from the same `senses` lookup table so
+  // the vocabulary lives in one place. `args.path` defaults to "senses".
   fantasyStatblockSenses(context, args, env) {
     const raw = String(resolvePath(context, args?.path || "senses") || "");
     const sensesTable = Array.isArray(env?.lookupTables?.senses) ? env.lookupTables.senses : [];
@@ -2405,45 +2094,38 @@ return {
     return result;
   },
 
-  // Fantasy Statblocks' own `damage_resistances`/`damage_vulnerabilities`
-  // (confirmed) and `damage_immunities`/`condition_immunities` (never seen
-  // in the 3 reference examples, mapped defensively on the same assumed
-  // convention as the two confirmed fields) are each a single free-text
-  // string, comma-separated when more than one applies (e.g.
-  // "cold, fire") — split and trimmed into a plain string array, matching
-  // Crucible's own damageResistances/damageImmunities shape.
+  // Fantasy Statblocks' damage_resistances/damage_vulnerabilities/
+  // damage_immunities/condition_immunities are each a single free-text
+  // string, comma-separated when more than one applies — split and trimmed
+  // into a plain string array, matching Crucible's shape.
   fantasyStatblockSplitList(context, args) {
     return splitCommaList(resolvePath(context, args?.path || ""));
   },
 
-  // The "notes" half of splitFantasyStatblockNotes above — References
-  // stripped out (see fantasyStatblockSources below for where that half
-  // goes instead). `args.path` defaults to "_postFenceNotes".
+  // The "notes" half of splitFantasyStatblockNotes — References stripped out
+  // (see fantasyStatblockSources below). `args.path` defaults to
+  // "_postFenceNotes".
   fantasyStatblockNotes(context, args) {
     return splitFantasyStatblockNotes(resolvePath(context, args?.path || "_postFenceNotes")).notes;
   },
 
-  // Combines the YAML frontmatter's own terse `source` field (e.g. "MM",
-  // a sourcebook abbreviation) with any citations parsed out of the
-  // "### References" list (splitFantasyStatblockNotes above) into one
-  // array — both are "where this content came from" in the same sense,
-  // and this suite has one `sources` field per monster, not two competing
-  // citation concepts. `args.sourcePath`/`args.notesPath` default to
-  // "source"/"_postFenceNotes".
+  // Combines the YAML frontmatter's terse `source` field with any citations
+  // parsed out of the "### References" list into one array — both are
+  // "where this content came from," and this suite has one `sources` field
+  // per monster, not two competing citation concepts. `args.sourcePath`/
+  // `args.notesPath` default to "source"/"_postFenceNotes".
   fantasyStatblockSources(context, args) {
     const fromSourceField = splitCommaList(resolvePath(context, args?.sourcePath || "source"));
     const { references } = splitFantasyStatblockNotes(resolvePath(context, args?.notesPath || "_postFenceNotes"));
     return [...fromSourceField, ...references];
   },
 
-  // Fantasy Statblocks' own damage_resistances/damage_vulnerabilities/
+  // Fantasy Statblocks' damage_resistances/damage_vulnerabilities/
   // damage_immunities/condition_immunities are each a separate free-text,
-  // comma-separated field — combined here into this suite's one shared
-  // `defenses` array (matching Character's own proficiencies.defenses
-  // exactly), each entry tagged with its `type`. Condition immunities fold
-  // into the same array as `type: "immunity"` too — no separate condition-
-  // immunity bucket, same convention Character's own data already uses
-  // (e.g. `{name:"Magical Sleep", type:"immunity"}`).
+  // comma-separated field — combined into this suite's shared `defenses`
+  // array (matching Character's proficiencies.defenses), each entry tagged
+  // with its `type`. Condition immunities fold in as `type: "immunity"`
+  // too, no separate bucket.
   fantasyStatblockDefenses(context) {
     const splitField = (path) =>
       String(resolvePath(context, path) || "")
@@ -2459,13 +2141,10 @@ return {
     ];
   },
 
-  // The 5e API's own damage_resistances/damage_vulnerabilities/
-  // damage_immunities are each already a flat string array; condition_
-  // immunities is an array of `{name}` reference objects (read raw here,
-  // not via the mapping's own pipeline step, since a custom function only
-  // ever sees the raw input context). Combined into this suite's one shared
-  // `defenses` array, each entry tagged with its `type` — same convention
-  // fantasyStatblockDefenses/Character's own proficiencies.defenses use.
+  // The 5e API's damage_resistances/damage_vulnerabilities/damage_immunities
+  // are each already a flat string array; condition_immunities is an array
+  // of `{name}` reference objects. Combined into this suite's shared
+  // `defenses` array, each entry tagged with its `type`.
   srdDefenses(context) {
     const stringList = (path) => {
       const raw = resolvePath(context, path);
@@ -2485,18 +2164,12 @@ return {
     ];
   },
 
-  // D&D Beyond's own monster conditionImmunities (numeric ids, resolved via
-  // the SAME positional `conditions` lookup table `lookup('conditions',
-  // ...)` formula calls already use — a plain array of strings indexed by
-  // sourceId, see system-lookup-tables.js's own `positionalNames`) fold into
-  // this suite's one shared `defenses` array as `type: "immunity"` entries —
-  // same convention every other source uses for condition immunities.
-  // Damage-type resistances/immunities/vulnerabilities are NOT included
-  // here yet: DDB's own raw `damageAdjustments` field has no documented
-  // shape anywhere in this codebase or a confirmed live-fetch sample (unlike
-  // senses/speed, which were verified against real payloads before being
-  // ported) — a known, flagged gap in the monster-data-alignment plan
-  // rather than a guessed-at parser. `args.path` defaults to
+  // DDB's monster conditionImmunities (numeric ids, resolved via the same
+  // positional `conditions` lookup table formula calls use) fold into this
+  // suite's shared `defenses` array as `type: "immunity"` entries. Damage-
+  // type resistances/immunities/vulnerabilities are NOT included yet: DDB's
+  // raw `damageAdjustments` field has no confirmed shape — a known, flagged
+  // gap rather than a guessed-at parser. `args.path` defaults to
   // "conditionImmunities".
   ddbConditionDefenses(context, args, env) {
     const raw = resolvePath(context, args?.path || "conditionImmunities");
@@ -2533,18 +2206,13 @@ return {
     return parseAbilityRefs(context.coreTraits?.savingThrowProficiencies);
   },
 
-  // A D&D Beyond MONSTER's own `stats` (confirmed via a real live fetch,
-  // content-fetch.js's fetchDdbMonster) is `[{statId, name, value}, ...]` —
-  // an array keyed by DDB's own numeric statId, not the character-sheet
-  // shape any of the ddb* functions above assume. Reshapes it into the
-  // keyed-object form `{strength, dexterity, ...}` this suite's own common
-  // monster-stats standard uses (matches Crucible's own stats.abilities —
-  // see crucible/js/lib/stats.js), keyed by the SAME ability names
-  // system-lookup-tables.js's own `abilities` table already exposes
-  // (sys.dnd5e.json's own ability field keys, e.g. "dexterity"). `args.path`
-  // defaults to "stats"; ddb-monster.json's own `initiativeBonus` field
-  // reads this same object back via a `with` binding rather than
-  // recomputing it, since a formula bind can only ever see the RAW input
+  // A DDB MONSTER's own `stats` is `[{statId, name, value}, ...]`, an array
+  // keyed by DDB's numeric statId, not the character-sheet shape the ddb*
+  // functions above assume. Reshapes into the keyed-object form
+  // `{strength, dexterity, ...}` this suite's monster-stats standard uses
+  // (matches Crucible's stats.abilities). `args.path` defaults to "stats";
+  // ddb-monster.json's `initiativeBonus` field reads this same object back
+  // via a `with` binding, since a formula bind can only see the RAW input
   // context, never a sibling output field still being built.
   ddbAbilitiesObject(context, args) {
     const entries = resolvePath(context, args?.path || "stats");
@@ -2685,11 +2353,9 @@ return {
         canEquip: Boolean(item.definition?.canEquip),
         isEquipped: Boolean(item.equipped),
       };
-      // `name` stays the real catalog name — reference-matching
-      // (linkCharacterInventoryReferences) and this item's own real
-      // mechanical identity both depend on it — `customName` is a pure
-      // DISPLAY override laid on top (component-renderers.js's own
-      // renderTextContent/renderInputContent), never a substitute for it.
+      // `name` stays the real catalog name — reference-matching and this
+      // item's mechanical identity both depend on it; `customName` is a
+      // pure display override laid on top, never a substitute for it.
       const customName = customNameById.get(String(item?.id));
       if (customName) row.customName = customName;
       return row;
@@ -2711,35 +2377,25 @@ return {
     }));
   },
 
-  // Ported from ddb-parser.js's buildFeatures — class features (including
-  // subclass features), racial traits, and feat descriptions, combined and
-  // deduped by name (a feat and its granted feature can otherwise appear
-  // twice). `level` is captured per source (real ddb_parser.js confirms
-  // DDB's own raw shape puts a class feature's own requiredLevel INSIDE its
-  // `.definition` — unlike a Feat's own requiredLevel, which sits on the
-  // OUTER wrapper next to `.definition`, same place featsTable's own
-  // sibling function already reads it from; a racial trait carries no
-  // level at all, 5e grants every one at character creation) — previously
-  // dropped entirely even though featsTable's own output always kept it,
-  // silently losing which level a class/racial feature was actually
-  // granted at. `content-feature-matching.js`'s own promotion step reads
-  // this to record `featureParams[id].grantedAtLevel`.
+  // Class features (including subclass features), racial traits, and feat
+  // descriptions, combined and deduped by name (a feat and its granted
+  // feature can otherwise appear twice). `level` is captured per source: a
+  // class feature's requiredLevel sits INSIDE its `.definition`, unlike a
+  // Feat's, which sits on the outer wrapper; a racial trait carries no level
+  // at all, since 5e grants every one at creation.
+  // content-feature-matching.js's promotion step reads this to record
+  // `featureParams[id].grantedAtLevel`.
   featuresTable(context) {
     const rawCharacter = context.root;
     const classes = Array.isArray(rawCharacter?.classes) ? rawCharacter.classes : [];
-    // DDB's own character-service API returns a class's/subclass's FULL
-    // feature catalog here — every level, not just what this character has
-    // actually reached — confirmed real, user-flagged: Maris Wavedeep
-    // (Warlock 5) had 10th- and 14th-level Fathomless features (Grasping
-    // Tentacles, Fathomless Plunge) on her own sheet despite being nowhere
-    // near those levels. `cls.level` is THIS class's own current level
-    // (not total character level — real for a multiclass character, and
-    // exactly why the filter has to happen per-class, before the
-    // cross-class flatMap merges everything together) — feats
-    // (`rawCharacter.feats` below) need no equivalent LEVEL filter (that
-    // list is only ever what the player has actually chosen, never a
-    // catalog of not-yet-available options), but DOES need isRealDdbFeat's
-    // own disguise-feat filter — see that function's own comment.
+    // DDB's character-service API returns a class's/subclass's FULL feature
+    // catalog here — every level, not just what this character has actually
+    // reached. `cls.level` is THIS class's own current level (not total
+    // character level, real for a multiclass character), which is exactly
+    // why the filter has to happen per-class before the cross-class flatMap
+    // merges everything together. Feats need no equivalent level filter
+    // (only ever what the player chose), but do need isRealDdbFeat's
+    // disguise-feat filter.
     const classFeatures = classes
       .flatMap((cls) => {
         const classLevel = cls.level || 0;
@@ -2767,19 +2423,14 @@ return {
     }, []);
   },
 
-  // Ported from ddb-parser.js's buildProficiencies — buckets every active
-  // modifier by its own type/subType strings (no hardcoded per-item
-  // tables). saves/skills/scores buckets are dropped versus the old
-  // script: savingThrowsTable/skillsTable already cover that ground with
-  // real per-item proficiency levels, so a flat name list here would just
-  // be a worse duplicate.
-  // `defenses`/`languages` are deliberately NOT in this object anymore —
-  // they relocated to `stats.proficiencies.{defenses,languages}` (this
-  // suite's one shared path/shape for both, matching every monster import
-  // mapping's own defenses/languages functions — see the monster-data-
-  // alignment plan), via proficiencyDefenses/proficiencyLanguages below.
-  // Keeping them here too would be the exact "two keys doing the same job"
-  // this suite avoids everywhere else.
+  // Buckets every active modifier by its own type/subType strings, no
+  // hardcoded per-item tables. saves/skills/scores buckets are dropped —
+  // savingThrowsTable/skillsTable already cover that ground with real
+  // per-item proficiency levels.
+  // `defenses`/`languages` deliberately aren't in this object — they
+  // relocate to `stats.proficiencies.{defenses,languages}` (this suite's
+  // one shared path/shape, matching every monster import mapping) via
+  // proficiencyDefenses/proficiencyLanguages below.
   proficienciesTable(context) {
     const { defenses, languages, ...rest } = buildProficiencyBuckets(context);
     return rest;
@@ -2793,24 +2444,16 @@ return {
     return buildProficiencyBuckets(context).languages;
   },
 
-  // Ported from ddb-parser.js's buildAttacks (equipped-weapon half) plus a
-  // synthesized Unarmed Strike (DDB doesn't supply one for non-Monk
-  // characters — every 5e character can make one regardless of class).
-  // Two real corrections versus the old script:
-  //  - Weapon proficiency/melee-ranged classification uses DDB's own
-  //    item.definition.categoryId (1=Simple, 2=Martial) and attackType
-  //    (1=Melee, 2=Ranged) directly — confirmed present on every weapon
-  //    item — instead of the old script's hardcoded WEAPONS.simple/
-  //    martial/ranged name lists. This also drops a real bug: the old
-  //    script granted martial-weapon proficiency to *any* ranged weapon,
-  //    including simple ones (isRanged && martial-weapons check).
-  //  - Damage type prefers DDB's own friendly strings — weapon items'
-  //    definition.damageType (already a string), and for spell-backed
-  //    displayAsAttack actions, that spell's own definition.modifiers
-  //    entry with type:"damage" (also a string — confirmed against a live
-  //    export: Hunter's Mark resolves to "Force" this way). Only a
-  //    non-spell action with *only* a numeric damageTypeId and no string
-  //    anywhere nearby falls back to the damageTypes System lookup.
+  // Equipped-weapon attacks plus a synthesized Unarmed Strike (DDB doesn't
+  // supply one for non-Monk characters, but every 5e character can make
+  // one). Weapon proficiency/melee-ranged classification uses DDB's own
+  // item.definition.categoryId (1=Simple, 2=Martial) and attackType
+  // (1=Melee, 2=Ranged) directly, never a hardcoded weapon-name list.
+  // Damage type prefers DDB's own friendly strings — a weapon's
+  // definition.damageType, or for a spell-backed displayAsAttack action,
+  // that spell's own definition.modifiers entry with type:"damage" — only
+  // falling back to the damageTypes System lookup for a non-spell action
+  // with only a numeric damageTypeId.
   attacksTable(context) {
     const rawCharacter = context.root;
     const modifiers = getActiveModifiers(rawCharacter);
@@ -2950,11 +2593,8 @@ return {
     return { attacksPerAction: 1 + extraAttacks, fightingStyle: determineFightingStyle(context.root?.feats) };
   },
 
-  // Ported from ddb-parser.js's buildSpellcasting — standalone
-  // ability/mod/attack-bonus/save-DC stats. Previously only computed
-  // internally (spells' own toHit/dc) via determineSpellcastingAbility,
-  // which already existed in this file; not exposed as its own field
-  // before now.
+  // Standalone ability/mod/attack-bonus/save-DC stats, exposed as their own
+  // field via determineSpellcastingAbility.
   spellcastingTable(context) {
     const rawCharacter = context.root;
     const classes = Array.isArray(rawCharacter?.classes) ? rawCharacter.classes : [];
@@ -2974,22 +2614,13 @@ return {
     };
   },
 
-  // Ported from ddb-parser.js's buildLimitedUses, simplified against a live
-  // export rather than assumption: the old script treated Pact Magic as a
-  // single object with several possible key-name guesses
-  // (context.pactMagic.totalSlots/slots/maxSlots/...), because at the time
-  // it was written DDB's API apparently didn't return it in a simple shape.
-  // A real export today has `pactMagic` in exactly the same per-level
-  // `{level, used, available}` array shape as `spellSlots` — so both are
-  // read identically here, and the old script's `deriveSpellSlots`
-  // (computing slots from hardcoded full/half/third-caster level tables,
-  // for when DDB's own data was missing) is dropped as unnecessary: DDB
-  // supplies real slot data directly now. Generic limited-use pools
-  // (Ki points, Second Wind, feat-granted uses, ...) come from
-  // actions/features/feats' own limitedUse — reset type is a numeric code
-  // on those (durations lookup, confirmed live: resetType 2 = "Long
-  // Rest"), but already a friendly string on inventory-item limitedUse
-  // (e.g. "Consumable"), so only numbers get looked up.
+  // `pactMagic` has the same per-level `{level, used, available}` array
+  // shape as `spellSlots`, so both are read identically here — DDB supplies
+  // real slot data directly, no need to derive it from caster-level tables.
+  // Generic limited-use pools (Ki points, Second Wind, feat-granted uses)
+  // come from actions/features/feats' own limitedUse — reset type is a
+  // numeric code there (durations lookup) but already a friendly string on
+  // inventory-item limitedUse, so only numbers get looked up.
   limitedUsesTable(context) {
     const rawCharacter = context.root;
     const pools = [];
@@ -3033,13 +2664,10 @@ return {
   },
 
   // Flat `{strength: N, dexterity: N, ...}` — matching Monster/NPC's own
-  // stats.abilities exactly (this suite's one shared shape — see the
-  // monster-data-alignment plan). No longer an array of enriched
-  // {id,name,friendlyName,shortName,score,modifier} objects — that
-  // metadata is already available from the active System's own `abilities`
-  // field definitions (abilityFieldDefs), no need to duplicate it per-
-  // character; `modifier` is derivable via the same `abilityModifier()`
-  // helper Monster/NPC's own UI already uses, not stored.
+  // stats.abilities exactly. Not an array of enriched objects: that
+  // metadata is already available from the System's own `abilities` field
+  // definitions, and `modifier` is derivable via the same
+  // `abilityModifier()` helper the UI already uses, not stored.
   abilitiesTable(context) {
     const modifiers = getActiveModifiers(context.root);
     const scores = calculateAbilityScores(context.root, modifiers);
@@ -3050,15 +2678,10 @@ return {
     return result;
   },
 
-  // Ported from ddb-parser.js's buildHitPoints (never carried over to this
-  // mapping-custom-functions.js rewrite, so DDB imports have never populated
-  // hit points until now). Real DDB characters have no simple "current HP"
-  // field — current is derived from baseHitPoints/bonusHitPoints/
-  // overrideHitPoints/removedHitPoints, the same as DDB's own sheet
-  // computes it. `temp` maps straight from DDB's own temporaryHitPoints —
-  // initially excluded as out of scope, now a real synced field (see the
-  // System's combatBindings.tempHp and the character template's Temp HP
-  // component), so it's included here too.
+  // Real DDB characters have no simple "current HP" field — current is
+  // derived from baseHitPoints/bonusHitPoints/overrideHitPoints/
+  // removedHitPoints, same as DDB's own sheet computes it. `temp` maps
+  // straight from DDB's own temporaryHitPoints.
   hitPoints(context) {
     const rawCharacter = context.root;
     const modifiers = getActiveModifiers(rawCharacter);
@@ -3072,11 +2695,9 @@ return {
     return { max, current: Math.max(0, max - damageTaken), temp: rawCharacter.temporaryHitPoints || 0 };
   },
 
-  // Ported from ddb-parser.js's buildArmorClass (also never carried over) —
-  // found while porting hitPoints above. DDB's export has no flat "armor
-  // class" field either; it's the best equipped-armor value plus Dex
-  // (capped by armor type) plus a shield and any flat AC modifiers, same
-  // computation DDB's own sheet does.
+  // DDB's export has no flat "armor class" field; it's the best
+  // equipped-armor value plus Dex (capped by armor type) plus a shield and
+  // any flat AC modifiers, same computation DDB's own sheet does.
   armorClass(context) {
     const rawCharacter = context.root;
     const modifiers = getActiveModifiers(rawCharacter);
@@ -3137,30 +2758,21 @@ return {
     return buildSkillValues(context.root);
   },
 
-  // Plain string — matching Monster/NPC's own `alignment` shape exactly
-  // (this suite's one shared shape — see the monster-data-alignment plan).
-  // ALIGNMENTS entries (deriveLookupTables) carry `id` matching DDB's own
-  // alignmentId, `friendlyName` (the display name — `name` itself is a
-  // slug, same convention as every other lookup entry in this file);
-  // `shortName` is no longer stored per-character — it's derivable from
-  // the System's own alignments vocabulary, same as every other lookup-
-  // resolved display value in this suite.
+  // Plain string, matching Monster/NPC's own `alignment` shape. ALIGNMENTS
+  // entries carry `id` matching DDB's alignmentId and `friendlyName` (the
+  // display name — `name` itself is a slug).
   alignmentTable(context) {
     const alignmentId = context.root?.alignmentId;
     const match = ALIGNMENTS.find((entry) => entry.id === alignmentId);
     return match?.friendlyName || null;
   },
 
-  // Ported from ddb-parser.js's buildInitiative — everyone technically CAN
-  // have an "initiative" proficiency/expertise modifier (e.g. the Alert
-  // feat's variants, or a subclass feature), hence the same
+  // Everyone technically CAN have an "initiative" proficiency/expertise
+  // modifier (the Alert feat, a subclass feature), hence the same
   // determineProficiencyLevel/applyProficiency path saves/skills use, not
-  // just a flat Dex mod. `{bonus, advantage?, disadvantage?}` — this
-  // suite's one shared initiative shape (see the monster-data-alignment
-  // plan), matching Monster/NPC's own stats.initiative exactly (they only
-  // ever populate `bonus`; advantage/disadvantage are Character-observable
-  // extras, sparse — omitted rather than `false` when absent, same
-  // convention senses/defenses already use).
+  // just a flat Dex mod. `{bonus, advantage?, disadvantage?}` matches
+  // Monster/NPC's stats.initiative — advantage/disadvantage sparse, omitted
+  // rather than `false` when absent.
   initiativeTable(context) {
     const rawCharacter = context.root;
     const modifiers = getActiveModifiers(rawCharacter);
@@ -3178,11 +2790,9 @@ return {
     return result;
   },
 
-  // Ported from ddb-parser.js's buildSenses — passive Perception/
-  // Investigation/Insight (10 + the matching skill's already-computed
-  // value, via the shared buildSkillValues helper) plus every known-range
-  // sense (darkvision/blindsight/tremorsense/truesight, via SENSES —
-  // deriveLookupTables, matching sys.dnd5e.json's own `senses` field) from
+  // Passive Perception/Investigation/Insight (10 + the matching skill's
+  // already-computed value, via buildSkillValues) plus every known-range
+  // sense (darkvision/blindsight/tremorsense/truesight, via SENSES) from
   // active modifiers, race-granted modifiers, and DDB's customSenses,
   // deduped keeping the largest range per sense name.
   sensesTable(context) {
@@ -3307,11 +2917,10 @@ return {
     return formatSigned(proficiencyBonus + (context.spellAbilityMod || 0));
   },
 
-  // Pipeline `source` custom function: gathers spell entries from every bucket
-  // ddb-parser.js's buildSpells reads (context.spells.{class,race,feat} and
-  // classSpells[].spells) into one flat array, each tagged with its source
-  // bucket — the part that's a genuine multi-source assembly, before the
-  // declarative map/dedup/group-by/sort pipeline steps take over.
+  // Pipeline `source` custom function: gathers spell entries from every
+  // bucket (context.spells.{class,race,feat} and classSpells[].spells) into
+  // one flat array, each tagged with its source bucket — the genuine
+  // multi-source assembly part, before the declarative pipeline steps take over.
   collectRawSpells(context) {
     const rawCharacter = context.root;
     const entries = [];

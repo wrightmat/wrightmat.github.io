@@ -1,15 +1,12 @@
 // A labeled image-URL field with a live thumbnail preview and a "Browse
-// Library" dropdown over the shared Token Library (token-library.js,
-// common/data/token-library.json) — the picture equivalent of
-// icon-picker.js's attachIconAutocomplete (same "type a value directly, OR
-// pick a shared saved one" shape), reused identically by every "this record
-// gets a token/portrait image" field in the suite (Orrery's marker Image
-// field, Forge's NPC Image field, Crucible's Monster Image field) so they
-// can never drift into three separately-built pickers.
+// Library" dropdown over the shared Token Library (token-library.js) — the
+// picture equivalent of icon-picker.js's attachIconAutocomplete ("type a
+// value directly, OR pick a shared saved one"), reused by every "this
+// record gets a token/portrait image" field (Orrery marker, Forge NPC,
+// Crucible Monster) so they don't drift into separately-built pickers.
 //
-// Values here are always a literal external URL (paste your own, or pick a
-// saved one) — no upload, no file hosting by this app, same philosophy as
-// the font/soundboard pickers this mirrors.
+// Values are always a literal external URL — no upload/file hosting, same
+// philosophy as the font/soundboard pickers this mirrors.
 import { getAllTokens, registerToken, removeTokenLocally, loadTokenLibrary, saveToken, deleteToken } from "./token-library.js";
 import { disposeTooltips, refreshTooltips } from "./tooltips.js";
 
@@ -31,18 +28,13 @@ function randomId() {
   return `${Math.random().toString(16).slice(2)}-${Date.now()}`;
 }
 
-// `dataManager`/`status` are optional — a caller that only wants the plain
-// URL-field-with-preview half (no library browsing/saving) can omit them and
-// the Browse button simply won't be built. Every real caller in this suite
-// passes both.
+// `dataManager`/`status` are optional — omitting them drops the Browse
+// button, leaving just the plain URL-field-with-preview.
 //
-// `boxed: true` wraps the field in the same bordered "field box" every other
-// center-pane property now uses (see ui-components.js's createFieldBox) —
-// border/rounded corners/padding, and the same small-uppercase-secondary
-// label style — so Image sits visually consistent next to Name/Identity
-// instead of standing out with plain Bootstrap input-group styling. Default
-// stays unboxed for any caller (Orrery's marker Image field) that isn't
-// rendering inside a field-box grid.
+// `boxed: true` wraps the field in the same bordered "field box" other
+// center-pane properties use (ui-components.js's createFieldBox), so Image
+// sits visually consistent next to Name/Identity. Default stays unboxed for
+// a caller (Orrery's marker Image field) not rendering inside that grid.
 export function createTokenImageField({
   id,
   label = "Image",
@@ -198,9 +190,8 @@ export function createTokenImageField({
   function renderList() {
     const query = searchInput.value.trim().toLowerCase();
     const tokens = getAllTokens().filter((token) => !query || token.name.toLowerCase().includes(query));
-    // Disposed before the wipe — each removable row's own "x" carries a real
-    // tooltip now, and this reruns on every search keystroke/add/remove. See
-    // tooltips.js's own BUG CLASS 2.
+    // Disposed before the wipe — each row's "x" carries a real tooltip and
+    // this reruns on every search keystroke/add/remove. See tooltips.js BUG CLASS 2.
     disposeTooltips(listHost);
     listHost.innerHTML = "";
     if (!tokens.length) {
@@ -236,8 +227,7 @@ export function createTokenImageField({
         return;
       }
       const token = { id: randomId(), name, url };
-      // Optimistic — same "update immediately, persist async" flow every
-      // other shared-library add in this suite already uses.
+      // Optimistic — update immediately, persist async.
       registerToken(token);
       renderList();
       addNameInput.value = "";

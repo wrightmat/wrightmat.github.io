@@ -10,11 +10,9 @@ import {
   createIconPickerField,
   createFormFloatingField,
   createEmptyStateCard,
-  // Aliased — inspector-fields.js's own createCollapsibleSection (positional
-  // title/fields/{defaultCollapsed} form) is already imported under the bare
-  // name below; this is the OTHER, object-arg createCollapsibleSection
-  // (label/content/actions/helpTopic), needed here only for the new
-  // Selections section.
+  // Aliased — distinct from inspector-fields.js's positional-args
+  // createCollapsibleSection imported below; this is the object-arg
+  // (label/content/actions/helpTopic) variant, used only for Selections.
   createCollapsibleSection as createFullCollapsibleSection,
   createSearchableCheckList,
   createListRow,
@@ -71,15 +69,10 @@ import {
   randomId,
 } from "./lib/map-model.js";
 import { BaseMapManager } from "./lib/base-maps.js";
-// The shared map-rendering core (also used by the Dashboard's Map widget —
-// see its own header comment) — renderMapLayers is the whole render loop;
-// everything else here is either a pure helper Orrery's own authoring code
-// still calls directly (getGridType, getGridCellKey,
-// createGridCellSelectionEntry, findGridCellById, normalizeGroupMembers,
-// getLayerPositionScale, getLayerSizeScale, getLayerRenderPosition — all
-// identical signatures, no wrapper needed), or one bindLayerDrag's
-// whole-layer drag needs with baseMapManager/state.map injected (the
-// `sharedGet*` aliases, wrapped just below).
+// Shared map-rendering core (also used by the Dashboard's Map widget) —
+// renderMapLayers is the whole render loop; most other imports are pure
+// helpers Orrery calls directly, except the `sharedGet*` aliases, which
+// bindLayerDrag wraps with this file's own baseMapManager/state.map.
 import {
   computeHiddenIds,
   renderMapLayers,
@@ -160,21 +153,12 @@ const { status, undoStack, undo, redo } = initAppShell({
 const auth = initAuthControls({ status });
 const dataManager = auth.dataManager;
 
-// Which System the Settings modal's Marker Resource Bar picker is
-// currently configuring — unlike Crucible/Forge/Vault (each authoring
-// against one explicitly-selected System), Orrery has no System selector
-// at all; the only System that's ever actually relevant here is whichever
-// one the active campaign's own running Encounter is tagged with, the
-// exact same systemId resolveMarkerResourceBarForMarker itself resolves
-// the preference against at render time. Proactively kicks off the active-
-// Encounter fetch itself (not just relying on primeResourceBarCache, which
-// only ever runs as part of rendering an actual map) — Settings is reachable
-// from the header with no map loaded at all, and an active Encounter can
-// exist perfectly well with nothing on-screen to have primed this cache yet
-// (confirmed real bug: this returned "" — "No active encounter" — for a
-// genuinely running Encounter, purely because no map had rendered since
-// page load). No active encounter at all still means there's nothing this
-// setting could apply to yet.
+// Unlike Crucible/Forge/Vault, Orrery has no System selector — the only
+// relevant System is whichever the active campaign's running Encounter is
+// tagged with. Proactively fetches that Encounter rather than relying on
+// primeResourceBarCache (which only runs during actual map rendering) —
+// Settings is reachable with no map loaded, so nothing may have primed the
+// cache yet.
 function currentResourceBarSettingsSystemId() {
   const groupId = getActiveCampaignGroupId();
   if (!groupId) return "";
@@ -183,16 +167,13 @@ function currentResourceBarSettingsSystemId() {
   return encounter?.systemId || "";
 }
 
-// Gear-icon Settings modal (upper-left header, settingsSlotAttr above) —
-// same shared module/visual pattern Crucible's own Combat Scaling/Creature
-// Type/Ability field pickers use. Just the one per-System preference so
-// far: which named `resource`-role binding (see combat-bindings.js's own
+// Gear-icon Settings modal — same shared pattern as Crucible's Combat
+// Scaling/Creature Type/Ability pickers. Currently one per-System
+// preference: which named `resource`-role binding (combat-bindings.js's
 // resolveCombatantStats) the Marker Resource Bar represents, for a System
-// that tracks more than one (d20 Modern's Hit Points + Action Points,
-// Daggerheart's Hope alongside HP, ...) — a System with only one resource
-// never needs this touched at all, since the guessed default already
-// matches resolveCombatantStats' own "first resource is the primary"
-// convention.
+// tracking more than one (e.g. d20 Modern's HP + Action Points). A System
+// with only one resource never needs this — the guessed default already
+// matches resolveCombatantStats' own "first resource is primary" rule.
 initToolSettings({
   toolId: "orrery",
   dataManager,
@@ -213,13 +194,10 @@ initToolSettings({
         },
       ];
     }
-    // Kicks off the fetch if nothing's cached yet (e.g. Settings opened
-    // before any combatant-linked marker triggered primeResourceBarCache) — a
-    // no-op when already cached/in-flight. The modal itself doesn't
-    // live-refresh once this resolves (tool-settings.js has no such hook),
-    // but every combatant marker on the actual map already primes this
-    // during ordinary rendering, well before a GM would reach for Settings
-    // in practice.
+    // No-op if already cached/in-flight. The modal itself doesn't live-
+    // refresh once this resolves (tool-settings.js has no such hook), but
+    // an actual map's combatant markers already prime this during normal
+    // rendering, well before a GM opens Settings in practice.
     ensureSystemResourceBarConfigCached(systemId, () => {});
     const resourceNames = getCachedSystemResourceBarConfig(systemId)?.resourceNames || [];
     if (!resourceNames.length) {
@@ -243,9 +221,8 @@ initToolSettings({
         label: "Marker resource bar",
         helpTopic: "orrery.barResourceName",
         // No separate "Auto-detect" option — the guessed resource IS the
-        // selected value until the GM picks a different one, with " (auto-
-        // detected)" on its own option label as the only indicator (see
-        // feedback_settings_preference_with_guessed_default).
+        // selected value until the GM picks another, "(auto-detected)" on
+        // its own option label the only indicator.
         options: resourceNames.map((name) => ({
           value: name,
           label: name === guessed && !getBarResourceNamePreference(systemId) ? `${name} (auto-detected)` : name,
@@ -258,9 +235,8 @@ initToolSettings({
       },
     ];
   },
-  // Queried live, not via `elements` — the settings slot is built by
-  // initAppShell() itself, above; mountButton fires synchronously right
-  // after that, so the slot already exists in the DOM by then.
+  // Queried live, not via `elements` — initAppShell() builds the settings
+  // slot above, and mountButton fires synchronously right after.
   mountButton: (button) => document.querySelector("[data-orrery-settings-slot]")?.appendChild(button),
 });
 
@@ -269,164 +245,110 @@ initToolSettings({
 // rule and shape as Sanctum's settingCatalog/locationCatalog.
 let mapCatalog = new Map();
 
-// Whether the Draw tool (setupDrawTool) is currently armed — module-scope
-// (not local to setupDrawTool) because renderLayerOverlays' own
-// onVectorPathClick wiring needs to read it too: a drawn path must stay
-// click-through while this is true, so a new stroke can start anywhere,
-// including on top of an existing one.
+// Module-scope, not local to setupDrawTool — renderLayerOverlays' own
+// onVectorPathClick wiring reads it too: a drawn path stays click-through
+// while true, so a new stroke can start anywhere, including atop one.
 let drawModeActive = false;
 
-// Same reasoning as drawModeActive just above — a placed AoE shape must
-// stay click-through while this is true, so a new one can be dropped
-// anywhere, including on top of an existing shape/path.
+// Same reasoning as drawModeActive — a placed AoE shape stays click-through
+// while true, so a new one can drop anywhere, including atop an existing one.
 let shapeModeActive = false;
 
-// The Shape/Effect tool's own placement workflow: while armed, a DRAFT
-// element (draftShapeElement) exists on the SAME layer (draftShapeLayer)
-// it'll eventually be placed on, and the right-pane Inspector renders it
-// through the exact same renderVectorShapeSelectionEditor a real, already-
-// placed shape uses — not a separate simplified view. That's what lets a
-// GM open the panel the instant the tool arms, change type/color there
-// BEFORE ever touching the map, then drag on the map to set Size/Angle/
-// Position, watching the SAME Size/Angle inputs update live as they do —
-// confirmed as the actual ask after two earlier, more limited attempts
-// (a standalone toolbar readout, then a separate simplified "armed"
-// summary) both fell short of "the exact same fields, live." Never pushed
-// into layer.elements until the gesture actually commits (sizeCells > 0 on
-// release) — recordHistory/renderLayerOverlays calls that fire from
-// editing the draft harmlessly no-op/redundantly redraw the REAL,
-// unaffected map in the meantime, since nothing in state.map itself has
-// changed yet. lastShapePresetId/lastShapeValues remember the most
-// recently used type/colors across arm/disarm cycles (captured right
-// before the draft is cleared), so re-arming the tool picks up where the
-// last placement left off, the same continuity a toolbar dropdown's own
-// persisted value used to give for free.
+// While the Shape tool is armed, a DRAFT element exists on its eventual
+// target layer and renders through the SAME renderVectorShapeSelectionEditor
+// a real placed shape uses — so a GM can set type/color before ever
+// touching the map, then drag to set Size/Angle/Position with those same
+// inputs updating live. Never pushed into layer.elements until the gesture
+// commits (sizeCells > 0 on release); edits to the draft before then just
+// harmlessly redraw the unaffected real map. lastShapePresetId/
+// lastShapeValues remember the last-used type/colors across arm/disarm
+// cycles so re-arming picks up where the last placement left off.
 let draftShapeElement = null;
 let draftShapeLayer = null;
 let lastShapePresetId = "circle";
 let lastShapeValues = null;
 
-// One shared "pencil color" for the plain Draw tool (a drawn path's
-// fillColor AND strokeColor both come from this single value) — matching
-// the Dashboard Map widget's identical single drawColor concept
-// (common/js/lib/widgets/map.js) rather than reading a per-layer default
-// from layer.settings — a player placing a drawing via the widget has no
-// "selected vector layer" to read defaults from at all, so a shared
-// toolbar swatch is the only model that works the same in both places.
-// Shape no longer uses this — colors are now per-colorSlot fields on
-// draftShapeElement.values, picked from the right pane, not one shared
-// swatch.
-// Persists across gestures within the session, same "sticky preference"
-// shape as wallSnapEnabled above.
+// One shared "pencil color" for the plain Draw tool (fillColor AND
+// strokeColor both come from this) — matches the Dashboard Map widget's
+// own single drawColor concept, since a player there has no "selected
+// vector layer" to read a per-layer default from. Shape no longer uses
+// this — its colors are per-colorSlot fields on draftShapeElement.values.
+// Persists across gestures within the session.
 let drawColor = "#0f172a";
 
-// Same reasoning as drawModeActive — walls/doors need to stay click-through
-// while a new one is being placed (setupWallTool), same "start anywhere,
-// including on top of an existing one" precedent, and precise vertex
-// placement near an existing wall's own endpoint is a common, expected case
-// (connecting two wall segments).
+// Same reasoning as drawModeActive — a wall/door being placed stays
+// click-through, and precise vertex placement near an existing wall's own
+// endpoint (connecting two segments) is a common, expected case.
 let wallModeActive = false;
-// Same draft-element workflow as draftShapeElement/draftShapeLayer —
-// renderWallSelectionEditor renders draftWallElement directly the whole
-// time the Wall tool is armed, so Type (wall/door — replaces the old
-// standalone toolbar dropdown), Stroke color/width, and Snap to Grid are
-// all live-editable from the moment the tool arms, not just after a wall
-// is actually placed. `points` starts empty and grows as vertices are
-// clicked (setupWallTool's own pointerdown), same array the committed
-// element keeps as-is. lastWallType remembers wall-vs-door across
-// arm/disarm cycles, same continuity lastShapePresetId gives Shape.
+// Same draft-element workflow as draftShapeElement — renderWallSelectionEditor
+// renders draftWallElement live the whole time the Wall tool is armed, so
+// Type/Stroke/Snap-to-Grid are editable before a wall is actually placed.
+// `points` grows as vertices are clicked and is kept as-is by the committed
+// element. lastWallType remembers wall-vs-door across arm/disarm cycles.
 let draftWallElement = null;
 let draftWallLayer = null;
 let lastWallType = "wall";
-// Whether the NEXT placed wall/door's own vertices snap to the grid as
-// they're clicked — defaults on (see createWallElement's own comment for
-// why: fog is only ever square-grid-cell granular anyway, and snapping
-// keeps walls straight/aligned to each other). Persists across gestures
-// within the session, same "sticky preference" shape as lastWallType. A
-// toolbar-level toggle (not draftWallElement.snapToGrid, which is a
-// separate per-element field editable via the inspector's own Snap to Grid
-// switch) because it governs LIVE placement snapping as vertices are
-// clicked — a wall's freeform, multi-vertex geometry can genuinely want
-// off-grid precision mid-placement in a way Shape's single-drag-to-size
-// gesture never needed a toggle for.
+// Whether the NEXT placed wall/door's vertices snap to the grid as they're
+// clicked — defaults on (fog is square-grid-cell granular regardless, and
+// snapping keeps walls aligned). A toolbar-level toggle, not
+// draftWallElement.snapToGrid (a separate per-element inspector field),
+// because it governs live placement snapping as vertices are clicked — a
+// wall's freeform multi-vertex geometry can want off-grid precision
+// mid-placement in a way Shape's single-drag gesture never needed.
 let wallSnapEnabled = true;
 // { preview, polyline } while a click-to-place-vertex gesture is in
-// progress; null otherwise. Module-scope (not local to setupWallTool) so
-// the capture-phase keydown handler and the pointermove/dblclick handlers
-// can all read/mutate the same in-progress state. The vertices themselves
-// live on draftWallElement.points directly, not here.
+// progress; null otherwise. Module-scope so the capture-phase keydown
+// handler and the pointermove/dblclick handlers share it. Vertices
+// themselves live on draftWallElement.points, not here.
 let wallGesture = null;
 
-// Same reasoning as shapeModeActive — a placed Light must stay immediately
-// selectable/draggable even while the Light tool is still armed (matching
-// how a placed shape already works), so this does NOT gate the
-// click-through wiring the way drawModeActive/wallModeActive do.
+// Same reasoning as shapeModeActive, except a placed Light stays
+// immediately selectable/draggable even while armed, so this does NOT
+// gate click-through the way drawModeActive/wallModeActive do.
 let lightModeActive = false;
 
-// Same draft-element workflow as draftShapeElement/draftShapeLayer above,
-// for the Light tool — renderLightSelectionEditor renders it directly, so
-// Range/Color/Opacity/Attach-to-Token are all live-editable from the moment
-// the tool arms, not just after a light is actually placed. No "last used"
-// memory the way Shape has one (a Light has no type to remember, and its
-// own color/opacity defaults are already fixed, sensible values from
-// createLightElement).
+// Same draft-element workflow as draftShapeElement, for the Light tool —
+// Range/Color/Opacity/Attach-to-Token are live-editable before placement.
+// No "last used" memory since a Light has no type to remember.
 let draftLightElement = null;
 let draftLightLayer = null;
 
-// Selecting a Group makes its target grid layer directly clickable —
-// single click adds one cell, click-and-drag paints a sweep — with no
-// separate toggle needed, same immediacy the OLD "select a layer, click a
-// cell" flow already had before Groups existed as their own selection kind.
-// paintTargetLayerId remembers the GM's own "Paint on layer" pick for maps
-// with more than one grid layer and no Fog-of-War link to fall back on
-// (resolvePaintTargetLayer's own priority order) — persists across
-// switching between groups on purpose, not reset on every selection change.
-// paintDragBefore is the pre-gesture snapshot a whole drag batches into ONE
-// undo entry, same "commit once at drag-end" pattern shape/marker dragging
-// already use.
+// Selecting a Group makes its target grid layer directly clickable (single
+// click adds a cell, drag paints a sweep) with no separate toggle needed.
+// paintTargetLayerId remembers the GM's "Paint on layer" pick for maps with
+// more than one grid layer and no Fog-of-War link to fall back on —
+// persists across group switches on purpose. paintDragBefore is the
+// pre-gesture snapshot a whole drag batches into one undo entry.
 let paintTargetLayerId = null;
 let paintDragBefore = null;
 
-// Set by showMapEmptyState/hideMapEmptyState — updateMapToolbarState's own
-// Delete gate (mapAllowsDelete) checks THIS too, not just ownership.
-// Without it, an admin account's own "admins can delete anything" bypass in
-// ownerOrAdminAllows made Delete re-enable itself the instant
-// populateMapSelect (called right after showMapEmptyState at startup) ran
-// updateMapToolbarState again — the exact "two mechanisms fighting over one
-// element's disabled state" bug this suite keeps tripping over, just for
-// an admin session specifically (any other tier correctly saw the
-// placeholder's random, never-saved id fail ownership and stayed
-// disabled, which is why this was easy to miss testing as a non-admin).
+// Set by showMapEmptyState/hideMapEmptyState — updateMapToolbarState's
+// Delete gate (mapAllowsDelete) checks THIS too, not just ownership, since
+// an admin account's "can delete anything" bypass would otherwise re-enable
+// Delete for the placeholder map the instant populateMapSelect re-ran
+// updateMapToolbarState at startup.
 let mapIsLoaded = false;
 
-// True once state.map is a REAL, previously-saved server record (loaded via
-// loadMapById with a real id, or just successfully saved for the first
-// time) — false for a brand-new, never-saved map (createMapModel's own
-// randomId(), which never appears in mapCatalog at all since nothing was
-// ever fetched for it). currentUserHasFullMapAccess treats "not yet saved
-// anywhere" as full access unconditionally — confirmed real bug this fixes:
-// mapAllowsDelete's own safe "no catalog entry = restricted" default (dead
-// right for an existing map this viewer genuinely has no access to) also
-// fired for a map that simply doesn't exist as a record YET, hiding the
-// entire authoring UI — including the Save button needed to create it at
-// all — the instant anyone opened Orrery fresh or clicked New Map.
+// True once state.map is a REAL, previously-saved server record — false
+// for a brand-new never-saved map. currentUserHasFullMapAccess treats "not
+// yet saved anywhere" as full access unconditionally; without this,
+// mapAllowsDelete's safe "no catalog entry = restricted" default (correct
+// for a map this viewer genuinely lacks access to) also fired for a map
+// that simply doesn't exist as a record yet, hiding the whole authoring UI
+// — including the Save button needed to create it — on every fresh load.
 let mapExistsOnServer = false;
 
 // Set by loadMapById — needed by the restricted-viewer marker-move/door-
-// toggle persistence below (persistRestrictedMarkerMove/onDoorClickRestricted),
-// the same anonymous share-link auth loadMapById itself already forwards to
-// dataManager.get.
+// toggle persistence below, the same share-token loadMapById already
+// forwards to dataManager.get.
 let currentShareToken = "";
 
-// Set true for the duration of a restricted viewer's marker drag
-// (buildRestrictedMapOptions' own onDragStateChange) — watchCurrentMap's
-// own onChange below skips an incoming poll/live-stream update while this
-// is true, the same way it already skips one whenever state.selection is
-// set (a GM must select the Marker Layer before dragging, which already
-// protects THEIR drag) — a restricted viewer has no selection concept at
-// all, so it needed its own signal. See buildRestrictedMapOptions' own
-// comment for the confirmed "drag pops straight to the final position
-// instead of tracking the cursor" bug this fixes.
+// Set true for the duration of a restricted viewer's marker drag —
+// watchCurrentMap's onChange below skips an incoming poll/live-stream
+// update while true, the same way it skips one whenever state.selection is
+// set for a GM's own drag. A restricted viewer has no selection concept,
+// so it needed its own signal to avoid a drag popping to its final
+// position instead of tracking the cursor.
 let isDraggingRestrictedMarker = false;
 
 const mapContainer = document.querySelector("#orrery-map");
@@ -441,13 +363,9 @@ const baseMapManager = new BaseMapManager({
   },
 });
 
-// Small local helpers for two button shapes this file uses that don't map
-// cleanly onto createIconButton's "compact"/"toolbar" kinds: a plain-link
-// "About X" help tooltip (used for the Layers/Groups/Map Properties/
-// Selection section headers below — JSON Data's own equivalent was removed,
-// see jsonDataPanel's own construction) and a small btn-group-sm "Add X"
-// action with a visually-hidden label (compact sizing, but WITH a hidden
-// label span, unlike every other compact-kind button in the suite).
+// Two button shapes createIconButton's "compact"/"toolbar" kinds don't
+// cleanly cover: a plain-link "About X" help tooltip, and a small
+// btn-group-sm "Add X" action with a visually-hidden label.
 function createHelpButton(title, label) {
   const button = document.createElement("button");
   button.type = "button";
@@ -467,21 +385,16 @@ function withHiddenLabel(button, label) {
   return button;
 }
 
-// Built and mounted before `elements` below queries for these buttons by
-// their data-action/data-add-*/data-selection-clear attribute, so every
-// existing selector/disabled-state call site elsewhere in this file keeps
-// working unchanged. New/Save/Duplicate/Delete/Undo/Redo, in that order —
-// Import/Export moved into the JSON Data panel's own onImport/onExport
-// (see jsonDataPanel's own construction below) instead of living here as
-// standalone buttons.
+// Built before `elements` below queries these by data-action attribute, so
+// every disabled-state call site elsewhere keeps working unchanged.
+// Import/Export live in the JSON Data panel instead of as standalone buttons.
 createToolbarButtonGroup([
   { action: "new", icon: "tabler:map-plus", label: "New Map", attrs: { "data-action": "new-map" } },
   { action: "save", label: "Save Map", disabled: true, attrs: { "data-action": "save-layout" } },
   { action: "duplicate", label: "Duplicate Map", attrs: { "data-action": "duplicate-map" } },
   { action: "delete", label: "Delete Map", disabled: true, attrs: { "data-action": "delete-map" } },
 ]).forEach((button) => document.querySelector("[data-map-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — same convention every other
-// tool's toolbar now uses (see forge/js/app.js's own comment).
+// A visual break only, not functional — same convention as other tools.
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-action": "undo-layout" } },
   { action: "redo", label: "Redo", attrs: { "data-action": "redo-layout" } },
@@ -552,11 +465,9 @@ document.querySelector("[data-selection-clear-mount]")?.appendChild(
   })
 );
 
-// Builds and mounts a collapsible-section chevron toggle via the shared
-// factory, for a header whose other content (label, help/clear buttons)
-// stays static HTML — the section-level createCollapsibleSection isn't used
-// here since it would rebuild the whole header, conflicting with those
-// already-mounted siblings.
+// Builds a collapsible-section chevron toggle for a header whose other
+// content stays static HTML — the section-level createCollapsibleSection
+// isn't used since it would rebuild the whole header.
 function createCollapsibleToggleButton(mountSelector, collapsed) {
   const button = createIconButton({
     icon: "tabler:chevron-right",
@@ -568,12 +479,10 @@ function createCollapsibleToggleButton(mountSelector, collapsed) {
   return button;
 }
 
-// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
-// for why: an appended-into wrapper stays an empty-but-in-flow flex item
-// even while its field is conditionally hidden, silently spending a full
-// gap-3 on both sides of it. Any class the static mount div itself carried
-// is merged onto the built field first so removing the wrapper doesn't
-// lose that layout.
+// replaceWith, not appendChild — an appended-into wrapper stays an
+// empty-but-in-flow flex item even while its field is conditionally
+// hidden, silently spending a gap-3 on both sides. The mount div's own
+// class is merged onto the built field first so its layout isn't lost.
 function mountField(key, element) {
   const mount = document.querySelector(`[data-field-mount="${key}"]`);
   if (!mount) return;
@@ -587,9 +496,8 @@ mountField(
     dataAttr: "data-map-select", helpTopic: "orrery.maps",
   })
 );
-// Selections — expanded by default, matching every other tool's own
-// left-pane Selections section. Just the one Map select here, but wrapped
-// in the same collapsible shape for suite-wide consistency.
+// Selections — expanded by default, matching every other tool's left-pane
+// Selections section.
 {
   const selectionsSection = createFullCollapsibleSection({
     label: "Selections",
@@ -598,10 +506,7 @@ mountField(
   });
   document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
 }
-// Same icon+text+tooltip toggle shape Press's own align-x/align-y groups
-// use (createButtonCheckGroup already supports it natively) — was plain
-// text-only buttons before, the one field in this panel not matching the
-// suite's standard icon-toggle convention.
+// Same icon+text+tooltip toggle shape as Press's align-x/align-y groups.
 mountField(
   "base-map-type",
   createButtonCheckGroup({
@@ -615,11 +520,9 @@ mountField(
     ],
   })
 );
-// Primary/standalone right-pane fields all use the floating-label shape
-// (createFormFloatingField) — the same convention Workbench's own inspector
-// uses for a single full-width field — not createCompactField, which is
-// reserved for fields condensed into a dense paired row (Image Width/Height
-// just below).
+// Primary/standalone right-pane fields use the floating-label shape
+// (createFormFloatingField), same as Workbench's inspector — not
+// createCompactField, reserved for fields condensed into a dense row.
 mountField("base-map-image-src", createFormFloatingField({ type: "text", id: "base-map-image-src", label: "Image URL", dataAttr: "data-base-map-image-src", placeholder: " " }));
 mountField(
   "map-name",
@@ -628,11 +531,10 @@ mountField(
     dataAttr: "data-map-name", placeholder: "Map name",
   })
 );
-// One scale/unit for the whole map (not per-grid-layer — a map's grid
-// squares always represent the same real-world distance no matter which
-// layer happens to be selected). Deliberately no default value stamped in
-// here — see createMapModel's own comment; the Measure tool checks both are
-// actually set and disables itself otherwise, rather than silently
+// One scale/unit for the whole map, not per-grid-layer — a map's grid
+// squares always represent the same real-world distance regardless of
+// which layer is selected. No default value stamped in; the Measure tool
+// checks both are set and disables itself otherwise, rather than silently
 // measuring against an invented number.
 mountField(
   "map-measurement",
@@ -644,21 +546,15 @@ mountField(
     { columns: 2 }
   )
 );
-// The view a map ALWAYS opens to (see resolveInitialView, map-model.js) —
-// unlike Scale per cell/unit just above, these DO ship a real default (1 /
-// 0 / 0) rather than starting unset, matching createMapModel's own
-// initialView default exactly, so a brand-new map's fields already show
-// the values it'll actually open at.
+// The view a map ALWAYS opens to (resolveInitialView, map-model.js) —
+// unlike Scale per cell/unit above, these ship a real default (1/0/0)
+// matching createMapModel's own initialView, so a fresh map's fields
+// already show what it'll open at.
 // Position X/Y only means anything for image/canvas maps — a tile map's
-// view is addressed by center lat/lng + zoom (TileBaseMap.setView never
-// even reads pan), so Position X/Y is currently a true no-op there.
-// Confirmed as the actual cause of "the Initial X/Y settings don't seem to
-// do anything": on a tile map, they genuinely don't yet. Hiding them for
-// that type (renderBaseMapSettings toggles .orrery-initial-position-field,
-// same "show/hide by baseMap.type" convention data-base-map-settings
-// already uses just above) is honest about the current limitation instead
-// of leaving two fields that quietly do nothing. Initial Zoom stays
-// visible/functional for every type.
+// view is addressed by center lat/lng + zoom, so Position X/Y is a true
+// no-op there. renderBaseMapSettings hides those two fields for that type
+// (honest about the limitation) while Initial Zoom stays functional for
+// every type.
 const initialViewRow = createFieldRow(
   [
     createCompactField({ type: "number", id: "map-initial-zoom", label: "Initial Zoom", dataAttr: "data-map-initial-zoom", min: 0.1, step: 0.1 }),
@@ -677,10 +573,10 @@ const tileProviderField = createFormFloatingField({
 });
 tileProviderField.classList.add("orrery-provider-input");
 mountField("base-map-tile-provider", tileProviderField);
-// Quick-pick options carry their tile URL/zoom payload as dataset attrs read
-// by the change handler below (~L2650) — createFormFloatingField's `options`
-// param only knows {value, label}, so the payload is stamped onto the built
-// <option> elements afterward rather than hand-writing this select in HTML.
+// Quick-pick options carry their tile URL/zoom payload as dataset attrs
+// read by the change handler below — createFormFloatingField's `options`
+// only knows {value, label}, so the payload is stamped onto the built
+// <option> elements afterward.
 const TILE_QUICK_PICKS = {
   "forgotten-realms": { url: "https://loremaps.github.io/LoreMaps-Faerun-Tiles/Tiles/{z}/{x}/{y}.png", maxZoom: "6", initialZoom: "3" },
   eberron: { url: "https://eberronmap.johnarcadian.com/worldbin/eberron/{z}/{x}/{y}.jpg", maxZoom: "7", initialZoom: "2.75" },
@@ -707,9 +603,8 @@ tileQuickPickField.querySelectorAll("option").forEach((option) => {
 });
 mountField("base-map-tile-quick-pick", tileQuickPickField);
 // Free text, not type="number" — a number input rejects "%" at the browser
-// level, and these need to accept blank (native size), a literal pixel
-// count, or a "NN%" scale-of-native value (see base-maps.js's own
-// applyImageDimensions/resolveImageDimension for how each is resolved).
+// level, and these accept blank (native size), a pixel count, or "NN%"
+// (see base-maps.js's applyImageDimensions/resolveImageDimension).
 mountField(
   "base-map-image-size",
   createFieldRow(
@@ -748,11 +643,8 @@ const elements = {
   imageWidth: document.querySelector("[data-base-map-image-width]"),
   imageHeight: document.querySelector("[data-base-map-image-height]"),
   canvasBackground: document.querySelector("[data-base-map-canvas-background]"),
-  // Built below (not queried) — the collapsible-toggle chevron button now
-  // comes from the shared createIconButton factory instead of static
-  // markup; everything else in each section's header (label, help mount,
-  // clear-selection mount) stays hand-authored HTML since it predates and
-  // is unrelated to the toggle itself.
+  // Built below (not queried) — the chevron toggle comes from the shared
+  // createIconButton factory; the rest of each header stays hand-authored HTML.
   baseMapToggle: createCollapsibleToggleButton("[data-base-map-toggle-mount]", true),
   baseMapPanel: document.querySelector("[data-base-map-panel]"),
   selectionToggle: createCollapsibleToggleButton("[data-selection-toggle-mount]", true),
@@ -776,12 +668,9 @@ const elements = {
   zoomReset: document.querySelector("[data-zoom-reset]"),
   measureToggle: document.querySelector("[data-measure-toggle]"),
   // Tooltip trigger lives on this wrapping span, not the button itself — a
-  // native `disabled` button doesn't reliably fire the hover/focus events
-  // Bootstrap's tooltip listens for in every browser, so a tooltip attached
-  // directly to the button can silently never show while it's disabled
-  // (confirmed: exactly what happened here). Standard Bootstrap pattern for
-  // "explain why this is disabled" — see their own docs' disabled-button
-  // tooltip example.
+  // native `disabled` button doesn't reliably fire hover/focus events, so a
+  // tooltip attached directly to it can silently never show. Standard
+  // Bootstrap pattern for explaining a disabled control.
   measureToggleWrap: document.querySelector("[data-measure-toggle-wrap]"),
   measureReadout: document.querySelector("[data-measure-readout]"),
   drawToggle: document.querySelector("[data-draw-toggle]"),
@@ -822,31 +711,25 @@ const elements = {
   viewPan: document.querySelector("[data-view-pan]"),
 };
 
-// Assigned once the hidden file-picker input is actually built (see the
-// Import/Export wiring further below, in the same place it always lived) —
-// onImport just needs a stable closure to call into once that's ready,
-// same reasoning applyMapSnapshot/watchCurrentMap etc. below are also only
-// resolved at click time, well after every declaration in this module has
-// run.
+// Assigned once the hidden file-picker input is built further below —
+// onImport just needs a stable closure to call once that's ready, resolved
+// at click time like applyMapSnapshot/watchCurrentMap elsewhere.
 let importInput = null;
 const jsonDataPanel = createJsonDataPanel({
   label: "JSON Data",
   getData: () => state.map,
   // Reuses the same Blob/anchor/download mechanics Crucible/Vault/Sanctum
-  // already share for "download this record as a .json file" — an identity
-  // shape function, since a map export is a portable copy of itself, not a
-  // Press-ingestion shape like those tools' own records.
+  // share — an identity shape function, since a map export is a portable
+  // copy of itself, not a Press-ingestion shape.
   onExport: () => exportRecordAsJson(state.map, (map) => map),
   onImport: () => importInput?.click(),
 });
 const renderJsonPreview = jsonDataPanel.render;
 
-// Wraps the raw preview renderer so every one of this file's many renderJson()
-// call sites (already sitting after essentially every edit — layer/marker/
-// view/property changes, drag-end, etc.) also re-evaluates the Save button's
-// dirty-gated disabled state, without having to hunt down and touch each one
-// individually. updateMapToolbarState is a function declaration (hoisted), so
-// this is safe to reference here even though it's defined later in the file.
+// Wraps the raw preview renderer so every renderJson() call site (after
+// essentially every edit) also re-evaluates the Save button's dirty-gated
+// state, without touching each call site individually. updateMapToolbarState
+// is hoisted, so referencing it here before its definition is safe.
 function renderJson() {
   renderJsonPreview();
   updateMapToolbarState();
@@ -854,9 +737,8 @@ function renderJson() {
 
 const LAYER_SETTINGS_SCHEMA = {
   vector: [
-    // Labeled "Outline" (not "Stroke") to match Marker's own outlineColor/
-    // outlineWidth vocabulary — same underlying key (strokeColor/
-    // strokeWidth, unchanged — a display rename only, no data migration).
+    // Labeled "Outline" to match Marker's outlineColor/outlineWidth
+    // vocabulary — a display rename only; underlying keys are unchanged.
     { key: "strokeColor", label: "Outline color", type: "color" },
     { key: "fillColor", label: "Fill color", type: "color" },
     { key: "strokeWidth", label: "Outline width", type: "number", min: 1, step: 1 },
@@ -875,8 +757,7 @@ const LAYER_SETTINGS_SCHEMA = {
     { key: "lineColor", label: "Line color", type: "color" },
   ],
   // Width/Height aren't schema-driven — they need the free-text "blank,
-  // NN%, or px" handling createDimensionField provides (see
-  // renderLayerSelectionEditor's own raster branch), not
+  // NN%, or px" handling createDimensionField provides, not
   // buildLayerSettingField's plain numeric field.
   raster: [{ key: "src", label: "Image URL", type: "text" }],
   marker: [
@@ -909,13 +790,10 @@ const setSelectionCollapsed = bindCollapsibleToggle(elements.selectionToggle, el
   collapseLabel: "Collapse selection",
 });
 
-// Map Properties and Selection share one "what's the GM focused on right
-// now" spotlight — expanding one collapses the other, rather than letting
-// both sit open (or both collapsed) at once. `selectionExpanded` drives
-// both: true when a layer/group/view/marker/grid-cells selection is active
-// (Selection open, Map Properties closed), false when there's nothing
-// selected (a freshly loaded/new map — Map Properties open, Selection
-// closed).
+// Map Properties and Selection share one "what's the GM focused on"
+// spotlight — expanding one collapses the other. `selectionExpanded` is
+// true when a layer/group/view/marker/grid-cells selection is active
+// (Selection open), false when nothing is selected (Map Properties open).
 function setPanelFocus(selectionExpanded) {
   setSelectionCollapsed(!selectionExpanded);
   setBaseMapCollapsed(selectionExpanded);
@@ -927,12 +805,9 @@ function normalizeTier(tier) {
   return typeof tier === "string" ? tier.trim().toLowerCase() : "";
 }
 
-// No second "default to every current layer/group id" argument anymore — that used
-// to exist ONLY because layerIds was an allow-list (an unset one had to be filled
-// with every id that existed at normalize time, or the view would show nothing).
-// hiddenLayerIds/hiddenElementIds are deny-lists, so an unset one already means
-// "nothing hidden" on its own; no pre-population needed, and nothing here depends
-// on state.map.layers/groups existing yet.
+// hiddenLayerIds/hiddenElementIds are deny-lists, so an unset one already
+// means "nothing hidden" — no pre-population needed, and nothing here
+// depends on state.map.layers/groups existing yet.
 function normalizeView(view) {
   const safeView = view && typeof view === "object" ? view : {};
   const name = typeof safeView.name === "string" && safeView.name.trim() ? safeView.name.trim() : "New View";
@@ -956,41 +831,31 @@ function normalizeView(view) {
   };
 }
 
-// Shown at page load and never since — every real load path (New Map,
-// picking a saved map, an undo/redo landing on real map data, a
-// spotlighted ?map= link) funnels through applyMapSnapshot, which calls
-// hideMapEmptyState() unconditionally. There's still a harmless, never-
-// rendered createMapModel() sitting in state.map underneath this the whole
-// time (avoids having to make every single one of this file's many
-// state.map.* reads null-safe) — this overlay's only job is making sure
-// nobody ever SEES that placeholder or the raw tile map it'd otherwise
-// mount, until they've actually picked or created something.
-// Add Layer/Add Group/Add View all mutate state.map directly with no
-// selection step first (unlike every other mutating action, which needs
-// something already selected/loaded to act on) — the only thing gating
-// them is a real map existing to add to at all, so they toggle on exactly
-// the same "is a real map loaded" signal the empty-state canvas itself
-// uses, not a separate flag.
+// Shown at page load and never since — every real load path funnels
+// through applyMapSnapshot, which calls hideMapEmptyState() unconditionally.
+// A harmless, never-rendered createMapModel() still sits in state.map
+// underneath (avoids making every state.map.* read null-safe); this
+// overlay's only job is making sure nobody sees that placeholder until
+// they've actually picked or created something.
+// Add Layer/Group/View mutate state.map directly with no selection step —
+// the only gate is a real map existing to add to, so they toggle on the
+// same "is a real map loaded" signal the empty-state canvas uses.
 function setMapActionsEnabled(enabled) {
   elements.layerButtons.forEach((button) => {
     button.disabled = !enabled;
   });
   if (elements.groupAdd) elements.groupAdd.disabled = !enabled;
   if (elements.viewAdd) elements.viewAdd.disabled = !enabled;
-  // Import/Export/Duplicate all act on state.map directly with no
-  // map-existence check of their own (same "nothing gates them but a real
-  // map being loaded" reasoning as Add Layer/Group/View above) — Export
-  // would otherwise happily dump the harmless placeholder createMapModel()
-  // as if it were real map data, Import would silently overwrite it
-  // instead of visibly failing, and Duplicate would have nothing real to
-  // copy.
+  // Same "gated only by a real map being loaded" reasoning as above —
+  // otherwise Export would dump the placeholder createMapModel() as if
+  // real, Import would silently overwrite it, and Duplicate would have
+  // nothing real to copy.
   if (jsonDataPanel.importButton) jsonDataPanel.importButton.disabled = !enabled;
   if (jsonDataPanel.exportButton) jsonDataPanel.exportButton.disabled = !enabled;
   if (elements.duplicateMapButton) elements.duplicateMapButton.disabled = !enabled;
-  // Delete has its own, more specific gate (mapAllowsDelete — ownership,
-  // not just "is a map loaded"), reapplied by updateMapToolbarState once a
-  // real map is actually loaded — only force it OFF here when there's no
-  // map to even consider deleting; never force it ON and fight that check.
+  // Delete has its own, more specific gate (mapAllowsDelete — ownership),
+  // reapplied by updateMapToolbarState once a real map loads — only force
+  // OFF here; never force ON and fight that check.
   if (!enabled && elements.deleteMapButton) {
     elements.deleteMapButton.disabled = true;
   }
@@ -1000,16 +865,11 @@ function showMapEmptyState() {
   mapIsLoaded = false;
   elements.mapEmptyState?.classList.remove("d-none");
   elements.viewPanel?.classList.add("d-none");
-  // Map Properties otherwise showed every field (Name, Base Map settings,
-  // Measurement, Initial View) sitting there blank/at-default with no map
-  // to actually belong to — confusing, since a blank Name field or a
-  // default Tile/OSM radio reads as "this is the map's real state," not
-  // "there is no map." Collapsing the section itself (same mechanism the
-  // toggle button drives — setBaseMapCollapsed already defaults to
-  // collapsed) represents "nothing to see" instead of a separate
-  // placeholder line of text; hideMapEmptyState's own caller
-  // (applyMapSnapshot -> setPanelFocus(false)) re-expands it once a real
-  // map exists.
+  // Otherwise Map Properties shows every field blank/at-default with no
+  // map to belong to — a blank Name or default Tile radio reads as "this
+  // is the map's real state," not "there is no map." Collapsing the
+  // section represents "nothing to see"; applyMapSnapshot's own
+  // setPanelFocus(false) re-expands it once a real map exists.
   setBaseMapCollapsed(true);
   setMapActionsEnabled(false);
 }
@@ -1029,38 +889,29 @@ function applyMapSnapshot(snapshot) {
   if (!state.map.views) {
     state.map.views = [];
   }
-  // Backward-compatible with maps saved before the Measure tool's scale/unit
-  // moved to the map level (see createMapModel's own comment) — an older
-  // saved map just has no measurement configured yet, same as a brand-new
-  // one, not a crash.
+  // Backward-compatible with maps saved before per-map measurement
+  // existed — an older map just has no measurement configured yet.
   if (!state.map.measurement) {
     state.map.measurement = { scale: null, unit: "" };
   }
   state.map.views = state.map.views.map((view) => normalizeView(view));
   // Backward-compatible with maps saved before Initial Zoom/Position
-  // existed — gives the new Map Properties fields something concrete to
-  // read/edit (resolveInitialView below tolerates a missing initialView
-  // fine either way).
+  // existed (resolveInitialView tolerates a missing initialView anyway).
   if (!state.map.initialView) {
     state.map.initialView = { zoom: 1, pan: { x: 0, y: 0 } };
   }
-  // Backward-compatible with layers saved before a settings key existed
-  // (e.g. Marker's outlineWidth/outlineColor/showLabels) — a merge, not a
-  // replace, so anything the GM already configured is untouched; this is
-  // what makes "the input shows blank instead of the real 2px default"
-  // impossible going forward, for this or any future new layer setting,
-  // rather than special-casing each one's own field-building code to guess
-  // a fallback the underlying data never actually had.
+  // Backward-compatible with layers saved before a settings key existed —
+  // a merge, not a replace, so anything already configured is untouched;
+  // this covers any future new layer setting too, not just today's.
   (state.map.layers || []).forEach((layer) => {
     layer.settings = { ...createLayerSettings(layer.type), ...(layer.settings || {}) };
   });
   state.selection = { kind: null, id: null, layerId: null, cells: [], elements: [], anchor: null };
   hideMapEmptyState();
-  // Always opens at the map's OWN configured Initial Zoom/Position, never
-  // wherever a previous editing session's camera happened to be left —
-  // state.map.view keeps live-syncing during THIS session same as before
-  // (see onViewChange), so Reset/the floating view details panel keep
-  // working exactly as before; only what a FRESH load starts at changes.
+  // Always opens at the map's own configured Initial Zoom/Position, never
+  // wherever a previous session's camera was left — state.map.view still
+  // live-syncs during this session (onViewChange), so only what a fresh
+  // load starts at changes.
   state.map.view = resolveInitialView(state.map);
   baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
   if (elements.mapNameInput) {
@@ -1091,21 +942,15 @@ function applyMapSnapshot(snapshot) {
 }
 
 // Owner-or-admin, or a local/anonymous entry — deliberately NOT
-// ownership.js's own allowsDelete (which also treats a plain share-level
-// "edit" permission as sufficient, the right call for every other kind's
-// delete gate — Sanctum's settingAllowsDelete/locationAllowsDelete, Loom's
-// systemAllowsDelete, etc). A Map can no longer follow that pattern: every
-// map share is now unconditionally "edit" (server/shares.py's own
-// _normalize_permissions), purely so a player's own narrow, client-
-// restricted write-back (moving their own owned character's token — this
-// file's own isMarkerDraggableRestricted) is even possible at all — it no
-// longer signals "this person is a trusted co-author of the whole map."
-// Reusing allowsDelete here regressed exactly the bug this file's own
-// restricted marker-drag gate was built to fix: with every map share now
-// "edit," `allowsDelete` (and therefore currentUserHasFullMapAccess below,
-// which every restricted-viewer check branches on) returned true for ANY
-// campaign member, silently granting full authoring access — move any
-// marker, see the Delete Map button, everything — to a mere player.
+// ownership.js's own allowsDelete, which treats a plain share-level "edit"
+// permission as sufficient (right for every other kind's delete gate). A
+// Map can't follow that: every map share is unconditionally "edit"
+// (server/shares.py) purely so a player's own restricted write-back
+// (moving their own character's token) is possible at all — it no longer
+// signals "trusted co-author of the whole map." Reusing allowsDelete here
+// would make it (and currentUserHasFullMapAccess below, which every
+// restricted-viewer check branches on) return true for ANY campaign
+// member, silently granting full authoring access to a mere player.
 function mapAllowsDelete(id) {
   if (dataManager?.getUserTier() === "admin") return true;
   const metadata = mapCatalog.get(id);
@@ -1114,76 +959,62 @@ function mapAllowsDelete(id) {
   return matchesOwner(metadata, { session: dataManager?.session });
 }
 
-// Same shape/reasoning as Sanctum's refreshSettingCatalog: ownership
-// metadata comes from a dedicated dataManager.list() call (not the full
-// fetched body), and local-only entries are always deletable.
+// Same shape as Sanctum's refreshSettingCatalog: ownership metadata comes
+// from a dedicated dataManager.list() call, and local-only entries are
+// always deletable.
 async function refreshMapCatalog(ids) {
   mapCatalog = await refreshOwnershipCatalog(dataManager, "map", ids);
 }
 
 // Tiered Views (state.map.views) only ever filter what a non-owner sees —
-// the map's own owner/editor always gets full, unfiltered access (they're
-// authoring it; Views are a presentation concern for viewers). mapAllowsDelete
-// already captures exactly this "does the current user actually own this
-// map (or is admin)" check — see its own comment for why that's ownership-
-// only now, not the broader owner-or-edit-shared rule most other kinds use.
+// the owner/editor always gets full, unfiltered access, since Views are a
+// presentation concern for viewers, not the author. mapAllowsDelete
+// already captures the right "owns this map, or admin" check.
 function currentUserHasFullMapAccess() {
   if (!mapExistsOnServer) return true;
   return mapAllowsDelete(state.map.id);
 }
 
-// The tier a non-owner viewer's Views filtering resolves against. Currently
-// just the signed-in account's own tier — the architecture plan's other
-// resolution path (a campaign group's share-link visitor counting as the
-// owner's top tier, everyone else as "player") depends on Orrery gaining a
-// share-link surface of its own, which doesn't exist yet; that bridge is a
-// documented follow-up, not faked here.
+// The tier a non-owner viewer's Views filtering resolves against —
+// currently just the signed-in account's own tier. A share-link visitor
+// counting as the owner's top tier depends on Orrery gaining its own
+// share-link surface, which doesn't exist yet.
 function getEffectiveViewerTier() {
   return dataManager?.getUserTier() || "free";
 }
 
-// The actual filtering logic lives in lib/map-viewer.js now — shared with
-// the Dashboard's Map widget so there's exactly one implementation. See its
-// own doc comment for the deny-list ("hidden", not "visible") contract.
+// The actual filtering logic lives in lib/map-viewer.js, shared with the
+// Dashboard's Map widget so there's exactly one implementation — a
+// deny-list ("hidden", not "visible") contract.
 function getHiddenLayerIds() {
   return computeHiddenIds(state.map, getEffectiveViewerTier(), currentUserHasFullMapAccess())?.layers ?? null;
 }
 
 // Snaps a marker's dropped/placed position to the nearest cell center —
-// relocated to lib/map-viewer.js (imported below as
-// snapMarkerPositionToGridShared, taking baseMapManager/map as explicit
-// parameters instead of this file's own closed-over state) so the
-// Dashboard's Map widget can call the exact same logic for a player's own
-// token drag, instead of saving an unsnapped raw position (confirmed real
-// bug — a visibly different, and per this suite's own top-priority parity
-// rule, wrong feel from Orrery's own drag). This thin wrapper just supplies
-// this file's own state/baseMapManager so the existing call sites below
-// don't all need editing.
+// lives in lib/map-viewer.js (as snapMarkerPositionToGridShared, taking
+// baseMapManager/map as explicit params) so the Dashboard's Map widget can
+// call the identical logic for a player's own token drag, matching
+// Orrery's own drag feel exactly. This wrapper just supplies this file's
+// closed-over state/baseMapManager.
 function snapMarkerPositionToGrid(position, markerLayer) {
   return snapMarkerPositionToGridShared(baseMapManager, state.map, position, markerLayer);
 }
 
-// Same "convert to true container-relative content-space, snap, convert
-// back" shape as snapMarkerPositionToGrid just above, but rounds to the
-// nearest grid LINE INTERSECTION (a corner) instead of the nearest cell
-// CENTER. A token filling a whole cell belongs centered on it; an AoE
-// template's origin is where a player would actually measure range from —
-// the corner between cells — so the shape's own edges land on grid lines
-// instead of cutting cells in half. Skips the getGridCoordFromPoint/
-// getGridCellPixelRect round-trip snapMarkerPositionToGrid needs (that
-// machinery finds a specific CELL; a corner is just "round each axis to
-// the nearest multiple of cell size" directly in the same content-space
-// gridOffset/getGridCellSize already share — no hitScale conversion
-// needed since neither input here is ever a real screen-pixel point).
+// Same "convert to content-space, snap, convert back" shape as
+// snapMarkerPositionToGrid, but rounds to the nearest grid LINE
+// INTERSECTION (a corner) instead of the nearest cell CENTER — an AoE
+// template's origin is where a player would measure range from, so its
+// edges land on grid lines instead of cutting cells in half. Skips the
+// getGridCoordFromPoint/getGridCellPixelRect round-trip (that finds a
+// specific cell; a corner is just rounding each axis to the nearest
+// multiple of cell size).
 function snapShapeOriginToGrid(position, shapeLayer) {
   const gridLayer = state.map.layers.find((entry) => entry.type === "grid");
   if (!gridLayer) {
     return position;
   }
-  // Hex grids have no clean 4-corner analog (each cell has 6 vertices,
-  // shared unevenly with neighbors) — falls back to the same cell-center
-  // snap a marker uses rather than inventing an ambiguous hex rule nothing
-  // else here establishes.
+  // Hex grids have no clean 4-corner analog (6 vertices, shared unevenly
+  // with neighbors) — falls back to the same cell-center snap a marker uses.
   if (getGridType(gridLayer) === "hex") {
     return snapMarkerPositionToGrid(position, shapeLayer);
   }
@@ -1369,20 +1200,15 @@ function applyRemoteMapLayers(nextMap) {
 // whatever the GM is doing right now — a remote change just waits for the
 // next poll once they're idle again instead.
 let mapWatcher = null;
-// A just-added/removed condition only actually lives on an "encounter" or
-// "character" record — separate from mapWatcher above (which only watches
-// the MAP record itself) — so waiting on THAT poll alone means a condition
-// only appears once CHARACTER_PAYLOAD_STALE_MS/ACTIVE_ENCOUNTER_STALE_MS's
-// own staleness window happens to lapse. Combat Tracker already subscribes
-// to exactly these two live-stream kinds for the same reason (per the
-// "check for existing transport before inventing a new mechanism"
-// principle) — reusing it here rather than adding a second mechanism. Shares
-// the SAME pooled EventSource mapWatcher's own watchMapForChanges opens for
-// this group (connectLiveStream's own pool is keyed by (dataManager,
-// groupId, shareToken), so this is a ref-counted subscribe, not a second
-// connection) — this costs nothing extra on the wire, it just adds two more
-// listeners that collapse the relevant cache entry and re-render
-// immediately instead of waiting out the staleness window.
+// A just-added/removed condition lives on an "encounter" or "character"
+// record, separate from mapWatcher (which only watches the MAP record) —
+// without this, a condition only appears once the cache's own staleness
+// window lapses. Combat Tracker already subscribes to these two live-
+// stream kinds; reusing rather than adding a second mechanism. Shares the
+// same pooled EventSource watchMapForChanges opens for this group
+// (connectLiveStream pools by dataManager/groupId/shareToken, so this is a
+// ref-counted subscribe, not a second connection) — costs nothing extra on
+// the wire.
 let conditionLiveStream = null;
 function watchCurrentMap(id, shareToken = "") {
   mapWatcher?.stop();
@@ -1396,34 +1222,12 @@ function watchCurrentMap(id, shareToken = "") {
     dataManager,
     mapId: id,
     shareToken,
-    // The account's active campaign (see getActiveCampaignGroupId) — also
-    // what activates the SSE "wake sooner" half of onChange below, since
-    // Orrery has no other group context of its own (see this module's own
-    // map-live-sync.js header comment).
+    // Orrery has no other group context of its own — this also activates
+    // the SSE "wake sooner" half of onChange below.
     groupId: getActiveCampaignGroupId(),
-    // 20s, was 10s — less pressure on the "don't land mid-edit" guards
-    // below now that a routine tick is a lot cheaper (applyRemoteMapLayers,
-    // not a full applyMapSnapshot), but there's no reason to poll a screen
-    // nobody's actively watching for changes twice as often as needed.
+    // No reason to poll a screen nobody's watching more than every 20s.
     pollIntervalMs: 20000,
     onChange: (nextMap) => {
-      // No nextMap.id/state.map.id comparison here — a map's own id is
-      // filename/library_items metadata, never body content (every Library
-      // kind follows this convention now), so nextMap.id was always
-      // undefined and this check was UNCONDITIONALLY true, on every single
-      // poll and every live-stream tick. Confirmed the actual root cause
-      // behind "Orrery never picks up a remote change no matter how long I
-      // wait, regardless of selection": applyRemoteMapLayers below never
-      // ran at all, full stop — not gated by isMapDirty()/selection like it
-      // looked, those guards never even got evaluated on a normal path
-      // (short-circuited by this one first). Matches the Dashboard Map
-      // widget's own onMapChanged (widgets/map.js) — which never had this
-      // check and works correctly — no need for it anyway: watchCurrentMap
-      // fully stops the old watcher (mapWatcher?.stop(), which sets its own
-      // `destroyed` flag so any in-flight fetch is dropped) before ever
-      // creating a new one for a different map, so there's no path for a
-      // stale watcher's callback to fire against the wrong map to guard
-      // against here.
       if (
         !nextMap ||
         isMapDirty() ||
@@ -1465,16 +1269,10 @@ function updateMapToolbarState() {
 }
 
 // Lists every Map this user can see (owned/shared/public, plus local/
-// anonymous saves) in the picker, mirroring Sanctum's populateSettingSelect.
-// Uses fetchKindEntriesWithIds (common/js/lib/content-fetch.js) for remote
-// entries so each option's label can show the map's real name, not just its
-// id — the same list-then-fetch-each helper Forge/Loom/Crucible already share.
-// The combined remote+local map listing — every real map this signed-in
-// user (or this anonymous browser's own local saves) can see — factored
-// out of populateMapSelect so the Move to Map modal's own destination
-// picker (openMoveMarkerModal below) can reuse the exact same list
-// instead of a second, drifting copy of this remote-fetch-plus-local-
-// merge logic.
+// anonymous saves), mirroring Sanctum's populateSettingSelect. Uses
+// fetchKindEntriesWithIds so each option shows the map's real name, not
+// just its id. Factored out of populateMapSelect so the Move to Map
+// modal's own destination picker can reuse the same list.
 async function fetchMapPickerEntries() {
   if (!dataManager) return [];
   let remoteEntries = [];
@@ -1497,10 +1295,8 @@ async function populateMapSelect() {
   const combined = await fetchMapPickerEntries();
   elements.mapSelect.innerHTML = "";
   // An inert placeholder, not a selectable "new/unsaved" state — matching
-  // Workbench's own template/character selector convention (disabled
-  // option, unselectable again once a real map's chosen). "New Map" is now
-  // the only way to get a fresh map; the dropdown is purely for loading
-  // saved ones.
+  // Workbench's template/character selector convention. "New Map" is the
+  // only way to get a fresh map; the dropdown is purely for loading saved ones.
   const placeholder = document.createElement("option");
   placeholder.value = "";
   placeholder.disabled = true;
@@ -1530,21 +1326,18 @@ function recordHistory(label, applyChange) {
 }
 
 // Which recordHistory label corresponds to which per-marker field being
-// auto-saved (see onMarkerDragEnd/applyMarkerElementChange below) — used
-// only to make a GM's own Undo/Redo of one of these three specific actions
-// also propagate immediately to the server, same as the action itself
-// already does, rather than leaving other viewers looking at a stale value
-// until the GM happens to click Save.
+// auto-saved — lets Undo/Redo of these three actions propagate immediately
+// to the server, same as the action itself, instead of leaving other
+// viewers stale until the next Save.
 const MARKER_AUTO_SAVE_FIELD_BY_LABEL = {
   "move marker": "position",
   "marker image": "image",
   "marker outline color": "outlineColor",
 };
 
-// Locates WHICH marker element a before/after snapshot pair changed a given
-// field on — recordHistory only records the label plus full before/after
-// map JSON, not which element was touched, so undo/redo has to work that out
-// itself before it can know what to re-persist.
+// Locates which marker element a before/after snapshot pair changed a
+// given field on — recordHistory only records label plus full JSON, not
+// which element was touched, so undo/redo must work that out first.
 function findChangedMarkerElement(beforeJson, afterJson, field) {
   let before;
   let after;
@@ -1568,19 +1361,13 @@ function findChangedMarkerElement(beforeJson, afterJson, field) {
 }
 
 // recordHistory labels whose action ADDS a brand-new element (Draw/Shape's
-// own commit, see setupDrawTool/setupShapeTool below) rather than changing
-// an existing one's field — same auto-save-this-specific-action idea as
-// MARKER_AUTO_SAVE_FIELD_BY_LABEL just above, but Undo/Redo of these means
-// re-syncing the element's very EXISTENCE on the server (create it back /
-// delete it again), not re-sending one field's value.
+// own commit) rather than changing an existing field — Undo/Redo of these
+// means re-syncing the element's EXISTENCE (create/delete), not one value.
 const DRAW_SHAPE_AUTO_SAVE_LABELS = new Set(["draw path", "place shape"]);
 
-// Same "diff before/after to find what changed" strategy as
-// findChangedMarkerElement just above, but for an element ADDED to a
-// layer's own elements array instead of an existing element's field
-// changing — Draw/Shape only ever add exactly one element per commit, so
-// "present in after, absent from that same layer in before" uniquely
-// identifies it.
+// Same diff strategy as findChangedMarkerElement, but for an element ADDED
+// to a layer — Draw/Shape only ever add exactly one element per commit, so
+// "present in after, absent in before" uniquely identifies it.
 function findAddedElement(beforeJson, afterJson) {
   let before;
   let after;
@@ -1599,16 +1386,11 @@ function findAddedElement(beforeJson, afterJson) {
   return null;
 }
 
-// Patches JUST one element into (or out of) mapCleanSnapshot's own copy of
-// one layer — called right after a Draw/Shape creation is auto-saved (or
-// after Undo/Redo re-syncs that same creation the other way), so the Save
-// button only ever reflects genuinely-batched wall/light/layer-settings
-// work afterward, same reasoning normalizeForDirtyCheck's marker-field
-// stripping already follows. Deliberately NOT a full markMapClean() here:
-// that snapshots the WHOLE map, which would also launder any OTHER already-
-// pending local edit (an unsaved wall, say) as "clean" just because it
-// happened to be sitting in state.map at this same moment — patching only
-// the one synced element avoids that.
+// Patches just one element into (or out of) mapCleanSnapshot's copy of one
+// layer, after a Draw/Shape creation auto-saves — so the Save button only
+// reflects genuinely-batched work afterward. Deliberately not a full
+// markMapClean(): that would also launder any OTHER pending local edit as
+// "clean" just because it happened to be in state.map at the same moment.
 function syncCleanSnapshotForElement(layerId, elementId, element) {
   if (!mapCleanSnapshot) return;
   let clean;
@@ -1625,23 +1407,19 @@ function syncCleanSnapshotForElement(layerId, elementId, element) {
   updateMapToolbarState();
 }
 
-// Re-persists a marker field, or re-syncs a Draw/Shape creation's very
-// existence, immediately after Undo/Redo restores it — the action itself
-// (drag-end/icon-and-color field commits, or a freshly-drawn stroke/shape's
-// own commit) already auto-saves the moment it happens; without this,
-// undoing one of those actions would revert the GM's own screen but leave
-// every other viewer looking at the un-undone value/element until the next
-// unrelated Save.
+// Re-persists a marker field, or re-syncs a Draw/Shape creation's
+// existence, immediately after Undo/Redo restores it — without this,
+// undoing an action would revert the GM's screen but leave other viewers
+// looking at the un-undone value until the next unrelated Save.
 function autoSaveHistoryEntry(entry) {
   if (!entry || !mapExistsOnServer) return;
   if (DRAW_SHAPE_AUTO_SAVE_LABELS.has(entry.label)) {
     const found = findAddedElement(entry.before, entry.after);
     if (!found) return;
     const layer = state.map.layers?.find((candidate) => candidate.id === found.layerId);
-    // Present in the CURRENT (post-applyMapSnapshot) map: we just redid the
-    // creation, so re-add it server-side. Absent: we just undid it, so
-    // delete it server-side instead — the map's own state already tells us
-    // which direction this was without needing an explicit undo/redo flag.
+    // Present in the current map: we redid the creation, re-add server-
+    // side. Absent: we undid it, delete server-side — state.map's own
+    // content tells us the direction without an explicit undo/redo flag.
     const element = layer?.elements?.find((candidate) => candidate.id === found.elementId);
     const persistCall = element
       ? persistNewElement({ dataManager, mapId: state.map.id, shareToken: currentShareToken, layerId: found.layerId, element })
@@ -1677,50 +1455,28 @@ function autoSaveHistoryEntry(entry) {
     });
 }
 
-// Which marker layer (if any) is "armed" — its own empty-map-space click
-// places a new marker there (createMarkerLayerElement's onEmptyClick,
-// map-viewer.js). Deliberately NOT the same thing as "this layer's own
+// Which marker layer (if any) is "armed" — its empty-map-space click
+// places a new marker there. Deliberately NOT the same as "this layer's
 // marker-element is the current selection": explicitly selecting the Layer
-// itself arms it (below), and placing/clicking a marker WHILE its layer is
-// already armed keeps it armed (so rapid "click empty space, click empty
-// space, ..." placement, or nudging an existing marker mid-session, both
-// stay fluid) — but fallback-clicking an existing marker directly (see
-// isLayerFallbackInteractive) does NOT arm its layer, so clicking elsewhere
-// afterward falls through to panning/deselecting instead of silently
-// placing a brand new marker. Confirmed real bug this fixes: a
-// fallback-selected marker's own layer looked "selected" (isSelected,
-// map-viewer.js's renderMapLayers, since isMarkerElementSelected is one of
-// its own OR'd branches) purely from having clicked one marker, arming
-// empty-click placement for a layer the user never actually chose to edit.
+// arms it, and clicking a marker while its layer is already armed keeps it
+// armed (so rapid placement or nudging stays fluid) — but fallback-
+// clicking an existing marker directly does NOT arm its layer, so clicking
+// elsewhere afterward falls through to panning instead of silently placing
+// a new marker on a layer the user never chose to edit.
 let armedMarkerLayerId = null;
 
-// Clears a stale, still-focused field (Label input, Position X/Y, Name,
-// ...) whenever the user picks a NEW selection on the map or in a list —
-// every marker/shape/empty-space pointerdown handler in this file calls
-// event.preventDefault() (needed so the click doesn't ALSO trigger the
-// browser's own drag-select/text-select behavior), which as a side effect
-// suppresses the browser's normal "clicking elsewhere blurs whatever was
-// focused" behavior too. Confirmed real bug this fixes: a field left
-// focused from editing the PREVIOUS selection (or the map's own Name
-// field) silently survived clicking a brand new marker, so the global
-// Delete/Backspace shortcut's own isEditableTarget guard (correctly
-// designed to never delete while the user is mid-edit in a field) kept
-// treating every fresh selection as "still typing" until an unrelated
-// later click happened to blur it — reported as "the first delete on a
-// token never works, but reselecting it does." Blurring here also commits
-// whatever was in that stale field, via its own existing change/blur
-// listener, exactly as if the user had clicked away from it normally.
-// BUTTON included alongside the form fields — confirmed real bug this
-// fixes: deleting a selected shape (via the selection toolbar's own
-// focused "Delete shape" button) rebuilds that toolbar as part of the same
-// setSelection() call, removing the still-focused button from the DOM out
-// from under itself. Left unblurred first, the browser's own "focused
-// element just vanished" fallback could land focus on a NEARBY toolbar
-// button (Draw a Shape/Effect) instead of cleanly resetting to the body —
-// visually indistinguishable from that button's own `.active` toggled
-// state, reading as "still in draw mode" even though shapeModeActive is
-// correctly false. Blurring here, BEFORE that removal happens, sends focus
-// to the body in a predictable way instead.
+// Clears a stale, still-focused field whenever a new selection is picked —
+// every pointerdown handler in this file calls event.preventDefault()
+// (needed so the click doesn't also trigger drag/text-select), which as a
+// side effect suppresses the browser's normal "clicking elsewhere blurs
+// whatever was focused" behavior. Without this, a field left focused from
+// the previous selection kept the global Delete/Backspace shortcut's
+// isEditableTarget guard treating every fresh selection as "still typing."
+// Blurring also commits the stale field's value via its own change/blur
+// listener. BUTTON is included too — deleting a selected shape rebuilds
+// the selection toolbar as part of the same setSelection() call, which
+// would otherwise remove the still-focused Delete button from under
+// itself and let focus land on a nearby toolbar button instead of the body.
 function blurStaleActiveField() {
   const active = document.activeElement;
   if (
@@ -1747,9 +1503,8 @@ function setSelection(kind, id = null, extra = {}) {
     id,
     layerId: extra.layerId ?? null,
     cells: extra.cells ?? [],
-    // Multi-selected markers only — {layerId, id} pairs (a marker's own
-    // layer isn't necessarily the same for every entry, unlike the
-    // single-select `layerId` field above), see toggleMarkerMultiSelect.
+    // Multi-selected markers only — {layerId, id} pairs, since a marker's
+    // layer isn't necessarily the same for every entry (toggleMarkerMultiSelect).
     elements: extra.elements ?? [],
     anchor: extra.anchor ?? (extra.cells?.[0]?.coord ?? null),
   };
@@ -1759,19 +1514,12 @@ function setSelection(kind, id = null, extra = {}) {
       cells: state.selection.cells.map((cell) => ({ ...cell })),
     };
   }
-  // The left pane's own Layers/Groups/Views lists only ever got rebuilt as
-  // a side effect of MUTATING actions (applyGroupChange, add/delete
-  // layer/group/view, ...) — never from a plain selection change on its
-  // own. Confirmed as a real bug before this: a group's blue .active state
-  // only ever appeared via one of those mutation-triggered rebuilds, and
-  // then stayed frozen on that same row forever after — every later
-  // selection change (clicking a different group, a layer, anything)
-  // updates state.selection just fine, but with nothing left to
-  // re-render these three lists, the DOM's own stale .active classes
-  // never move or clear. Cheap enough to just always do here — these are
-  // small lists, and explicit selection changes (unlike paint-mode's own
-  // per-cell drag updates, which never call setSelection at all) are
-  // infrequent.
+  // Without this, the left pane's Layers/Groups/Views lists only rebuild
+  // as a side effect of mutating actions, never a plain selection change —
+  // so a group's .active state would appear once and then stay frozen on
+  // that row forever. Cheap enough to always do here: small lists, and
+  // explicit selection changes (unlike paint-mode's per-cell drag, which
+  // never calls setSelection) are infrequent.
   renderLayers();
   renderGroups();
   renderViewsList();
@@ -1793,12 +1541,10 @@ function setSelection(kind, id = null, extra = {}) {
   setPanelFocus(shouldExpand);
 }
 
-// Click-to-select, click-again-to-deselect — used by the left pane's own
-// Layer/Group/View list rows (their whole reason to exist is picking one
-// thing at a time; re-clicking the one already active most naturally means
-// "never mind"), not by every setSelection call in this file (a delete
-// handler picking a fallback selection, say, isn't a row the GM clicked
-// twice — a plain setSelection there stays a plain setSelection).
+// Click-to-select, click-again-to-deselect — used by the left pane's
+// Layer/Group/View list rows, where re-clicking the active row means
+// "never mind." Not used by every setSelection call (a delete handler
+// picking a fallback selection stays a plain setSelection).
 function toggleSelection(kind, id, extra = {}) {
   if (state.selection.kind === kind && state.selection.id === id) {
     setSelection(null);
@@ -1808,22 +1554,13 @@ function toggleSelection(kind, id, extra = {}) {
 }
 
 // Single source of truth for "delete whatever's currently selected" — used
-// by the global Delete/Backspace keyboard shortcut AND every selection
-// editor's own Delete button (each just calls this instead of duplicating
-// the same recordHistory/filter/setSelection logic a second time). Acts
-// directly on state.selection, never on any rendered DOM button — so it
-// works correctly regardless of whether the selection editor panel has
-// actually finished building yet. Confirmed real bug this fixes: the
-// keyboard shortcut used to find-and-click a
-// `[data-action="delete-selected"]` button in the DOM, but
-// renderMarkerElementSelectionEditor is async (a freshly placed or
-// freshly (re)selected marker takes a render pass before its own Delete
-// button exists at all — see that function's own markerSelectionEditorRenderId
-// comment on why it can't just build synchronously) — any keypress landing
-// in that window silently did nothing: "hit or miss," matching the reported
-// behavior exactly, not just right after creating a marker (ANY later
-// re-render of the panel — e.g. a remote map update landing while this
-// marker is selected — reopens the same window).
+// by the global Delete/Backspace shortcut AND every selection editor's own
+// Delete button, instead of duplicating recordHistory/filter/setSelection
+// logic. Acts directly on state.selection, not a rendered DOM button — the
+// keyboard shortcut used to find-and-click a DOM button, but
+// renderMarkerElementSelectionEditor is async, so a keypress landing before
+// that button existed silently did nothing ("hit or miss" on a freshly
+// placed marker, or after any later async re-render).
 // Returns true if something was actually deleted, so the keydown handler
 // knows whether to consume the key.
 function deleteCurrentSelection() {
@@ -1880,10 +1617,8 @@ function deleteCurrentSelection() {
   if (selection.kind === "marker-elements") {
     const resolved = resolveSelectedMarkerElements(selection);
     if (!resolved.length) return false;
-    // Grouped by layer (a multi-selection can span several marker
-    // layers) so every removal lands in one recordHistory entry, same
-    // "one undo step per user action" convention every other bulk
-    // mutation in this file already follows.
+    // Grouped by layer (a multi-selection can span several marker layers)
+    // so every removal lands in one recordHistory entry.
     const idsByLayer = new Map();
     resolved.forEach(({ layer, markerElement }) => {
       if (!idsByLayer.has(layer.id)) idsByLayer.set(layer.id, new Set());
@@ -1916,14 +1651,11 @@ function deleteCurrentSelection() {
   return false;
 }
 
-// The one View toggleElementHiddenFromPlayers manages for itself
-// (View.autoManaged, createView's own comment) — auto-created the first
-// time a GM uses the marker's own "Hidden from players" convenience switch,
-// same "auto-create the first time you need it" precedent the fog-of-war
-// reveal-group (`revealGroupId`) already sets. Only ever returns/creates
-// THIS one View; a hand-authored View a GM separately scopes to "player"
-// tier via the View editor's own Visible Components checklist is a
-// deliberately SEPARATE, independent thing this never touches.
+// The one View toggleElementHiddenFromPlayers manages — auto-created the
+// first time a GM uses the marker's "Hidden from players" convenience
+// switch. Only ever returns/creates THIS one View; a hand-authored View a
+// GM separately scopes via the View editor's Visible Components checklist
+// is a deliberately separate thing this never touches.
 function ensureAutoManagedPlayerView() {
   let view = state.map.views.find((entry) => entry.autoManaged);
   if (!view) {
@@ -1933,24 +1665,19 @@ function ensureAutoManagedPlayerView() {
   return view;
 }
 
-// Read-only — whether `elementId` is currently hidden by the auto-managed
-// Player View specifically (not the union of every View that might also
-// hide it — see this function's own toggle below for why that's the right
-// scope for a single convenience switch). False, not an error, when the
-// auto-managed View doesn't exist yet at all.
+// Read-only — whether `elementId` is hidden by the auto-managed Player
+// View specifically, not the union of every View that might hide it.
+// False, not an error, when the auto-managed View doesn't exist yet.
 function isElementHiddenFromPlayers(elementId) {
   const view = state.map.views.find((entry) => entry.autoManaged);
   return Boolean(view?.hiddenElementIds?.includes(elementId));
 }
 
-// Explicit target `hidden`, not a per-element flip — the right shape for
-// a bulk toggle over a multi-selection that can start in a MIXED state
-// (some already hidden, some not): one recordHistory entry sets every
-// listed id to the SAME final state, converging the whole group in one
-// action rather than each marker flipping independently of the others.
-// toggleElementHiddenFromPlayers (below) is just this called with a
-// single-element list and the opposite of its own current state — same
-// mechanism, not a second copy of it.
+// Explicit target `hidden`, not a per-element flip — a bulk toggle over a
+// multi-selection that can start in a MIXED state needs every listed id to
+// converge on the SAME final state in one recordHistory entry, not flip
+// independently. toggleElementHiddenFromPlayers below is just this called
+// with a single-element list and the opposite of its current state.
 function setElementsHiddenFromPlayers(elementIds, hidden) {
   if (!elementIds.length) return;
   recordHistory(hidden ? "hide from players" : "show to players", () => {
@@ -1968,11 +1695,8 @@ function setElementsHiddenFromPlayers(elementIds, hidden) {
   renderViewsList();
   renderJson();
   // Saves itself instantly, like a marker's own position/image/outline
-  // color (MARKER_AUTO_SAVE_FIELD_BY_LABEL) — confirmed real bug without
-  // this: the toggle only ever updated state.map in memory, so the
-  // Dashboard's Map widget (reading the server, via its own poll) never
-  // picked it up until the GM happened to hit the map's own batched Save
-  // button. void — best-effort, same as the marker-field auto-saves.
+  // color — without this the Dashboard's Map widget (polling the server)
+  // wouldn't pick it up until the GM hit the batched Save button.
   void autoSaveHiddenFromPlayersView(elementIds, hidden);
 }
 
@@ -1981,19 +1705,11 @@ function toggleElementHiddenFromPlayers(elementId) {
 }
 
 // Narrow read-modify-write against the server's OWN current copy of this
-// map (not state.map — same reasoning as persistElementUpdate,
-// map-live-sync.js: state.map may carry OTHER pending, not-yet-saved edits
-// the GM hasn't hit Save for yet, and this auto-save must never eagerly
-// persist those as a side effect of a quick visibility toggle). Applies
-// the SAME explicit `hidden` target setElementsHiddenFromPlayers already
-// applied LOCALLY onto the fresh server copy's own auto-managed View,
-// rather than re-deriving/re-toggling independently — a rapid double-
-// toggle before this resolves must always converge on the same final
-// state the GM's own screen already shows, not whatever order two
-// competing toggles happen to land on the server in. Bulk-capable
-// (elementIds is always an array, one or many) so a multi-marker
-// visibility change is one fetch-modify-save round trip, not one per
-// marker.
+// map, not state.map — which may carry other pending unsaved edits this
+// auto-save must never eagerly persist. Applies the SAME explicit `hidden`
+// target already applied locally, rather than re-deriving independently,
+// so a rapid double-toggle always converges on the GM's own screen state.
+// Bulk-capable so a multi-marker change is one round trip, not one per marker.
 async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
   if (!mapExistsOnServer || !dataManager) return;
   try {
@@ -2013,22 +1729,15 @@ async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
     view.hiddenElementIds = Array.from(hiddenSet);
     await dataManager.save("map", state.map.id, freshMap);
     mapWatcher?.noteLocalWrite();
-    // Confirmed real bug this fixes: this auto-save never re-baselined
-    // mapCleanSnapshot, so isMapDirty() (which compares the FULL state.map,
-    // views included, against that snapshot) stayed permanently true from
-    // the very first use of this toggle onward — silently blocking every
-    // future onChange merge in watchCurrentMap above (isMapDirty() is one
-    // of its guards), no matter what was or wasn't selected. Can't just
-    // exclude views wholesale from normalizeForDirtyCheck the way marker
-    // position/image/outlineColor are excluded — hiddenElementIds on any
-    // view, including this auto-managed one, can ALSO be edited manually
-    // through the View editor's own checklist (applyViewChange), which does
-    // NOT auto-save and must still show as dirty. So re-baseline only the
-    // views slice, at the moment it's confirmed synced with the server —
-    // any later edit (either path) will correctly diverge from THIS
-    // snapshot and show dirty again. (updatedAt itself needs no special
-    // handling here — normalizeForDirtyCheck excludes it from the
-    // comparison entirely, see its own comment.)
+    // Without re-baselining, isMapDirty() (comparing full state.map,
+    // views included, against mapCleanSnapshot) would stay permanently
+    // true from the first use of this toggle, silently blocking every
+    // future onChange merge in watchCurrentMap. Can't exclude views
+    // wholesale from normalizeForDirtyCheck the way marker fields are —
+    // hiddenElementIds can ALSO be edited manually via the View editor,
+    // which does NOT auto-save and must still show dirty. So re-baseline
+    // only the views slice, at the moment it's confirmed synced; any later
+    // edit via either path correctly diverges again.
     if (mapCleanSnapshot !== null) {
       try {
         const clean = JSON.parse(mapCleanSnapshot);
@@ -2037,8 +1746,8 @@ async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
         updateMapToolbarState();
       } catch (error) {
         // mapCleanSnapshot is always our own prior JSON.stringify output —
-        // parse failure isn't expected, but isn't worth surfacing to the GM
-        // over what's still a successful save.
+        // not worth surfacing a parse failure over what's still a
+        // successful save.
       }
     }
   } catch (error) {
@@ -2046,20 +1755,14 @@ async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
   }
 }
 
-// Move to Map's own source-side removal (openMoveMarkerModal's Apply
-// handler) needs to persist just as immediately as the destination-side
-// add already does (dataManager.save, right in that same handler) — or a
-// moved marker briefly exists on BOTH maps until the GM remembers to hit
-// THIS map's own Save button. Confirmed real bug this fixes: the marker
-// correctly vanished from the current view (state.map itself was
-// mutated right away) but reappeared after navigating away and back,
-// because only the destination side had actually reached the server.
-// Same "fetch fresh, mutate, save" shape as autoSaveHiddenFromPlayersView
-// just above and removeElement (common/js/lib/map-live-sync.js) — a
-// local, bulk-capable version rather than looping that shared
-// single-element helper once per marker, so removing several markers in
-// one move is still one fetch-modify-save round trip against the source
-// map, not one per marker. idsByLayer: Map<layerId, Set<elementId>>.
+// Move to Map's source-side removal needs to persist just as immediately
+// as the destination-side add does, or a moved marker briefly exists on
+// BOTH maps until the next Save — the marker correctly vanished from the
+// current view but reappeared after navigating away and back, since only
+// the destination side had reached the server. Same "fetch fresh, mutate,
+// save" shape as autoSaveHiddenFromPlayersView, bulk-capable so moving
+// several markers is one round trip, not one per marker.
+// idsByLayer: Map<layerId, Set<elementId>>.
 async function autoSaveRemovedMarkerElements(idsByLayer) {
   if (!mapExistsOnServer || !dataManager) return;
   try {
@@ -2072,10 +1775,9 @@ async function autoSaveRemovedMarkerElements(idsByLayer) {
     });
     await dataManager.save("map", state.map.id, freshMap);
     mapWatcher?.noteLocalWrite();
-    // Same per-element clean-snapshot patch autoSaveHistoryEntry's own
-    // Draw/Shape-deletion branch uses (syncCleanSnapshotForElement,
-    // element: null means "remove it") — so the Save button doesn't keep
-    // nagging the GM about a removal that's already reached the server.
+    // Same per-element clean-snapshot patch autoSaveHistoryEntry's
+    // Draw/Shape-deletion branch uses — so Save doesn't keep nagging about
+    // a removal that already reached the server.
     idsByLayer.forEach((ids, layerId) => {
       ids.forEach((elementId) => syncCleanSnapshotForElement(layerId, elementId, null));
     });
@@ -2100,9 +1802,8 @@ function renderBaseMapSettings() {
 
   const imageSettings = baseMap.settings.image;
   elements.imageSrc.value = imageSettings.src;
-  // null (no override, native size) has to become "" here — assigning null
-  // directly to a text input's .value stringifies to the literal text
-  // "null".
+  // null (no override, native size) becomes "" here — assigning null
+  // directly to a text input's .value stringifies to the literal "null".
   elements.imageWidth.value = imageSettings.width ?? "";
   elements.imageHeight.value = imageSettings.height ?? "";
 
@@ -2117,9 +1818,8 @@ function renderBaseMapSettings() {
   }
 }
 
-// Same icon per layer type as the "Add X layer" buttons just above this
-// list (data-add-layer-mount) — literally the same string, so the list row
-// always matches whatever icon a GM just clicked to create it.
+// Same icon per layer type as the "Add X layer" buttons above, so the
+// list row always matches whatever icon the GM clicked to create it.
 const LAYER_TYPE_ICONS = {
   vector: "tabler:vector",
   grid: "tabler:grid-dots",
@@ -2127,15 +1827,12 @@ const LAYER_TYPE_ICONS = {
   marker: "tabler:map-pin",
 };
 
-// Icon + short label for one of a layer's own placed elements, by kind —
-// shared by the left pane's own per-layer component list (renderLayers,
-// just below) and kept deliberately independent from renderSelection's own
-// (pre-existing, unchanged) per-kind icon/title logic, which additionally
-// needs full context (preset lookup for a shape's category, point counts,
-// ...) this compact list has no room to show. `cell` (a grid layer's own
-// sparse, lazily-created touched-cell elements — ensureGridCell) is
-// deliberately never passed in here at all — see renderLayers' own filter
-// just below for why.
+// Icon + short label for one of a layer's placed elements, by kind — used
+// by the left pane's per-layer component list (renderLayers below), kept
+// independent from renderSelection's own per-kind icon/title logic, which
+// needs more context (preset lookup, point counts) this compact list has
+// no room for. `cell` elements are never passed in — see renderLayers'
+// filter below.
 function describeLayerElement(element) {
   if (element.kind === "marker") {
     return { icon: "tabler:map-pin", label: element.label || "Marker" };
@@ -2153,35 +1850,22 @@ function describeLayerElement(element) {
   return { icon: "tabler:pencil", label: "Drawn Path" };
 }
 
-// Displayed topmost-first (reverse of state.map.layers' own array order,
-// where a LATER array index renders on top — see renderMapLayers in
-// lib/map-viewer.js, which appends in plain array order and lets normal DOM
-// stacking put later siblings in front) — matches the Photoshop-style
-// convention GMs already expect: the layer nearest the top of the list is
-// the one rendered nearest the front of the map.
-// Palette-style row (icon left, larger, matching Press/Workbench's own
-// component palette) — Visible/Locked and Move up/down all live in the
-// right pane's Selection panel once a layer is actually selected (the
-// "Visible"/"Locked" switches in renderLayerSelectionEditor, the
-// move-up/move-down toolbar buttons), so this list stays purely "pick a
-// layer" for those, not a second place those same controls live and can
-// drift out of sync — the Lock icon shown here is a read-only glance
-// indicator, not a control of its own (clicking it does the same thing
-// clicking anywhere else on the row does: select the layer).
+// Displayed topmost-first (reverse of state.map.layers' array order, where
+// a LATER index renders on top) — matches the Photoshop-style convention
+// GMs expect: the layer nearest the top of the list renders nearest the
+// front of the map.
+// Palette-style row — Visible/Locked and Move up/down live in the right
+// pane's Selection panel once a layer is selected, so this list stays
+// purely "pick a layer"; the Lock icon here is a read-only glance
+// indicator, not its own control (clicking it just selects the layer).
 //
-// Whichever layer currently owns the selection (the layer itself, OR one
-// of its own elements — a marker/shape/wall/light/grid-cells selection all
-// carry layerId) gets an expanded sub-list of its own placed elements
-// underneath it, each a small button in the same icon+label shape as the
-// layer row above it (describeLayerElement) — a second, always-available
-// way to reach a specific component besides clicking it on the map, which
-// a Locked layer (or one simply buried under other layers' own hit
-// targets) can make awkward. Grid cells are deliberately excluded — a grid
-// layer's own `elements` only holds whichever cells have actually been
-// touched (ensureGridCell), a set that's typically sparse but can still run
-// into the dozens/hundreds on a well-used map, and cell selection is
-// already a dedicated multi-select flow (click/shift/ctrl on the grid
-// itself, or a Group) this per-element button list isn't meant to replace.
+// Whichever layer currently owns the selection gets an expanded sub-list
+// of its own placed elements underneath, each a small button
+// (describeLayerElement) — a second way to reach a component besides
+// clicking it on the map, useful when a layer is Locked or buried under
+// other layers' hit targets. Grid cells are excluded — a grid layer's
+// `elements` can run into the dozens/hundreds, and cell selection is
+// already a dedicated multi-select flow this list isn't meant to replace.
 function renderLayers() {
   disposeTooltips(elements.layerList);
   elements.layerList.innerHTML = "";
@@ -2194,12 +1878,9 @@ function renderLayers() {
         return;
       }
       // state.selection.layerId (the single-select field) is always null
-      // for a "marker-elements" selection — checked separately here, or
-      // every layer's own sub-list would collapse the instant a second
-      // marker gets Ctrl-clicked into a multi-selection, hiding the very
-      // list this feature needs to keep extending/shrinking that
-      // selection from. Confirmed real bug this avoids, caught alongside
-      // isLayerSelected's own matching fix just above.
+      // for a "marker-elements" selection — checked separately, or every
+      // layer's sub-list would collapse the instant a second marker gets
+      // Ctrl-clicked into a multi-selection.
       const isLayerActive =
         (state.selection.kind === "layer" && state.selection.id === layer.id) ||
         state.selection.layerId === layer.id ||
@@ -2262,10 +1943,8 @@ function renderLayers() {
           componentButton.append(componentIconEl, componentLabelEl);
           componentButton.addEventListener("click", (event) => {
             // Ctrl/Cmd/Shift-click extends/shrinks a marker multi-selection
-            // instead of replacing it — same modifier-key convention as the
-            // map canvas's own marker dots (createMarkerDot, map-viewer.js).
-            // Only markers support this; a vector-path element (wall,
-            // light, shape) click is unchanged regardless of modifier keys.
+            // instead of replacing it, same convention as the map canvas's
+            // own marker dots. Only markers support this.
             if (element.kind === "marker" && (event.ctrlKey || event.metaKey || event.shiftKey)) {
               toggleMarkerMultiSelect(layer, element);
               return;
@@ -2292,22 +1971,18 @@ function moveLayer(layer, delta) {
     updateMapTimestamp(state.map);
   });
   renderLayers();
-  // Also re-renders the right pane's own copy of these same reorder
-  // buttons (renderLayerSelectionEditor) so their disabled-at-the-boundary
-  // state stays correct regardless of which copy (left list or right
-  // panel) was actually clicked.
+  // Also re-renders the right pane's copy of these reorder buttons so
+  // their disabled-at-the-boundary state stays correct either way.
   renderSelection();
   renderLayerOverlays();
   renderJson();
 }
 
-// Deep-copies a layer — settings/position/opacity/properties, plus every
-// one of its own elements — through the SAME map-model.js factories that
-// create them fresh, rather than hand-rolling a JSON clone with the
-// original's own ids poked out. Marker/path/shape/grid-cell ids are what
-// Groups and selection state key off of; sharing them with the source
-// layer would make the two layers' own elements indistinguishable to
-// anything that looks one up by id, not just visually duplicated.
+// Deep-copies a layer through the SAME map-model.js factories that create
+// elements fresh, rather than a JSON clone with ids poked out — Groups and
+// selection state key off element ids, so sharing them with the source
+// layer would make the two layers' elements indistinguishable by id, not
+// just visually duplicated.
 function duplicateLayer(sourceLayer) {
   const layer = createLayer({ type: sourceLayer.type, name: `${sourceLayer.name} (copy)` });
   layer.visible = sourceLayer.visible;
@@ -2342,14 +2017,10 @@ function duplicateLayerElement(element) {
     return createVectorShapeElement({
       presetId: element.presetId,
       origin: element.origin ? { ...element.origin } : undefined,
-      // Attachment deliberately NOT copied — two elements bound to the same
-      // token would render on top of each other with no way to tell them
-      // apart via drag; a duplicate always starts freestanding at the
-      // original's own (copied) origin, same as how a duplicated Light
-      // would need the identical treatment if it ever gained this same
-      // Duplicate action (it doesn't yet, so there's nothing to keep
-      // consistent with today — this is just the correct default on its
-      // own merits).
+      // Attachment deliberately NOT copied — two elements bound to the
+      // same token would render on top of each other with no way to tell
+      // them apart via drag; a duplicate always starts freestanding at the
+      // original's own (copied) origin.
       label: element.label,
       loop: element.loop,
       sizeCells: element.sizeCells,
@@ -2383,9 +2054,8 @@ function duplicateLayerElement(element) {
     });
   }
   if (element.kind === "cell") {
-    // `key` is coord-derived (getGridCellKey), not an identity id — safe
-    // (and correct) to carry over as-is, unlike `id` which createGridCell
-    // regenerates fresh below.
+    // `key` is coord-derived, not an identity id — safe to carry over
+    // as-is, unlike `id` which createGridCell regenerates fresh below.
     const cell = createGridCell({ key: element.key, coord: element.coord ? { ...element.coord } : undefined, gridType: element.gridType });
     cell.properties = JSON.parse(JSON.stringify(element.properties || {}));
     return cell;
@@ -2408,13 +2078,11 @@ function renderGroups() {
   state.map.groups.forEach((group) => {
     const item = document.createElement("button");
     item.type = "button";
-    // Palette-style row (icon left, larger) — same icon as the Add group
-    // button just above this list (data-add-group-mount), matching Layers'
-    // own row convention just above.
+    // Palette-style row — same icon as the Add group button above,
+    // matching Layers' own row convention.
     item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
-    // .active (Bootstrap's real styled selection state), not aria-current —
-    // matches Views below and Combat Tracker's own selected-row convention;
-    // aria-current alone has no visual effect anywhere in this suite's CSS.
+    // .active (Bootstrap's real styled selection state), not aria-current
+    // — aria-current alone has no visual effect anywhere in this suite's CSS.
     if (state.selection.kind === "group" && state.selection.id === group.id) {
       item.classList.add("active");
     }
@@ -2448,9 +2116,8 @@ function renderViewsList() {
     const isSelected = state.selection.kind === "view" && state.selection.id === view.id;
     const item = document.createElement("button");
     item.type = "button";
-    // Palette-style row (icon left, larger) — same icon as the Add view
-    // button just above this list (data-add-view-mount), matching
-    // Layers'/Groups' own row convention just above.
+    // Palette-style row — same icon as the Add view button above,
+    // matching Layers'/Groups' row convention.
     item.className = "list-group-item list-group-item-action d-flex align-items-center gap-2";
     if (isSelected) {
       item.classList.add("active");
@@ -2468,11 +2135,9 @@ function renderViewsList() {
   });
 }
 
-// Replaces the old text badge/pill (data-selection-type) — a single blue
-// icon, same "consistent blue icon instead of a pill" treatment the
-// Layers/Groups/Views list rows just above already use, and (where the
-// kind IS a layer type) literally the same icon those rows/the Add-layer
-// buttons use. null hides it entirely (the "No selection" state).
+// A single blue icon, same treatment as the Layers/Groups/Views list rows
+// above (and, where the kind IS a layer type, the same icon those rows
+// use). null hides it entirely (the "No selection" state).
 function setSelectionTypeIcon(icon) {
   if (!elements.selectionTypeIcon) {
     return;
@@ -2490,11 +2155,9 @@ function renderSelection() {
   if (elements.selectionClear) {
     elements.selectionClear.classList.toggle("d-none", selection.kind === null);
   }
-  // Cleared unconditionally, then repopulated only by whichever selection
-  // kind's own render function actually uses it (every kind now except a
-  // plain drawn path, which still builds a standalone inline Delete —
-  // renderVectorPathSelectionEditor's own delete-and-redraw-only shape has
-  // no other buttons to group it with).
+  // Cleared unconditionally, repopulated only by whichever selection
+  // kind's render function uses it (every kind except a plain drawn path,
+  // which still builds a standalone inline Delete).
   if (elements.selectionToolbar) {
     disposeTooltips(elements.selectionToolbar);
     elements.selectionToolbar.innerHTML = "";
@@ -2658,10 +2321,8 @@ function renderVectorPathSelectionEditor(layer, pathElement) {
   hint.textContent = "Delete this stroke, or turn Draw mode back on to add more.";
   container.appendChild(hint);
 
-  // Just one color — a freehand path has no meaningful fill (it's an open
-  // line, not a closed shape), same "one primary color" model the toolbar's
-  // own drawColor swatch and the Dashboard Map widget's drawing popover
-  // both already use (no separate "outline" concept for a plain stroke).
+  // Just one color — a freehand path has no meaningful fill (an open line,
+  // not a closed shape), same model the toolbar's drawColor swatch uses.
   const colorField = createCompactField({
     type: "color",
     label: "Color",
@@ -2687,20 +2348,17 @@ function renderVectorPathSelectionEditor(layer, pathElement) {
   container.appendChild(deleteButton);
 }
 
-// No post-placement per-vertex editing (matches the plain-path editor's own
-// delete-and-redraw precedent just above — a wall's `points` array has no
-// single natural "position" field to expose the way a shape's one-point
-// origin does). GM-only surface — the GM always has full control regardless
-// of Secret/Locked, which only ever restrict the Dashboard widget's
-// player-facing click-to-toggle (see map.js's own onDoorClick).
+// No post-placement per-vertex editing — a wall's `points` array has no
+// single natural "position" field the way a shape's one-point origin does.
+// GM-only surface — Secret/Locked only restrict the Dashboard widget's
+// player-facing click-to-toggle.
 function renderWallSelectionEditor(layer, wallElement) {
   if (!elements.selectionEditor) {
     return;
   }
-  // True while this panel is showing the Wall tool's own not-yet-placed
-  // draft (renderArmedWallInspector) rather than a real, already-placed
-  // wall — see renderVectorShapeSelectionEditor's own isDraftShape for the
-  // identical reasoning, applied here to Wall instead of Shape.
+  // True while showing the Wall tool's not-yet-placed draft rather than a
+  // real placed wall — same reasoning as renderVectorShapeSelectionEditor's
+  // isDraftShape, applied to Wall.
   const isDraftWall = wallElement === draftWallElement;
   const container = elements.selectionEditor;
   disposeTooltips(container);
@@ -2741,9 +2399,8 @@ function renderWallSelectionEditor(layer, wallElement) {
   typeSelect.value = WALL_TYPES.includes(wallElement.wallType) ? wallElement.wallType : "wall";
   typeSelect.addEventListener("change", () => {
     // doorState/secret/locked are never cleared when switching away from
-    // "door" — they just go inert, same "harmless defaults, never stripped"
-    // convention createWallElement itself establishes. Switching back to
-    // "door" later picks up wherever they were left.
+    // "door" — they just go inert. Switching back later picks up where
+    // they were left.
     applyWallChange("wall type", () => {
       wallElement.wallType = typeSelect.value === "door" ? "door" : "wall";
     });
@@ -2785,10 +2442,9 @@ function renderWallSelectionEditor(layer, wallElement) {
   snapInput.addEventListener("change", () => {
     applyWallChange("wall snap to grid", () => {
       wallElement.snapToGrid = snapInput.checked;
-      // Same "toggling on re-aligns immediately" behavior as a shape's own
-      // Snap to Grid — a wall has no post-placement per-vertex drag, so this
-      // is the only way to align an already-drawn off-grid wall afterward
-      // without deleting and redrawing it.
+      // Same "toggling on re-aligns immediately" behavior as Shape's Snap
+      // to Grid — a wall has no per-vertex drag, so this is the only way
+      // to align an off-grid wall without redrawing it.
       if (snapInput.checked) {
         wallElement.points = (wallElement.points || []).map((point) => snapShapeOriginToGrid(point, layer));
       }
@@ -2825,10 +2481,8 @@ function renderWallSelectionEditor(layer, wallElement) {
     initHelpSystem({ root: container });
   }
 
-  // Suppressed entirely for a draft — see renderVectorShapeSelectionEditor's
-  // own identical Delete-button guard for the full reasoning (nothing real
-  // to delete/open/close yet, and state.selection doesn't point at the
-  // draft either).
+  // Suppressed entirely for a draft — nothing real to delete/open/close
+  // yet, and state.selection doesn't point at the draft either.
   if (elements.selectionToolbar && !isDraftWall) {
     const buttons = [];
     if (wallElement.wallType === "door") {
@@ -2858,10 +2512,8 @@ function renderLightSelectionEditor(layer, lightElement) {
   if (!elements.selectionEditor) {
     return;
   }
-  // True while this panel is showing the Light tool's own not-yet-placed
-  // draft (renderArmedLightInspector) rather than a real, already-placed
-  // light — see renderVectorShapeSelectionEditor's own isDraftShape for the
-  // identical reasoning, applied here to Light instead of Shape.
+  // True while showing the Light tool's not-yet-placed draft rather than a
+  // real placed light — same reasoning as isDraftShape, applied to Light.
   const isDraftLight = lightElement === draftLightElement;
   const container = elements.selectionEditor;
   disposeTooltips(container);
@@ -2884,11 +2536,10 @@ function renderLightSelectionEditor(layer, lightElement) {
   initHelpSystem({ root: container });
 
   // Attach to Token — a light attached to a marker tracks that marker's
-  // live position every render instead of its own stored origin (see
-  // map-viewer.js's own resolveLightOrigin), moving with it as it's dragged
-  // — a torch a character carries. Lists every marker across every marker
-  // layer on the map, not just this one layer's own (a light and its
-  // carrier don't have to share a layer).
+  // live position every render (resolveLightOrigin) instead of its own
+  // stored origin, moving with it as dragged — a torch a character
+  // carries. Lists every marker across every layer, since a light and its
+  // carrier don't have to share one.
   const attachField = createFormFloatingField({ type: "select", label: "Attach to Token" });
   const attachSelect = attachField.querySelector("select");
   const noneOption = document.createElement("option");
@@ -2913,10 +2564,8 @@ function renderLightSelectionEditor(layer, lightElement) {
   });
   container.appendChild(attachField);
 
-  // Position X/Y — shown only while freestanding; while attached, position
-  // is derived from the host marker, not directly authored (mirrors how a
-  // live-Bound Workbench field's value display becomes read-only/derived
-  // rather than independently editable).
+  // Shown only while freestanding; while attached, position derives from
+  // the host marker instead of being directly authored.
   if (!lightElement.attachedMarkerId) {
     const originPixel = markerPositionToLocalPixel(baseMapManager, state.map, lightElement.origin);
     const positionRow = createFieldRow(
@@ -2941,10 +2590,8 @@ function renderLightSelectionEditor(layer, lightElement) {
     container.appendChild(positionRow);
   }
 
-  // Map units (cells), not the map's own real-world Scale unit — same
-  // "(cells)" vocabulary and decimal-friendly, step-1 shape Shape's own
-  // Size/Width fields use now (renderVectorShapeSelectionEditor's own
-  // header comment has the full reasoning).
+  // Map units (cells), not the map's real-world Scale unit — same
+  // "(cells)" vocabulary Shape's own Size/Width fields use.
   const rangeField = createCommitOnBlurNumberField(
     "Range (cells)",
     lightElement.rangeCells || 0,
@@ -2984,8 +2631,7 @@ function renderLightSelectionEditor(layer, lightElement) {
 
   if (elements.selectionToolbar && !isDraftLight) {
     // Nothing real to delete yet while drafting — state.selection doesn't
-    // point at the draft (see renderVectorShapeSelectionEditor's own
-    // identical Delete-button guard for the full reasoning).
+    // point at the draft.
     createToolbarButtonGroup([
       {
         action: "delete",
@@ -2998,22 +2644,14 @@ function renderLightSelectionEditor(layer, lightElement) {
   }
 }
 
-// Same "select a placed thing, then Delete" pattern as a drawn path's own
-// editor just above, plus numeric fields (createHalfWidthNumberField,
-// same factory every other inspector field in this file uses) to dial in
-// the shape's size/direction precisely after the drag-to-place gesture —
-// click-drag (setupShapeTool) gets it roughly right with live feedback,
-// these fields nudge it exactly. Size/Width are edited directly in map
-// units (cells, same "(cells)" vocabulary Marker's own Size/Height fields
-// already use) rather than converted through the map's own Scale per
-// cell/Scale unit — that conversion is what PRESENTS a cell count as "10
-// ft" elsewhere (the drag-to-place readout, Position's own real-world
-// context), not what this field is edited in. `step: 1` moves the native
-// up/down spinner by a whole cell at a time (what's most common to want),
-// but typed/committed values are never rounded — a shape placed via drag
-// can easily land on a fractional cell count, and forcing it to the
-// nearest whole cell here would silently change the shape out from under
-// a GM who only meant to blur the field.
+// Same "select, then Delete" pattern as a drawn path's editor, plus
+// numeric fields to dial in size/direction precisely after the drag-to-
+// place gesture gets it roughly right. Size/Width edit directly in map
+// units (cells), not through the map's own Scale conversion — that's what
+// PRESENTS a cell count as "10 ft" elsewhere, not what this field edits
+// in. `step: 1` moves the spinner a whole cell at a time, but typed values
+// are never rounded — a drag-placed shape can land on a fractional cell
+// count, and forcing it whole here would silently change the shape.
 function renderVectorShapeSelectionEditor(layer, shapeElement) {
   if (!elements.selectionEditor) {
     return;
@@ -3022,38 +2660,26 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   disposeTooltips(container);
   container.innerHTML = "";
 
-  // True while this call is rendering the Shape tool's own in-progress
-  // DRAFT (draftShapeElement's own header comment) rather than an already-
-  // placed, real selection — suppresses the Delete button (there's nothing
-  // real to delete yet) and redirects the couple of field handlers below
-  // that would otherwise call the general renderSelection() to
-  // renderArmedShapeInspector() instead, so they keep showing the draft
-  // instead of whatever state.selection happens to point to underneath it
-  // (typically the layer, from ensureDrawableVectorLayer).
+  // True while rendering the Shape tool's own in-progress DRAFT rather
+  // than an already-placed selection — suppresses the Delete button and
+  // redirects field handlers to renderArmedShapeInspector() instead of
+  // renderSelection(), so they keep showing the draft rather than
+  // whatever state.selection points to underneath it (typically the layer).
   const isDraftShape = shapeElement === draftShapeElement;
 
   const selectedPreset = getPresetById(shapeElement.presetId) || getPresetById("circle");
   // Presets whose geometry uses a facing direction/spread beyond plain
-  // size — Angle: cone/line (existing geometry) plus beam/cone-blast (the
-  // new particle presets that are also directional); Spread: cone plus
-  // cone-blast. Width: line only, no particle preset uses widthCells.
-  // Hardcoded lists, not a new registry field — mirrors this panel's own
-  // pre-existing style (it already hardcoded shapeType checks the same way
-  // before presets existed at all).
+  // size. Hardcoded lists, not a new registry field — mirrors this
+  // panel's pre-existing style.
   const usesAngle = ["cone", "line", "beam", "cone-blast"].includes(selectedPreset.id);
   const usesSpread = ["cone", "cone-blast"].includes(selectedPreset.id);
   const usesWidth = selectedPreset.id === "line";
 
-  // No renderSelection() — same reasoning as Layer's own
-  // applyLayerPositionChange (see createCommitOnBlurNumberField's comment):
-  // presetId (the only thing that decides which of these fields even show)
-  // never changes from editing Size/Angle/Spread/Width, so there's nothing
-  // in this panel that needs rebuilding in response, and doing it anyway
-  // only risked destroying the very input being edited. (Changing the
-  // preset ITSELF, via the new "Change Shape/Effect" button below, DOES
-  // need a full rebuild — that button explicitly calls renderSelection()
-  // itself after committing, rather than trying to patch this panel in
-  // place.)
+  // No renderSelection() — presetId (the only thing deciding which fields
+  // show) never changes from editing Size/Angle/Spread/Width, so nothing
+  // needs rebuilding, and doing it anyway risks destroying the input being
+  // edited. Changing the preset itself, via "Change Shape/Effect" below,
+  // DOES call renderSelection() after committing.
   function applyShapeChange(label, apply) {
     recordHistory(label, () => {
       apply();
@@ -3063,13 +2689,11 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     renderJson();
   }
 
-  // Opens the picker modal (Part 3) on this exact element — the only way to
-  // change WHICH shape/effect a placed element is; the toolbar's own
-  // pre-placement type select only ever affects new placements. Same
-  // input+button shape as Press/Workbench's own Image component field
-  // (press/index.html's `data-inspector-image-field`) — a readonly text
-  // input showing the current pick, plus a button that opens the modal,
-  // rather than a standalone button with no indication of what's selected.
+  // Opens the picker modal on this exact element — the only way to change
+  // WHICH shape/effect a placed element is; the toolbar's pre-placement
+  // type select only affects new placements. Same input+button shape as
+  // Press/Workbench's Image component field — a readonly text input
+  // showing the current pick, plus a button that opens the modal.
   const presetGroup = document.createElement("div");
   presetGroup.className = "input-group";
   const presetField = createFormFloatingField({ label: "Shape/Effect", readonly: true });
@@ -3085,12 +2709,9 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   presetGroup.appendChild(changePresetButton);
   container.appendChild(presetGroup);
 
-  // Attach to Token — same exact capability/wiring Lights already have
-  // (renderLightSelectionEditor's own identical block just above in this
-  // file, map-viewer.js's resolveElementOrigin) — an attached shape/effect
-  // tracks that marker's live position every render instead of its own
-  // stored origin, moving with it as it's dragged. Lists every marker
-  // across every marker layer on the map, not just this one layer's own.
+  // Attach to Token — same capability/wiring Lights already have — an
+  // attached shape/effect tracks that marker's live position every render
+  // instead of its own stored origin. Lists every marker across every layer.
   const attachField = createFormFloatingField({ type: "select", label: "Attach to Token" });
   const attachSelect = attachField.querySelector("select");
   const noneOption = document.createElement("option");
@@ -3113,9 +2734,7 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
       shapeElement.attachedMarkerId = attachSelect.value;
     });
     // Position (shown/hidden based on attachment) needs a full rebuild,
-    // same "changing what this panel even shows" reasoning the preset
-    // modal's own Apply handler already follows. isDraftShape's own comment
-    // has the full reasoning for why this isn't always renderSelection().
+    // same reasoning the preset modal's own Apply handler follows.
     if (isDraftShape) {
       renderArmedShapeInspector();
     } else {
@@ -3124,12 +2743,9 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   });
   container.appendChild(attachField);
 
-  // Label — every shape/effect can carry one now (previously particles
-  // only), letting a GM name ANY placed element ("North Trap Zone," not
-  // just "Boss Burst") for its own sake, not just for the particle-only
-  // re-trigger lookup (findEffectElementByLabel, map.js) that originally
-  // motivated it. Sits right below Attach to Token — identifying/organizing
-  // fields, ahead of the geometry/color fields below.
+  // Label — every shape/effect can carry one, letting a GM name any
+  // placed element for its own sake, not just for the particle-only
+  // re-trigger lookup that originally motivated it.
   const labelField = createFormFloatingField({ label: "Label (optional)" });
   const labelInput = labelField.querySelector("input");
   labelInput.value = shapeElement.label || "";
@@ -3140,16 +2756,12 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   });
   container.appendChild(labelField);
 
-  // Position X/Y — shown only while freestanding; while attached, position
-  // is derived from the host marker, not directly authored, same as
-  // Light's own identical gate just above in this file. Edits the same
-  // content-space pixel coordinate Layer Position X/Y already exposes
-  // (markerPositionToLocalPixel/localPixelToMarkerPosition — the exact
-  // conversion drag-to-place and drag-to-move already round-trip through),
-  // not shapeElement.origin's raw stored shape directly — origin is {x,y}
-  // for image/canvas maps but {lat,lng} for tile ones, and this keeps the
-  // field meaning "pixels from the map's own center" either way, same as
-  // every other on-map position in this panel.
+  // Shown only while freestanding; while attached, position derives from
+  // the host marker, same as Light's gate above. Edits the same content-
+  // space pixel coordinate Layer Position X/Y exposes, not
+  // shapeElement.origin's raw stored shape — origin is {x,y} for
+  // image/canvas maps but {lat,lng} for tile ones, and this keeps the
+  // field meaning "pixels from the map's center" either way.
   if (!shapeElement.attachedMarkerId) {
     const originPixel = markerPositionToLocalPixel(baseMapManager, state.map, shapeElement.origin);
     const positionRow = createFieldRow(
@@ -3174,11 +2786,9 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     container.appendChild(positionRow);
   }
 
-  // dataAttr on Size/Angle only — the two fields the Shape tool's own
-  // drag gesture updates LIVE (setupShapeTool's own onMove), by writing
-  // straight into these inputs' own .value via this same attribute rather
-  // than rebuilding the whole panel on every pointermove tick. Harmless,
-  // unused attribute on an already-placed shape's own identical fields.
+  // dataAttr on Size/Angle only — the two fields the Shape tool's drag
+  // gesture updates LIVE by writing straight into these inputs' .value,
+  // rather than rebuilding the whole panel on every pointermove tick.
   const fields = [
     createCommitOnBlurNumberField(
       selectedPreset.id === "square" ? "Side (cells)" : "Size (cells)",
@@ -3234,17 +2844,12 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     );
   }
 
-  // Outline width — a geometry-only concept (a particle preset draws its
-  // own internal styling, not a generic stroke around a shape) — joins the
-  // SAME `fields` pool as Size/Angle/Spread/Width rather than getting its
-  // own separate single-field row: a lone half-width field left by itself
-  // (an odd-length `fields` array — Circle/Square's own Size-alone case
-  // most visibly) broke to a new line with an awkward empty gap next to it.
-  // Every geometry preset's own field count (Size, +Angle/Spread/Width as
-  // usesAngle/usesSpread/usesWidth apply) is odd on its own but becomes
-  // EVEN once Outline width joins it — Circle/Square: 1+1=2, Cone: 3+1=4,
-  // Line: 3+1=4 — so chunking the whole pool by twos below always pairs
-  // cleanly for every existing geometry preset.
+  // Outline width — a geometry-only concept — joins the SAME `fields`
+  // pool as Size/Angle/Spread/Width rather than its own row: a lone
+  // half-width field left alone broke to a new line with an awkward gap.
+  // Every geometry preset's field count is odd on its own but becomes
+  // even once Outline width joins it, so chunking by twos below always
+  // pairs cleanly.
   if (selectedPreset.kind === "geometry") {
     fields.push(
       createCommitOnBlurNumberField(
@@ -3264,12 +2869,9 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     container.appendChild(createFieldRow(fields.splice(0, 2), { columns: 2 }));
   }
 
-  // Fill/Outline/Opacity moved into the Shape/Effect picker modal (Part 3)
-  // alongside the rest of a preset's own colorSlots/params — editing them
-  // here too would just be the same three values duplicated in two places.
-  // The "Change Shape/Effect" input+button above is the one place a preset's
-  // colors/opacity are set now, whether or not the preset itself is also
-  // being changed.
+  // Fill/Outline/Opacity live in the Shape/Effect picker modal alongside a
+  // preset's own colorSlots/params — editing them here too would just
+  // duplicate the same values in two places.
 
   const snapField = createCheckField({
     id: `shape-snap-${shapeElement.id}`,
@@ -3282,9 +2884,8 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     applyShapeChange("shape snap to grid", () => {
       shapeElement.snapToGrid = snapInput.checked;
       // Snapping ON right now (not just future drags) re-aligns the shape
-      // to the grid immediately, the same instant-feedback expectation
-      // toggling a setting usually carries — otherwise the toggle would
-      // read "on" while the shape visibly sat off-grid until next moved.
+      // immediately — otherwise the toggle would read "on" while the shape
+      // visibly sat off-grid until next moved.
       if (snapInput.checked) {
         shapeElement.origin = snapShapeOriginToGrid(shapeElement.origin, layer);
       }
@@ -3293,12 +2894,9 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
   container.appendChild(snapField);
 
   // Loop/Play — only meaningful for a particle preset (Effect); a plain
-  // geometry Shape has neither concept. Loop decides whether it just plays
-  // continuously (true, the "campfire" case, nothing to trigger) or holds
-  // at rest after each cycle until explicitly replayed (false, the "spell
-  // blast" case) — Label (now shared by every shape/effect, set right below
-  // Attach to Token above) is what a re-trigger looks a resting Effect up
-  // by, on top of just being generally useful for naming any placed thing.
+  // geometry Shape has neither. Loop decides whether it plays continuously
+  // (true, "campfire") or holds at rest until replayed (false, "spell
+  // blast") — Label is what a re-trigger looks a resting Effect up by.
   if (selectedPreset.kind === "particles") {
     const loopField = createCheckField({
       id: `shape-loop-${shapeElement.id}`,
@@ -3312,8 +2910,7 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
         shapeElement.loop = loopInput.checked;
       });
       // Loop on/off changes whether the Play button below even applies —
-      // same full-rebuild reasoning every other panel-shape-changing
-      // control here already follows.
+      // same full-rebuild reasoning as other panel-shape-changing controls.
       if (isDraftShape) {
         renderArmedShapeInspector();
       } else {
@@ -3332,15 +2929,12 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     }
   }
 
-  // Same shared icon-toolbar factory/mount point Layer selection uses
-  // (renderLayerSelectionEditor) instead of a standalone inline button —
-  // renderSelection() already clears data-selection-toolbar-mount before
-  // every render, so only whichever selection kind is current populates it.
-  // Suppressed entirely for a draft (isDraftShape) — there's nothing real
-  // to delete yet, and state.selection doesn't even point at this element
-  // (deleteCurrentSelection would act on whatever it DOES point to instead,
-  // typically the layer — a real, confirmed-by-inspection footgun this
-  // avoids outright rather than hoping nobody clicks it).
+  // Same shared icon-toolbar factory/mount point Layer selection uses —
+  // renderSelection() clears the mount before every render, so only the
+  // current selection kind populates it. Suppressed entirely for a draft —
+  // state.selection doesn't point at this element yet, so
+  // deleteCurrentSelection would act on whatever it DOES point to
+  // (typically the layer) — a real footgun this avoids outright.
   if (elements.selectionToolbar && !isDraftShape) {
     createToolbarButtonGroup([
       {
@@ -3352,10 +2946,9 @@ function renderVectorShapeSelectionEditor(layer, shapeElement) {
     ]).forEach((button) => elements.selectionToolbar.appendChild(button));
     refreshTooltips(elements.selectionToolbar);
   }
-  // Activates the "Change Shape/Effect" button's own data-bs-title tooltip
-  // (createIconButton's `label` sets the attribute, but nothing initializes
-  // a live Bootstrap Tooltip off it until this runs) — was previously only
-  // called for the toolbar above, never for this panel's own content.
+  // Activates the "Change Shape/Effect" button's own tooltip — createIconButton's
+  // `label` sets the attribute, but nothing initializes a live Bootstrap
+  // Tooltip off it until this runs.
   refreshTooltips(container);
 }
 
@@ -3382,24 +2975,18 @@ function syncOverlayInteractivity() {
         ? state.selection.layerId
         : null;
   const layer = selectedLayerId ? state.map.layers.find((entry) => entry.id === selectedLayerId) : null;
-  // A "marker-elements" (plural) multi-selection has no single layerId of
-  // its own the way selectedLayerId above expects — it can span several
-  // layers at once — but every one of its entries is necessarily a
-  // marker, so its mere existence already tells us the overlay needs to
-  // stay interactive, same conclusion the single-marker branch above
-  // reaches via `layer.type === "marker"`. Without this, forming a
-  // multi-selection on a TILE base map (this whole pointer-events gate is
-  // Leaflet-pane-only, per the comment below) set the overlay pane
-  // non-interactive, silently swallowing every further click — including
-  // the very Ctrl-click meant to extend/shrink that same selection.
-  // Confirmed real bug this avoids, caught alongside isLayerSelected's/
-  // renderLayers' own matching fixes.
+  // A "marker-elements" (plural) multi-selection has no single layerId the
+  // way selectedLayerId expects — it can span several layers — but every
+  // entry is necessarily a marker, so its mere existence tells us the
+  // overlay needs to stay interactive. Without this, forming a multi-
+  // selection on a tile base map set the overlay pane non-interactive,
+  // silently swallowing every further click, including the Ctrl-click
+  // meant to extend the selection.
   const hasMultiMarkerSelection = state.selection.kind === "marker-elements" && (state.selection.elements || []).length > 0;
-  // A selected Group also arms its own target grid layer's interactivity
-  // without the grid layer itself ever being the current `selection` — this
-  // pointer-events gate (tile maps only, via the Leaflet pane below) has to
-  // know about that too, or clicking/painting a group's cells would never
-  // even reach the grid's own pointerdown listener on a tile base map.
+  // A selected Group also arms its target grid layer's interactivity
+  // without the grid layer ever being the current `selection` — this gate
+  // has to know that too, or clicking a group's cells would never reach
+  // the grid's own pointerdown listener on a tile base map.
   const isInteractive =
     Boolean(layer && (layer.type === "grid" || layer.type === "marker")) || state.selection.kind === "group" || hasMultiMarkerSelection;
   overlay.classList.toggle("is-interactive", isInteractive);
@@ -3409,14 +2996,9 @@ function syncOverlayInteractivity() {
 }
 
 // getGridLayoutScale/getGridBackgroundPosition delegate to lib/map-viewer.js
-// now (same coordinate math the shared createGridLayerElement uses
-// internally) — kept here only because bindLayerDrag's whole-layer drag
-// (Orrery-authoring-only) still needs them directly. getGridType/
-// getGridCellKey/createGridCellSelectionEntry/findGridCellById/
-// normalizeGroupMembers are imported straight from the shared module below
-// (identical signatures, no wrapper needed) since findGridCell/
-// ensureGridCell/buildGridRangeSelection/formatGridCellLabel/
-// summarizeGridSelection and the group-editing UI still call them directly.
+// (same math createGridLayerElement uses internally) — kept here only
+// because bindLayerDrag's whole-layer drag (Orrery-authoring-only) still
+// needs them directly.
 function getGridLayoutScale() {
   return sharedGetGridLayoutScale(baseMapManager, state.map);
 }
@@ -3507,14 +3089,10 @@ function summarizeGridSelection(layer, selectedCells) {
   return `Col ${minCol}, Row ${minRow} → Col ${maxCol}, Row ${maxRow} · ${selectedCells.length} cells`;
 }
 
-// createGridLayerElement/buildHexGridBackground/createRasterLayerElement/
-// createGridSelectionOverlay now live only in lib/map-viewer.js — the shared
-// renderMapLayers orchestrator calls them internally, so nothing here needs
-// to call them directly anymore. getLayerPositionScale/getLayerSizeScale/
-// getLayerRenderPosition ARE still called directly, though — by
-// updateTileLayerElementPosition below (whole-layer drag,
-// Orrery-authoring-only) — imported from the same module (see the import
-// block at the top of this file), identical signatures, no wrapper needed.
+// getLayerPositionScale/getLayerSizeScale/getLayerRenderPosition are
+// called directly by updateTileLayerElementPosition below (whole-layer
+// drag, Orrery-authoring-only) — everything else in the render loop lives
+// only in lib/map-viewer.js now.
 function updateTileLayerElementPosition(layer, element) {
   if (!element || state.map.baseMap.type !== "tile") {
     return;
@@ -3554,29 +3132,22 @@ function updateTileLayerElementPosition(layer, element) {
   }
 }
 
-// isTileBaseMap/getMarkerLayerOffset/localPixelToMarkerPosition/
-// createMarkerDot/createMarkerLayerElement/createVectorLayerElement/
-// createLayerWrapper now live only in lib/map-viewer.js — the entire render
-// loop (renderLayerOverlays below) delegates to the shared renderMapLayers
-// orchestrator, which calls all of these internally, so nothing here needs
-// to call them directly anymore. selectMarkerElementForDrag stays: it's
-// passed to renderMapLayers as the onMarkerDragStart callback (Orrery-only —
-// updates state.selection and the property inspector, which the shared
-// module has no concept of).
+// The render loop (renderLayerOverlays below) delegates to the shared
+// renderMapLayers orchestrator; selectMarkerElementForDrag stays here since
+// it's passed as the onMarkerDragStart callback (Orrery-only — updates
+// state.selection and the inspector, which the shared module has no
+// concept of).
 //
-// A lightweight selection update for the moment a marker drag begins: updates
-// state.selection and the inspector panel, but deliberately skips
-// renderLayerOverlays() — that would tear down and replace the very dot
-// element (dotEl) the drag is about to setPointerCapture on and drive via
-// onMove/onUp, silently ending the gesture the instant the DOM node it
-// targets gets swapped out.
+// A lightweight selection update for the moment a marker drag begins:
+// updates state.selection and the inspector, but deliberately skips
+// renderLayerOverlays() — that would tear down the very dot element the
+// drag is about to setPointerCapture on, ending the gesture the instant
+// its DOM node gets swapped out.
 function selectMarkerElementForDrag(layer, markerElement, dotEl) {
-  // Bypasses setSelection (see this function's own header comment on why),
-  // so it needs its own copy of setSelection's armedMarkerLayerId logic:
-  // stays armed only if this marker's layer was ALREADY the armed one
-  // (clicking/dragging a marker mid-placement-session); a fresh fallback
-  // click on a marker whose layer was never explicitly selected does not
-  // arm it. See armedMarkerLayerId's own comment for the full reasoning.
+  // Bypasses setSelection, so it needs its own copy of the
+  // armedMarkerLayerId logic: stays armed only if this marker's layer was
+  // ALREADY the armed one; a fallback click on a never-selected layer does
+  // not arm it.
   if (armedMarkerLayerId !== layer.id) {
     armedMarkerLayerId = null;
   }
@@ -3593,14 +3164,10 @@ function selectMarkerElementForDrag(layer, markerElement, dotEl) {
   dotEl.classList.add("is-selected");
 }
 
-// Ctrl/Cmd/Shift-click on a marker (map canvas dot, or the left-pane
-// component list — see renderLayers' own click handler and
-// createMarkerDot's pointerdown branch in map-viewer.js) — extends the
-// current selection into (or shrinks/collapses out of) a multi-marker
-// selection, rather than replacing it the way a plain click does. Uses
-// the ordinary setSelection (not selectMarkerElementForDrag's own
-// bypass) since this never begins a drag, so there's no live dotEl to
-// preserve across a renderLayerOverlays() rebuild.
+// Ctrl/Cmd/Shift-click on a marker — extends the current selection into
+// (or shrinks out of) a multi-marker selection, rather than replacing it.
+// Uses ordinary setSelection since this never begins a drag, so there's no
+// live dotEl to preserve across a renderLayerOverlays() rebuild.
 function toggleMarkerMultiSelect(layer, markerElement) {
   const current = state.selection;
   let entries;
@@ -3630,16 +3197,12 @@ function toggleMarkerMultiSelect(layer, markerElement) {
   }
 }
 
-// Same reasoning as selectMarkerElementForDrag just above — updates
-// state.selection and the inspector panel only, deliberately skipping
-// renderLayerOverlays(): that would tear down and replace the very
-// hit-target/visible SVG nodes a shape drag is about to setPointerCapture
-// on and drive via onMove/onUp (map-viewer.js's own renderShapeElement),
-// ending the gesture before it even starts. Confirmed as a real bug before
-// this split existed: routing a shape's pointerdown through the plain
-// setSelection("vector-path", ...) every OTHER vector-path click uses (see
-// onVectorPathClick below) rebuilt the overlay on every click, which is
-// exactly why shapes could be selected but never actually dragged.
+// Same reasoning as selectMarkerElementForDrag — skips renderLayerOverlays()
+// to avoid tearing down the SVG nodes a shape drag is about to
+// setPointerCapture on. Before this split existed, routing a shape's
+// pointerdown through the plain setSelection every other vector-path click
+// uses rebuilt the overlay on every click, which is why shapes could be
+// selected but never actually dragged.
 function selectShapeElementForDrag(layer, elementId) {
   blurStaleActiveField();
   state.selection = { kind: "vector-path", id: elementId, layerId: layer.id, cells: [], elements: [], anchor: null };
@@ -3659,10 +3222,9 @@ function bindLayerDrag(target, layer, element) {
     }
     event.preventDefault();
     event.stopPropagation();
-    // Best-effort — see map-viewer.js's renderShapeElement/beginMarkerDrag
-    // for why (some browsers throw InvalidStateError capturing in certain
-    // DOM positions); the window-level pointermove/pointerup listeners
-    // below track the gesture regardless.
+    // Best-effort — some browsers throw InvalidStateError capturing in
+    // certain DOM positions; the pointermove/pointerup listeners below
+    // track the gesture regardless.
     try {
       target.setPointerCapture(event.pointerId);
     } catch (error) {
@@ -3702,8 +3264,7 @@ function bindLayerDrag(target, layer, element) {
     };
     if (activeLayerDrag.target) {
       // Grid folds position into its own backgroundPosition below instead —
-      // translating the wrapper too would apply the same offset twice (see
-      // createLayerWrapper's own matching exclusion, map-viewer.js).
+      // translating the wrapper too would apply the same offset twice.
       if (state.map.baseMap.type !== "tile" && layer.type !== "grid") {
         activeLayerDrag.target.style.transform = `translate(${layer.position.x}px, ${layer.position.y}px)`;
       }
@@ -3742,18 +3303,14 @@ function bindLayerDrag(target, layer, element) {
   target.addEventListener("pointercancel", stopDrag);
 }
 
-// The whole render loop lives in lib/map-viewer.js's renderMapLayers now —
-// shared with the Dashboard's Map widget, so every layer type (grid, raster,
-// vector, marker) renders identically in both places. Everything below is
-// just Orrery's own authoring behavior, supplied as callbacks: grid-cell
-// click-selection (ctrl/shift range semantics), "click empty space to place
-// a new marker," per-marker drag→undo-stack recording, and the whole-layer
-// drag handle. None of these run at all when a caller (the widget) doesn't
-// pass them.
+// The whole render loop lives in lib/map-viewer.js's renderMapLayers —
+// shared with the Dashboard's Map widget, so every layer type renders
+// identically in both places. Everything below is Orrery's own authoring
+// behavior, supplied as callbacks; none of it runs when a caller (the
+// widget) doesn't pass it.
 // Resolves which grid layer a selected Group's cells get painted onto —
-// its own Fog of War-linked layer if it has one (the common case this
-// exists for), else the GM's own last explicit "Paint on layer" pick if
-// that layer still exists, else the map's first grid layer.
+// its own Fog of War-linked layer if it has one, else the GM's last
+// "Paint on layer" pick if it still exists, else the map's first grid layer.
 function resolvePaintTargetLayer(group) {
   if (!group) {
     return null;
@@ -3768,16 +3325,10 @@ function resolvePaintTargetLayer(group) {
 }
 
 // Fires the character-payload (and System-fields/conditions) fetch for
-// EVERY character-linked marker, not just whichever one's own inspector
-// panel happens to be open right now — without this, a GM who never
-// happens to click a given marker's own inspector would silently never see
-// that marker's Auto-Reveal Vision Range OR its condition-icon badges
-// (resolveMarkerConditionIconsForMarker) resolve past their empty/literal
-// fallback. No longer gated on Vision Range being configured — condition
-// icons need the same two fetches for every character-linked marker
-// regardless. Fire-and-forget, cheap after the first pass
-// (ensureCharacterPayloadCached/ensureCharacterSystemFieldsCached are both
-// no-ops once cached/in-flight/already-resolved).
+// EVERY character-linked marker, not just whichever inspector happens to
+// be open — without this, a marker's Auto-Reveal Vision Range or
+// condition-icon badges would never resolve past their fallback until
+// clicked. Fire-and-forget, cheap after the first pass.
 function primeCharacterPayloadCache() {
   (state.map.layers || []).forEach((layer) => {
     if (layer.type !== "marker") return;
@@ -3790,12 +3341,9 @@ function primeCharacterPayloadCache() {
 }
 
 // Same "prime for every marker, not just the selected one" reasoning as
-// primeCharacterPayloadCache above, for Monster/NPC-linked markers'
-// condition icons (resolveMarkerConditionIconsForMarker) — fires the active
-// Encounter fetch (once per campaign group, not per marker) and, once that
-// resolves, its own System's conditions fetch. A no-op with nothing to do
-// when there's no active campaign group, or no Monster/NPC-linked marker on
-// the map at all.
+// primeCharacterPayloadCache, for Monster/NPC-linked markers' condition
+// icons — fires the active Encounter fetch (once per group) and then its
+// System's conditions fetch. No-op with no active group or no such marker.
 function primeMonsterConditionCache() {
   const groupId = getActiveCampaignGroupId();
   if (!groupId) return;
@@ -3814,15 +3362,11 @@ function primeMonsterConditionCache() {
   }
 }
 
-// The Marker Resource Bar (resolveMarkerResourceBarForMarker) shows for ANY combatant
-// with a linked marker — character, monster, or NPC alike, per the GM's own
-// explicit choice for this feature (unlike condition icons, which only ever
-// needed the active Encounter fetch for Monster/NPC markers, since a
-// Character's own conditions read straight off its own payload instead —
-// see resolveMarkerConditionIcons' own header comment). So this primes the
-// active Encounter (and, once its systemId is known, that System's own
-// resource-name config) whenever the map has ANY referenced marker at all,
-// not gated on Monster/NPC presence the way primeMonsterConditionCache is.
+// The Marker Resource Bar shows for ANY combatant with a linked marker —
+// character, monster, or NPC alike, unlike condition icons (Character
+// conditions read straight off its own payload). So this primes the
+// active Encounter whenever the map has ANY referenced marker, not gated
+// on Monster/NPC presence the way primeMonsterConditionCache is.
 function primeResourceBarCache() {
   const groupId = getActiveCampaignGroupId();
   if (!groupId) return;
@@ -3844,17 +3388,14 @@ function primeResourceBarCache() {
   }
 }
 
-// Which characters the current viewer has owner/admin/edit-shared access to
-// (allowsDelete's own established owner-or-admin-or-edit-shared rule — the
-// right rule for a CHARACTER, unlike mapAllowsDelete's own narrower
-// ownership-only rule for the map itself, see that function's own comment
-// for why those two had to diverge) — only ever consulted from the
-// restricted render path (see isMarkerDraggableRestricted/
-// renderRestrictedLayerOverlays below); the full-access path never reaches
-// this at all.
-// Confirmed real bug this fixes: with no per-marker check of any kind at
-// all, ANY signed-in visitor reaching Orrery's own authoring view — most
-// often a player following the Dashboard Map widget's own "Open in Orrery"
+// Which characters the current viewer has owner/admin/edit-shared access
+// to (allowsDelete's own owner-or-admin-or-edit-shared rule — the right
+// rule for a CHARACTER, unlike mapAllowsDelete's narrower ownership-only
+// rule for the map itself) — only consulted from the restricted render
+// path; the full-access path never reaches this.
+// Without a per-marker check of any kind, ANY signed-in visitor reaching
+// Orrery's own authoring view — most often a player following the
+// Dashboard Map widget's own "Open in Orrery"
 // link, a surface this tool was never built assuming a non-owner would use
 // — could drag EVERY marker on the map, including characters they don't
 // own. Shared fetch-once-per-id-set primer (ownership.js's own
@@ -3911,13 +3452,10 @@ function isLayerSelected(layer) {
 
 // True while any click-based gesture tool (Draw/Shape/Wall/Light/Measure/
 // Ping) is armed — these all claim map clicks for their own purpose, and
-// letting fallback click-to-select also respond to the same click was
-// confirmed as a real bug once already (see map-viewer.js's own comment on
-// createMarkerLayerElement for the "every marker always clickable" version
-// of this same mistake): a Measure click landing on a marker underneath
-// selected the marker instead of taking a measurement. Draw/Shape/Wall/
-// Light each keep a dedicated module-level flag; Measure/Ping don't (no
-// equivalent state to read besides their own toggle button's own class).
+// fallback click-to-select must stay suppressed or it steals the click
+// (e.g. a Measure click lands on a marker and selects it instead of
+// measuring). Draw/Shape/Wall/Light each keep a module-level flag;
+// Measure/Ping read their own toggle button's class instead.
 function isAnyGestureToolActive() {
   return Boolean(
     drawModeActive ||
@@ -3930,46 +3468,30 @@ function isAnyGestureToolActive() {
 }
 
 // Lets a marker/grid-cell/vector element be clicked directly without first
-// selecting its owning Layer from the left pane — the fallback hit-testing
-// the user asked for: click whatever's actually under the cursor, topmost
-// wins (ordinary DOM stacking already resolves that for markers/vectors,
-// same as an already-selected layer's own elements do today; a grid
-// layer's overlay is one full-map-covering element per layer, so the same
-// "later in map.layers paints on top and wins" stacking applies there too).
-// Selecting a Layer still narrows this down to just that layer (the
-// isLayerSelected branch), matching the existing "select the layer, then
-// its own elements become clickable" behavior exactly — this only ADDS the
-// "nothing selected yet" case, it doesn't change what happens once
-// something is. Suppressed entirely while a gesture tool is armed, so this
-// can never reopen the bug isMarkerDraggableForFullAccess originally fixed.
+// selecting its owning Layer — click whatever's under the cursor, topmost
+// wins via ordinary DOM stacking. Selecting a Layer still narrows this to
+// just that layer's own elements (isLayerSelected); this only adds the
+// "nothing selected yet" case. Suppressed while a gesture tool is armed.
 function isLayerFallbackInteractive(layer) {
   if (isAnyGestureToolActive()) return false;
   if (state.selection.kind === null) return true;
   return isLayerSelected(layer);
 }
 
-// Only ever used from the full-access render path now (renderLayerOverlays
-// below branches to a completely separate, restricted render for anyone
-// without full map access — see renderRestrictedLayerOverlays, which pulls
-// its own equivalent marker-drag policy from map-viewer.js's shared
-// buildRestrictedMapOptions instead of a second copy here) — so this only
-// has one job left: the GM/owner/admin can click-select (and, on the same
-// gesture, drag) any marker on the currently-selected layer, OR — now —
-// any marker at all when no layer is selected yet (isLayerFallbackInteractive
-// already covers the selected-layer case as one of its own branches).
+// Full-access render path only (the restricted path uses map-viewer.js's
+// own buildRestrictedMapOptions instead). GM/owner/admin can click-select
+// and drag any marker on the selected layer, or any marker at all when
+// none is selected — isLayerFallbackInteractive covers both cases.
 function isMarkerDraggableForFullAccess(layer) {
   return isLayerFallbackInteractive(layer);
 }
 
-// Shapes & Effects plan, Part 5 — replays a placed, non-looping particle
-// effect's run() cycle from its own inspector "Play" button. Not a data
-// change (nothing about the element itself is different after this), so no
-// recordHistory/applyShapeChange — just resets its "already played" state
-// and forces a re-render, same mechanism triggerElementById (map.js) uses
-// for a remote-delivered trigger, then broadcasts so the rest of the table
-// sees it too. Plays locally first, same "don't make your own feedback
-// depend on the full SSE round-trip" reasoning the ping tool's own
-// pointerdown handler already follows just below.
+// Replays a placed, non-looping particle effect's run() cycle from its
+// inspector "Play" button. Not a data change, so no recordHistory — just
+// resets its "already played" state, re-renders locally (same mechanism
+// triggerElementById in map.js uses for a remote trigger), then broadcasts
+// so the rest of the table sees it too. Plays locally first rather than
+// waiting on the SSE round-trip, same as the ping tool below.
 function triggerShapeEffectElement(layer, shapeElement) {
   resetParticleEffectPlayState(shapeElement.id);
   renderLayerOverlays();
@@ -3988,28 +3510,18 @@ function renderLayerOverlays() {
     return;
   }
   // A restricted viewer's drag (beginMarkerDrag, map-viewer.js) tracks the
-  // cursor via direct style mutation on its own dot element, entirely
-  // outside this function — it needs nothing from a re-render until the
-  // gesture actually ends (onMarkerDragEnd handles that explicitly). ANY
-  // render triggered while a drag is in flight would rebuild the marker
-  // layer's DOM and tear out that exact dot out from under the pointer-
-  // capture driving the gesture — confirmed real bug, and more common than
-  // it sounds: the ownership-catalog/vision-payload caches below
-  // (primeCharacterOwnershipCatalog/primeCharacterPayloadCache) each kick
-  // off their own fire-and-forget fetch-then-render-again the FIRST time
-  // this runs after a fresh page load, i.e. almost exactly when a first,
-  // freshly-loaded test drag is most likely to be in progress — not just
-  // the remote poll (which isDraggingRestrictedMarker already guarded
-  // separately, but wasn't the only trigger). One guard here covers every
-  // trigger uniformly instead of chasing each one individually.
+  // cursor via direct style mutation outside this function; it needs
+  // nothing from a re-render until the gesture ends. Any render mid-drag
+  // would rebuild the marker layer's DOM and tear the dragged dot out from
+  // under the pointer capture — including the fire-and-forget re-renders
+  // the ownership/payload cache primers below can trigger on first load,
+  // not just the remote poll. One guard here covers every trigger.
   if (isDraggingRestrictedMarker) return;
   const hasFullAccess = currentUserHasFullMapAccess();
-  // Everything below `[data-pane]`/the floating toolbar's authoring
-  // buttons (css/styles.css) is hidden by this class alone — see its own
-  // rules for the full list. Keyed off mapIsLoaded too so a fresh page load
-  // (mapCatalog not populated yet, hasFullAccess defaults false — see
-  // mapAllowsDelete) doesn't flash the restricted class before there's even
-  // a map to judge access against.
+  // Hides everything below `[data-pane]`/the floating toolbar's authoring
+  // buttons (see css/styles.css for the full rule list). Gated on
+  // mapIsLoaded too so a fresh page load doesn't flash the restricted
+  // class before there's a map to judge access against.
   document.body.classList.toggle("orrery-restricted-viewer", mapIsLoaded && !hasFullAccess);
   if (!hasFullAccess) {
     renderRestrictedLayerOverlays(overlay);
@@ -4027,23 +3539,19 @@ function renderLayerOverlays() {
     viewerTier: getEffectiveViewerTier(),
     hasFullAccess: true,
     isMarkerDraggable: isMarkerDraggableForFullAccess,
-    // Whether THIS layer's own empty-click-places-a-marker should be armed
-    // — see armedMarkerLayerId's own comment. Kept separate from
-    // isMarkerDraggable/isLayerFallbackInteractive on purpose: an existing
-    // marker can be fallback-clickable (select/drag it) on a layer that
-    // ISN'T armed for placing new ones.
+    // Whether THIS layer's empty-click-places-a-marker is armed. Kept
+    // separate from isMarkerDraggable/isLayerFallbackInteractive: an
+    // existing marker can be fallback-clickable on a layer not armed for
+    // placing new ones.
     armedMarkerLayerId,
-    // Same fallback click-to-select for vector paths/shapes/doors (already
-    // has this exact escape hatch — built for the Dashboard Map widget,
-    // which has no layer-selection concept at all) as markers get above.
-    // Grid layers deliberately don't get this — see the grid branch's own
-    // comment in map-viewer.js for why (a grid overlay covers the whole
-    // map, so fallback-interactive there would swallow every click).
+    // Same fallback click-to-select for vector paths/shapes/doors as
+    // markers get above (built for the Dashboard Map widget, which has no
+    // layer-selection concept). Grid layers don't get this — a grid
+    // overlay covers the whole map, so it would swallow every click.
     isVectorLayerInteractive: isLayerFallbackInteractive,
     selection: state.selection,
     activeGroup,
-    // Orrery's own authoring view needs to resolve vision Bindings too —
-    // both for its own live fog-preview tint and so the marker inspector's
+    // Needed for the live fog-preview tint and so the marker inspector's
     // Binding field can display a resolved value once the record loads.
     getCharacterPayload: getCachedCharacterPayload,
     resolveConditionIcons: resolveMarkerConditionIconsForMarker,
@@ -4098,12 +3606,10 @@ function renderLayerOverlays() {
       const after = JSON.stringify(state.map);
       if (before !== after) {
         undoStack.push({ label: "move marker", before, after });
-        // VTT-like immediacy: a moved token saves itself the instant the
-        // drag ends, same as a restricted (non-owner) viewer's own marker
-        // drag already does via this exact helper — no need to wait for the
-        // GM's own separate Save button, which stays reserved for walls/
-        // lights/layer settings/map settings (see isMapDirty's own field
-        // exclusion for why this doesn't also light up Save).
+        // VTT-like immediacy: a moved token saves itself instantly, same as
+        // a restricted viewer's own marker drag. Doesn't light up the GM's
+        // Save button (isMapDirty excludes this field) — that stays
+        // reserved for walls/lights/layer settings/map settings.
         if (mapExistsOnServer) {
           void persistElementUpdate({
             dataManager,
@@ -4119,17 +3625,13 @@ function renderLayerOverlays() {
             });
         }
       }
-      // Deferred until drag-end, same as bindLayerDrag's whole-layer drag: a
+      // Deferred until drag-end, like bindLayerDrag's whole-layer drag: a
       // full renderLayerOverlays() mid-drag would replace dotEl in the DOM
       // out from under the pointer capture driving the gesture.
       renderLayerOverlays();
-      // The marker's own Position X/Y fields (if this marker's inspector is
-      // still open) need this to pick up where the drag actually landed —
-      // renderLayerOverlays() alone doesn't touch the selection panel.
-      // Safe here specifically because it's AFTER the deferred-until-drag-
-      // end point above (dotEl isn't mid-gesture anymore), unlike a
-      // renderSelection() during the drag itself, which would tear out the
-      // very node the pointer capture is driving.
+      // Updates the marker's own Position X/Y fields if its inspector is
+      // open — renderLayerOverlays() alone doesn't touch the selection
+      // panel. Safe here (post drag-end) unlike during the drag itself.
       renderSelection();
       syncOverlayInteractivity();
       renderJson();
@@ -4141,33 +3643,17 @@ function renderLayerOverlays() {
       wrapper.classList.add("is-draggable");
       bindLayerDrag(handle, layer, element);
     },
-    // Only wired while Draw/Shape mode is off (see setupDrawTool/
-    // setupShapeTool) — a drawn path or placed shape needs to stay
+    // Wired only while Draw/Wall mode is off — a drawn path needs to stay
     // click-through while actively drawing, so a new stroke can start
-    // anywhere, including on top of an existing one — but NOT gated on
-    // shapeModeActive: a placed shape should always be immediately
-    // selectable/draggable, matching how a placed Marker already works
-    // (click it to select, click empty space to place a new one), even
-    // while the Shape tool is still armed. Confirmed as a real bug before
-    // this: with shapes ALSO click-through while shapeModeActive, clicking
-    // a just-placed shape didn't select it — it fell through and stamped a
-    // brand new shape on top of it instead. A shape uses the lightweight
-    // selectShapeElementForDrag (no overlay rebuild — see its own comment)
-    // since it might be about to be dragged; a plain path has no drag to
-    // protect, so the regular setSelection is fine.
-    // "shape" or "light" — both use the lightweight selectShapeElementForDrag
-    // (no overlay rebuild) since either might be about to be dragged; a
-    // plain path has no drag to protect, so the regular setSelection is fine
-    // for that (walls get their own dedicated onWallDragEnd/
-    // onWallVertexDragEnd below instead of this callback).
-    //
-    // Gated by drawModeActive || wallModeActive (NOT shapeModeActive/
-    // lightModeActive — a placed shape/light must stay immediately
-    // selectable even while ITS OWN tool is still armed, see this block's
-    // own history a few lines up) — walls have no equivalent "click my own
-    // just-placed one" nuance (their own placement commits via double-
-    // click/Enter, not a drag-release), so there's no reason to keep other
-    // elements interactive while Wall mode is active.
+    // anywhere. NOT gated on shapeModeActive/lightModeActive: a placed
+    // shape/light must stay immediately selectable even while its own tool
+    // is still armed (a placed Marker works the same way). A shape/light
+    // uses the lightweight selectShapeElementForDrag (no overlay rebuild)
+    // since it might be dragged next; a plain path has no drag to protect,
+    // so the regular setSelection is fine. Walls get their own dedicated
+    // onWallDragEnd/onWallVertexDragEnd instead of this callback — their
+    // placement commits via double-click/Enter, not a drag-release, so
+    // there's no "click my own just-placed one" case to preserve.
     onVectorPathClick: drawModeActive || wallModeActive
       ? undefined
       : (layer, elementId, event, kind) => {
@@ -4177,22 +3663,13 @@ function renderLayerOverlays() {
             setSelection("vector-path", elementId, { layerId: layer.id });
           }
         },
-    // Shared by both AoE shapes and Lights — snapMarkerPositionToGrid isn't
-    // actually shape-specific, it only ever uses the layer's own generic
-    // getMarkerLayerOffset, so it snaps any layer's element position. A
-    // Light has no snapToGrid field of its own (unlike a shape) — the
-    // `!== false` default here means a dragged light always snaps, which is
-    // a reasonable default for a grid-based placement and not worth a
-    // dedicated per-light toggle.
-    //
-    // wallModeActive added to this gate (previously only drawModeActive) —
-    // confirmed as the actual cause of "a light gets selected instead of
-    // the wall being drawn": onVectorPathClick above was already correctly
-    // gated by wallModeActive, but this callback wasn't, so an
-    // already-selected light's own DRAG capability alone (independent of
-    // click-to-select) was still enough for its hit-target to intercept the
-    // pointerdown and call stopPropagation() before the Wall tool's own
-    // mapContainer handler ever saw it.
+    // Shared by AoE shapes and Lights — snapMarkerPositionToGrid only uses
+    // the layer's generic getMarkerLayerOffset, so it works for either. A
+    // Light has no snapToGrid field of its own; `!== false` here means a
+    // dragged light always snaps. Gated on wallModeActive too, not just
+    // drawModeActive — an already-selected light's drag capability alone
+    // (independent of click-to-select) was enough to intercept a pointerdown
+    // meant for the Wall tool.
     onShapeDragEnd: drawModeActive || wallModeActive
       ? undefined
       : (layer, elementId, nextOrigin) => {
@@ -4208,15 +3685,12 @@ function renderLayerOverlays() {
           renderLayerOverlays();
           renderJson();
         },
-    // Whole-wall drag — translates every point of the wall by the same
-    // delta (map-viewer.js's renderWallElement already computed the shifted
-    // points; this just re-snaps each one if the wall's own snapToGrid is
-    // on and commits). Gated by every OTHER placement tool too (not just
-    // wallModeActive/drawModeActive) — unlike a shape/light, a wall has no
-    // "click my own just-placed one" convenience to preserve (its own
-    // placement never commits via a single click the way a shape/light's
-    // does), so there's no reason to leave an existing wall interactive
-    // while placing a brand new shape or light near/over it either.
+    // Whole-wall drag — translates every point by the same delta
+    // (map-viewer.js's renderWallElement already computed the shifted
+    // points; this re-snaps each one and commits). Gated by every other
+    // placement tool too, unlike shape/light: a wall has no "click my own
+    // just-placed one" case to preserve, so no reason to stay interactive
+    // while placing anything else nearby.
     onWallDragEnd: drawModeActive || wallModeActive || shapeModeActive || lightModeActive
       ? undefined
       : (layer, elementId, nextPoints) => {
@@ -4233,8 +3707,7 @@ function renderLayerOverlays() {
           renderJson();
         },
     // Single-vertex drag (the handles shown when a wall is selected) — same
-    // snap/commit shape (and same gating reasoning) as onWallDragEnd, just
-    // for one point.
+    // snap/commit and gating as onWallDragEnd, just for one point.
     onWallVertexDragEnd: drawModeActive || wallModeActive || shapeModeActive || lightModeActive
       ? undefined
       : (layer, elementId, vertexIndex, nextPoint) => {
@@ -4252,13 +3725,11 @@ function renderLayerOverlays() {
         },
     paintModeActive: Boolean(activeGroup && paintLayer),
     paintTargetLayerId: paintLayer?.id ?? null,
-    // Additive only (never removes a cell already a member) — a single
-    // click or a whole drag sweep both just add cells in, not a toggle/
-    // erase tool; removing individual cells still works fine through the
-    // plain select-then-checkbox path this doesn't replace. No
-    // recordHistory per cell — paintDragBefore (captured on the FIRST cell
-    // of a gesture) and onGridCellPaintEnd below batch the whole gesture
-    // (single click included) into one undo entry.
+    // Additive only — a click or drag sweep adds cells, never removes one;
+    // removal still works via the plain select-then-checkbox path. No
+    // recordHistory per cell — paintDragBefore (set on the first cell of a
+    // gesture) and onGridCellPaintEnd batch the whole gesture into one
+    // undo entry.
     onGridCellPaint: (layer, coord) => {
       const group = activeGroup;
       if (!group) return;
@@ -4283,38 +3754,28 @@ function renderLayerOverlays() {
         }
         paintDragBefore = null;
       }
-      // Full rebuild only at drag-end (not per-cell, see onGridCellPaint's
-      // own comment) — refreshes the Members list/count in the still-open
-      // group editor.
+      // Full rebuild only at drag-end, not per-cell — refreshes the
+      // Members list/count in the still-open group editor.
       renderSelection();
     },
   });
 }
 
 // Restricted (non-owner, non-admin) viewer — no Layers/Groups/Views panel,
-// no toolbar tools, no click-to-select of anything at all (css/styles.css's
-// own .orrery-restricted-viewer rules hide every one of those UI surfaces —
-// see renderLayerOverlays' own toggle above). The interactive POLICY this
-// render path wires up (drag a character marker you own, open/close a
-// non-secret unlocked door, wall-aware blocking, grid-snap on drop) comes
-// straight from map-viewer.js's own buildRestrictedMapOptions — the SAME
-// function the Dashboard's own Map widget uses, not a second, independently
-// -written copy of the same rules (confirmed real complaint: the two used
-// to drift — dragging felt "totally different" between the widget and
-// Orrery precisely because each had its own bespoke implementation).
-// Deliberately a SEPARATE renderMapLayers call from the full-access one
-// above (not a conditionally-neutered version of it) — same "supply no
-// callback at all to opt a feature out" convention the widget's own map.js
-// already established, rather than scattering `restricted ? undefined :
-// ...` through every closure above.
-// A minimal popover for a restricted viewer's marker click — a marker they
-// can't drag (not their own character token) but that references a real
-// Library record, the same "used to do nothing at all on click" gap fixed
-// for the Dashboard's own Map widget (see that file's own
-// openMarkerLinkPopover, which this mirrors — Orrery's restricted view has
-// no shared DOM-building module with the widget beyond map-viewer.js's pure
-// resolveMarkerLinkTarget, so each builds its own small popover using its
-// own existing host/lifecycle conventions).
+// no toolbar tools, no click-to-select at all (css/styles.css's
+// .orrery-restricted-viewer rules hide those UI surfaces). The interactive
+// policy (drag your own character marker, toggle a non-secret unlocked
+// door, wall-aware blocking, grid-snap on drop) comes from map-viewer.js's
+// shared buildRestrictedMapOptions — the same function the Dashboard's Map
+// widget uses, so the two never drift into different-feeling drag behavior.
+// A deliberately separate renderMapLayers call from the full-access one
+// above, not a conditionally-neutered version of it — same "supply no
+// callback to opt a feature out" convention the widget's map.js uses.
+// A minimal popover for a restricted viewer clicking a marker they can't
+// drag but that references a real Library record — mirrors the Dashboard
+// Map widget's own openMarkerLinkPopover; each builds its own small
+// popover since the two share no DOM-building module beyond map-viewer.js's
+// pure resolveMarkerLinkTarget.
 let restrictedMarkerLinkPopover = null;
 function closeRestrictedMarkerLinkPopover() {
   restrictedMarkerLinkPopover?.remove();
@@ -4360,10 +3821,10 @@ function openRestrictedMarkerLinkPopover(layer, markerElement, dotEl) {
     popover.appendChild(link);
   }
 
-  // Contents claim rows — one Claim button per remaining item, calling the
-  // SAME shared claimMarkerContentEntry (marker-contents.js) the Dashboard's
-  // own Map widget calls too, so the two never grow independently-diverging
-  // claim logic even though each still builds its own popover DOM.
+  // One Claim button per remaining item, calling the same shared
+  // claimMarkerContentEntry (marker-contents.js) the Dashboard's Map widget
+  // uses, so claim logic never diverges even though each builds its own
+  // popover DOM.
   contents.forEach((entry) => {
     const row = document.createElement("div");
     row.className = "d-flex align-items-center justify-content-between gap-2";
@@ -4437,15 +3898,11 @@ function renderRestrictedLayerOverlays(overlay) {
   });
 }
 
-// A restricted viewer's own writes need an IMMEDIATE, single-element persist
-// (map-live-sync.js's persistElementUpdate/persistMarkerMove: fresh fetch,
-// patch just this one element, save) — not this file's usual "mutate
-// state.map locally, wait for the GM to click Save" convention every other
-// edit here uses, since a restricted viewer never sees a Save button at all
-// (data-pane-content is hidden entirely, see css/styles.css). Both merge the
-// server's fresh response back in via applyRemoteMapLayers — the same "pick
-// up someone else's change" path this file's own poll (watchCurrentMap)
-// already uses.
+// A restricted viewer's writes need an immediate, single-element persist
+// (map-live-sync.js's persistElementUpdate: fresh fetch, patch, save) —
+// not the usual "mutate state.map, wait for GM Save" convention, since a
+// restricted viewer never sees a Save button. Merges the server's response
+// back in via applyRemoteMapLayers, same as the poll (watchCurrentMap).
 async function toggleDoorRestricted(layerId, elementId) {
   try {
     const freshMap = await persistElementUpdate({
@@ -4547,12 +4004,9 @@ function parseImageDimension(raw) {
 }
 
 // Free text, not type="number" — a number input rejects "%" at the browser
-// level. Tracks the last successfully-committed display value itself
-// (rather than re-reading whatever prop it was built with) so reverting an
-// invalid edit doesn't regress to a stale value once the field has already
-// committed at least one real change — this field is never rebuilt after
-// mount (see applyLayerSettingsFieldChange's own no-renderSelection()
-// reasoning), so nothing else keeps that tracking for it.
+// level. Tracks its own last-committed display value (rather than
+// re-reading its build-time prop) since this field is never rebuilt after
+// mount, so nothing else keeps that state for it.
 function createDimensionField(label, value, onChange, options = {}) {
   const field = createCompactField({ type: "text", label, ...options });
   const input = field.querySelector("input");
@@ -4570,12 +4024,10 @@ function createDimensionField(label, value, onChange, options = {}) {
   return field;
 }
 
-// Position X/Y both on a Layer's whole-layer pan offset and (separately) a
-// Marker element's own {x,y} share this exact shape. Recorded via
-// applyLayerPositionChange (NOT applyLayerChange — see
-// createCommitOnBlurNumberField's own comment for why this specific field
-// must not rebuild the panel it lives in). Marker elements use their own
-// inline updater instead (see renderMarkerElementSelectionEditor).
+// Position X/Y on a Layer's whole-layer pan offset and a Marker's own
+// {x,y} share this shape. Uses applyLayerPositionChange, not
+// applyLayerChange, so committing doesn't rebuild the panel it lives in.
+// Marker elements use their own inline updater instead.
 function applyLayerPositionChange(label, apply) {
   recordHistory(label, () => {
     apply();
@@ -4614,21 +4066,11 @@ function buildLayerOpacityField(layer) {
 
 // One field per LAYER_SETTINGS_SCHEMA[layer.type] entry (Stroke/Fill color,
 // Grid type, Cell size, Marker size/color, ...), same change/undo wiring
-// throughout (recordHistory via applyLayerSettingsChange, plus the
-// gridType-changes-invalidate-cell-selection special case) regardless of
-// shape. `variant` picks the shape to match how the field sits in the
-// layout:
-// - "floating" (default) — createFormFloatingField, the suite-wide shape
-//   for a standalone single-column field (Grid type, Cell size, Stroke
-//   width, Raster's Image URL) — matches Workbench's own inspector
-//   convention for primary right-pane controls.
-// - "compact" — createCompactField's small-label-above-input shape, for a
-//   field condensed into a dense paired row (a color swatch next to
-//   Opacity, Scale next to Scale unit).
-// - "half" — createHalfWidthNumberField, for a numeric field condensed
-//   alongside Position X/Y (Marker's own Size) — same shape as Position
-//   itself, so labels in that row match instead of one being visibly
-//   larger than the others.
+// throughout regardless of shape. `variant` picks the layout shape:
+// "floating" (default) — standalone single-column field, matching
+// Workbench's inspector convention; "compact" — small-label-above-input,
+// for a field paired in a dense row; "half" — condensed alongside Position
+// X/Y so labels in that row match instead of one looking larger.
 function buildLayerSettingField(layer, field, { variant = "floating" } = {}) {
   if (!field) {
     return document.createDocumentFragment();
@@ -4684,10 +4126,8 @@ function buildLayerSettingField(layer, field, { variant = "floating" } = {}) {
   return built;
 }
 
-// The Marker Layer's Icon setting — a free-text field until now with no
-// visual effect (createMarkerDot never read layer.settings.icon; fixed
-// alongside this to actually render the chosen icon). Uses the same
-// autocomplete+preview picker as Press/Workbench's icon fields.
+// The Marker Layer's Icon setting — uses the same autocomplete+preview
+// picker as Press/Workbench's icon fields.
 function buildMarkerIconField(layer) {
   const field = createIconPickerField({
     label: "Icon",
@@ -4703,9 +4143,8 @@ function buildMarkerIconField(layer) {
 }
 
 // Show Labels toggle + Position/Size — same "toggle, then conditionally
-// show the fields it gates" shape buildFogOfWarFields already uses, not a
-// LAYER_SETTINGS_SCHEMA entry since Position/Size only make sense to show
-// once labels are actually on.
+// show the fields it gates" shape as buildFogOfWarFields, not a
+// LAYER_SETTINGS_SCHEMA entry since these only make sense once labels are on.
 function buildMarkerLabelFields(layer) {
   const wrapper = document.createDocumentFragment();
   const toggleField = createCheckField({ id: `layer-labels-${layer.id}`, label: "Show Labels", switchStyle: true });
@@ -4751,11 +4190,10 @@ function buildMarkerLabelFields(layer) {
   return wrapper;
 }
 
-// Fog of War toggle + reveal-group picker for a grid layer. Deliberately not
-// a LAYER_SETTINGS_SCHEMA entry like the rest of the grid fields — the
-// reveal-group select needs live options from state.map.groups, which the
-// schema-driven buildLayerSettingField (static options only) can't supply,
-// same reasoning as buildMarkerIconField's own special-casing.
+// Fog of War toggle + reveal-group picker for a grid layer. Not a
+// LAYER_SETTINGS_SCHEMA entry — the reveal-group select needs live options
+// from state.map.groups, which the schema-driven buildLayerSettingField
+// (static options only) can't supply.
 function buildFogOfWarFields(layer) {
   const wrapper = document.createDocumentFragment();
   const toggleRow = document.createElement("div");
@@ -4767,9 +4205,8 @@ function buildFogOfWarFields(layer) {
     applyLayerSettingsChange("layer fog of war", () => {
       layer.settings = layer.settings || {};
       layer.settings.fogOfWar = toggleInput.checked;
-      // Auto-create a dedicated reveal group the first time fog is turned
-      // on, so there's immediately somewhere to add cells via the existing
-      // Groups UI instead of a dead "fog on, nothing configured yet" state.
+      // Auto-create a reveal group the first time fog is turned on, so
+      // there's somewhere to add cells instead of a dead unconfigured state.
       if (toggleInput.checked && !layer.settings.revealGroupId) {
         const group = createGroup({ name: `${layer.name} — Revealed` });
         state.map.groups.push(group);
@@ -4777,9 +4214,7 @@ function buildFogOfWarFields(layer) {
       }
     });
     // applyLayerSettingsChange doesn't re-render the left pane's Groups
-    // list (most settings changes have nothing to do with it) — the new
-    // reveal group created above needs it explicitly, or it exists in
-    // state.map.groups but never appears anywhere for the GM to find.
+    // list — the new reveal group needs it explicitly or it never appears.
     renderGroups();
   });
   const fogHelp = document.createElement("span");
@@ -4824,11 +4259,8 @@ function buildFogOfWarFields(layer) {
     wrapper.appendChild(autoRevealRow);
     initHelpSystem({ root: autoRevealRow });
 
-    // Same range-slider shape as every other Opacity in this suite
-    // (buildLayerOpacityField's own). Two independent sliders, not one —
-    // "opaque enough a player can't cheat" and "visible enough a GM can
-    // actually see it while working" are different targets (see
-    // createLayerSettings's own comment on these two keys).
+    // Two independent sliders, not one — "opaque enough a player can't
+    // cheat" and "visible enough a GM can work" are different targets.
     const playerOpacityField = createCompactField({ type: "range", label: "Player Fog Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
     const playerOpacityInput = playerOpacityField.querySelector("input");
     playerOpacityInput.value = Number.isFinite(layer.settings.fogOpacity) ? layer.settings.fogOpacity : 0.92;
@@ -4877,16 +4309,12 @@ function applyLayerSettingsChange(label, apply) {
   renderJson();
 }
 
-// Same reasoning as applyLayerPositionChange/createCommitOnBlurNumberField
-// — used by buildLayerSettingField for every schema-driven setting (Grid
-// Type, Cell Size, Line/Stroke/Fill color, Stroke Width, Image URL/Width/
-// Height, Marker Size — none of which show/hide any OTHER field in this
-// panel based on their own value, unlike Fog of War's own Reveal Group
-// field, which still goes through applyLayerSettingsChange above for
-// exactly that reason). Skipping renderSelection() here is what actually
-// lets Tab move Name → Position X → Position Y → Grid Type → Cell Size
-// without a mid-transition rebuild stealing focus at every stop along the
-// way, not just the Position fields.
+// Used by buildLayerSettingField for every schema-driven setting that
+// doesn't show/hide another field based on its own value (unlike Fog of
+// War's Reveal Group, which goes through applyLayerSettingsChange
+// instead). Skipping renderSelection() is what lets Tab move through
+// Name → Position X → Position Y → Grid Type → Cell Size without a
+// mid-transition rebuild stealing focus at every stop.
 function applyLayerSettingsFieldChange(label, apply) {
   recordHistory(label, () => {
     apply();
@@ -4896,12 +4324,10 @@ function applyLayerSettingsFieldChange(label, apply) {
   renderJson();
 }
 
-// Same reasoning as applyLayerSettingsFieldChange just above, for the
-// Layer's own Name field — renderLayers() still runs (the left-hand layer
-// list shows each layer's name), but renderSelection() doesn't, since
-// nothing else in THIS panel depends on the name, and Name is the first
-// stop in the Name → Position X → Position Y → Grid Type → Cell Size tab
-// sequence, so a rebuild on committing it would derail every field after.
+// Same reasoning as applyLayerSettingsFieldChange, for the Layer's own
+// Name field — renderLayers() still runs (left-hand list shows the name),
+// but renderSelection() doesn't, since Name is the first stop in the tab
+// sequence and a rebuild on committing it would derail every field after.
 function applyLayerNameChange(label, apply) {
   recordHistory(label, () => {
     apply();
@@ -5385,14 +4811,10 @@ function createGridCellPropertyRow(layer, selectionCoords, key, value) {
   return row;
 }
 
-// A marker's own target-kind whitelist for the References picker below —
-// same restricted, alphabetized-by-label shape as the suite's own
-// RELATIONSHIP_TARGET_KINDS (Forge/Crucible/Vault/Sanctum/Workbench's
-// app.js each define one for the shared relationship-editor.js), not the
-// full live Library kind registry: a marker only ever sensibly points at
-// something with a physical presence on the map (or a Macro to trigger from
-// it), not every authoring kind Loom manages (Template, System, Journal
-// page, ...).
+// A marker's own target-kind whitelist for the References picker — same
+// restricted, alphabetized shape as the suite's own RELATIONSHIP_TARGET_KINDS,
+// not the full Library kind registry: a marker only sensibly points at
+// something with a physical presence on the map, or a Macro to trigger.
 const MARKER_REFERENCE_KINDS = [
   { id: "character", label: "Character" },
   { id: "location", label: "Location" },
@@ -5402,35 +4824,20 @@ const MARKER_REFERENCE_KINDS = [
   { id: "wonder", label: "Wonder" },
 ];
 
-// A marker's own Vision Range can be Bound to a field on its linked
-// Character record (see createMarkerElement's own header comment) —
-// resolving a live Binding needs that record's real payload, which means a
-// fetch, but resolveRevealedCells/renderMapLayers are all synchronous
-// (called directly during DOM construction). Rather than making the whole
-// render pipeline async, this is a small synchronous, cache-backed lookup
-// (getCachedCharacterPayload) threaded through as a plain callback —
-// map-viewer.js's own resolveMarkerVisionRangeCells never fetches anything
-// itself, matching that module's own "everything caller-specific is a
-// callback" architecture. `ensureCharacterPayloadCached` is fire-and-forget:
-// call it during a render pass, it populates the cache and re-renders once
-// the fetch resolves.
+// A marker's Vision Range can be Bound to a field on its linked Character
+// record — resolving a live Binding needs a real fetch, but
+// resolveRevealedCells/renderMapLayers are synchronous. Rather than making
+// the render pipeline async, this is a synchronous cache-backed lookup
+// threaded through as a plain callback; `ensureCharacterPayloadCached` is
+// fire-and-forget — populates the cache and triggers a re-render once the
+// fetch resolves.
 //
-// This same cache also backs a Character marker's condition icons
-// (resolveMarkerConditionIconsForMarker below) — unlike Vision Range's own
-// original "fetch once, reselecting the marker or reloading the page is
-// what picks up a change" tradeoff, a condition is expected to update
-// automatically the moment it's added via Combat Tracker (the whole point
-// of that feature) while the GM is still looking at the very same page.
-// Confirmed real bug this fixes: a permanently-cached-forever payload never
-// re-fetched at all once set, so a condition added after the marker's first
-// render never appeared — even re-placing the marker didn't help, since
-// this cache is keyed by the CHARACTER's own refId, not any particular
-// marker instance. Re-fetches in the background once the cached copy is
-// older than CHARACTER_PAYLOAD_STALE_MS, still returning the last-known
-// value synchronously in the meantime (no flicker while the fresh copy is
-// in flight) — cadence loosely matches watchMapForChanges' own ~10s map
-// poll, so a GM sees a just-added condition within about one poll tick
-// without needing to touch anything.
+// Also backs a Character marker's condition icons, which need to update
+// live as Combat Tracker adds them (unlike Vision Range's original
+// fetch-once tradeoff) — keyed by the character's refId, not any one
+// marker instance, so it re-fetches in the background once the cached
+// copy passes CHARACTER_PAYLOAD_STALE_MS, still returning the last-known
+// value synchronously (no flicker) until the fresh copy lands.
 const CHARACTER_PAYLOAD_STALE_MS = 8000;
 const characterPayloadCache = new Map();
 const characterPayloadFetchedAt = new Map();
@@ -5452,25 +4859,18 @@ function ensureCharacterPayloadCached(refId, onLoaded) {
       onLoaded?.();
     })
     .catch(() => {
-      // See map.js's own ensureCharacterPayloadCached comment — stamping the
-      // timestamp on failure too is what makes the staleness window apply to
-      // a permanently-inaccessible/deleted reference, not just a successful
-      // fetch, preventing a retry-every-render loop.
+      // Stamping the timestamp on failure too applies the staleness window
+      // to a permanently-inaccessible reference, preventing a retry-every-render loop.
       characterPayloadFetchedAt.set(refId, Date.now());
       pendingCharacterFetches.delete(refId);
     });
 }
 
-// The GM-facing "@field" autocomplete list for a marker's own Vision Range
-// Binding — walks refId's own linked Character -> its Template's own
-// `.schema` field -> that System's own field tree (collectSystemFields),
-// the same two-hop chain Workbench's character editor itself resolves a
-// loaded character's System through (character.template -> template.schema
-// -> system). Cached per Character refId (not recomputed every render) —
-// empty (never an error) when any hop is missing/unresolvable, so the
-// field just degrades to a plain literal-number/formula input with no
-// suggestions, same graceful-degradation contract as the payload cache
-// above.
+// The GM-facing "@field" autocomplete list for a marker's Vision Range
+// Binding — walks refId's Character -> Template's `.schema` -> System's
+// field tree, same two-hop chain Workbench's character editor resolves a
+// System through. Cached per refId; empty (never an error) when any hop
+// is missing, degrading to a plain literal/formula input with no suggestions.
 const characterSystemFieldsCache = new Map();
 const pendingCharacterSystemFieldsFetches = new Set();
 function getCachedCharacterSystemFields(refId) {
@@ -5478,26 +4878,21 @@ function getCachedCharacterSystemFields(refId) {
 }
 
 // Which System a Character resolves to (refId -> systemId), cached
-// alongside characterSystemFieldsCache below by the same fetch — kept
-// separate (rather than folded into that cache's own value shape) so
-// getCachedCharacterSystemFields' existing callers (the Vision Range
-// @-autocomplete) don't need to change what they get back.
+// alongside characterSystemFieldsCache by the same fetch — kept separate
+// so existing callers of getCachedCharacterSystemFields don't change shape.
 const characterSystemIdCache = new Map();
 function getCachedCharacterSystemId(refId) {
   return characterSystemIdCache.get(refId) || "";
 }
 
-// A System's own Conditions vocabulary, resolved to id -> {icon, color} and
-// cached by systemId (not refId) — genuinely System-level, so this is
-// fetched at most once regardless of how many characters/markers reference
-// that System. icon/color live in each Condition value's own "Extra
-// Properties" JSON (Loom's property-schema-editor.js), the same generic
-// per-value catch-all resolveMonsterSizeCells already reads `sizeValue`
-// through — no dedicated UI column for these. Also carries the resolved
-// `tags`-role binding path (e.g. "@conditions") a Character's own live
-// conditions array is read from — see map-viewer.js's own shared
-// resolveMarkerConditionIcons, called via resolveMarkerConditionIconsForMarker
-// below.
+// A System's Conditions vocabulary, resolved to id -> {icon, color} and
+// cached by systemId — fetched at most once regardless of how many
+// characters/markers reference that System. icon/color live in each
+// Condition value's "Extra Properties" JSON (Loom's
+// property-schema-editor.js), same generic per-value pattern
+// resolveMonsterSizeCells reads `sizeValue` through. Also carries the
+// resolved `tags`-role binding path (e.g. "@conditions") a Character's
+// live conditions array is read from.
 const systemConditionsCache = new Map();
 function getCachedSystemConditions(systemId) {
   return systemConditionsCache.get(systemId) || null;
@@ -5520,13 +4915,11 @@ function buildSystemConditions(fields) {
   return { iconMap, tagsBinding: tagsEntry?.binding || "" };
 }
 
-// Fetches a System's own `fields` directly (by systemId) and populates
-// systemConditionsCache from it — ensureCharacterSystemFieldsCached below
-// already has a System's fields in hand from its own Character->Template
-// hop and populates this cache straight from that instead of calling this a
-// second time; this is for a caller that only knows the systemId already,
-// with no Character/Template hop of its own to reuse (Monster/NPC condition
-// resolution, via the active Encounter's own systemId).
+// Fetches a System's `fields` directly by systemId and populates
+// systemConditionsCache — for a caller that only knows the systemId
+// (Monster/NPC condition resolution via the active Encounter). A caller
+// with a Character->Template hop already in hand
+// (ensureCharacterSystemFieldsCached) populates this cache directly instead.
 const pendingSystemConditionsFetches = new Set();
 function ensureSystemConditionsCached(systemId, onLoaded) {
   if (!systemId || !dataManager) return;
@@ -5556,11 +4949,9 @@ function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
   pendingCharacterSystemFieldsFetches.add(refId);
   (async () => {
     try {
-      // preferLocal: false on both fetches — a Template's own schema and a
-      // System's own field tree are exactly the kind of content edited
-      // directly in Workbench/Loom out from under whatever this browser
-      // last cached; a stale local copy here would silently starve the
-      // @-autocomplete of fields with no visible sign anything was wrong.
+      // preferLocal: false — a Template's schema and System's fields are
+      // edited directly in Workbench/Loom; a stale local copy would
+      // silently starve the @-autocomplete with no visible sign of why.
       const templateResult = await dataManager.get("templates", templateId, { preferLocal: false });
       const systemId = templateResult?.payload?.schema || "";
       if (!systemId) {
@@ -5583,25 +4974,15 @@ function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
   })();
 }
 
-// The campaign's currently active/spotlighted Encounter, cached by groupId
-// (a GM could switch active campaigns mid-session, so this isn't a single
-// global slot) — map-viewer.js's own shared resolveMarkerConditionIcons
-// reads a Monster/NPC combatant's own LIVE conditions from here, the only
-// place they actually exist: Monster/NPC records are deliberately reusable
-// templates, never
-// mutated per-combat-instance (writeThroughToCharacter's own comment,
-// combat-tracker.js — the same reason a marker can't just read a Monster's
-// own record the way it reads a Character's). Fetched once per groupId,
-// same "cache once, no live-poll" tradeoff getCachedCharacterPayload
-// already accepts for Vision Range — a GM re-selecting the marker, or
-// reloading the map, is what picks up a combat state change since. No
-// active encounter, or a fetch failure, caches an empty combatants list
-// rather than erroring — "not currently in combat" is a normal state, not
-// a problem to surface.
-// See CHARACTER_PAYLOAD_STALE_MS's own comment just above — a combatant's
-// `conditions` here is exactly as live as a Character record's own, and was
-// suffering the identical "cached forever, never actually re-fetched" bug
-// before this staleness check existed.
+// The campaign's active/spotlighted Encounter, cached by groupId (a GM
+// could switch campaigns mid-session, so not a single global slot) —
+// map-viewer.js's shared resolveMarkerConditionIcons reads a Monster/NPC
+// combatant's live conditions from here, since Monster/NPC records are
+// reusable templates never mutated per-combat-instance. No active
+// encounter, or a fetch failure, caches an empty combatants list rather
+// than erroring — "not in combat" is a normal state. Re-fetches past
+// ACTIVE_ENCOUNTER_STALE_MS, same staleness pattern as the character
+// payload cache above, for the same reason: conditions need to stay live.
 const ACTIVE_ENCOUNTER_STALE_MS = 8000;
 const activeEncounterCache = new Map();
 const activeEncounterFetchedAt = new Map();
@@ -5637,16 +5018,12 @@ function ensureActiveEncounterCached(groupId, onLoaded) {
   })();
 }
 
-// Every combatant in the active encounter that shares this marker's own
-// refKind/refId — the candidate set markerElement.linkedCombatantId (see
-// map-model.js's own createMarkerElement) disambiguates between when there
-// is more than one (three Goblins sharing one Monster record). Used by the
-// "Linked Combatant" picker (renderMarkerElementSelectionEditor) to decide
-// whether it has anything to show, and to populate its own options — a
-// plain array filter, not the risky part of condition-icon resolution, so
-// this stays a small local helper rather than living in map-viewer.js's own
-// shared resolveMarkerConditionIcons alongside the icon-mapping logic that
-// actually needed to be kept in sync between callers.
+// Every combatant in the active encounter sharing this marker's
+// refKind/refId — the candidate set markerElement.linkedCombatantId
+// disambiguates when there's more than one (three Goblins, one Monster
+// record). Used by the "Linked Combatant" picker to populate its options —
+// a plain array filter, so it stays local rather than living in
+// map-viewer.js's shared resolveMarkerConditionIcons.
 function findMatchingCombatants(markerElement, groupId) {
   const encounter = getCachedActiveEncounter(groupId);
   if (!encounter) return [];
@@ -5655,15 +5032,11 @@ function findMatchingCombatants(markerElement, groupId) {
   );
 }
 
-// Thin wrapper around map-viewer.js's own shared resolveMarkerConditionIcons
-// — Orrery only supplies its own cache-backed getters here (see this
-// file's own caches just above); the actual resolution ALGORITHM (which
-// path a Character vs. Monster/NPC marker takes, how a condition id maps to
-// an icon) lives in that one shared place instead, so this file and the
-// Dashboard's map.js widget — which keeps its own independent copies of
-// these same caches, same "two cache instances, one shared algorithm"
-// precedent resolveMarkerVisionRangeCells already establishes — can't
-// quietly drift apart on what a marker's condition badges actually show.
+// Thin wrapper around map-viewer.js's shared resolveMarkerConditionIcons —
+// Orrery only supplies its own cache-backed getters; the resolution
+// algorithm itself lives in that one shared place, so this file and the
+// Dashboard's map.js widget (which keep independent copies of the same
+// caches) can't drift apart on what a marker's condition badges show.
 function resolveMarkerConditionIconsForMarker(markerElement) {
   return resolveMarkerConditionIcons(markerElement, {
     getCharacterPayload: getCachedCharacterPayload,
@@ -5676,14 +5049,11 @@ function resolveMarkerConditionIconsForMarker(markerElement) {
   });
 }
 
-// A System's own `resource`-role combatBindings entries (name only — that's
-// all guessBarResourceName and the Settings dropdown below actually need)
-// — same "own cache, populated by a dedicated fetch, keyed by systemId"
-// shape as systemConditionsCache just above, for the same reason: the
-// Marker Resource Bar setting needs to know every candidate resource NAME a System
-// offers before it can either guess a default or list Settings options,
-// and that's a second, independent thing to know about a System's fields
-// from the tags-role vocabulary systemConditionsCache already tracks.
+// A System's `resource`-role combatBindings entries (name only — all
+// guessBarResourceName and the Settings dropdown need) — same
+// cache-by-systemId shape as systemConditionsCache, since the Marker
+// Resource Bar setting needs every candidate resource name independently
+// of the tags-role vocabulary that cache tracks.
 const systemResourceBarConfigCache = new Map();
 function getCachedSystemResourceBarConfig(systemId) {
   return systemResourceBarConfigCache.get(systemId) || null;
@@ -5696,8 +5066,7 @@ function ensureSystemResourceBarConfigCached(systemId, onLoaded) {
   (async () => {
     try {
       // preferLocal: false — same staleness reasoning as every other direct
-      // System fields fetch in this file (ensureSystemConditionsCached,
-      // ensureCharacterSystemFieldsCached, resolveMonsterSizeCells).
+      // System fields fetch in this file.
       const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
       const fields = Array.isArray(systemResult?.payload?.fields) ? systemResult.payload.fields : [];
       const resourceBindings = findBindingsByRole(deriveCombatBindings(fields), "resource");
@@ -5711,12 +5080,9 @@ function ensureSystemResourceBarConfigCached(systemId, onLoaded) {
   })();
 }
 
-// Which named `resource`-role binding the Marker Resource Bar represents for a
-// given System — per-System, per-browser, same storage shape Crucible's own
-// combatScalingField/creatureTypeField preferences use (see that file's own
-// getCrucibleSystemSettings comment for why one bucket per System, not a
-// flat key, and why writes go through this pair of helpers rather than
-// dataManager.saveLocal directly).
+// Which named `resource`-role binding the Marker Resource Bar represents
+// for a given System — per-System, per-browser, same storage shape
+// Crucible's combatScalingField/creatureTypeField preferences use.
 const ORRERY_SETTINGS_BUCKET = "orrery-settings";
 function getOrrerySystemSettings(systemId) {
   if (!dataManager || !systemId) return {};
@@ -5784,12 +5150,8 @@ async function resolveMonsterSizeCells(monsterPayload) {
   const systemId = Array.isArray(monsterPayload?.systemIds) ? monsterPayload.systemIds[0] : "";
   if (!sizeName || !systemId || !dataManager) return null;
   try {
-    // preferLocal: false — a System's own field vocabulary (sizes, in
-    // particular) is exactly the kind of content that gets edited directly
-    // in Loom out from under whatever this browser last cached; a stale
-    // local copy here would silently resolve every size to null forever,
-    // with no visible sign anything was wrong. Same reasoning as this
-    // file's own ensureCharacterSystemFieldsCached just above.
+    // preferLocal: false — a stale local copy would silently resolve
+    // every size to null forever with no visible sign anything was wrong.
     const systemResult = await dataManager.get("systems", systemId, { preferLocal: false });
     const fields = Array.isArray(systemResult?.payload?.fields) ? systemResult.payload.fields : [];
     const sizesField = fields.find((entry) => entry.type === "array" && entry.key === "sizes");
@@ -5802,27 +5164,19 @@ async function resolveMonsterSizeCells(monsterPayload) {
 }
 
 // A marker element optionally references a real Library entity of any kind
-// — the {refKind, refId, label} shape the architecture plan settled on so
-// Orrery maps can point at Sanctum Locations, Forge/Crucible NPCs and
-// Monsters, Vault Effects, etc. without either tool needing to know about
-// the other. Mirrors Sanctum's Assets/Needs "kind + entity" picker.
+// — the {refKind, refId, label} shape so Orrery maps can point at Sanctum
+// Locations, Forge/Crucible NPCs and Monsters, Vault Effects, etc. without
+// either tool knowing about the other. Mirrors Sanctum's "kind + entity" picker.
 //
-// This function is async (it awaits populateEntitySelect/refreshPreview
-// before its final DOM appends), and a character-linked
-// marker's own ensureCharacterPayloadCached/ensureCharacterSystemFieldsCached
-// calls (below) each re-invoke renderSelection() — and therefore this whole
-// function again — once their own fetch resolves. Without a staleness guard,
-// two or three overlapping invocations each independently append their own
-// Position X/Y row and toolbar Delete button once their awaits resolve,
-// producing duplicates (confirmed bug: referencing a character produced
-// three Position X/Y rows and two extra Delete buttons — one invocation per
-// cache fetch). markerSelectionEditorRenderId lets only the most recent
-// invocation's tail actually mutate the live container/toolbar.
-// Resolves a "marker-elements" selection's own {layerId, id} pairs back
-// into real {layer, markerElement} pairs — silently dropping any entry
-// whose marker or layer no longer exists (deleted from underneath an
-// open multi-selection by an undo, a remote map update, etc.), the same
-// defensive-lookup shape the single-select branches above already use.
+// This function is async, and a character-linked marker's own cache-fetch
+// calls below each re-invoke renderSelection() — and therefore this whole
+// function — once their fetch resolves. Without a staleness guard, two or
+// three overlapping invocations each append their own Position X/Y row and
+// Delete button, producing duplicates. markerSelectionEditorRenderId lets
+// only the most recent invocation's tail mutate the live container/toolbar.
+// Resolves a "marker-elements" selection's {layerId, id} pairs back into
+// real {layer, markerElement} pairs, silently dropping any entry whose
+// marker/layer no longer exists (deleted by an undo, a remote update, etc.).
 function resolveSelectedMarkerElements(selection) {
   return (selection.elements || [])
     .map((entry) => {
@@ -5833,11 +5187,10 @@ function resolveSelectedMarkerElements(selection) {
     .filter(Boolean);
 }
 
-// The bulk counterpart to renderMarkerElementSelectionEditor — deliberately
-// lightweight: a read-only roster (label/image don't have one shared value
-// across N different markers, so there's no per-field editor here the way
-// the single-marker panel has) plus the shared selectionToolbar mount with
-// whatever bulk actions apply to a group of markers (Delete, Move to Map).
+// The bulk counterpart to renderMarkerElementSelectionEditor — a read-only
+// roster (no per-field editor since label/image have no shared value
+// across N markers) plus the shared selectionToolbar with bulk actions
+// (Delete, Move to Map).
 function renderMarkerElementsSelectionEditor(resolved) {
   const container = elements.selectionEditor;
   disposeTooltips(container);
@@ -5862,15 +5215,11 @@ function renderMarkerElementsSelectionEditor(resolved) {
 
   if (elements.selectionToolbar) {
     const elementIds = resolved.map(({ markerElement }) => markerElement.id);
-    // Aggregate, not per-marker: a mixed-state selection (some already
-    // hidden, some not) reads as "visible" here — same tri-state
-    // "select all" convention a checkbox header row uses — so the next
-    // click always converges the WHOLE group to one state (hide
-    // everything not already hidden) rather than leaving it mixed.
-    // Clicking again once every selected marker IS hidden shows them
-    // all. setElementsHiddenFromPlayers (shared with the single-marker
-    // toggle below) takes that explicit target rather than flipping each
-    // marker independently, which is exactly what makes this converge.
+    // Aggregate, not per-marker: a mixed-state selection reads as
+    // "visible" (tri-state "select all" convention), so the next click
+    // converges the whole group to one state instead of leaving it mixed.
+    // setElementsHiddenFromPlayers takes that explicit target rather than
+    // flipping each marker independently.
     const allHidden = resolved.length > 0 && resolved.every(({ markerElement }) => isElementHiddenFromPlayers(markerElement.id));
     const buttons = [
       {
@@ -5887,11 +5236,8 @@ function renderMarkerElementsSelectionEditor(resolved) {
         onClick: () => deleteCurrentSelection(),
       },
     ];
-    // Gated on currentUserHasFullMapAccess() specifically — a cross-map
-    // write, unlike everything else this toolbar can do, so it gets its
-    // own explicit check rather than relying on this panel only ever
-    // being reachable by an owner/admin in the first place (see
-    // openMoveMarkerModal's own header comment for the fuller reasoning).
+    // A cross-map write, unlike everything else this toolbar can do, so
+    // it gets its own explicit access check.
     if (currentUserHasFullMapAccess()) {
       buttons.splice(1, 0, {
         action: "move-to-map",
@@ -5917,8 +5263,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   container.innerHTML = "";
 
   // Same shape as applyLayerChange/applyLayerSettingsChange: snapshot for
-  // undo, then refresh the inspector (title/details reflect the new label
-  // or reference), the overlay (dot tooltip), and the JSON preview.
+  // undo, then refresh the inspector, overlay, and JSON preview.
   function applyMarkerElementChange(label, apply) {
     recordHistory(label, () => {
       apply();
@@ -5927,10 +5272,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     renderSelection();
     renderLayerOverlays();
     renderJson();
-    // Icon/color, like a marker's own position, save themselves the instant
-    // they're changed — see MARKER_AUTO_SAVE_FIELD_BY_LABEL's own comment.
-    // Every other marker field this function handles (label, opacity, vision
-    // range, overlay icons) stays on the regular batched Save flow.
+    // Icon/color save themselves instantly, like position; every other
+    // marker field stays on the regular batched Save flow.
     const autoSaveField = MARKER_AUTO_SAVE_FIELD_BY_LABEL[label];
     if (autoSaveField && mapExistsOnServer) {
       void persistElementUpdate({
@@ -5959,14 +5302,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   container.appendChild(labelField);
 
-  // Multiplier on the grid's own cell size (createMarkerElement/
-  // createMarkerDot) — 1 is a normal one-square token; a Large creature
-  // (D&D 5e) is 2, Huge is 3, etc. `step: 1` moves the native up/down
-  // spinner by a whole cell (what's most common — most tokens really are
-  // whole-cell sizes), but a typed/committed value is never rounded — a
-  // fractional token size is unusual but real (a Tiny creature sharing a
-  // square, say), and rounding it away here would silently change the
-  // marker just from blurring the field.
+  // Multiplier on the grid's own cell size — 1 is a normal one-square
+  // token; a Large creature (D&D 5e) is 2, Huge is 3. `step: 1` moves the
+  // spinner by a whole cell, but a typed value is never rounded — a
+  // fractional size is unusual but real (a Tiny creature sharing a square).
   const sizeField = createCommitOnBlurNumberField(
     "Size (cells)",
     Number.isFinite(markerElement.sizeCells) && markerElement.sizeCells > 0 ? markerElement.sizeCells : 1,
@@ -5979,12 +5318,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     { min: 1, step: 1 }
   );
 
-  // Off-the-ground offset (map-model.js's own createMarkerElement) — positive
-  // is flying above the surface, negative is burrowing/submerged below it.
-  // No `min` (unlike Size, which can't go below 1) — negative is a real,
-  // meaningful value here, not an error. See createMarkerDot's own comment
-  // for the two directions' distinct visual treatment (shadow vs. dashed
-  // outline). Same decimal-friendly, step-1 shape as Size just above.
+  // Off-the-ground offset — positive is flying above the surface, negative
+  // is burrowing/submerged below it. No `min` (unlike Size) — negative is
+  // meaningful here, not an error. createMarkerDot renders the two
+  // directions with distinct visuals (shadow vs. dashed outline).
   const heightField = createCommitOnBlurNumberField(
     "Height (cells)",
     Number.isFinite(markerElement.heightCells) ? markerElement.heightCells : 0,
@@ -5997,26 +5334,19 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     { step: 1 }
   );
 
-  // Vision Range — Binding/Formula/Text, the same shared control (and the
-  // same "no invisible defaults, starts as an immediately-usable literal"
-  // convention) every other bindable field in this suite uses. Meaningful
-  // only when refKind==="character" and the grid layer's own Auto-Reveal
-  // toggle is on, but shown regardless — an inert field on a non-character
-  // marker is harmless, matching how a wall's own doorState stays
-  // harmlessly inert on a plain (non-door) wall. `@`-suggestions are
-  // restricted to numeric fields on the linked Character's own System
-  // (empty, not an error, when no character is linked or its System can't
-  // be resolved).
+  // Vision Range — same shared Binding/Formula/Text control every other
+  // bindable field uses. Meaningful only when refKind==="character" and
+  // the grid layer's Auto-Reveal toggle is on, but shown regardless — an
+  // inert field on a non-character marker is harmless. `@`-suggestions are
+  // restricted to numeric fields on the linked Character's System (empty
+  // when none is linked/resolvable).
   if (markerElement.refKind === "character" && markerElement.refId) {
     ensureCharacterPayloadCached(markerElement.refId, () => renderSelection());
     ensureCharacterSystemFieldsCached(markerElement.refId, getCachedCharacterPayload(markerElement.refId), () => renderSelection());
   }
   const visionRangeField = createBindingFormulaInput(markerElement, {
     labelText: "Vision Range (cells)",
-    // Same compact "label above, form-control-sm" markup Size (its own
-    // row-mate, right above) already uses — the field looked like two
-    // different Bootstrap control conventions sitting side by side without
-    // this.
+    // Same compact "label above, form-control-sm" markup as Size right above.
     compact: true,
     placeholder: "0, @senses.darkvision, or =@senses.darkvision + 1",
     bindingKey: "visionRangeBinding",
@@ -6025,22 +5355,13 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     allowedFieldCategories: ["number"],
     systemFields: markerElement.refKind === "character" ? getCachedCharacterSystemFields(markerElement.refId) : [],
     hasSchemaSelected: Boolean(markerElement.refKind === "character" && markerElement.refId),
-    // No helperText, and showEmptyFieldsHint off — a marker has no "select
-    // a system" step of its own anywhere nearby (unlike Workbench's
-    // template editor, where that hint's default wording makes sense), so
-    // both the explicit helper text and the shared control's own auto
-    // "Select a system to enable bindings." fallback read as out-of-place
-    // noise here.
+    // A marker has no "select a system" step nearby, so the shared
+    // control's default helper/hint text would read as out-of-place noise.
     showEmptyFieldsHint: false,
-    // Deliberately NOT applyMarkerElementChange — createBindingFormulaInput
-    // commits on every keystroke ("input", not blur/change — its own live
-    // Preview line and @-autocomplete need to update as you type), and
-    // applyMarkerElementChange's renderSelection() rebuilds this entire
-    // editor's DOM, which would steal focus out of this very input on every
-    // character typed. Same recordHistory+re-render shape, just without the
-    // inspector-panel rebuild (this field's own value display is already
-    // self-managing; the title/details text above doesn't depend on vision
-    // range).
+    // NOT applyMarkerElementChange — this control commits on every
+    // keystroke (its live Preview/@-autocomplete needs to update as you
+    // type), and applyMarkerElementChange's renderSelection() would rebuild
+    // this editor's DOM and steal focus out of the input on every character.
     onCommit: (mutator) => {
       recordHistory("marker vision range", () => {
         mutator(markerElement);
@@ -6052,12 +5373,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   container.appendChild(createFieldRow([sizeField, heightField, visionRangeField], { columns: 3 }));
 
-  // Which clip createMarkerDot cuts the marker into — "circle" (the real,
-  // concrete default, matches every marker placed before this field
-  // existed) or "square", which fills the cell edge-to-edge with sharp
-  // corners instead. Independent of Show outline just below: a square
-  // token can still carry a border ring, a circular one can still go
-  // borderless.
+  // Which clip createMarkerDot cuts the marker into — "circle" (default,
+  // matches every marker placed before this field existed) or "square",
+  // edge-to-edge with sharp corners. Independent of Show outline below.
   const shapeField = createCompactField({
     type: "select",
     label: "Shape",
@@ -6075,11 +5393,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     });
   });
 
-  // Whether the marker's own outline ring renders at all (createMarkerDot's
-  // border + its always-on box-shadow ring) — on by default so every
-  // existing marker keeps its current look; the one case for turning it off
-  // is an object token (a chest, say) that needs a clean, borderless
-  // edge-to-edge fill rather than a circular ring around it.
+  // Whether the marker's outline ring renders at all — on by default so
+  // existing markers keep their look; off for an object token (a chest)
+  // that needs a clean, borderless fill.
   const showOutlineField = createCheckField({
     id: `marker-show-outline-${markerElement.id}`,
     label: "Show outline",
@@ -6094,12 +5410,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   container.appendChild(createFieldRow([shapeField, showOutlineField], { columns: 2 }));
 
-  // Per-marker override of the layer's own outline color (createMarkerDot
-  // reads markerElement.outlineColor first, falling back to the layer
-  // default) — shows whichever's currently EFFECTIVE (this marker's own if
-  // set, else the layer's), but always commits as this marker's own once
-  // touched, same "copy once, stays user-editable after" shape image/label
-  // already follow.
+  // Per-marker override of the layer's outline color — shows whichever's
+  // currently effective, but always commits as this marker's own once touched.
   const outlineColorField = createCompactField({
     type: "color",
     label: "Outline color",
@@ -6112,11 +5424,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     });
   });
 
-  // Same range-slider shape every other Opacity in this suite uses (0-1,
-  // step 0.05, form-range) — see the shape/light editors' own identical
-  // fields. Per-marker only, no layer-wide equivalent (createMarkerElement's
-  // own comment) — a token fading in/out (unconscious, hidden, ...) is a
-  // property of that one placed marker.
+  // Same range-slider shape every Opacity in this suite uses. Per-marker
+  // only, no layer-wide equivalent — a token fading in/out (unconscious,
+  // hidden) is a property of that one placed marker.
   const opacityField = createCompactField({ type: "range", label: "Opacity", controlClass: "form-range", min: 0, max: 1, step: 0.05 });
   const opacityInput = opacityField.querySelector("input");
   opacityInput.value = Number.isFinite(markerElement.opacity) ? markerElement.opacity : 1;
@@ -6144,21 +5454,17 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   container.appendChild(entityField);
 
   // Only meaningful for a journal-kind reference — matches
-  // common/js/lib/widgets/handout.js's own picker exactly: Whole Page, or
-  // one of the selected page's own headings/quests, so a marker can point
-  // at a specific quest the same granularity a Handout can already show.
-  // Hidden (not just disabled) whenever the kind isn't journal, same
-  // "irrelevant field stays out of the way" convention every other
-  // kind-specific field in this panel already follows.
+  // common/js/lib/widgets/handout.js's own picker: Whole Page, or one of
+  // the page's own headings/quests. Hidden (not disabled) when the kind
+  // isn't journal.
   const anchorField = createFormFloatingField({ type: "select", label: "Show" });
   const anchorSelect = anchorField.querySelector("select");
   anchorField.classList.add("d-none");
   container.appendChild(anchorField);
 
-  // Below Entity, not above — Image is very often auto-inherited FROM
-  // whichever entity gets picked (entitySelect's own "change" handler,
-  // below), so grouping it visually right after the picker it depends on
-  // reads more naturally than before it.
+  // Below Entity, not above — Image is often auto-inherited from whichever
+  // entity gets picked, so grouping it right after that picker reads
+  // more naturally.
   const imageField = createTokenImageField({
     label: "Image",
     value: markerElement.image || "",
@@ -6172,25 +5478,15 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   container.appendChild(imageField);
 
-  // Icon overlays (map-model.js's own createMarkerOverlayIcon, rendered by
-  // map-viewer.js's own createMarkerDot) — purely visual, no mechanical
-  // effect. Useful for any small indicator a GM wants to pin to a token
-  // (a condition, a quest marker, a turn-order cue, anything) — not
-  // conditions specifically, so nothing in this UI names them that. A
-  // marker can carry several at once, each independently removable/
-  // re-colorable. Picking an icon from the search field below adds it
-  // immediately (a fresh entry, default badge color) — no separate confirm
-  // step, matching how placing a marker/shape itself already has no
-  // confirm step either; color is set AFTER adding, per-chip, rather than
-  // as an upfront "choose a color, then pick an icon" two-step flow.
-  // Placed below Image, near the bottom of the panel — it's the least
-  // frequently touched marker field, so it doesn't need to sit above
-  // fields edited far more often.
+  // Icon overlays — purely visual, no mechanical effect. Useful for any
+  // small indicator a GM wants to pin to a token (condition, quest, turn
+  // order), not conditions specifically. A marker can carry several,
+  // independently removable/re-colorable. Picking an icon adds it
+  // immediately with a default badge color, no confirm step; color is set
+  // after, per-chip. Placed near the bottom — least frequently touched field.
   //
-  // labelClass matches createTokenImageField's own Image label exactly
-  // ("form-label small text-body-secondary fw-semibold", overriding this
-  // field's own default "form-label mb-0") — the two sit right next to
-  // each other in this panel and should read as the same kind of label.
+  // labelClass matches createTokenImageField's Image label exactly, since
+  // the two sit next to each other and should read as the same kind of label.
   const addOverlayIconField = createIconPickerField({
     label: "Icons",
     labelClass: "form-label small text-body-secondary fw-semibold",
@@ -6204,11 +5500,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
   container.appendChild(addOverlayIconField);
 
-  // Scrollable (not just a plain flex-wrap row) so a marker stacking many
-  // icons doesn't push Position X/Y and the toolbar further down the panel
-  // every time one's added — and collapsible (createCollapsibleSection, the
-  // same "Custom Properties" pattern used elsewhere in this file) since
-  // most markers carry zero or few icons most of the time.
+  // Scrollable so a marker stacking many icons doesn't push the rest of
+  // the panel down, and collapsible (same "Custom Properties" pattern
+  // used elsewhere) since most markers carry zero or few icons.
   const overlayIconsList = document.createElement("div");
   overlayIconsList.className = "orrery-marker-icons-list d-flex flex-wrap gap-2";
   if ((markerElement.overlayIcons || []).length) {
@@ -6261,12 +5555,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   const activeIconsSection = createCollapsibleSection("Active Icons", [overlayIconsList], {
     defaultCollapsed: !(markerElement.overlayIcons || []).length,
   });
-  // createCollapsibleSection's own heading always uses "fs-6" (this
-  // panel's normal section-heading size) — smaller here since "Active
-  // Icons" is a lightweight, glance-only list, not a peer of the panel's
-  // real named sections like Custom Properties. Below even .extra-small
-  // (0.75rem, common/css/shell.css's own smallest text utility) — a plain
-  // inline size since nothing in the shared utility scale goes smaller.
+  // Smaller than createCollapsibleSection's default "fs-6" — "Active
+  // Icons" is a lightweight glance-only list, not a peer of a real section
+  // like Custom Properties. Below .extra-small (shell.css's own smallest
+  // utility), so a plain inline size since nothing smaller exists.
   const activeIconsHeading = activeIconsSection.querySelector(".fs-6");
   if (activeIconsHeading) {
     activeIconsHeading.classList.remove("fs-6");
@@ -6279,29 +5571,21 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       return;
     }
     try {
-      // preferLocal: false — this function's own whole point is picking up
-      // a change to the referenced record made SINCE it was linked (its own
-      // comment just below); a locally cached copy would defeat that the
-      // same way loadMapById's own missing preferLocal:false once did.
+      // preferLocal: false — this exists to pick up a change to the
+      // referenced record made since it was linked; a cached copy defeats that.
       const result = await dataManager.get(markerElement.refKind, markerElement.refId, { preferLocal: false });
-      // A marker linked before its reference had an image (e.g. a Character
-      // imported before the DDB mapping picked up `image`, or re-imported
-      // later to add one) never gets a second chance at the entitySelect
-      // "change" handler's own inheritance below — that only fires once, at
-      // link time. Every render of an already-linked marker re-checks here
-      // too, so a referenced record gaining an image later is picked up the
-      // next time this panel opens, without ever overwriting an image the
-      // GM set (or intentionally cleared) by hand — same `!markerElement.image`
-      // guard as the link-time path.
+      // A marker linked before its reference had an image never gets a
+      // second chance at entitySelect's own inheritance (that only fires
+      // once, at link time). Every render re-checks here too, so a record
+      // gaining an image later is picked up on next open, without ever
+      // overwriting an image the GM set or cleared by hand.
       if (!markerElement.image && result?.payload?.image) {
         applyMarkerElementChange("marker image", () => {
           markerElement.image = result.payload.image;
         });
       }
-      // Same "every panel open re-checks, not just link time" reasoning as
-      // image just above — a marker linked before Favorite Color existed
-      // (or before the signed-in user had one saved) never gets a second
-      // chance at the entitySelect "change" handler's own inheritance.
+      // Same "every panel open re-checks" reasoning as image, for Favorite
+      // Color — a marker linked before it existed never got a first chance.
       if (!markerElement.outlineColor && dataManager.isAuthenticated?.()) {
         const settings = await dataManager.getUserSettings();
         if (typeof settings?.favoriteColor === "string" && settings.favoriteColor) {
@@ -6311,16 +5595,13 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         }
       }
     } catch (error) {
-      // No preview box to report into anymore — a failed fetch here just
-      // means this pass skips the image/outline inheritance checks above,
-      // same as any other transient fetch failure elsewhere in this panel.
+      // A failed fetch just means this pass skips the inheritance checks above.
     }
   }
 
-  // Kept across calls so updateAnchorSelect (below) can look up the
-  // currently-selected journal entity's own body without a second fetch —
-  // fetchKindEntriesWithIds' own {id, entity} entries already carry the
-  // full payload, not just a summary.
+  // Kept across calls so updateAnchorSelect can look up the currently-
+  // selected journal entity's body without a second fetch —
+  // fetchKindEntriesWithIds' entries already carry the full payload.
   let entitySelectEntries = [];
 
   async function populateEntitySelect(kind, selectedId) {
@@ -6342,11 +5623,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       entries = [];
     }
     entitySelectEntries = entries;
-    // `.title` fallback — a journal page's own payload has no `.name` field
-    // at all (its display field is `.title`), so this fell through straight
-    // to the raw record id ("journal_4ai1dhb4...") for every journal
-    // reference, both in the option label AND the sort order. Confirmed
-    // real bug, not a naming preference.
+    // `.title` fallback — a journal page's payload has no `.name` field
+    // (its display field is `.title`), so without this every journal
+    // reference fell through to its raw record id, in both the label and
+    // sort order.
     const displayName = (entry) => entry.entity?.name || entry.entity?.title || entry.id;
     entries
       .slice()
@@ -6362,11 +5642,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     }
   }
 
-  // Populates the "Show" select from whichever journal entity is currently
-  // chosen — Whole Page plus every heading/quest on that page, same shape
-  // handout.js's own picker builds. `savedAnchor` (only used the FIRST time
-  // this panel opens for an already-linked marker) restores whatever anchor
-  // was previously picked, once its own option actually exists in the list.
+  // Populates the "Show" select from the currently chosen journal entity —
+  // Whole Page plus every heading/quest, same shape handout.js's picker
+  // builds. `savedAnchor` (only used the first time this panel opens)
+  // restores whatever anchor was previously picked, if its option exists.
   function updateAnchorSelect(savedAnchor) {
     const isJournal = kindSelect.value === "journal";
     anchorField.classList.toggle("d-none", !isJournal);
@@ -6389,9 +5668,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     }
   }
 
-  // The label a specific anchor (heading/quest) would inherit — plain text,
-  // no leading dashes/"Quest:" prefix (those are just the Show select's own
-  // display formatting), since this feeds the marker's actual Label field.
+  // The label a specific anchor would inherit — plain text, no dashes/
+  // "Quest:" prefix (that's just the Show select's display formatting),
+  // since this feeds the marker's actual Label field.
   function anchorDisplayLabel(anchor) {
     return anchor?.value || "";
   }
@@ -6405,58 +5684,41 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   kindSelect.value = markerElement.refKind || "";
   await populateEntitySelect(markerElement.refKind, markerElement.refId);
   updateAnchorSelect(markerElement.refAnchor);
-  // Baseline for the anchor AND entity handlers' own "still looks
-  // auto-inherited, safe to refine further" checks below — whatever the
-  // label would currently read as from the MOST specific thing already
-  // selected (the anchor if one's picked, otherwise the entity's own
-  // name). lastAutoImage is the same idea for Image — whatever's
-  // currently set is treated as "still looks auto" until a GM picks
-  // something that doesn't match it (a manual upload, say). Both
-  // recomputed fresh on every render, since a kind/entity change tears
-  // this whole panel down and rebuilds it (see kindSelect/entitySelect's
-  // own change handlers) — so the entity handler below never needs to
-  // update these itself, the next render already will.
+  // Baseline for the anchor and entity handlers' own "still looks
+  // auto-inherited, safe to refine further" checks — the label from the
+  // most specific thing already selected (anchor, else entity name).
+  // lastAutoImage is the same idea for Image. Both recomputed fresh on
+  // every render, since a kind/entity change tears this panel down and
+  // rebuilds it — the entity handler never needs to update these itself.
   let lastAutoLabel = markerElement.refAnchor
     ? anchorDisplayLabel(markerElement.refAnchor)
     : entitySelect.selectedOptions[0]?.textContent || "";
   let lastAutoImage = markerElement.image || "";
   await refreshPreview();
 
-  // A newer invocation (triggered by one of the character-data cache
-  // fetches above resolving, or by a fresh selection change) already
-  // cleared and rebuilt the container while this one was awaiting — bail
-  // out rather than appending this stale invocation's own Position X/Y row
-  // and toolbar Delete button on top of the current one's.
+  // A newer invocation already cleared and rebuilt the container while
+  // this one was awaiting — bail out rather than appending a stale
+  // Position X/Y row and Delete button on top of the current one's.
   if (renderId !== markerSelectionEditorRenderId) {
     return;
   }
 
-  // Both handlers call renderSelection() (via applyMarkerElementChange)
-  // rather than manually re-running populateEntitySelect/refreshPreview —
-  // renderSelection() re-invokes this whole function fresh, which already
-  // does exactly that at the top using the just-updated refKind/refId. Safe
-  // to tear this DOM down here (unlike the marker-drag case): a plain
-  // <select> "change" event has no pointer capture depending on the element
-  // surviving the handler.
+  // Both handlers call renderSelection() rather than manually re-running
+  // populateEntitySelect/refreshPreview — renderSelection() re-invokes
+  // this whole function, which already does that using the updated
+  // refKind/refId. Safe to tear this DOM down: a <select> "change" has no
+  // pointer capture depending on the element surviving.
   kindSelect.addEventListener("change", () => {
     const kind = kindSelect.value;
     applyMarkerElementChange("marker reference kind", () => {
       markerElement.refKind = kind;
       markerElement.refId = "";
       markerElement.refAnchor = null;
-      // label/image are "copy once at pick-time, stays user-editable after"
-      // (see entitySelect's own change handler just below) — once set, a
-      // LATER entity pick never overwrites them again, which is correct
-      // within the same kind but left a stale Character's own portrait/name
-      // permanently attached to a marker after switching its reference kind
-      // to something else entirely (a Journal Page, say) — confirmed real
-      // bug, not by design. A kind change means whatever was inherited from
-      // the OLD kind's own entity no longer applies, so both reset here,
-      // clearing the way for the new kind's own entity pick to inherit
-      // fresh. outlineColor is deliberately NOT reset — it's inherited from
-      // the signed-in user's own Favorite Color account setting, not from
-      // the referenced entity, so it stays valid regardless of what kind
-      // this marker points at.
+      // label/image are "copy once at pick-time, stays editable after" —
+      // correct within the same kind, but without resetting them here a
+      // switched reference kind (Character -> Journal Page) left a stale
+      // portrait/name permanently attached. outlineColor is NOT reset — it's
+      // inherited from the user's Favorite Color, not the referenced entity.
       markerElement.label = "";
       markerElement.image = "";
     });
@@ -6466,28 +5728,20 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     const refId = entitySelect.value;
     const option = entitySelect.selectedOptions[0];
     const kind = kindSelect.value;
-    // Image inheritance and a Monster's own auto-sized footprint both need
-    // the full record payload (unlike label, which reads straight off the
-    // <option> text) — fetch it once here, before applyMarkerElementChange's
-    // renderSelection() tears this whole editor down and rebuilds it, rather
-    // than re-fetching inside refreshPreview on every render (which would
-    // re-trigger the auto-fill and a spurious undo entry each time the panel
-    // simply redraws).
+    // Image inheritance and a Monster's auto-sized footprint both need the
+    // full record payload — fetched once here, before renderSelection()
+    // tears this editor down, rather than re-fetching inside refreshPreview
+    // on every render (which would re-trigger auto-fill on every redraw).
     (async () => {
       let inheritedImage = "";
-      // A Monster's own size (auto-fill below) needs the full payload too —
-      // fetched here regardless of whether an image is already set, unlike
-      // the image-only condition this used to be, so a monster pick always
-      // resolves its footprint even on a marker that already has a custom
-      // image.
+      // Fetched regardless of whether an image is already set, so a
+      // monster pick always resolves its footprint even with a custom image.
       let payload = null;
       const imageLooksAutoInherited = !markerElement.image || markerElement.image === lastAutoImage;
       if (refId && kind && dataManager && (imageLooksAutoInherited || kind === "monster")) {
         try {
-          // preferLocal: false — a Monster's own size (or image) is exactly
-          // the kind of content edited directly in Loom/Crucible out from
-          // under whatever this browser last cached; same reasoning as
-          // resolveMonsterSizeCells' own systems fetch just below.
+          // preferLocal: false — a Monster's size/image is edited directly
+          // in Loom/Crucible; same reasoning as resolveMonsterSizeCells.
           const result = await dataManager.get(kind, refId, { preferLocal: false });
           payload = result?.payload || null;
         } catch (error) {
@@ -6497,25 +5751,17 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       if (imageLooksAutoInherited) {
         inheritedImage = payload?.image || "";
       }
-      // Re-resolved on every Monster pick (not gated behind a "still looks
-      // untouched" check the way image/label/outlineColor are just below) —
-      // sizeCells always defaults to a real number (createMarkerElement's
-      // own `sizeCells = 1`), so there's no empty-string-style sentinel to
-      // tell "never touched" apart from "a GM deliberately set this Large
-      // creature's own token to 1". Picking a monster is itself the
-      // deliberate action that should set its footprint; a GM who then wants
-      // a non-standard size still edits the Size field afterward exactly as
-      // before, same as always.
+      // Re-resolved on every Monster pick, not gated behind a "still
+      // untouched" check — sizeCells always defaults to 1, so there's no
+      // sentinel to distinguish "never touched" from "deliberately set to
+      // 1". Picking a monster is itself the action that sets its footprint.
       let inheritedSizeCells = null;
       if (kind === "monster" && payload) {
         inheritedSizeCells = await resolveMonsterSizeCells(payload);
       }
-      // Doesn't verify THIS specific record belongs to the signed-in user
-      // (that needs a dedicated ownership lookup — dataManager.get's own
-      // payload carries no owner info, only a full kind-wide list() call
-      // does) — simplified to "whoever's linking an entity, while signed
-      // in, hasn't set an outline yet" instead, same "copy once, stays
-      // user-editable after" precedent as image/label just above.
+      // Doesn't verify this record belongs to the signed-in user (needs a
+      // dedicated ownership lookup) — simplified to "whoever's linking,
+      // while signed in, hasn't set an outline yet."
       let inheritedOutlineColor = "";
       if (!markerElement.outlineColor && refId && dataManager?.isAuthenticated?.()) {
         try {
@@ -6527,23 +5773,14 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       }
       applyMarkerElementChange("marker reference entity", () => {
         markerElement.refId = refId;
-        // A different entity (even the same kind) has its own headings/
-        // quests — whatever anchor was picked for the PREVIOUS one almost
-        // certainly doesn't mean the same thing (or exist at all) here.
+        // A different entity has its own headings/quests — whatever anchor
+        // was picked for the previous one likely doesn't apply here.
         markerElement.refAnchor = null;
-        // "Still looks auto-inherited, safe to refine further" — same
-        // lastAutoLabel/lastAutoImage check the anchor handler below
-        // already uses, not just a blank check. A blank-only check
-        // (the original shape here) only ever populated Label/Image on
-        // a marker's very FIRST entity pick — switching an
-        // already-linked marker to a DIFFERENT entity left the prior
-        // entity's own name/portrait stuck, since neither field was
-        // blank anymore. Confirmed real bug, not by design — the
-        // deliberate "copy once, stays user-editable" protection this
-        // was built on only needs to block overwriting a GM's own
-        // hand-typed label or hand-picked image, which lastAutoLabel/
-        // lastAutoImage already distinguish from "still exactly what
-        // the last entity pick set."
+        // Checks lastAutoLabel/lastAutoImage, not just blank — a blank-only
+        // check only populated Label/Image on the marker's first entity
+        // pick, leaving a prior entity's name/portrait stuck on a later
+        // switch. This distinguishes "still exactly what the last pick
+        // set" from a GM's own hand-typed/picked value.
         if ((!markerElement.label || markerElement.label === lastAutoLabel) && option && option.value) {
           markerElement.label = option.textContent;
         }
@@ -6567,13 +5804,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       const separatorIndex = value.indexOf(":");
       anchor = { type: value.slice(0, separatorIndex), value: value.slice(separatorIndex + 1) };
     }
-    // The label should follow the MOST specific thing selected — picking a
-    // heading/quest within a Journal Page is more specific than the page
-    // itself, so it becomes the new label the same way picking the entity
-    // itself already does. Only when the current label still looks
-    // auto-inherited (matches lastAutoLabel, computed above from whatever
-    // was most-specific BEFORE this change) — a label the GM typed in by
-    // hand is never overwritten.
+    // The label follows the most specific thing selected — a heading/quest
+    // is more specific than its page. Only when the label still looks
+    // auto-inherited (matches lastAutoLabel) — a hand-typed label is never
+    // overwritten.
     const nextAutoLabel = anchor ? anchorDisplayLabel(anchor) : entitySelect.selectedOptions[0]?.textContent || "";
     applyMarkerElementChange("marker reference anchor", () => {
       markerElement.refAnchor = anchor;
@@ -6583,11 +5817,9 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     });
   });
 
-  // Deliberately NOT applyMarkerElementChange — same reasoning as Layer's
-  // own applyLayerPositionChange (see createCommitOnBlurNumberField's
-  // comment): nothing else in this panel depends on the marker's position,
-  // so renderSelection() rebuilding it mid-edit only risked destroying the
-  // focused input for no benefit.
+  // NOT applyMarkerElementChange — nothing else in this panel depends on
+  // the marker's position, so a rebuild mid-edit would only risk
+  // destroying the focused input for no benefit.
   function applyMarkerPositionChange(label, apply) {
     recordHistory(label, () => {
       apply();
@@ -6596,16 +5828,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     renderLayerOverlays();
     renderJson();
   }
-  // Reads/wrote markerElement.position.x/.y directly before this — correct
-  // for an image/canvas map (where position genuinely IS {x,y}) but always
-  // silently 0 for a tile map, whose position is {lat,lng} instead (.x/.y
-  // are just undefined on that shape). Confirmed as the actual cause of
-  // "I'd expect an initial position, not zero, for all Markers": every
-  // marker on a tile map showed 0/0 here regardless of where it actually
-  // was. Same markerPositionToLocalPixel/localPixelToMarkerPosition
-  // round-trip the shape origin's own Position X/Y already uses fixes it
-  // for both map types uniformly — "pixels from the map's own center,"
-  // not the raw stored shape.
+  // Reading position.x/.y directly is correct for an image/canvas map but
+  // always 0 for a tile map, whose position is {lat,lng} instead. The same
+  // markerPositionToLocalPixel/localPixelToMarkerPosition round-trip the
+  // shape origin's own Position X/Y uses fixes it for both map types.
   const markerOriginPixel = markerPositionToLocalPixel(baseMapManager, state.map, markerElement.position);
   function updateMarkerPosition(axis, value) {
     if (value === null) {
@@ -6627,14 +5853,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     )
   );
 
-  // "Linked Combatant" — only relevant, and only shown, when there's a real
-  // ambiguity to resolve: more than one combatant in the campaign's active
-  // Encounter shares this marker's own refKind/refId (e.g. three Goblins
-  // sharing one Monster record — see map-model.js's own linkedCombatantId
-  // comment for why Monster/NPC records can't just answer "which one's
-  // conditions" the way a Character's own record can). Absent entirely
-  // outside combat, or when there's zero or exactly one match — the common
-  // case resolves automatically with no picker at all.
+  // "Linked Combatant" — only shown when there's real ambiguity: more than
+  // one combatant in the active Encounter shares this marker's refKind/
+  // refId (three Goblins, one Monster record). Absent outside combat or
+  // with zero/one match — the common case resolves automatically.
   if (markerElement.refKind === "monster" || markerElement.refKind === "npc") {
     const groupId = getActiveCampaignGroupId();
     if (groupId) {
@@ -6670,13 +5892,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     }
   }
 
-  // Contents — createMarkerContentEntry (map-model.js) items a player can
-  // later claim into their own Character inventory or the campaign's
-  // shared Party Inventory (see marker-contents.js's own header for the
-  // full claim mechanism). Any marker can carry this — a plain token, an
-  // NPC, a Monster, a Wonder-referencing marker — same layered-capability
-  // relationship Light/Shape already have with attachedMarkerId, not a
-  // separate "Container" marker type.
+  // Contents — createMarkerContentEntry items a player can later claim
+  // into their Character inventory or the campaign's Party Inventory (see
+  // marker-contents.js's header for the claim mechanism). Any marker can
+  // carry this, not a separate "Container" marker type.
   const contentsList = document.createElement("div");
   contentsList.className = "d-flex flex-column gap-2";
   function renderContentsList() {
@@ -6708,18 +5927,13 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       });
       contentsList.appendChild(row);
 
-      // "Give to" — the GM delivering an entry directly to a specific
-      // player's Character (or the Party), without that player needing to
-      // be present to claim it themselves. Not every player has a
-      // dashboard open, and the GM should always be able to complete this
-      // regardless — same claimMarkerContentEntry the player-facing Claim
-      // button (openRestrictedMarkerLinkPopover above) calls, just with an
-      // explicit recipient instead of "whoever's clicking." A REAL
-      // transaction (server round-trip, actual currency/inventory
-      // delivery, Group Log entry) — deliberately NOT routed through
-      // applyMarkerElementChange/recordHistory's own local-edit-with-undo
-      // path, matching that the player-facing Claim button has no undo
-      // either.
+      // "Give to" — the GM delivers an entry directly to a specific
+      // player's Character (or the Party) without them needing to be
+      // present to claim it. Same claimMarkerContentEntry the player-facing
+      // Claim button calls, just with an explicit recipient. A real
+      // transaction (server round-trip, Group Log entry) — NOT routed
+      // through applyMarkerElementChange/recordHistory's undo path, same as
+      // the Claim button has no undo either.
       const giveToSelect = document.createElement("select");
       giveToSelect.className = "form-select form-select-sm mt-1";
       giveToSelect.setAttribute("aria-label", `Give ${describeMarkerContentEntry(entry) || "item"} to`);
@@ -6776,10 +5990,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       row.appendChild(giveToSelect);
     });
   }
-  // One shared roster fetch for the whole Contents panel (not one per
-  // entry) — cached for the lifetime of this render, same reasoning
-  // resolveGiveToOptions' own header comment gives for keeping roster
-  // lookups infrequent.
+  // One shared roster fetch for the whole Contents panel, not one per
+  // entry — cached for the lifetime of this render.
   let giveToRosterPromise = null;
   function loadGiveToRoster() {
     if (!giveToRosterPromise) {
@@ -6845,14 +6057,10 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
 
   // System-defined currency, resolved fresh against whichever campaign is
-  // currently active — never a hardcoded denomination vocabulary (5e's own
-  // cp/sp/ep/gp/pp is just one System's choice among many; a different
-  // System defines its own currency field entirely, or none at all — same
-  // reasoning inventory-weight.js's own extractCurrencyWeight already
-  // follows for reading it). No "Add Currency" row at all for a System
-  // with no currency field of its own — same "no error/hidden state for an
-  // inapplicable field" precedent a wall's own doorState already follows,
-  // rather than showing a picker with nothing real to pick from.
+  // currently active — never a hardcoded denomination vocabulary (5e's
+  // cp/sp/ep/gp/pp is just one System's choice; a different System defines
+  // its own or none at all). No "Add Currency" row for a System with no
+  // currency field, rather than showing a picker with nothing to pick from.
   let currencyDenominations = [];
   try {
     const groupContext = await resolveGroupContext(dataManager).catch(() => null);
@@ -6927,10 +6135,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
 
   // The object-arg createCollapsibleSection (imported as
-  // createFullCollapsibleSection — see this file's own import comment),
-  // not the positional one "Active Icons" above uses — this is the variant
-  // whose own header row places the help icon directly beside the "Contents"
-  // label itself, rather than as a separate line inside the body.
+  // createFullCollapsibleSection), not the positional one "Active Icons"
+  // uses — its header row places the help icon beside the "Contents" label.
   const contentsBody = document.createElement("div");
   contentsBody.className = "d-flex flex-column gap-2";
   contentsBody.append(contentsList, addItemRow, addWonderButton, ...(addCurrencyRow ? [addCurrencyRow] : []), claimTargetField);
@@ -6943,27 +6149,17 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   container.appendChild(contentsSection);
   initHelpSystem({ root: contentsSection });
 
-  // Same shared icon-toolbar mount every other selection kind (wall, shape,
-  // light) already uses, not a standalone inline button — renderSelection()
-  // clears data-selection-toolbar-mount before every render, so only
-  // whichever selection kind is current populates it.
+  // Same shared icon-toolbar mount every other selection kind uses, not a
+  // standalone inline button — renderSelection() clears it before every
+  // render, so only the current selection kind populates it.
   if (elements.selectionToolbar) {
-    // A shortcut, not a second visibility mechanism of its own — flips this
-    // one marker's id in/out of the auto-managed "Player View" (see
-    // toggleElementHiddenFromPlayers's own comment). The View editor's own
-    // Visible Components checklist (renderViewSelectionEditor) is the same
-    // underlying state, just viewed/edited a whole-View-at-a-time instead of
-    // one marker at a time — the two always agree. Same eye/eye-off toggle
-    // button convention Combat Tracker's own per-combatant "visible to
-    // players" switch uses (constant outline-secondary styling, only the
-    // icon/tooltip change — see that file's own visibleButton/
-    // toggleSelectedHidden) rather than the checkbox this replaced, so a
-    // hidden marker reads identically regardless of which tool a GM
-    // happens to be toggling it from. This whole toolbar rebuilds fresh on
-    // every renderSelection() call (see this function's own header
-    // comment), so — unlike Combat Tracker's persistent edit panel — there's
-    // no stale-cached-icon-reference risk here to guard against; the
-    // current state is just read fresh into the descriptor below.
+    // A shortcut, not a second visibility mechanism — flips this marker's
+    // id in/out of the auto-managed "Player View." The View editor's own
+    // Visible Components checklist is the same underlying state, viewed
+    // a whole-View-at-a-time instead of one marker at a time — always agree.
+    // Same eye/eye-off toggle convention as Combat Tracker's per-combatant
+    // switch. Rebuilds fresh on every renderSelection(), so no
+    // stale-icon-reference risk to guard against.
     const hiddenFromPlayers = isElementHiddenFromPlayers(markerElement.id);
     const markerToolbarButtons = [
       {
@@ -6974,9 +6170,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         onClick: () => toggleElementHiddenFromPlayers(markerElement.id),
       },
     ];
-    // See renderMarkerElementsSelectionEditor's own matching comment —
-    // same explicit currentUserHasFullMapAccess() gate on this one
-    // cross-map-write action.
+    // Same explicit currentUserHasFullMapAccess() gate as
+    // renderMarkerElementsSelectionEditor — a cross-map write.
     if (currentUserHasFullMapAccess()) {
       markerToolbarButtons.push({
         action: "move-to-map",
@@ -6996,9 +6191,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     refreshTooltips(elements.selectionToolbar);
   }
   // The toolbar above gets its own scoped sweep since it lives outside
-  // `container` (elements.selectionToolbar is a separate mount) — this one
-  // covers everything actually built INTO container itself (marker icon
-  // chips' own remove buttons, ...), which was missing entirely before.
+  // `container` — this covers everything built into container itself
+  // (marker icon chips' remove buttons, ...).
   refreshTooltips(container);
 }
 
@@ -7222,12 +6416,10 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
   actionGroup.appendChild(copyButton);
   actionGroup.appendChild(pasteButton);
   actionRow.appendChild(actionGroup);
-  // setDisabledTooltip (not bare `.disabled = ...`) for both — each button
-  // already carries its own permanent tooltip (set above); a real `disabled`
-  // attribute would block that tooltip from showing at all (see
-  // tooltips.js's own header), so the disabled-state explanation has to go
-  // on setDisabledTooltip's own separate wrapper instead. Must run AFTER
-  // the appendChild calls above, since the wrapper needs a real parent.
+  // setDisabledTooltip, not bare `.disabled = ...` — each button already
+  // has a permanent tooltip, and a real `disabled` attribute would block
+  // it from showing. Must run after the appendChild calls, since the
+  // wrapper needs a real parent.
   setDisabledTooltip(copyButton, primaryCoord ? "" : "Select a cell first.");
   setDisabledTooltip(pasteButton, state.propertyClipboard ? "" : "Nothing copied yet.");
   const customPropertiesFields = bulkNotice ? [bulkNotice, actionRow, propertiesWrapper] : [actionRow, propertiesWrapper];
@@ -7338,10 +6530,9 @@ function renderGroupSelectionEditor(group) {
   });
   container.appendChild(nameField);
 
-  // Selecting this group already arms its target grid layer for direct
-  // click/drag cell-adding with no separate toggle (renderLayerOverlays'
-  // own resolvePaintTargetLayer + isInteractive check) — this panel only
-  // needs to expose WHICH layer that is when it's ambiguous.
+  // Selecting this group already arms its target grid layer for click/drag
+  // cell-adding (resolvePaintTargetLayer) — this panel only exposes WHICH
+  // layer when it's ambiguous.
   const gridLayers = state.map.layers.filter((entry) => entry.type === "grid");
   const fogLinkedLayer = gridLayers.find((entry) => entry.settings?.revealGroupId === group.id);
   const resolvedPaintLayer = resolvePaintTargetLayer(group);
@@ -7367,10 +6558,8 @@ function renderGroupSelectionEditor(group) {
     });
   }
 
-  // Same shared icon-toolbar factory/mount point Layer and AoE Shape
-  // selection already use (data-selection-toolbar-mount) — renderSelection()
-  // clears it before every render, so only whichever selection kind is
-  // current repopulates it.
+  // Shared icon-toolbar mount (data-selection-toolbar-mount) — renderSelection()
+  // clears it each render, so only the current selection kind repopulates it.
   if (elements.selectionToolbar) {
     createToolbarButtonGroup([
       {
@@ -7392,10 +6581,8 @@ function renderGroupSelectionEditor(group) {
 
   const membersBody = [];
 
-  // Only shown when it's actually ambiguous which layer clicking/painting
-  // targets — a Fog of War link already resolves it unambiguously
-  // (resolvePaintTargetLayer's own priority order), same as a single grid
-  // layer does.
+  // Only shown when it's ambiguous which layer painting targets — a Fog of
+  // War link or a single grid layer already resolves it unambiguously.
   if (!fogLinkedLayer && gridLayers.length > 1) {
     const paintLayerField = createCompactField({
       type: "select",
@@ -7424,9 +6611,8 @@ function renderGroupSelectionEditor(group) {
   membersHelp.dataset.helpInsert = "replace";
   summaryActions.appendChild(membersHelp);
   if (members.length) {
-    // Distinct icon from the per-member remove buttons below (trash-x vs
-    // plain trash) so "clear everything" reads differently at a glance
-    // from "remove this one cell."
+    // trash-x (vs. plain trash below) so "clear everything" reads
+    // differently at a glance from "remove this one cell."
     const removeAllButton = document.createElement("button");
     removeAllButton.type = "button";
     removeAllButton.className = "btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center";
@@ -7446,11 +6632,8 @@ function renderGroupSelectionEditor(group) {
   membersBody.push(summaryRow);
   initHelpSystem({ root: summaryRow });
 
-  // Its own scrollable box (orrery-pane-list — the same class the left
-  // pane's Layers/Groups/Views lists already use for exactly this) so a
-  // group with dozens of painted cells doesn't balloon the whole right
-  // pane — separate from the Members section's own collapse/expand, which
-  // hides the whole thing away instead.
+  // Own scrollable box (orrery-pane-list, shared with the left pane's own
+  // lists) so a group with dozens of cells doesn't balloon the right pane.
   const memberList = document.createElement("div");
   memberList.className = "orrery-pane-list d-flex flex-column gap-2 p-2 border rounded";
 
@@ -7573,30 +6756,20 @@ function renderGroupSelectionEditor(group) {
   container.appendChild(
     createCollapsibleSection("Custom Properties", [actionRow, propertiesWrapper], { defaultCollapsed: !entries.length })
   );
-  // setDisabledTooltip, not bare `.disabled = ...` — see the Layer/Cell
-  // panels' own identical fix just above for the full reasoning. Must run
-  // AFTER the appendChild calls above.
+  // setDisabledTooltip, not bare `.disabled`, and must run AFTER appendChild.
   setDisabledTooltip(pasteButton, state.propertyClipboard ? "" : "Nothing copied yet.");
   refreshTooltips();
 }
 
-// A short, human-readable label for any placed element — shared by the View
-// editor's own "Visible Components" checklist below (the only current
-// caller). Mirrors the exact labels renderSelection already uses for each
-// kind's own inspector title (marker: its own label, shape/effect: its own
-// label or preset name, wall/door, light, plain path: "Drawn Path" — see
-// that function's own per-kind branches), so a GM sees the same names here
-// as everywhere else in this tool.
+// Mirrors renderSelection's own per-kind inspector titles, so the View
+// editor's "Visible Components" checklist below shows the same names.
 function describeMapElementKind(element) {
   if (element.kind === "marker") return element.label || "Marker";
   if (element.kind === "shape") {
     const preset = getPresetById(element.presetId) || getPresetById("circle");
-    // A named Effect shows its own label (mirrors the marker branch just
-    // above) — a GM's own "Boss Burst" is far more useful in this checklist
-    // than the generic preset name every OTHER instance of the same preset
-    // would otherwise show identically. Falls back to the preset's own
-    // label for a plain Shape (which has no label concept) or an unlabeled
-    // Effect.
+    // A named Effect's own label beats the generic preset name (e.g. "Boss
+    // Burst" vs. every other instance of the same preset); falls back to
+    // the preset label for a plain/unlabeled Shape.
     return element.label || preset.label;
   }
   if (element.kind === "wall") return element.wallType === "door" ? "Door" : "Wall";
@@ -7628,9 +6801,7 @@ function renderViewSelectionEditor(view) {
   container.appendChild(nameField);
 
   const descriptionField = createFormFloatingField({
-    // form-floating textareas need an explicit height (the `rows` attribute
-    // fights the padding it adds for the label) — same fix Workbench's own
-    // createTextarea/Press's text field already apply.
+    // form-floating textareas need an explicit height — `rows` fights the label's own padding.
     type: "textarea", label: "Description", placeholder: "Describe what this view shows or hides.", style: "min-height: 72px",
   });
   const descriptionInput = descriptionField.querySelector("textarea");
@@ -7642,17 +6813,11 @@ function renderViewSelectionEditor(view) {
   });
   container.appendChild(descriptionField);
 
-  // Both lists below are the same shared "search box + scrollable checkbox
-  // list" the generator tools' own Locked Features picker uses
-  // (createSearchableCheckList, ui-components.js; populateStringChecklist/
-  // readLockedFeatureIds, generator-kit.js) rather than the hand-rolled
-  // `<div class="form-check">` rows this used to build per row — that old
-  // shape didn't scale past a handful of items and had no search, fine for
-  // a few layers but not for "every marker/path/shape/wall/light on the
-  // map" below. Checked = visible in the UI either way; under the hood
-  // view.hiddenLayerIds/hiddenElementIds are DENY-lists (see createView's
-  // own comment for why), so what's actually written back is the
-  // COMPLEMENT of whatever's checked, not the checked set itself.
+  // Shared searchable-checklist widget (createSearchableCheckList/
+  // populateStringChecklist, generator-kit.js) — needed once lists cover
+  // every element on the map, not just a few layers. Checked = visible;
+  // hiddenLayerIds/hiddenElementIds are DENY-lists under the hood, so what's
+  // written back is the COMPLEMENT of the checked set, not the set itself.
   const layerChecklist = createSearchableCheckList({
     id: `view-${view.id}-layers`,
     label: "Visible Layers",
@@ -7736,10 +6901,8 @@ function renderViewSelectionEditor(view) {
   });
   container.appendChild(tierWrapper);
 
-  // Same shared icon-toolbar factory/mount point Layer/Shape/Group
-  // selection already use (data-selection-toolbar-mount) instead of a
-  // standalone inline button — renderSelection() clears it before every
-  // render, so only whichever selection kind is current repopulates it.
+  // Shared icon-toolbar mount (data-selection-toolbar-mount) — renderSelection()
+  // clears it each render, so only the current selection kind repopulates it.
   if (elements.selectionToolbar) {
     createToolbarButtonGroup([
       {
@@ -8590,10 +7753,8 @@ function renderShapeEffectControls(preset) {
   const fragment = document.createDocumentFragment();
   (preset.colorSlots ?? []).forEach((slot) => {
     const raw = String(currentShapeEffectValues[slot.key] ?? slot.default ?? "");
-    // A "@"/"=" prefixed value is a binding/formula, not a literal hex —
-    // createColorPickerField expects the caller to already know which of
-    // its two params a stored string represents (same split its own
-    // committedRawText logic works from), rather than guessing itself.
+    // A "@"/"=" prefix is a binding/formula, not a literal hex — createColorPickerField
+    // needs the caller to pre-classify which of its two params the value is.
     const isBindingLike = raw.startsWith("@") || raw.startsWith("=");
     const field = createColorPickerField(slot.label, {
       value: isBindingLike ? "" : raw,
@@ -8611,19 +7772,14 @@ function renderShapeEffectControls(preset) {
         currentShapeEffectValues = { ...currentShapeEffectValues, [slot.key]: slot.default };
         updateShapeEffectPreview();
       },
-      // No evaluate — a map shape/effect has no Character-bound context to
-      // resolve a "@..." reference against (unlike Press/Workbench's own
-      // template canvas), so a typed binding/formula stores and displays
-      // as entered but previews as indeterminate, same as Workbench's own
-      // Template editor canvas already does for "=formula" text (this
-      // module's own header comment).
+      // No evaluate — a map shape/effect has no Character context to resolve
+      // a "@..." reference against, so a binding stores/displays as typed
+      // but previews as indeterminate (same as Workbench's Template canvas).
     });
     fragment.appendChild(field);
   });
-  // Opacity — same range-slider vocabulary every other Opacity in this
-  // suite uses (0-1, step 0.05, form-range), applies to every preset,
-  // geometry or particle alike, so it's rendered here unconditionally
-  // rather than as one more colorSlot-driven entry.
+  // Opacity applies to every preset (geometry or particle), so it's
+  // rendered unconditionally rather than as a colorSlot-driven entry.
   const opacityWrap = document.createElement("div");
   opacityWrap.className = "d-flex align-items-center justify-content-between gap-2";
   const opacityId = "shapeEffectOpacity";
@@ -8743,13 +7899,8 @@ function initShapeEffectModal() {
     });
     renderLayerOverlays();
     renderJson();
-    // draftShapeElement's own declaration comment — the modal can be opened
-    // on the Shape tool's own in-progress draft now (not just an already-
-    // placed shape), so this has to hand back to the SAME draft view
-    // instead of the general renderSelection(), or Applying here would
-    // silently drop back to whatever state.selection points to underneath
-    // it (typically the layer) instead of the draft the GM was still
-    // configuring.
+    // Modal can open on an in-progress draft, not just a placed shape — hand
+    // back to the draft view, or Applying would fall back to state.selection.
     if (shapeElement === draftShapeElement) {
       renderArmedShapeInspector();
     } else {
@@ -8759,19 +7910,12 @@ function initShapeEffectModal() {
   });
 }
 
-// Carries everything about a marker that isn't tied to WHERE it sits —
-// same intent as duplicateLayerElement's own marker branch, but broader:
-// a moved marker should read as "the same token, relocated," not a fresh
-// second copy a GM might expect to look different. Two fields
-// deliberately excluded: `position` (the caller — the Apply handler
-// below — overwrites it with computeMoveMarkerPositions' own output right
-// after cloning; the destination map's coordinate system has nothing in
-// common with the source's, so createMarkerElement's own {x:0,y:0}
-// default here is only ever a placeholder, never what actually lands)
-// and `linkedCombatantId` (scoped to the SOURCE map's own active
-// Encounter, meaningless anywhere else). overlayIcons isn't a
-// createMarkerElement constructor argument at all (always starts `[]`
-// there) so it's copied onto the clone afterward.
+// Carries everything about a marker except WHERE it sits, so a moved marker
+// reads as "the same token, relocated." `position` is overwritten by the
+// Apply handler via computeMoveMarkerPositions (source/dest coordinate
+// systems don't match); `linkedCombatantId` is scoped to the source map's
+// Encounter and dropped. overlayIcons isn't a constructor arg, so it's
+// copied onto the clone afterward.
 function cloneMarkerElementForMove(element) {
   const clone = createMarkerElement({
     refKind: element.refKind,
@@ -8792,26 +7936,12 @@ function cloneMarkerElementForMove(element) {
   return clone;
 }
 
-// Per-marker "reset near origin" targets for a batch of moved markers,
-// aware of the DESTINATION map's own base map type (unknowable at clone
-// time — cloneMarkerElementForMove has no map context of its own) — two
-// real correctness needs, not just cosmetic ones:
-// - A tile base map stores position as {lat, lng}, never {x, y}
-//   (hasValidMarkerPosition, map-viewer.js); createMarkerElement's own
-//   {x:0,y:0} default fails that check entirely, so every moved marker
-//   would silently NOT RENDER at all on a tile destination map. Basing
-//   it on the destination's own current view center (falling back to
-//   getDefaultView("tile")'s {lat:20,lng:0} if the map has no `view` of
-//   its own yet) at least lands markers somewhere near what's actually
-//   on screen, matching "reset near origin" in spirit for a coordinate
-//   system that doesn't have a literal (0,0) worth using.
-// - Every marker in the batch landing on the EXACT same point stacked
-//   them directly on top of one another, functionally invisible/
-//   unclickable as separate tokens the moment there's more than one.
-//   Staggered by a small, fixed per-axis step (pixels for image/canvas,
-//   degrees for tile) so they're visibly and clickably distinct — not
-//   meant to be precise placement, the GM repositions from here same as
-//   a single moved marker always has.
+// "Reset near origin" targets for a batch of moved markers, aware of the
+// DESTINATION map's base type (unknowable at clone time): a tile map stores
+// {lat,lng} not {x,y}, so createMarkerElement's {x:0,y:0} default would
+// leave a moved marker unrendered — base it on the dest view center instead.
+// Markers are also staggered by a small per-axis step so a batch doesn't
+// land stacked and unclickable; the GM repositions precisely from there.
 const MOVE_MARKER_OFFSET_PX = 32;
 const MOVE_MARKER_OFFSET_DEG = 0.0004;
 function computeMoveMarkerPositions(destPayload, count) {
@@ -8824,19 +7954,14 @@ function computeMoveMarkerPositions(destPayload, count) {
   );
 }
 
-// Captured at open time (not re-resolved from state.selection at Apply
-// time) — same reasoning as shapeEffectModalTarget just above: the modal
-// stays open across an await (populating the layer picker), and nothing
-// should change WHICH markers move if a stray render happens to touch
-// state.selection in that window.
+// Captured at open time, not re-resolved from state.selection at Apply —
+// the modal stays open across an await, and a stray render touching
+// state.selection in that window shouldn't change WHICH markers move.
 let moveMarkerModalEntries = [];
 
-// Opened from either selection toolbar (single marker or the bulk
-// "marker-elements" panel — both call this the same way, this function
-// itself resolves which one is current). Deliberately re-checks
-// currentUserHasFullMapAccess() here too, not just at the button's own
-// render-time gate — belt-and-suspenders against a stale toolbar button
-// surviving a permission change without a re-render in between.
+// Opened from either the single-marker or bulk "marker-elements" toolbar.
+// Re-checks currentUserHasFullMapAccess() here too (not just at the
+// button's render-time gate) in case permissions changed without a re-render.
 function openMoveMarkerModal() {
   if (!elements.moveMarkerModal || !window.bootstrap?.Modal || !currentUserHasFullMapAccess()) return;
   const selection = state.selection;
@@ -8962,9 +8087,8 @@ function initMoveMarkerModal() {
       elements.moveMarkerApply.disabled = false;
       return;
     }
-    // Only remove the originals from the CURRENTLY open map once the
-    // destination write above has actually succeeded — a failed cross-map
-    // save must never lose the source marker.
+    // Only remove originals after the destination write succeeds — a failed
+    // cross-map save must never lose the source marker.
     const idsByLayer = new Map();
     entries.forEach(({ layer, markerElement }) => {
       if (!idsByLayer.has(layer.id)) idsByLayer.set(layer.id, new Set());
@@ -8978,10 +8102,8 @@ function initMoveMarkerModal() {
       });
       updateMapTimestamp(state.map);
     });
-    // Persists that same removal to the server right away — see this
-    // function's own header comment for why a move can't leave it as an
-    // ordinary batched, Save-button-pending edit the way a plain Delete
-    // does.
+    // Persists the removal right away — a move can't sit as an ordinary
+    // batched, Save-button-pending edit the way a plain Delete does.
     void autoSaveRemovedMarkerElements(idsByLayer);
     setSelection(null);
     const destName = elements.moveMarkerMapSelect?.selectedOptions?.[0]?.textContent || "the destination map";
@@ -8994,11 +8116,9 @@ function initMoveMarkerModal() {
   });
 }
 
-// Same reasoning as setDrawModeActive just above — plus, unlike Draw, Shape
-// has a right-pane Inspector view of its own now (renderArmedShapeInspector)
-// that has to take over/hand back the panel exactly when arming/disarming
-// does. Creates/discards draftShapeElement here — the ONE place its whole
-// lifecycle is owned (see its own declaration comment).
+// Unlike Draw, Shape has its own right-pane Inspector (renderArmedShapeInspector)
+// that must take over/hand back the panel on arm/disarm. Creates/discards
+// draftShapeElement here — the one place its lifecycle is owned.
 function setShapeModeActive(active) {
   shapeModeActive = active;
   elements.shapeToggle?.classList.toggle("active", shapeModeActive);
@@ -9027,16 +8147,11 @@ function setShapeModeActive(active) {
   }
 }
 
-// The right-pane Inspector view shown for the ENTIRE time the Shape/Effect
-// tool is armed — draftShapeElement's own declaration comment has the full
-// reasoning for why this renders through the EXACT SAME
-// renderVectorShapeSelectionEditor an already-placed shape uses (Type,
-// Attach to Token, Label, Position, Size/Angle/Spread/Width, Outline width,
-// Snap to Grid, Loop/Play — everything), rather than a separate simplified
-// view. Only this wrapper's own title/details/icon (and clearing the
-// toolbar first, which renderSelection() normally does but this bypasses)
-// are specific to the "drawing" state; the editor body itself is 100% the
-// shared function.
+// Right-pane Inspector shown while the Shape/Effect tool is armed. Renders
+// through the SAME renderVectorShapeSelectionEditor an already-placed shape
+// uses, rather than a separate simplified view — only this wrapper's own
+// title/details/icon (and the toolbar clear renderSelection() normally does)
+// are specific to the "drawing" state.
 function renderArmedShapeInspector() {
   if (!draftShapeElement || !draftShapeLayer) return;
   const preset = getPresetById(draftShapeElement.presetId) || getPresetById("circle");
@@ -9055,18 +8170,12 @@ function renderArmedShapeInspector() {
   setPanelFocus(true);
 }
 
-// Shapes (Circle/Cone/Line/Square) or Effects (Burst/Beam/Cone Blast/Pulse)
-// onto the selected vector layer — the SAME click-drag-commit gesture
-// Draw's own freehand stroke uses (a live preview appended straight to the
-// overlay, torn down on release, committed as one element via
-// recordHistory), sized through the exact same screen-pixel-distance-to-
-// cells conversion Measure's own readout uses (pixelsToCells) instead of
-// any new coordinate math. The live preview reuses map-viewer.js's own
-// renderShapeElement — the same function that renders a COMMITTED geometry
-// shape — against a throwaway element object, so there's exactly one place
-// in the whole codebase that knows how to turn a shape's fields into an SVG
-// primitive. Placement behavior is unchanged from before this preset
-// catalog existed — only the TYPE list got longer.
+// Places Shapes/Effects onto the selected vector layer via the same
+// click-drag-commit gesture Draw's freehand stroke uses, sized through the
+// same pixelsToCells conversion Measure uses. The live preview reuses
+// map-viewer.js's own renderShapeElement (the committed-geometry renderer)
+// against a throwaway element, so only one function turns a shape's fields
+// into an SVG primitive.
 function setupShapeTool() {
   if (!elements.shapeToggle || !mapContainer) {
     return;
@@ -9075,11 +8184,9 @@ function setupShapeTool() {
 
   elements.shapeToggle.addEventListener("click", () => {
     if (elements.shapeToggle.disabled) return;
-    // Same reasoning as setupDrawTool's own click handler — a re-render
-    // picks up the orrery-shaping cursor class immediately. Existing shapes
-    // stay selectable/draggable regardless of this toggle now (see
-    // onVectorPathClick/onShapeDragEnd's own comment) — only NEW placement
-    // gates on it.
+    // Re-render picks up the orrery-shaping cursor class immediately.
+    // Existing shapes stay selectable/draggable regardless — only NEW
+    // placement gates on this toggle.
     setShapeModeActive(!shapeModeActive);
   });
 
@@ -9107,13 +8214,9 @@ function setupShapeTool() {
     preview.style.pointerEvents = "none";
     overlay.appendChild(preview);
 
-    // Type/colors were already picked from the right-pane Inspector before
-    // this gesture even started (renderArmedShapeInspector) and live on
-    // draftShapeElement already — this gesture only ever decides
-    // Size/Angle/Position, so it mutates the SAME draft object rather than
-    // tracking its own local copies. A full rebuild here (not just the
-    // live dataAttr update onMove uses) is correct exactly once, so
-    // Position X/Y reflect the real click point.
+    // Type/colors were already picked in the Inspector and live on
+    // draftShapeElement — this gesture only decides Size/Angle/Position, so
+    // it mutates the same draft object rather than tracking a local copy.
     draftShapeElement.origin = origin;
     draftShapeElement.sizeCells = 0;
     draftShapeElement.angleDeg = 0;
@@ -9121,12 +8224,10 @@ function setupShapeTool() {
 
     function drawPreview() {
       preview.innerHTML = "";
-      // A "particles" preset (an Effect) has no live drag preview here —
-      // renderShapeElement stays scoped to static geometry (see its own
-      // header comment); its own animated rendering is a separate,
-      // canvas-based system. A known, temporary-in-implementation-order gap
-      // only (no visual feedback while dragging to size an Effect), not a
-      // functional one — the placed/committed element is real either way.
+      // A "particles" preset (an Effect) has no live drag preview —
+      // renderShapeElement stays scoped to static geometry; Effects animate
+      // via a separate canvas system. No visual feedback while dragging to
+      // size one, but the placed/committed element is real either way.
       const preset = getPresetById(draftShapeElement.presetId) || getPresetById("circle");
       if (preset.kind !== "geometry") return;
       renderShapeElement(
@@ -9148,10 +8249,8 @@ function setupShapeTool() {
       draftShapeElement.sizeCells = cells === null ? 0 : snapCellsToWholeUnit(state.map, cells);
       draftShapeElement.angleDeg = cells === null ? 0 : (Math.atan2(dy, dx) * 180) / Math.PI;
       drawPreview();
-      // Live-updates ONLY the Size/Angle inputs already showing in the
-      // right pane (the same fields renderArmedShapeInspector rendered via
-      // the normal post-placement editor) — no full rebuild mid-drag, which
-      // would be wasteful and could disrupt an open color-picker popover.
+      // Live-updates only the Size/Angle inputs already in the right pane —
+      // no full rebuild mid-drag, which could disrupt an open color popover.
       const sizeInput = elements.selectionEditor?.querySelector("[data-shape-size-input]");
       if (sizeInput) sizeInput.value = draftShapeElement.sizeCells.toFixed(1);
       const angleInput = elements.selectionEditor?.querySelector("[data-shape-angle-input]");
@@ -9165,10 +8264,8 @@ function setupShapeTool() {
       preview.remove();
       if (draftShapeElement.sizeCells > 0) {
         const placedElement = draftShapeElement;
-        // Snap to Grid defaults on (createVectorShapeElement's own
-        // snapToGrid default) — new shapes land pre-snapped so the toggle's
-        // initial checked state actually matches what just happened, not a
-        // stale claim about an unsnapped placement.
+        // Snap to Grid defaults on, so new shapes land pre-snapped and the
+        // toggle's initial checked state matches what just happened.
         placedElement.origin = snapShapeOriginToGrid(placedElement.origin, layer);
         recordHistory("place shape", () => {
           layer.elements = layer.elements || [];
@@ -9178,18 +8275,11 @@ function setupShapeTool() {
         renderJson();
         // Single-shot — see the Draw tool's own identical comment above.
         // Clears draftShapeElement, but placedElement still references the
-        // same (now-committed) object, so nothing below is affected by it.
+        // committed object, so nothing below is affected.
         setShapeModeActive(false);
-        // Selects the just-placed shape/effect immediately, rather than
-        // leaving whatever was selected before drawing (typically the
-        // layer) — a GM's very next move after placing one is almost always
-        // adjusting its color/size/attachment in the inspector, so landing
-        // there without an extra click matters more here than it does for a
-        // plain drawn path (no per-placement fields of its own to jump to).
-        // setSelection's own full render (renderLayerOverlays included)
-        // already covers what setShapeModeActive's call above did, so this
-        // isn't a wasted duplicate — it's the render that actually reflects
-        // the new selection.
+        // Selects the just-placed shape/effect immediately rather than
+        // whatever was selected before — a GM's next move is almost always
+        // adjusting its color/size/attachment in the inspector.
         setSelection("vector-path", placedElement.id, { layerId: layer.id });
         // VTT-like immediacy — see the Draw tool's own identical comment
         // above.
@@ -9292,12 +8382,10 @@ function updateLightAvailability() {
   }
 }
 
-// Reuses the Shape tool's own click-drag-commit gesture almost verbatim — a
-// light is geometrically a circle (origin + range), so there's no shape-type
-// picker, but the live preview reuses map-viewer.js's own renderLightElement
-// against a throwaway element, same "one place in the codebase that knows
-// how to turn this element's fields into an SVG primitive" reasoning
-// setupShapeTool's own preview already follows.
+// Reuses the Shape tool's click-drag-commit gesture — a light is
+// geometrically a circle (origin + range), so no shape-type picker, but the
+// live preview reuses map-viewer.js's own renderLightElement, same as
+// setupShapeTool's preview does for its own element type.
 function setupLightTool() {
   if (!elements.lightToggle || !mapContainer) {
     return;
@@ -9333,13 +8421,9 @@ function setupLightTool() {
     preview.style.pointerEvents = "none";
     overlay.appendChild(preview);
 
-    // Color/opacity were already picked from the right-pane Inspector
-    // before this gesture even started (renderArmedLightInspector) and live
-    // on draftLightElement already — see setupShapeTool's own identical
-    // reasoning for why this gesture mutates the SAME draft object rather
-    // than tracking local copies. A full rebuild here (not just the live
-    // dataAttr update onMove uses) is correct exactly once, so Position X/Y
-    // reflect the real click point.
+    // Color/opacity were already picked in the Inspector and live on
+    // draftLightElement — mutates the same draft object rather than
+    // tracking a local copy (see setupShapeTool's identical reasoning).
     draftLightElement.origin = origin;
     draftLightElement.rangeCells = 0;
     renderArmedLightInspector();
@@ -9356,10 +8440,8 @@ function setupLightTool() {
       const cells = pixelsToCells(baseMapManager, state.map, Math.hypot(dx, dy));
       draftLightElement.rangeCells = cells === null ? 0 : snapCellsToWholeUnit(state.map, cells);
       drawPreview();
-      // Live-updates ONLY the Range input already showing in the right pane
-      // (the same field renderArmedLightInspector rendered via the normal
-      // post-placement editor) — see setupShapeTool's own identical
-      // reasoning for why this skips a full rebuild mid-drag.
+      // Live-updates only the Range input already in the right pane —
+      // skips a full rebuild mid-drag (see setupShapeTool's identical logic).
       const rangeInput = elements.selectionEditor?.querySelector("[data-light-range-input]");
       if (rangeInput) rangeInput.value = draftLightElement.rangeCells.toFixed(1);
     }
@@ -9377,10 +8459,8 @@ function setupLightTool() {
           updateMapTimestamp(state.map);
         });
         renderJson();
-        // Single-shot, and selects the just-placed light immediately —
-        // matches Shape's own identical behavior (setupShapeTool's own
-        // onUp). Clears draftLightElement, but placedElement still
-        // references the same (now-committed) object.
+        // Single-shot; selects the just-placed light immediately, matching
+        // Shape's identical onUp behavior.
         setLightModeActive(false);
         setSelection("vector-path", placedElement.id, { layerId: layer.id });
       } else {
@@ -9393,26 +8473,16 @@ function setupLightTool() {
   });
 }
 
-// The account's own single "active campaign" (set from the header's user
-// menu — see auth-ui.js's renderUserMenu/data-campaign-select, and
-// dataManager.getActiveGroup/setActiveGroup) — reused here rather than
-// giving Orrery its own separate campaign picker, which would just be a
-// second, easy-to-desync place to pick the same thing the header already
-// asks for once, shared across every tool.
+// The account's single "active campaign" (header user menu, auth-ui.js) —
+// reused here rather than a second Orrery-local picker that could desync.
 function getActiveCampaignGroupId() {
   return dataManager?.getActiveGroup?.()?.groupId || "";
 }
 
-// A dedicated overlay for ping dots, lazily created as a SIBLING of the
-// regular layer overlay (baseMapManager.getOverlayContainer()'s own
-// parent — the pan/zoom-transformed element either base map type already
-// positions its overlay host inside, so a sibling there still lands in the
-// same coordinate space) rather than a child of the overlay host itself.
-// Necessary because renderMapLayers does `overlay.innerHTML = ""` on every
-// single re-render (any selection change, any edit, every ~10s poll tick)
-// — a ping appended directly into that container could get wiped out well
-// before its own fade animation finished, or even before painting a single
-// frame, which is exactly why pings were never visibly showing up at all.
+// A dedicated overlay for ping dots, a sibling of the regular layer
+// overlay rather than its child — renderMapLayers does
+// `overlay.innerHTML = ""` on every re-render, which would wipe a ping
+// before its fade animation finished.
 function getPingOverlayHost() {
   const overlay = baseMapManager.getOverlayContainer();
   const parent = overlay?.parentElement;
@@ -9431,12 +8501,9 @@ function getPingOverlayHost() {
   return host;
 }
 
-// Renders someone's ping (a click-to-ping broadcast — see
-// setupPingTool below and server/state.py's ServerState.pending_pings) as a
-// transient dot on the map. Called for BOTH remote pings (via the live
-// watcher's onPing) and the local GM's own — there's no separate optimistic
-// render path (see setupPingTool's own comment on why); every ping, including
-// your own, arrives back through the same live-stream echo.
+// Renders a click-to-ping broadcast as a transient dot. Called for both
+// remote pings and the local GM's own — every ping arrives back through
+// the same live-stream echo, no separate optimistic render path.
 function renderIncomingPing({ position, by }) {
   if (!position) return;
   const host = getPingOverlayHost();
@@ -9444,16 +8511,10 @@ function renderIncomingPing({ position, by }) {
   host.appendChild(createPingMarker(baseMapManager, state.map, position, by || ""));
 }
 
-// Click-to-ping — a transient pointer broadcast to a campaign group's table
-// (NOT one of Orrery's own map "Groups," the grid-cell-organizing concept
-// used elsewhere in this file — this is the account's real campaign/session
-// group, the same concept the Dashboard/spotlight system uses). Requires an
-// active campaign (see getActiveCampaignGroupId), both because the
-// server-side ping endpoint requires one and because that's what activates
-// the live-stream subscription this whole feature rides on (see
-// watchCurrentMap/map-live-sync.js's own onPing wiring) — no active
-// campaign means no live connection to echo the ping back through at all,
-// so the toggle stays disabled until one's set from the header menu.
+// Click-to-ping — a transient broadcast to a campaign group's table (not
+// Orrery's own map "Groups"). Requires an active campaign: the ping
+// endpoint needs one, and it's what activates the live-stream subscription
+// the echo rides on — so the toggle stays disabled without one.
 function setupPingTool() {
   if (!elements.pingToggle || !mapContainer) {
     return;
@@ -9463,15 +8524,9 @@ function setupPingTool() {
   function updateToggleAvailability() {
     const hasGroup = Boolean(getActiveCampaignGroupId());
     elements.pingToggle.disabled = !hasGroup;
-    // A disabled button with no explanation just looks broken — the
-    // tooltip is the only visible signal here, so it has to say WHY, not
-    // just repeat what the icon already implies. Set on the WRAPPING span
-    // (data-ping-toggle-wrap), not the button — a native `disabled` button
-    // doesn't reliably fire the hover/focus events Bootstrap's tooltip
-    // listens for, so a tooltip on the button itself can silently never
-    // show while disabled (confirmed: exactly what happened here). Standard
-    // Bootstrap pattern for this — see their own disabled-button-tooltip
-    // docs example.
+    // Tooltip must say why it's disabled. Set on the wrapping span, not the
+    // button — a native `disabled` button doesn't reliably fire the
+    // hover/focus events Bootstrap's tooltip listens for.
     const tooltipTarget = elements.pingToggleWrap || elements.pingToggle;
     tooltipTarget.setAttribute(
       "data-bs-title",
@@ -9488,10 +8543,8 @@ function setupPingTool() {
 
   updateToggleAvailability();
 
-  // The header's own campaign switcher (auth-ui.js) fires this on every
-  // change, from any tool's page — picking up on it here means switching
-  // campaigns from the header takes effect immediately without a reload,
-  // same as every other "active campaign"-aware surface in the suite.
+  // The header's campaign switcher fires this from any tool's page, so
+  // switching campaigns takes effect immediately without a reload.
   window.addEventListener("workbench:active-group-changed", () => {
     updateToggleAvailability();
     if (state.map.id) {
@@ -9515,13 +8568,9 @@ function setupPingTool() {
     if (!overlay) return;
     const position = resolveClickPosition(baseMapManager, state.map, event, overlay);
     if (!position) return;
-    // Render locally right away rather than relying purely on the
-    // live-stream echo to send it back — the whole SSE round-trip (server
-    // record, next 1s poll tick, connection delivery, client dispatch) is a
-    // lot of links for feedback on your OWN click to depend on end to end,
-    // and any single one having trouble (a slow/stalled connection, a
-    // reconnect in progress) meant the pinger saw literally nothing happen.
-    // Every OTHER viewer's copy still only ever arrives via the real echo.
+    // Render locally right away rather than relying solely on the live-
+    // stream echo — too many links in that round-trip for feedback on your
+    // own click to depend on. Every other viewer still gets it via the echo.
     renderIncomingPing({ position, by: dataManager.session?.user?.username || "You" });
     void dataManager.postMapPing({ groupId, position }).catch((error) => {
       status.show(error.message || "Unable to send ping.", { type: "error", timeout: 3000 });
@@ -9530,9 +8579,8 @@ function setupPingTool() {
 }
 
 // Keeps the Measure toggle's enabled state and tooltip in sync with
-// state.map.measurement — called on map load/switch (applyMapSnapshot) and
-// whenever the Scale per cell/Scale unit fields change (setupMapEvents), not
-// just once at startup, since either can change mid-session.
+// state.map.measurement — called on map load/switch and whenever Scale
+// per cell/Scale unit change, not just once at startup.
 function updateMeasureAvailability() {
   if (!elements.measureToggle) return;
   const configured = hasMapMeasurementConfigured(state.map);
@@ -9551,15 +8599,12 @@ function updateMeasureAvailability() {
 }
 
 // Click-drag anywhere on the map measures the straight-line distance
-// between the two points, converted through the primary grid layer's own
-// on-screen cell size and the map's own configured scale/unit. Deliberately
-// a pure SCREEN-PIXEL-DELTA measurement (start/end clientX/clientY, divided
-// by the grid's own on-screen cell size from getGridCellSize, which already
-// bakes in the current zoom) rather than converting either point through a
-// specific layer's own local coordinate space — a relative distance needs
-// no absolute position at all, which sidesteps the same base-map-type/
-// layer-offset coordinate reconciliation snapMarkerPositionToGrid has to
-// account for.
+// between two points, converted through the grid's on-screen cell size and
+// the map's configured scale/unit. A pure screen-pixel-delta measurement
+// (clientX/clientY divided by getGridCellSize, which bakes in zoom) rather
+// than converting through a layer's local coordinate space — a relative
+// distance needs no absolute position, sidestepping the coordinate
+// reconciliation snapMarkerPositionToGrid has to do.
 function setupMeasureTool() {
   if (!elements.measureToggle || !mapContainer) {
     return;
@@ -9578,13 +8623,10 @@ function setupMeasureTool() {
     return formatMeasuredDistance(baseMapManager, state.map, pixelDistance);
   }
 
-  // Drawn in plain screen (clientX/clientY) space, same as the distance math
-  // above — a straight line from the pointerdown point to the live cursor
-  // position needs no map-local coordinate conversion at all, it's already
-  // exactly what's being measured. Appended to <body> (position: fixed, so
-  // it tracks the viewport regardless of any scroll/layout underneath it),
-  // not the map overlay, since it's a screen-space UI affordance, not map
-  // content.
+  // Drawn in plain screen space, same as the distance math above — needs
+  // no map-local coordinate conversion, it's already what's being measured.
+  // Appended to <body> (position: fixed, tracks the viewport), not the map
+  // overlay, since it's a screen-space UI affordance, not map content.
   function createMeasureLine(startX, startY) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "orrery-measure-line-overlay");
@@ -9660,14 +8702,10 @@ function setupActionEvents() {
     elements.selectionClear.addEventListener("click", () => setSelection(null));
   }
 
-  // "Click off" any selected layer/group/view — the X button was the only
-  // way to deselect before this, which isn't discoverable and doesn't match
-  // how clicking empty space deselects in basically every other editor.
-  // Excludes clicks landing on any actual control (button/input/select/
-  // textarea/link) AND anywhere inside a .list-group-item row — otherwise
-  // an imprecise click near a layer's own badge/padding (not its name
-  // button) would deselect it instead of doing nothing, which would feel
-  // like a misclick trap rather than "clicking elsewhere."
+  // "Click off" any selected layer/group/view — matches how clicking empty
+  // space deselects in most other editors. Excludes clicks on any control
+  // or inside a .list-group-item row — otherwise an imprecise click near a
+  // layer's badge/padding would deselect it, feeling like a misclick trap.
   const leftPane = document.querySelector('[data-pane-content="left"]');
   if (leftPane) {
     leftPane.addEventListener("click", (event) => {
@@ -9677,22 +8715,14 @@ function setupActionEvents() {
     });
   }
 
-  // Same "click off to deselect" convenience for the map canvas itself —
-  // previously there was none: every actual interactive element
-  // (marker/grid-cell/vector-path/layer-handle) already stops propagation
-  // on its own pointerdown, so a click on genuinely empty map space always
-  // reaches this listener untouched, but nothing here ever acted on it.
-  // Confirmed real gap once isLayerFallbackInteractive shipped: clicking
-  // off a fallback-selected marker (no longer adding a stray new marker,
-  // see armedMarkerLayerId) still just did nothing instead of deselecting
-  // it. A plain "click" listener won't work here the way it does for the
-  // left pane above — panning is a real pointerdown-drag-pointerup gesture
-  // over this same element, and browsers still fire a native "click" at
-  // the end of one regardless of how far the pointer traveled — so this
-  // tracks movement itself and only deselects a genuine no-movement click,
-  // same convention beginMarkerDrag/bindLayerDrag already use elsewhere in
-  // this file (onDragEnd only fires once real movement happened; a
-  // never-moved gesture calls onClick instead).
+  // Same "click off to deselect" convenience for the map canvas — every
+  // interactive element already stops propagation on its own pointerdown,
+  // so a click on empty map space reaches this listener untouched. A plain
+  // "click" listener won't work here like it does for the left pane —
+  // panning is a real pointerdown-drag-pointerup gesture, and browsers
+  // still fire a native "click" at the end regardless of distance moved —
+  // so this tracks movement itself and only deselects a genuine
+  // no-movement click, same convention beginMarkerDrag/bindLayerDrag use.
   mapContainer.addEventListener("pointerdown", (event) => {
     if (
       event.button !== 0 ||
@@ -9754,10 +8784,8 @@ function setupMapEvents() {
     elements.measurementUnit.addEventListener("change", applyMeasurementChange);
   }
 
-  // Only commits the SETTING — deliberately does not re-mount the base map
-  // live (that would jerk the camera around mid-edit); it takes effect the
-  // next time this map is actually loaded (applyMapSnapshot's own
-  // resolveInitialView call).
+  // Only commits the setting — does not re-mount the base map live (that
+  // would jerk the camera mid-edit); takes effect next time this map loads.
   if (elements.initialZoom && elements.initialPositionX && elements.initialPositionY) {
     const applyInitialViewChange = () => {
       const zoomValue = Number(elements.initialZoom.value);
@@ -9771,8 +8799,7 @@ function setupMapEvents() {
         updateMapTimestamp(state.map);
       });
       // Reflect back in case an invalid/empty entry got reverted to the
-      // default (1 / 0 / 0), same "don't leave text the model never
-      // actually accepted" pattern the Name field's own guard uses.
+      // default (1 / 0 / 0) — don't leave text the model never accepted.
       elements.initialZoom.value = zoom;
       elements.initialPositionX.value = x;
       elements.initialPositionY.value = y;
@@ -9788,9 +8815,7 @@ function setupMapEvents() {
       mapExistsOnServer = false;
       applyMapSnapshot(JSON.stringify(createMapModel()));
       if (elements.mapSelect) elements.mapSelect.value = "";
-      // A brand-new, never-edited map has nothing worth saving yet — same
-      // "clean until you actually change something" convention Sanctum's
-      // New Setting/Location already follows.
+      // A brand-new, never-edited map has nothing worth saving yet.
       markMapClean();
       watchCurrentMap(null);
       status.show("Started a new map.", { type: "info", timeout: 1500 });
@@ -9799,10 +8824,8 @@ function setupMapEvents() {
 
   if (elements.duplicateMapButton) {
     elements.duplicateMapButton.addEventListener("click", () => {
-      // Clones the CURRENT map (not a blank createMapModel() the way New
-      // Map does) — same recipe as Repository's own handleDuplicate: fresh
-      // id so it saves as new rather than overwriting, " Copy" suffix on
-      // the name, left dirty (an unsaved copy until explicitly saved).
+      // Clones the current map (not a blank createMapModel()) — fresh id
+      // so it saves as new, " Copy" suffix, left dirty until saved.
       const duplicate = JSON.parse(JSON.stringify(state.map));
       duplicate.id = randomId();
       duplicate.name = `${state.map.name || "Map"} Copy`;
@@ -9814,25 +8837,20 @@ function setupMapEvents() {
     });
   }
 
-  // Same dirty check updateMapToolbarState already uses for the Save
-  // button — Orrery had no guard at all against navigating/closing away
-  // from unsaved edits (unlike Workbench, which already had this).
+  // Same dirty check updateMapToolbarState uses for the Save button —
+  // guards against navigating/closing away from unsaved edits.
   window.addEventListener("beforeunload", (event) => {
     if (!isMapDirty()) return;
     event.preventDefault();
     event.returnValue = "";
   });
 
-  // Delete/Backspace deletes whatever's currently selected (layer, group,
-  // view, marker, drawn path, shape) — delegates to deleteCurrentSelection()
-  // (defined near setSelection above), which acts on state.selection
-  // directly rather than finding-and-clicking a
-  // `[data-action="delete-selected"]` DOM button. Confirmed real bug this
-  // fixes: that DOM-query approach depended on whichever selection editor's
-  // Delete button having actually finished rendering — fine for every kind
-  // except marker (renderMarkerElementSelectionEditor is async), where a
-  // keypress landing before/during a re-render just silently did nothing.
-  // See deleteCurrentSelection's own comment for the full explanation.
+  // Delete/Backspace deletes whatever's selected (layer, group, view,
+  // marker, path, shape) — delegates to deleteCurrentSelection(), which
+  // acts on state.selection directly rather than finding-and-clicking a
+  // `[data-action="delete-selected"]` DOM button (that approach depended on
+  // the selection editor's Delete button having finished rendering — broke
+  // for marker specifically, since renderMarkerElementSelectionEditor is async).
   window.addEventListener("keydown", (event) => {
     const target = event.target;
     const isEditableTarget =
@@ -9840,8 +8858,7 @@ function setupMapEvents() {
       (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable);
     if (event.key === "Escape") {
       // Escape always deselects, even from inside a field (blurring it
-      // first) — matches the left-pane click-off behavior above, just from
-      // the keyboard.
+      // first) — same behavior as the left-pane click-off, from the keyboard.
       if (isEditableTarget) target.blur();
       if (state.selection.kind !== null) setSelection(null);
       return;
@@ -9859,21 +8876,14 @@ function setupMapEvents() {
       const name = elements.mapNameInput?.value.trim() || state.map.name || "New Orrery Map";
       state.map.name = name;
       updateMapTimestamp(state.map);
-      // This is otherwise a BLIND full-body overwrite of state.map — unlike
-      // every other write path on this map (marker position/image/color
-      // auto-save, the "hidden from players" toggle, Combat Tracker's own
-      // write-through), none of which ever save a stale, un-refetched
-      // copy. views specifically can now be changed by tools OTHER than
-      // this one (Combat Tracker's own toggleCombatantHiddenFromPlayers)
-      // while this GM's own Orrery tab has no local edit of its own to
-      // views at all — its poll is slower than the rest of the suite
-      // (pollIntervalMs above) AND skips every incoming update entirely
-      // while anything's selected, so state.map.views can easily still be
-      // stale at the moment Save is clicked. Confirmed real bug this
-      // fixes: a GM un-hid a marker from Combat Tracker, then (unrelated)
-      // hit Save in Orrery moments later — silently restored the marker to
-      // hidden, since Orrery's own copy of views hadn't caught up yet.
-      // Only refetch-and-take-the-server's-copy when this GM hasn't
+      // Otherwise a blind full-body overwrite of state.map — but `views`
+      // can be changed by tools other than this one (Combat Tracker's
+      // toggleCombatantHiddenFromPlayers), while Orrery's own poll is
+      // slower and skips updates entirely while anything's selected, so
+      // state.map.views can easily be stale at the moment Save is clicked
+      // (a GM un-hiding a marker from Combat Tracker, then saving in Orrery
+      // moments later, would silently re-hide it). Only refetch-and-take-
+      // the-server's-copy when this GM hasn't
       // ALSO hand-edited a View locally since the last known-clean sync
       // (comparing against mapCleanSnapshot, not just "is anything
       // selected") — a genuine pending local View edit (the View editor's
@@ -9901,19 +8911,14 @@ function setupMapEvents() {
         const { id: _mapId, ...bodyWithoutId } = state.map;
         await dataManager.save("map", state.map.id, bodyWithoutId);
         status.show(`Saved "${name}".`, { type: "success", timeout: 2000 });
-        // Now a real record — currentUserHasFullMapAccess stops giving this
-        // map an unconditional pass and starts checking its real ownership
-        // (mapCatalog, refreshed below) instead, same as any other loaded
-        // map. Harmless either way for THIS save (the saver is the real
-        // owner per server/storage.py's own is_new_record ownership rule),
-        // but correct going forward if this same tab later reloads or polls.
+        // Now a real record — currentUserHasFullMapAccess stops giving it
+        // an unconditional pass and starts checking real ownership instead.
         mapExistsOnServer = true;
-        // The in-memory map now exactly matches what's persisted — reset the
-        // dirty baseline before populateMapSelect's own updateMapToolbarState
-        // call (via refreshMapCatalog) re-evaluates Delete too.
+        // The in-memory map now matches what's persisted — reset the dirty
+        // baseline before populateMapSelect re-evaluates Delete too.
         markMapClean();
-        // A brand-new map now has a real backing record — start watching it
-        // (idempotent for an already-loaded map, just restarts the poll).
+        // A brand-new map now has a real backing record — start watching
+        // it (idempotent for an already-loaded map, just restarts the poll).
         watchCurrentMap(state.map.id);
         await populateMapSelect();
       } catch (error) {
@@ -9939,11 +8944,9 @@ function setupMapEvents() {
     });
   }
 
-  // Export's own click handling is wired directly at construction
-  // (jsonDataPanel's own onExport, above) — no separate listener needed
-  // here. Import's own button click is wired the same way (onImport), but
-  // the hidden file-picker input itself still needs building — assigned to
-  // the module-level `importInput` onImport already closes over.
+  // Export's click handling is wired at construction (jsonDataPanel's
+  // onExport) — no listener needed here. Import's button is wired the
+  // same way, but the hidden file-picker input still needs building.
   importInput = document.createElement("input");
   importInput.type = "file";
   importInput.accept = "application/json";
@@ -9963,10 +8966,9 @@ function setupMapEvents() {
       status.show("That file doesn't look like an Orrery map.", { type: "error", timeout: 3000 });
       return;
     }
-    // Funnels through the same snapshot path New/Load/Undo/Redo already
-    // use, so history/dirty-state/JSON-preview stay consistent — left
-    // dirty (not markMapClean()) since an imported file is unsaved
-    // content until the user explicitly hits Save.
+    // Funnels through the same snapshot path New/Load/Undo/Redo use, so
+    // history/dirty-state/JSON-preview stay consistent — left dirty since
+    // an imported file is unsaved until the user hits Save.
     applyMapSnapshot(JSON.stringify(parsed));
     if (elements.mapSelect) elements.mapSelect.value = "";
     watchCurrentMap(null);
@@ -9981,16 +8983,13 @@ function setupMapEvents() {
   }
 }
 
-// Shared by the Map picker's own change handler and the ?map=<id> deep link
-// (see loadMapFromUrlParam) — the Dashboard's own Map widget spotlights a
-// map by posting exactly this same "map" kind (common/js/lib/widgets/map.js),
+// Shared by the Map picker's change handler and the ?map=<id> deep link —
+// the Dashboard's Map widget spotlights a map by posting this "map" kind,
 // and this is where that link points, since a map has no print-card
-// rendering of its own, just a direct link into Orrery itself. shareToken is
-// only ever set by the ?map=<id>&share= deep link (an anonymous group
-// share-link visitor has no session at all — see loadMapFromUrlParam) and
-// forwarded straight to dataManager.get, which is what lets get_item's
-// narrow spotlight exception (server/storage.py) grant read access to
-// exactly this map with no account.
+// rendering of its own. shareToken is only ever set by the ?map=<id>&share=
+// deep link (an anonymous share-link visitor has no session) and forwarded
+// straight to dataManager.get, letting get_item's spotlight exception grant
+// read access to exactly this map with no account.
 async function loadMapById(id, shareToken = "") {
   currentShareToken = shareToken || "";
   if (!id) {
@@ -10002,38 +9001,26 @@ async function loadMapById(id, shareToken = "") {
   }
   if (!dataManager) return;
   try {
-    // preferLocal: false (now redundant for a signed-in user — get()'s
-    // default is itself auth-aware — kept explicit for clarity/resilience
-    // regardless of sign-in state) — a map is exactly the kind of record
-    // OTHER tools (Combat Tracker's own write-through, the Dashboard's Map
-    // widget, a GM's own second Orrery tab) can change out from under this
-    // browser's own local mirror. Under the old flat `preferLocal: true`
-    // default, that mirror was checked BEFORE ever reaching the server
-    // whenever no shareToken was present — true for a signed-in GM's own
-    // normal Orrery use, not just anonymous saves, since a signed-in save
-    // also writes a "read-acceleration" local copy (data-manager.js's own
-    // save()). A hard refresh clears the HTTP cache but never localStorage,
-    // so this loaded whatever THIS browser last saved, forever, regardless
-    // of anything that changed on the server since — confirmed real bug
-    // this fixed: a marker's "hidden from players" state fixed directly in
-    // the server's own data file still showed stale after a full page
-    // reload, because this call never actually reached the server to see it.
+    // preferLocal: false — a map is exactly the kind of record other tools
+    // (Combat Tracker's write-through, the Dashboard's Map widget, a GM's
+    // second Orrery tab) can change out from under this browser's local
+    // mirror. A signed-in save also writes a "read-acceleration" local
+    // copy, and a hard refresh clears the HTTP cache but never
+    // localStorage — without this, a load would keep returning whatever
+    // this browser last saved regardless of server changes since.
     const result = await dataManager.get("map", id, { shareToken, preferLocal: false });
     mapExistsOnServer = true;
     applyMapSnapshot(JSON.stringify(result?.payload || createMapModel()));
-    // A map's own id is filename/library_items metadata, never body content
-    // (every Library kind now follows this convention) — the loaded payload
-    // may not carry one at all, so state.map.id is re-stamped from the
-    // KNOWN id (the argument this function was actually called with), not
-    // trusted from the body. Confirmed real bug this fixes: watchCurrentMap
-    // just below reads state.map.id immediately after this.
+    // A map's id is filename/library_items metadata, never body content —
+    // the loaded payload may not carry one, so state.map.id is re-stamped
+    // from the known argument, not trusted from the body (watchCurrentMap
+    // just below reads state.map.id immediately after this).
     state.map.id = id;
     if (elements.mapSelect) elements.mapSelect.value = id;
-    // Just-loaded state matches the stored record exactly — nothing to save
-    // until an edit actually happens. NOT called from onUndo/onRedo (which
-    // also route through applyMapSnapshot): navigating undo history can land
-    // on a state that still legitimately differs from the last save, and
-    // Save needs to reflect that.
+    // Just-loaded state matches the stored record — nothing to save until
+    // an edit happens. NOT called from onUndo/onRedo: navigating undo
+    // history can land on a state that legitimately differs from the last
+    // save, and Save needs to reflect that.
     markMapClean();
     watchCurrentMap(state.map.id, shareToken);
   } catch (error) {
@@ -10041,11 +9028,9 @@ async function loadMapById(id, shareToken = "") {
   }
 }
 
-// A spotlighted map is just a link (see workbench-character-view.js's
-// refreshNowShowing) — clicking it lands here with ?map=<id>[&share=token]
-// in the URL, and this loads that map the same way picking it from the
-// dropdown would. Runs after populateMapSelect so the id is already in
-// mapCatalog/the picker's own option list by the time it's selected.
+// A spotlighted map is just a link — clicking it lands here with
+// ?map=<id>[&share=token] in the URL, loading it the same way the picker
+// would. Runs after populateMapSelect so the id is already in mapCatalog.
 async function loadMapFromUrlParam() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("map");
@@ -10112,16 +9097,13 @@ function setupViewPanelDrag() {
   };
 
   handle.addEventListener("pointerdown", (event) => {
-    // Same "don't hijack an actual control" guard the left-pane click-off
-    // handler already uses — this bar also holds the zoom buttons and the
-    // Measure/Draw/Shape toggles plus the Shape Type <select>. Buttons
-    // tolerated the unconditional preventDefault() below (their own click
-    // still fires regardless of what a prior pointerdown prevented), but a
-    // native <select>'s dropdown-opening IS exactly what browsers tie to
-    // that default action — confirmed as the actual cause of the Shape
-    // Type dropdown never opening, since every pointerdown on it, anywhere
-    // in this handle, got preventDefault()'d before the browser could show
-    // its options.
+    // Same "don't hijack an actual control" guard as the left-pane
+    // click-off handler — this bar also holds zoom buttons, Measure/Draw/
+    // Shape toggles, and the Shape Type <select>. Buttons tolerate the
+    // preventDefault() below, but a native <select>'s dropdown-opening is
+    // tied to that same default action — without this guard, every
+    // pointerdown on Shape Type got preventDefault()'d before the browser
+    // could show its options.
     if (event.target.closest("button, select, input, textarea, a")) {
       return;
     }
@@ -10139,18 +9121,13 @@ function setupViewPanelDrag() {
   });
 }
 
-// Deliberately does NOT mount state.map's own base map or call renderAll()
-// here — state.map is still just the harmless placeholder createMapModel()
-// built at module load (see its own comment), and mounting/rendering it
-// would paint a real, functioning default Tile/OSM map (plus its Primary
-// Grid Layer, Name field, etc.) behind/around the empty-state card below,
-// completely defeating the point of it. The various setup*Events calls
-// just below only wire listeners onto STATIC toolbar buttons (Add Layer,
-// Add Group, zoom controls, base map type radios) that exist in the HTML
-// regardless of state.map's content, not onto anything renderAll() would
-// have produced — safe to call before a real map is ever loaded.
-// applyMapSnapshot (New Map / picking a saved map / the ?map= deep link)
-// is what actually calls setBaseMap + renderAll for the first time.
+// Does NOT mount state.map's base map or call renderAll() here —
+// state.map is still the harmless placeholder createMapModel() built at
+// module load, and rendering it would paint a real default map behind the
+// empty-state card below. The setup*Events calls just wire listeners onto
+// static toolbar buttons that exist in the HTML regardless of state.map's
+// content. applyMapSnapshot (New Map / picking a saved map / ?map= deep
+// link) is what calls setBaseMap + renderAll for the first time.
 setupBaseMapEvents();
 setupLayerEvents();
 setupGroupEvents();
@@ -10174,11 +9151,9 @@ if (elements.mapEmptyState) {
     })
   );
 }
-// Hides everything renderAll() above just painted (the harmless, never-
-// saved default map createMapModel() built at module load) until the GM
-// actually picks or creates one — see showMapEmptyState's own comment.
-// loadMapFromUrlParam below, if there's a real ?map= to load, calls
-// loadMapById -> applyMapSnapshot -> hideMapEmptyState() and reveals it
-// immediately.
+// Hides everything just painted (the harmless never-saved default map)
+// until the GM picks or creates one. loadMapFromUrlParam below, if there's
+// a real ?map= to load, calls loadMapById -> applyMapSnapshot ->
+// hideMapEmptyState() and reveals it immediately.
 showMapEmptyState();
 void populateMapSelect().then(() => loadMapFromUrlParam());

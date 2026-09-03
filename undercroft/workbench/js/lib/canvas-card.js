@@ -43,27 +43,17 @@ export function createCanvasCardElement({
   bare = false,
 } = {}) {
   const element = document.createElement("div");
-  // Not Bootstrap's `.border`/`.rounded-3` utility classes — both are
-  // generated with `!important`, which unconditionally beat the per-side
-  // border-color/width/style/radius applyComponentStyles sets inline for a
-  // component's own authored border, making that setting a no-op. The
-  // equivalent default look (a subtle border + rounded corners for cards
-  // that haven't set their own border) lives in workbench/css/styles.css's
-  // .workbench-canvas-card rule instead, as a plain, override-able rule.
+  // Not Bootstrap's `.border`/`.rounded-3`/`.p-3` utilities — those are
+  // `!important`-generated and would block a component's own custom
+  // border/padding (applyComponentStyles). The default look lives in
+  // workbench/css/styles.css's .workbench-canvas-card rule instead.
   element.classList.add("workbench-canvas-card", "d-flex", "flex-column");
   if (bare) {
-    // A component nested inside a Container/zone in Play view — no
-    // background/shadow of its own (the outer Container's card already
-    // provides that boundary once; stacking a full second card's worth of
-    // chrome per nested child is what made a Container's content sit
-    // noticeably indented from a plain sibling field's own left edge).
+    // Nested inside a Container/zone in Play view — the outer Container's
+    // card already provides the visual boundary once; a second full card
+    // per child made nested content sit indented from a sibling field.
     element.classList.add("workbench-canvas-card--bare");
   } else {
-    // Not Bootstrap's `.p-3` utility class — `!important`-generated, which
-    // would block a component's own custom Padding (applyComponentStyles)
-    // the same way `.border` blocked custom borders. There's no default
-    // padding to replace it with, by design — see .workbench-canvas-card's
-    // own comment in workbench/css/styles.css.
     element.classList.add("bg-body", "shadow-sm");
   }
   if (gapClass) {

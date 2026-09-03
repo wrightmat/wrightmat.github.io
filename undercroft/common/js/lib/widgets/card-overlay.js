@@ -1,12 +1,9 @@
-// A card draw's own reveal — the cards-side counterpart to dice-reveal.js,
-// but genuinely simpler: a card's outcome is already fully determined the
-// instant it's drawn (deck.js's drawCard), so unlike a Broadcast dice roll
-// there's no cross-client physics-sync problem to design around at all.
-// Every viewer just plays the identical deal-and-flip sequence off the same
-// spotlight `data` payload it already received (see dashboard.js's own
-// spotlight-watcher hook) — no forced-result spike, no new transport, no new
-// SSE kind, just a page-level singleton overlay div (same shape as
-// dice-overlay.js/dice-reveal.js) built from real CSS 3D transforms.
+// A card draw's reveal — the cards-side counterpart to dice-reveal.js, but
+// simpler: a card's outcome is fully determined the instant it's drawn
+// (deck.js's drawCard), so unlike a Broadcast dice roll there's no
+// cross-client physics-sync problem. Every viewer plays the identical
+// deal-and-flip sequence off the same spotlight `data` payload — a
+// page-level singleton overlay div built from CSS 3D transforms.
 import { el } from "../dom.js";
 
 const LINGER_MS = 2600;
@@ -59,13 +56,9 @@ function buildCardEl(card, backImage, delayMs) {
 }
 
 // `cards`: [{label, image}, ...] — one entry for a single draw, several for
-// a spread (Part 6's Deck widget, or any System/macro that wants more than
-// one card at once — same per-card sequence, just staggered, no separate
-// animation to build for that case). `backImage` is the deck's own back
-// face (deck.js's extractSystemDecks) — falls back to a plain card-back
-// glyph when a deck doesn't set one, same "never a broken/guessed image URL"
-// reasoning the starter decks themselves follow (blank `image`/`backImage`
-// rather than an unverified external link).
+// a spread (same per-card sequence, just staggered). `backImage` is the
+// deck's own back face — falls back to a plain card-back glyph when unset,
+// rather than guessing at an external image URL.
 export function playCardReveal({ cards = [], backImage = "" } = {}) {
   if (typeof window === "undefined") return;
   const list = Array.isArray(cards) ? cards.filter((card) => card && (card.label || card.image)) : [];

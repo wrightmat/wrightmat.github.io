@@ -1,16 +1,7 @@
-// Shared Save-button dirty-gating: Save should disable once there's nothing
-// new to save (right after a save, or before anything's been generated/
-// loaded). Extracted from Crucible's original inline lastSavedSnapshot/
-// buildRecordForSave/isRecordDirty pattern — the one place this was actually
-// implemented; Forge and Vault never got it and their Save buttons stayed
-// enabled indefinitely. See undercroft/README.md's Code Conventions section.
-//
-// `buildSnapshot` should return the exact JSON-serializable shape that will
-// actually be saved (post any export-shape transform), synced from live
-// input fields — not the last-loaded record, which wouldn't reflect an
-// in-progress name/notes edit until the next save. Callers still gate on
-// "is a record even loaded" themselves (e.g. `!hasRecord || !gate.isDirty()`)
-// — this only tracks dirtiness relative to the last save.
+// Shared Save-button dirty-gating: disables Save once there's nothing new to
+// save. `buildSnapshot` must return the exact post-export-transform shape
+// that will actually be saved, synced from live input fields, not the last-
+// loaded record. Callers still gate on "is a record even loaded" themselves.
 export function createDirtyGate({ buildSnapshot }) {
   let lastSavedSnapshot = null;
 

@@ -17,35 +17,26 @@ function matchesSystem(entity, systemId) {
   return !ids.length || ids.includes(systemId);
 }
 
-// Same convention as matchesSystem — a Resource with no settingIds (or an
-// empty array) is universally available; a non-empty array restricts it to
-// exactly those Settings (e.g. Eberron-flavored goods/services shouldn't
-// show up when generating a Location in a different Setting).
+// Same convention as matchesSystem — a Resource with no settingIds is
+// universally available; a non-empty array restricts it to those Settings.
 function matchesSetting(entity, settingId) {
   if (!settingId) return true;
   const ids = Array.isArray(entity.settingIds) ? entity.settingIds : [];
   return !ids.length || ids.includes(settingId);
 }
 
-// A feature with no categories tag is treated as universally compatible (the
-// suite-wide "no tag means unconstrained" convention); otherwise it must claim
-// "location". Exported (not just used internally by generateLocation below)
-// so app.js's own reloadReferenceData can apply the identical filter to the
-// module-level `features` list its own UI pickers (Locked Features, Add
-// Feature) read from — confirmed the exact same category-leak bug already
-// fixed in Crucible's/Vault's own equivalents, just never applied here:
-// generateLocation's own pool was already filtered, but the picker UI read
-// straight from the raw, unfiltered fetch, leaking monster/spell/item
-// features into Sanctum's own Features list.
+// A feature with no categories tag is universally compatible; otherwise it
+// must claim "location". Exported so app.js's own module-level `features`
+// pickers (Locked Features, Add Feature) apply the same filter as
+// generateLocation below, not the raw unfiltered fetch.
 export function matchesCategory(feature) {
   const categories = feature.tags?.categories;
   if (!Array.isArray(categories) || !categories.length) return true;
   return categories.includes("location");
 }
 
-// Shared by both Features and Resources — an empty tag array on any of the three
-// axes means universally compatible with that axis, exactly Crucible's
-// roles/creatureTypes convention.
+// Shared by Features and Resources — an empty tag array on any axis means
+// universally compatible with that axis, Crucible's roles/creatureTypes convention.
 function matchesLocationTags(entry, typeId, purposeId, environment) {
   const tags = entry.tags || {};
   const types = Array.isArray(tags.locationTypes) ? tags.locationTypes : [];
@@ -75,37 +66,22 @@ function conflictsWithSelected(feature, selected) {
   return selected.some((entry) => (entry.conflictsWith || []).includes(feature.id));
 }
 
-// A Resource can declare conflictsWith against Feature ids (e.g. "Clean
-// Water" conflicts with "Polluted Waters") — checked the same bidirectional
-// way as feature-to-feature conflicts, so either side can declare the
-// relationship. This only ever gates the ASSET pool: a resource that
-// contradicts an already-selected Feature as something the location *has*
-// is exactly the kind of thing that instead belongs in Needs (a place with
-// Polluted Waters plausibly *needs* Clean Water — that's the point of a
-// Need, not a contradiction), so Needs are deliberately left unfiltered by
-// this check.
+// A Resource can declare conflictsWith against Feature ids, checked
+// bidirectionally like feature-to-feature conflicts. Gates the ASSET pool
+// only — a resource contradicting an already-selected Feature (e.g.
+// "Polluted Waters") is exactly the kind of thing that belongs as a Need
+// instead, so Needs are deliberately left unfiltered by this check.
 function conflictsWithFeatures(resource, selectedFeatures) {
   const selectedFeatureIds = new Set(selectedFeatures.map((feature) => feature.id));
   if ((resource.conflictsWith || []).some((id) => selectedFeatureIds.has(id))) return true;
   return selectedFeatures.some((feature) => (feature.conflictsWith || []).includes(resource.id));
 }
 
-// Prefers a candidate with positive synergy to what's already selected, but
-// — unlike an earlier version of this function, which refused to add
-// anything scoring zero at all — falls back to any compatible,
-// non-conflicting candidate when nothing synergizes, the same restraint
-// Crucible's own resolveSlot already applies. Confirmed real bug the old
-// behavior caused: with no slots forcing a fill here, and typically only a
-// couple of the small starter feature set actually synergizing with any
-// given seed, traversal routinely stopped after just one or two Features —
-// nowhere near even the small 2-4 targetCount below, let alone leaving a
-// Location with "nothing going on" whenever the very first seed pick had no
-// synergy partners at all. Positive-synergy candidates still win over
-// zero-synergy ones whenever both exist (bestScore below), so this doesn't
-// make selection less thematically coherent when a real synergistic option
-// is actually available — it only kicks in once nothing else is. Returns
-// null once nothing qualifies at all (every candidate's used, conflicting,
-// or the pool was empty to begin with).
+// Prefers positive-synergy candidates (bestScore below), but falls back to
+// any compatible, non-conflicting candidate once nothing synergizes —
+// without this, traversal routinely stalled after 1-2 Features against a
+// small starter library where few candidates ever synergized with the seed.
+// Returns null once nothing qualifies at all.
 function pickNextFeature(eligibleFeatures, selected, random) {
   const selectedIds = new Set(selected.map((entry) => entry.id));
   const scored = [];
@@ -121,10 +97,9 @@ function pickNextFeature(eligibleFeatures, selected, random) {
 }
 
 // `widerFeatures` is the same System+category pool with Type/Purpose/
-// Environment tag-filtering dropped — the fallback whenever the tag-matched
-// `eligibleFeatures` has nothing left to offer, for both the initial seed
-// and every step of the fill loop below (see generateLocation's own comment
-// on allLocationFeatures for why this fallback exists at all).
+// Environment tag-filtering dropped — the fallback whenever tag-matched
+// `eligibleFeatures` has nothing left (a starter library sized in the
+// dozens can't densely cover every Type x Purpose x Environment combination).
 function selectFeatures(eligibleFeatures, widerFeatures, lockedFeatures, random) {
   const selected = [...lockedFeatures];
   if (!selected.length) {
@@ -156,13 +131,11 @@ function pickDistinctResources(eligibleResources, count, excludeIds, random) {
   return picks;
 }
 
-// Expands `picks` into every id that counts as "the same Resource" for
-// exclusion purposes — each pick's own id, plus (per the documented
-// `family` convention in undercroft/README.md's Resource conventions) every
-// OTHER entry in `pool` sharing a pick's non-empty `family`. Different
-// sizes/variants of the same underlying Resource (e.g. every
-// `res.dragonshard-*` sharing `family: "dragonshard"`) are different ids but
-// still shouldn't let a place both have and need "the same thing."
+// Expands `picks` into every id counting as "the same Resource" for exclusion
+// purposes — each pick's own id, plus (per the `family` convention in
+// undercroft/README.md) every other entry in `pool` sharing a non-empty
+// `family` (different sizes/variants of the same underlying Resource, e.g.
+// every `res.dragonshard-*`), so a place doesn't both have and need "the same thing."
 function resourceExclusionIds(pool, picks) {
   const ids = new Set(picks.map((entry) => entry.id));
   const families = new Set(picks.map((entry) => entry.family).filter(Boolean));
@@ -175,12 +148,9 @@ function resourceExclusionIds(pool, picks) {
 }
 
 // Rerolls a single Identity axis (Type/Purpose/Environment) — backs the
-// per-field reroll button next to Sanctum's own Identity selects, mirroring
-// Forge's/Crucible's/Vault's own per-attribute reroll. Deliberately does NOT
-// re-run Feature/Resource traversal — same restraint those tools' own reroll
-// applies, rather than cascading into a much bigger, more surprising
-// re-derivation of the whole Features/Assets/Needs list just because one
-// axis changed.
+// per-field reroll button, mirroring Forge's/Crucible's/Vault's own
+// per-attribute reroll. Deliberately does NOT re-run Feature/Resource
+// traversal, same restraint those tools' own reroll applies.
 export function rerollAxis(record, { locationTypes, locationPurposes, environmentPropertyType }, systemId, key, { random = Math.random } = {}) {
   function rerollFrom(list, currentId) {
     const eligible = list.filter((entry) => matchesSystem(entry, systemId));
@@ -210,11 +180,9 @@ export function rerollAxis(record, { locationTypes, locationPurposes, environmen
  *
  * `systemId`/`settingId` are supplied by the caller (a Location always belongs to a
  * specific, GM-chosen Setting — never randomized). Type/Purpose/Environment are
- * optional overrides (blank = random, the established convention). `environmentPropertyType`
- * is the active System's "environment"-keyed generator-property field (an ordinary array
- * field on the System's `fields`, translated by app.js's loadEnvironmentPropertyType), or
- * null if the System doesn't define one, in which case Environment stays unresolved and no
- * environment-tag filtering applies.
+ * optional overrides (blank = random). `environmentPropertyType` is the active
+ * System's "environment"-keyed generator-property field (translated by app.js's
+ * loadEnvironmentPropertyType), or null if the System doesn't define one.
  */
 export function generateLocation(locationTypes, locationPurposes, features, resources, options = {}) {
   const {
@@ -250,15 +218,9 @@ export function generateLocation(locationTypes, locationPurposes, features, reso
       matchesCategory(feature) &&
       matchesLocationTags(feature, resolvedTypeId, resolvedPurposeId, resolvedEnvironment)
   );
-  // Every location-category Feature for this System, regardless of Type/
-  // Purpose/Environment tags — selectFeatures' own fallback pool for when
-  // tag-filtering leaves nothing (a real, common outcome: a starter library
-  // sized in the dozens can't densely cover the full Type x Purpose x
-  // Environment combination space, so plenty of specific combinations have
-  // zero tag-matching Features). Confirmed real bug this fixes, alongside
-  // pickNextFeature's own relaxed synergy rule above: a Location generated
-  // for an under-covered combination used to come back with literally
-  // nothing — no Feature, and (see below) often no Asset/Need either.
+  // Every location-category Feature for this System regardless of tags —
+  // selectFeatures' own fallback pool for the common case where a specific
+  // Type x Purpose x Environment combination has zero tag-matching Features.
   const allLocationFeatures = features.filter((feature) => matchesSystem(feature, systemId) && matchesCategory(feature));
   const eligibleResources = resources.filter(
     (resource) =>
@@ -274,47 +236,30 @@ export function generateLocation(locationTypes, locationPurposes, features, reso
     .filter(Boolean);
   const selectedFeatures = selectFeatures(eligibleFeatures, allLocationFeatures, lockedFeatures, random);
 
-  // Falls back to the widened pool the same way selectFeatures does above,
-  // when the tag-filtered one has nothing to offer.
   const assetSourcePool = eligibleResources.length ? eligibleResources : allLocationResources;
   const assetCandidates = assetSourcePool.filter((resource) => !conflictsWithFeatures(resource, selectedFeatures));
   const assetPicks = pickDistinctResources(assetCandidates, 1 + Math.floor(random() * 3), new Set(), random);
   const assets = assetPicks.map((entry) => ({ kind: "resource", refId: entry.id, label: entry.name || entry.id }));
 
-  // Needs are deliberately drawn from the FULL source pool (not
-  // assetCandidates) — a resource that conflicts with a selected Feature as
-  // an Asset is exactly the kind of thing that's plausible as a Need instead
-  // — but two more restrictions apply on top of that pool:
-  // - A `category: "service"` Resource (see undercroft/README.md's Resource
-  //   conventions) never Needs-in for "commerce" (the shared starter
-  //   Purpose id — a shop) at all: a place that sells things doesn't Need a
-  //   service the way it might Need raw goods. Outside Commerce, a Service
-  //   is still comparatively rare as a Need, so it's mostly filtered out —
-  //   one dice roll per Location, not per candidate, so a "yes" doesn't
-  //   flood the pool with every service at once.
-  // - Commerce locations generally don't have Needs at all — a shop's whole
-  //   purpose is supplying, not lacking — so the target count can land on
-  //   zero, unlike every other Purpose's 1-3 range.
+  // Needs draw from the FULL source pool, not assetCandidates — a resource
+  // conflicting with a selected Feature as an Asset is plausible as a Need
+  // instead. Two extra restrictions: a `category: "service"` Resource never
+  // Needs-in for "commerce" (a shop doesn't Need the service it sells), and
+  // is otherwise rare as a Need (one coin flip per Location, not per
+  // candidate, so a "yes" doesn't flood the pool). Commerce locations can
+  // also land on zero Needs entirely, unlike every other Purpose's 1-3 range.
   const needsAllowServices = resolvedPurposeId !== "commerce" && random() < 0.15;
   const needSourcePool = eligibleResources.length ? eligibleResources : allLocationResources;
   const needCandidatePool = needSourcePool.filter((resource) => needsAllowServices || resource.category !== "service");
-  // Never the same Resource as an Asset — by exact id, or by sharing a
-  // non-empty `family` (different sizes/variants of the same underlying
-  // thing, e.g. every res.dragonshard-* — see resourceExclusionIds).
   const needExcludeIds = resourceExclusionIds(needCandidatePool, assetPicks);
   const needsTargetCount = resolvedPurposeId === "commerce" ? Math.floor(random() * 2) : 1 + Math.floor(random() * 3);
   const needPicks = pickDistinctResources(needCandidatePool, needsTargetCount, needExcludeIds, random);
   const needs = needPicks.map((entry) => ({ kind: "resource", refId: entry.id, label: entry.name || entry.id }));
 
-  // Absolute last resort — every Location should have SOMETHING going on
-  // with it (explicit user ask). The widened pools above already cover any
-  // Type/Purpose/Environment combination a real content library would leave
-  // uncovered, so this only ever fires when this System's location-category
-  // Feature/Resource libraries are themselves essentially empty (a brand
-  // new homebrew System with nothing authored yet). Prefers a Feature (the
-  // richer of the two — a name plus a real mechanical/narrative hook) over
-  // an Asset; if this System genuinely has neither, there's nothing left to
-  // substitute and the Location stays empty, same as it always could.
+  // Absolute last resort — every Location should have SOMETHING going on.
+  // Only fires when this System's location-category libraries are
+  // themselves essentially empty (a brand-new homebrew System). Prefers a
+  // Feature over an Asset; if neither exists, the Location stays empty.
   if (!selectedFeatures.length && !assets.length && !needs.length) {
     const forcedFeature = pickRandom(allLocationFeatures, random);
     if (forcedFeature) {
@@ -336,9 +281,8 @@ export function generateLocation(locationTypes, locationPurposes, features, reso
     featureIds: selectedFeatures.map((entry) => entry.id),
     assets,
     needs,
-    // Relationships (parentId/connectedTo, formerly) are never generated —
-    // they're `relationship` records now (common/js/lib/relationship-graph.js),
-    // added deliberately by the GM afterward, same as before.
+    // Containment/adjacency are `relationship` records now, added
+    // deliberately by the GM afterward — never generated here.
     notes: "",
   };
 }

@@ -6,28 +6,16 @@ function clearContainer(container) {
   }
 }
 
-// Image base map Width/Height (and, via map-viewer.js's own
-// createRasterLayerElement, a Raster LAYER's Width/Height too — same three
-// forms apply to both) — matching Workbench's own free-text Image
-// component width/height field convention (see workbench-template-view.js's
-// own "100% or 320px" placeholder) as closely as this map's own coordinate
-// system allows: empty/null means "native size" (no width/height attribute
-// forced at all, so the browser just uses the loaded image's own intrinsic
-// pixel dimensions — setting ONLY one axis this way lets the browser
-// auto-preserve aspect ratio for the other), a plain number is a literal
-// pixel override (the old behavior, just no longer defaulted), and a "NN%"
-// string scales the image's own NATIVE size by that percentage. Not a CSS
-// percentage (which would resolve against .orrery-map-content's own width
-// — but that div has none of its own, it shrink-wraps to fit the BASE
-// MAP's image, an unresolvable circular dependency for that one case) —
-// computed here in JS against naturalWidth/naturalHeight instead, once
-// actually known, so it's a stable, deterministic pixel size independent
-// of viewport/container size (for the base map specifically, the whole
-// grid/marker/path/shape coordinate space is its rendered box — see
-// ImageBaseMap.mount()'s own comment — so an unstable size there would
-// silently reflow every already-placed thing on top of it; a Raster
-// layer's own size has no such coordinate-space stake, but the same "no
-// bad forced default, native unless overridden" reasoning still applies).
+// Image base map Width/Height (also a Raster LAYER's, via map-viewer.js's
+// createRasterLayerElement) — matches Workbench's own free-text Image
+// component width/height convention: empty/null means native size (no
+// width/height attribute forced, so setting only one axis lets the browser
+// auto-preserve aspect ratio), a plain number is a literal pixel override,
+// and a "NN%" string scales the image's own NATIVE size by that percentage.
+// Not a CSS percentage — .orrery-map-content has no width of its own to
+// resolve against (it shrink-wraps to the base map's image, circular for
+// that case) — computed here in JS against naturalWidth/naturalHeight
+// instead, once known, so it's stable regardless of viewport/container size.
 export function resolveImageDimension(rawValue, naturalSize) {
   if (rawValue === null || rawValue === undefined || rawValue === "") {
     return null;
@@ -58,11 +46,9 @@ function applyImageDimensions(image, settings) {
       image.removeAttribute("height");
     }
   }
-  // A percentage needs the image's own natural size, which isn't known
-  // until it's actually loaded — `complete` is already true for a
-  // browser-cached image (no further "load" event coming), so apply
-  // immediately in that case rather than waiting on an event that already
-  // fired.
+  // A percentage needs the image's natural size, not known until loaded —
+  // `complete` is already true for a cached image (no "load" event coming),
+  // so apply immediately in that case instead of waiting on the event.
   if (image.complete && image.naturalWidth) {
     apply();
   } else {
@@ -99,21 +85,13 @@ class TileBaseMap {
       attributionControl: false,
       zoomSnap: 0.25,
     });
-    // Registered BEFORE setView below (not after, where this used to sit) —
-    // confirmed as the actual cause of "grid cells are offset right after
-    // the map loads, but self-corrects the moment I zoom": setView's own
-    // initial 'moveend'/'zoomend' (settling on the map's real starting
-    // center/zoom — possibly snapped to zoomSnap's 0.25 grid, or clamped by
-    // setMinZoom/setMaxZoom below, either of which can differ from the
-    // raw Initial Zoom value requested) fired and was gone before a
-    // listener registered afterward could ever catch it, leaving
-    // state.map.view.zoom stuck at the UNSNAPPED/UNCLAMPED requested value
-    // — mismatched against Leaflet's own real, live zoom that
-    // markerPositionToLocalPixel's latLngToLayerPoint always uses, which is
-    // what every grid-cell/marker/shape position on screen is actually
-    // measured against. The very next real zoom interaction fires
-    // 'zoomend' again — this time WITH a listener attached — which is why
-    // it "fixes itself" after that.
+    // Registered BEFORE setView below — setView's own initial 'moveend'/
+    // 'zoomend' (settling on the real starting center/zoom, possibly
+    // snapped/clamped by zoomSnap/setMinZoom/setMaxZoom) fires and is gone
+    // before a listener registered afterward can catch it, leaving
+    // state.map.view.zoom stuck at the unsnapped/unclamped requested value —
+    // mismatched against Leaflet's real live zoom that every grid-cell/
+    // marker/shape position is actually measured against.
     this.map.on("moveend", () => this.emitChange());
     this.map.on("zoomend", () => this.emitChange());
     this.tileLayer = leaflet
@@ -131,21 +109,13 @@ class TileBaseMap {
     }
 
     this.setView(this.view);
-    // Explicit, synchronous sync — not relying on the 'moveend'/'zoomend'
-    // listeners above alone. Confirmed as the actual REMAINING cause of
-    // "grid cells still offset until I zoom OR pan": moving the listener
-    // registration earlier (so it's attached before setView) wasn't
-    // sufficient on its own — Leaflet's FIRST-EVER setView on a map that's
-    // never had a view before doesn't reliably fire 'moveend'/'zoomend' the
-    // same way a later, real pan/zoom does (both of which DO reach the
-    // listeners above, which is why either one "fixes" it). This call
-    // forces state.map.view to match Leaflet's real settled center/zoom
-    // (post zoomSnap/minZoom/maxZoom) immediately, synchronously, before
-    // mount() returns — so the very first renderLayerOverlays() call
-    // (applyMapSnapshot's own renderAll(), right after setBaseMap returns)
-    // already has the correct value instead of the raw, potentially
-    // snapped/clamped-away Initial Zoom that was only ever a request, not
-    // a guarantee.
+    // Explicit, synchronous sync — Leaflet's FIRST-EVER setView on a map
+    // that's never had a view doesn't reliably fire 'moveend'/'zoomend' the
+    // way a later real pan/zoom does. Forces state.map.view to match
+    // Leaflet's real settled center/zoom immediately, before mount()
+    // returns, so the first renderLayerOverlays() call already has the
+    // correct value instead of the raw, possibly snapped/clamped-away
+    // requested zoom.
     this.emitChange();
 
     const overlayPane = this.map.getPane("overlayPane");
@@ -287,12 +257,11 @@ class TileBaseMap {
     return this.overlayHost;
   }
 
-  // Real Leaflet map instance — needed by marker rendering (app.js) to
-  // convert a marker's stored {lat, lng} into a pixel position via
-  // latLngToLayerPoint, and to convert a click event into {lat, lng} via
-  // mouseEventToLayerPoint/layerPointToLatLng. null for image/canvas maps,
-  // which have no such projection (and don't need one — their overlay lives
-  // inside the same CSS-transformed element pan-zoom already handles).
+  // Real Leaflet map instance — marker rendering (app.js) uses it to convert
+  // a marker's {lat,lng} to a pixel position (latLngToLayerPoint) and a
+  // click event back to {lat,lng} (layerPointToLatLng). null for image/
+  // canvas maps, which need no projection — their overlay lives inside the
+  // same CSS-transformed element pan-zoom already handles.
   getMap() {
     return this.map;
   }

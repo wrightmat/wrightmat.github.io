@@ -59,23 +59,14 @@ const { status, undoStack, undo, redo } = initAppShell({
     return { message: entry.label ? `Redid ${entry.label}` : "Redid last action" };
   },
 });
-// Unified onto the shared "undercroft" local-storage prefix every other tool
-// already uses by default (DataManager's own DEFAULT_STORAGE_PREFIX) —
-// Repository's own bucket names (journal, ...) already fully disambiguate
-// its content, so a second, tool-specific prefix layer on top was pure
-// redundant fragmentation (the whole reason suite-search.js needed its own
-// per-kind local-prefix lookup just to search across tools).
+// Uses the shared "undercroft" local-storage prefix (DataManager's default) —
+// Repository's own bucket names already disambiguate its content, so a
+// second tool-specific prefix layer would be redundant fragmentation.
 const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 initAuthControls({ root: document, status, dataManager });
 
-// The built element itself (not a wrapper — unlike the other generator
-// tools' data-*-empty-state divs, this attribute lives directly on it, same
-// as its sibling data-repository-editor) carries the empty-state attribute
-// this file's own editorEmptyEl below expects to find, so it's built and
-// swapped in for the plain mount marker before that query runs. "inline"
-// variant — condensed, left-aligned, no card — sits flush in the header row
-// beside the Mode/View toggle, same treatment as Forge/Crucible/Sanctum/
-// Vault's own "Nothing selected yet" messages.
+// "inline" variant sits flush in the header row beside the Mode/View toggle,
+// same treatment as the other generator tools' "Nothing selected yet" messages.
 {
   const emptyCard = createEmptyStateCard({
     message: "Select a page from the list, or create a new one.",
@@ -101,13 +92,9 @@ const backlinksListEl = document.querySelector("[data-repository-backlinks-list]
 const outlineListEl = document.querySelector("[data-repository-outline-list]");
 const settingsSlotEl = document.querySelector("[data-repository-settings-slot]");
 
-// Page/Relationships/Timeline — three independent top-level views sharing
-// the main pane, switched by the Mode toggle group in the center pane's own
-// header row (see applyActiveTab/setActiveTab/renderModeToggle) rather than
-// the page toolbar's own View/Edit button, which now stays a plain
-// two-stage per-page toggle rendered in that same header row (see
-// renderPageViewToggle). See repository/js/lib/relationships-graph.js /
-// journal-timeline.js for the data each of the latter two modes renders.
+// Page/Relationships/Timeline — three top-level views sharing the main pane,
+// switched by the Mode toggle group (applyActiveTab/renderModeToggle), distinct
+// from the page toolbar's own View/Edit toggle (renderPageViewToggle).
 const relationshipsEl = document.querySelector("[data-repository-relationships]");
 const graphContainerEl = document.querySelector("[data-repository-graph-container]");
 const graphContentEl = document.querySelector("[data-repository-graph-content]");
@@ -121,17 +108,9 @@ const timelineEl = document.querySelector("[data-repository-timeline]");
 const timelineListEl = document.querySelector("[data-repository-timeline-list]");
 const timelineEmptyEl = document.querySelector("[data-repository-timeline-empty]");
 
-// A generic, reusable settings modal (common/js/lib/tool-settings.js) — the
-// gear button it builds mounts into settingsSlotEl (the header, to the left
-// of the pane-collapse toggle — see index.html), which is this tool's own
-// choice of placement; another tool adopting the same module could put its
-// button somewhere else entirely.
-//
-// Checking a task box off is always interactive (see markdown.js/
-// journal-tasks.js) — that part isn't a setting. The one thing this
-// controls is whether doing so *also* appends a "✅ YYYY-MM-DD" completion
-// stamp (read live in handleToggleTask below) — on by default, matching
-// Obsidian's own Tasks plugin.
+// Checking a task box is always interactive; the one setting here is whether
+// that also appends a "✅ YYYY-MM-DD" completion stamp (handleToggleTask below)
+// — on by default, matching Obsidian's own Tasks plugin.
 const toolSettings = initToolSettings({
   toolId: "repository",
   dataManager,
@@ -154,15 +133,9 @@ const toolSettings = initToolSettings({
   mountButton: (button) => settingsSlotEl?.appendChild(button),
 });
 
-// Adopts each section's existing static `[data-xxx-panel]` markup (its own
-// content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as the collapsible section's content; createCollapsibleSection's
-// own internal bindCollapsibleToggle replaces the old standalone calls this
-// block used to make directly.
-//
-// Outline defaults open regardless of content (it's navigation, not a
-// content-dependent section like Tags/Related/Backlinks below) — still
-// user-collapsible via the same toggle, just no programmatic re-collapsing.
+// Outline defaults open regardless of content (navigation, not content-dependent
+// like Tags/Related/Backlinks below) — still user-collapsible, just no
+// programmatic re-collapsing.
 {
   const outlineSection = createCollapsibleSection({
     label: "Outline",
@@ -171,10 +144,8 @@ const toolSettings = initToolSettings({
   });
   document.querySelector("[data-repository-outline-mount]")?.appendChild(outlineSection.section);
 }
-// Tags/Parent/Related/Backlinks start collapsed — each is opened
-// programmatically the moment it actually has something to show (see
-// renderTags/renderParent/renderRelated/renderBacklinks below), not left to
-// a fixed initial state.
+// Tags/Parent/Related/Backlinks start collapsed, opened programmatically the
+// moment each actually has something to show (renderTags/renderParent/etc below).
 const tagsSection = createCollapsibleSection({
   label: "Tags",
   helpTopic: "repository.tags",
@@ -206,9 +177,8 @@ const backlinksSection = createCollapsibleSection({
 document.querySelector("[data-repository-backlinks-mount]")?.appendChild(backlinksSection.section);
 const setBacklinksCollapsed = backlinksSection.setCollapsed;
 
-// View/Edit no longer lives in this toolbar (see data-repository-view-toggle-mount,
-// the center pane's own header row) — every page-action button appends
-// straight into the mount with no "insert before the mode button" step.
+// View/Edit lives in the center pane's own header row (data-repository-view-toggle-mount),
+// not this toolbar.
 document.querySelector("[data-page-toolbar-mount]")?.append(
   ...createToolbarButtonGroup([
     { action: "new", label: "New Page", attrs: { "data-action": "new-page" } },
@@ -217,8 +187,7 @@ document.querySelector("[data-page-toolbar-mount]")?.append(
     { action: "delete", label: "Delete Page", disabled: true, attrs: { "data-action": "delete-page" } },
   ])
 );
-// A small visual break, not a functional one — same convention every other
-// tool's toolbar now uses (see forge/js/app.js's own comment).
+// A visual break only, not functional — same convention every other tool's toolbar uses.
 document.querySelector("[data-page-undo-toolbar-mount]")?.append(
   ...createToolbarButtonGroup([
     { action: "undo", label: "Undo", attrs: { "data-action": "undo-page" } },
@@ -232,47 +201,31 @@ const newButton = document.querySelector('[data-action="new-page"]');
 const duplicateButton = document.querySelector('[data-action="duplicate-page"]');
 const saveButton = document.querySelector('[data-action="save-page"]');
 const deleteButton = document.querySelector('[data-action="delete-page"]');
-// The Mode/View header row (center pane) — createModeToggleGroup/
-// createCycleToggleButton both rebuild their own mount's contents fresh on
-// every call, so these are just the two container elements, not individual
-// button refs.
+// createModeToggleGroup/createCycleToggleButton rebuild their mount fresh on every
+// call, so these are just the container elements, not individual button refs.
 const viewToggleMountEl = document.querySelector("[data-repository-view-toggle-mount]");
 const modeToggleMountEl = document.querySelector("[data-repository-mode-toggle-mount]");
 
-// The whole in-memory saved-page list — re-fetched after every save/delete
-// rather than patched in place, since backlinks/the group tree/wiki-link
-// resolution all need to reflect the *other* pages' current state too, not
-// just the one being edited.
+// Re-fetched after every save/delete rather than patched in place — backlinks,
+// the group tree, and wiki-link resolution all need other pages' current state.
 let entries = [];
-// Ownership metadata for every currently-listed page (owner id/username,
-// share permissions, local-only) — refreshed alongside `entries`, and what
-// the Delete button's tier-gating (allowsDelete) actually reads.
+// Refreshed alongside `entries`; what Delete's tier-gating (allowsDelete) reads.
 let ownershipCatalog = new Map();
 let selectedId = "";
-// A page that's been created (New/Duplicate) but never actually persisted —
-// not part of `entries` until the first successful Save, at which point this
-// clears and the refetched `entries` takes over. Never deletable (nothing
-// exists server-side yet to delete) and never subject to ownership gating.
+// Created (New/Duplicate) but not yet persisted — not part of `entries` until
+// the first Save. Never deletable or ownership-gated.
 let draftEntry = null;
-// The in-memory edit state of whichever page is selected — mutated directly
-// by the title/body/tags controls, compared against `cleanSnapshot` to
-// drive Save's dirty-gating. Deliberately NOT auto-saved on every keystroke
-// (see Save's own button) — same explicit-Save convention Press/Orrery both
-// use, not a parallel autosave model.
+// Mutated directly by the title/body/tags controls, compared against
+// `cleanSnapshot` to drive Save's dirty-gating. Deliberately not auto-saved
+// (explicit-Save convention, same as Press/Orrery).
 let workingPayload = null;
 let cleanSnapshot = null;
 let currentMode = "edit";
-// The "before" half of a pending, not-yet-committed title/body undo entry —
-// captured at the start of a burst of typing, cleared once that burst is
-// committed (debounced, or flushed early by blur/Ctrl+Z — see
-// scheduleFieldCommit/commitFieldEdit near the bottom of this file).
+// The "before" half of a pending title/body undo entry, captured at the start
+// of a typing burst (scheduleFieldCommit/commitFieldEdit near the bottom).
 let fieldEditBaseline = null;
-// Enter-to-cycle search state (goToSearchMatch and friends, near
-// matchesSearch below) — the page-id order to step through, which one is
-// current, and the <mark> elements highlighted on whichever of those pages
-// is currently open, plus which one of THOSE is current. lastSearchQuery is
-// what tells a fresh Enter apart from "still cycling the same search" — see
-// resetSearchCycle's own comment for why typing invalidates all of this.
+// Enter-to-cycle search state (goToSearchMatch below): matching page-id order,
+// current position, and the <mark> elements on whichever page is open.
 let lastSearchQuery = null;
 let searchMatchPageIds = [];
 let searchMatchPageIndex = -1;
@@ -288,17 +241,9 @@ function cloneTags(tags) {
   return [...(tags || [])];
 }
 
-// Every Library kind this page's own `` `kindId:Name` `` references/
-// autocomplete can target, minus the ones journal-kind-reference.js's own
-// EXCLUDED_KINDS already carves out (journal/kind/encounter/macro — the
-// first two don't make sense as a generic reference, the latter two have
-// their own richer, dedicated syntax already). Fetched once and cached —
-// this suite's kind list doesn't change mid-session. `validKindIds`/
-// `kindLabelsMap` are read SYNCHRONOUSLY by renderPreview (renderMarkdown
-// itself never fetches anything, see its own header comment) — empty until
-// this resolves, same "chips just don't appear yet" grace period every
-// other fetch-then-render path in this file already accepts, rather than
-// blocking the first render on it.
+// Every Library kind a `` `kindId:Name` `` reference can target, minus
+// EXCLUDED_KINDS. Fetched once and cached; read synchronously by renderPreview,
+// so chips just don't appear until this resolves rather than blocking the first render.
 let libraryKindsPromise = null;
 let validKindIds = new Set();
 let kindLabelsMap = {};
@@ -316,22 +261,13 @@ function ensureLibraryKinds() {
   return libraryKindsPromise;
 }
 
-// The active campaign's own Setting `.calendar` — read SYNCHRONOUSLY by
-// renderPreview via `` `date:...` `` chips, same "fetched once up front,
-// chips just don't appear yet until this resolves" grace period
-// validKindIds/kindLabelsMap above already accept. Re-resolved whenever the
-// active campaign changes (the header's own Campaign dropdown) — not on
-// every campaign-date advance, since that changes WHICH day it is, never
-// WHICH calendar vocabulary is being read against.
+// The active campaign's Setting `.calendar`, read synchronously by renderPreview
+// via `` `date:...` `` chips — same resolve-once grace period as validKindIds
+// above. Re-resolved when the active campaign changes, not on every date advance.
 let activeCalendar = null;
-// The ambient campaign date itself — read SYNCHRONOUSLY by renderPreview via
-// `` `date:current` ``/`` `date:today` `` chips (journal-date.js), same
-// grace period as activeCalendar above. Unlike activeCalendar, this is ALSO
-// refreshed live off the same "undercroft:campaign-date-changed" event the
-// Calendar widget itself broadcasts on every advance (see the listener near
-// the bottom of this file) — a fixed calendar vocabulary only changes when
-// the active campaign itself changes, but the ambient date changes far more
-// often, and a `date:current` reference is the whole point of exposing it.
+// The ambient campaign date, read synchronously via `` `date:current` ``/`` `date:today` ``
+// chips (journal-date.js). Unlike activeCalendar, also refreshed live off the
+// "undercroft:campaign-date-changed" event the Calendar widget broadcasts.
 let activeCampaignDayIndex = null;
 async function refreshActiveCalendar() {
   let groupContext = null;
@@ -353,11 +289,9 @@ async function refreshActiveCalendar() {
   }
 }
 
-// Merges the remote list (fetchKindEntriesWithIds — {id, entity}) with
-// whatever's local-only (listLocalEntries — {id, payload}), normalizing both
-// into the same {id, payload} shape everything else in this file expects.
-// Same merge pattern handout.js's own openHandoutPicker already uses for its
-// item dropdown.
+// Merges the remote list ({id, entity}) with local-only entries ({id, payload}),
+// normalizing both into the {id, payload} shape this file expects — same merge
+// pattern handout.js's openHandoutPicker uses.
 async function fetchAllEntries() {
   let remote = [];
   try {
@@ -385,12 +319,8 @@ function titleOf(entry) {
 function matchesSearch(entry, query) {
   if (!query) return true;
   const parts = [titleOf(entry), (entry.payload?.tags || []).join(" ")];
-  // Body is a single plain markdown string (see fetchAllEntries's own
-  // comment) already sitting in memory for every entry — no extra fetch
-  // needed to search it. Behind a setting (default on) rather than always
-  // on: a title/tag-only search is meaningfully narrower once a campaign
-  // wiki has enough pages that "the" or a common word shows up in dozens of
-  // bodies, and toggling it off is the fast way back to that narrower list.
+  // Behind a setting (default on): title/tag-only search is meaningfully
+  // narrower once a wiki has enough pages that a common word shows up everywhere.
   if (toolSettings.get("searchPageContents")) parts.push(entry.payload?.body || "");
   return parts.join(" ").toLowerCase().includes(query);
 }
@@ -408,11 +338,9 @@ function buildPageRow(entry, depth) {
   return row;
 }
 
-// `pageNode` is {entry, children} — buildGroupTree's own page-with-children
-// wrapper (journal-tags.js), children built from parentId relationships.
-// Renders the page's own row, then recurses into its children one level
-// deeper, so a parent set via the right pane's "Parent" section shows its
-// children nested directly underneath it here, at any depth.
+// `pageNode` is {entry, children} (buildGroupTree, journal-tags.js), children
+// built from parentId relationships — recurses so a page's Parent-section
+// children nest directly underneath it, at any depth.
 function renderPageNode(pageNode, container, depth) {
   container.appendChild(buildPageRow(pageNode.entry, depth));
   pageNode.children
@@ -421,12 +349,9 @@ function renderPageNode(pageNode, container, depth) {
     .forEach((child) => renderPageNode(child, container, depth + 1));
 }
 
-// Persisted by the group's own full "group:" tag path (buildGroupTree's own
-// node.path, e.g. "Adventures" or "Adventures/Session 1") — stable across
-// reloads and re-renders regardless of sort order or which pages currently
-// happen to be in it. localStorage, not a server-side setting — same
-// per-browser-only convention every other collapse-state affordance in this
-// suite already uses (collapsible.js's own sections).
+// Persisted by the group's full "group:" tag path (buildGroupTree's node.path,
+// e.g. "Adventures/Session 1") — stable across reloads regardless of sort order.
+// localStorage, same per-browser convention collapsible.js's sections use.
 const COLLAPSED_GROUPS_KEY = "undercroft.repository.collapsedGroups";
 function loadCollapsedGroups() {
   try {
@@ -441,17 +366,13 @@ function saveCollapsedGroups() {
   try {
     localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(Array.from(collapsedGroups)));
   } catch (error) {
-    // Local storage unavailable (private browsing, quota) — collapse state
-    // just won't persist past this session, same graceful degrade every
-    // other localStorage write in this suite already accepts.
+    // localStorage unavailable — collapse state just won't persist this session.
   }
 }
 
-// `forceExpanded` (true while a search query is active) ignores collapsed
-// state without touching it — a collapsed "Adventures" folder shouldn't
-// hide a page inside it that actually matches what was just searched for,
-// but toggling it while search is active still records the real persisted
-// state, which takes effect again the moment the search is cleared.
+// `forceExpanded` (true during an active search) ignores collapsed state
+// without touching it — a collapsed folder shouldn't hide a matching search
+// result, but the real persisted state still applies once search clears.
 function renderGroupNode(node, container, depth, forceExpanded) {
   if (node.label) {
     const isCollapsed = !forceExpanded && collapsedGroups.has(node.path);
@@ -484,13 +405,9 @@ function renderGroupNode(node, container, depth, forceExpanded) {
     .forEach((child) => renderGroupNode(child, container, depth + 1, forceExpanded));
 }
 
-// Deliberately just `entries` (persisted pages), never draftEntry — a
-// brand-new/duplicated page that hasn't been saved yet doesn't show up here
-// at all until Save actually creates it, so the list never shows something
-// clicking it can't actually re-select (or a phantom entry that vanishes
-// the moment you look at a different page). The editor itself is still the
-// obvious "you're on a new page" indicator meanwhile — title/body focused,
-// Save lit up.
+// Deliberately just `entries`, never draftEntry — an unsaved new/duplicated
+// page shouldn't appear in a list that can't actually re-select it. The editor
+// itself (title/body focused, Save lit up) is the "new page" indicator meanwhile.
 function renderPageTree() {
   if (!pageTreeEl) return;
   pageTreeEl.innerHTML = "";
@@ -504,27 +421,20 @@ function renderPageTree() {
   renderGroupNode(tree, pageTreeEl, 0, Boolean(query));
 }
 
-// The exact order matching pages appear in the sidebar right now — reusing
-// pageTreeEl's own already-filtered, already-hierarchically-sorted rows
-// (renderPageTree just built them) instead of re-deriving that same order
-// here, so Enter-cycling always visits pages in the same order you'd see
-// them in if you scrolled the list yourself.
+// Reuses pageTreeEl's already-filtered, already-sorted rows rather than
+// re-deriving order, so Enter-cycling matches the order you'd see scrolling the list.
 function matchingPageIdsInTreeOrder() {
   if (!pageTreeEl) return [];
   return Array.from(pageTreeEl.querySelectorAll("[data-repository-page-id]")).map((row) => row.dataset.repositoryPageId);
 }
 
-// Wraps every occurrence of `query` (case-insensitive) found anywhere in
-// `root`'s own text with a <mark data-repo-search-mark>, in document order
-// — goToSearchMatch cycles through the returned array directly. Only ever
-// touches TEXT NODES, never an element's attributes or structure, so this
-// is safe to run over rendered markdown that also contains wiki-links,
-// checkboxes, code blocks, dice/macro chips, etc. — none of those depend on
-// their own text staying a single, unsplit node. Collects every text node
-// up front, THEN mutates, so the walk itself is never disturbed by the
-// wrapping it triggers. The one real limitation: a match spanning two
-// separate text nodes (e.g. split across an inline **bold** boundary) isn't
-// found — the same blind spot any plain per-node text scan has.
+// Wraps every case-insensitive occurrence of `query` in `root` with a
+// <mark data-repo-search-mark>, in document order — goToSearchMatch cycles the
+// returned array. Only touches text nodes (safe over rendered wiki-links,
+// checkboxes, chips, etc.); collects nodes up front, then mutates, so the walk
+// isn't disturbed by its own wrapping. A match split across two text nodes
+// (e.g. an inline **bold** boundary) isn't found — same blind spot any
+// per-node text scan has.
 function highlightTextMatches(root, query) {
   const marks = [];
   if (!root || !query) return marks;
@@ -566,11 +476,9 @@ function clearSearchHighlights() {
   previewEl.normalize();
 }
 
-// Typing anything invalidates the whole cycle — the matching page order,
-// which page/mark within it is current, all of it — rather than trying to
-// re-map an old position onto a new result set. The next Enter after typing
-// always starts a fresh cycle from the top, same as a browser's own Find
-// does when you edit the search term mid-search.
+// Typing anything invalidates the whole cycle rather than remapping an old
+// position onto a new result set — next Enter starts fresh, same as a
+// browser's own Find when you edit the term mid-search.
 function resetSearchCycle() {
   clearSearchHighlights();
   lastSearchQuery = null;
@@ -586,12 +494,9 @@ function setActiveSearchMark(index) {
   searchMatchMarks[index]?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
-// Enter (direction 1) / Shift+Enter (direction -1) in the search box —
-// steps to the next/previous occurrence of the current query, cycling
-// through every occurrence on the currently-open matching page before
-// moving on to the next matching page (wrapping at both ends), same
-// two-level "within this page, then the next page" order a browser's own
-// Ctrl+F would give you if every matching page were one long document.
+// Enter (direction 1) / Shift+Enter (direction -1) — cycles every occurrence
+// on the current page before moving to the next matching page (wrapping both
+// ends), same two-level order a browser's own Ctrl+F gives across one long document.
 function goToSearchMatch(direction) {
   const query = (searchInput?.value || "").trim();
   if (!query) return;
@@ -609,11 +514,8 @@ function goToSearchMatch(direction) {
     status?.show("No pages match.", { type: "warning", timeout: 2000 });
     return;
   }
-  // Still looking at the page these marks belong to, with another of its
-  // own occurrences left in this direction — step within it before moving
-  // on. Checked against selectedId (not just "were there marks left over
-  // from last time") since the user could have clicked to a different page
-  // by hand in between Enter presses without touching the search box at all.
+  // Checked against selectedId, not just "marks left over" — the user could
+  // have clicked to a different page by hand between Enter presses.
   if (!queryChanged && selectedId === searchMatchTrackedPageId && searchMatchMarks.length) {
     const nextMarkIndex = searchMatchMarkIndex + direction;
     if (nextMarkIndex >= 0 && nextMarkIndex < searchMatchMarks.length) {
@@ -623,11 +525,8 @@ function goToSearchMatch(direction) {
       return;
     }
   }
-  // -1 means "haven't landed on a page yet this cycle" — a first Shift+Enter
-  // should jump straight to the LAST match, not wrap arithmetic through -1
-  // as if it were "one before index 0" (which lands on index 0 either way
-  // and loses that distinction). Once a page's actually selected, plain
-  // wrapping modulo arithmetic is exactly right for every step after.
+  // -1 = "haven't landed on a page yet" — a first Shift+Enter jumps straight to
+  // the LAST match rather than wrapping through -1 as "one before index 0".
   searchMatchPageIndex =
     searchMatchPageIndex === -1
       ? (direction >= 0 ? 0 : searchMatchPageIds.length - 1)
@@ -635,25 +534,19 @@ function goToSearchMatch(direction) {
   const pageId = searchMatchPageIds[searchMatchPageIndex];
   selectPage(pageId, { remember: false });
   searchMatchTrackedPageId = pageId;
-  // A match that only landed in the title/tags (not the body) leaves no
-  // marks here — expected, not a bug: the title is already right there in
-  // the editor the moment this page opens, nothing left to highlight.
+  // A match landing only in title/tags leaves no marks here — expected, since
+  // the title is already visible the moment the page opens.
   searchMatchMarks = highlightTextMatches(previewEl, query);
   searchMatchMarkIndex = direction >= 0 ? 0 : searchMatchMarks.length - 1;
   if (searchMatchMarks.length) setActiveSearchMark(searchMatchMarkIndex);
   searchInput?.focus();
 }
 
-// The suite-wide header search's own deep link into a body match (see
-// common/js/lib/suite-search.js's own `?q=` extraParam) — same highlight+
-// scroll experience goToSearchMatch gives when cycling via Enter, just
-// seeded from the URL instead of a live keystroke. Unlike goToSearchMatch,
-// the target page is already known (whichever `?page=<id>` this same
-// deep-link already resolved and selected) — no need to re-derive which
-// page to land on, just highlight/scroll within the one already open.
-// Still populates every searchMatch* state variable goToSearchMatch reads,
-// so an Enter/Shift+Enter right afterward continues the cycle naturally
-// instead of starting over confused about where it left off.
+// The suite-wide header search's deep link into a body match (suite-search.js's
+// `?q=` extraParam) — same highlight+scroll goToSearchMatch gives, seeded from
+// the URL instead of a keystroke. Target page is already resolved via `?page=<id>`.
+// Still populates every searchMatch* variable so a following Enter continues
+// the cycle naturally.
 function jumpToSearchQuery(query) {
   if (!query || !searchInput || !selectedId) return;
   searchInput.value = query;
@@ -685,18 +578,15 @@ async function refreshEntries() {
   updateTagDatalist();
   renderPageTree();
   if (selectedId && !draftEntry && !findEntry(selectedId)) {
-    // Whatever was selected got removed elsewhere (deleted, or this is the
-    // first load after a delete) — fall back to the empty state rather than
-    // silently keep showing a stale editor for a page that no longer exists.
+    // Selected page got removed elsewhere — fall back to empty state rather
+    // than show a stale editor for a page that no longer exists.
     clearSelection();
   }
 }
 
-// Same shape/reasoning as Orrery's own recordHistory: snapshot before,
-// apply the change, snapshot after, push an undo entry only if something
-// actually changed. Scoped to whichever page is currently selected — same
-// single, session-wide undo stack Orrery uses for its one map at a time
-// (switching pages doesn't clear it), not a separate history per page.
+// Same shape as Orrery's own recordHistory: snapshot before/after, push an undo
+// entry only if something changed. One session-wide undo stack (not per-page),
+// same as Orrery's single stack for its one map at a time.
 function recordHistory(label, applyChange) {
   if (!workingPayload) {
     applyChange();
@@ -739,14 +629,10 @@ function updateToolbarState() {
   renderPageViewToggle();
 }
 
-// The suite-wide View control (common/js/lib/ui-components.js's own
-// createCycleToggleButton) — ONE button, icon/tooltip always describing
-// what clicking will switch TO, the same idiom Handout/Map/Combat Tracker's
-// own visibility button (setRightAction) already uses, now shared suite-
-// wide instead of hand-rolled per tool. Only rendered while activeTab ===
-// "page" — View/Edit is a per-page concern, not meaningful on
-// Relationships/Timeline (see applyActiveTab, which calls this on every
-// tab change too, so the mount empties itself the moment Mode changes).
+// The suite-wide View control (ui-components.js's createCycleToggleButton) — one
+// button, icon/tooltip always describing what clicking switches TO, same idiom
+// Handout/Map/Combat Tracker's visibility button uses. Only rendered while
+// activeTab === "page" — View/Edit isn't meaningful on Relationships/Timeline.
 function renderPageViewToggle() {
   if (!viewToggleMountEl) return;
   if (activeTab !== "page") {
@@ -777,15 +663,11 @@ function applyMode(mode) {
   if (isView) renderPreview();
 }
 
-// Switching modes shouldn't dump you back at the top of a long page — this
-// finds which heading (if any) governs whatever's currently scrolled to the
-// top of the active view, switches modes, then scrolls the newly-visible
-// view to that same heading via jumpToHeading (same function the Outline
-// panel's own clicks already use — one "go to this heading" implementation,
-// not two). Falls back to matching scroll *position as a fraction of the
-// scrollable range* when there's no heading to anchor to at all (a doc with
-// no headings, or scrolled above the first one) — cruder, but still keeps
-// you in the same general area rather than snapping to the top.
+// Switching modes shouldn't dump you back at the top of a long page — finds
+// which heading governs the current scroll position, switches modes, then
+// scrolls the new view to that heading via jumpToHeading (same function the
+// Outline panel uses). Falls back to matching scroll *fraction* when there's
+// no heading to anchor to.
 function findCurrentHeadingIndex(outline) {
   if (!outline.length) return -1;
   if (currentMode === "view") {
@@ -795,20 +677,16 @@ function findCurrentHeadingIndex(outline) {
     outline.forEach((heading, index) => {
       const headingEl = previewEl.querySelector(`#repo-heading-${index}`);
       if (!headingEl) return;
-      // The last heading whose top has scrolled up to (or past) the
-      // container's own top edge is "what you're currently reading" —
-      // matches how a sticky table-of-contents highlight usually works.
+      // The last heading scrolled up to (or past) the top edge is "what you're
+      // currently reading" — matches a sticky table-of-contents highlight.
       if (headingEl.getBoundingClientRect().top - containerTop <= 24) bestIndex = index;
     });
     return bestIndex;
   }
   if (!bodyTextarea) return -1;
-  // Same wrapped-line accounting as jumpToHeading's own edit-mode branch —
-  // this is its exact inverse (given a scroll position, which heading is at
-  // the top; jumpToHeading goes the other way, given a heading, what
-  // scrollTop puts it at the top), so it needs the same mirror-measured
-  // pixel heights, not a line-count × line-height guess that ignores
-  // wrapping.
+  // Exact inverse of jumpToHeading's edit-mode branch (given scroll position,
+  // find the heading; jumpToHeading goes heading -> scrollTop) — needs the same
+  // mirror-measured pixel heights, not a line-count guess that ignores wrapping.
   const paddingBottom = parseFloat(getComputedStyle(bodyTextarea).paddingBottom) || 0;
   const lines = (workingPayload?.body || "").split("\n");
   let bestIndex = -1;
@@ -838,16 +716,10 @@ function applyScrollFraction(fraction) {
   target.scrollTop = scrollable * fraction;
 }
 
-// Polls (via rAF, not a fixed frame count) until `target` genuinely has
-// layout — clientHeight > 0 — before running `callback`. A fixed "wait two
-// frames" guess turned out not to be enough for the very first time
-// bodyTextarea/previewEl are ever measured in a session (consistently
-// reproducible: first switch lands wrong, every switch after that is
-// correct) — whatever the browser actually needs that first time, this
-// waits for the concrete signal that layout happened instead of guessing
-// how many frames that takes. Gives up after ~10 frames (roughly 160ms) and
-// runs the callback anyway rather than waiting forever if something else is
-// wrong.
+// Polls via rAF until `target` genuinely has layout (clientHeight > 0) before
+// running `callback` — the first time bodyTextarea/previewEl are ever measured
+// in a session needs this; a fixed frame-count guess isn't reliably enough.
+// Gives up after ~10 frames (~160ms) and runs anyway.
 function whenLaidOut(target, callback, attemptsLeft = 10) {
   if (!target || target.clientHeight > 0 || attemptsLeft <= 0) {
     callback();
@@ -870,17 +742,12 @@ function toggleMode() {
   });
 }
 
-// Page titles resolve first; a bare [[Quest Title]] only ever falls back to
-// the quest index when no page has that title (rare in practice, but a
-// page named after its own most prominent quest could otherwise ever
-// collide) — a resolved quest match carries its own title as `heading` so
-// the link lands on that quest's own callout, not just the top of its
-// page, even though the author never typed an explicit #Heading. An
-// explicit [[Page#Quest Title]] link never goes through this at all — its
-// own heading segment already rides along untouched. Both indexes are built
-// once per render (not once per link) — buildQuestIndex scans and re-lexes
-// every page's raw body, expensive enough to matter with several links on
-// one page.
+// Page titles resolve first; a bare [[Quest Title]] falls back to the quest
+// index only when no page has that title. A resolved quest match carries its
+// own title as `heading` so the link lands on that quest's callout, not just
+// the page top, without the author typing an explicit #Heading. Both indexes
+// are built once per render, not per link — buildQuestIndex re-lexes every
+// page's body, expensive enough to matter with several links on one page.
 function resolveWikiLinkTarget(title, titleIndex, questIndex) {
   const pageMatch = titleIndex.resolve(title);
   if (pageMatch) return pageMatch;
@@ -892,10 +759,8 @@ function resolveWikiLinkTarget(title, titleIndex, questIndex) {
 function renderPreview() {
   if (!previewEl || !workingPayload) return;
   destroyMountedStoryBoards();
-  // Disposed before the wipe, not left to be garbage-collected — dice/
-  // macro/encounter/date chips inside rendered journal content all carry
-  // real tooltips now, and this reruns on every edit. See tooltips.js's own
-  // BUG CLASS 2.
+  // Disposed before the wipe, not left to be GC'd — chips inside rendered
+  // content carry real tooltips and this reruns on every edit (tooltips.js BUG CLASS 2).
   disposeTooltips(previewEl);
   previewEl.innerHTML = "";
   const titleIndex = buildTitleIndex(entries);
@@ -910,42 +775,31 @@ function renderPreview() {
     onStartEncounter: (creatures, blockIndex) => void handleStartEncounter(creatures, blockIndex),
     interactiveDice: true,
     interactiveMacros: true,
-    // Same source Combat Tracker's own autoShowOnStart and this file's own
-    // handleStartEncounter use for the equivalent action — this GM's own
-    // active campaign, not a per-page setting.
+    // This GM's own active campaign, not a per-page setting — same source
+    // Combat Tracker's autoShowOnStart uses.
     groupContext: { groupId: dataManager.getActiveGroup()?.groupId || "" },
     dataManager,
-    // Empty until ensureLibraryKinds resolves — renderMarkdown stays fully
-    // synchronous (see its own header comment), so a `` `kindId:Name` ``
-    // block simply doesn't turn into a chip on the very first render of the
-    // very first page opened this session; every later render (kinds are
-    // fetched once, cached module-wide) has them.
+    // Empty until ensureLibraryKinds resolves — renderMarkdown stays synchronous,
+    // so a `` `kindId:Name` `` chip just doesn't appear on the very first render.
     validKindIds,
     kindLabels: kindLabelsMap,
     onOpenReference: (kindId, name) => void handleOpenReference(kindId, name),
-    // Empty until refreshActiveCalendar resolves — same grace period as
-    // validKindIds above; a `` `date:...` `` chip just reads as a plain
-    // "Day <N>" until then.
+    // Empty until refreshActiveCalendar resolves — a `` `date:...` `` chip
+    // reads as a plain "Day <N>" until then.
     activeCalendar,
     currentDayIndex: activeCampaignDayIndex,
   });
   previewEl.appendChild(node);
-  // Positional pairing with the Outline panel's own entries (extractOutline
-  // scans the same raw text top-to-bottom) — an id per rendered heading, in
-  // order, is what jumpToHeading scrolls to in View mode.
+  // Positional pairing with the Outline panel (extractOutline scans the same
+  // raw text top-to-bottom) — an id per heading, in order, is what
+  // jumpToHeading scrolls to in View mode.
   previewEl.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((heading, index) => {
     heading.id = `repo-heading-${index}`;
   });
-  // Same positional-pairing convention as headings above, so a quest title
-  // can be resolved as a second class of in-page anchor (see
-  // findQuestByTitle/selectPage) without inventing a parallel navigation
-  // mechanism. extractQuests only ever finds TOP-LEVEL [!quest] callouts
-  // (marked's own lexer keeps a nested blockquote's tokens off the
-  // top-level array) — a quest callout nested inside another callout would
-  // still match this DOM query but not extractQuests' own scan, misaligning
-  // the pairing; quests aren't expected to be authored that way, same
-  // "well-formed document" assumption the heading pairing above already
-  // makes.
+  // Same pairing convention, so a quest title resolves as a second anchor class
+  // (findQuestByTitle/selectPage). extractQuests only finds TOP-LEVEL [!quest]
+  // callouts — a nested quest callout would misalign the pairing, but quests
+  // aren't expected to be authored that way.
   previewEl.querySelectorAll('[data-callout="quest"]').forEach((questEl, index) => {
     questEl.id = `repo-quest-${index}`;
   });
@@ -953,14 +807,11 @@ function renderPreview() {
   refreshTooltips(previewEl);
 }
 
-// Upgrades every rendered `[data-callout="story-board"]` element (plain
-// structure/tables from the same generic callout path quest uses) into a
-// live interactive canvas — deliberately NOT part of markdown.js's own
-// renderMarkdown pipeline, so a story board only ever becomes interactive
-// here, in Repository's own editor; anywhere else this markdown renders
-// (Handout, Sanctum's Notes field) it stays a plain, read-only callout
-// showing its raw tables, matching the plan's own "GM planning tool, not a
-// player-facing surface" scope.
+// Upgrades every `[data-callout="story-board"]` element into a live interactive
+// canvas — deliberately not part of markdown.js's renderMarkdown pipeline, so a
+// story board is only interactive here in Repository's editor; anywhere else
+// (Handout, Sanctum's Notes) it stays a plain read-only callout, matching the
+// "GM planning tool, not player-facing" scope.
 let mountedStoryBoards = [];
 
 function destroyMountedStoryBoards() {
@@ -968,10 +819,9 @@ function destroyMountedStoryBoards() {
   mountedStoryBoards = [];
 }
 
-// A node's own Ref cell only needs an ICON here (which depends solely on
-// its kind, not the specific record) — no fetch needed, so this stays
-// synchronous. iconFor (library-reference.js) is the exact same
-// lookup an inline `` `kindId:Name` `` chip already uses.
+// A Ref cell only needs an ICON (depends solely on kind, not the specific
+// record) — no fetch needed, stays synchronous. Same iconFor lookup an inline
+// `` `kindId:Name` `` chip uses.
 function resolveStoryBoardRefIcon(ref) {
   const raw = String(ref || "").trim();
   if (!raw) return null;
@@ -985,14 +835,10 @@ function resolveStoryBoardRefIcon(ref) {
 function mountStoryBoardsInPreview() {
   if (!previewEl || !workingPayload) return;
   const boards = extractStoryBoards(workingPayload.body || "");
-  // Matched by DOCUMENT-ORDER POSITION, not by comparing rendered title
-  // text back against extractStoryBoards' own raw title — a title
-  // containing inline markdown (e.g. "The *Real* Culprit") would render
-  // with that markup stripped by the browser, silently breaking a
-  // text-based match. Both this DOM query and extractStoryBoards walk the
-  // same document in the same order (marked's own lexer, twice), so a
-  // plain index correspondence is exact and simpler — same reasoning the
-  // repo-quest-<index> pairing above already relies on.
+  // Matched by document-order position, not by comparing rendered title text
+  // — a title with inline markdown (e.g. "The *Real* Culprit") renders with
+  // that markup stripped, breaking a text-based match. Both walk the same
+  // document in the same order, so index correspondence is exact.
   previewEl.querySelectorAll('[data-callout="story-board"]').forEach((calloutEl, index) => {
     const board = boards[index];
     const contentEl = calloutEl.querySelector(":scope > .callout-content");
@@ -1000,22 +846,15 @@ function mountStoryBoardsInPreview() {
     contentEl.innerHTML = "";
     const mountPoint = document.createElement("div");
     contentEl.appendChild(mountPoint);
-    // markdown.js's own applyCalloutStyling reserves this generic slot in
-    // EVERY callout's own title bar (not story-board-specific there) — this
-    // is the one place that actually knows a story-board callout wants its
-    // Corkboard/Swimlane toggle mounted into it, immediately left of the
-    // fold chevron. A plain querySelector (not :scope-restricted) is safe
-    // here — the slot only ever exists once, inside this callout's own
-    // title bar, never inside `.callout-content` (a sibling, not an
-    // ancestor of it).
+    // markdown.js's applyCalloutStyling reserves this generic slot in every
+    // callout's title bar; this is the one place that mounts a Corkboard/Swimlane
+    // toggle into it. Plain querySelector is safe — the slot exists once, in
+    // the title bar, never inside `.callout-content`.
     const modeSlot = calloutEl.querySelector(".callout-mode-slot");
-    // Every edit here just updates workingPayload/the dirty state, same as
-    // typing in the title/tags/body textarea does elsewhere in this file —
-    // Repository has no autosave anywhere, a Story Board edit doesn't get
-    // an exception to that. `instance` is assigned after mountStoryBoard
-    // returns, but onMutate is never called synchronously during that same
-    // call — only later, from a real user action — so the closure always
-    // sees the assigned value by the time it actually runs.
+    // Updates workingPayload/dirty state like any other edit — Repository has
+    // no autosave anywhere. `instance` is assigned after mountStoryBoard returns,
+    // but onMutate only fires later from a real user action, so the closure
+    // always sees the assigned value.
     let instance;
     instance = mountStoryBoard(mountPoint, {
       model: board.model,
@@ -1028,10 +867,8 @@ function mountStoryBoardsInPreview() {
         workingPayload.body = nextBody;
         if (bodyTextarea) bodyTextarea.value = nextBody;
         updateToolbarState();
-        // Re-syncs THIS one board's own instance with the freshly
-        // re-parsed model, rather than a full renderPreview() — which
-        // would tear down and rebuild every mounted board on the page,
-        // including this one, mid-interaction.
+        // Re-syncs just this board's instance with the re-parsed model, rather
+        // than a full renderPreview() which would tear down every board mid-interaction.
         const refreshed = extractStoryBoards(nextBody).find(
           (entry) => entry.title.trim().toLowerCase() === board.title.trim().toLowerCase()
         );
@@ -1047,18 +884,14 @@ function handleWikiLinkNavigate(target) {
     createDraftEntry({ title: target.title });
     return;
   }
-  // Arriving via a link is never "remember where I left this page" — a
-  // [[Page#Heading]] link jumps straight to that heading; a plain [[Page]]
-  // link lands at the top, regardless of whatever scroll position happened
-  // to be sitting there from a previous visit (see scrollMemory).
+  // Arriving via a link never restores a remembered scroll position — a
+  // [[Page#Heading]] link jumps to that heading; a plain [[Page]] link lands at the top.
   selectPage(target.id, { heading: target.heading || "", remember: false });
 }
 
-// Checking a task box is a real content edit (unlike the dice-roller's
-// ephemeral re-rolls) — it goes through recordHistory like any other body
-// change, and updates the checkbox's own rendered <li> text directly rather
-// than re-rendering the whole preview, so it doesn't disturb scroll
-// position the way a full renderPreview() would.
+// A real content edit (unlike the dice-roller's ephemeral re-rolls) — goes
+// through recordHistory, and updates the checkbox's <li> text directly rather
+// than re-rendering the whole preview, so scroll position isn't disturbed.
 function handleToggleTask(lineIndex, checkboxEl) {
   if (!workingPayload) return;
   const appendStamp = Boolean(toolSettings.get("appendCompletionStamp"));
@@ -1067,22 +900,17 @@ function handleToggleTask(lineIndex, checkboxEl) {
   });
   if (checkboxEl) {
     updateCheckboxLineText(checkboxEl, taskLineText(workingPayload.body, lineIndex));
-    // A toggled objective inside a [!quest] callout changes that quest's own
-    // derived status — refreshed directly (not via a full renderPreview,
-    // same reasoning this function's own header comment already gives for
-    // not re-rendering on every toggle) rather than left stale until the
-    // next full render.
+    // A toggled objective inside a [!quest] callout changes that quest's derived
+    // status — refreshed directly rather than left stale until the next full render.
     refreshQuestBadge(checkboxEl.closest('[data-callout="quest"]'));
   }
   updateToolbarState();
 }
 
-// Clicking an `encounter:` chip in the preview — builds and starts a real
-// Combat Tracker encounter from the parsed creature list (journal-encounter.js
-// owns the whole flow: match against the Library, resolve stats, save,
-// spotlight, then navigate to/reload the Dashboard so Combat Tracker picks
-// it up). groupId comes from this GM's own active campaign, same source
-// Combat Tracker's own autoShowOnStart uses for the equivalent action.
+// Clicking an `encounter:` chip — builds and starts a real Combat Tracker
+// encounter from the parsed creature list (journal-encounter.js owns the whole
+// flow: match, resolve stats, save, spotlight, reload Dashboard). groupId is
+// this GM's own active campaign, same source Combat Tracker's autoShowOnStart uses.
 function handleStartEncounter(creatures, blockIndex) {
   if (!workingPayload || !selectedId) return;
   void startEncounter({
@@ -1096,12 +924,10 @@ function handleStartEncounter(creatures, blockIndex) {
   });
 }
 
-// True if setting `candidateParentId` as `forId`'s parent would create a
-// cycle — i.e. `forId` is already somewhere in `candidateParentId`'s own
-// ancestor chain, which would make `candidateParentId` a descendant of
-// `forId`. Walks `entries` (the last-saved payloads), not workingPayload —
-// a candidate parent has to already exist as a real page to begin with
-// (openContentPicker only ever offers saved/local KIND entries).
+// True if `forId` is already in `candidateParentId`'s ancestor chain (which
+// would make candidateParentId a descendant of forId). Walks `entries`
+// (last-saved payloads), not workingPayload — a candidate parent must already
+// exist as a real page (openContentPicker only offers saved entries).
 function wouldCreateCycle(candidateParentId, forId) {
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
   let cursor = candidateParentId;
@@ -1115,13 +941,10 @@ function wouldCreateCycle(candidateParentId, forId) {
   return false;
 }
 
-// A more pronounced relationship than a Related reference or a backlink —
-// one page can have exactly one parent, which is what nests it under that
-// page in the left-pane list (see buildPageNode/buildGroupTree in
-// journal-tags.js and renderPageNode above). Kept as its own section rather
-// than folded into Related since it's a structured single-value field
-// (`workingPayload.parentId`), not a `` `kindId:Name` `` reference extracted
-// from the body.
+// A more pronounced relationship than Related/backlink — one page has exactly
+// one parent, which nests it in the left-pane list (buildGroupTree,
+// journal-tags.js). Its own section since it's a structured single-value field
+// (`workingPayload.parentId`), not a body-extracted reference.
 function renderParent() {
   if (!parentContentEl || !workingPayload) return;
   parentContentEl.innerHTML = "";
@@ -1299,22 +1122,12 @@ function showReferencePreview(record) {
   bsModal?.show();
 }
 
-// Obsidian requires every referenceable thing (a spell, a magic item) to be
-// its own page, so a vault migrated into Undercroft often still has
-// [[Wiki Links]] pointing at what are now real Library records (a saved
-// resource/wonder/etc.) instead of the page they used to be. This scans the
-// CURRENT page for exactly that: a wikilink whose title does NOT match any
-// real page or quest (an intentional page/quest link is left alone) but
-// DOES match a real Library record by name, and rewrites it to that
-// record's own `` `kindId:Name` `` reference syntax — the same generic
-// kind-reference chip every other part of this suite already renders.
-// One reviewed, single-undo-step edit (recordHistory), not a silent/
-// automatic conversion running on every render — a wrong match (a
-// same-named page and resource, say) is far easier to catch and undo this
-// way than to notice it happened invisibly. Scoped to the current page
-// only, not a workspace-wide sweep — matches everything else in this
-// editor operating on "the page that's open," and keeps one click's own
-// blast radius small.
+// A vault migrated into Undercroft (Obsidian requires every referenceable thing
+// to be its own page) often has [[Wiki Links]] pointing at what are now real
+// Library records instead of pages. Scans the current page for a wikilink whose
+// title matches no real page/quest but does match a Library record, and
+// rewrites it to `` `kindId:Name` `` chip syntax. One reviewed, single-undo-step
+// edit (recordHistory), not silent/automatic — scoped to the current page only.
 async function handleConvertWikiLinksToReferences() {
   if (!workingPayload) return;
   await ensureLibraryKinds();
@@ -1322,11 +1135,9 @@ async function handleConvertWikiLinksToReferences() {
   const titleIndex = buildTitleIndex(entries);
   const questIndex = buildQuestIndex(entries);
 
-  // Same code-span protection markdown.js's own rewriteWikiLinks applies at
-  // render time — a literal `` `[[Example]]` `` meant as documentation text
-  // should never be rewritten just because its title happens to match a
-  // real record. Splitting on a capturing group keeps the code spans
-  // themselves in the result at the odd indices, skipped below.
+  // Same code-span protection markdown.js's rewriteWikiLinks applies at render
+  // time — a literal `` `[[Example]]` `` shouldn't rewrite. Splitting on a
+  // capturing group keeps code spans at odd indices, skipped below.
   const codeSpanPattern = /(`[^`\n]*`)/g;
   const segments = body.split(codeSpanPattern);
 
@@ -1349,7 +1160,7 @@ async function handleConvertWikiLinksToReferences() {
       if (replacements.has(raw)) continue;
       const title = (match[1] || "").trim();
       if (!title) continue;
-      if (titleIndex.resolve(title) || questIndex.resolve(title)) continue; // a real page/quest link — leave it alone
+      if (titleIndex.resolve(title) || questIndex.resolve(title)) continue; // real page/quest link — leave alone
       const normalized = title.toLowerCase();
       for (const kindId of kindIds) {
         const list = await loadKindEntries(kindId);
@@ -1409,11 +1220,9 @@ function renderBacklinks() {
   setBacklinksCollapsed(false);
 }
 
-// The current parent's own group: tag(s) — a child inherits these (see
-// handleSetParent) and they stay locked in the child's own Tags section for
-// as long as the parent still carries them (checked live here against
-// `entries`, not a static copy captured at set-parent time — if the parent's
-// own group tag later changes, the child's lock follows it).
+// The parent's group: tag(s) — a child inherits these (handleSetParent) and
+// stays locked in Tags for as long as the parent carries them, checked live
+// against `entries` so a later parent-tag change follows through.
 function parentGroupTags() {
   if (!workingPayload?.parentId) return new Set();
   const parentEntry = findEntry(workingPayload.parentId);
@@ -1458,9 +1267,8 @@ function renderTags() {
   setTagsCollapsed(tags.length === 0);
 }
 
-// Clicking an entry jumps to that heading wherever it's currently showing —
-// the body textarea in Edit mode, the rendered preview in View mode —
-// rather than forcing a mode switch first.
+// Jumps to that heading wherever it's currently showing (textarea in Edit
+// mode, preview in View mode) rather than forcing a mode switch first.
 function renderOutline() {
   if (!outlineListEl || !workingPayload) return;
   outlineListEl.innerHTML = "";
@@ -1478,14 +1286,10 @@ function renderOutline() {
   });
 }
 
-// A `<textarea>` wraps long lines to fit its width — a single \n-separated
-// "line" in the raw text can span several visual rows. Estimating scroll
-// position from raw line count × line-height (the previous approach here)
-// silently assumes 1 line = 1 row, which is only true for short lines —
-// real prose wraps, and the error compounds with every wrapped paragraph
-// before the target heading. This mirrors the textarea's own text into an
-// offscreen, identically-styled/identically-wide div and measures its
-// actual rendered height instead of guessing.
+// A `<textarea>` wraps long lines, so one \n-separated "line" can span several
+// visual rows — line count × line-height only works for short lines. This
+// mirrors the textarea's text into an offscreen, identically-styled div and
+// measures its actual rendered height instead of guessing.
 const TEXTAREA_MIRROR_STYLE_PROPS = [
   "boxSizing",
   "width",
@@ -1506,16 +1310,10 @@ const TEXTAREA_MIRROR_STYLE_PROPS = [
   "tabSize",
 ];
 
-// Created once, immediately, rather than lazily on first use — a div
-// created and measured in the very same synchronous call it's first
-// inserted into the document was the actual cause of "the first jump lands
-// at the bottom, every jump after that is correct": its first-ever
-// getBoundingClientRect() (right after appendChild, same tick) wasn't
-// trustworthy yet, even though every *later* call against the same
-// already-settled element measured correctly. Existing in the DOM well
-// before anyone actually needs a real measurement sidesteps that
-// "brand new this exact tick" state entirely, rather than trying to prove
-// out exactly which part of a fresh insertion was unreliable.
+// Created once, immediately, rather than lazily on first use — a div measured
+// in the same synchronous call it's inserted has an unreliable first
+// getBoundingClientRect(), even though later calls against the same settled
+// element measure correctly. Existing in the DOM well before use sidesteps that.
 const textareaMirror = document.createElement("div");
 textareaMirror.style.position = "absolute";
 textareaMirror.style.visibility = "hidden";
@@ -1531,8 +1329,7 @@ function measureTextareaContentHeight(textarea, text) {
   TEXTAREA_MIRROR_STYLE_PROPS.forEach((prop) => {
     textareaMirror.style[prop] = computed[prop];
   });
-  // A trailing space so a heading that's the very last line still measures
-  // a full line of height, not zero.
+  // Trailing space so a heading on the very last line still measures a full line, not zero.
   textareaMirror.textContent = `${text} `;
   return textareaMirror.getBoundingClientRect().height;
 }
@@ -1545,66 +1342,42 @@ function jumpToHeading(heading, index) {
   if (!bodyTextarea) return;
   const lines = (workingPayload?.body || "").split("\n");
   const offset = lines.slice(0, heading.line).reduce((sum, line) => sum + line.length + 1, 0);
-  // setSelectionRange alone doesn't reliably auto-scroll a textarea in
-  // every browser — it moves the caret, but "scroll to reveal it" is a
-  // separate, inconsistently-applied heuristic. Setting scrollTop directly
-  // is deterministic instead of hoping focus-follows-scroll kicks in.
+  // setSelectionRange alone doesn't reliably auto-scroll a textarea in every
+  // browser; setting scrollTop directly is deterministic.
   const textBeforeHeading = lines.slice(0, heading.line).join("\n");
   const paddingBottom = parseFloat(getComputedStyle(bodyTextarea).paddingBottom) || 0;
   const measuredHeight = measureTextareaContentHeight(bodyTextarea, textBeforeHeading);
-  // The mirror includes both paddings; the heading's own unscrolled
-  // position is paddingTop + (wrapped height of the text before it), which
-  // works out to measuredHeight - paddingBottom. Scrolling to exactly that
-  // puts the heading's own line flush at the top of the visible box
-  // (matching View mode's scrollIntoView({block:"start"})), with the same
-  // normal top padding above it that line 1 gets at scrollTop 0 — not
-  // flush against the border with no breathing room.
+  // The mirror includes both paddings; the heading's unscrolled position works
+  // out to measuredHeight - paddingBottom, flush at the top (matching View
+  // mode's scrollIntoView({block:"start"})).
   const target = measuredHeight - paddingBottom;
   const maxScrollTop = Math.max(0, bodyTextarea.scrollHeight - bodyTextarea.clientHeight);
   const finalScrollTop = Math.min(Math.max(0, target), maxScrollTop);
-  // scrollTop assigned LAST, after focus()/setSelectionRange() rather than
-  // before — confirmed via logging that focus() on a textarea whose value
-  // was just set programmatically (never actually typed/clicked into by the
-  // user) scrolls to reveal a caret at the *end* of the content the first
-  // time it's ever focused, overriding whatever scrollTop was set right
-  // before it; setSelectionRange's own scroll-to-reveal doesn't reliably
-  // override that either. Once the textarea has a real focus/selection
-  // history, that default-to-end behavior doesn't recur — exactly why this
-  // only ever showed up on the very first jump. Setting scrollTop last means
-  // nothing runs after it that could re-scroll the box.
+  // scrollTop assigned LAST — focus() on a textarea whose value was just set
+  // programmatically scrolls to reveal the caret at the *end* the first time
+  // it's ever focused, overriding an earlier scrollTop. Only happens before the
+  // textarea has a real focus/selection history.
   bodyTextarea.focus();
   bodyTextarea.setSelectionRange(offset, offset + lines[heading.line].length);
   bodyTextarea.scrollTop = finalScrollTop;
 }
 
-// "page" (the existing per-page title/body/preview surface), "relationships"
-// (a workspace-wide read-only graph — relationships-graph.js), or "timeline"
-// (a workspace-wide day-sorted list — journal-timeline.js) — mutually
-// exclusive, switched by the Mode toggle group in the center pane's own
-// header row (see renderModeToggle). applyActiveTab is the one place that
-// decides all three panels' (editorEmptyEl/editorEl/relationshipsEl/
-// timelineEl) visibility together, called from renderEditor (whenever the
-// page selection changes) and from setActiveTab (whenever the mode changes).
+// "page", "relationships" (workspace-wide read-only graph), or "timeline"
+// (workspace-wide day-sorted list) — mutually exclusive, switched by the Mode
+// toggle group (renderModeToggle). applyActiveTab decides all three panels'
+// visibility together, called from renderEditor and setActiveTab.
 let activeTab = "page";
 
-// The suite-wide Mode control (createModeToggleGroup) — a real button
-// group, all three options always visible, deliberately a different shape
-// from renderPageViewToggle's own single cycling button (see that
-// function's own header comment, and ui-components.js's own
-// createModeToggleGroup/createCycleToggleButton for why the two stay
-// visually distinct).
+// The suite-wide Mode control — a real button group, all three options always
+// visible, deliberately a different shape from renderPageViewToggle's own
+// single cycling button.
 function renderModeToggle() {
   if (!modeToggleMountEl) return;
-  // Relationships stays enabled with nothing loaded — unlike Timeline, it
-  // was never really "about" the selected page's own content: with no page
-  // loaded it graphs everything, same as today; with one loaded it scopes
-  // down to just that page's own connections (see scopedRelationshipsData).
-  // Timeline genuinely has nothing useful to anchor to without a page, so
-  // it keeps the disabled-until-loaded gate.
+  // Relationships stays enabled with nothing loaded — with no page it graphs
+  // everything, with one loaded it scopes to that page's connections
+  // (scopedRelationshipsData). Timeline has nothing to anchor to without a
+  // page, so it keeps the disabled-until-loaded gate.
   const hasPage = Boolean(selectedId) && Boolean(workingPayload);
-  // Dispose/refresh (needed only when an option carries its own `tooltip`,
-  // which Timeline does for its disabled state) is handled internally by
-  // createModeToggleGroup itself.
   createModeToggleGroup({
     container: modeToggleMountEl,
     ariaLabel: "Repository view",
@@ -1625,11 +1398,9 @@ function renderModeToggle() {
 }
 
 // Forces back to "page" only when Timeline becomes disabled out from under
-// itself (selection just got cleared while it was active) — Relationships
-// has no such gate anymore, so it's never force-switched away from.
-// Called at the top, before the tab-visibility toggling below, so that
-// toggling and renderModeToggle's own re-render both already see the
-// corrected activeTab rather than a stale disabled-but-still-active value.
+// itself (selection cleared while active) — Relationships has no such gate.
+// Called before the tab-visibility toggling below so it sees the corrected
+// activeTab, not a stale disabled-but-still-active value.
 function applyActiveTab() {
   const hasPage = Boolean(selectedId) && Boolean(workingPayload);
   if (!hasPage && activeTab === "timeline") {
@@ -1644,11 +1415,9 @@ function applyActiveTab() {
     editorEmptyEl?.classList.add("d-none");
     editorEl?.classList.add("d-none");
   }
-  // Keeps the Relationships graph scoped to whichever page is loaded (or
-  // back to everything, the moment one isn't) even when the user switches
-  // pages WITHOUT leaving the Relationships tab — setActiveTab's own
-  // loadAndRenderRelationships only runs on switching INTO this tab, not on
-  // every subsequent selection change, so this is the other half of that.
+  // Keeps the Relationships graph scoped to whichever page is loaded even when
+  // switching pages without leaving the tab — loadAndRenderRelationships only
+  // runs on switching INTO the tab, this covers every selection change after.
   if (activeTab === "relationships" && relationshipsData) {
     renderGraphFilterOptions(scopedRelationshipsData());
     redrawRelationshipsGraph();
@@ -1657,10 +1426,8 @@ function applyActiveTab() {
   renderPageViewToggle();
 }
 
-// Only meaningful for "relationships"/"timeline" — switching TO "page" never
-// needs a rebuild (renderEditor's own hasSelection branch already covers
-// it), and switching AWAY from a tab leaves its own cached data
-// (relationshipsData/timelineData) alone for a fast return trip.
+// Only meaningful for "relationships"/"timeline" — switching to "page" never
+// needs a rebuild, and switching away leaves cached data alone for a fast return.
 async function setActiveTab(tab) {
   activeTab = tab;
   applyActiveTab();
@@ -1681,11 +1448,8 @@ function renderEditor() {
   renderOutline();
 }
 
-// Journal/quest icons chosen to match their own callout/reference-chip
-// look elsewhere (journal-quests.js's status badge, journal-callouts.js's
-// own CALLOUT_TYPES.quest entry); every other kind reuses iconFor
-// (library-reference.js) — the same lookup its own inline `` `kindId:
-// Name` `` chips already use — rather than a second hardcoded table.
+// Journal/quest icons match their callout/reference-chip look elsewhere; every
+// other kind reuses iconFor rather than a second hardcoded table.
 function relationshipsNodeIcon(node) {
   if (node.kind === "journal") return "tabler:notebook";
   if (node.kind === "quest") return "tabler:map-2";
@@ -1699,18 +1463,12 @@ function relationshipsNodeRadius(node) {
 }
 
 let relationshipsGraph = null;
-// Cached for the session (per buildRelationshipsGraph's own header
-// comment) — null after a save/delete (see handleSave/handleDelete) so the
-// next time the view opens it recomputes rather than showing stale data;
-// never recomputed just because the view was already open.
+// Cached for the session, nulled after a save/delete so the view recomputes
+// next open rather than showing stale data.
 let relationshipsData = null;
 
-// Kinds currently HIDDEN (unchecked in the filter menu) — a Set of node
-// `kind` values (see relationships-graph.js's own addNode), not a positive
-// "visible kinds" list, so a kind this workspace hasn't shown yet defaults
-// to visible the first time it appears rather than needing to be explicitly
-// opted into. Persists across a `relationshipsData` recompute (a save
-// invalidating the cache shouldn't reset which types a GM chose to hide).
+// Kinds currently HIDDEN (unchecked) — a Set, not a positive "visible" list, so
+// a new kind defaults to visible. Persists across a relationshipsData recompute.
 let graphHiddenKinds = new Set();
 
 function kindLabelForFilter(kind) {
@@ -1719,9 +1477,8 @@ function kindLabelForFilter(kind) {
   return kindLabelsMap[kind] || kind;
 }
 
-// Node/edge shape only — never touches relationshipsData itself, so toggling
-// a checkbox just re-filters and redraws (relationshipsGraph.setGraph) from
-// the one already-computed graph rather than rebuilding it.
+// Node/edge shape only — never touches relationshipsData, so toggling a
+// checkbox just re-filters and redraws from the already-computed graph.
 function filterGraphData(data, hiddenKinds) {
   const nodes = (data?.nodes || []).filter((node) => !hiddenKinds.has(node.kind));
   const visibleIds = new Set(nodes.map((node) => node.id));
@@ -1729,12 +1486,9 @@ function filterGraphData(data, hiddenKinds) {
   return { nodes, edges };
 }
 
-// Narrows to just pageNodeId's own direct connections — itself, its quest
-// sub-nodes (always a direct edge, see buildRelationshipsGraph's own
-// addEdge(`journal:${page.id}`, questNodeId, ...)), and anything it links
-// to/from via a wikilink or `kind:Name` reference. One hop only, not
-// transitive — "this page's own relationships," not everything reachable
-// from it.
+// Narrows to pageNodeId's direct connections — itself, its quest sub-nodes,
+// and anything linked via wikilink or `kind:Name` reference. One hop only,
+// not transitive.
 function filterGraphToPage(data, pageNodeId) {
   const edges = (data?.edges || []).filter((edge) => edge.a === pageNodeId || edge.b === pageNodeId);
   const nodeIds = new Set([pageNodeId]);
@@ -1746,11 +1500,8 @@ function filterGraphToPage(data, pageNodeId) {
   return { nodes, edges };
 }
 
-// The one place that decides "everything" vs. "just the loaded page" —
-// every caller that needs the graph's current scope (redrawRelationshipsGraph,
-// the filter-menu rebuild in loadAndRenderRelationships/applyActiveTab) goes
-// through this instead of each re-deciding when to apply
-// filterGraphToPage, so the two can never disagree about the active scope.
+// The one place that decides "everything" vs. "just the loaded page" — every
+// caller needing the graph's current scope goes through this so they can never disagree.
 function scopedRelationshipsData() {
   if (!selectedId || !workingPayload) return relationshipsData;
   return filterGraphToPage(relationshipsData, `journal:${selectedId}`);
@@ -1760,12 +1511,9 @@ function redrawRelationshipsGraph() {
   relationshipsGraph?.setGraph(filterGraphData(scopedRelationshipsData(), graphHiddenKinds));
 }
 
-// Rebuilds the filter menu's own checkboxes from whichever kinds are
-// actually present in `data` right now — journal/quest first (the two
-// structural node kinds every graph has), everything else alphabetical by
-// its own registered Library label. Checked state reads from
-// `graphHiddenKinds`, not reset here, so re-opening the view or a
-// post-save recompute doesn't silently un-hide a kind the GM chose to hide.
+// Rebuilds filter checkboxes from kinds present in `data` — journal/quest
+// first, rest alphabetical. Checked state reads from `graphHiddenKinds`, not
+// reset here, so re-opening the view doesn't un-hide a kind the GM chose to hide.
 function renderGraphFilterOptions(data) {
   if (!graphFilterMenuEl) return;
   const kinds = Array.from(new Set((data?.nodes || []).map((node) => node.kind))).sort((a, b) => {
@@ -1813,17 +1561,12 @@ function initRelationshipsGraph() {
     classPrefix: "repository-graph",
     emptyIcon: "tabler:affiliate",
     emptyMessage: "Nothing connected yet — add a [[wikilink]], a [!quest], or a `kind:Name` reference to a page.",
-    // Lower than graph-view.js's own 0.75 default — a workspace with many
-    // pages/entities needs to zoom out further than a single record's own
-    // (much smaller) Relationships graph ever does to see the whole shape
-    // at once.
+    // Lower than graph-view.js's own 0.75 default — a workspace-wide graph
+    // needs to zoom out further than a single record's smaller graph.
     minZoom: 0.2,
   });
-  // Same reason every tool's own Relationships graph stops this event from
-  // bubbling to `container` — otherwise PanZoomController's own
-  // setPointerCapture (fired on every pointerdown regardless of target)
-  // hijacks the click these zoom buttons (and the filter dropdown below)
-  // need.
+  // Stops the event bubbling to `container` — otherwise PanZoomController's
+  // setPointerCapture hijacks the click these zoom buttons need.
   graphControlsEl?.addEventListener("pointerdown", (event) => event.stopPropagation());
   graphFilterEl?.addEventListener("pointerdown", (event) => event.stopPropagation());
   [
@@ -1848,9 +1591,8 @@ async function loadAndRenderRelationships() {
   redrawRelationshipsGraph();
 }
 
-// Cached for the session, same "computed on demand, invalidated on
-// save/delete" convention relationshipsData above already establishes
-// (handleSave/handleDelete null both out together).
+// Same "computed on demand, invalidated on save/delete" convention as
+// relationshipsData above (handleSave/handleDelete null both out together).
 let timelineData = null;
 
 async function loadAndRenderTimeline() {
@@ -1865,21 +1607,15 @@ async function loadAndRenderTimeline() {
   renderTimeline();
 }
 
-// A day-index-formatted heading via the active calendar's own describeDate
-// (journal-date.js's own chip uses the identical function) — falls back to
-// a plain "Day <N>" reading when describeDate itself has to (no calendar
-// months defined), same grace period every other calendar-aware render in
-// this file already accepts.
+// Day-index heading via the active calendar's describeDate (same function
+// journal-date.js's chip uses) — falls back to plain "Day <N>" with no calendar defined.
 function formatTimelineDayHeading(dayIndex) {
   return describeDate(activeCalendar || {}, dayIndex);
 }
 
-// Grouped by day (groupTimelineByDay — `isCurrent` entries resolved against
-// the live ambient day), each group a heading + its own entries, with a
-// "Today" divider inserted wherever activeCampaignDayIndex actually falls
-// in the sorted list — not just appended at the end, so past and upcoming
-// read as genuinely separated. Click-to-navigate mirrors Relationships'
-// own handleRelationshipsNodeSelect (handleTimelineEntrySelect above).
+// Grouped by day, with a "Today" divider inserted wherever activeCampaignDayIndex
+// falls in the sorted list (not just appended at the end), so past and upcoming
+// read as genuinely separated.
 function renderTimeline() {
   if (!timelineListEl) return;
   timelineListEl.innerHTML = "";
@@ -1921,13 +1657,10 @@ function renderTimeline() {
   }
 }
 
-// A node's own {pageId, questTitle, refKind, refId} (attached directly by
-// relationships-graph.js, not re-derived from the id string — see that
-// file's own addNode comment for why) drives navigation: journal/quest
-// nodes switch back to the page editor (the same "resolve page + anchor"
-// path wikilinks already use), any other kind reuses the exact same
-// reference-preview handleOpenReference already gives a kind-reference
-// chip's own click.
+// A node's {pageId, questTitle, refKind, refId} (attached directly by
+// relationships-graph.js, not re-derived from the id string) drives navigation:
+// journal/quest nodes switch back to the page editor; any other kind reuses
+// handleOpenReference, same as a kind-reference chip's click.
 function handleRelationshipsNodeSelect(nodeId) {
   const node = (relationshipsData?.nodes || []).find((entry) => entry.id === nodeId);
   if (!node) return;
@@ -1944,22 +1677,17 @@ function handleRelationshipsNodeSelect(nodeId) {
   void handleOpenReference(node.refKind, node.refId);
 }
 
-// Timeline's own click-to-navigate — same "switch back to the Page tab,
-// then select" shape as handleRelationshipsNodeSelect above. No heading
-// anchor (unlike a Relationships quest node) — a date reference's own free-
-// text label isn't reliably a real heading/quest title to jump to, just
-// the page itself.
+// Same "switch back to Page tab, then select" shape as
+// handleRelationshipsNodeSelect. No heading anchor — a date reference's
+// free-text label isn't reliably a real heading/quest title.
 function handleTimelineEntrySelect(pageId) {
   void setActiveTab("page");
   selectPage(pageId, { remember: false });
 }
 
-// previewEl's own scrollTop for whichever page is currently selected, keyed
-// by page id — captured just before switching away (captureScrollMemory)
-// and restored on a later "remember"-mode return to that same page (list
-// clicks, the browser back/forward buttons), so leaving and coming back
-// feels like nothing moved. A link-driven navigation (handleWikiLinkNavigate)
-// deliberately opts out of restoring this — see selectPage's own comment.
+// previewEl's scrollTop per page id, captured before switching away and
+// restored on a "remember"-mode return (list clicks, back/forward) so leaving
+// and coming back feels unchanged. Link-driven navigation opts out of this.
 const scrollMemory = new Map();
 
 function captureScrollMemory() {
@@ -1968,9 +1696,7 @@ function captureScrollMemory() {
   }
 }
 
-// Same shape as findHeadingByText (now journal-outline.js's own, imported
-// above), over quest titles instead of headings —
-// see selectPage's own anchor-resolution chain for how the two combine.
+// Same shape as findHeadingByText (journal-outline.js), over quest titles instead.
 function findQuestByTitle(body, title) {
   const target = (title || "").trim().toLowerCase();
   if (!target) return -1;
@@ -1978,10 +1704,8 @@ function findQuestByTitle(body, title) {
   return quests.findIndex((quest) => (quest.title || "").trim().toLowerCase() === target);
 }
 
-// history.pushState/replaceState both go through here — `?page=<id>` (or no
-// param at all once nothing's selected) is the whole of Repository's
-// navigable state, mirroring the same "URL identifies the current record"
-// convention Dashboard's own `?encounter=<id>` already uses.
+// `?page=<id>` is the whole of Repository's navigable state — same
+// "URL identifies the current record" convention as Dashboard's `?encounter=<id>`.
 function pageUrl(id) {
   const url = new URL(window.location.href);
   if (id) url.searchParams.set("page", id);
@@ -2008,30 +1732,17 @@ function clearSelection() {
   updateToolbarState();
 }
 
-// Switching away from whatever's currently selected discards any unsaved
-// draft outright — same as this suite's existing tools (Orrery's own map
-// switcher has no "unsaved changes" guard either); Save's dirty-gating is
-// what tells you something needs saving, not a navigation block.
+// Switching away discards any unsaved draft outright, same as Orrery's map
+// switcher — Save's dirty-gating is what warns of unsaved work, not a nav block.
 //
-// `heading`/`remember` control where the newly-shown page lands scrolled to:
-// a `heading` (from a [[Page#Heading]] link) always wins when it actually
-// matches one of the page's own headings; otherwise `remember: true`
-// (the default — list clicks, backlinks, the Parent link, and the browser
-// back/forward buttons) restores wherever this same page was last left
-// scrolled to (scrollMemory), falling back to the top for a page that's
-// never been visited this session; `remember: false` (plain [[Page]] link
-// clicks) always lands at the top instead, regardless of any remembered
-// position — arriving via a link is a fresh "read from the start," not a
-// "continue where I left off."
+// `heading`/`remember` control scroll landing: a `heading` (from a
+// [[Page#Heading]] link) always wins; otherwise `remember: true` (default)
+// restores scrollMemory's last position; `remember: false` (plain [[Page]]
+// clicks) always lands at the top.
 //
-// A brief highlight pulse on whatever a heading/quest link just landed on —
-// scrollIntoView alone gives no feedback at all when the target was already
-// fully visible (a short page, or a link back to a heading near the top),
-// which read as "the link did nothing" even though navigation genuinely
-// worked. Inline styles (not a CSS class + animation) for the same
-// cross-tool-reuse reason every other bit of this renderer already uses
-// them — this can fire on a page rendered inside handout.js's Dashboard
-// widget too, which never loads Repository's own stylesheet.
+// A brief highlight pulse on the link target — scrollIntoView gives no
+// feedback when already visible. Inline styles, not a CSS class, since this
+// can fire inside handout.js's Dashboard widget, which never loads Repository's stylesheet.
 function flashElement(target) {
   if (!target) return;
   target.style.transition = "box-shadow 0.2s ease";
@@ -2044,9 +1755,8 @@ function flashElement(target) {
   }, 700);
 }
 
-// `pushHistory: false` is only ever passed by the popstate handler itself —
-// every other caller is a genuine new navigation step the browser's own
-// back/forward buttons should be able to retrace.
+// `pushHistory: false` is only passed by the popstate handler — every other
+// caller is a new navigation step the browser's back/forward should retrace.
 function selectPage(id, { heading = "", remember = true, pushHistory = true } = {}) {
   const entry = findEntry(id);
   if (!entry) return;
@@ -2060,17 +1770,15 @@ function selectPage(id, { heading = "", remember = true, pushHistory = true } = 
   cleanSnapshot = JSON.stringify(workingPayload);
   renderPageTree();
   renderEditor();
-  // Defaults to View for a page that already exists — there's presumably
-  // already-written content worth reading, not a blank page waiting to be
-  // typed into. Renders the preview synchronously, so repo-heading-<index>
-  // ids already exist by the time the scroll-outcome logic below runs.
+  // Defaults to View for an existing page — presumably already-written content
+  // worth reading. Renders synchronously so repo-heading-<index> ids exist
+  // by the time the scroll-outcome logic below runs.
   applyMode("view");
   updateToolbarState();
   if (pushHistory) pushPageHistory(id);
   const headingIndex = findHeadingByText(workingPayload.body, heading);
-  // A quest title is checked as a second class of in-page anchor whenever
-  // it doesn't match a real heading — same "resolve page + anchor"
-  // navigation headings already get, no parallel mechanism.
+  // A quest title is checked as a second anchor class whenever it doesn't
+  // match a real heading — no parallel navigation mechanism.
   const questIndex = headingIndex < 0 ? findQuestByTitle(workingPayload.body, heading) : -1;
   if (headingIndex >= 0) {
     const target = previewEl?.querySelector(`#repo-heading-${headingIndex}`);
@@ -2096,13 +1804,13 @@ function createDraftEntry({ title = "", body = "", tags = [], parentId = "" } = 
   };
   selectedId = id;
   workingPayload = { ...draftEntry.payload, tags: cloneTags(draftEntry.payload.tags) };
-  // Never equal to any real JSON.stringify(workingPayload) — a draft is
-  // dirty from the moment it exists, since nothing has been saved yet.
+  // Never equal to a real JSON.stringify(workingPayload) — a draft is dirty
+  // from the moment it exists.
   cleanSnapshot = null;
   renderPageTree();
   renderEditor();
-  // Defaults to Edit for a brand new page — nothing written yet to preview.
-  applyMode("edit");
+  applyMode("edit"); // nothing written yet to preview
+
   updateToolbarState();
   titleInput?.focus();
   titleInput?.select();
@@ -2118,9 +1826,8 @@ async function handleSave() {
   }
   draftEntry = null;
   cleanSnapshot = JSON.stringify(workingPayload);
-  // Stale after any real content change — recomputed the next time the
-  // Relationships/Timeline tab opens, not eagerly here (see
-  // loadAndRenderRelationships's own "computed on demand" comment).
+  // Stale after any content change — recomputed on demand the next time the
+  // Relationships/Timeline tab opens, not eagerly here.
   relationshipsData = null;
   timelineData = null;
   await refreshEntries();
@@ -2159,13 +1866,9 @@ searchInput?.addEventListener("input", () => {
   resetSearchCycle();
   renderPageTree();
 });
-// stopPropagation (not just preventDefault) — preventDefault alone only
-// cancels Enter's own default action, it doesn't stop this same keydown
-// from continuing to bubble up past this input to document (where
-// app-shell.js's own KeyboardShortcuts listens, among possibly others) —
-// belt-and-suspenders against anything further up the chain also reacting
-// to Shift+Enter, even though nothing in this codebase currently registers
-// for that combo.
+// stopPropagation, not just preventDefault — preventDefault alone doesn't stop
+// this keydown from bubbling to document, where app-shell.js's
+// KeyboardShortcuts listens; guards against anything reacting to Shift+Enter too.
 searchInput?.addEventListener("keydown", (event) => {
   if (event.key !== "Enter") return;
   event.preventDefault();
@@ -2174,9 +1877,8 @@ searchInput?.addEventListener("keydown", (event) => {
 });
 undoButton?.addEventListener("click", () => undo());
 redoButton?.addEventListener("click", () => redo());
-// Same dirty check updateToolbarState already uses for the Save button —
-// Repository had no guard at all against navigating/closing away from
-// unsaved edits (unlike Workbench, which already had this).
+// Same dirty check updateToolbarState uses for Save — Repository had no
+// guard against navigating/closing away from unsaved edits before this.
 window.addEventListener("beforeunload", (event) => {
   if (!isDirty()) return;
   event.preventDefault();
@@ -2187,32 +1889,20 @@ newButton?.addEventListener("click", () => createDraftEntry());
 duplicateButton?.addEventListener("click", () => handleDuplicate());
 saveButton?.addEventListener("click", () => void handleSave());
 deleteButton?.addEventListener("click", () => void handleDelete());
-// The Mode/View header row's own click handling lives inside
-// renderModeToggle/renderPageViewToggle themselves (createModeToggleGroup's
-// own onChange, createCycleToggleButton's own onSelect) — both rebuild
-// fresh on every call, so there's no persistent top-level listener to wire
-// here the way the fixed toolbar buttons above need.
+// The Mode/View header row's click handling lives inside renderModeToggle/
+// renderPageViewToggle themselves — both rebuild fresh on every call, no
+// persistent top-level listener needed here.
 renderModeToggle();
 renderPageViewToggle();
 
-// Live (every keystroke) for dirty-gating feedback — Save should enable the
-// instant you type, not just once you blur. The undo entry itself is
-// coarser: one entry per burst of typing (debounced — see
-// FIELD_COMMIT_DEBOUNCE_MS), not one per keystroke, roughly matching how a
-// browser's own native textarea undo batches consecutive typing.
+// Live (every keystroke) for dirty-gating feedback. The undo entry is coarser
+// — one per burst of typing, debounced (FIELD_COMMIT_DEBOUNCE_MS), roughly
+// matching a browser's native textarea undo batching.
 //
-// That native undo is exactly what's NOT available here, though: the app
-// shell's own Ctrl+Z handler (app-shell.js) is a single global `keydown`
-// listener with no exception for focused text fields, so it always
-// intercepts and calls preventDefault before the browser's native undo ever
-// gets a chance to run — same behavior every other tool in this suite
-// already has. That means whatever's sitting in the debounce window (typed
-// but not yet committed to undoStack) has to be flushed synchronously the
-// moment Ctrl+Z is pressed, or performUndo finds the stack still missing
-// the very edit the user is trying to undo. Attaching a plain (bubbling,
-// not capturing) keydown listener directly on the field does this — it
-// runs before the same keydown reaches app-shell's document-level listener,
-// since DOM dispatch visits the target's own listeners first.
+// Native undo isn't actually available here: app-shell.js's Ctrl+Z handler is
+// a global listener with no text-field exception, always intercepting first.
+// Whatever's in the debounce window must flush synchronously on Ctrl+Z, via a
+// bubbling keydown listener on the field that runs before app-shell's document-level one.
 const FIELD_COMMIT_DEBOUNCE_MS = 600;
 let fieldCommitTimer = 0;
 let fieldCommitLabel = "";
@@ -2241,8 +1931,8 @@ function flushFieldCommitOnUndoRedo(event) {
 titleInput?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
 titleInput?.addEventListener("input", () => {
   if (!workingPayload) return;
-  // Baseline has to be captured (inside scheduleFieldCommit) before this
-  // mutation, since it's the "before" half of the undo entry.
+  // Baseline captured inside scheduleFieldCommit before this mutation — it's
+  // the "before" half of the undo entry.
   scheduleFieldCommit("page title");
   workingPayload.title = titleInput.value;
   updateToolbarState();
@@ -2260,60 +1950,37 @@ bodyTextarea?.addEventListener("input", () => {
 });
 bodyTextarea?.addEventListener("change", () => commitFieldEdit());
 
-// `[[` autocomplete — lists page titles, `page#Heading` sections, and
-// `page#^blockId` named tables (journal-tables.js), all insertable
-// directly. `entries` is read fresh on every keystroke (a callback, not a
-// snapshot) since it's reassigned once the page's own async load resolves.
+// `[[` autocomplete — page titles, `page#Heading`, `page#^blockId` tables.
+// `entries` read fresh via callback since it's reassigned after async load.
 attachWikiLinkAutocomplete(bodyTextarea, { getEntries: () => entries });
-// `` `macro:`/`encounter:`/`dice:` `` autocomplete — same textarea, a
-// second independent attachment (each only ever reacts to its own trigger
-// syntax, so both listening on the same element causes no conflict).
+// `` `macro:`/`encounter:`/`dice:` `` autocomplete — independent attachment on
+// the same textarea, each reacting only to its own trigger syntax.
 attachCodeBlockAutocomplete(bodyTextarea, { dataManager });
 
 // --- Markdown formatting toolbar ---------------------------------------
-// A lightweight toolbar, not a rich-text/WYSIWYG editor — every button
-// inserts/wraps real Markdown syntax directly into the plain textarea (bold
-// wraps the selection in literal `**`, immediately, as text), so the page's
-// body is always valid, plain Markdown, never a parallel HTML
-// representation that would need converting back. TinyMCE (which the user
-// recalled having used before, and which searched for zero references
-// anywhere in this project) wasn't a fit for exactly this reason — it's an
-// HTML-output rich text editor at heart; getting clean Markdown back out of
-// one means fighting its own internal model rather than just writing the
-// syntax directly, which is all this actually needs to do.
+// A lightweight toolbar, not rich-text/WYSIWYG — every button inserts/wraps
+// real Markdown syntax directly, so the body stays valid plain Markdown.
 //
-// Every insertion goes through document.execCommand("insertText", ...)
-// rather than a raw textarea.value assignment — this is the one reliable
-// cross-browser way to programmatically insert text into a plain form
-// control while preserving the browser's own native undo/redo stack (a
-// direct .value= write does not; there is no modern replacement API for
-// this on a plain textarea, which is why every markdown-toolbar
-// implementation elsewhere — GitHub's own comment box included — still
-// relies on the same deprecated-but-universally-supported command). It also
-// fires the exact same "input" event real typing does, so this integrates
-// with bodyTextarea's own existing input listener (workingPayload sync,
-// Outline refresh, the app-level undo-stack commit) with no extra wiring at
-// all — from every one of those listeners' own perspective, this IS typing.
+// Insertion goes through document.execCommand("insertText", ...) rather than
+// a raw textarea.value assignment — preserves the browser's native undo/redo
+// stack and fires the same "input" event real typing does, integrating with
+// bodyTextarea's existing input listener with no extra wiring.
 function replaceTextareaSelection(textarea, start, end, text) {
   textarea.focus();
   textarea.setSelectionRange(start, end);
   const inserted = typeof document.execCommand === "function" && document.execCommand("insertText", false, text);
   if (!inserted) {
-    // execCommand unsupported/blocked — falls back to a direct value
-    // mutation and manually fires "input" so the rest of the pipeline still
-    // picks it up; loses native undo for this one edit, the same tradeoff
-    // every textarea-scripting approach outside execCommand has.
+    // execCommand unsupported/blocked — falls back to a direct value mutation
+    // and manually fires "input"; loses native undo for this one edit.
     const value = textarea.value;
     textarea.value = `${value.slice(0, start)}${text}${value.slice(end)}`;
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
   }
 }
 
-// True when the current selection is exactly surrounded by `before`/`after`
-// — shared by applyMarkdownWrap (decides whether to unwrap instead of
-// wrap-again) and the toolbar's own button-active-state tracking below (a
-// button reflects the style actually in effect at the current selection,
-// not just what clicking it would do).
+// True when the current selection is exactly surrounded by `before`/`after` —
+// shared by applyMarkdownWrap (unwrap vs. wrap-again) and the toolbar's own
+// button-active-state tracking below.
 function isSelectionWrapped(textarea, before, after = before) {
   const { selectionStart, selectionEnd, value } = textarea;
   const beforeStart = selectionStart - before.length;
@@ -2326,16 +1993,11 @@ function isSelectionWrapped(textarea, before, after = before) {
   );
 }
 
-// Bold and Italic both use the SAME marker character (`*`) — 1 asterisk is
-// Italic, 2 is Bold, 3 is both at once — so unlike Strikethrough/Code below
-// (each its own distinct character), toggling one has to know the other's
-// current state rather than blindly checking/adding a fixed string.
-// Confirmed real bug this fixes: treating Italic as "exactly one `*`"
-// independently of Bold meant selecting the inner text of already-bold
-// `**text**` (whose own boundary chars ARE a single `*`, being the
-// innermost character of that doubled marker) read as "already italic"
-// too, and clicking Bold there stripped one asterisk from each side instead
-// of adding a third.
+// Bold and Italic share the SAME marker character (`*`) — 1 asterisk is
+// Italic, 2 is Bold, 3 is both — so toggling one has to know the other's
+// current state rather than blindly checking/adding a fixed string. Treating
+// Italic as "exactly one `*`" independently of Bold misreads the inner text
+// of already-bold `**text**` as italic too, corrupting a Bold click there.
 function asteriskRunBefore(value, position) {
   let count = 0;
   for (let i = position - 1; i >= 0 && value[i] === "*"; i--) count++;
@@ -2346,10 +2008,9 @@ function asteriskRunAfter(value, position) {
   for (let i = position; i < value.length && value[i] === "*"; i++) count++;
   return count;
 }
-// The shorter of the two sides' own full run — a well-formed selection has
-// matching runs on both sides, but this stays sane even against a malformed
-// one (an unmatched stray `*`) by never reporting more than what's actually
-// mirrored on both sides.
+// The shorter of the two sides' runs — stays sane against a malformed
+// selection (an unmatched stray `*`) by never reporting more than what's
+// actually mirrored on both sides.
 function currentEmphasisRunLength(textarea) {
   const { selectionStart, selectionEnd, value } = textarea;
   return Math.min(asteriskRunBefore(value, selectionStart), asteriskRunAfter(value, selectionEnd));
@@ -2361,11 +2022,9 @@ function isItalicActive(textarea) {
   const run = currentEmphasisRunLength(textarea);
   return run === 1 || run >= 3;
 }
-// Rewrites BOTH sides' existing run (whatever its real length actually is,
-// even if the two sides mismatch) to exactly `targetLength` asterisks, in
-// one atomic edit — the only reliable way to move between "italic" (1),
-// "bold" (2), and "both" (3) without the two toggles' own edits fighting
-// each other.
+// Rewrites both sides' run to exactly `targetLength` asterisks in one atomic
+// edit — the only reliable way to move between italic (1), bold (2), and both
+// (3) without the two toggles fighting each other.
 function setEmphasisRunLength(textarea, targetLength) {
   const { selectionStart, selectionEnd, value } = textarea;
   const beforeRun = asteriskRunBefore(value, selectionStart);
@@ -2377,10 +2036,8 @@ function setEmphasisRunLength(textarea, targetLength) {
   replaceTextareaSelection(textarea, beforeStart, afterEnd, `${marker}${selected}${marker}`);
   textarea.setSelectionRange(beforeStart + marker.length, beforeStart + marker.length + selected.length);
 }
-// Toggles just the Bold "bit" of the current run, preserving Italic's own —
-// bold-off (2 or 3) drops it to (0 or 1); bold-off (0 or 1) raises it to
-// (2 or 3) — so Italic(1)+Bold-click → Both(3), Both(3)+Bold-click →
-// Italic(1), never losing track of the other style along the way.
+// Toggles just the Bold bit of the current run, preserving Italic — so
+// Italic(1)+Bold-click → Both(3), Both(3)+Bold-click → Italic(1).
 function toggleBold(textarea) {
   const run = currentEmphasisRunLength(textarea);
   const italicOn = run === 1 || run >= 3;
@@ -2392,21 +2049,14 @@ function toggleItalic(textarea) {
   setEmphasisRunLength(textarea, (boldOn ? 2 : 0) + (isItalicActive(textarea) ? 0 : 1));
 }
 
-// Wraps the current selection in `before`/`after` (Strikethrough/Code —
-// Bold/Italic use the dedicated emphasis functions above instead, since
-// those two can't be toggled independently of a fixed string) — toggles OFF
-// instead (unwraps) when isSelectionWrapped is already true, so clicking a
-// button on already-wrapped text undoes it rather than double-wrapping.
-// Empty selection wraps anyway and leaves the caret sitting between the
-// markers, ready to type.
+// Wraps the current selection in `before`/`after` (Strikethrough/Code — Bold/
+// Italic use the dedicated emphasis functions above since those can't toggle
+// independently of a fixed string). Toggles OFF (unwraps) when already
+// wrapped; an empty selection wraps anyway, leaving the caret between markers.
 //
-// Only detects a selection that exactly spans the wrapped text itself (as
-// in the user's own "select text, click Bold" description) — a cursor
-// merely resting somewhere in the MIDDLE of a bolded word with nothing
-// selected won't register as wrapped, since that needs scanning outward
-// for an enclosing span rather than just checking the two boundaries
-// immediately next to the current selection. A deliberate scope limit for
-// a lightweight toolbar, not an oversight.
+// Only detects a selection that exactly spans the wrapped text — a cursor
+// resting in the middle of a bolded word with nothing selected won't register
+// as wrapped. A deliberate scope limit for a lightweight toolbar.
 function applyMarkdownWrap(textarea, before, after = before) {
   const { selectionStart, selectionEnd, value } = textarea;
   const selected = value.slice(selectionStart, selectionEnd);
@@ -2426,9 +2076,8 @@ function applyMarkdownWrap(textarea, before, after = before) {
   }
 }
 
-// The lines actually touched by the current selection (or just the current
-// line, for a collapsed cursor) — shared by applyMarkdownLinePrefix and its
-// own active-state check below.
+// The lines touched by the current selection (or just the current line, for a
+// collapsed cursor) — shared by applyMarkdownLinePrefix and its active-state check.
 function selectedLineRange(textarea) {
   const { selectionStart, selectionEnd, value } = textarea;
   const lineStart = value.lastIndexOf("\n", selectionStart - 1) + 1;
@@ -2437,22 +2086,17 @@ function selectedLineRange(textarea) {
   return { lineStart, lineEnd, lines: value.slice(lineStart, lineEnd).split("\n") };
 }
 
-// True when every line touched by the current selection already starts
-// with its own prefixFor(index) — unlike applyMarkdownWrap's boundary-only
-// check above, this naturally covers a plain collapsed cursor anywhere on
-// the line too (a whole-line prefix has no "middle" to miss the way an
-// inline wrap does).
+// True when every touched line already starts with its own prefixFor(index) —
+// unlike applyMarkdownWrap's boundary-only check, a whole-line prefix has no
+// "middle" to miss, so this covers a collapsed cursor anywhere on the line too.
 function isSelectionLinePrefixed(textarea, prefixFor) {
   const { lines } = selectedLineRange(textarea);
   return lines.every((line, index) => line.startsWith(prefixFor(index)));
 }
 
-// Prefixes every line touched by the current selection (Heading/Quote/
-// Bullet list) — `prefixFor(lineIndex)` returns that line's own prefix
-// (numbered lists need an incrementing one; the rest return the same fixed
-// string every time). Toggles OFF (strips the prefix) if
-// isSelectionLinePrefixed is already true, same toggle idiom as
-// applyMarkdownWrap above.
+// Prefixes every touched line (Heading/Quote/Bullet list) — `prefixFor(index)`
+// returns that line's prefix (numbered lists increment; others are fixed).
+// Toggles OFF if already prefixed, same idiom as applyMarkdownWrap.
 function applyMarkdownLinePrefix(textarea, prefixFor) {
   const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
   const alreadyPrefixed = isSelectionLinePrefixed(textarea, prefixFor);
@@ -2463,14 +2107,10 @@ function applyMarkdownLinePrefix(textarea, prefixFor) {
   textarea.setSelectionRange(lineStart, lineStart + nextText.length);
 }
 
-// Six standalone buttons (H1-H6), not one button prefixing a fixed "## " —
-// each is its own toggle, and clicking a DIFFERENT level than what's
-// currently on the line switches to it directly (H3 line + H2 click → H2,
-// not H2 stacked on top of H3), rather than needing two clicks (remove H3,
-// add H2). Only reports/sets a single consistent level across every
-// touched line — a selection spanning an H1 line and an H2 line reports 0
-// (no single level to reflect on any button, and a click sets every
-// touched line to the SAME clicked level uniformly).
+// Six standalone buttons (H1-H6) — each is its own toggle, and clicking a
+// different level switches to it directly (H3 line + H2 click → H2, not
+// stacked), no two-click remove-then-add. A selection spanning an H1 and H2
+// line reports 0 (no single level), and a click sets every line uniformly.
 const HEADING_LINE_PATTERN = /^(#{1,6})\s/;
 function currentHeadingLevel(textarea) {
   const { lines } = selectedLineRange(textarea);
@@ -2498,27 +2138,19 @@ function toggleHeadingLevel(textarea, level) {
 }
 
 // Bullet list, Checklist, and Numbered list are mutually exclusive
-// alternatives for what a line's own leading marker is, NOT independent
-// toggleable bits the way Bold/Italic are — but Checklist's own syntax
-// (GFM `- [ ] `/`- [x] `, the same convention journal-tasks.js's own
-// TASK_LINE_PATTERN already parses for the rendered preview's clickable
-// checkboxes) starts with the exact same `- ` a plain bullet does.
-// Confirmed real bug this fixes: Bullet list's own old isActive (a plain
-// startsWith("- ") check) read a checklist line as ALSO an active bullet
-// list, and clicking Bullet there stripped only the leading `- `, leaving
-// a broken `[ ] text` behind — the same class of bug Bold/Italic had via
-// their own shared `*` character, fixed here the same way: one shared model
-// that knows about every kind sharing the ambiguity, rather than each
-// button's own isolated prefix check.
+// alternatives for a line's leading marker, not independent toggleable bits
+// like Bold/Italic — but Checklist's syntax (GFM `- [ ] `) starts with the
+// same `- ` a plain bullet does. A naive startsWith("- ") check reads a
+// checklist line as also an active bullet, corrupting it on a Bullet click —
+// same class of bug as Bold/Italic's shared `*`, fixed the same way: one
+// shared model, not isolated per-button prefix checks.
 const CHECKLIST_LINE_PATTERN = /^[-*+]\s+\[[ xX]\]\s+/;
 const BULLET_LINE_PATTERN = /^[-*+]\s+/;
 const NUMBERED_LINE_PATTERN = /^\d+\.\s+/;
 
-// null (no consistent list marker), "bullet", "checklist", or "numbered" —
-// null whenever the touched lines don't all agree, same "report nothing
-// rather than guess" rule every other multi-line toggle above already uses.
-// Checked in this exact order since checklist's own pattern is a strict
-// superset of bullet's (every checklist line also matches BULLET_LINE_PATTERN).
+// null when the touched lines don't all agree, same "report nothing rather
+// than guess" rule as the multi-line toggles above. Checked in this order
+// since checklist's pattern is a strict superset of bullet's.
 function currentListKind(textarea) {
   const { lines } = selectedLineRange(textarea);
   let kind;
@@ -2541,10 +2173,8 @@ function stripListMarker(line) {
 }
 
 // Rewrites every touched line to `targetKind` (or plain text for null),
-// stripping whatever marker (if any) was already there first — this is how
-// a checklist line cleanly becomes a plain bullet (or vice versa) in one
-// step, rather than each kind's own toggle only ever knowing how to add or
-// remove itself.
+// stripping any existing marker first — how a checklist line cleanly becomes
+// a plain bullet in one step.
 function setListKind(textarea, targetKind) {
   const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
   const stripped = lines.map(stripListMarker);
@@ -2563,13 +2193,9 @@ function toggleListKind(textarea, kind) {
   setListKind(textarea, currentListKind(textarea) === kind ? null : kind);
 }
 
-// Inserts `content` as its own standalone block — always preceded/followed
-// by a blank line unless one's already there — shared by the Horizontal
-// Rule button and the Table picker below, since both are block-level
-// elements that need real separation from surrounding text to render as
-// such in every Markdown implementation, regardless of where the cursor
-// happens to sit when the button's clicked. Not a toggle — there's no
-// "already a rule"/"already this exact table" state to detect or undo.
+// Inserts `content` as its own standalone block, preceded/followed by a blank
+// line unless one's already there — shared by Horizontal Rule and Table,
+// both block-level elements needing real separation. Not a toggle.
 function insertMarkdownBlock(textarea, content) {
   const { selectionStart, selectionEnd, value } = textarea;
   const before = value.slice(0, selectionStart);
@@ -2599,17 +2225,12 @@ function buildMarkdownTable(columns, rows) {
 const TABLE_PICKER_MAX_COLS = 8;
 const TABLE_PICKER_MAX_ROWS = 6;
 
-// Word/Excel's own "Insert Table" grid picker, same interaction: hover
-// highlights a rectangle from the top-left cell out to the pointer, a
-// label reports the current "columns x rows," and a click commits that
-// size immediately — no separate confirm step, no dialog for a custom size
-// beyond the grid's own max (8x6 covers the overwhelming majority of real
-// use; a bigger table is one line easy enough to hand-edit afterward).
-// Built once per page load (not per click) and just shown/hidden — a real
-// popover element living in document.body (so its own fixed/absolute
-// positioning is never clipped by the editor card's own `overflow: hidden`)
-// rather than Bootstrap's own Popover component, which doesn't have a
-// clean way to host interactive content like this grid inside itself.
+// Word/Excel's "Insert Table" grid picker: hover highlights a rectangle from
+// top-left to the pointer, a label reports "columns x rows," a click commits
+// immediately (8x6 max — a bigger table is easy to hand-edit afterward). Built
+// once and shown/hidden — a real popover in document.body (not Bootstrap's
+// Popover, which can't cleanly host interactive content) so its positioning
+// isn't clipped by the editor card's `overflow: hidden`.
 function createTablePickerPopover(anchorButton, onPick) {
   const popover = el("div", "repository-table-picker d-none");
   const grid = el("div", "repository-table-picker-grid");
@@ -2647,10 +2268,8 @@ function createTablePickerPopover(anchorButton, onPick) {
     popover.style.left = `${window.scrollX + rect.left}px`;
     popover.classList.remove("d-none");
     highlight(0, 0);
-    // Capture phase, and deferred past this same click via setTimeout — the
-    // click that OPENS this (on anchorButton) would otherwise immediately
-    // bubble up and satisfy this exact listener, closing it again in the
-    // same tick before the user ever sees it.
+    // Deferred past this same click via setTimeout — the click that opened
+    // this would otherwise immediately bubble up and close it in the same tick.
     setTimeout(() => {
       document.addEventListener("mousedown", onOutsideClick, true);
       document.addEventListener("keydown", onKeydown, true);
@@ -2683,9 +2302,8 @@ function createTablePickerPopover(anchorButton, onPick) {
 }
 
 // `[label](url)` — wraps a selection as the link label, or inserts a
-// `link text` placeholder when nothing's selected; either way, leaves `url`
-// itself selected so pasting/typing a real address is the very next
-// keystroke, no separate prompt() step needed.
+// placeholder when nothing's selected; either way leaves `url` selected so
+// typing a real address is the next keystroke.
 function insertMarkdownLink(textarea) {
   const { selectionStart, selectionEnd, value } = textarea;
   const selected = value.slice(selectionStart, selectionEnd);
@@ -2695,19 +2313,11 @@ function insertMarkdownLink(textarea) {
   textarea.setSelectionRange(urlStart, urlStart + 3); // "url"
 }
 
-// journal-callouts.js's own documented syntax (`> [!type]fold Title` then
-// `>`-prefixed body) — this is literally the "eventual insert callout
-// toolbar button" that module's own resolveCalloutStyle comment already
-// anticipated. Defaults to `[!note]+` (foldable, open by default) — "our
-// standard optionally collapsible format," per the user's own framing; `+`
-// is what actually makes the fold affordance appear at all in View mode
-// (see that module's own header comment), and the type itself is left
-// selected afterward so overtyping "note" with "warning"/"tip"/any other
-// known type (or a custom one — Obsidian, and this suite's own parser,
-// both allow arbitrary types) is the very next keystroke. Reuses the
-// current line(s) as the callout's own body, same "operate on whatever
-// selectedLineRange finds" shape every block-level action above already
-// uses, rather than a bespoke insertion point.
+// journal-callouts.js's documented syntax (`> [!type]+ Title` then
+// `>`-prefixed body). Defaults to `[!note]+` (foldable, open by default) —
+// `+` is what makes the fold affordance appear in View mode — with the type
+// left selected so overtyping "note" with "warning"/"tip"/a custom type is
+// the next keystroke. Reuses the current line(s) as the body.
 function insertCallout(textarea) {
   const { lineStart, lineEnd, lines } = selectedLineRange(textarea);
   const bodyLines = lines.some((line) => line.trim()) ? lines : ["Callout body"];
@@ -2717,16 +2327,10 @@ function insertCallout(textarea) {
   textarea.setSelectionRange(typeStart, typeStart + "note".length);
 }
 
-// A blank [!story-board] callout — same "insert the standard shape, leave
-// the title selected to overtype" convention insertCallout above already
-// uses. Empty Nodes/Edges tables (serializeStoryBoard's own regular
-// output, run over a fully-empty model — the same shape the visual
-// editor's own toolbar Add Node/Add Lane/Add Stage actions build up from
-// once this is on the page and Repository re-renders it as a live
-// canvas). Reusable NAMED starter skeletons (a library of pre-populated
-// layouts to spawn from) are real future work, not built this pass — this
-// is deliberately just "start a blank one," the one action every board
-// needs regardless.
+// A blank [!story-board] callout — same "insert, leave title selected to
+// overtype" convention as insertCallout. Empty Nodes/Edges tables
+// (serializeStoryBoard over a fully-empty model) that the visual editor's own
+// Add Node/Lane/Stage actions build up from once rendered as a live canvas.
 function insertStoryBoard(textarea) {
   const { lineStart, lineEnd } = selectedLineRange(textarea);
   const blank = serializeStoryBoard({ layoutMode: "freeform", lanes: [], stages: [], nodes: [], edges: [] });
@@ -2742,11 +2346,9 @@ if (bodyTextarea) {
   const blockGroup = document.querySelector("[data-repository-format-block-mount]");
   const insertGroup = document.querySelector("[data-repository-format-insert-mount]");
 
-  // {button, isActive(textarea)} for every TOGGLE-able button (Link and
-  // Callout aren't toggles — they insert/wrap once, there's no "already
-  // linked" state to reflect) — updateFormatToggleStates below walks this
-  // to keep every button's pressed/unpressed look in sync with wherever the
-  // cursor/selection actually is right now, not just what the last click did.
+  // {button, isActive(textarea)} for every toggleable button (Link/Callout
+  // aren't toggles) — updateFormatToggleStates walks this to keep pressed
+  // state in sync with the current cursor/selection, not just the last click.
   const toggleButtons = [];
   function registerToggle(button, isActive) {
     toggleButtons.push({ button, isActive });
@@ -2758,15 +2360,12 @@ if (bodyTextarea) {
       button.classList.toggle("active", active);
       button.setAttribute("aria-pressed", active ? "true" : "false");
     });
-    // Not a plain {button,isActive} toggle like the rest — its own icon has
-    // to change, not just an .active class — so it's called directly here
-    // rather than folded into the generic loop above.
+    // Not a plain {button,isActive} toggle — its icon has to change too, so
+    // it's called directly rather than folded into the generic loop above.
     updateHeadingPickerState();
   }
-  // Every action handler runs the actual edit, then re-derives every
-  // button's state from the resulting (post-edit) selection — simpler and
-  // more obviously correct than each handler individually predicting what
-  // its own toggle should flip to.
+  // Every action handler runs the edit, then re-derives every button's state
+  // from the resulting selection — simpler than each handler predicting its own toggle.
   function formatAction(fn) {
     return () => {
       fn();
@@ -2809,31 +2408,18 @@ if (bodyTextarea) {
     },
   ].forEach((config) => styleGroup?.appendChild(buildFormatButton(config)));
 
-  // Condensed into one hover-dropdown (six separate small buttons pushed
-  // the whole toolbar onto its own row, and only one level is ever active
-  // at once anyway) — same hover-opens Bootstrap-dropdown mechanism the
-  // header's own tool switcher/campaign menu already use
-  // (attachHoverDropdown, common/js/lib/dom.js), not a bespoke popover like
-  // the Table picker below (that one needs a custom hover-grid; a plain
-  // list of six items is exactly what a real dropdown menu already is).
-  // The toggle button's own icon mirrors whichever level is active on the
-  // current selection (a real H1-H6 glyph), or the generic "heading" glyph
-  // when none is — updated by updateHeadingPickerState, called from
-  // updateFormatToggleStates below alongside every other button's own
-  // active-state refresh.
+  // Condensed into one hover-dropdown (six buttons would push the toolbar
+  // onto its own row, and only one level is ever active at once) — same
+  // hover-opens mechanism the header's tool switcher uses (attachHoverDropdown).
+  // The toggle icon mirrors the active level's H1-H6 glyph, or the generic
+  // "heading" glyph when none is (updateHeadingPickerState).
   const headingDropdown = el("div", "dropdown");
   const headingToggle = createIconButton({ icon: "tabler:heading", label: "Heading", kind: "compact" });
   headingToggle.classList.add("dropdown-toggle");
   headingToggle.dataset.bsToggle = "dropdown";
-  // Bootstrap's own Popper positioning defaults to `position: absolute`
-  // within the normal DOM flow — which the editor card's own `overflow:
-  // hidden` (data-repository-editor's card-body, this dropdown's actual
-  // clipping ancestor) would cut off the moment the menu needs to extend
-  // past the card's own edge. `strategy: fixed` positions it relative to
-  // the viewport instead, the documented Bootstrap escape hatch for exactly
-  // this "clipped by an overflow:hidden ancestor" case — the tool
-  // switcher/campaign menu dropdowns elsewhere in this suite never needed
-  // this because the header they live in has no such clipping ancestor.
+  // Bootstrap's default Popper `position: absolute` would get cut off by the
+  // editor card's own `overflow: hidden`. `strategy: fixed` positions relative
+  // to the viewport instead, Bootstrap's documented escape hatch for this case.
   headingToggle.dataset.bsStrategy = "fixed";
   headingToggle.setAttribute("aria-expanded", "false");
   const headingMenu = el("ul", "dropdown-menu");
@@ -2899,16 +2485,13 @@ if (bodyTextarea) {
     },
   ].forEach((config) => blockGroup?.appendChild(buildFormatButton(config)));
 
-  // No isActive — a rule isn't a span/line style with an "on" state to
-  // reflect, it's a one-shot insertion, same as Table/Callout below (moved
-  // here from the Block group for the same reason: it replaces the
-  // selection rather than augmenting it, same as everything else here).
+  // No isActive — a one-shot insertion, same as Table/Callout below, not a
+  // span/line style with an "on" state.
   insertGroup?.appendChild(
     buildFormatButton({ icon: "tabler:minus", label: "Horizontal rule", onClick: () => insertHorizontalRule(bodyTextarea) })
   );
-  // Not built via buildFormatButton — clicking Table doesn't perform an
-  // edit itself, it opens the grid picker below (createTablePickerPopover),
-  // which is the thing that actually inserts on a cell click.
+  // Not built via buildFormatButton — clicking Table opens the grid picker
+  // (createTablePickerPopover), which inserts on a cell click.
   const tableButton = createIconButton({ icon: "tabler:table", label: "Table", kind: "compact" });
   insertGroup?.appendChild(tableButton);
   const tablePicker = createTablePickerPopover(tableButton, (columns, rows) => {
@@ -2925,10 +2508,8 @@ if (bodyTextarea) {
   insertGroup?.appendChild(
     buildFormatButton({ icon: "tabler:layout-board-split", label: "Story Board", onClick: () => insertStoryBoard(bodyTextarea) })
   );
-  // Not built via buildFormatButton — this transforms existing content
-  // (async, resolving each wikilink against the Library) rather than
-  // inserting at the cursor, so it doesn't fit that helper's synchronous
-  // "run once, then re-derive toggle states" shape.
+  // Not built via buildFormatButton — transforms existing content (async,
+  // resolving each wikilink) rather than inserting at the cursor.
   insertGroup?.appendChild(
     createIconButton({
       icon: "tabler:replace",
@@ -2938,10 +2519,8 @@ if (bodyTextarea) {
     })
   );
 
-  // Keeps every toggle button's pressed state in sync with wherever the
-  // cursor/selection actually is, not just immediately after a click —
-  // covers clicking around with the mouse, arrow-key navigation, and typing,
-  // matching how a real toolbar (Word, Google Docs) tracks this.
+  // Keeps toggle state in sync with the cursor/selection, not just after a
+  // click — covers mouse clicks, arrow-key navigation, and typing.
   ["keyup", "mouseup", "click", "input"].forEach((eventName) => {
     bodyTextarea.addEventListener(eventName, updateFormatToggleStates);
   });
@@ -2949,13 +2528,10 @@ if (bodyTextarea) {
   refreshTooltips();
 }
 
-// The browser's own back/forward buttons — without this, they fall through
-// to app-shell's page-level history (landing on whichever tool page was
-// open before Repository) instead of stepping back through pages viewed
-// inside Repository itself. `event.state.repositoryPageId` (set by
-// pushPageHistory/replacePageHistory) is preferred when present; falling
-// back to parsing the URL's own `?page=` covers the browser-default `null`
-// state a plain page load's own initial history entry always has.
+// Without this, back/forward fall through to app-shell's page-level history
+// instead of stepping back through pages viewed inside Repository.
+// `event.state.repositoryPageId` is preferred when present; falling back to
+// the URL's `?page=` covers the browser-default `null` state on initial load.
 window.addEventListener("popstate", (event) => {
   const id =
     typeof event.state?.repositoryPageId === "string"
@@ -2969,20 +2545,15 @@ window.addEventListener("popstate", (event) => {
 });
 
 updateToolbarState();
-// initHelpSystem's own refreshTooltips(root) call (root: document here)
-// already activates every tooltip in the document, help-topic triggers and
-// everything else alike — a separate refreshTooltips() call before this one
-// used to run (reversed order vs. every other tool's own init sequence)
-// only ever swept whatever existed BEFORE initHelpSystem built its own
-// trigger elements, making it fully redundant with this call's own sweep.
+// initHelpSystem's own refreshTooltips(root) already activates every tooltip
+// in the document, including help-topic triggers — a separate call before
+// this one would only sweep whatever existed before initHelpSystem's own
+// trigger elements, fully redundant with this sweep.
 void initHelpSystem({ root: document });
 initRelationshipsGraph();
-// Fetched once, up front — validKindIds/kindLabelsMap need to be populated
-// before the FIRST renderPreview/renderRelated call can turn a
-// `` `kindId:Name` `` block into a chip. If a page's already selected and
-// rendered by the time this resolves (unlikely — loadLibraryKinds is a
-// single small fetch — but not impossible on a slow connection), refresh
-// it once so those chips don't wait for the next keystroke to appear.
+// Fetched once, up front — validKindIds/kindLabelsMap must populate before
+// the first renderPreview/renderRelated can turn a `` `kindId:Name` `` block
+// into a chip. Refreshes once more if a page rendered before this resolves.
 void ensureLibraryKinds().then(() => {
   if (currentMode === "view") renderPreview();
   void renderRelated();
@@ -2991,22 +2562,17 @@ void refreshActiveCalendar().then(() => {
   if (currentMode === "view") renderPreview();
   if (activeTab === "timeline") renderTimeline();
 });
-// The header's own Campaign dropdown — a different campaign can mean a
-// different Setting, so its calendar vocabulary needs re-resolving too
-// (data-manager.js's own setActiveGroup emits this on every switch).
+// A different campaign can mean a different Setting, so calendar vocabulary
+// needs re-resolving too (data-manager.js's setActiveGroup emits this).
 window.addEventListener("workbench:active-group-changed", () => {
   void refreshActiveCalendar().then(() => {
     if (currentMode === "view") renderPreview();
     if (activeTab === "timeline") renderTimeline();
   });
 });
-// Advancing the campaign date from a Calendar widget (this tab, another tab,
-// another dashboard entirely) broadcasts this — updates the cached day index
-// directly (no re-fetch needed, the event payload already carries it — see
-// data-manager.js's own setCampaignDate) and re-renders so any
-// `` `date:current` `` chip on the currently-viewed page (or the Timeline
-// tab's own Today divider/grouping) reflects it immediately, the same
-// live-propagation the Calendar widget itself gives.
+// Advancing the campaign date from any Calendar widget broadcasts this —
+// updates the cached day index directly (payload already carries it) and
+// re-renders so a `` `date:current` `` chip or the Timeline's Today divider reflects it immediately.
 window.addEventListener("undercroft:campaign-date-changed", (event) => {
   const dayIndex = event.detail?.dayIndex;
   activeCampaignDayIndex = Number.isFinite(dayIndex) ? dayIndex : null;
@@ -3014,25 +2580,18 @@ window.addEventListener("undercroft:campaign-date-changed", (event) => {
   if (activeTab === "timeline") renderTimeline();
 });
 void refreshEntries().then(() => {
-  // A bookmarked/reloaded `?page=<id>` deep-links straight to that page —
-  // resolved AFTER entries load, since findEntry needs the fetched list.
-  // replacePageHistory (not push) either way, establishing a clean baseline
-  // state object for this initial load rather than relying purely on the
-  // popstate handler's own URL-parsing fallback above.
+  // A bookmarked/reloaded `?page=<id>` deep-links straight to that page,
+  // resolved after entries load (findEntry needs the fetched list).
+  // replacePageHistory establishes a clean baseline state for this load.
   const deepLinkParams = new URLSearchParams(window.location.search);
   const requestedId = deepLinkParams.get("page") || "";
   const resolvedId = requestedId && findEntry(requestedId) ? requestedId : "";
-  // `?heading=<text>` — a marker/reference deep link into a specific
-  // heading or quest anchor (see kind-tool-route.js's own journal route
-  // and Orrery's marker "Open in Repository" link-out) — selectPage's own
-  // `heading` option already resolves either kind of anchor uniformly.
+  // `?heading=<text>` — a marker/reference deep link into a heading or quest
+  // anchor (kind-tool-route.js's journal route, Orrery's marker link-out).
   const requestedHeading = deepLinkParams.get("heading") || "";
-  // `?q=<term>` — the suite-wide header search's own deep link into a body
-  // match (common/js/lib/suite-search.js) — highlights and scrolls to the
-  // actual match inside the page, same as jumpToSearchQuery's own comment
-  // explains. selectPage's own scroll decision (heading/remembered
-  // position/top) runs first and is deliberately superseded by this right
-  // after — both are synchronous, so there's no visible flash between them.
+  // `?q=<term>` — the suite-wide header search's deep link into a body match
+  // (suite-search.js). selectPage's own scroll decision runs first and is
+  // superseded by this right after; both synchronous, no visible flash.
   const requestedQuery = deepLinkParams.get("q") || "";
   if (resolvedId) selectPage(resolvedId, { heading: requestedHeading, remember: true, pushHistory: false });
   if (resolvedId && requestedQuery) jumpToSearchQuery(requestedQuery);

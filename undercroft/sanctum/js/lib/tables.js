@@ -1,25 +1,17 @@
-// Data loading for Sanctum's reference kinds — location-type, location-purpose,
-// feature (category "location"), resource, species (for the optional NPC
-// Generation Config section) — plus Setting/Location themselves, all managed
-// generically via fetchKindEntriesForSystem (common/js/lib/content-fetch.js), the
-// authenticated-aware, server-side-System-filtered bulk loader every other
-// generator tool already uses.
-// Sanctum is now the sole authoring surface for setting/location (Loom's old
-// Places panel is retired), so every read here must see the signed-in user's own
-// private/unpublished records, not just public ones — dataManager-backed throughout.
+// Data loading for Sanctum's reference kinds (location-type, location-purpose,
+// feature, resource, species) plus Setting/Location, via fetchKindEntriesForSystem
+// (content-fetch.js) — the same server-filtered bulk loader other generators use.
+// Sanctum is the sole authoring surface for setting/location (Loom's old Places
+// panel is retired), so reads must see the signed-in user's own private records.
 import { fetchKindEntriesForSystem, listLocationsForSetting } from "../../../common/js/lib/content-fetch.js";
 
-// Re-exported so undercroft/sanctum/js/app.js's own import (from this file)
-// keeps working unchanged — the implementation moved to content-fetch.js
-// since Forge's own copy was byte-identical (both list Locations for a
-// Setting, both need the same pre-migration scalar-settingId fallback).
+// Re-exported so app.js's import from this file keeps working — the
+// implementation moved to content-fetch.js since Forge's copy was identical.
 export { listLocationsForSetting };
 
-// fetchKindEntriesForSystem asks the server to filter by systemId before
-// reading any file (get_items_bulk, server/storage.py) rather than fetching
-// a kind's whole cross-tool library and filtering client-side — the
-// `.filter()` below stays regardless, as the correctness guarantee for the
-// case fetchKindEntriesForSystem itself falls back to an unfiltered fetch.
+// fetchKindEntriesForSystem filters server-side before reading any file
+// (server/storage.py); the `.filter()` below stays as the correctness
+// guarantee for when it falls back to an unfiltered fetch.
 async function listKindForSystem(dataManager, kind, systemId) {
   const entries = await fetchKindEntriesForSystem(dataManager, kind, systemId);
   return entries
@@ -50,9 +42,8 @@ export async function listSpeciesForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "species", systemId);
 }
 
-// The other Library kinds an Asset/Need entry can reference by id — cached
-// the same way Features/Resources are, so a saved Asset/Need's description
-// can always be looked up locally rather than re-fetched per row render.
+// Other Library kinds an Asset/Need entry can reference by id — cached like
+// Features/Resources so a description can be looked up without a re-fetch per row.
 export async function listNpcsForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "npc", systemId);
 }
@@ -65,11 +56,10 @@ export async function listWondersForSystem(dataManager, systemId) {
   return listKindForSystem(dataManager, "wonder", systemId);
 }
 
-// Setting now uses `systemIds` (a plural array) exactly like every other
-// kind — no more separate systemId-scalar special case — so this is just
-// listKindForSystem under a Setting-specific name. Keeps the original
-// "no systemId means no results at all" behavior (listKindForSystem's own
-// filter would otherwise treat a blank systemId as "match everything").
+// Setting uses `systemIds` like every other kind now, so this is just
+// listKindForSystem under a Setting-specific name — except it keeps the
+// "no systemId means no results" guard (listKindForSystem's own filter
+// would otherwise treat a blank systemId as "match everything").
 export async function listSettingsForSystem(dataManager, systemId) {
   if (!systemId) return [];
   return listKindForSystem(dataManager, "setting", systemId);

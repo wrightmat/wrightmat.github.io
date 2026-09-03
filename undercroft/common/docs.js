@@ -4,13 +4,10 @@ import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
 import { loadHelpTopics } from "./js/lib/help.js";
 
-// Same shell bootstrap every other page under common/ uses (account.html's
-// own account.js is the reference) — this page used to live one directory
-// deeper (common/docs/index.html), which put it at the wrong depth for
-// initAppShell's own tool-context path math (resolveToolContextPath reads
-// the second-to-last URL segment, assuming every page sits exactly one
-// level under the suite root) and silently broke the tool-switcher nav as
-// a result. Moved flat into common/ instead of working around that.
+// Same shell bootstrap every other page under common/ uses (account.js is
+// the reference). Lives flat in common/ (not common/docs/), matching
+// initAppShell's tool-context path math (resolveToolContextPath assumes
+// every page sits exactly one level under the suite root).
 const { status } = initAppShell({
   namespace: "docs",
   leftPaneLabel: "Toggle topics pane",
@@ -30,13 +27,10 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-// Resolves a topic's own stored `href` (data/help-topics.json) into an
-// absolute URL for the "Open in app" button — most topics point at another
-// tool entirely ("../loom/index.html?help=..."), a few still point back at
-// this same page ("docs.html#topic-id"). Base is just "wherever this page
-// itself lives," same as new URL(href, document.baseURI) would give —
-// spelled out explicitly rather than relying on baseURI so a <base> tag
-// added later for some other reason can't silently change this.
+// Resolves a topic's stored `href` into an absolute URL for the "Open in
+// app" button — most topics point at another tool entirely, a few point
+// back at this page. Base is spelled out explicitly rather than relying on
+// document.baseURI so a <base> tag added later can't silently change this.
 function resolveTopicUrl(href) {
   const base = `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}`;
   try {
@@ -47,10 +41,9 @@ function resolveTopicUrl(href) {
   }
 }
 
-// Just the topic-count/last-updated/version badges — the catalog's own
+// Just the topic-count/last-updated/version badges — the catalog's
 // free-text description lives in a separate paragraph (renderDescription
-// below) since both sit in the left pane's fixed header, above the
-// scrollable topic nav.
+// below) since both sit in the left pane's fixed header.
 function renderMetadata(root, metadata, topics) {
   if (!root) return;
   root.innerHTML = "";

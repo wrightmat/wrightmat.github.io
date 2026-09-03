@@ -8,15 +8,9 @@ const GAP_UNIT_REM = 0.25;
 const DEFAULT_LINE_HEIGHT = 1.3;
 
 // Every binding/formula resolution in this file goes through here instead
-// of resolveBinding directly, so `lookup(table, key)` (bindings.js's
-// createLookupFn) is available in every one of them for free — a template
-// author writing `=lookup("abilities","str").color` shouldn't need this
-// file to specifically know about it at each call site. Press has no
-// System concept of its own (see createLookupFn's own comment on why that's
-// deliberate, not a gap to close) — createLookupFn's second (System field
-// list) argument is simply omitted here, so `lookup` searches only
-// whatever's actually in `context`, same as any other @binding already
-// does.
+// of resolveBinding directly, so `lookup(table, key)` is available in every
+// one for free. Press has no System concept of its own, so createLookupFn's
+// System-field-list argument is omitted — `lookup` searches only `context`.
 function resolveBindingWithLookup(raw, context) {
   return resolveBinding(raw, context, {
     functions: { lookup: createLookupFn(context), lookupField: createLookupFieldFn(context) },
@@ -25,10 +19,8 @@ function resolveBindingWithLookup(raw, context) {
 
 // node.visibleWhen is a single combined literal/@path/=formula string, same
 // convention as node.text/node.iconClass/node.url — when present, its
-// resolved truthiness is what decides visibility, taking over from the
-// plain node.hidden checkbox (set by the inspector's own manual click path;
-// see press/js/app.js's visibilityToggle). A falsy resolved value hides the
-// node exactly like node.hidden === true always has.
+// resolved truthiness decides visibility, taking over from the plain
+// node.hidden checkbox (app.js's visibilityToggle).
 function shouldHide(node, context) {
   if (typeof node?.visibleWhen === "string" && node.visibleWhen.trim()) {
     return !resolveBindingWithLookup(node.visibleWhen, context);
@@ -49,12 +41,9 @@ function applyClassName(element, className) {
 }
 
 // Callers do `resolveClassName(node, context) ?? "some-default-class"` to
-// fall back to a required base class (e.g. "press-image") when a node
-// doesn't specify its own — that only works if this returns null/undefined
-// for "nothing to apply", not "" (which resolveBindingWithLookup("", ...) legitimately
-// returns for a className-less node), or the ?? never triggers and the
-// element silently ends up with no class — and therefore none of that base
-// class's CSS — at all.
+// fall back to a required base class. Must return null, not "" (which
+// resolveBindingWithLookup legitimately returns for a className-less node),
+// or the ?? never triggers and the element silently loses its base class.
 function resolveClassName(node, context) {
   const raw = node?.className ?? node?.classNameBind ?? "";
   if (typeof raw === "string") {
@@ -80,17 +69,12 @@ function resolveTextSizePx(node) {
   return TEXT_SIZE_MAP.md;
 }
 
-// color/backgroundColor/borderColor each have a "When" counterpart
-// (colorWhen/backgroundColorWhen/borderColorWhen — same single-combined-
-// field shape as node.visibleWhen, see shouldHide's own comment) that
-// overrides the literal when non-empty, resolved via resolveBindingWithLookup
-// against the same context every other bound value on this node already
-// resolves against. Returns a shallow-cloned styles object with the
+// color/backgroundColor/borderColor each have a "When" counterpart (same
+// single-combined-field shape as node.visibleWhen) that overrides the
+// literal when non-empty. Returns a shallow-cloned styles object with the
 // override applied where resolution actually produced something —
-// applyInlineStyles/applyBorderStyles stay completely unaware any of this
-// exists, reading whatever they're handed exactly as before. An
-// unresolvable/invalid result always falls back to the literal value,
-// never a JS-invented color.
+// applyInlineStyles/applyBorderStyles stay unaware this exists. An
+// unresolvable result always falls back to the literal value.
 const COLOR_WHEN_KEYS = {
   color: "colorWhen",
   backgroundColor: "backgroundColorWhen",
@@ -298,16 +282,12 @@ function applyTextFormatting(element, node) {
     }
   }
   if (node?.component !== "icon") {
-    // Explicit on every text-bearing element, block or inline alike,
-    // rather than left to the inherited cascade — a <span> (Inline toggle
-    // on) and a <p> (off) otherwise compute line-height from whatever
-    // ancestor context each happens to inherit through, which don't
-    // necessarily match depth-for-depth (e.g. the first repeater item's
-    // extra drop-slot wrapper vs later items with none). Setting it here
-    // unconditionally, on every node.component !== "icon" text formatting
-    // pass, guarantees inline and block text always compute the exact same
-    // way. DEFAULT_LINE_HEIGHT is only the fallback — node.style.lineHeight
-    // (the inspector's "Line height" field) always wins when set.
+    // Explicit here rather than left to the inherited cascade — a <span>
+    // and a <p> otherwise compute line-height from whatever ancestor
+    // context each inherits through, which doesn't necessarily match
+    // depth-for-depth. Setting it unconditionally guarantees inline and
+    // block text always compute the same way. DEFAULT_LINE_HEIGHT is only
+    // the fallback — node.style.lineHeight always wins when set.
     element.style.lineHeight = String(
       typeof node?.style?.lineHeight === "number" ? node.style.lineHeight : DEFAULT_LINE_HEIGHT
     );
@@ -955,22 +935,16 @@ function renderGrid(node, context, options) {
 
 // Backward compatibility for pre-grid templates: converts a legacy `stack`
 // or `row` node into the equivalent `grid` shape, recursively, without
-// mutating the input. Non-container nodes (field, already-grid contents'
-// leaves) pass through by the same object reference — this matters because
-// the table field component mutates its own `node.cells` in place in
-// editable mode to persist newly-added cells back into the caller's
-// (editor-owned) tree, and that only keeps working if normalization never
+// mutating the input. Non-container nodes pass through by the same object
+// reference — the table field component mutates its own `node.cells` in
+// place in editable mode, which only keeps working if normalization never
 // clones nodes it doesn't need to convert. `align` becomes `alignX` (row) or
-// `alignY` (stack) only when explicitly set — left unset otherwise so
-// resolveGridAlignX/Y's own defaults reproduce the old per-type default.
-// The one exception is a converted stack's alignX: a flex column's children
-// stretch to fill the cross axis (CSS's flex default) unconditionally,
-// completely independent of the stack's own `align` property (which only
-// ever drove the main-axis justify-content) — grid's equivalent default
-// ("start", matching row) would instead shrink each child to its own content
-// width, silently breaking anything that relied on that full-width box (e.g.
-// a centered text-align with nothing to center within), so it has to be set
-// explicitly here rather than left to resolveGridAlignX's shared default.
+// `alignY` (stack) only when explicitly set, so resolveGridAlignX/Y's own
+// defaults reproduce the old per-type default. Exception: a converted
+// stack's alignX is always set explicitly to reproduce flex's
+// stretch-to-fill cross-axis default — grid's own default ("start") would
+// instead shrink children to content width, breaking anything relying on a
+// full-width box.
 export function normalizeLegacyLayoutNode(node) {
   if (!node || typeof node !== "object") return node;
 
@@ -1278,29 +1252,21 @@ export function renderLayout(layout, context = {}, options = {}) {
   return rendered;
 }
 
-// Caps every auto-width layer placement (flagged with data-auto-width
-// during renderLayer, above) at the right edge of whichever layer box it
-// actually sits in — real measured geometry, not a CSS percentage, since a
-// percentage max-width on an absolutely positioned, width:auto box didn't
-// reliably resolve against the right containing block here in practice.
-// Must run after `rootElement` is attached somewhere in the document with
-// real layout (visible, or at least not display:none) — getBoundingClientRect
-// on a detached or display:none tree returns all zeros, which would clamp
-// every auto-width box down to nothing.
+// Caps every auto-width layer placement at the right edge of whichever
+// layer box it sits in — real measured geometry, not a CSS percentage,
+// since a percentage max-width on an absolutely positioned, width:auto box
+// didn't reliably resolve here. Must run after `rootElement` is attached
+// with real layout — getBoundingClientRect on a detached/display:none tree
+// returns all zeros, clamping every box to nothing.
 //
-// safeInsetIn (inches) only applies to the ROOT layer (data-press-root) when
-// its origin isn't "safe": with origin "trim"/"bleed", applyRootLayoutOrigin
-// gives that box zero padding, so its own right edge is the trim (or bleed)
-// edge, not the safe line — sitting further out than where text should
-// actually stop. Pulling the cap in by safeInsetIn there is exact for
-// "trim". For "bleed" it's an approximation (the true safe line is also
-// past the per-edge bleed inset, which varies by row/col in a multi-card
-// sheet and isn't available here) — better than no correction at all, but
-// not pixel-exact for that origin. A root layer with origin "safe" (the
-// default) needs no adjustment: applyRootLayoutOrigin already padded that
-// box by safeInset, so its own edge already IS the safe line. Nested
-// (non-root) layers have no card-level safe/trim/bleed concept at all, so
-// they're always capped at their own box's edge, unadjusted.
+// safeInsetIn only applies to the ROOT layer when its origin isn't "safe":
+// with "trim"/"bleed", applyRootLayoutOrigin gives that box zero padding, so
+// its right edge is the trim/bleed edge, not the safe line. Pulling the cap
+// in by safeInsetIn is exact for "trim", an approximation for "bleed"
+// (per-edge bleed inset varies by row/col and isn't available here). A root
+// layer with origin "safe" needs no adjustment — its edge already IS the
+// safe line. Nested layers have no safe/trim/bleed concept, so they're
+// always capped at their own box's edge.
 export function applyAutoWidthCaps(rootElement, { safeInsetIn = 0 } = {}) {
   if (!rootElement?.querySelectorAll) return;
   const safeInsetPx = safeInsetIn * 96;

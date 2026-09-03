@@ -16,10 +16,7 @@ export class StatusManager {
   show(message, { type = "info", timeout = DEFAULT_TIMEOUT } = {}) {
     const id = `status-${counter++}`;
     // Errors always persist until manually dismissed (see the close button
-    // in _render), regardless of whatever timeout a caller passed —
-    // callers shouldn't have to remember to opt into that for every error
-    // call site individually, and a caller-provided timeout would defeat
-    // the whole point of an error staying visible.
+    // in _render), regardless of a caller-passed timeout.
     const resolvedTimeout = type === "error" ? 0 : timeout;
     const item = { id, message, type, timeout: resolvedTimeout };
     this.queue.push(item);
@@ -70,11 +67,10 @@ export class StatusManager {
     text.textContent = item.message;
     wrapper.appendChild(text);
 
-    // Iconify only renders icons for elements at the moment they're added
-    // to the DOM — it doesn't watch for data-icon attribute changes on an
-    // element already rendered, so swapping copy -> check has to replace
-    // the whole <span>, not mutate the existing one's attribute (same
-    // pattern app.js's own replaceTypeIcon already uses for this reason).
+    // Iconify only renders icons when an element is added to the DOM — it
+    // doesn't watch data-icon changes — so swapping copy->check replaces the
+    // whole <span> rather than mutating its attribute (same as app.js's
+    // replaceTypeIcon).
     const setCopyIcon = (iconName) => {
       const fresh = document.createElement("span");
       fresh.className = "iconify";
@@ -106,9 +102,8 @@ export class StatusManager {
     });
     wrapper.appendChild(copyButton);
 
-    // Errors don't auto-dismiss (see show()'s resolvedTimeout) — they need
-    // an explicit way to close instead. Everything else keeps the existing
-    // timed dismissal with no close button, unchanged.
+    // Errors don't auto-dismiss (see show()'s resolvedTimeout), so they need
+    // an explicit close.
     if (item.type === "error") {
       const closeButton = document.createElement("button");
       closeButton.type = "button";

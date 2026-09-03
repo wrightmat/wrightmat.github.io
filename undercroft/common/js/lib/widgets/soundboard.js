@@ -1,32 +1,26 @@
-// GM-defined audio clips — links only, no file hosting by this app (the GM
-// supplies their own URLs, same "no Library record, no server storage"
-// philosophy as browser.js's own URL widget). Clip DEFINITIONS themselves
-// live in a shared, server-persisted library (audio-clip-library.js,
-// common/data/audio-clips.json) — same pattern Press's own custom fonts
-// use: anyone gm+ can add a clip, and it's immediately usable by everyone
-// else's Soundboard widget, building up one shared TTRPG sound catalog
-// rather than each widget instance/GM maintaining their own separate list.
+// GM-defined audio clips — links only, no file hosting by this app (same
+// "no Library record, no server storage" philosophy as browser.js's own URL
+// widget). Clip DEFINITIONS live in a shared, server-persisted library
+// (audio-clip-library.js): anyone gm+ can add a clip, and it's immediately
+// usable by everyone else's Soundboard widget, building up one shared TTRPG
+// sound catalog rather than each GM maintaining their own list.
 //
 // Two clip types with genuinely different behavior, chosen explicitly per
-// clip rather than inferred from a flag: "music" (loops by default) and
-// "sfx" (one-shot by default) — loop is still a real per-clip toggle
-// afterward (see loopOverrides below — a LOCAL, per-viewer playback
-// preference, not a shared-library edit; toggling it doesn't call the
-// server at all). Only one clip of each type can ever be active at once;
-// starting a new one in a type replaces whatever was already playing there
-// (a new Music track stops the old one; an SFX can still fire on top of
-// Music, since they're independent slots).
+// clip: "music" (loops by default) and "sfx" (one-shot by default) — loop
+// is still a real per-clip toggle afterward (see loopOverrides below, a
+// LOCAL, per-viewer preference that never calls the server). Only one clip
+// of each type can be active at once; starting a new one replaces whatever
+// was playing in that slot (a new Music track stops the old one; SFX can
+// still fire on top of Music, independent slots).
 //
-// Routing reuses the widget's own existing "show to table" eye icon —
-// confirmed with the user, same meaning as every other widget's visibility
-// toggle, no separate control: hidden means Play only plays locally, in
-// whichever browser clicked it; shown means Play also broadcasts to every
-// accepted follower and the second-screen mirror, through the same
-// spotlightToGroup/updateSpotlightData/resolveSpotlightData machinery
-// Clock/Browser/Calendar already use (see server/groups.py's own
-// _INLINE_SPOTLIGHT_KINDS — "soundboard" has no Library record at all). The
-// broadcast payload carries a clip's name/url/loop inline, so a follower
-// never needs its own copy of the shared library to play back what's sent.
+// Routing reuses the widget's existing "show to table" eye icon, same
+// meaning as every other widget's visibility toggle: hidden means Play only
+// plays locally; shown also broadcasts to every accepted follower and the
+// second-screen mirror, through the same spotlightToGroup/updateSpotlightData/
+// resolveSpotlightData machinery Clock/Browser/Calendar use ("soundboard"
+// has no Library record). The broadcast payload carries a clip's
+// name/url/loop inline, so a follower never needs its own copy of the
+// shared library.
 import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
@@ -70,13 +64,10 @@ function iconButton(name, { active = false, disabled = false, title } = {}) {
 }
 
 // HTMLMediaElement.error.code values — MEDIA_ERR_SRC_NOT_SUPPORTED (4) is
-// the one that actually fires for a URL like
-// "https://www.tabletoprpgmusic.com/#track=..." — a real webpage, not a
-// direct audio file — since the browser fetches it, gets back HTML (or a
-// player app's own JS-rendered page) instead of anything it can decode as
-// audio, and reports "unsupported source" rather than a network failure.
-// Named here specifically so that exact case reads as an actionable message
-// instead of a bare error code.
+// the one that fires for a URL pointing at a real webpage rather than a
+// direct audio file, since the browser fetches HTML instead of anything it
+// can decode as audio and reports "unsupported source" rather than a
+// network failure. Named here so that case reads as actionable.
 const MEDIA_ERROR_MESSAGES = {
   1: "Playback was aborted.",
   2: "A network error prevented loading this clip.",
@@ -90,26 +81,19 @@ function describeMediaError(mediaError) {
 }
 
 // One real <audio> element per type, reused across plays (created fresh
-// each time a NEW clip starts in that slot, previous one stopped first) —
-// this is what actually enforces "only one Music and one SFX at once,"
-// locally, independent of whether anything's currently broadcasting.
-// setPaused/setLoop are idempotent — safe to call every poll/render without
-// worrying whether the state already matches. Used by both the GM's own
-// authoring instance (immediate local feedback on every click, shown or
-// hidden) and every follower/second-screen instance (playing back whatever
-// the broadcast state says).
+// each time a new clip starts in that slot, previous one stopped first) —
+// this enforces "only one Music and one SFX at once," locally, independent
+// of whether anything's broadcasting. setPaused/setLoop are idempotent.
+// Used by both the GM's authoring instance and every follower/second-screen
+// instance (playing back whatever the broadcast state says).
 //
 // `onStateChange(type, state, detail)` — state is "loading"|"playing"|
-// "paused"|"error"|"idle"|"ended"|"progress". Previously play() just
-// fired-and-forgot with a blanket `.catch(() => {})` — real playback
-// failures (a bad URL, a blocked network request) were indistinguishable
-// from a harmless autoplay-policy rejection, and both failed completely
-// silently. This is what actually lets a caller show real per-clip
-// diagnostics instead of "nothing happened, no idea why." "progress" fires
-// on every native `timeupdate` tick (several times a second) with
-// `detail = {currentTime, duration}` — callers that render a position bar
-// should update it directly rather than routing through a full list
-// re-render, or every tick would rebuild every row in the section.
+// "paused"|"error"|"idle"|"ended"|"progress", so a real playback failure (a
+// bad URL, a blocked request) is distinguishable from a harmless autoplay
+// rejection, both previously silent under a blanket `.catch()`. "progress"
+// fires on every native `timeupdate` tick with `detail =
+// {currentTime, duration}` — callers rendering a position bar should update
+// it directly rather than through a full list re-render.
 function createLocalPlayer({ onStateChange } = {}) {
   const audioByType = { music: null, sfx: null };
 
@@ -136,20 +120,17 @@ function createLocalPlayer({ onStateChange } = {}) {
       if (audioByType[type] === audioEl) setState(type, "playing");
     });
     audioEl.addEventListener("pause", () => {
-      // `pause` also fires on natural end-of-track (a non-looping clip) and
-      // immediately before a real `error` — only report a genuine
-      // user-facing "paused" for neither of those cases.
+      // `pause` also fires on natural end-of-track and immediately before a
+      // real `error` — only report genuine "paused" for neither case.
       if (audioByType[type] === audioEl && !audioEl.error && !audioEl.ended) setState(type, "paused");
     });
     audioEl.addEventListener("error", () => {
       if (audioByType[type] !== audioEl) return;
       setState(type, "error", describeMediaError(audioEl.error));
     });
-    // Only fires for a non-looping clip (SFX by default, or Music with
-    // looping switched off) — without this, nothing ever tells a caller
-    // playback actually stopped once it reaches the end on its own, so a
-    // finished clip's row/state stays stuck looking "active" (Play button
-    // shown as Pause) until the user clicks something.
+    // Only fires for a non-looping clip — without this, nothing tells a
+    // caller playback stopped once it reaches the end on its own, so a
+    // finished clip's row stays looking "active" until the user clicks.
     audioEl.addEventListener("ended", () => {
       if (audioByType[type] !== audioEl) return;
       audioByType[type] = null;
@@ -161,13 +142,11 @@ function createLocalPlayer({ onStateChange } = {}) {
     });
     audioEl.play().catch((error) => {
       if (audioByType[type] !== audioEl) return;
-      // Distinct code path from the `error` event above (this is a promise
-      // rejection from play() itself — most commonly the browser's own
-      // autoplay policy withholding playback with no prior user gesture in
-      // THIS tab/frame, which a follower's very first play can hit) but
-      // surfaced the same way either way, since both mean "nothing is
-      // actually audible right now" and the caller shouldn't have to care
-      // which kind of failure it was.
+      // A promise rejection from play() itself — most commonly the
+      // browser's autoplay policy withholding playback with no prior user
+      // gesture, which a follower's very first play can hit. Surfaced the
+      // same way as the `error` event above, since both mean "nothing is
+      // audible right now."
       setState(type, "error", error?.message || "Playback was blocked or failed to start.");
     });
     audioByType[type] = audioEl;
@@ -210,14 +189,13 @@ function renderFollowerLine(container, activeInfo, playerError = {}) {
 // contentRef.followKind === "soundboard" marks a follower instance — created
 // by acceptSpotlight (dashboard.js) when a player accepts a GM's soundboard
 // spotlight, or by the forcePlayerView self-follow branch below for the
-// second-screen mirror. Diffs each slot's own `seq` against the last one
-// actually applied: unseen seq → stop whatever was playing in that slot and
-// start the new one; null → stop; unchanged seq → leave playback alone
-// (so an in-progress clip isn't restarted by re-polling the same state) —
-// `loop`/`paused` are re-applied every poll regardless of `seq`, since
-// those can change without the clip itself changing. Needs no access to the
-// shared clip library at all — the broadcast payload already carries
-// everything (name/url/loop) inline.
+// second-screen mirror. Diffs each slot's `seq` against the last one
+// applied: unseen seq → stop and start the new one; null → stop; unchanged
+// → leave playback alone (an in-progress clip isn't restarted by
+// re-polling the same state). `loop`/`paused` are re-applied every poll
+// regardless of `seq`, since those can change without the clip changing.
+// Needs no access to the shared clip library — the broadcast payload
+// already carries everything (name/url/loop) inline.
 function initFollowerSoundboard(container, { dataManager, groupId = "", shareToken = "", followId, setTitle }) {
   let destroyed = false;
   let pollTimer = 0;
@@ -236,10 +214,9 @@ function initFollowerSoundboard(container, { dataManager, groupId = "", shareTok
     onStateChange: (type, state, detail) => {
       playerError[type] = state === "error" ? detail : null;
       if (state === "ended") {
-        // Same "it actually stopped" gap as the GM widget's own
-        // onStateChange — without this, activeInfo (and the "Playing: X"
-        // line) would keep showing the finished clip until the next poll
-        // happens to catch up with the GM's now-cleared broadcast slot.
+        // Without this, activeInfo (and the "Playing: X" line) would keep
+        // showing the finished clip until the next poll catches up with
+        // the GM's now-cleared broadcast slot.
         activeInfo[type] = null;
       }
       render();
@@ -320,9 +297,8 @@ export function initSoundboardWidget(
   }
 
   // Second-screen mirror — a fully separate JS context, same reasoning
-  // Clock/Browser/Calendar's own forcePlayerView branch gives: treating it
-  // as a follower OF ITSELF is what makes it a live, correctly-updating
-  // view instead of one static snapshot.
+  // Clock/Browser/Calendar's forcePlayerView branch gives: treating it as a
+  // follower of itself is what makes it a live, correctly-updating view.
   if (forcePlayerView && instanceId) {
     return initFollowerSoundboard(container, { dataManager, groupId, shareToken, followId: instanceId, setTitle });
   }
@@ -337,30 +313,24 @@ export function initSoundboardWidget(
   const userTier = dataManager.getUserTier?.() || "free";
   const canAddClips = ADD_CLIP_TIERS.has(userTier);
   // Edit and Delete are both admin-only — editing a shared clip's name/URL
-  // is exactly as consequential as removing it (it changes what everyone
+  // is exactly as consequential as removing it (changes what everyone
   // else's Soundboard plays), so it gets the same gate.
   const canManageClips = userTier === "admin";
-  // `{state:"error", detail}` per type when the currently-active clip in
-  // that slot failed to play, else null — surfaced both as a toast (once,
-  // right when it happens) and as a persistent icon/tooltip on the clip's
-  // own row (renderClipRow), so a failure like a webpage URL fed to
-  // <audio> (see createLocalPlayer's own MEDIA_ERROR_MESSAGES comment)
-  // doesn't just read as "nothing happened, no idea why."
+  // `{state:"error", detail}` per type when the active clip in that slot
+  // failed to play, else null — surfaced as both a toast and a persistent
+  // icon/tooltip on the clip's row (renderClipRow), so a failure doesn't
+  // just read as "nothing happened."
   const playerState = { music: null, sfx: null };
-  // {currentTime, duration} per type while that slot is actively playing,
-  // else null — driven by createLocalPlayer's own "progress" state (native
-  // `timeupdate`, several times a second). Kept separate from playerState/
-  // renderLists() on purpose: routing every tick through a full row rebuild
-  // would rebuild every clip row in the section several times a second for
-  // no reason — applyProgressToBar below updates just the one fill element
-  // directly instead.
+  // {currentTime, duration} per type while playing, driven by
+  // createLocalPlayer's "progress" state. Kept separate from playerState/
+  // renderLists() — routing every tick through a full row rebuild would
+  // rebuild every clip row several times a second for no reason;
+  // applyProgressToBar below updates just the one fill element directly.
   const progressState = { music: null, sfx: null };
-  // DOM ref to the currently-mounted progress fill element per type, if the
-  // active clip's row is currently rendered — reassigned by buildProgressBar
-  // on every renderLists() (renderSection tears down and rebuilds each
-  // section's rows wholesale), so a stale ref here just means the last
-  // render didn't include that type's active row (e.g. filtered out by a
-  // search query) and progress updates are harmlessly skipped until it is.
+  // DOM ref to the mounted progress fill element per type, reassigned by
+  // buildProgressBar on every renderLists() — a stale ref just means the
+  // last render didn't include that type's active row (e.g. filtered out
+  // by search), and progress updates are harmlessly skipped until it is.
   const progressBarEls = { music: null, sfx: null };
   const player = createLocalPlayer({
     onStateChange: (type, state, detail) => {
@@ -377,11 +347,9 @@ export function initSoundboardWidget(
         progressState[type] = null;
       }
       if (state === "ended") {
-        // Finished on its own (a non-looping clip reached the end) — clear
-        // the active state so the row goes back to a plain Play icon
-        // instead of staying highlighted as "playing" forever, and push
-        // that to followers too so their own "Playing: X" line clears
-        // instead of waiting on the next 5s poll to notice.
+        // Finished on its own — clear the active state so the row goes back
+        // to a plain Play icon, and push that to followers too so their
+        // "Playing: X" line clears instead of waiting on the next poll.
         activeClipId[type] = null;
         pausedState[type] = false;
         if (visible) void pushBroadcastState();
@@ -393,21 +361,18 @@ export function initSoundboardWidget(
   const pausedState = { music: false, sfx: false };
   const seqCounter = { music: 0, sfx: 0 };
   // A LOCAL playback preference, not a shared-library edit — flipping a
-  // clip's Loop button never calls the server (see this file's own header
-  // comment). Falls back to the clip's own catalog default (clip.loop) for
-  // anything not explicitly overridden this session.
+  // clip's Loop button never calls the server. Falls back to the clip's own
+  // catalog default (clip.loop) for anything not overridden this session.
   const loopOverrides = new Map();
 
   function effectiveLoop(clip) {
     return loopOverrides.has(clip.id) ? loopOverrides.get(clip.id) : Boolean(clip.loop);
   }
 
-  // The active clip (playing OR paused — it stays pinned across a pause
-  // rather than jumping back into list order and then back to the top
-  // again on resume, which read as more confusing than helpful) floats to
-  // the very top of its own type's list, ahead of the query filter's own
-  // alphabetical/library order — the exact "which one's playing right now"
-  // question that prompted this, no scrolling required to answer it.
+  // The active clip (playing OR paused — pinned across a pause rather than
+  // jumping in and out of list order) floats to the top of its type's
+  // list, ahead of alphabetical order — answers "which one's playing right
+  // now" with no scrolling required.
   function clipsByType(type) {
     const query = searchQuery.trim().toLowerCase();
     const clips = getAllClips().filter(
@@ -498,28 +463,21 @@ export function initSoundboardWidget(
     await refreshVisibility();
   }
 
-  // Exposed on this instance's own returned object (see the bottom of this
-  // function) — what macro-runner.js's runSoundboardMacroAction (soundboard.js's
-  // own module-level exports below) calls INSTEAD of its standalone
-  // fallback whenever a real, mounted Soundboard widget exists for it to
-  // route through (dashboard.js's own ensureWidgetForMacroAction — see that
-  // function's own comment). Routing through THIS widget's own player/
-  // activeClipId/broadcast state, rather than a disconnected module-level
-  // player, is what makes a macro-started clip show up as "now playing" —
-  // and stay controllable (Stop, volume, loop) — in whichever real
-  // Soundboard widget the GM has on screen, auto-added or not.
+  // Exposed on this instance's returned object — what macro-runner.js's
+  // runSoundboardMacroAction calls INSTEAD of its standalone fallback
+  // whenever a real, mounted Soundboard widget exists to route through.
+  // Routing through THIS widget's own player/activeClipId/broadcast state,
+  // rather than a disconnected module-level player, is what makes a
+  // macro-started clip show up as "now playing" — and stay controllable —
+  // in whichever real Soundboard widget the GM has on screen.
   async function runMacroAction(action) {
     const params = action?.params || {};
     if (action?.action === "play") {
-      // getClipById alone isn't enough here: this widget's own mount kicks
-      // off loadClipLibrary() but doesn't await it (see this file's own
-      // init below), so a macro that auto-adds this widget and fires
-      // immediately (dashboard.js's ensureWidgetForMacroAction) can still
-      // race ahead of that fetch. resolveClip (below) covers that by
-      // lazily awaiting loadClipLibrary() itself on a cache miss — the
-      // exact "Unknown clip" bug this widget's standalone macro path
-      // already fixed once, just reachable again through this instance
-      // path since it used to call getClipById directly.
+      // getClipById alone isn't enough: this widget's mount kicks off
+      // loadClipLibrary() but doesn't await it, so a macro that auto-adds
+      // this widget and fires immediately can race ahead of that fetch.
+      // resolveClip (below) covers that by lazily awaiting loadClipLibrary
+      // itself on a cache miss.
       const clip = await resolveClip(params.clipId);
       if (!clip) throw new Error(`Unknown clip "${params.clipId || ""}".`);
       const loop = params.loop !== undefined ? Boolean(params.loop) : effectiveLoop(clip);
@@ -531,9 +489,8 @@ export function initSoundboardWidget(
       if (params.broadcast && groupId && instanceId) {
         if (!visible) {
           // A macro asking to broadcast implies "start showing this to the
-          // table" — same as clicking the eye icon — so later natural
-          // state changes (pause, stop, the clip ending on its own) keep
-          // reaching followers too, not just this one snapshot.
+          // table" — same as clicking the eye icon — so later state
+          // changes keep reaching followers too, not just this snapshot.
           visible = true;
           updateVisibilityAction();
           void dataManager
@@ -553,14 +510,12 @@ export function initSoundboardWidget(
     return Promise.reject(new Error(`Unknown Soundboard macro action "${action?.action}".`));
   }
 
-  // Clicking the same active clip again toggles pause/resume in place (no
-  // restart, no new seq); clicking a DIFFERENT clip (or the same one after
-  // it was stopped) starts it fresh. Always acts locally immediately,
-  // regardless of visibility — broadcast is an ADDITION on top of local
-  // playback, never a replacement for it. An active clip that's currently
-  // in an error state is treated as NOT really active for this purpose —
-  // clicking it retries a fresh play() rather than toggling pause on a
-  // dead <audio> element that was never actually playing anything.
+  // Clicking the same active clip again toggles pause/resume in place;
+  // clicking a different clip (or the same one after being stopped) starts
+  // it fresh. Always acts locally immediately — broadcast is an addition on
+  // top, never a replacement. An active clip in an error state is treated
+  // as not really active — clicking it retries a fresh play() rather than
+  // toggling pause on a dead <audio> element.
   function handlePlayPauseClick(type, clip) {
     const isRetryable = activeClipId[type] === clip.id && !playerState[type];
     if (isRetryable) {
@@ -606,11 +561,8 @@ export function initSoundboardWidget(
   }
 
   // Optimistic, same "update immediately, persist async" flow every other
-  // shared-library write in this file uses — saveClip upserts by id
-  // server-side, so saving with the SAME id as an existing clip replaces it
-  // in place rather than creating a duplicate. Reverts the in-memory copy
-  // if the server round-trip fails, since the optimistic update already
-  // overwrote it.
+  // shared-library write here uses — saveClip upserts by id server-side.
+  // Reverts the in-memory copy if the round-trip fails.
   async function handleSaveEdit(clip, nextName, nextUrl) {
     if (!canManageClips) return;
     const name = nextName.trim();
@@ -662,12 +614,9 @@ export function initSoundboardWidget(
   }
 
   // Sets just the fill element's width from the latest known
-  // {currentTime, duration} — called on every "progress" tick AND once
-  // right when a row is (re)built, so a bar that's rebuilt mid-playback
-  // (e.g. from an unrelated loop-toggle click elsewhere in the same
-  // section) starts at the correct position instead of resetting to 0 and
-  // waiting for the next tick. No duration yet (still loading, or a stream
-  // that never reports one) just shows an empty bar rather than guessing.
+  // {currentTime, duration} — called on every "progress" tick and once when
+  // a row is (re)built, so a bar rebuilt mid-playback starts at the correct
+  // position instead of resetting to 0. No duration yet shows an empty bar.
   function applyProgressToBar(type) {
     const fill = progressBarEls[type];
     if (!fill) return;
@@ -746,21 +695,19 @@ export function initSoundboardWidget(
     }
     wrapper.appendChild(row);
     // Only the active, non-error slot gets a bar — a stopped/idle clip has
-    // no "how far along" to show, and an errored one never actually started.
+    // nothing to show, and an errored one never actually started.
     if (isActive && !isError) {
       wrapper.appendChild(buildProgressBar(type));
     }
     return wrapper;
   }
 
-  // One compact row: a type toggle (icon + tooltip, click to switch between
-  // Music/SFX — the loop default the type implies only matters at the
-  // moment of adding; each clip's own Loop button can flip it anytime
-  // after, locally), name, URL, Add. Built once and never torn down by
-  // renderLists (see that function's own comment) — its inputs hold real,
-  // ephemeral in-progress typing. Omitted entirely below this tier
-  // (ADD_CLIP_TIERS) — browsing and playing the shared library needs no
-  // special tier, only adding to it does.
+  // One compact row: a type toggle (click to switch Music/SFX — the loop
+  // default only matters at the moment of adding; each clip's own Loop
+  // button can flip it anytime after, locally), name, URL, Add. Built once
+  // and never torn down by renderLists — its inputs hold real in-progress
+  // typing. Omitted below ADD_CLIP_TIERS — browsing/playing the shared
+  // library needs no special tier, only adding to it does.
   function renderAddClipForm() {
     const form = el("div", "d-flex align-items-center gap-1 border-top pt-2");
 
@@ -796,8 +743,8 @@ export function initSoundboardWidget(
       }
       const clip = { id: randomId(), name, url, type: addType, loop: addType === "music" };
       // Optimistic — registered locally immediately so it shows up in the
-      // list right away, same "update immediately, persist async" flow
-      // font-library.js's own registerCustomFont/saveCustomFont pair uses.
+      // list right away, same flow font-library.js's registerCustomFont/
+      // saveCustomFont pair uses.
       registerClip(clip);
       renderLists();
       nameInput.value = "";
@@ -810,9 +757,8 @@ export function initSoundboardWidget(
     });
 
     form.append(typeButton, nameInput, urlInput, addButton);
-    // This form is built once and never re-swept by renderSection's own
-    // dispose/refresh cycle (see this function's own header comment) — arm
-    // typeButton/addButton's tooltips directly, here, once.
+    // Built once and never re-swept by renderSection's dispose/refresh
+    // cycle — arm typeButton/addButton's tooltips directly, here, once.
     refreshTooltips(form);
     return form;
   }
@@ -845,11 +791,11 @@ export function initSoundboardWidget(
     renderSection(sfxHost, "sfx");
   }
 
-  // Each type gets its OWN independently bounded, independently scrollable
-  // section — otherwise a growing shared library (the whole point of this
-  // refactor) would make the widget itself grow without bound. Returns
-  // `{section, host}`: `section` (the labeled wrapper) gets appended to the
-  // widget; `host` (the scrollable inner div) is what renderSection fills.
+  // Each type gets its own independently bounded, scrollable section —
+  // otherwise a growing shared library would make the widget grow without
+  // bound. Returns `{section, host}`: `section` (the labeled wrapper) gets
+  // appended to the widget; `host` (scrollable inner div) is what
+  // renderSection fills.
   function buildScrollableSection(type) {
     const section = el("div", "d-flex flex-column gap-1");
     section.appendChild(el("div", "small fw-semibold text-body-secondary", `${TYPE_LABEL[type]}${type === "music" ? "" : "s"}`));
@@ -897,9 +843,9 @@ export function initSoundboardWidget(
   render();
   setTitle?.("Soundboard");
   void (async () => {
-    // The shared library may not have been fetched by anything in THIS
-    // session yet — render once immediately with whatever's already in
-    // memory (possibly empty), then refresh once the real list lands.
+    // The shared library may not have been fetched yet this session —
+    // render once immediately with whatever's in memory, then refresh once
+    // the real list lands.
     await loadClipLibrary();
     if (!destroyed) renderLists();
   })();
@@ -929,18 +875,14 @@ export function initSoundboardWidget(
 
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
 // Prefers routing through a real, mounted Soundboard widget's own
-// runMacroAction (see initSoundboardWidget above) when one is available —
-// dashboard.js's own ensureWidgetForMacroAction auto-adds one if none
-// exists yet, specifically so a macro-started clip shows up as "now
-// playing" (and stays controllable — Stop, volume, loop) in a real widget
-// the GM can see, rather than an invisible standalone player nothing on
-// screen reflects. The standalone path below (module-level createLocalPlayer
-// + a macro-owned spotlight id) is the fallback for contexts with no
-// widget grid to add to at all — a macro fired from a Journal note
-// (journal-macro.js) or a Dashboard with `ensureWidget` unavailable for
-// any other reason. resolveSpotlightData has no dependency on any widget
-// being mounted (see spotlight.js), so the fallback's own broadcast still
-// reaches followers/the second-screen mirror either way.
+// runMacroAction when available — dashboard.js's ensureWidgetForMacroAction
+// auto-adds one if none exists, so a macro-started clip shows up as "now
+// playing" in a real widget rather than an invisible standalone player. The
+// standalone path below (module-level createLocalPlayer + a macro-owned
+// spotlight id) is the fallback for contexts with no widget grid at all —
+// a macro fired from a Journal note, or a Dashboard with `ensureWidget`
+// unavailable. resolveSpotlightData has no dependency on any widget being
+// mounted, so the fallback's broadcast still reaches followers either way.
 
 export const SOUNDBOARD_MACRO_ACTIONS = {
   play: { label: "Play a clip", params: ["clipId", "broadcast", "loop"] },
@@ -959,17 +901,12 @@ function getMacroPlayer() {
   return macroPlayer;
 }
 
-// getClipById reads audio-clip-library.js's own in-memory `customClips`,
-// which starts empty and is only ever populated by loadClipLibrary() — the
-// live Soundboard widget calls that on its own mount, but a macro can run
-// with no Soundboard widget mounted anywhere on the dashboard at all (the
-// whole point of this being standalone). Confirmed real bug: running a
-// clip-playing macro before any Soundboard widget had ever mounted this
-// session failed with "Unknown clip" even for a perfectly valid id, since
-// nothing had loaded the library yet. Lazily loads once, on first miss —
-// loadClipLibrary has no internal caching guard of its own (see its own
-// comment), so this only pays the fetch cost when the cache actually
-// turns out to be empty, not on every macro run once it's warm.
+// getClipById reads audio-clip-library.js's in-memory `customClips`, which
+// starts empty and is only populated by loadClipLibrary() — a macro can run
+// with no Soundboard widget ever mounted (the whole point of standalone),
+// so without this a clip-playing macro fails with "Unknown clip" even for
+// a valid id. Lazily loads once, on first miss, so this only pays the
+// fetch cost when the cache is actually empty.
 async function resolveClip(clipId) {
   const existing = getClipById(clipId);
   if (existing) return existing;
@@ -991,28 +928,18 @@ export async function runSoundboardMacroAction(action, { dataManager, groupConte
       throw new Error(`Unknown clip "${params.clipId || ""}".`);
     }
     const loop = params.loop !== undefined ? Boolean(params.loop) : Boolean(clip.loop);
-    // Confirmed real bug: `broadcast` used to REPLACE local playback
-    // instead of adding to it — a macro run with no live Soundboard
-    // widget for ensureWidget to route through (a Journal-triggered macro
-    // with no widget grid at all, or one where ensureWidget didn't find/
-    // add a match) posted the "show to the table" spotlight entry and
-    // nothing else, so the GM who actually fired the macro heard nothing
-    // — only a follower who'd separately accepted that spotlight would.
-    // The live widget's own runMacroAction never had this bug (it always
-    // plays locally via player.play, broadcasting is a true addition on
-    // top) — matched here now instead of a second, inconsistent shape.
+    // `broadcast` is an addition on top of local playback, never a
+    // replacement — always plays locally via player.play first, matching
+    // the live widget's own runMacroAction shape.
     getMacroPlayer().play(clip.type, { ...clip, loop });
-    // Best-effort, same as the live widget's own runMacroAction (which
-    // silently skips/swallows a missing groupContext or a failed post
-    // rather than throwing) — a broadcast that can't go out doesn't mean
-    // the local play the GM can already hear should read as a failed step.
+    // Best-effort, same as the live widget's runMacroAction — a broadcast
+    // that can't go out doesn't mean the local play should read as failed.
     const groupId = groupContext?.groupId;
     if (params.broadcast && dataManager && groupId) {
       try {
-        // Merge onto whatever's already in the macro's own broadcast slot
-        // rather than overwriting it outright, so playing a Music clip
-        // doesn't silently stop an unrelated SFX another macro action
-        // already started broadcasting under the same id.
+        // Merge onto whatever's already in the macro's broadcast slot
+        // rather than overwriting it, so playing a Music clip doesn't stop
+        // an unrelated SFX another macro action started under the same id.
         const existing = (await resolveSpotlightData(dataManager, {
           groupId,
           kind: "soundboard",
@@ -1035,10 +962,8 @@ export async function runSoundboardMacroAction(action, { dataManager, groupConte
 
   if (actionName === "stop") {
     const type = params.clipType === "music" || params.clipType === "sfx" ? params.clipType : "sfx";
-    // Same additive fix as "play" above — always stop the local player;
-    // clearing the broadcast slot is a best-effort addition, not a
-    // replacement (a broadcast-started clip that never played locally,
-    // under the old bug, also could never be silenced locally either).
+    // Always stop the local player; clearing the broadcast slot is a
+    // best-effort addition, not a replacement.
     getMacroPlayer().stop(type);
     const groupId = groupContext?.groupId;
     if (params.broadcast && dataManager && groupId) {

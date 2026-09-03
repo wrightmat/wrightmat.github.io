@@ -13,14 +13,15 @@
 3. **Vanilla-First UI** – Stick to plain JavaScript and DOM APIs. SortableJS is the sole approved helper for drag-and-drop interactions, and Toast UI Editor for rich text.
 4. **Bootstrap via CDN** – Use Bootstrap 5 utilities and components loaded from a CDN. Keep custom CSS minimal, centralised in `css/styles.css`, and lean on Bootstrap classes whenever possible.
 5. **Consistent Layout** – Maintain the three-pane layout (left tools, center canvas, right utilities) with collapsible panes and a shared app shell.
-6. **Match Existing Precedent** – Before adding new UI or architecture, name the nearest existing precedent and confirm the new work matches its *placement*, not just its shape (e.g. a kind-specific editor belongs on its own tab, never bolted onto Loom's kind-agnostic Library tab). If something must genuinely diverge from precedent, state why explicitly rather than burying the exception in the implementation.
+6. **Match Existing Precedent** – Before adding new UI or architecture, name the nearest existing precedent and confirm the new work matches its *placement*, not just its shape (e.g. a kind-specific editor belongs on its own tab, never bolted onto Loom's kind-agnostic Library tab). If something must genuinely diverge from precedent, state why explicitly rather than burying the exception in the implementation. Extend this to rendering itself: Template editor and Play/Edit are separate render implementations of the same component vocabulary — a change to shared component behavior must be checked and kept behaviorally identical in both files, not just the one you're editing.
 
 ## Authoring Guidelines
 - Compose JavaScript as ES modules with explicit imports/exports. Share cross-editor utilities through `js/lib` (create the folder if needed).
 - When creating functions, ensure that names don't conflict (avoid 'function' has already been declared errors). If functions names are similar, then first ensure that no duplication of functionality is created - reuse functions when possible).
-- Wrap each page module in an IIFE (`(() => { /* page code */ })();`) so a double-evaluated script doesn't clash on top-level `const` declarations. Run `scripts/check-modules.mjs` before committing changes to Workbench editors — it catches duplicate-identifier regressions like this across shared libraries and page entry points.
+- Wrap each page module in an IIFE (`(() => { /* page code */ })();`) so a double-evaluated script doesn't clash on top-level `const` declarations.
 - When updating HTML, ensure assets are referenced relative to this directory so the Python server can host them without extra configuration.
 - Keep documentation current. `undercroft/README.md` is the only suite-level Markdown doc (this file describes agent conventions, not what the suite does — see the Project Overview above); a new tool, workflow, or data-shape change belongs there. Everything else — how a function or module works — belongs in a code comment, not a separate Markdown file.
+- Comments explain the *why*, never the *what*/*how* — well-named code already makes those clear. Default to no comment at all; write one only for a genuinely non-obvious constraint, invariant, or workaround, and keep it to that insight alone — not a discursive multi-paragraph justification, and never a reference to the current task, a past fix, or a specific incident (that belongs in a commit message, not the code).
 - CSS additions must include a rationale in the PR summary when Bootstrap utilities are insufficient.
 
 ## Testing & Validation

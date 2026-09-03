@@ -1,27 +1,16 @@
-// A general-purpose Dashboard "Calculator" widget, built to host more than
-// one calculator type over time via the Type select below — "Travel Time"
-// and "Dice Probability" today, a third is a new render function plus one
-// more `<option>`, not a redesign. Travel Time was ported from the legacy
-// `dnd/travel.js` overland-travel calculator, with its D&D5e-flavored
-// content (which travel means exist, their speed/fare) moved to
-// System-authored data (`common/js/lib/travel-means.js`) instead of being
-// hardcoded here, and two real bugs fixed rather than reproduced: the old
-// tool's "party roster" table was fully dead markup (targeted a
-// `#players-table` removed from the HTML in a past commit), and its rations
-// cost was computed per-player but never actually multiplied by the
-// player-count field it collected.
+// A general-purpose Dashboard "Calculator" widget hosting more than one
+// calculator type via the Type select below — a new one is a render
+// function plus an `<option>`, not a redesign. Travel means content
+// (which means exist, speed/fare) is System-authored data
+// (`common/js/lib/travel-means.js`), never hardcoded here.
 //
-// There is deliberately no hardcoded weather/random-encounter logic here —
-// the suite already has a general mechanism for "something happens as the
-// party travels": a GM-authored rollable table in a Repository Journal page
-// (`[[Page Title#^blockId]]`, resolved by rollExpression, dice-roll.js).
-// The Daily macro field just runs whatever roll/table reference the GM
-// configures once per day of the computed trip (e.g.
-// `dice:[[Encounters#^encounter-table]]`) and prints each day's result —
-// weather itself doesn't belong to a *trip* at all (a GM might roll it once
-// at the start of a session regardless of travel), so it isn't handled here;
-// it's just an ordinary Board macro button elsewhere pointed at
-// `dice:[[Weather#^random-weather-table]]`.
+// No hardcoded weather/random-encounter logic — the suite already has a
+// general mechanism for "something happens as the party travels": a
+// GM-authored rollable table in a Journal page, resolved by rollExpression.
+// The Daily macro field runs whatever roll/table reference the GM
+// configures once per day of the trip and prints each day's result.
+// Weather itself isn't handled here (it doesn't belong to a *trip*) — it's
+// an ordinary Board macro button pointed at a weather table elsewhere.
 import { resolveActiveDice, rollExpression } from "./dice-roll.js";
 import { extractSystemTravelMeans, computeFareCopper, formatCopperAsCurrency } from "../travel-means.js";
 import { fetchKindEntriesWithIds } from "../content-fetch.js";
@@ -37,17 +26,10 @@ import {
 } from "../calculator-modes/encounter-xp.js";
 import { computeCharacterTotalWeight, resolveWeightUnitLabel } from "../calculator-modes/inventory-weight.js";
 import { loadRarityPriceRanges, rollItemPrices, PRICE_CHECK_TIERS } from "../item-pricing.js";
-// Cross-tool import of Vault's own reference-data loader — same established
-// precedent as this file's own Repository imports below (journal-tables.js,
-// the two autocompletes): a Dashboard widget reusing one tool's data-loading
-// module isn't a layering violation in this codebase, it's how "the same
-// list Vault itself uses" is guaranteed rather than re-fetched a second way.
+// Cross-tool import of Vault's own reference-data loader, guaranteeing the
+// same list Vault itself uses rather than re-fetching it a second way.
 import { listWondersForSystem } from "../../../../vault/js/lib/tables.js";
-// Same `` `macro:`/`encounter:`/`dice:`/`kindId:` `` and `[[Page Title]]`
-// filtered autocomplete dropdowns Board's own "Add a card" input attaches
-// (board.js) — reused as-is rather than duplicated, so the Daily macro
-// field behaves identically to every other reference-authoring input in the
-// suite.
+// Same autocomplete dropdowns Board's "Add a card" input attaches (board.js), reused as-is.
 import { attachCodeBlockAutocomplete } from "../../../../repository/js/lib/code-block-autocomplete.js";
 import { attachWikiLinkAutocomplete } from "../../../../repository/js/lib/wiki-link-autocomplete.js";
 import { el, setElementVisible } from "../dom.js";
@@ -69,17 +51,11 @@ const MODE_OPTIONS = [
 ];
 
 // Same `` `dice:` `` prefix convention journal-dice.js/journal-kind-reference.js
-// already recognize inline in Journal text — duplicated locally rather than
-// exported/shared (same precedent those two files already set), so a GM can
-// paste the exact same macro text they'd use anywhere else in the suite.
-// Every other place this syntax appears is a markdown code span (`` ` ``-
-// wrapped), so wrapping backticks are stripped FIRST, before the optional
-// "dice:" prefix — otherwise a pasted `` `dice:[[Page#^block]]` `` (typed
-// exactly like it would be in a Journal page or Board card) leaves the
-// backticks attached to the expression, which the table-reference parser
-// then rejects (its whole-string match fails) and rollDiceExpression's own
-// parser can't tokenize either, surfacing as a confusing "Invalid dice
-// expression" toast. Confirmed real bug, not reproduced.
+// recognize inline in Journal text, duplicated locally so a GM can paste
+// the exact same macro text used elsewhere in the suite. Wrapping backticks
+// are stripped BEFORE the optional "dice:" prefix — otherwise a pasted
+// `` `dice:[[Page#^block]]` `` leaves backticks attached to the expression,
+// which neither the table-reference parser nor rollDiceExpression can tokenize.
 const DICE_PREFIX_PATTERN = /^dice:\s*(.+)$/i;
 function stripDicePrefix(value) {
   const unwrapped = String(value || "")
@@ -174,13 +150,10 @@ export function initCalculatorWidget(
     return { destroy() {} };
   }
 
-  // Persisted per-instance: which calculator Type is showing, which Setting
-  // scopes the travel-means list (see travel-means.js's own per-value
-  // settingIds), the optional daily-macro reference, and Inventory Weight's
-  // own scope/character pick — everything else (distance/pace/means/hours/
-  // dice pool, and Encounter XP's own roster/tier/monster selections) is a
-  // fresh calculation each time, not persisted, same as the Dice Roller
-  // widget's own expression input isn't.
+  // Persisted per-instance: active Type, Setting scope, daily-macro
+  // reference, Inventory Weight's scope/character. Everything else
+  // (distance/pace/means/hours, Encounter XP's roster/tier/monster
+  // selections) is a fresh calculation each time, not persisted.
   let config = {
     mode: "traveltime",
     settingId: "",
@@ -215,10 +188,7 @@ export function initCalculatorWidget(
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
 
-  // The Type select mounts into the Dashboard card's own title bar, right
-  // next to this widget's "Calculator" title (setHeaderContent, dashboard.js)
-  // — not as a row inside the widget's own content — so it reads as
-  // "Calculator [Travel Time ▾]" in the header itself.
+  // Mounts into the Dashboard card's own title bar via setHeaderContent, so it reads "Calculator [Travel Time ▾]".
   const modeSelect = document.createElement("select");
   modeSelect.className = "form-select form-select-sm";
   modeSelect.style.maxWidth = "10rem";
@@ -230,10 +200,7 @@ export function initCalculatorWidget(
   });
   setHeaderContent?.(modeSelect);
 
-  // Setting is only meaningful for Travel Time (it scopes which travel means
-  // apply) — lives on the Calculate row (below), not up here, since it's
-  // nested inside travelSection now and hidden along with the rest of it
-  // whenever a different calculator Type is active.
+  // Setting scopes which travel means apply — nested inside travelSection so it hides with the rest of Travel Time.
   const settingGroup = el("div", "d-flex align-items-center gap-2 ms-auto");
   settingGroup.appendChild(el("span", "small text-body-secondary", "Setting"));
   const settingSelect = document.createElement("select");
@@ -256,8 +223,7 @@ export function initCalculatorWidget(
     return { row, input };
   }
 
-  // Reads like a sentence — "24 miles at Normal Pace" — same style as the
-  // Travel means/Speed/Hours row below, no standalone "Distance" label.
+  // Reads like a sentence — "24 miles at Normal Pace" — no standalone "Distance" label.
   const distanceRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
   const distanceField = numberField("Distance (miles)", 24, 0);
   distanceRow.appendChild(distanceField.input);
@@ -279,18 +245,14 @@ export function initCalculatorWidget(
   distanceRow.appendChild(paceSelect);
   paceSelect.addEventListener("change", () => updateSpeedDisplay());
 
-  // Reads like a sentence — "On Foot at 3 mph for 8 hours" — Travel means,
-  // its live Speed readout, and Hours traveled per day all share one row
-  // instead of three stacked label/control rows.
+  // Reads like a sentence — "On Foot at 3 mph for 8 hours" — one row instead of three stacked label/control rows.
   const meansRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
   const meansSelect = document.createElement("select");
   meansSelect.className = "form-select form-select-sm";
   meansSelect.style.maxWidth = "10rem";
   meansRow.appendChild(meansSelect);
   meansRow.appendChild(el("span", "small text-body-secondary", "at"));
-  // A live readout, not an input — updates from the selected means' own
-  // speedMph and the current Pace, same as the legacy travel calculator's
-  // own up-front speed display, before Calculate is ever clicked.
+  // A live readout, not an input — updates from the selected means' speedMph and the current Pace.
   const speedDisplay = el("span", "small fw-semibold", "—");
   meansRow.appendChild(speedDisplay);
   meansRow.appendChild(el("span", "small text-body-secondary", "for"));
@@ -306,11 +268,7 @@ export function initCalculatorWidget(
   fareSelect.style.maxWidth = "8rem";
   fareRow.appendChild(fareSelect);
 
-  // Same row shape as Pace/Travel means/Fare class above (label grows,
-  // control sits at a fixed width on the right) so this lines up with the
-  // rest of the trip controls instead of reading as a separate config box.
-  // Sits below Calculate — optional, so a GM who doesn't want per-day rolls
-  // never has to look at it.
+  // Same row shape as the controls above. Sits below Calculate and is optional.
   const dailyMacroRow = el("div", "d-flex align-items-center gap-2");
   dailyMacroRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Daily macro (optional)"));
   const dailyMacroInput = document.createElement("input");
@@ -320,19 +278,14 @@ export function initCalculatorWidget(
   dailyMacroInput.placeholder = "dice:[[Encounters#^encounter-table]]";
   dailyMacroInput.value = config.dailyMacro || "";
   dailyMacroInput.addEventListener("change", () => persistConfig({ dailyMacro: dailyMacroInput.value.trim() }));
-  // Same two autocompletes attached in the same order as Board's "Add a
-  // card" input (code-block-autocomplete.js's own keydown handler must run
-  // first so event.defaultPrevented is already set — not relied on here
-  // since this input commits on "change", not Enter, but kept consistent
-  // with the established attach order anyway).
+  // Same two autocompletes, same attach order, as Board's "Add a card" input.
   const dailyMacroAutocompletes = [
     attachCodeBlockAutocomplete(dailyMacroInput, { dataManager }),
     attachWikiLinkAutocomplete(dailyMacroInput, { getEntries: () => journalEntriesForAutocomplete }),
   ];
   dailyMacroRow.appendChild(dailyMacroInput);
 
-  // Gates whether the macro fires at all each day — a 100% chance (the
-  // default) behaves exactly like before this existed (always triggers).
+  // Gates whether the macro fires each day — 100% (the default) always triggers.
   const dailyMacroChanceInput = document.createElement("input");
   dailyMacroChanceInput.type = "number";
   dailyMacroChanceInput.className = "form-control form-control-sm";
@@ -492,11 +445,7 @@ export function initCalculatorWidget(
   // --- Item Price ------------------------------------------------------
   const itemPriceSection = el("div", "d-flex flex-column gap-2");
 
-  // Optional — picking a saved Wonder just auto-fills the Rarity select
-  // below to whatever that Wonder's own "rarity" property resolved to
-  // (see loadItemPriceOptions); it's a shortcut, not a requirement, so a
-  // GM pricing something that was never generated in Vault can still pick
-  // a Rarity directly.
+  // Optional — picking a saved Wonder auto-fills Rarity below (see loadItemPriceOptions); not required.
   const itemWonderRow = el("div", "d-flex align-items-center gap-2 flex-wrap");
   itemWonderRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "Wonder (optional)"));
   const itemWonderSelect = document.createElement("select");
@@ -516,10 +465,7 @@ export function initCalculatorWidget(
     'This System has no Rarity price ranges configured — add priceMin/priceMax to its "rarity" field\'s values via Loom\'s Property editor (Extra JSON).'
   );
 
-  // Optional — the GM's own read of how a Persuasion/Insight/appraisal-
-  // flavored check the PC already rolled went, compared against whatever DC
-  // the table uses. Left at "No check rolled" this has no effect at all,
-  // same shape as the "Setting" blank option elsewhere in this widget.
+  // Optional — the GM's read of how a Persuasion/Insight check went. Left at "No check rolled" it has no effect.
   const itemCheckRow = el("div", "d-flex align-items-center gap-2");
   itemCheckRow.appendChild(el("span", "small text-body-secondary flex-grow-1", "PC's check"));
   const itemCheckSelect = document.createElement("select");
@@ -529,10 +475,7 @@ export function initCalculatorWidget(
     const option = document.createElement("option");
     option.value = tier.id;
     option.textContent = tier.label;
-    // "No check rolled" is the default state (no PC check happened yet),
-    // not just whichever tier happens to render first in the worst-to-best
-    // list order above.
-    option.selected = tier.id === "none";
+    option.selected = tier.id === "none"; // "No check rolled" is the default state, not just list order
     itemCheckSelect.appendChild(option);
   });
   itemCheckRow.appendChild(itemCheckSelect);
@@ -557,8 +500,7 @@ export function initCalculatorWidget(
 
   function renderMode() {
     const mode = modeSelect.value;
-    // settingGroup lives inside travelSection now, so hiding/showing that
-    // whole section already covers it — no separate toggle needed.
+    // settingGroup lives inside travelSection, so hiding that section already covers it.
     setElementVisible(travelSection, mode === "traveltime", "flex");
     setElementVisible(diceProbSection, mode === "diceprob", "flex");
     setElementVisible(encounterSection, mode === "encounterxp", "flex");
@@ -602,18 +544,14 @@ export function initCalculatorWidget(
     setElementVisible(fareRow, options.length > 0, "flex");
   }
 
-  // Picking a Travel means re-suggests Hours traveled per day (its own
-  // hoursPerDay) — the same auto-fill the legacy travel calculator had.
-  // Still just a suggestion: the GM's own edit to the field isn't
-  // overwritten again until the means changes.
+  // Picking a Travel means re-suggests Hours traveled per day — a
+  // suggestion only, not overwritten again until the means changes.
   function applySuggestedHours() {
     const means = selectedMeans();
     if (means) hoursField.input.value = String(means.hoursPerDay);
   }
 
-  // Live Speed readout — same math Calculate uses (means.speedMph × the
-  // current Pace multiplier), shown up front like the legacy travel
-  // calculator's own always-visible speed display, not only after a click.
+  // Live Speed readout — same math Calculate uses, shown up front rather than only after a click.
   function updateSpeedDisplay() {
     const means = selectedMeans();
     if (!means) {
@@ -641,13 +579,10 @@ export function initCalculatorWidget(
     renderFareOptions();
   }
 
-  // Blank means "no explicit override for this one widget" — which then
-  // falls back to the active campaign's own Setting (Group.settingId, set
-  // in Loom's Groups tab) rather than "no Setting at all," so a GM doesn't
-  // have to re-pick their campaign's Setting separately on every Calculator
-  // card. The blank option's own label reflects whichever of those two it
-  // actually resolves to, so this stays transparent instead of silently
-  // using a Setting the select itself still shows as "Any."
+  // Blank means "no override for this widget" — falls back to the active
+  // campaign's own Setting (Group.settingId) rather than "no Setting at
+  // all," so a GM doesn't re-pick it per card. The blank option's label
+  // reflects whichever it actually resolves to.
   function resolvedSettingId() {
     return config.settingId || groupContext?.settingId || "";
   }
@@ -718,16 +653,12 @@ export function initCalculatorWidget(
     dailyResultsBox.innerHTML = "";
     setElementVisible(dailyResultsWrap, true, "flex");
     for (let day = 1; day <= days; day += 1) {
-      // A plain percentage gate, not itself a broadcast/toasted roll — this
-      // is "did anything happen today at all," not a result worth reporting
-      // on its own; only an actual trigger rolls (and reports) the macro.
+      // A plain percentage gate, not itself a reported roll — only an actual trigger rolls (and reports) the macro.
       if (Math.random() * 100 >= chance) {
         dailyResultsBox.appendChild(el("div", "text-body-secondary", `Day ${day}: —`));
         continue;
       }
-      // No `status` here on purpose — each day's result already prints in
-      // the Daily rolls list below; a toast per day (on top of a multi-day
-      // trip) would just be noise the GM didn't ask to see.
+      // No `status` here — each day's result already prints below; a toast per day would just be noise.
       const rolled = await rollExpression(expression, {
         label: `Day ${day}`,
         dataManager,
@@ -751,16 +682,11 @@ export function initCalculatorWidget(
     const speed = Math.round(means.speedMph * paceMultiplier);
     const days = speed > 0 ? Math.ceil(distance / (speed * hoursPerDay)) : 0;
 
-    // Speed itself is already shown live up front (updateSpeedDisplay) — not
-    // repeated here.
     const lines = [`Trip length: ${days} day${days === 1 ? "" : "s"}`];
     const paceNote = PACE_NOTES[paceSelect.value];
     if (paceNote) lines.push(paceNote);
 
-    // Forced-march exhaustion — only meaningful for an on-the-ground means
-    // (hoursPerDay === 8, e.g. On Foot/Horse/Coach); a continuous conveyance
-    // (a ship, an airship, the rail) doesn't tire out the traveler's own
-    // body regardless of how many hours it travels.
+    // Forced-march exhaustion only applies to an on-the-ground means (hoursPerDay === 8) — a ship/airship doesn't tire the traveler.
     if (means.hoursPerDay === 8 && hoursPerDay > 8) {
       const dc = hoursPerDay - 8 + 10;
       lines.push(`Forced march: DC ${dc} Constitution save at the end of each hour beyond the 8th, or gain a level of exhaustion.`);
@@ -768,10 +694,7 @@ export function initCalculatorWidget(
 
     const fareOption = fareOptionsFor(means).find((entry) => entry.id === fareSelect.value);
     const fareCopper = fareOption ? computeFareCopper(fareOption.entry, distance) : 0;
-    // Rations: flat 5 sp/day per person, doubled by horse (feeding the
-    // horse too) — verified legacy behavior. Stated per person rather than
-    // totaled for the party — party size doesn't affect anything else about
-    // the trip, so a party-size input isn't worth the extra control.
+    // Rations: flat 5 sp/day per person, doubled by horse (feeding the horse too). Stated per person, not per party.
     const rationsPerDay = means.id === "By Horse" ? 10 : 5;
     const rationsCopper = days * rationsPerDay * 10;
     const totalCopper = fareCopper + rationsCopper;
@@ -820,10 +743,7 @@ export function initCalculatorWidget(
       barArea.style.height = `${CHART_HEIGHT}px`;
       const bar = el("div", "rounded-top bg-primary");
       bar.style.height = `${Math.max(2, Math.round((probability / maxProbability) * CHART_HEIGHT))}px`;
-      // Narrower than the label text at this font size on purpose (the bars
-      // themselves needed to shrink) — nowrap lets each label overflow its
-      // own thin column horizontally, centered, rather than wrapping into an
-      // ugly multi-line stack.
+      // Column is narrower than the label text; nowrap lets it overflow horizontally instead of wrapping into a stack.
       const pctLabel = el("div", "text-center", `${(probability * 100).toFixed(1)}%`);
       pctLabel.style.fontSize = "0.8rem";
       pctLabel.style.whiteSpace = "nowrap";
@@ -942,11 +862,7 @@ export function initCalculatorWidget(
     setElementVisible(tierUnavailableNotice, !hasTiers);
 
     const systemId = groupContext?.systemId || "";
-    // Reuses Crucible's OWN configured preference (crucible-settings bucket)
-    // rather than a second, separately maintained setting — see
-    // combat-scaling.js's own comment on why. A GM who's already configured
-    // Crucible's Combat scaling field gets correct monster XP here with
-    // nothing further to set up.
+    // Reuses Crucible's own configured preference rather than a second, separately maintained setting.
     const combatScalingField = dataManager?.getLocal?.("crucible-settings", systemId)?.combatScalingField || undefined;
     encounterCombatScalingLevels = systemId ? await loadCombatScalingLevels(dataManager, systemId, combatScalingField) : [];
     monsterSelect.innerHTML = "";
@@ -1063,13 +979,9 @@ export function initCalculatorWidget(
         return;
       }
       inventoryResultBox.appendChild(el("div", "text-body-secondary", "Loading campaign roster…"));
-      // Owner-only fetch — the generic full-document route only ever
-      // grants a non-owner reader via a share token or Character-linked
-      // share, which a plain member using this widget from their own
-      // Dashboard has neither of; skipped entirely for a non-owner rather
-      // than attempted-then-caught, so a real player never logs a 401 for
-      // a request that was always going to fail (same reasoning as
-      // group-live-sync.js's own watchGroupForChanges).
+      // Owner-only fetch, skipped entirely (not attempted-then-caught) for a
+      // non-owner — a plain member has no share grant on the group document,
+      // so the request would always 401.
       let group = null;
       if (groupContext.access === "owner") {
         try {
@@ -1081,8 +993,7 @@ export function initCalculatorWidget(
       const memberIds = Array.isArray(group?.payload?.members)
         ? group.payload.members.filter((member) => member.content_type === "character").map((member) => member.content_id)
         : [];
-      // allSettled, not all — one broken member reference must not blank the
-      // whole result; it's listed under "Could not load" below instead.
+      // allSettled — one broken member reference shouldn't blank the whole result; listed under "Could not load" instead.
       const results = await Promise.allSettled(memberIds.map((id) => dataManager.get("character", id)));
       inventoryResultBox.innerHTML = "";
 
@@ -1170,18 +1081,12 @@ export function initCalculatorWidget(
   // --- Wiring: Item Price ------------------------------------------------
 
   // Which array field Item Price treats as Rarity — resolved, not stored,
-  // so the Wonder auto-fill (below) looks up the same field's slug id the
-  // range list itself was keyed by.
+  // so the Wonder auto-fill below looks up the same field's slug id the range list was keyed by.
   let itemPriceRarityFieldKey = "rarity";
 
   async function loadItemPriceOptions() {
     const systemId = groupContext?.systemId || "";
-    // Reuses Vault's OWN configured Budget ceiling field preference
-    // (bucket "vault-settings") rather than a second, separately
-    // maintained setting — same reasoning Encounter XP's own reuse of
-    // Crucible's Combat scaling field preference gives above. A GM who's
-    // already pointed Vault at a Rarity-equivalent field gets correct
-    // price data here with nothing further to set up.
+    // Reuses Vault's own configured Budget ceiling field preference rather than a second, separately maintained setting.
     const storedField = dataManager?.getLocal?.("vault-settings", systemId)?.budgetCeilingField;
     itemPriceRarityFieldKey = storedField || "rarity";
     itemPriceRanges = systemId ? await loadRarityPriceRanges(dataManager, systemId, itemPriceRarityFieldKey) : [];
@@ -1199,14 +1104,8 @@ export function initCalculatorWidget(
     itemPriceCalculateButton.disabled = !hasRanges;
     setElementVisible(itemPriceUnavailableNotice, !hasRanges);
 
-    // The Wonder picker only matters once there's something to auto-fill
-    // into — hidden entirely for a System with no price ranges configured,
-    // or one with no saved Wonders yet.
     const fetchedWonders = systemId && hasRanges ? await listWondersForSystem(dataManager, systemId).catch(() => []) : [];
-    // Same name-sort Vault's own Wonder select uses (vault/js/app.js's
-    // populateWonderSelect) — without it, grouped names like "Potion of
-    // Giant Strength, Hill"/"...Storm" would list in fetch order instead of
-    // clustering together the way the naming was chosen to achieve.
+    // Same name-sort Vault's own Wonder select uses — clusters related names ("Potion of X, Hill"/"...Storm") together.
     itemPriceWonders = [...fetchedWonders].sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
     itemWonderSelect.innerHTML = "";
     const blankOption = document.createElement("option");
@@ -1222,11 +1121,8 @@ export function initCalculatorWidget(
     setElementVisible(itemWonderRow, itemPriceWonders.length > 0, "flex");
   }
 
-  // Auto-fills Rarity from whichever value the picked Wonder's own
-  // generation actually resolved (`properties[rarityField]`, the same slug
-  // id toLegacyPropertyType/loadRarityPriceRanges both derive from the
-  // value's name) — a shortcut, so re-selecting Rarity by hand still works
-  // for a Wonder that predates this field or used a different one.
+  // Auto-fills Rarity from the picked Wonder's own resolved property — a
+  // shortcut; re-selecting Rarity by hand still works for a Wonder that predates this field.
   itemWonderSelect.addEventListener("change", () => {
     const wonder = itemPriceWonders.find((entry) => entry.id === itemWonderSelect.value);
     const rarityId = wonder?.properties?.[itemPriceRarityFieldKey];
@@ -1241,11 +1137,8 @@ export function initCalculatorWidget(
       status?.show("Pick a Rarity with a configured price range.", { type: "info", timeout: 2500 });
       return;
     }
-    // A single roll drives both figures — the check tier's multiplier always
-    // favors the PC (a discount for buying, a better payout for selling), so
-    // picking "Extreme success" once improves whichever of the two actually
-    // applies to this transaction without the GM having to say which in
-    // advance.
+    // A single roll drives both figures — the check tier's multiplier
+    // always favors the PC, so the GM doesn't need to say buy-vs-sell in advance.
     const { buyPrice, sellPrice } = rollItemPrices(range.priceMin, range.priceMax, {
       checkTierId: itemCheckSelect.value,
     });

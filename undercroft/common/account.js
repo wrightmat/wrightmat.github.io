@@ -42,9 +42,9 @@ const elements = {
   ownedTypeSelect: document.querySelector("[data-admin-owned-type]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
   quickReference: document.querySelector("[data-quick-reference]"),
-  // Help & Documentation lives in the LEFT pane here (swapped with the
-  // campaign quick-reference, which moved to the right) — named for what's
-  // actually there now, not which physical side it happens to be.
+  // Help & Documentation lives in the LEFT pane here (campaign quick
+  // reference is on the right) — named for what's actually there, not
+  // which physical side it happens to be.
   leftPane: document.querySelector('[data-pane="left"]'),
   leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
   emailForm: document.querySelector("[data-admin-email-form]"),
@@ -73,24 +73,22 @@ const TIER_OPTIONS = [
   { value: "admin", label: "Admin" },
 ];
 
-// Keyed by Library `kind` id (singular — "character", "template", "system",
-// "species", ...), matching list_owned_content()'s item.bucket directly now
-// that every kind shares the same library_items table. A kind not listed
-// here just falls back to its raw id/tier list elsewhere below — every kind
-// still shows up in Owned Content, just without a prettier label.
+// Keyed by Library `kind` id (singular — "character", "template", "system"),
+// matching list_owned_content()'s item.bucket directly. A kind not listed
+// here falls back to its raw id — it still shows up in Owned Content, just
+// without a prettier label.
 const OWNED_TYPE_LABELS = {
   character: "Character",
   template: "Template",
   system: "System",
 };
 
-// The inverse of server/kinds.py's own _LEGACY_BUCKET_ALIASES — that file's
-// comment explains why: character/template/system predate the unified kind
-// registry and still use plural DataManager bucket names
-// ("characters"/"templates"/"systems") everywhere else in the client, while
-// this page's own item.bucket (from list_owned_content()) uses the singular
-// kind id like every other kind. WRITE_ROLE_REQUIREMENTS is keyed by the
-// plural form, so this translates before looking it up.
+// The inverse of server/kinds.py's own _LEGACY_BUCKET_ALIASES:
+// character/template/system predate the unified kind registry and still
+// use plural DataManager bucket names everywhere else in the client, while
+// item.bucket (from list_owned_content()) uses the singular kind id.
+// WRITE_ROLE_REQUIREMENTS is keyed by the plural form, so this translates
+// before looking it up.
 const OWNER_BUCKET_ALIASES = { character: "characters", template: "templates", system: "systems" };
 
 const TAB_SETTINGS = "settings";
@@ -98,16 +96,14 @@ const TAB_OWNED = "owned";
 const TAB_UPGRADE = "upgrade";
 const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_UPGRADE];
 
-// Self-service upgrade targets only — "admin" is deliberately excluded from
-// this list (and rejected server-side in upgrade_own_tier regardless) since
-// it can only ever be granted by an existing admin, never chosen here.
+// Self-service upgrade targets only — "admin" is deliberately excluded (and
+// rejected server-side regardless) since it can only be granted by an
+// existing admin, never chosen here.
 //
-// TEMPORARY: prices are placeholders, not settled figures — and there's no
-// billing integration yet at all (see dataManager.upgradeTier, which applies
-// the tier change for free today, immediately, with no payment step). This
-// whole self-service-for-free approach is a stand-in until a real payment
-// platform is wired up; a future payment-token check would slot in ahead of
-// dataManager.upgradeTier's call without changing this UI.
+// TEMPORARY: prices are placeholders, not settled figures, and there's no
+// billing integration yet (dataManager.upgradeTier applies the tier change
+// for free today, immediately). A future payment-token check would slot in
+// ahead of that call without changing this UI.
 const TIER_UPGRADE_PLANS = [
   { value: "free", label: "Free", price: "Free", description: "A limited number of saves to your account." },
   { value: "player", label: "Player", price: "$10 one-time", description: "Unlimited saves of your characters and content." },
@@ -143,11 +139,10 @@ function currentUser() {
 }
 
 // Derived from data-manager.js's own WRITE_ROLE_REQUIREMENTS/ROLE_ORDER
-// (imported) rather than a second hand-maintained tier list — this used to
-// be an independent OWNER_ROLE_REQUIREMENTS array that had already drifted
-// out of sync with it (excluding "free" from character ownership, while
-// WRITE_ROLE_REQUIREMENTS and character.json's own writeTier both already
-// agreed free tier can write/own a character).
+// rather than a second hand-maintained tier list — an earlier independent
+// OWNER_ROLE_REQUIREMENTS array had drifted out of sync with it (excluding
+// "free" from character ownership, while WRITE_ROLE_REQUIREMENTS and
+// character.json's own writeTier both agreed free tier can own one).
 function tierMeetsOwnerRequirement(tier, bucket) {
   const requirement = WRITE_ROLE_REQUIREMENTS[OWNER_BUCKET_ALIASES[bucket] || bucket];
   if (!requirement) {
@@ -242,9 +237,8 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
 }
 
 // Excludes "admin" by construction (TIER_UPGRADE_PLANS never lists it) —
-// the server rejects it unconditionally too (upgrade_own_tier), so this is
-// a UX nicety on top of a real enforced restriction, not the restriction
-// itself.
+// the server rejects it unconditionally too, so this is a UX nicety on top
+// of a real enforced restriction, not the restriction itself.
 function renderUpgradeTab() {
   if (!elements.upgradeCards) {
     return;
@@ -360,9 +354,8 @@ function populateSettings({ force = false } = {}) {
   }
 }
 
-// Static — every option comes from dice-overlay.js's own curated
-// DICE_THEMES, not from anything user- or session-specific, so this only
-// ever needs to run once.
+// Static — every option comes from dice-overlay.js's curated DICE_THEMES,
+// not anything user- or session-specific, so this only needs to run once.
 function populateDiceThemeOptions() {
   const select = elements.diceThemeSelect;
   if (!select) {
@@ -378,15 +371,12 @@ function populateDiceThemeOptions() {
   select.replaceChildren(fragment);
 }
 
-// Hides the whole color control for a theme dice-overlay.js's own
-// getThemeColorSupport says can't be tinted at all (see that function's own
-// header for the "color" vs "standard" material split) — no point showing
-// a control that would visibly do nothing. Unlike Favorite color below,
-// there's no "unset" state here: a colorable theme's swatch always shows a
-// real, already-meaningful value (the saved one, or the theme's own
-// getThemeDefaultColor) that the user can see and change, never a blank
-// left for something else to invent silently later — see dice-overlay.js's
-// own DICE_THEMES header for why that used to be a real crash.
+// Hides the whole color control for a theme getThemeColorSupport says
+// can't be tinted at all — no point showing a control that would visibly
+// do nothing. Unlike Favorite color below, there's no "unset" state here: a
+// colorable theme's swatch always shows a real, already-meaningful value
+// (the saved one, or getThemeDefaultColor), never a blank left for
+// something else to invent silently later.
 function refreshDiceColorVisibility(theme) {
   elements.diceColorControl?.classList.toggle("d-none", !getThemeColorSupport(theme));
 }
@@ -430,16 +420,13 @@ async function saveDiceSettings() {
   }
 }
 
-// No default — deliberately NOT auto-saved or shown as "already chosen"
-// the way an earlier version of this did. .template-color-control--unset
-// (common/css/shell.css, the same checkerboard-X treatment Press/Workbench's
-// own color-picker.js uses for "nothing set") is the ONLY thing that stands
-// in for a value here; the user has to actually pick a color for one to
-// exist at all. Any tool can read the real value back the same way
-// (dataManager.getUserSettings() → .favoriteColor) — no dedicated endpoint,
-// just another key in the same general-purpose settings blob
-// dashboardLayout/dashboardBackground/etc. already share (server/auth.py's
-// users.settings column).
+// No default — deliberately NOT auto-saved or shown as "already chosen."
+// .template-color-control--unset (the same checkerboard-X treatment
+// color-picker.js uses for "nothing set") is the ONLY thing that stands in
+// for a value here; the user has to actually pick a color for one to exist.
+// Any tool can read it back via dataManager.getUserSettings() →
+// .favoriteColor — no dedicated endpoint, just another key in the same
+// general-purpose settings blob dashboardLayout/dashboardBackground share.
 function setFavoriteColorUnset(isUnset) {
   elements.favoriteColorControl?.classList.toggle("template-color-control--unset", isUnset);
   if (elements.favoriteColorClear) {
@@ -485,9 +472,9 @@ function formatTimestamp(value, fallback = "Unknown") {
   return dateFormatter ? dateFormatter.format(date) : date.toLocaleString();
 }
 
-// Doesn't render a users table (that lives in Loom now) — this just keeps
-// viewState.users populated so the Owned Content owner picker (buildOwnerOptions)
-// has the full user list to offer as ownership-transfer targets.
+// Doesn't render a users table (that lives in Loom) — this just keeps
+// viewState.users populated so buildOwnerOptions has the full user list to
+// offer as ownership-transfer targets.
 async function loadUsers({ force = false } = {}) {
   if (!isAdminSession()) {
     return;
@@ -543,9 +530,9 @@ function populateOwnedUserFilter() {
 }
 
 // Options come from whichever kinds are actually present in the current
-// owned-content result set (not a hardcoded kind list) — the suite's set of
-// Library kinds is open-ended and keeps growing, and there's no point
-// offering a filter option that would just show an empty table.
+// owned-content result set, not a hardcoded kind list — the suite's set of
+// Library kinds is open-ended, and a filter option that would show an
+// empty table isn't worth offering.
 function populateOwnedTypeFilter() {
   const select = elements.ownedTypeSelect;
   if (!select) {
@@ -668,7 +655,7 @@ function buildOwnerOptions(bucket, currentOwner = { username: "", tier: "" }) {
 }
 
 // `bucket` (from list_owned_content's `item.bucket`) is already the Library
-// `kind` id directly now (e.g. "species", "character", "template" — always
+// `kind` id directly (e.g. "species", "character", "template").
 function ownedSortValue(item, key) {
   switch (key) {
     case "name":
@@ -1113,10 +1100,10 @@ if (elements.favoriteColorClear) {
     }
     setFavoriteColorUnset(true);
     try {
-      // "" (not deleting the key) — dataManager.saveUserSettings is a
-      // merge-patch, and the read side above already treats a falsy
-      // favoriteColor exactly like a missing one, so this is a real,
-      // explicit "the user chose to clear this," not silent data loss.
+      // "" (not deleting the key) — saveUserSettings is a merge-patch, and
+      // the read side above already treats a falsy favoriteColor exactly
+      // like a missing one, so this is an explicit "user chose to clear
+      // this," not silent data loss.
       await dataManager.saveUserSettings({ favoriteColor: "" });
       status?.show("Favorite color cleared", { type: "info", timeout: 1500 });
     } catch (error) {
@@ -1245,13 +1232,12 @@ if (elements.passwordForm) {
 }
 
 // ===== Help topic browser (left pane) =========================================
-// Admin is the one place every tool's inline (?) help triggers now deep-link
-// to (see common/js/lib/help.js) — this pane is what they land on, and it's
-// also just directly browsable/searchable on its own, independent of the
-// admin-gated content in the main panel (this pane isn't behind the sign-in
-// gate at all). The actual search/browse/detail wiring lives in
-// common/js/lib/help-browser.js, shared with the Dashboard's own copy (which
-// adds pinning on top of the same module).
+// This page is where every tool's inline (?) help triggers deep-link to —
+// this pane is what they land on, and it's also directly browsable/
+// searchable on its own, independent of the admin-gated content in the main
+// panel (not behind the sign-in gate). Search/browse/detail wiring lives in
+// help-browser.js, shared with the Dashboard's own copy (which adds pinning
+// on top of the same module).
 let helpBrowserApi = null;
 
 async function initHelpBrowser() {
@@ -1261,18 +1247,17 @@ async function initHelpBrowser() {
   });
 }
 
-// Exposed on window so the quick-reference steps below (and, in principle,
-// any other same-page control) can jump straight to a topic without a full
-// navigation — the generic data-help-topic mechanism (help.js) is for
-// triggers OUTSIDE this page, which have to open Admin in a new tab instead.
+// Exposed on window so the quick-reference steps below can jump straight to
+// a topic without a full navigation — the generic data-help-topic mechanism
+// is for triggers OUTSIDE this page, which open this page in a new tab.
 function showHelpTopic(topicId) {
   helpBrowserApi?.showTopic(topicId);
 }
 
 // ===== Campaign quick reference (left pane) ===================================
-// Creating a group requires GM tier or higher (server/groups.py's
-// _CREATE_GROUP_MIN_TIER) — the same tier this whole panel is gated on, so
-// everyone who can see this guide can actually complete every step in it.
+// Creating a group requires GM tier or higher — the same tier this whole
+// panel is gated on, so everyone who can see this guide can complete every
+// step in it.
 const QUICK_REFERENCE_STEPS = [
   {
     title: "Create a Campaign Group",
@@ -1399,10 +1384,9 @@ window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
 window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
 
 handleAuthChanged();
-// Same-page shortcut for Admin's own inline (?) help triggers (see
-// common/js/lib/help.js) — clicking one here jumps straight to the topic in
-// this page's own right-pane browser instead of opening a redundant second
-// tab pointed at itself.
+// Same-page shortcut for this page's own inline (?) help triggers —
+// clicking one jumps straight to the topic in this page's own left-pane
+// browser instead of opening a redundant second tab pointed at itself.
 window.addEventListener("undercroft:show-help-topic", (event) => {
   const topicId = event.detail?.topicId;
   if (topicId) {

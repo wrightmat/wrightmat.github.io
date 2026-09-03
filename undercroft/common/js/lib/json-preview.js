@@ -25,18 +25,11 @@ function formatSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// The size badge that used to sit in the header row was folded into the
-// Copy button's own tooltip instead (one less element competing for the
-// same row's horizontal space — see workbench/index.html's own JSON Data
-// section for the shape every tool now matches). `copyButton`, if given,
-// gets its tooltip title updated to read "Copy to clipboard (1.2 KB)" —
-// both the attribute (so a not-yet-initialized Bootstrap Tooltip picks it
-// up at construction) and, if a Tooltip instance already exists, its live
-// content too (Bootstrap caches title at construction, it does not
-// re-read the attribute on its own). bindCopyButton (clipboard.js) reads
-// this same attribute fresh at each click, not once at bind time, so its
-// own "Copied!" flash always restores to the current size, never a stale
-// one captured before this ran.
+// The size badge lives in the Copy button's own tooltip ("Copy to clipboard
+// (1.2 KB)") rather than a separate header element. Updates both the
+// attribute (for a not-yet-initialized Tooltip) and, if one already exists,
+// its live content — Bootstrap caches title at construction and won't
+// re-read the attribute on its own.
 function updateCopyButtonSize(copyButton, byteCount) {
   if (!copyButton) return;
   const title = `Copy to clipboard (${formatSize(byteCount)})`;
@@ -72,9 +65,8 @@ export function createJsonPreviewRenderer({
       ? resolvePreviewElement
       : () => resolvePreviewElement;
 
-  // Still named for the size info it resolves, not the element type — every
-  // call site now points this at the Copy button (see updateCopyButtonSize
-  // above) rather than the removed badge span.
+  // Named for the size info it resolves, not the element type — call sites
+  // point this at the Copy button (see updateCopyButtonSize).
   const bytesResolver =
     typeof resolveBytesElement === "function"
       ? resolveBytesElement

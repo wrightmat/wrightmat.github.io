@@ -1,10 +1,7 @@
-// Optional wonder-note synthesis (mirrors Crucible's llm-note.js) — a GM can
-// generate and save a wonder with no LLM involvement whatsoever. Sends the
-// resolved property values and full feature list to the server-side proxy at
-// POST /vault/generate-note, which talks to Anthropic directly. `details.name`
-// may be blank (Vault's Name field has no default) — the server asks Claude
-// to invent one in that case, returned alongside the note so the caller can
-// fill the Name field in too.
+// Optional wonder-note synthesis (mirrors Crucible's llm-note.js) — posts
+// resolved property values + feature list to POST /vault/generate-note
+// (server-side Anthropic proxy). A blank `details.name` asks Claude to
+// invent one, returned for the caller to fill in.
 export async function generateWonderNote(details) {
   const response = await fetch("/vault/generate-note", {
     method: "POST",

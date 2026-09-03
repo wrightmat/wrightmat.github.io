@@ -22,17 +22,11 @@ import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, ge
 import { generateWonder, getWonderGenerationBlockReason, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createWonderRecord, toPressExportShape } from "./lib/wonder-schema.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
-// Same shared weapon-attack/rider/save-effect/options editor Crucible's own
-// Inspector uses (feature-params-editor.js) — see that module's own comment
-// for why it moved out of Crucible into a shared home. Vault's own
-// mechanics types (item-passive-bonus, see vault-feature-matching.js —
-// feat.damage/feat.healing both use the ordinary "active" type, dispatched
-// by feature id instead) don't need any of the weapon-attack/save-effect
-// branches this editor also renders, but a pinned/locked Feature from
-// outside Vault's own spell/item category pool (never produced by
-// generation, only possible via hand-edited JSON) could theoretically still
-// be one — instantiated the same way regardless, so nothing crashes on that
-// edge case.
+// Same shared weapon-attack/rider/save-effect/options editor Crucible uses.
+// Vault's own mechanics types (item-passive-bonus; feat.damage/feat.healing
+// use the ordinary "active" type, dispatched by feature id) don't exercise
+// the weapon-attack/save-effect branches, but a hand-edited Feature outside
+// Vault's own category pool could still be one — instantiated the same way.
 import { createFeatureParamsEditor } from "../../common/js/lib/feature-params-editor.js";
 import { generateWonderNote } from "./lib/llm-note.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
@@ -54,10 +48,8 @@ import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../comm
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { setElementVisible, markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
-// Repository's own markdown renderer (dice/task-list/callout/wiki-link
-// awareness, degrading gracefully without any of that for a plain note) —
-// reused as-is for the Notes field's View mode, same as Crucible/Forge/
-// Sanctum's own identical Notes preview.
+// Repository's own markdown renderer, reused for the Notes View mode — same
+// as Crucible/Forge/Sanctum's Notes preview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
 
 let status = null;
@@ -68,44 +60,30 @@ let dataManager = null;
 let features = [];
 let propertyTypes = [];
 // Which propertyTypes entry guessBudgetCeilingFieldKey would auto-pick for
-// the active System — same "ride along, no second round trip" shape as
-// abilityFieldGuess below, computed straight from propertyTypes itself
-// (already the isGeneratorPropertyField-eligible candidate list) rather
-// than a separate fetch.
+// the active System — computed straight from propertyTypes, same "ride
+// along" shape as abilityFieldGuess below.
 let budgetCeilingFieldGuess = "";
 // The active System's own casting classes (Wizard, Cleric, ...) — empty for
-// any System with no "classes" field at all (most Systems), in which case
-// the Casting Class select stays hidden entirely (see
-// populateCastingClassSelect).
+// a System with no "classes" field, which hides the Casting Class select.
 let classes = [];
 let currentRecord = null;
-// Which row in the Features list the Inspector panel is currently showing
-// — same module-level tracking Crucible's own selectedFeatureId uses, so
-// the Edit Feature toolbar button (registered once, at init) can look up
-// the right feature at click time.
+// Which Features-list row the Inspector is currently showing — same as
+// Crucible's selectedFeatureId.
 let selectedFeatureId = null;
-// Read once per System reload (reloadReferenceData) — the active System's
-// own ability fields, e.g. so an "active"-type Feature's own `ability`
-// param (Ability Score Increase's own "which ability" choice) renders as a
-// real select instead of free text (see feature-params-editor.js's own
-// ABILITY_LIKE_PARAM_KEYS).
+// Read once per System reload — the active System's ability fields, so an
+// "active"-type Feature's own `ability` param renders as a real select
+// instead of free text (see feature-params-editor.js's ABILITY_LIKE_PARAM_KEYS).
 let abilityFieldDefs = [];
-// Candidate list for the abilityField settings preference below — every
-// object-type field the active System defines — plus which one
-// guessAbilityFieldKey would auto-pick, so the dropdown can pre-select and
-// label it instead of offering a separate "Auto-detect" placeholder option.
+// Candidate object-type fields for the abilityField preference below, plus
+// which one guessAbilityFieldKey would auto-pick.
 let objectFieldOptions = [];
 let abilityFieldGuess = "";
 const featureParamsEditor = createFeatureParamsEditor({
   getRecord: () => currentRecord,
-  // A tier change (renderFeatureTierEditor) is now reached through this
-  // SAME hook as an ordinary params edit — recomputeBudget before
-  // refreshWonderView, same as addFeature/removeFeature already do,
-  // because renderBudget only recomputes when record.budget is unset
-  // (`record.budget || recomputeBudget(record)`) and would otherwise show
-  // a stale total after a tier change specifically (budget depends on
-  // featureTiers, never on featureParams — recomputing on every params
-  // edit too is harmless, just a no-op for the ones that don't affect it).
+  // A tier change now routes through this same hook as an ordinary params
+  // edit — recomputeBudget before refreshWonderView, since renderBudget only
+  // recomputes when record.budget is unset and would otherwise show a stale
+  // total after a tier-only change.
   onParamsChanged: () => {
     if (currentRecord) recomputeBudget(currentRecord);
     refreshWonderView();
@@ -113,51 +91,35 @@ const featureParamsEditor = createFeatureParamsEditor({
   saveFeature: (feature) => dataManager.save("feature", feature.id, feature),
   onFeatureSaved: () => refreshWonderView(),
   getAbilityFieldDefs: () => abilityFieldDefs,
-  // Drives the "Delete Parameter" toolbar button's own enabled state —
-  // independent of selectedFeatureId (Edit Feature's own gate), since a
-  // Feature can be selected in the list with no param row selected within
-  // its own generic active-params grid yet.
+  // Drives Delete Parameter's own enabled state, independent of
+  // selectedFeatureId — a Feature can be selected with no param row
+  // selected within its own params grid yet.
   onParamSelectionChanged: (hasSelection) => {
     if (elements.deleteParamButton) elements.deleteParamButton.disabled = !hasSelection;
   },
 });
-// View/Edit toggle for the Notes box — same button as Repository's own
-// Edit/View button (undercroft/repository/js/app.js#applyMode) for the
-// identical concept, and the same behavior Crucible/Forge/Sanctum's own
-// Notes toggle uses (this suite's one shared Notes-field convention).
-// Icon/label always describe what clicking will switch TO, not the current
-// state. Defaults to "view" — a freshly-loaded record's notes are read far
-// more often than edited, and a note written with markdown in mind
-// (headings, lists, callouts) reads better rendered than as raw source by
-// default.
+// View/Edit toggle for the Notes box — same convention as Repository/
+// Crucible/Forge/Sanctum's Notes toggle. Icon/label always describe what
+// clicking switches TO. Defaults to "view" — read far more often than
+// edited, and reads better rendered than as raw markdown source.
 let notesMode = "view";
-// Every saved wonder for the active System (Wonder picker options) plus its
-// ownership metadata — same role/shape as Crucible's monstersInSystem/
-// monsterCatalog, itself mirroring Sanctum's locationsInSetting/
-// locationCatalog. currentWonderId is tracked separately from currentRecord
-// for the same reason Crucible tracks currentMonsterId separately.
+// Every saved wonder for the active System plus its ownership metadata —
+// same shape as Crucible's monstersInSystem/monsterCatalog. currentWonderId
+// is tracked separately from currentRecord for the same reason Crucible
+// tracks currentMonsterId separately.
 let wondersInSystem = [];
 let wonderCatalog = new Map();
 let currentWonderId = null;
-// Tracks whether the record as last successfully saved differs from a live
-// snapshot — built from currentRecord (feature add/remove already patches it
-// directly) plus whatever's currently typed into Name/Notes, since those two
-// fields aren't written back into currentRecord until Save/Export actually
-// runs. Gates Save (dirty) and Delete (nothing saved yet) — see
-// common/js/lib/dirty-gate.js, lifted from Crucible's original version of
-// this exact pattern.
+// Whether the record as last saved differs from a live snapshot — Name/
+// Notes aren't written back into currentRecord until Save/Export runs, so
+// this reads the live inputs too. Gates Save (dirty) and Delete (nothing
+// saved yet) — see dirty-gate.js.
 const dirtyGate = createDirtyGate({ buildSnapshot: () => toPressExportShape(buildRecordForSave()) });
 
-// Whole-record snapshot undo — same shape/reasoning as Crucible's own
-// recordHistory/field-commit-debounce pair (crucible/js/app.js), reusing
-// buildRecordForSave() (defined below, referenced here since function
-// declarations hoist) so a Name/Notes edit — not synced onto currentRecord
-// until Save/Export, see that function's own comment — is captured too.
-// Restoring goes through renderWonder, which already writes record.name/
-// record.notes back into their live input fields. Feature-params sub-edits
-// (routed through the shared featureParamsEditor) are intentionally NOT
-// wrapped here, same scoping decision as Crucible's — that mutation happens
-// inside a shared module this pass isn't touching.
+// Whole-record snapshot undo — same shape as Crucible's own recordHistory/
+// field-commit-debounce pair. Feature-params sub-edits (routed through the
+// shared featureParamsEditor) are intentionally not wrapped here, same
+// scoping decision as Crucible's.
 function recordSnapshot() {
   return JSON.stringify(buildRecordForSave());
 }
@@ -204,21 +166,16 @@ function flushFieldCommitOnUndoRedo(event) {
   if ((event.ctrlKey || event.metaKey) && key === "z") commitFieldEdit();
 }
 
-// Built and mounted before `elements` below queries for these buttons by
-// their data-*-wonder attribute, so every existing selector/disabled-state
-// call site elsewhere in this file keeps working unchanged.
+// Built and mounted before `elements` below queries for these buttons, so
+// every selector/disabled-state call site elsewhere keeps working unchanged.
 createToolbarButtonGroup([
   // Starts disabled — nothing to generate FROM until reloadReferenceData
-  // (init()'s own cascade, below) resolves; clicking it before then threw
-  // straight out of generateWonder (features/propertyTypes still their
-  // initial empty state). Re-enabled by init() once that resolves.
+  // resolves; re-enabled by init() once it does.
   { action: "generate", icon: "tabler:sparkles", label: "Generate Wonder", disabled: true, attrs: { "data-generate-wonder": true } },
   { action: "save", label: "Save", disabled: true, attrs: { "data-save-wonder": true } },
   { action: "duplicate", label: "Duplicate", disabled: true, attrs: { "data-duplicate-wonder": true } },
   { action: "delete", label: "Delete", disabled: true, attrs: { "data-delete-wonder": true } },
 ]).forEach((button) => document.querySelector("[data-wonder-toolbar-mount]")?.appendChild(button));
-// A small visual break, not a functional one — same convention every other
-// tool's toolbar now uses (see forge/js/app.js's own comment).
 createToolbarButtonGroup([
   { action: "undo", label: "Undo", attrs: { "data-undo-wonder": true } },
   { action: "redo", label: "Redo", attrs: { "data-redo-wonder": true } },
@@ -240,11 +197,9 @@ createToolbarButtonGroup([
     variant: "outline-danger",
     disabled: true,
     attrs: { "data-delete-param-button": true },
-    // Select-then-delete for the generic active-params grid's own rows
-    // (feature-params-editor.js's own setSelectedParam/deleteSelectedParam)
-    // — this button's own enabled state is driven by the editor's
-    // onParamSelectionChanged hook below, not by selectedFeatureId, since a
-    // Feature can be selected with no param row selected within it yet.
+    // Select-then-delete for the params grid's own rows — this button's
+    // enabled state is driven by onParamSelectionChanged above, not
+    // selectedFeatureId.
     onClick: () => featureParamsEditor.deleteSelectedParam(),
   },
 ]).forEach((button) => document.querySelector("[data-feature-inspector-toolbar-mount]")?.appendChild(button));
@@ -256,16 +211,12 @@ document.querySelector("[data-wonder-empty-state]")?.appendChild(
 );
 
 // Named data-field-mount (not data-inspector-mount) — this file's own
-// [data-inspector-mount] selector below is a single bare marker for the
-// Detail Inspector's collapsible wrapper; a keyed attribute of the same
-// name would collide with it (attribute selectors match on presence, not
-// value).
-// replaceWith, not appendChild — see press/js/app.js's mountInspectorField
-// for why: an appended-into wrapper stays an empty-but-in-flow flex item
-// even while its field is conditionally hidden, silently spending a full
-// gap-3 on both sides of it. Any class the static mount div itself carried
-// is merged onto the built field first so removing the wrapper doesn't
-// lose that layout.
+// [data-inspector-mount] below is a bare marker for the Detail Inspector's
+// collapsible wrapper; a keyed attribute of the same name would collide.
+// replaceWith, not appendChild — an appended-into wrapper stays an
+// empty-but-in-flow flex item even while hidden, silently spending a gap-3
+// on both sides. Any class the static mount div carried is merged onto the
+// built field first so removing the wrapper doesn't lose layout.
 function mountField(key, element) {
   const mount = document.querySelector(`[data-field-mount="${key}"]`);
   if (!mount) return;
@@ -274,11 +225,9 @@ function mountField(key, element) {
 }
 mountField("system-select", createCompactField({ type: "select", id: "vaultSystemSelect", label: "System", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-system-select" }));
 mountField("wonder-select", createCompactField({ type: "select", id: "vaultWonderSelect", label: "Wonder", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-wonder-select" }));
-// Hidden entirely for a System with no "classes" field (most Systems) —
-// see populateCastingClassSelect. Casting Class narrows which Features are
-// eligible (matchesClass, lib/generator.js) the same way a locked Signature
-// Feature narrows the pick, so it's positioned right before the Property
-// overrides that also constrain generation.
+// Hidden entirely for a System with no "classes" field. Casting Class
+// narrows eligible Features (matchesClass) the same way a locked Signature
+// Feature narrows the pick, positioned right before Property overrides.
 mountField("casting-class-select", createCompactField({ type: "select", id: "vaultCastingClassSelect", label: "Casting Class", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-casting-class-select" }));
 mountField("signature-feature-override", createCompactField({ type: "select", id: "vaultSignatureOverride", label: "Signature Feature", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-signature-feature-override" }));
 mountField(
@@ -288,9 +237,8 @@ mountField(
     dataAttr: "data-locked-features", helpTopic: "vault.lockedFeatures",
   })
 );
-// Same field-box style as Identity below (and Forge/Crucible's own Name
-// box) — per explicit feedback that every tool's center-pane properties
-// should look and act the same.
+// Same field-box style as Identity below (and Forge/Crucible's Name box) —
+// every tool's center-pane properties should look and act the same.
 mountField("wonder-name", createFieldBox({ key: "name", label: "Name", editable: true, colClass: null, dataAttr: "data-wonder-name" }));
 
 const elements = {
@@ -347,10 +295,9 @@ const elements = {
 };
 
 // Wonder Properties — no content yet (Vault has no Convert-style action of
-// its own today, unlike Forge/Crucible's own "NPC Properties"/"Monster
-// Properties"), but the section exists now for structural consistency
-// across all three generators' right-pane layout, ready for whatever gets
-// added here later. Starts (and stays) collapsed — nothing populates it yet.
+// its own, unlike Forge/Crucible's "NPC/Monster Properties"), but the
+// section exists for layout consistency across all three generators. Starts
+// (and stays) collapsed — nothing populates it yet.
 {
   const wonderPropertiesSection = createCollapsibleSection({
     label: "Wonder Properties",
@@ -360,15 +307,11 @@ const elements = {
   document.querySelector("[data-wonder-properties-mount]")?.appendChild(wonderPropertiesSection.section);
 }
 
-// Adopts each section's existing static `[data-xxx-panel]` markup (its own
-// content stays hand-authored HTML — only the header+chevron wrapper is
-// JS-built) as createCollapsibleSection's content — same pattern Sanctum's
-// own initCollapsibles/Crucible's own module-top-level block use. Every
-// section here is expanded by default. Features and Notes both keep extra
-// header content in static HTML (Features' own budget summary; Notes' own
-// "Generate Note" button) that createCollapsibleSection's built header would
-// clobber, so only their toggle button is built and mounted — same as
-// Crucible/Forge/Sanctum's own Notes sections.
+// Adopts each section's existing static `[data-xxx-panel]` markup as
+// createCollapsibleSection's content (only the header+chevron is JS-built) —
+// same pattern as Sanctum/Crucible. Features and Notes keep extra header
+// content in static HTML that createCollapsibleSection's built header would
+// clobber, so only their toggle button is built and mounted.
 {
   const inspectorSection = createCollapsibleSection({
     label: "Inspector",
@@ -377,13 +320,8 @@ const elements = {
   });
   document.querySelector("[data-inspector-mount]")?.appendChild(inspectorSection.section);
 
-  // Collapsed by default (raw JSON is a power-user/debugging view, not
-  // something a GM needs open by default the way the structured Basic
-  // Info/tier/params editors above it are) — same "adopt the existing
-  // static element as content" pattern as every other createCollapsibleSection
-  // call here, mirroring Crucible's own identical Raw JSON section exactly.
-  // elements.inspectorJson keeps working unchanged (its own querySelector
-  // ref stays valid after appendChild relocates the element).
+  // Collapsed by default — raw JSON is a power-user/debugging view, mirrors
+  // Crucible's own Raw JSON section exactly.
   document.querySelector("[data-inspector-json-mount]")?.appendChild(
     createCollapsibleSection({
       label: "Raw JSON",
@@ -446,20 +384,16 @@ function currentSystemId() {
 }
 
 // Which generator-property field Vault treats as the budget ceiling is a
-// Vault tool preference, not System data — it's not game content, it's
-// "which of this System's fields does Vault's own generator special-case,"
-// so it lives in this browser's local storage (keyed per System), never in
-// the System record edited in Loom. See common/docs/... — this replaced an
-// earlier attempt that stored it on the System itself before being corrected.
+// Vault tool preference, not System data — it's not game content, so it
+// lives in this browser's local storage (keyed per System), never on the
+// System record edited in Loom.
 const BUDGET_CEILING_BUCKET = "vault-settings";
 
-// Both budgetCeilingField and abilityField below share this one merged
-// per-System record (dataManager.getLocal/saveLocal replaces the whole
-// record for a given (bucket, id) — writing one setting straight through
-// saveLocal, as this used to, would silently wipe out the other one's
-// already-saved value for that same System). Mirrors Forge's/Crucible's own
-// getForgeSystemSettings+setForgeSystemSetting /
-// getCrucibleSystemSettings+setCrucibleSystemSetting pattern exactly.
+// Both budgetCeilingField and abilityField share this one merged per-System
+// record — dataManager.getLocal/saveLocal replaces the whole record for a
+// given (bucket, id), so writing one setting straight through saveLocal
+// would silently wipe the other's already-saved value. Mirrors Forge's/
+// Crucible's own per-System settings pattern exactly.
 function getVaultSystemSettings(systemId) {
   if (!dataManager || !systemId) return {};
   return dataManager.getLocal(BUDGET_CEILING_BUCKET, systemId) || {};
@@ -483,12 +417,10 @@ function setBudgetCeilingFieldPreference(systemId, fieldKey) {
   setVaultSystemSetting(systemId, "budgetCeilingField", fieldKey || "");
 }
 
-// Which object field is this System's ability/stat block — same per-System,
-// per-browser tool preference shape as budgetCeilingField above, feeding
-// loadAbilityFieldDefs' own preferredKey param instead of it always
-// assuming a field literally named "abilities" (see
-// feedback_settings_preference_with_guessed_default). Empty/unset falls
-// through to loadAbilityFieldDefs' own shape-based guess.
+// Which object field is this System's ability/stat block — same per-System
+// preference shape as budgetCeilingField, feeding loadAbilityFieldDefs'
+// preferredKey instead of assuming a field literally named "abilities".
+// Empty/unset falls through to loadAbilityFieldDefs' own shape-based guess.
 function getAbilityFieldPreference(systemId) {
   return getVaultSystemSettings(systemId).abilityField || "";
 }
@@ -500,18 +432,17 @@ function setAbilityFieldPreference(systemId, fieldKey) {
 async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
   // Disabled, not just blank — a real System is required before anything
-  // else in this tool is usable, so the picker shouldn't silently fall back
-  // to whichever System happens to sort first (previously "Blades in the
-  // Dark"). Once a real System is chosen this option can't be reselected.
+  // else here is usable, so the picker shouldn't silently fall back to
+  // whichever System sorts first. Once a real System is chosen this option
+  // can't be reselected.
   renderRequiredSelectOptions(elements.systemSelect, systems, { placeholder: "Select a System" });
   markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect?.value));
   return systems;
 }
 
 // Ownership metadata comes from the list response, not the full fetched
-// body — mirrors Sanctum's refreshLocationCatalog/Crucible's
-// refreshMonsterCatalog exactly. Local-only (anonymous, browser-storage)
-// entries are always deletable, since it's just this browser's own storage.
+// body — mirrors Sanctum's/Crucible's own catalog refresh. Local-only
+// (anonymous, browser-storage) entries are always deletable.
 async function refreshWonderCatalog(ids) {
   wonderCatalog = await refreshOwnershipCatalog(dataManager, "wonder", ids);
 }
@@ -535,15 +466,14 @@ async function populateWonderSelect() {
 
 // Casting Class/Property overrides/Signature Feature/Locked Features only
 // matter for generating something new — once an existing Wonder is loaded
-// they're just clutter (same convention Sanctum/Crucible/Forge's own
-// generation fields follow). Purely visual: hiding never clears an
-// override's underlying value.
+// they're just clutter. Purely visual: hiding never clears an override's
+// underlying value.
 function updateGenerationFieldsVisibility() {
   elements.generationFields?.classList.toggle("d-none", Boolean(elements.wonderSelect?.value));
 }
 
-// Signature Feature is an optional override — blank = "Random" — exactly like
-// Crucible's Creature Type/Archetype/Role/signature Feature selects.
+// Signature Feature is an optional override — blank = "Random", exactly
+// like Crucible's Creature Type/Archetype/Role/signature Feature selects.
 function populateOverrideSelect(select, entries, blankLabel) {
   if (!select) return;
   const previous = select.value;
@@ -602,10 +532,9 @@ function populatePropertyOverrides() {
     if (propertyType.id === "spellLevels") spellLevelsWrapper = wrapper;
   });
   // Spell Levels only means anything for a wonder whose Item Form IS
-  // "Spell" (no physical vessel) — every other Form has its own real-world
-  // shape instead. "Random" (the default, no override pinned) still shows
-  // it, since generation could still land on Spell. See renderIdentity's
-  // own matching check for the post-generation half of this.
+  // "Spell" — "Random" (no override pinned) still shows it, since
+  // generation could still land on Spell. See renderIdentity's own matching
+  // check for the post-generation half of this.
   if (formSelect && spellLevelsWrapper) {
     const syncSpellLevelsVisibility = () => {
       spellLevelsWrapper.classList.toggle("d-none", Boolean(formSelect.value) && formSelect.value !== "spell");
@@ -655,10 +584,8 @@ async function reloadReferenceData() {
   [fetchedFeatures, propertyTypes, classes, objectFieldResult, abilityFieldDefs] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
     // `|| undefined` (not the stored "" directly) so an unconfigured System
-    // falls through to getSystemPropertyTypes's own guessBudgetCeilingFieldKey
-    // guess (then "rarity" as the last resort) instead of resolving to no
-    // ceiling field at all — mirrors Crucible's own combatScalingField/
-    // creatureTypeField `|| undefined` call pattern.
+    // falls through to getSystemPropertyTypes' own guess (then "rarity" as
+    // last resort) instead of resolving to no ceiling field at all.
     getSystemPropertyTypes(dataManager, systemId, budgetCeilingField || undefined),
     getSystemClasses(dataManager, systemId),
     listObjectFieldOptions(dataManager, systemId),
@@ -668,13 +595,10 @@ async function reloadReferenceData() {
   abilityFieldGuess = objectFieldResult.guessedKey;
   budgetCeilingFieldGuess = guessBudgetCeilingFieldKey(propertyTypes.map((propertyType) => propertyType.id));
   // The shared `feature` kind also holds Sanctum's location features and
-  // Crucible's monster features (tagged accordingly) — filtered here, once,
-  // so every consumer of the module-level `features` array (generateWonder,
-  // and the Locked/Signature/Add-feature selects below) only ever sees
-  // Vault's own spell/item ones. generateWonder already applied this same
-  // matchesCategory filter internally, so this was really only ever visible
-  // in the three UI pickers — confirmed the identical bug reported (and
-  // just fixed) in Crucible's own equivalent pickers.
+  // Crucible's monster features — filtered here, once, so every consumer of
+  // the module-level `features` array only ever sees Vault's own spell/item
+  // ones (generateWonder applies the same filter internally; this was only
+  // ever visible in the three UI pickers below).
   features = fetchedFeatures.filter(matchesCategory);
   populatePropertyOverrides();
   populateCastingClassSelect();
@@ -684,10 +608,9 @@ async function reloadReferenceData() {
   await populateWonderSelect();
 }
 
-// Optional override, blank = "Any class" (unconstrained) — same convention
-// as Signature Feature/property overrides. Hidden entirely (not just empty)
-// for a System with no "classes" field at all, matching how the Symbol Dice
-// stepper only shows up for a System that actually declares one.
+// Optional override, blank = "Any class" — same convention as Signature
+// Feature/property overrides. Hidden entirely for a System with no
+// "classes" field at all.
 function populateCastingClassSelect() {
   if (!elements.castingClassSelect) return;
   const wrapper = elements.castingClassSelect.parentElement;
@@ -725,21 +648,17 @@ function propertyValueLabel(propertyTypeId, valueId) {
   return value?.label || valueId;
 }
 
-// Editable — a select per property type, listing that type's own real
-// values (Rarity/Activation/Item Form/...), matching how Crucible/Forge/
-// Sanctum's own Identity fields are all directly editable post-generation
-// rather than plain read-only text. Signature Feature is deliberately not
-// included here — it's already shown, clearly labeled "Signature", on its
-// own Feature's row at the top of the Features list, so repeating it here
-// was redundant.
+// Editable — a select per property type, matching how Crucible/Forge/
+// Sanctum's own Identity fields are directly editable post-generation.
+// Signature Feature isn't included here — it's already shown on its own
+// Feature's row at the top of the Features list.
 function renderIdentity(record) {
   if (!elements.identityFields) return;
   elements.identityFields.innerHTML = "";
   propertyTypes.forEach((propertyType) => {
-    // Same "only means something for a bare Spell" reasoning as
-    // populatePropertyOverrides' own pre-generation check — here Form is
-    // always resolved to a concrete value (generation never leaves it
-    // blank), so the check is exact: show only when it's actually "spell".
+    // Same "only means something for a bare Spell" check as
+    // populatePropertyOverrides' pre-generation one — Form is always
+    // resolved to a concrete value post-generation, so this check is exact.
     if (propertyType.id === "spellLevels" && record.properties?.form !== "spell") return;
     elements.identityFields.appendChild(
       createFieldBox({
@@ -747,16 +666,12 @@ function renderIdentity(record) {
         label: propertyType.label || propertyType.id,
         type: "select",
         value: record.properties?.[propertyType.id] || "",
-        // A leading blank option — createFieldBox's own select only ever
-        // sets `select.value` when a matching option is present (see its
-        // own comment); with none of these `option.value`s ever "" before,
-        // a wonder with no resolved value for this property type (a
-        // markdown-imported mundane item has no rarity at all — confirmed
-        // real: Alchemist's Fire, Elixir of Health) silently rendered
-        // whatever the browser defaults an unselected <select> to — its
-        // FIRST option, "Common" — indistinguishable from a wonder that
-        // genuinely resolved to that value. Same "(random)"-style honesty
-        // propertyValueLabel above already gives note-generation text.
+        // A leading blank option — createFieldBox's select only sets
+        // `select.value` when a matching option is present; with no
+        // `option.value` ever "" before, a wonder with no resolved value
+        // for this property (a markdown-imported mundane item has no
+        // rarity at all) would silently render the browser's default —
+        // its first option — indistinguishable from a genuine match.
         options: [{ value: "", label: "—" }, ...(propertyType.values || []).map((value) => ({ value: value.id, label: value.label || value.id }))],
         colClass: "col-6 col-md-3",
         editable: true,
@@ -804,14 +719,11 @@ function selectFeatureRow(featureId) {
   if (elements.inspectorJson) elements.inspectorJson.textContent = JSON.stringify(feature, null, 2);
 }
 
-// Mirrors Crucible's own renderFeatureBasicInfo/updateFeatureBasicInfo
-// exactly (crucible/js/app.js) — editable here only for a Feature marked
-// Unique (Loom's own Scope field), same gating reasoning. In practice every
-// one of Vault's own spell/item Features is shared across many Wonders by
-// design (this whole atomic-Feature model exists specifically so they
-// are), so these three fields read as permanently disabled here — Edit
-// Feature (opens Loom) is the real editing path, exactly like Crucible's
-// own non-unique Features already work today.
+// Mirrors Crucible's own renderFeatureBasicInfo exactly — editable here
+// only for a Feature marked Unique (Loom's Scope field). In practice every
+// one of Vault's spell/item Features is shared across many Wonders by
+// design, so these three fields read as permanently disabled — Edit
+// Feature (opens Loom) is the real editing path.
 function renderFeatureBasicInfo(feature) {
   if (elements.featureBasicId) elements.featureBasicId.value = feature.id;
   if (elements.featureBasicName) elements.featureBasicName.value = feature.name || "";
@@ -825,12 +737,9 @@ function renderFeatureBasicInfo(feature) {
   if (elements.editFeatureButton) elements.editFeatureButton.disabled = false;
 }
 
-// Saves straight through dataManager.save("feature", ...) — a Feature-
-// record edit, not a Wonder-record one, so the Wonder's own dirty-
-// gate/Save button don't apply, same immediate-save path Crucible's own
-// version uses. description/mechanics.text kept in sync when both are
-// plain strings, matching every prior migration this session's own
-// convention for a plain "passive"/"active" Feature.
+// Saves straight through dataManager.save("feature", ...) — a Feature edit,
+// not a Wonder edit, so the Wonder's own dirty-gate/Save button don't
+// apply, same immediate-save path Crucible's own version uses.
 async function updateFeatureBasicInfo(feature, patch) {
   Object.assign(feature, patch);
   if ("description" in patch && feature.mechanics && typeof feature.mechanics.text === "string") {
@@ -857,16 +766,13 @@ elements.featureBasicBudgetCost?.addEventListener("change", () => {
 });
 
 // A shared parameterized template's own live-computed description text —
-// same "shared, number-free template Feature plus per-record data on the
-// record" convention Crucible's weaponAttackDescriptionText/
-// saveEffectDescriptionText (crucible/js/app.js) already use, for Vault's
-// own new mechanics types (vault-feature-matching.js). `params.scaling.values`
-// is a `{level: diceString}` map straight from the 5e API's own
-// damage_at_slot_level/damage_at_character_level/heal_at_slot_level shape —
-// the LOWEST level entry is the headline number, every other level becomes
-// a trailing scaling note rather than picking just one (unlike a monster's
-// own Recharge/Day frequency tiers, a spell's own slot level is chosen
-// fresh at every cast, not a fixed property of this one Wonder record).
+// same convention as Crucible's weaponAttackDescriptionText/
+// saveEffectDescriptionText, for Vault's own new mechanics types
+// (vault-feature-matching.js). `params.scaling.values` is a
+// `{level: diceString}` map straight from the 5e API's own damage/heal
+// shape — the lowest level is the headline number, every other level
+// becomes a trailing scaling note (unlike a monster's Recharge/Day tiers, a
+// spell's slot level is chosen fresh at every cast, not fixed per record).
 function scalingNoteText(scaling) {
   const entries = Object.entries(scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
   if (entries.length < 2) return "";
@@ -875,9 +781,8 @@ function scalingNoteText(scaling) {
 }
 
 // feat.damage's own render — shared by every wonder (spell or item) whose
-// own primary damage resolved cleanly (see vault-feature-matching.js's own
-// `mechanic.kind === "damage"` fast path), not just spells, despite the
-// scaling-ladder shape being far more common for a spell's own damage.
+// primary damage resolved cleanly, not just spells, despite the
+// scaling-ladder shape being far more common for a spell.
 function damageDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   const entries = Object.entries(params?.scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
@@ -894,37 +799,25 @@ function damageDescriptionText(feature, record) {
 
 // Only reached for a NON-variant flat-bonus item (Ring of Protection) — a
 // variant-family item (Weapon +1/+2/+3) is a Feature with `tiers` instead,
-// whose own per-tier `mechanics.text` already carries the full sentence
-// (see vault-feature-matching.js's own resolvePassiveBonusFeature), so
-// featureDescriptionText's own tier-resolution below never reaches this.
+// whose own per-tier `mechanics.text` already carries the full sentence, so
+// featureDescriptionText's tier-resolution below never reaches this.
 function itemPassiveBonusDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params) return feature.description || "";
   return `You have a +${params.bonusValue} bonus to ${params.bonusTarget}.`;
 }
 
-// The generic clause-recognized Features below (vault-feature-matching.js's
-// own CLAUSE_RECOGNIZERS) all share `mechanics.type: "active"` — the same
-// generic type Vault's own pre-existing starter Features already use — so
-// unlike item-passive-bonus they can't be told apart by TYPE alone (same
-// reason feat.damage/feat.healing, despite being just as parameterized,
-// are also dispatched by id below rather than a dedicated mechanics type).
-// Dispatched by id instead, right below. Each of these
-// still resolves its OWN tier text first when tiered (featureDescriptionText's
-// own tier-resolution below runs before any of this is reached), so these
-// functions only ever handle the tier-LESS compound-fact case (params
-// carrying everything) or the independent-magnitude case with no tier
-// currently selected — a genuinely tiered Feature with a real tier picked
-// never reaches here at all.
-// The four functions below all build ONE self-sufficient sentence combining
-// this record's own tier (the magnitude — resistance/+2/Set to 19/...) with
-// its own params (the "which X" — damage type/skill/ability). Previously
-// the tier alone showed via a live <select> right in the Features list row
-// and only the "which X" half needed spelling out here; now that the tier
-// picker lives in the Inspector instead (feature-params-editor.js's own
-// renderFeatureTierEditor), the list row's own description text is the
-// ONLY place the tier's magnitude is visible at a glance, so every one of
-// these has to say both halves plainly.
+// The clause-recognized Features below all share `mechanics.type: "active"`
+// — the same generic type Vault's pre-existing starter Features use — so
+// unlike item-passive-bonus they can't be told apart by type alone;
+// dispatched by id instead (FEATURE_ID_DESCRIPTION_TEXT below). Each still
+// resolves its own tier text first when tiered, so these functions only
+// handle the tier-less compound-fact case or the independent-magnitude case
+// with no tier currently selected. The four functions below each build ONE
+// self-sufficient sentence combining this record's own tier (the magnitude)
+// with its own params (the "which X") — the tier picker lives in the
+// Inspector, so the list row's description text is the only place the
+// tier's magnitude is visible at a glance.
 function damageModificationDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   const tier = feature.tiers?.find((entry) => entry.id === record.featureTiers?.[feature.id]);
@@ -973,8 +866,8 @@ function acMinimumDescriptionText(feature, record) {
 }
 
 // `spellName`/`spellLevel` are one compound fact (never split into a tier —
-// see feature-import-core.js's own module comment on why) — this Feature
-// has no tiers at all, so this is the ONLY render path for it.
+// see feature-import-core.js) — this Feature has no tiers, so this is the
+// only render path for it.
 function castASpellDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params?.spellName) return feature.description || "";
@@ -991,21 +884,17 @@ function speedModificationDescriptionText(feature, record) {
   return `Grants a ${params.speedType} speed ${distance}.`;
 }
 
-// `damageDice`/`damageType` are one compound fact (like `feat.cast-a-spell`'s
-// own spellName/spellLevel) — never split into a tier. `saveDC`/
-// `saveAbility`/`saveEffect` are only present for the save-conditional
-// shape (Arrow of Slaying: fails a save to take it in full, half on a
-// success) — absent entirely for a plain unconditional grant (Flame Tongue).
+// `damageDice`/`damageType` are one compound fact — never split into a
+// tier. `saveDC`/`saveAbility`/`saveEffect` are only present for the
+// save-conditional shape (fails a save to take it in full, half on a
+// success) — absent for a plain unconditional grant.
 function extraDamageDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params?.damageDice) return feature.description || "";
   const base = `Deals an extra ${params.damageDice} ${params.damageType || ""} damage`;
   // `saveAbility`, not `saveDC`, is the real "is this a save-conditional
-  // clause at all" signal now — a spell's own save DC is never a literal
-  // number in its own text (vault-feature-matching.js's own
-  // `extra-damage` recognizer only ever sets `saveDC` when the source text
-  // actually states one, but still sets `saveAbility`/`saveEffect` for a
-  // spell's DC-less save clause).
+  // clause at all" signal — a spell's own save DC is never a literal number
+  // in its own text.
   if (!params.saveAbility) return `${base} on a hit.`;
   const half = params.saveEffect === "half" ? ", or half as much on a success" : "";
   const dc = params.saveDC ? `DC ${params.saveDC} ` : "";
@@ -1019,8 +908,8 @@ function darkvisionDescriptionText(feature, record) {
 }
 
 // `curseText` is the curse's own specific drawback, preserved verbatim
-// (see vault-feature-matching.js's own "Curse" clause dispatch) since the
-// actual mechanic varies too much item to item to structure further.
+// since the actual mechanic varies too much item to item to structure
+// further.
 function curseDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params?.curseText) return feature.description || "";
@@ -1034,10 +923,9 @@ function savingThrowAdvantageDescriptionText(feature, record) {
 }
 
 // An item's own healing is usually one fixed value (`healingDice`); a
-// spell's own healing usually scales instead (`scaling`, the same
-// {by, values} ladder shape feat.damage's own render uses) — checked first
-// since a record carrying both would mean the scaling ladder is the real
-// data and healingDice is stale/redundant.
+// spell's usually scales instead (`scaling`, same {by, values} ladder shape
+// as feat.damage) — checked first since a record carrying both means the
+// scaling ladder is the real data and healingDice is stale.
 function healingDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   const entries = Object.entries(params?.scaling?.values || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
@@ -1056,9 +944,8 @@ function attackerDisadvantageDescriptionText(feature, record) {
   return `${scope} against the wearer are made with disadvantage.`;
 }
 
-// Mirrors Crucible's own multiattackDescriptionText (crucible/js/app.js) —
-// the same Multiattack-shaped concept, applied to a menu of spells instead
-// of a menu of attacks.
+// Mirrors Crucible's own multiattackDescriptionText — the same Multiattack-
+// shaped concept, applied to a menu of spells instead of attacks.
 function spellMenuDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   const spells = Array.isArray(params?.spells) ? params.spells : [];
@@ -1079,9 +966,8 @@ function imposeConditionDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params?.condition) return feature.description || "";
   const duration = params.duration ? ` for ${params.duration}` : "";
-  // `saveDC` is optional — a spell's own text never states a literal DC
-  // (vault-feature-matching.js's own `impose-condition` recognizer only
-  // sets it when the source text actually has one).
+  // `saveDC` is optional — a spell's text never states a literal DC unless
+  // the source clause actually has one.
   const dc = params.saveDC ? `DC ${params.saveDC} ` : "";
   const trigger =
     params.trigger === "hit"
@@ -1126,10 +1012,9 @@ function modifiesRollDescriptionText(feature, record) {
 }
 
 // `params` is null (not just missing `tool`) for the common "proficient
-// with whatever tool this transforms into/represents" case (see the
-// `tool-proficiency` clause recognizer, vault-feature-matching.js) — falls
-// back to the shared Feature's own generic description text for that case,
-// same convention every params-optional render function here already uses.
+// with whatever tool this transforms into/represents" case — falls back to
+// the shared Feature's own static description, same convention every
+// params-optional render function here uses.
 function toolProficiencyDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params?.tool) return feature.description || "";
@@ -1238,11 +1123,9 @@ function grantsAdvantageDescriptionText(feature, record) {
   return `Grants advantage on ${params.rollType}.`;
 }
 
-// Mirrors damageDescriptionText's own sentence shape, but every value
-// here is the item's own literal fixed number (see vault-feature-
-// matching.js's own CLAUSE_RECOGNIZERS "area-damage-save-half"/"-binary")
-// rather than a caster-scaled `scaling` table — an item has no spell slot
-// to scale by.
+// Mirrors damageDescriptionText's own sentence shape, but every value here
+// is the item's own literal fixed number rather than a caster-scaled
+// `scaling` table — an item has no spell slot to scale by.
 function areaDamageBurstDescriptionText(feature, record) {
   const params = record.featureParams?.[feature.id];
   if (!params?.damageDice) return feature.description || "";
@@ -1253,9 +1136,9 @@ function areaDamageBurstDescriptionText(feature, record) {
   return `${area}ach target must make a ${dc}${params.saveAbility || ""} saving throw, taking ${params.damageDice} ${params.damageType || ""} damage on a failure${rider}.${half}`;
 }
 
-// Featureless-param Features (no per-record data at all needed to render —
-// "No Critical Hits"/"Water Breathing" always mean the same thing) just use
-// their own shared static description, same as any plain "passive" Feature.
+// Featureless-param Features (no per-record data needed to render — "No
+// Critical Hits"/"Water Breathing" always mean the same thing) just use
+// their shared static description, same as any plain "passive" Feature.
 const FEATURE_ID_DESCRIPTION_TEXT = {
   "feat.damage-modification": damageModificationDescriptionText,
   "feat.skill-bonus": skillBonusDescriptionText,
@@ -1298,13 +1181,12 @@ const FEATURE_ID_DESCRIPTION_TEXT = {
   "feat.grants-advantage": grantsAdvantageDescriptionText,
 };
 
-// Single entry point renderFeatureList (below) and any future selected-
-// feature detail view call — resolves a selected tier's own text first
-// (same priority Crucible's own renderFeatureList gives feature.tiers),
-// then whichever live-computed text this Feature's own mechanics.type OR
-// (for the generic `"active"` clause-recognized Features) own id needs,
-// then the shared Feature's own static description for anything else (a
-// plain "passive" Feature, or a record-scoped one-off created for a
+// Single entry point (renderFeatureList below) — resolves a selected tier's
+// own text first (same priority Crucible's own renderFeatureList gives
+// feature.tiers), then whichever live-computed text this Feature's
+// mechanics.type OR (for the generic "active" clause-recognized Features)
+// own id needs, then the shared Feature's static description for anything
+// else (a plain "passive" Feature, or a record-scoped one-off for a
 // genuinely unrecognized spell/item clause).
 function featureDescriptionText(feature, record, featureId) {
   const tier = feature?.tiers?.find((entry) => entry.id === record.featureTiers?.[featureId]);
@@ -1315,22 +1197,18 @@ function featureDescriptionText(feature, record, featureId) {
     case "item-passive-bonus":
       return itemPassiveBonusDescriptionText(feature, record);
     default:
-      // A pure tier ladder with no dedicated description function above
-      // (Weapon Enhancement, Spell Attack Bonus, Ranged Damage Bonus,
-      // General Bonus, Mending Pulse, ...) — the tier's own terse name
-      // ("+2", "Superior") means nothing without the feature's own name
-      // for context, unlike a monster's own self-descriptive tier names
-      // (Crucible's "Legendary Resistance (3/Day)"), so it's prefixed
-      // here rather than shown alone.
+      // A pure tier ladder with no dedicated description function above —
+      // the tier's own terse name ("+2", "Superior") means nothing without
+      // the feature's own name for context, unlike a monster's own
+      // self-descriptive tier names, so it's prefixed here.
       return tier ? `${tier.name}${tier.shortName && tier.shortName !== tier.name ? ` (${tier.shortName})` : ""} — ${feature?.description || ""}` : feature?.description || "";
   }
 }
 
 function renderFeatureList(record) {
   if (!elements.featureList) return;
-  // Disposed before the wipe — each row's own Remove button carries a real
-  // tooltip now, and this reruns on every feature add/remove. See
-  // tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — each row's Remove button carries a real
+  // tooltip, and this reruns on every feature add/remove.
   disposeTooltips(elements.featureList);
   elements.featureList.innerHTML = "";
   record.featureIds.forEach((featureId) => {
@@ -1347,8 +1225,8 @@ function renderFeatureList(record) {
 
     const header = document.createElement("div");
     header.className = "d-flex align-items-center gap-2 flex-wrap";
-    // Hover-preview chip (library-reference.js), same suite-wide "displayed
-    // inline wherever needed" primitive Character's own Features tab uses.
+    // Hover-preview chip (library-reference.js), same suite-wide primitive
+    // Character's own Features tab uses.
     header.appendChild(createReferenceChip({ kind: "feature", id: featureId, name: feature?.name || featureId, dataManager }));
     if (isSignature) {
       const badge = document.createElement("span");
@@ -1395,9 +1273,9 @@ function refreshWonderView() {
   updateActionButtons();
 }
 
-// What Save/Export would actually write right now — name/notes only get
-// synced from their input fields inside handleSave/handleExport themselves,
-// so a live dirty-check needs this instead of reading currentRecord directly.
+// What Save/Export would actually write right now — name/notes only sync
+// from their input fields inside handleSave/handleExport, so a live
+// dirty-check needs this instead of reading currentRecord directly.
 function buildRecordForSave() {
   if (!currentRecord) return null;
   return {
@@ -1421,10 +1299,9 @@ function removeFeature(featureId) {
 function addFeature(featureId) {
   if (!currentRecord || !featureId) return;
   // A freshly added tiered feature starts at its own first (cheapest) tier
-  // — same "always a real, well-defined tier" guarantee generateWonder's
-  // own output gives — so the Inspector's own tier select (feature-params-
-  // editor.js's renderFeatureTierEditor) always has something valid
-  // selected rather than defaulting silently.
+  // — same guarantee generateWonder's own output gives — so the Inspector's
+  // tier select always has something valid selected rather than defaulting
+  // silently.
   const feature = findById(features, featureId);
   recordHistory(`add ${feature?.name || "feature"}`, () => {
     if (!currentRecord.featureIds.includes(featureId)) currentRecord.featureIds.push(featureId);
@@ -1443,9 +1320,8 @@ function readLockedFeatureIds() {
 
 function renderNotesPreview() {
   if (!elements.notesPreview) return;
-  // Disposed before the wipe — a `` `date:...` `` reference or a missing
-  // wiki-link inside Notes both carry real tooltips now, and this reruns on
-  // every edit. See tooltips.js's own BUG CLASS 2.
+  // Disposed before the wipe — a date reference or missing wiki-link inside
+  // Notes carries a real tooltip, and this reruns on every edit.
   disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
   elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
@@ -1457,9 +1333,8 @@ function applyNotesMode(mode) {
   const isView = mode === "view";
   elements.notesText?.classList.toggle("d-none", isView);
   elements.notesPreview?.classList.toggle("d-none", !isView);
-  // Showing the eye while in Edit mode (the icon describes what clicking
-  // switches TO, not the current state) and vice versa — same convention
-  // Repository's own toggle uses.
+  // Icon describes what clicking switches TO, not the current state — same
+  // convention as Repository's own toggle.
   elements.notesModeEyeIcon?.classList.toggle("d-none", isView);
   elements.notesModePencilIcon?.classList.toggle("d-none", !isView);
   if (elements.notesModeLabel) elements.notesModeLabel.textContent = isView ? "Edit" : "View";
@@ -1507,10 +1382,9 @@ function renderWonder(record) {
 //
 // Vault's own target-kind whitelist and type-suggestion vocabulary for the
 // shared relationship-editor.js/relationship-graph.js modules — see that
-// pair's own header comments for the full suite-wide mechanism, and Forge's
-// own app.js for the first tool this pattern shipped on. Item/spell-
+// pair's own header comments for the full suite-wide mechanism. Item/spell-
 // flavored suggestions, not social or ecological ones — a Wonder's own
-// natural relationships read differently than an NPC's or a Monster's.
+// relationships read differently than an NPC's or a Monster's.
 const RELATIONSHIP_TARGET_KINDS = [
   { id: "npc", label: "NPC" },
   { id: "location", label: "Location" },
@@ -1529,8 +1403,7 @@ const RELATIONSHIP_TYPE_SUGGESTIONS = [
 // "wonder" (the existing Identity/Features/Notes card stack) or
 // "relationships" (a full-pane List/Graph view over this Wonder's own
 // relationship edges) — mutually exclusive Modes, switched by the
-// suite-wide Mode toggle group (createModeToggleGroup) in the header row
-// above the main pane, exactly mirroring Forge/Crucible/Sanctum's own split.
+// suite-wide Mode toggle group, mirroring Forge/Crucible/Sanctum's split.
 let mode = "wonder";
 let relationshipsForceGraph = null;
 let relationshipsIconByKind = {};
@@ -1538,11 +1411,8 @@ let relationshipsIconByKind = {};
 function renderModeToggle() {
   if (!elements.modeToggleMount) return;
   // Nothing to relate until a Wonder exists — disabled (not hidden) until
-  // then, via createButtonCheckGroup's own disabled/tooltip option support
-  // (ui-components.js), the same mechanism every other tool's Relationships
-  // option now uses too (previously each hand-rolled an identical
-  // post-render querySelector('input[value="relationships"]').disabled
-  // patch — consolidated onto this one shared mechanism instead).
+  // then, the same shared mechanism every other tool's Relationships option
+  // now uses.
   createModeToggleGroup({
     container: elements.modeToggleMount,
     ariaLabel: "Vault view",
@@ -1596,7 +1466,7 @@ function ensureRelationshipsForceGraph() {
 
 async function refreshRelationshipsList() {
   if (!elements.relationshipsListMount) return;
-  // No Wonder loaded — clear rather than leave a stale prior Wonder's own
+  // No Wonder loaded — clear rather than leave a stale prior Wonder's
   // relationships on screen.
   if (!currentRecord?.id) {
     elements.relationshipsListMount.innerHTML =
@@ -1640,11 +1510,10 @@ async function refreshRelationshipsSection() {
 renderModeToggle();
 
 function handleGenerate() {
-  // No readiness guard needed here — setGenerateButtonReadiness gives the
-  // button a real `disabled` attribute whenever this would fail, and a
-  // disabled button's click listener never fires at all (mouse or
-  // keyboard), so this handler only ever runs when generation is genuinely
-  // ready.
+  // No readiness guard needed — setGenerateButtonReadiness gives the button
+  // a real `disabled` attribute whenever this would fail, and a disabled
+  // button's click listener never fires, so this only runs when generation
+  // is genuinely ready.
   try {
     const selectedClass = classes.find((entry) => entry.id === elements.castingClassSelect?.value);
     const generated = generateWonder(features, propertyTypes, {
@@ -1656,9 +1525,9 @@ function handleGenerate() {
     });
     const record = createWonderRecord(generated);
     dirtyGate.markDirty();
-    // Freshly generated content is always unsaved, regardless of whichever
-    // saved Wonder the picker previously pointed at — mirrors Crucible's
-    // handleGenerate/Sanctum's handleGenerate resetting the same way.
+    // Freshly generated content is always unsaved regardless of whichever
+    // saved Wonder the picker previously pointed at — mirrors Crucible's/
+    // Sanctum's own handleGenerate resetting the same way.
     currentWonderId = null;
     if (elements.wonderSelect) elements.wonderSelect.value = "";
     updateGenerationFieldsVisibility();
@@ -1677,14 +1546,11 @@ async function handleSave() {
     // Every Wonder save gets its remaining raw stats.mechanic (an imported
     // spell/item's own recognized structured mechanic, or unrecognized
     // stats.description) converted into a real Feature reference,
-    // unconditionally — mirrors Crucible's own handleSave exactly (see
-    // vault-feature-matching.js's own module comment). Loom's saveEntity
-    // already does this for imports made through Loom; this save bypasses
-    // saveEntity entirely (writes straight to dataManager.save), so it
+    // unconditionally — mirrors Crucible's own handleSave exactly. Loom's
+    // saveEntity already does this for imports made through Loom; this save
+    // bypasses saveEntity (writes straight to dataManager.save), so it
     // needs the same call directly. Idempotent — hasConvertibleSpellItemStats
-    // is false once nothing's left to convert (the converter deletes
-    // record.stats once consumed), so this is a safe no-op on every
-    // subsequent save of the same record.
+    // is false once nothing's left to convert.
     let conversionErrors = [];
     if (hasConvertibleSpellItemStats(currentRecord)) {
       const conversionResult = await convertSpellOrItemToFeatures(currentRecord, {
@@ -1694,9 +1560,9 @@ async function handleSave() {
       });
       conversionErrors = conversionResult?.errors || [];
     }
-    // Default mode ("auto") matters here exactly like Crucible/Forge's save:
-    // an anonymous GM saves locally to their own browser, a signed-in user
-    // gets a real owned/shareable record — Vault has no whole-tool login gate.
+    // Default mode ("auto") matters here exactly like Crucible/Forge's
+    // save: an anonymous GM saves locally, a signed-in user gets a real
+    // owned/shareable record — Vault has no whole-tool login gate.
     const exported = toPressExportShape(currentRecord);
     await dataManager.save("wonder", currentRecord.id, exported);
     dirtyGate.markClean(exported);
@@ -1765,9 +1631,9 @@ async function handleGenerateNote() {
     elements,
     status,
     generateNote: generateWonderNote,
-    // Leave name blank rather than falling back to record.id here — an id
-    // like "won_abc123" would look like a real name to the server and stop
-    // it from suggesting one.
+    // Leave name blank rather than falling back to record.id — an id like
+    // "won_abc123" would look like a real name to the server and stop it
+    // from suggesting one.
     buildRequestBody: (record) => {
       const propertySummary = {};
       propertyTypes.forEach((propertyType) => {
@@ -1821,11 +1687,8 @@ async function init() {
   dataManager = auth.dataManager;
 
   // Generate starts disabled (see its own toolbar definition above) —
-  // recomputed once reloadReferenceData has actually resolved, from every
-  // path that can reach "loading is done" below (the plain init cascade,
-  // handleSystemSelectChange, or applyDeepLinkParams' own background Phase
-  // 2). Proactively disables (with an explanatory tooltip, via the shared
-  // setGenerateButtonReadiness helper) instead of unconditionally enabling —
+  // recomputed once reloadReferenceData resolves. Proactively disables
+  // (with an explanatory tooltip) instead of unconditionally enabling —
   // getWonderGenerationBlockReason mirrors generateWonder's own eligible-
   // Features check, so this can never drift out of sync with what actually
   // happens on click.
@@ -1834,9 +1697,9 @@ async function init() {
     setGenerateButtonReadiness(elements.generateButton, reason);
   }
 
-  // Same dirty check updateActionButtons already uses for the Save button —
-  // Vault had no guard at all against navigating/closing away from
-  // unsaved edits (unlike Workbench, which already had this).
+  // Same dirty check updateActionButtons already uses for Save — Vault had
+  // no guard against navigating/closing away from unsaved edits (unlike
+  // Workbench, which already had this).
   window.addEventListener("beforeunload", (event) => {
     if (!currentRecord || !dirtyGate.isDirty()) return;
     event.preventDefault();
@@ -1865,17 +1728,15 @@ async function init() {
       currentRecord.properties = { ...(currentRecord.properties || {}), [key]: select.value };
     });
     recomputeBudget(currentRecord);
-    // Form's own value gates Spell Levels' visibility (see renderIdentity) —
-    // only a Form change needs the whole Identity grid rebuilt to reflect
-    // that; every other property just updates its own already-visible select.
+    // Form's own value gates Spell Levels' visibility — only a Form change
+    // needs the whole Identity grid rebuilt to reflect that.
     if (key === "form") renderIdentity(currentRecord);
     refreshWonderView();
   });
-  // Per-property reroll button (createFieldBox's own `rerollable` option) —
-  // same convention Forge's Identity/4D and Crucible's Identity fields use.
-  // Unlike a manual select change, the picked value never touched the DOM,
-  // so the Identity grid needs a full re-render (not just refreshWonderView)
-  // to show it.
+  // Per-property reroll button (createFieldBox's `rerollable` option) —
+  // same convention Forge's/Crucible's Identity fields use. Unlike a manual
+  // select change, the picked value never touched the DOM, so the Identity
+  // grid needs a full re-render to show it.
   elements.identityFields?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord) return;
@@ -1891,13 +1752,11 @@ async function init() {
     refreshWonderView();
   });
   // Named (not an inline listener) so the init flow below can also call
-  // this directly when auto-selecting the active campaign group's own
-  // System.
+  // this directly when auto-selecting the active campaign group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     // A different System means any previously loaded Wonder (and the
-    // reference data it was built from) is no longer relevant — same
-    // reasoning as Crucible/Sanctum's own System change handlers.
+    // reference data it was built from) is no longer relevant.
     currentWonderId = null;
     renderWonder(null);
     await reloadReferenceData();
@@ -1914,27 +1773,21 @@ async function init() {
       return;
     }
     try {
-      // preferLocal: false — `id` always comes from elements.wonderSelect,
-      // populated by listWondersForSystem's own fetchKindEntriesWithIds
-      // (`includeLocal: false`), so it's already guaranteed to be a
-      // server-known wonder; defaulting to a local-preferring get() here
-      // silently served a stale per-record snapshot whenever the server
-      // copy changed after this browser's own local cache of it was first
-      // populated (confirmed live: Arrow of Slaying's own corrected
-      // featureIds never appeared in Vault after a direct data fix, even
-      // though Loom's own equally-fresh fetch showed it immediately) — the
-      // exact same bug fetchKindEntriesWithIds' own comment already
-      // documents and fixes for the list-then-fetch-each path, just missed
-      // at this single-record load path.
+      // preferLocal: false — `id` always comes from a server-known option
+      // (listWondersForSystem's own includeLocal: false), so defaulting to
+      // a local-preferring get() here would silently serve a stale
+      // per-record snapshot whenever the server copy changed after this
+      // browser's local cache was first populated — the same bug
+      // fetchKindEntriesWithIds already documents and fixes for the
+      // list-then-fetch-each path, just missed at this single-record load.
       const result = await dataManager.get("wonder", id, { preferLocal: false });
       if (!result?.payload) {
         status?.show("Unable to load that wonder.", { type: "error", timeout: 4000 });
         return;
       }
-      // Not createWonderRecord — that function always stamps a fresh id and
-      // createdAt (see wonder-schema.js), which is right for a NEW
-      // generation but would silently rewrite an existing record's real
-      // creation time on every load.
+      // Not createWonderRecord — that always stamps a fresh id and
+      // createdAt, right for a NEW generation but would silently rewrite an
+      // existing record's real creation time on every load.
       renderWonder({ ...result.payload, id });
       dirtyGate.markClean(toPressExportShape(currentRecord));
       updateActionButtons();
@@ -1943,12 +1796,11 @@ async function init() {
     }
   });
 
-  // Budget ceiling field picker, moved into a gear-icon Settings modal
-  // (upper-left of the header) — same shared module and visual pattern
-  // Repository's own Settings button already uses. getValue/setValue defer
-  // straight to the per-System dataManager.getLocal/saveLocal preference
-  // above rather than this module's own flat store (see tool-settings.js's
-  // own comment on that option).
+  // Budget ceiling field picker, in the gear-icon Settings modal (upper-left
+  // of the header) — same shared module and visual pattern Repository's own
+  // Settings button uses. getValue/setValue defer to the per-System
+  // dataManager.getLocal/saveLocal preference above rather than this
+  // module's own flat store.
   initToolSettings({
     toolId: "vault",
     dataManager,
@@ -1960,10 +1812,9 @@ async function init() {
         type: "select",
         label: "Budget ceiling field",
         helpTopic: "vault.budgetCeilingField",
-        // "(auto-detected)" on the guessed field's own option label — same
-        // convention as abilityField below — plus a real "None" option so a
-        // GM can explicitly force no ceiling field for a System that
-        // genuinely wants every property type treated as pure spend.
+        // "(auto-detected)" on the guessed field's own option label, plus a
+        // real "None" option so a GM can explicitly force no ceiling field
+        // for a System that wants every property type treated as pure spend.
         options: [
           { value: "", label: "None" },
           ...propertyTypes.map((propertyType) => ({
@@ -1989,12 +1840,10 @@ async function init() {
         type: "select",
         label: "Ability field",
         helpTopic: "vault.abilityField",
-        // No separate "Auto-detect" option — the guessed field (whichever
-        // Object property guessAbilityFieldKey picked) IS the selected
-        // value until the GM actually picks a different one, with " (auto-
-        // detected)" on its own option label as the only indicator. Once a
-        // real preference is stored (even re-picking the same field
-        // explicitly), that suffix drops — see getValue below.
+        // No separate "Auto-detect" option — the guessed field IS the
+        // selected value until the GM picks a different one, with "
+        // (auto-detected)" on its option label as the only indicator. Once
+        // a real preference is stored, that suffix drops.
         options: objectFieldOptions.map((field) => ({
           value: field.key,
           label:
@@ -2009,17 +1858,16 @@ async function init() {
         },
       },
     ],
-    // Queried live (not via `elements`, unlike everything else in this
-    // object) because the header — and this mount point inside it — is now
-    // built by initAppShell() itself, which runs after `elements` above is
-    // already constructed; an eager query here would have captured null.
+    // Queried live (not via `elements`) because the header — and this mount
+    // point inside it — is built by initAppShell() itself, which runs after
+    // `elements` above is already constructed.
     mountButton: (button) => document.querySelector("[data-vault-settings-slot]")?.appendChild(button),
   });
 
   // Name/Notes aren't written back into currentRecord until Save/Export
-  // actually runs (see buildRecordForSave) — without this, editing either
-  // field wouldn't re-enable an already-saved record's Save button until
-  // some unrelated re-render happened to call updateActionButtons() again.
+  // runs (see buildRecordForSave) — without this, editing either field
+  // wouldn't re-enable an already-saved record's Save button until some
+  // unrelated re-render happened to call updateActionButtons() again.
   elements.nameInput?.addEventListener("input", () => {
     scheduleFieldCommit("edit name");
     updateActionButtons();
@@ -2033,35 +1881,29 @@ async function init() {
   elements.notesText?.addEventListener("keydown", flushFieldCommitOnUndoRedo);
   elements.notesText?.addEventListener("change", () => commitFieldEdit());
   elements.notesModeToggle?.addEventListener("click", () => {
-    // Notes isn't written back into currentRecord until Save/Export (see
-    // buildRecordForSave) — switching to View needs the live textarea
-    // value, not whatever was last saved, so it's synced here same as
-    // Save/Export already does.
+    // Notes isn't written back into currentRecord until Save/Export —
+    // switching to View needs the live textarea value, not the last saved
+    // one.
     if (currentRecord) currentRecord.notes = elements.notesText?.value || "";
     applyNotesMode(notesMode === "view" ? "edit" : "view");
   });
 
   document.querySelector("[data-json-mount]")?.appendChild(jsonDataPanel.section);
 
-  // `?wonder=<id>` — a cross-tool deep link (Repository's own kind-reference
-  // chips route here via KIND_TOOL_ROUTE, see repository/js/app.js), same
-  // `?param=<id>`-read-at-bootstrap convention Orrery's own `?map=` and
-  // Loom's own `?feature=` already establish. Vault has no Setting concept
-  // (same as Crucible), so System alone is the scope. Dispatches a real
-  // "change" event to actually load the wonder rather than duplicating
-  // wonderSelect's own change-handler body a second time here.
+  // `?wonder=<id>` — a cross-tool deep link (Repository's own kind-
+  // reference chips route here via KIND_TOOL_ROUTE), same `?param=<id>`
+  // bootstrap convention as Orrery's `?map=`/Loom's `?feature=`. Vault has
+  // no Setting concept (same as Crucible), so System alone is the scope.
+  // Dispatches a real "change" event rather than duplicating wonderSelect's
+  // own change-handler body.
   // Two-phase, not one straight-line await chain — same "show the linked
   // record first, load everything else in the background" fix Sanctum's
   // own deep link needed once a campaign had enough saved content for the
-  // full System reference-data reload to be genuinely slow. Phase 1
-  // (awaited, blocks return): render THIS wonder directly (reusing
-  // renderWonder + the same dirty-baseline call wonderSelect's own change
-  // handler makes — not that handler itself, since it reads the id off
-  // wonderSelect.value, which has no matching <option> yet this early).
-  // Phase 2 (fired but not awaited): the System reference-data reload
-  // populates wonderSelect's own option list; a real "change" event
-  // re-dispatched at the end puts the picker's own displayed selection in
-  // sync.
+  // full reference-data reload to be genuinely slow. Phase 1 (awaited):
+  // render THIS wonder directly. Phase 2 (fired but not awaited): the
+  // System reference-data reload populates wonderSelect's own option list;
+  // a real "change" event re-dispatched at the end syncs the picker's
+  // displayed selection.
   async function applyDeepLinkParams() {
     const params = new URLSearchParams(window.location.search);
     const wonderId = params.get("wonder");
@@ -2076,19 +1918,17 @@ async function init() {
       renderWonder({ ...payload, id: wonderId });
       dirtyGate.markClean(toPressExportShape(currentRecord));
       updateActionButtons();
-      // Phase 2 — deliberately not awaited here; runs after this function
-      // has already returned `true`. NOT handleSystemSelectChange (which
-      // resets currentWonderId and calls renderWonder(null) before its own
-      // reloadReferenceData) — that wiped the wonder Phase 1 had ALREADY
-      // rendered, leaving the screen blank for the ~700-record Wonder
-      // catalog fetch's own full duration instead of just quietly finishing
-      // in the background behind an already-correct view. Setting
-      // systemSelect's own value directly and calling reloadReferenceData()
-      // straight (same reference-data fetch, minus the reset) keeps Phase
-      // 1's render on screen the whole time. wonderSelect's own value is set
-      // without dispatching "change" for the same reason — the wonder is
-      // already loaded and correctly shown; re-dispatching would only
-      // re-fetch and re-render it a second time for no benefit.
+      // Phase 2 — deliberately not awaited; runs after this function has
+      // already returned `true`. NOT handleSystemSelectChange (which resets
+      // currentWonderId and calls renderWonder(null) first) — that would
+      // wipe the wonder Phase 1 already rendered, leaving the screen blank
+      // for the whole Wonder-catalog fetch instead of finishing quietly
+      // behind an already-correct view. Setting systemSelect's value
+      // directly and calling reloadReferenceData() straight (same fetch,
+      // minus the reset) keeps Phase 1's render on screen throughout.
+      // wonderSelect's value is set without dispatching "change" — the
+      // wonder is already loaded and correctly shown; re-dispatching would
+      // only re-fetch and re-render it a second time for no benefit.
       void (async () => {
         try {
           if (targetSystemId && elements.systemSelect) {
@@ -2100,9 +1940,8 @@ async function init() {
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just
           // leaves the picker under-populated, not worth an error toast on
-          // top of a page that's already showing real content. Generate
-          // stays disabled in this case — reference data may never have
-          // loaded, and clicking it would just throw straight back out.
+          // top of a page already showing real content. Generate stays
+          // disabled in this case, since reference data may never have loaded.
         }
       })();
       return true;
@@ -2112,13 +1951,12 @@ async function init() {
     }
   }
 
-  // If a campaign group is active (the header's Campaign dropdown) and that
-  // group has its own System assigned, default Vault's System select to it
-  // — a real, GM-chosen fact about the campaign being played, not a guess —
-  // to make mid-campaign generation faster. Falls through to the original
-  // "nothing chosen yet" placeholder whenever there's no active group, or
-  // its System isn't one this tool's own list actually contains. An
-  // explicit `?wonder=` deep link always wins over both.
+  // If a campaign group is active and has its own System assigned, default
+  // Vault's System select to it — a real, GM-chosen fact about the
+  // campaign, not a guess — to make mid-campaign generation faster. Falls
+  // through to the original placeholder when there's no active group, or
+  // its System isn't in this tool's own list. An explicit `?wonder=` deep
+  // link always wins over both.
   const systems = await populateSystemSelect();
   const deepLinked = await applyDeepLinkParams();
   if (!deepLinked) {
@@ -2132,10 +1970,9 @@ async function init() {
     }
     renderWonder(null);
     // Both branches above resolve reference data for whatever System ended
-    // up selected — safe to recompute readiness here regardless of which one
-    // ran. The deepLinked === true case updates from inside its own Phase 2
-    // background IIFE instead (applyDeepLinkParams above), once ITS
-    // reference-data load actually finishes.
+    // up selected — safe to recompute readiness here regardless of which
+    // one ran. The deepLinked case updates from inside its own Phase 2
+    // background IIFE instead, once ITS reference-data load finishes.
     updateGenerateButtonReadiness();
   }
 

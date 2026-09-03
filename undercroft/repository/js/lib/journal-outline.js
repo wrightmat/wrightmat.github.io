@@ -1,17 +1,14 @@
 // Pure extraction of a page's markdown headings — no rendering, no DOM.
-// Order here has to match the order marked() renders headings in (both are
-// a straight top-to-bottom scan of the same raw text), since app.js pairs
-// each entry up positionally with the matching rendered heading via
-// `repo-heading-<index>` ids (see renderPreview/renderOutline there) rather
-// than a text-based slug that could collide on a heading used twice.
+// Order here must match marked()'s own render order (both are a top-to-
+// bottom scan of the same raw text) since app.js pairs entries positionally
+// with rendered `repo-heading-<index>` ids rather than a text slug, which
+// could collide on a repeated heading.
 import { wikiLinkPattern } from "./wiki-link-syntax.js";
 
 const HEADING_PATTERN = /^(#{1,6})\s+(.*)$/;
 
-// A heading like "## [[Grimlock]]" or "## [[Grimlock#Backstory|the old man]]"
-// should read as "Grimlock"/"the old man" in the outline, not the raw
-// [[...]] syntax (heading fragment included) — doesn't fit and isn't the
-// point of a table of contents.
+// "## [[Grimlock|the old man]]" should read as "the old man" in the
+// outline, not the raw [[...]] syntax.
 function stripWikiLinkSyntax(text) {
   return text.replace(wikiLinkPattern(), (match, title, heading, alias) => (alias || title).trim());
 }
@@ -24,12 +21,9 @@ export function extractOutline(body) {
     if (!match) return;
     raw.push({ level: match[1].length, text: stripWikiLinkSyntax(match[2].trim()), line: index });
   });
-  // `depth` reflects actual nesting under the headings that came before it,
-  // not its raw `#` count — a page that only ever uses ## and ### (no #)
-  // should still read with ## flush against the left edge, not artificially
-  // indented one level in just because "2" isn't "1"; and a level that
-  // jumps (# straight to ###, no ## in between) nests one step under #,
-  // not two, since there's no ## sibling it's actually nesting under.
+  // `depth` reflects nesting relative to prior headings, not raw `#` count —
+  // a page using only ##/### still renders ## flush left, and a level that
+  // jumps (# straight to ###) nests one step, not two.
   const stack = [];
   return raw.map((heading) => {
     while (stack.length && stack[stack.length - 1] >= heading.level) stack.pop();
@@ -39,11 +33,7 @@ export function extractOutline(body) {
   });
 }
 
-// Case-insensitive exact match against a page's own outline — returns the
-// matching entry's index, or -1. Promoted here from repository/js/app.js
-// (a private function of the same name/shape) once a second caller
-// (common/js/lib/widgets/handout.js's own anchor-aware spotlight) needed
-// it too, rather than a second copy.
+// Case-insensitive exact match against a page's own outline — index, or -1.
 export function findHeadingByText(body, headingText) {
   const target = (headingText || "").trim().toLowerCase();
   if (!target) return -1;

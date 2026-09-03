@@ -1,9 +1,7 @@
-// Optional location-note synthesis (mirrors Crucible's/Vault's llm-note.js) — a GM
-// can generate and save a Location with no LLM involvement whatsoever. Sends the
-// resolved Type/Purpose/Environment and full feature/asset/need lists to the
-// server-side proxy at POST /sanctum/generate-note, which talks to Anthropic
-// directly. `details.name` may be blank — the server asks Claude to invent one in
-// that case, returned alongside the note so the caller can fill the Name field in.
+// Optional location-note synthesis (mirrors Crucible's/Vault's llm-note.js) —
+// posts resolved Type/Purpose/Environment + feature/asset/need lists to
+// POST /sanctum/generate-note (server-side Anthropic proxy). A blank
+// `details.name` asks Claude to invent one, returned for the caller to fill in.
 export async function generateLocationNote(details) {
   const response = await fetch("/sanctum/generate-note", {
     method: "POST",

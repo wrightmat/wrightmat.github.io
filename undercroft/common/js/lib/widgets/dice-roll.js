@@ -1,51 +1,30 @@
-// Thin, shared "roll this expression and report the result" wrapper around
-// Workbench's own dice engine (workbench/js/lib/dice.js's rollDiceExpression,
-// reused as-is — see map.js's identical reasoning for reusing Orrery's
-// renderMapLayers), plus the exact quick-dice-button expression-building
-// logic from Workbench's own dice tool (workbench-character-view.js's
-// QUICK_DICE/incrementDieInExpression/parseQuickDiceCounts, moved here
-// verbatim and imported back by that file, not duplicated). Used by
-// character-sheet.js's Initiative roller and the standalone Dice Roller
-// dashboard widget, so there's one roll-and-report path and one quick-dice-
-// button behavior, not two of each.
+// Shared "roll this expression and report the result" wrapper around
+// workbench/js/lib/dice.js's rollDiceExpression, plus the quick-dice-button
+// logic from Workbench's own dice tool (moved here, imported back so it's
+// not duplicated). Used by character-sheet.js's Initiative roller and the
+// Dice Roller dashboard widget — one roll-and-report path, one quick-dice
+// behavior, not two of each.
 import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
-// Only for rollSymbolPoolExpression's own optional log-post below — this
-// module has no display-formatting knowledge of its own otherwise.
 import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
-// Rollable Journal tables (`[[Page#^blockId]]`) — recognized/resolved here,
-// not `rollDiceExpression` itself, which stays the pure, sync numeric-
-// notation engine Forge's own tables.js also depends on. `common/` already
-// imports from `repository/` for renderMarkdown (via handout.js), so this
-// isn't a new layering direction.
+// Rollable Journal tables (`[[Page#^blockId]]`) are recognized/resolved
+// here, not in rollDiceExpression itself, which stays a pure numeric-
+// notation engine (Forge's tables.js also depends on that).
 import { parseTableReferenceExpression, resolveTableReference, describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
-// The 3D dice overlay — see dice-overlay.js's own header for the full split
-// of responsibilities. Only wired into the plain-expression branch below
-// (table rolls have nothing to physically roll); every existing caller of
-// rollExpression picks this up for free.
+// The 3D dice overlay (see dice-overlay.js) — wired only into the plain-
+// expression branch below, since table rolls have nothing to physically roll.
 import { rollDiceOverlay, rollSymbolDiceOverlay } from "./dice-overlay.js";
-// Tier-3 symbol-dice pool engine (Section 1.4/3.4) — rollSymbolPoolExpression
-// below is this file's own "try the overlay, else fall back" wrapper around
-// it, mirroring rollExpression's own relationship with rollDiceExpression.
+// Tier-3 symbol-dice pool engine — rollSymbolPoolExpression below mirrors
+// rollExpression's own "try the overlay, else fall back" shape.
 import { rollSymbolDicePool, buildSymbolPoolFromDiceBoxValues } from "../../../../workbench/js/lib/symbol-dice.js";
 
 // Expressions eligible for the 3D overlay: a plain +/- sum of `NdM` groups,
-// flat numbers, and registered named-die terms (Section 1.1's System.dice,
-// e.g. "hopeDie", "2 hopeDie") only — no keep/drop/reroll/explode/success
-// comparators, functions, variables, parentheses, or multiplication/
-// division. Anything outside that falls back to the ordinary non-visual
-// roll below, since dice-box has no way to physically show (say) "4d6, drop
-// the lowest" — it only knows how to roll a fixed pile of same/different-
-// sided dice. A named-die term can only be recognized against the caller's
-// own `dice` list, not a fixed regex, so eligibility is now checked
-// term-by-term inside extractSimpleDiceTerms itself rather than a
-// standalone whole-string pattern test — returning `null` from it IS "not
-// eligible."
-//
-// Only a die's numeric `sides` is used here — a Tier-3 symbol die (Phase 5,
-// an array of face objects instead of a number) has nothing this overlay
-// path can roll, so a term naming one safely falls through to "not simple"
-// via the `typeof sides === "number"` guard below, same as any other
-// ineligible term.
+// flat numbers, and registered named-die terms (e.g. "hopeDie") only — no
+// keep/drop/reroll/explode/comparators/functions/parens/multiply/divide.
+// dice-box can only physically roll a fixed pile of same/different-sided
+// dice, not e.g. "drop the lowest", so anything else falls back to the
+// ordinary non-visual roll. A named-die term only resolves against the
+// caller's own `dice` list, so eligibility is checked term-by-term here
+// rather than with a single regex — `null` return means "not eligible".
 function extractSimpleDiceTerms(expression, dice = []) {
   const diceById = new Map();
   (Array.isArray(dice) ? dice : []).forEach((die) => {
@@ -85,40 +64,36 @@ function extractSimpleDiceTerms(expression, dice = []) {
     }
     const flatNumberMatch = /^\d+/.exec(rest);
     if (flatNumberMatch) {
-      cursor += flatNumberMatch[0].length; // a flat number term — nothing to roll
+      cursor += flatNumberMatch[0].length; // flat number term — nothing to roll
       continue;
     }
-    return null; // anything else (function call, paren, comparator, ...) — not simple
+    return null; // function call, paren, comparator, etc. — not simple
   }
   return terms;
 }
 
-// A generous but finite cap — dice-box can physically roll more than this,
-// but past a certain pile size the "watch them land" spectacle stops being
-// worth the load, so just skip straight to the toast.
+// Above this pile size the 3D overlay's "watch them land" spectacle stops
+// being worth the load — dice-box could technically roll more.
 const MAX_OVERLAY_DICE = 100;
 
-// Wraps a flat queue of real dice-box values (already in the same
-// left-to-right order formula-engine.js's parser will ask for them) as a
-// `random()` function, so rollDiceExpression's own keep/drop/success
-// handling and detail/HTML formatting run completely untouched — the only
-// thing that changed is where the "random" numbers actually came from.
-// `(value - 1) / sides` is the exact input rollSingleDie's own
-// `Math.floor(random() * sides) + 1` needs to land back on `value`.
+// Wraps a flat queue of real dice-box values as a `random()` function, so
+// rollDiceExpression's own keep/drop/success/formatting logic runs
+// untouched — only the source of "randomness" changes. `(value-1)/sides`
+// is the exact input rollSingleDie's `Math.floor(random()*sides)+1` needs
+// to land back on `value`.
 function buildScriptedRandom(queue) {
   return () => {
     if (!queue.length) {
-      return Math.random(); // never expected — never let an internal bug block a roll
+      return Math.random(); // should never happen — never let an internal bug block a roll
     }
     const { sides, value } = queue.shift();
     return Math.min(0.999999, Math.max(0, (value - 1) / sides));
   };
 }
 
-// Returns a rollDiceExpression-shaped result rolled physically via the 3D
-// overlay, or `null` if the expression isn't eligible or the overlay isn't
-// available right now — either way, the caller just falls back to
-// `rollDiceExpression(expression)` as if this never happened.
+// Rolls physically via the 3D overlay, or returns `null` if the expression
+// isn't eligible/overlay unavailable — either way the caller falls back to
+// a plain rollDiceExpression call as if this never happened.
 async function tryOverlayRoll(expression, dataManager, dice = []) {
   const terms = extractSimpleDiceTerms(expression, dice);
   if (!terms || !terms.length) {
@@ -133,114 +108,74 @@ async function tryOverlayRoll(expression, dataManager, dice = []) {
   }
   const queue = [];
   rolled.forEach(({ sides, values }) => values.forEach((value) => queue.push({ sides, value })));
-  // A SEPARATE shallow copy, taken BEFORE buildScriptedRandom gets anywhere
-  // near `queue` — confirmed real bug this fixes: buildScriptedRandom's own
-  // `queue.shift()` (this file, above) MUTATES the exact same array in
-  // place as rollDiceExpression below consumes its "random" values one by
-  // one, fully draining it to `[]` by the time that call returns. Reading
-  // `queue` itself for the broadcast AFTER that call (the first version of
-  // this fix) always found it empty, regardless of the actual roll —
-  // `dieResultsSnapshot`, captured before any shifting happens, is what
-  // actually still holds the real values afterward.
+  // Snapshot BEFORE buildScriptedRandom's own queue.shift() drains it —
+  // rollDiceExpression below consumes the same array as its random source.
   const dieResultsSnapshot = queue.slice();
-  // `dice` must also reach this fallback parse — a named-die term (e.g.
-  // "hopeDie") only resolves through the SAME dice map the overlay term
-  // extraction above just used; omitting it here would throw "Unexpected
-  // token 'hopeDie'" even after a successful physical roll.
+  // `dice` must reach this call too — a named-die term (e.g. "hopeDie")
+  // only resolves via the same map extractSimpleDiceTerms just used.
   const result = rollDiceExpression(expression, { random: buildScriptedRandom(queue), dice });
-  // The REAL physically-rolled per-die values — attached here (only on the
-  // overlay path; the plain Math.random fallback below has no "real" dice
-  // to speak of) so a Broadcast-mode caller can hand them to a remote
-  // viewer's own reveal animation (dice-reveal.js) instead of having that
-  // viewer roll independently and hope for a matching result — see this
-  // file's own broadcast comment on why dice-box itself can't do that.
+  // The REAL physically-rolled values, attached so a Broadcast-mode caller
+  // can hand them to a remote viewer's own reveal animation instead of
+  // having that viewer roll independently and hope for a matching result.
   result.dieResults = dieResultsSnapshot;
   return result;
 }
 
-// Async now (a table reference needs to fetch the referencing Journal page)
-// — every existing caller needs `await`. Returns `null` if the expression
-// was invalid or unresolvable (already toasted). A plain numeric expression
-// returns `{expression, total, result}` (`result` is rollDiceExpression's
-// own full return value) exactly as before; a table reference returns
+// Async (a table reference needs to fetch the referencing Journal page) —
+// every caller needs `await`. A plain expression returns
+// `{expression, total, result}`; a table reference returns
 // `{expression, isTable:true, pageTitle, blockId, roll, dieSize, row,
-// headers}` instead — callers that care about the difference check
-// `result.isTable`, everyone else can just read `.expression` back.
+// headers}` — callers that care check `result.isTable`.
 //
-// `groupContext`/`broadcast` are optional and default to no behavior change
-// for every existing caller (character-sheet.js's Initiative roller, the
-// Dice Roller dashboard widget) — when both a truthy `broadcast` and a real
-// `groupContext.groupId` are given, a successful plain-expression roll also
-// posts a `type:"roll"` group log entry, same shape
-// workbench-character-view.js's own recordGameLogRoll already posts, so it
-// renders identically in the Game Log/second-screen wherever roll entries
-// are already handled. Table rolls aren't broadcast this way yet — not
-// needed for the Dice Roller macro action this was added for.
+// `groupContext`/`broadcast`: when both a truthy `broadcast` and a real
+// `groupContext.groupId` are given, a successful plain roll also posts a
+// `type:"roll"` group log entry (same shape workbench-character-view.js's
+// own recordGameLogRoll posts). Table rolls aren't broadcast this way.
 //
-// `context` (optional, default `{}`) is passed straight through to
-// rollDiceExpression's own `@path` variable substitution — needed by
-// Workbench's ability/save/attack roller buttons, whose formulas reference
-// the live character draft (e.g. `1d20 + @abilities.strength.modifier`).
-// SIMPLE_EXPRESSION_PATTERN already rejects anything containing `@`, so an
-// expression that needs `context` never matches the overlay-eligible path
-// and always falls through to the plain rollDiceExpression call below —
+// `context` passes through to rollDiceExpression's own `@path` variable
+// substitution (Workbench's ability/save/attack rollers reference the live
+// character draft, e.g. `1d20 + @abilities.strength.modifier`) — such an
+// expression always contains `@`, which is never overlay-eligible, so
 // `tryOverlayRoll` itself never needs `context`.
 export async function rollExpression(
   expression,
   {
     status,
-    // No `= ""` default — an omitted label has to stay `undefined` all the
-    // way through to rollSystemMove below (its own `label = move.label`
-    // default only kicks in for a genuinely undefined argument, not an
-    // explicit empty string), so a Moves-panel roll with no override still
-    // shows the Move's own name instead of a blank one. Every other use of
-    // `label` here is a truthy check (`label ? ... : ""`), so `undefined`
-    // behaves identically to the old `""` default everywhere else.
+    // No `= ""` default — an omitted label must stay `undefined` through to
+    // rollSystemMove below, whose own `label = move.label` default only
+    // applies to a genuinely undefined argument, not an explicit "".
     label,
     dataManager,
     groupContext = null,
     broadcast = false,
-    // Whisper-style visibility (see server/groups.py's create_group_log_entry) —
-    // a non-empty list logs the roll but restricts who can see it (Private
-    // mode passes [currentUserId], a self-whisper). Independent of
-    // `broadcast`: a roll can now log-and-be-restricted even when it
-    // wouldn't normally broadcast at all (see shouldLog below) — this is
-    // what lets the Dice Roller widget's own mode switcher force a Private
-    // roll to log even from a button (the plain expression Roll) whose own
-    // default behavior has never logged anything.
+    // Whisper-style visibility (server/groups.py's create_group_log_entry):
+    // a non-empty list logs the roll but restricts who can see it. Lets the
+    // Dice Roller's Private mode force a log even from a plain Roll button,
+    // whose own default has never logged anything.
     recipientIds = undefined,
     dice = [],
     context = {},
-    // false only from rollSystemMove below, which wants ONE combined
-    // "roll + verdict" toast instead of this plain-roll toast immediately
-    // followed by a second one — the roll itself (and any broadcast) still
-    // happens identically either way, just without announcing it here.
+    // false only from rollSystemMove, which wants ONE combined "roll +
+    // verdict" toast instead of this one immediately followed by a second.
     announce = true,
-    // System Moves (extractSystemRolls' own shape) this roll can resolve
-    // against — a caller passes whichever list is right for its own scope
-    // (a character's own System for a field-bound button, the campaign-
-    // priority activeSystemRolls for the free-typed box/Moves panel — see
-    // workbench-character-view.js's executeDiceRoll). Optional and empty
-    // by default, so every existing caller with no Moves concept at all
-    // (Forge's tables.js, the Dashboard Character widget) sees zero
-    // behavior change.
+    // System Moves (extractSystemRolls' shape) this roll can resolve
+    // against — caller picks the right-scoped list (a character's own
+    // System for a field-bound button, campaign-priority activeSystemRolls
+    // for the free-typed box/Moves panel; see executeDiceRoll). Empty by
+    // default, so a caller with no Moves concept sees no behavior change.
     rolls = [],
-    // Threaded straight to a matched Move's own band grading — see
-    // matchesRangeBand's own comment for what this enables.
+    // Threaded to a matched Move's own band grading — see matchesRangeBand.
     targetValue = undefined,
   } = {}
 ) {
   const trimmed = String(expression || "").trim();
-  // A Move reference (by shortName, NEVER by comparing expression text —
-  // see findRollByShortName's own comment for two real, pre-existing
-  // Systems that already prove why) resolves through rollSystemMove
-  // instead — this is what makes THIS function itself understand both "a
-  // real dice expression" and "a System Roll's own shortName" the exact
-  // same way a table reference is already recognized above the plain-roll
-  // path below, so every caller (a template button, the free-typed Dice
-  // Roller box, a Moves-panel button inserting its own shortName) just
-  // calls rollExpression once and gets a Move's bands/compare graded for
-  // free when the text resolves to one, with no branching of its own.
+  // A Move reference resolves by shortName, NEVER by comparing expression
+  // text (Apocalypse World has two different Moves with the same "2d6+
+  // @stats.hard" expression; B/X D&D's Attack Roll and Saving Throw are
+  // both bare "d20" — text equality can't tell those apart). This is what
+  // lets every caller (a template button, the Dice Roller box, a Moves-
+  // panel button) just call rollExpression once and get a Move's bands/
+  // compare graded for free when the text resolves to one.
   const move = findRollByShortName(rolls, trimmed);
   if (move) {
     return rollSystemMove(move, {
@@ -267,11 +202,8 @@ export async function rollExpression(
         status?.show(`Couldn't find "${tableRef.title}#^${tableRef.blockId}".`, { type: "danger" });
         return null;
       }
-      // Just the number/result — no "pageTitle (dN)" parenthetical, same
-      // reasoning journal-dice.js's own chip and the Dice Roller widget's
-      // result line drop it: the table that was rolled is already visible
-      // wherever this toast was triggered from (a chip's own tooltip, or
-      // the widget's own input), so repeating it here is just noise.
+      // No "pageTitle (dN)" parenthetical — the table being rolled is
+      // already visible wherever this toast was triggered from.
       const prefix = label ? `${label}: ` : "";
       status?.show(`${prefix}${describeTableRow(outcome.row)}`, {
         type: "success",
@@ -291,8 +223,7 @@ export async function rollExpression(
     }
     // Logs whenever EITHER broadcast is on OR explicit recipientIds were
     // given — a Private roll has to log (self-only) even from a call site
-    // (a plain expression roll) whose own `broadcast` default has never
-    // logged anything at all.
+    // whose own `broadcast` default has never logged anything.
     const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
     if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
       void dataManager
@@ -312,9 +243,7 @@ export async function rollExpression(
           },
         })
         .catch(() => {
-          // Best-effort — the roll itself already succeeded and was
-          // reported locally above; a failed broadcast just means nobody
-          // else sees it in the Game Log this time.
+          // Best-effort — the roll itself already succeeded locally.
         });
     }
     return { expression: trimmed, total: result.total, result };
@@ -324,14 +253,10 @@ export async function rollExpression(
   }
 }
 
-// Section 2's shared "which System's dice are in effect right now" resolver
-// — the active campaign Group's own System (Section 1.2's Group.systemId)
-// wins first, then the character's own first Assigned System, else `null`
-// (meaning: fall back to the standard 7, Section 4's read-time default).
-// Only ever reachable for an authenticated dataManager with a real saved
-// System record — D&D (and any System with no `dice` array at all) simply
-// returns a payload with no usable `dice`, which resolveQuickDice below
-// already treats the same as "no System resolved."
+// Which System's dice are in effect: the active campaign Group's own
+// System wins first, then the character's own first Assigned System, else
+// `null` (falls back to the standard 7). A System with no `dice` array at
+// all (D&D) returns a payload with no usable dice, same as "no System".
 export async function resolveActiveDice({ dataManager, groupContext = null, character = null } = {}) {
   const characterSystemIds = Array.isArray(character?.systemIds)
     ? character.systemIds
@@ -352,10 +277,8 @@ export async function resolveActiveDice({ dataManager, groupContext = null, char
 
 export const QUICK_DICE = ["d4", "d6", "d8", "d10", "d12", "d20", "d100"];
 
-// Normalized {id, label, sides} shape of the array above — kept as a
-// SEPARATE export rather than changing QUICK_DICE itself, since
-// code-block-autocomplete.js's own QUICK_DICE import (Journal text
-// suggestions, no System/group context available there) stays on the plain
+// Normalized {id, label, sides} form of QUICK_DICE, kept as a separate
+// export since code-block-autocomplete.js's own import needs the plain
 // string form unchanged.
 const STANDARD_DICE = QUICK_DICE.map((id) => ({
   id,
@@ -363,18 +286,11 @@ const STANDARD_DICE = QUICK_DICE.map((id) => ({
   sides: id === "d100" ? 100 : Number(id.slice(1)),
 }));
 
-// A System's own dice (Section 1.1) aren't a new property type or a
-// separate top-level array — they're an ordinary Enum-mode Array property
-// with the reserved key "dice" (same "just another array field, discovered
-// by a fixed marker" shape combat-tracker.js's own Role-marker convention
-// already uses, just keyed by the field's own `key` instead of a per-value
-// column, since there's only ever one dice vocabulary per System). Each
-// value's `name` is the die's id (what expressions reference — e.g.
-// "hopeDie") AND its display label, same as every other Enum value in this
-// app (Ancestries' "Clank", Rarity's options, ...) — no separate label
-// field. `sides`/`color`/`themeOverride`/`faceMap` live in that value's own
-// Extra properties (JSON) catch-all, exactly like Modifier's own `die`
-// property does today — nothing new for Loom's array editor to support.
+// A System's own dice: an ordinary Enum-mode Array property with the
+// reserved key "dice", not a new property type. Each value's `name` is
+// both the die's id (what expressions reference, e.g. "hopeDie") and its
+// display label; `sides`/`color`/`themeOverride`/`faceMap` live in that
+// value's own Extra-properties JSON.
 export function extractSystemDice(systemDefinition) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   const diceField = fields.find((field) => field?.type === "array" && field.key === "dice");
@@ -382,17 +298,11 @@ export function extractSystemDice(systemDefinition) {
   return (
     values
       .filter((value) => value && typeof value.name === "string" && value.name)
-      // A Tier-3 symbol die (Phase 5 — `sides` is an array of face objects,
-      // e.g. Genesys's Boost/Setback/Ability/..., not a number) has no
-      // numeric face count to roll through this engine at all:
-      // rollSingleDie's `Math.floor(Number(sides))` on an array is `NaN`,
-      // silently producing garbage rolls rather than throwing. Excluded
-      // here — not just from the 3D overlay (extractSimpleDiceTerms already
-      // guards that) but from quick-dice buttons and named-die expression
-      // resolution entirely — until Phase 5 ships the dedicated symbol-pool
-      // stepper UI/roller these dice actually need. A die with `sides: "F"`
-      // (Fudge/Fate) is fine and stays included — rollSingleDie already
-      // handles that case correctly, just without the 3D overlay.
+      // A Tier-3 symbol die (`sides` is an array of face objects, not a
+      // number — e.g. Genesys's Boost/Setback) has no numeric face count
+      // this engine can roll; excluded here (not just from the overlay)
+      // until the dedicated symbol-pool stepper UI ships. Fudge dice
+      // (`sides: "F"`) are fine and stay included.
       .filter((value) => typeof value.sides === "number" || value.sides === "F")
       .map((value) => ({
         id: value.name,
@@ -405,21 +315,12 @@ export function extractSystemDice(systemDefinition) {
   );
 }
 
-// A System's Tier-3 symbol dice (Phase 5, Section 1.4/3.4) — the SAME
-// "dice"-keyed Array field extractSystemDice reads, just the inverse
-// filter: entries whose `sides` is a non-empty array of face-symbol
-// objects, since a numeric-sided or Fudge die has nothing to do with a
-// symbol pool. Consumed only by the dedicated stepper UI (Section 6.3) and
-// rollSymbolDicePool/rollSymbolPoolExpression below.
-//
-// `diceBoxType` (optional, e.g. sys.genesys.json's own boostDie ->
-// "boost") is which name this die rolls as in its vendored theme's own
-// theme.config.json `diceAvailable` list — the ONLY thing that makes a
-// symbol die eligible for the 3D overlay at all (see
-// rollSymbolPoolExpression's own tryOverlaySymbolPool). A symbol die with
-// no `diceBoxType` (any System without a matching vendored theme yet) just
-// always rolls via the plain Math.random pool, same as before this field
-// existed.
+// A System's Tier-3 symbol dice — same "dice"-keyed field extractSystemDice
+// reads, inverse filter: entries whose `sides` is a face-symbol array.
+// `diceBoxType` (e.g. sys.genesys.json's boostDie -> "boost") is the name
+// this die rolls as in its vendored theme's diceAvailable list — the only
+// thing making a symbol die eligible for the 3D overlay; without it, the
+// die always rolls via the plain Math.random pool.
 export function extractSystemSymbolDice(systemDefinition) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   const diceField = fields.find((field) => field?.type === "array" && field.key === "dice");
@@ -436,12 +337,10 @@ export function extractSystemSymbolDice(systemDefinition) {
     }));
 }
 
-// Same "physically roll it, fall back to the ordinary Math.random pool if
-// not eligible or unavailable" contract as tryOverlayRoll above, for a
-// Tier-3 symbol-dice pool instead of a numeric expression. Eligibility is
-// ALL-or-nothing across the whole requested pool, not per-die — a mix of
-// physically-rolled and simulated dice in the same pool would be more
-// confusing on screen than just falling back to the plain roll entirely.
+// Same "physically roll it, fall back to Math.random pool if ineligible"
+// contract as tryOverlayRoll, for a symbol-dice pool. Eligibility is
+// all-or-nothing across the pool — a mix of physical and simulated dice
+// on screen would be more confusing than a full fallback.
 async function tryOverlaySymbolPool(poolCounts, diceById, dataManager) {
   const entries = (Array.isArray(poolCounts) ? poolCounts : [])
     .map(({ dieId, count }) => ({
@@ -475,30 +374,14 @@ async function tryOverlaySymbolPool(poolCounts, diceById, dataManager) {
   return buildSymbolPoolFromDiceBoxValues(flatEntries);
 }
 
-// `poolCounts`/`diceById` are the exact shapes workbench-character-view.js's
-// and dice-roller.js's own symbol-pool steppers already build for
-// rollSymbolDicePool — both callers just swap that call for this one.
-// Returns the same `{rolls, counts, net}` shape either way (real physics or
-// Math.random) — formatSymbolPoolResult (symbol-dice.js) doesn't care which
-// path produced it. `.catch(() => null)` mirrors buildScriptedRandom's own
-// "never let an internal bug block a roll" philosophy — an overlay-path
-// failure here just means this particular roll falls back silently, exactly
-// like every other overlay entry point already does.
-// `groupContext`/`broadcast`/`recipientIds`/`label`/`notation`/`resultSummary`
-// are all optional and only ever used for the SAME log-posting behavior
-// rollExpression/rollSystemMove above already have — added so the Dice
-// Roller widget's own Default/Broadcast/Private mode switcher works
-// identically for a symbol-dice pool roll as it does for a plain numeric
-// one (confirmed real requirement: the 3D overlay already covers symbol
-// dice too, via rollSymbolDiceOverlay — there's no reason Broadcast
-// wouldn't). `resultSummary`/`notation` are pre-formatted by the caller
-// `notation` (a human-readable "2 abilityDie + 1 proficiencyDie"-style
-// string) is caller-supplied — building it needs each die's own display
-// label, which this function only has ids for (diceById is keyed for
-// lookup, but the caller already has the same map for its own UI). The
-// result SUMMARY, unlike notation, is computed here via
-// formatSymbolPoolResult once `rolled` actually exists — it can't be
-// pre-formatted by the caller before this function even runs the roll.
+// `poolCounts`/`diceById` match the shapes workbench-character-view.js's
+// and dice-roller.js's own symbol-pool steppers already build. Returns the
+// same `{rolls, counts, net}` shape whether physically rolled or simulated.
+// `groupContext`/`broadcast`/`recipientIds`/`label`/`notation` mirror
+// rollExpression's own logging so the Dice Roller's mode switcher works
+// identically for a symbol pool as for a numeric roll. `notation` is
+// caller-supplied (needs each die's own display label); `resultSummary` is
+// computed here via formatSymbolPoolResult once the roll actually exists.
 export async function rollSymbolPoolExpression(
   poolCounts,
   { diceById, dataManager, groupContext = null, broadcast = false, recipientIds = undefined, label = "", notation = "" } = {}
@@ -519,31 +402,22 @@ export async function rollSymbolPoolExpression(
           total: formatSymbolPoolResult(rolled.net) || undefined,
         },
       })
-      .catch(() => {
-        // Best-effort — same as rollExpression's own identical broadcast
-        // failure handling.
-      });
+      .catch(() => {});
   }
   return rolled;
 }
 
-// Section 5's quick-dice source: a resolved System's own dice (Section 1.1)
-// when it declares any, else the standard 7 — this is what makes a
-// campaign's System (or a character's own) win over the fixed default for
-// quick-dice buttons, while a System with no "dice" array field at all
-// (every System that hasn't opted in, including D&D) is byte-identical to
-// today.
+// A resolved System's own dice when it declares any, else the standard 7 —
+// a System with no "dice" field (every System that hasn't opted in,
+// including D&D) is byte-identical to before this existed.
 export function resolveQuickDice({ systemDefinition } = {}) {
   const dice = extractSystemDice(systemDefinition);
   return dice.length ? dice : STANDARD_DICE;
 }
 
-// A die id doubling as literal NdM dice notation (e.g. "d20") resolves via
-// the engine's own reserved bare-`d` grammar — no named-die lookup needed.
-// Anything else (e.g. "hopeDie") only resolves through a System's own
-// `dice` map (Section 1.1's named-die resolution) and needs `N id` grammar
-// instead of `NdM`. Every STANDARD_DICE entry has the numeric-notation
-// shape; a System's own named dice generally won't.
+// A die id that's also literal NdM notation (e.g. "d20") resolves via the
+// engine's own bare-`d` grammar; anything else (e.g. "hopeDie") only
+// resolves through a System's own named-die map and needs `N id` grammar.
 function numericNotationSides(id) {
   const match = /^d(\d+)$/i.exec(id || "");
   return match ? match[1] : null;
@@ -553,10 +427,8 @@ function escapeForRegex(text) {
   return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// How many of each die in `diceList` already appear in `expression` — drives
-// each quick button's "× N" active state. `diceList` is whatever
-// resolveQuickDice returned for the currently active System — id-keyed so a
-// non-numeric-suffix id like "hopeDie" works identically to "d20".
+// How many of each die in `diceList` already appear in `expression` —
+// drives each quick button's "× N" active state.
 export function parseQuickDiceCounts(expression, diceList = STANDARD_DICE) {
   const counts = Object.fromEntries(diceList.map((die) => [die.id, 0]));
   if (typeof expression !== "string" || !expression) {
@@ -583,10 +455,9 @@ export function parseQuickDiceCounts(expression, diceList = STANDARD_DICE) {
   return counts;
 }
 
-// Clicking a quick-dice button either bumps an existing count of that die at
-// the start of the expression, bumps the first occurrence anywhere in it, or
-// appends a fresh term — whichever applies. `die` is a die's own id, either
-// plain numeric notation ("d20") or a System's own named-die id ("hopeDie").
+// Clicking a quick-dice button bumps an existing count at the start of the
+// expression, bumps the first occurrence anywhere in it, or appends a
+// fresh term — whichever applies.
 export function incrementDieInExpression(die, expression = "") {
   const sides = numericNotationSides(die);
   const escapedId = escapeForRegex(die);
@@ -628,22 +499,17 @@ export function incrementDieInExpression(die, expression = "") {
   return `${trimmed} + ${buildTerm(1)}`;
 }
 
-// A System's own named Rolls/Moves (Section 1.3) — same convention as dice
-// (extractSystemDice above): an ordinary Enum-mode Array property with the
-// reserved key "rolls", not a new property type or a dedicated Loom UI.
-// A Move is IDENTIFIED by its `shortName` (Loom's own standard short-token
-// column, VALUE_COLUMNS in property-schema-editor.js — the same field
-// characteristics/traits already use for "STR"/"AGI") — never by `expression`.
-// Two Systems' worth of real, pre-existing proof of why: Apocalypse World has
-// two DIFFERENT Moves that both roll "2d6+@stats.hard"-shaped expressions,
-// and B/X D&D has an Attack Roll and a Saving Throw that are BOTH bare
-// "d20" — expression equality can't tell those apart, only a stable
-// reference can. `name` stays a free-text display label (what a button
-// SHOWS); `shortName` is what a caller (a button's own `rollKey`, or the
-// Dice Roller box when a user types the token directly) look this Move up
-// BY. `expression`/`resultMode`/`bands`/`compare` live in that value's Extra
-// properties (JSON), same home dice's sides/color/faceMap already use for
-// one-off per-value metadata.
+// A System's own named Rolls/Moves — same convention as dice: an ordinary
+// Enum-mode Array property with the reserved key "rolls". A Move is
+// IDENTIFIED by its `shortName` (Loom's standard short-token column, same
+// field characteristics/traits use for "STR"/"AGI") — never by
+// `expression`. Two real Systems prove why: Apocalypse World has two
+// different Moves with the identical "2d6+@stats.hard" expression; B/X
+// D&D's Attack Roll and Saving Throw are both bare "d20" — expression
+// equality can't tell those apart. `name` is the free-text display label;
+// `shortName` is what a caller looks the Move up by. `expression`/
+// `resultMode`/`bands`/`compare` live in the value's own Extra-properties
+// JSON, same as dice's sides/color/faceMap.
 export function extractSystemRolls(systemDefinition) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   const rollsField = fields.find((field) => field?.type === "array" && field.key === "rolls");
@@ -669,8 +535,8 @@ export function extractSystemRolls(systemDefinition) {
     }));
 }
 
-// Case-insensitive, exact-token match — a shortName is a short, typed
-// reference (like a named die's own id), not a search/substring match.
+// Case-insensitive, exact-token match — a shortName is a typed reference
+// (like a named die's id), not a search/substring match.
 export function findRollByShortName(rolls, shortName) {
   const needle = typeof shortName === "string" ? shortName.trim().toLowerCase() : "";
   if (!needle || !Array.isArray(rolls)) {
@@ -679,13 +545,10 @@ export function findRollByShortName(rolls, shortName) {
   return rolls.find((entry) => typeof entry.shortName === "string" && entry.shortName.toLowerCase() === needle) || null;
 }
 
-// A tally band (`{ tally: { gte|lte|eq } }`) matches against the tally
-// count from a `t`-modifier'd dice group (Section 3.3) — independent of
-// which specific dice group produced it, since a Move's expression only
-// ever has one meaningful tally in practice (Blades' whole-pool crit rule).
-// A range band (`{ min?, max? }`) matches the roll's own total instead. All
-// given bounds on whichever kind of band it is must hold — an absent bound
-// is unconstrained on that side.
+// A tally band (`{tally:{gte|lte|eq}}`) matches a `t`-modifier'd dice
+// group's tally count. A range band (`{min?, max?}`) matches the roll's
+// total. All given bounds on a band must hold; an absent bound is
+// unconstrained on that side.
 function matchesTallyBand(count, tallySpec) {
   if (typeof count !== "number" || !tallySpec) {
     return false;
@@ -696,38 +559,21 @@ function matchesTallyBand(count, tallySpec) {
   return true;
 }
 
-// `target*` keys let a band compare the roll against a value the CALLER
-// passes in at roll time (a character's own skill/characteristic score —
-// see workbench-character-view.js's per-component roller, which reads the
-// bound input's current value and threads it through as `targetValue`),
-// rather than only ever a fixed number baked into the System's own Move
-// definition. This is what makes a percentile roll-under System (Call of
-// Cthulhu's d100 — Regular/Hard/Extreme success as fractions of whatever
-// skill is being tested) representable at all: those thresholds move with
-// the field being rolled, so a plain `{min,max}` band can't express them.
-// A band mixing `min`/`max` with `target*` keys requires BOTH to hold — the
-// fixed-total conditions gate special cases (a natural 1 or 100) that apply
-// regardless of the target, the target conditions gate the success tiers
-// that don't.
-//
-// - `targetBelow`/`targetAtLeast`: a condition on the target value itself
-//   (not the roll) — e.g. CoC's "96-99 is a Fumble only if the skill being
-//   tested is under 50" needs the fixed range AND this target condition
-//   both to hold.
-// - `targetMaxFraction`/`targetMinFraction`: bounds on the roll total
-//   expressed as a fraction of the target (rounded down, matching the 7E
-//   rulebook's own rounding), e.g. `targetMaxFraction: 0.5` for a Hard
-//   success (roll <= half the skill).
-// - `targetExceeds` (boolean): the roll must be STRICTLY GREATER than the
-//   raw target value, no fraction involved — a "roll over" check (Call of
-//   Cthulhu's own optional Luck-regain rule: roll d100, succeed only if the
-//   total is higher than your current Luck) rather than the "roll under a
-//   fraction of it" shape every other target* key assumes.
-// Any band using a `target*` key simply doesn't match when no `targetValue`
-// was passed (a context-free roll — the standalone Dice Roller widget, or
-// a Move fired from the Moves panel with no associated field) — the same
-// "unmatched roll, no verdict" fallback bands without any conditions at all
-// already have, not an error.
+// `target*` keys let a band compare the roll against a value the caller
+// resolved at roll time (e.g. a character's own skill score) instead of a
+// fixed number baked into the Move — this is what makes a percentile
+// roll-under System (CoC's d100, Regular/Hard/Extreme as fractions of
+// whatever's being tested) representable at all. A band mixing `min`/`max`
+// with `target*` keys requires BOTH to hold (fixed-total conditions gate
+// special cases like a natural 1/100 regardless of target).
+// - `targetBelow`/`targetAtLeast`: a condition on the target itself (CoC's
+//   "96-99 is a Fumble only if the skill is under 50").
+// - `targetMaxFraction`/`targetMinFraction`: the roll bounded by a fraction
+//   of the target, rounded down (CoC's Hard success = roll <= half skill).
+// - `targetExceeds`: the roll must be STRICTLY GREATER than the raw target
+//   (a "roll over" check — CoC's optional Luck-regain rule).
+// A band using any `target*` key simply doesn't match when no targetValue
+// was passed (a context-free roll) — same as an unmatched band otherwise.
 function matchesRangeBand(total, band, targetValue) {
   if (typeof total !== "number") {
     return false;
@@ -755,13 +601,9 @@ function matchesRangeBand(total, band, targetValue) {
   return true;
 }
 
-// Checked in order, first match wins (Section 1.3) — list special/crit
-// conditions before the general range bands that would otherwise also
-// match the same total. Returns the matched band's label, or `null` if
-// nothing matched (a Move's bands don't have to exhaustively cover every
-// possible total — an unmatched roll still has a real total, just no named
-// verdict for it). `targetValue` (optional) is threaded into every band
-// check — see matchesRangeBand's own comment for what it enables.
+// First match wins — list special/crit conditions before general range
+// bands that would otherwise also match. Returns `null` if nothing matched
+// (bands don't have to exhaustively cover every total).
 function evaluateBands(bands, result, targetValue) {
   if (!Array.isArray(bands) || !bands.length) {
     return null;
@@ -782,15 +624,11 @@ function evaluateBands(bands, result, targetValue) {
   return null;
 }
 
-// Compare mode (Daggerheart's Hope-vs-Fear duality roll) — reads each named
-// die's own total out of `result.dice` by matching `compare.a`/`compare.b`
-// against each dice-group's own `notation` (a named die's notation is
-// literally its own id, e.g. "hopeDie" — see workbench/js/lib/dice.js's
-// parseDice), no engine changes needed: rollDiceExpression's existing
-// per-group breakdown already carries this. Returns `null` if either named
-// die isn't actually present in the roll's own dice breakdown (e.g. the
-// Move's `expression` doesn't reference the id `compare.a`/`compare.b`
-// name — a Move-authoring mistake, not a runtime error worth crashing on).
+// Compare mode (Daggerheart's Hope-vs-Fear duality roll): reads each named
+// die's total from `result.dice` by matching `compare.a`/`compare.b`
+// against each dice-group's own notation (a named die's notation is its
+// own id, e.g. "hopeDie"). Returns `null` if either named die isn't
+// actually present in the roll (a Move-authoring mistake, not a crash).
 function evaluateCompare(compareSpec, result) {
   if (!compareSpec || !compareSpec.a || !compareSpec.b) {
     return null;
@@ -815,41 +653,20 @@ function evaluateMoveVerdict(move, result, targetValue) {
   return label ? { mode: "band", label } : null;
 }
 
-// Rolls a System-defined Move (Section 1.3/4) — the exact same
-// rollExpression every other roll goes through (3D overlay, `@path`
-// context substitution, and named dice all just work unmodified), plus
-// this Move's own band/compare interpretation layered on top. `targetValue`
-// (optional) is a number the CALLER already resolved from the character
-// sheet — e.g. workbench-character-view.js's per-component roller reads
-// the bound input's own current value — and is passed straight through to
-// evaluateMoveVerdict for the Move's `target*` bands (see
-// matchesRangeBand's own comment). Left unset from a context-free caller
-// (the standalone Dice Roller widget has no field to read a value from) —
-// any band relying on it simply won't match, same as an unmatched roll
-// with no verdict at all today. `label` is
-// always overridden to this Move's own label, so the roll's own toast
-// reads "Action Roll: 2d6+3 → 8" consistently regardless of what the
-// caller passed. A matched verdict fires its own follow-up toast (this
-// app's own status root already supports more than one toast on screen —
-// see shell.css's own comment on why .status-root centers rather than
-// stacks-in-place) rather than trying to rewrite rollExpression's own
-// already-shown toast text.
+// Rolls a System-defined Move through the same rollExpression every other
+// roll uses (3D overlay, `@path` substitution, named dice all just work),
+// plus this Move's own band/compare interpretation. `targetValue` is a
+// number the caller already resolved from the character sheet — left unset
+// from a context-free caller (the standalone Dice Roller has no field to
+// read), in which case any band relying on it simply won't match. `label`
+// defaults to the Move's own name but a caller rolling FOR a specific
+// field overrides it, so toasts read "Dexterity: 45" / "Dexterity:
+// Regular Success" rather than repeating the Move's generic name.
 //
-// `broadcast`/`groupContext` are handled HERE, not passed through to the
-// inner rollExpression call — rollExpression's own broadcast payload has
-// no concept of a Move's verdict, and passing both through would double-
-// post. A caller with its own richer log-posting already built (Workbench's
-// own recordGameLogRoll, which also attaches character context) should
-// leave both false/unset here and post the returned result itself, exactly
-// like it already does for a plain roll — this built-in broadcast exists
-// for a caller with no such helper of its own (the Dashboard Character
-// widget). Same payload shape rollExpression's own broadcast already uses,
-// plus `verdict`.
-//
-// Returns rollExpression's own result shape plus `verdict` (`null` if
-// nothing matched) — `null`/`isTable` results pass through unchanged,
-// since a Move is never a table reference and a failed roll has nothing to
-// evaluate.
+// `broadcast`/`groupContext` are handled HERE rather than passed into the
+// inner rollExpression call, which has no concept of a verdict and would
+// double-post. A caller with its own richer log-posting (Workbench's
+// recordGameLogRoll) should leave both unset and post the result itself.
 export async function rollSystemMove(
   move,
   {
@@ -862,22 +679,11 @@ export async function rollSystemMove(
     ...rollOptions
   } = {}
 ) {
-  // recipientIds/targetValue destructured out here (same as
-  // broadcast/groupContext already were) so neither leaks into the inner
-  // rollExpression call via ...rollOptions below — that call has no concept
-  // of either, and passing recipientIds through unintentionally would
-  // double-post: once from the inner call's own logging, once from this
-  // function's own Move-shaped one further down. `label` defaults to the
-  // Move's own name (today's behavior, unchanged for the Moves-panel
-  // caller) but a caller rolling this Move FOR a specific field — the
-  // per-component roller, whose expression happens to match a System Move
-  // by coincidence of both being "d100" — overrides it with that field's
-  // own label ("Dexterity"), so both toasts read "Dexterity: 45" /
-  // "Dexterity: Regular Success" instead of repeating the Move's generic
-  // name on every single roll.
-  // announce: false — this call's own plain-roll toast is skipped so the
-  // single combined "roll + verdict" toast below is the only one shown,
-  // instead of that toast immediately followed by a second one.
+  // recipientIds/targetValue destructured out so neither leaks into the
+  // inner call via ...rollOptions — passing recipientIds through would
+  // double-post (once from the inner call's own logging, once here).
+  // announce:false skips that inner call's own toast, since the combined
+  // "roll + verdict" toast below is the only one that should show.
   const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label, announce: false });
   if (!rolled || rolled.isTable) {
     return rolled;
@@ -886,9 +692,7 @@ export async function rollSystemMove(
   const prefix = label ? `${label}: ` : "";
   const verdictSuffix = verdict?.label ? ` — ${verdict.label}` : "";
   // The RESOLVED notation (e.g. "2d6 kh1 t>=6"), not move.expression's own
-  // unsubstituted "@actions.insight.hunt d6 kh1 t>=6" — the toast should
-  // read what was actually rolled, matching rollExpression's own inner
-  // (now-silenced) toast text exactly.
+  // unsubstituted form — the toast should read what was actually rolled.
   const notation = rolled.result?.notation || move.expression;
   rollOptions.status?.show(`${prefix}${notation} → ${rolled.total}${verdictSuffix}`, {
     type: "success",
@@ -915,10 +719,7 @@ export async function rollSystemMove(
         },
       })
       .catch(() => {
-        // Best-effort — the roll itself already succeeded and was reported
-        // locally above; a failed broadcast just means nobody else sees it
-        // in the Game Log this time (matches rollExpression's own
-        // identical broadcast failure handling).
+        // Best-effort — the roll already succeeded and was reported above.
       });
   }
   return { ...rolled, verdict };

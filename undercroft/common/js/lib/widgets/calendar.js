@@ -1,27 +1,21 @@
 // Tracks "what day is it" (and optionally "what time is it") against a
 // Setting's own optional calendar vocabulary (months, weekday names, moon
-// cycles — authored in Sanctum, sanctum/js/app.js's own Calendar section on
-// the Setting record). Unlike Clock, this widget references a REAL Library
-// record (the Setting) a follower needs read access to — so showing it to
-// the table is a hybrid of two existing patterns: Handout/Map's own
-// record-sharing step (grants access to the Setting) plus Clock/Browser's
-// inline-spotlight-data step (the widget instance itself has no Library
-// record of its own, just a running day/time — see server/groups.py's own
-// _INLINE_SPOTLIGHT_KINDS).
+// cycles — authored in Sanctum). Unlike Clock, this widget references a
+// REAL Library record (the Setting) a follower needs read access to — so
+// showing it to the table is a hybrid: Handout/Map's own record-sharing
+// step (grants access to the Setting) plus Clock/Browser's inline-
+// spotlight-data step (the widget instance itself has no Library record,
+// just a running day/time).
 //
-// The day/time themselves, and which Setting they're read against, are NOT
-// this widget's own contentRef any more — they're ambient campaign state,
-// the same conceptual tier as the active Group's own systemId/settingId
-// (see group-context.js's own resolveGroupContext, which this widget's
-// `groupContext` param comes from, and data-manager.js's own
-// setCampaignDate). Every Calendar widget on a dashboard reads/writes the
-// SAME shared day/time — advancing it from one instance is reflected in
-// every other one immediately (see the "undercroft:campaign-date-changed"
-// event this file listens for below), not an independent running count per
-// widget the way it used to be. `contentRef` now only holds this ONE
-// instance's own display preferences — `{ time: { enabled, autoTickEnabled,
-// autoTickSeconds, autoTickMinutes } }` — whether THIS card shows/manages
-// the time-of-day section at all, not the time value itself.
+// The day/time, and which Setting they're read against, are NOT this
+// widget's own contentRef — they're ambient campaign state, the same tier
+// as the active Group's own systemId/settingId (group-context.js's
+// resolveGroupContext; data-manager.js's setCampaignDate). Every Calendar
+// widget on a dashboard reads/writes the SAME shared day/time — advancing
+// it from one instance reflects in every other immediately (the
+// "undercroft:campaign-date-changed" event below). `contentRef` only holds
+// this ONE instance's own display preferences — `{ time: { enabled,
+// autoTickEnabled, autoTickSeconds, autoTickMinutes } }`.
 import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
@@ -36,11 +30,7 @@ export const CALENDAR_MACRO_ACTIONS = {
   hide: { label: "Hide from table" },
   advanceDay: { label: "Advance / retreat days", params: ["delta"] },
   advanceTime: { label: "Advance / retreat minutes", params: ["minutes"] },
-  // See Clock's own CLOCK_MACRO_ACTIONS.create for why this one, alone
-  // among these, is allowed to add a widget when none exists yet — here
-  // that also means prompting for a Setting via dashboard.js's own
-  // pickCalendarContentRef when there's no existing Calendar of any
-  // visibility to reuse.
+  // Alone among these, allowed to add a widget when none exists yet — also prompts for a Setting if none to reuse.
   create: { label: "Create new & show" },
 };
 
@@ -48,13 +38,10 @@ export const CALENDAR_MACRO_ACTIONS = {
 const POLL_INTERVAL_MS = 5000;
 const MINUTES_PER_DAY = 1440;
 
-// Exported — repository/js/lib/journal-date.js's own `date:` reference
-// chip formats against this exact same implementation, not a second copy,
-// so a date reads identically whether it's this widget or a journal page
-// doing the formatting. `calendar.months` must be non-empty — callers
-// branch around this themselves (see describeDate) rather than pretending a
-// missing month structure is "a 365-day placeholder year," which would
-// just show a confusing blank month name.
+// Exported — journal-date.js's `date:` chip formats against this exact
+// implementation, not a second copy. `calendar.months` must be non-empty —
+// callers branch around this (see describeDate) rather than treating a
+// missing month structure as a placeholder year.
 export function formatCalendarDate(calendar, dayIndex) {
   const months = calendar.months;
   const totalDays = months.reduce((sum, month) => sum + (Number(month.days) || 0), 0) || 1;
@@ -92,12 +79,10 @@ function formatMoonPhase(cycle, dayIndex) {
   return "Waning";
 }
 
-// Which season `dayIndex` currently falls in — walked cumulatively the
-// same way formatCalendarDate walks Months, just simpler (no year/weekday
-// concept, only "which one"). The season cycle's own total length is all
-// Seasons' own `days` summed, deliberately NOT required to equal the
-// Months-based year length — a Setting author may describe seasons on a
-// different cadence entirely (see sanctum/js/app.js's own renderSeasonRow).
+// Which season `dayIndex` falls in — walked cumulatively like
+// formatCalendarDate walks Months. The season cycle's total length
+// (Seasons' `days` summed) is deliberately NOT required to equal the
+// Months-based year length — a Setting author may describe seasons on a different cadence.
 function formatSeason(seasons, dayIndex) {
   const list = Array.isArray(seasons) ? seasons : [];
   const totalDays = list.reduce((sum, season) => sum + (Number(season.days) || 0), 0);
@@ -135,10 +120,8 @@ export function formatTimeOfDay(minutesOfDay) {
 }
 
 // Every cell for the CURRENT month, in weekday-column order — `null` for
-// the leading blanks before day 1 lands in its actual weekday column.
-// Requires both `months` and `daysPerWeek` to be set (there's no "week" to
-// lay a grid out against otherwise) — returns null if either is missing,
-// so the caller just skips the grid and falls back to the plain date text.
+// leading blanks before day 1. Requires `months` and `daysPerWeek`; returns
+// null otherwise so the caller falls back to plain date text.
 function buildMonthGrid(calendar, dayIndex) {
   const daysPerWeek = Number(calendar.daysPerWeek) || 0;
   if (!daysPerWeek || !calendar.months?.length) return null;
@@ -150,11 +133,8 @@ function buildMonthGrid(calendar, dayIndex) {
   return { cells, currentDay: dayOfMonth, daysPerWeek, firstOfMonthIndex };
 }
 
-// `onDayClick(targetDayIndex)` — optional, omitted entirely for read-only
-// views (followers, the second-screen mirror). Passed the absolute dayIndex
-// for whichever cell was clicked (computed from the grid's own
-// firstOfMonthIndex), not just a bare day-of-month number, so the caller
-// never has to re-derive it.
+// `onDayClick(targetDayIndex)` — optional, omitted for read-only views.
+// Passed the absolute dayIndex, not a bare day-of-month, so the caller never re-derives it.
 function renderMonthGrid(container, calendar, dayIndex, onDayClick) {
   const grid = buildMonthGrid(calendar, dayIndex);
   if (!grid) return;
@@ -194,27 +174,18 @@ function renderMonthGrid(container, calendar, dayIndex, onDayClick) {
   container.appendChild(gridEl);
 }
 
-// Read-only display — shared by the GM's own view and every follower/
-// second-screen view, so the calendar always reads identically everywhere.
-// `headingExtra` (the month/year-stepper buttons), `headingContent` (the
-// GM's own click-to-edit Month/Year heading, see buildEditableHeading below
-// — followers never get this, they keep the plain describeDate() text),
-// `time` (only passed by followers — the GM's own author view renders its
-// own interactive time section instead, see initCalendarWidget's own
-// render()), and `onDayClick` (also author-only — followers never get a
-// clickable grid) are all optional.
+// Read-only display shared by the GM's own view and every follower/second-
+// screen view. `headingExtra` (stepper buttons), `headingContent` (the GM's
+// click-to-edit heading — followers keep plain describeDate() text),
+// `time` (followers only — the author view renders its own interactive
+// time section), and `onDayClick` (author-only) are all optional.
 function renderCalendarView(container, calendar, dayIndex, { headingExtra, headingContent, time, onDayClick } = {}) {
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
-  // NOT flex-wrap on this row — the stepper buttons (headingExtra) need to
-  // stay pinned in place always, including the moment an edit control
-  // (buildEditableHeading's own <select>/<input>) appears and the date
-  // text's own natural width grows; wrapping the whole ROW to a second line
-  // at that moment was moving the buttons out from under the pointer.
-  // Instead the date text itself is the one that flexes/shrinks (flex-grow,
-  // min-width: 0 below) — its OWN internal flex-wrap (buildEditableHeading's
-  // own `heading` div) still lets IT wrap onto a second line on a narrow
-  // card, which is the piece that can afford to.
+  // NOT flex-wrap — the stepper buttons must stay pinned even as an edit
+  // control widens the date text; the date text itself flexes/shrinks
+  // instead (flex-grow, min-width: 0 below), and its own internal wrap can
+  // still drop to a second line on a narrow card.
   const headingRow = el("div", "d-flex align-items-center justify-content-between gap-2 flex-nowrap");
   const headingNode = headingContent || el("div", "fw-semibold", describeDate(calendar, dayIndex));
   headingNode.style.flex = "1 1 auto";
@@ -244,17 +215,12 @@ function renderCalendarView(container, calendar, dayIndex, { headingExtra, headi
   container.appendChild(wrap);
 }
 
-// The GM's own click-to-edit date heading — "Weekday, Day Month, Year
-// Epoch" as separate DOM pieces (not describeDate's own single string) so
-// Month/Year can each be clicked into an editable control: a <select> for
-// Month (jump to that month, same day-of-month, current year — onSetMonth),
-// a number <input> for Year (jump to the same month/day in that year —
-// onSetYear). Both start, and end, as plain inline text — "hidden until
-// clicked," not a pair of permanently-visible form controls — swapping back
-// after a commit (change/Enter) or an abandoned edit (blur with no change).
-// Falls back to plain describeDate() text when the calendar has no months
-// at all — there's no month list to build a <select> from, and no reliable
-// "days per year" figure to shift Year by either.
+// The GM's click-to-edit date heading — "Weekday, Day Month, Year Epoch" as
+// separate DOM pieces so Month/Year can each be clicked into an editable
+// control (a <select> for Month via onSetMonth, a number <input> for Year
+// via onSetYear). Both start and end as plain inline text, swapping back on
+// commit or an abandoned edit. Falls back to plain describeDate() text when
+// the calendar has no months at all.
 function buildEditableHeading(calendar, dayIndex, { onSetMonth, onSetYear }) {
   const months = calendar?.months || [];
   const heading = el("div", "fw-semibold d-flex align-items-center flex-wrap");
@@ -268,11 +234,7 @@ function buildEditableHeading(calendar, dayIndex, { onSetMonth, onSetYear }) {
 
   function styleEditableField(span) {
     span.style.cursor = "pointer";
-    // text-decoration, not border-bottom — a border sits inside the inline
-    // box's own layout (padding/height), which nudged this span (and with
-    // it, the whole text line it's part of) up slightly compared to plain
-    // text next to it. text-decoration is pure paint, never affects layout
-    // or line height, so the line stays straight either way.
+    // text-decoration, not border-bottom — a border affects layout/line height, text-decoration is pure paint.
     span.style.textDecorationLine = "underline";
     span.style.textDecorationStyle = "dashed";
     span.style.textDecorationColor = "var(--bs-secondary-color, #6c757d)";
@@ -288,12 +250,7 @@ function buildEditableHeading(calendar, dayIndex, { onSetMonth, onSetYear }) {
   monthSpan.setAttribute("data-bs-title", "Click to change month");
   styleEditableField(monthSpan);
   // Plain unstyled controls, not Bootstrap's form-select/form-control-sm —
-  // those add a border, background, and (for select) a chevron/padding
-  // that's a lot of extra width for an inline heading to absorb, which is
-  // exactly what was pushing the Year control (and the stepper buttons
-  // beside it) onto a second line. Sized/colored to blend into the
-  // surrounding heading text instead ("hidden until clicked" extends to
-  // "unobtrusive once clicked into", not just before).
+  // those add enough width to push the Year control and stepper buttons onto a second line.
   function styleInlineControl(control) {
     control.style.border = "none";
     control.style.background = "transparent";
@@ -373,13 +330,11 @@ function renderFollowerEmpty(container) {
 }
 
 // contentRef.followKind === "calendar" marks a follower instance — created
-// by acceptSpotlight (dashboard.js) when a player accepts a GM's calendar
-// spotlight, or by the forcePlayerView self-follow branch below for the
-// second-screen mirror. Reads the running day/time from the spotlight
-// entry's own inline data (resolveSpotlightData — no Library record for the
-// widget instance itself), then fetches the referenced Setting (readable via
-// the share grant toggleVisibility already made) purely for its `.calendar`
-// vocabulary.
+// by acceptSpotlight when a player accepts a GM's calendar spotlight, or by
+// the forcePlayerView self-follow branch below for the second-screen
+// mirror. Reads day/time from the spotlight entry's inline data, then
+// fetches the referenced Setting (readable via toggleVisibility's share
+// grant) purely for its `.calendar` vocabulary.
 function initFollowerCalendar(container, { dataManager, groupId = "", shareToken = "", followId, setTitle }) {
   let destroyed = false;
   let pollTimer = 0;
@@ -408,12 +363,8 @@ function initFollowerCalendar(container, { dataManager, groupId = "", shareToken
   }
 
   void refresh();
-  // createReliableInterval — same reasoning as every other follower in this
-  // suite: a followed widget popped onto a physical second screen (or just
-  // left unfocused) needs a poll that survives being backgrounded.
   pollTimer = createReliableInterval(() => void refresh(), POLL_INTERVAL_MS);
-  // The group log is the one live channel every inline-kind follower
-  // watches — matches Clock/Browser's own followers.
+  // The group log is the one live channel every inline-kind follower watches — matches Clock/Browser's own followers.
   const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
   liveStream.subscribe("group_log", () => void refresh());
 
@@ -427,16 +378,11 @@ function initFollowerCalendar(container, { dataManager, groupId = "", shareToken
   };
 }
 
-// No more `minutesOfDay` here — that's the ambient value now (this
-// widget's own `minutesOfDay` variable, sourced from groupContext/the
-// campaign-date-changed event), not a per-instance display preference.
+// No `minutesOfDay` here — that's the ambient value now (sourced from groupContext/the campaign-date-changed event).
 function normalizeTime(raw) {
   return {
     enabled: Boolean(raw?.enabled),
-    // Auto-tick — same shape as Clock's own autoTickEnabled/autoTickSeconds,
-    // plus autoTickMinutes (how much game time each tick advances), so a GM
-    // can set e.g. "6 real seconds = 1 game minute" or "1 real second = 10
-    // game minutes" for a faster-moving downtime montage.
+    // autoTickMinutes: how much game time each tick advances, so a GM can set e.g. "6 real sec = 1 game min".
     autoTickEnabled: Boolean(raw?.autoTickEnabled),
     autoTickSeconds: Math.max(1, Number(raw?.autoTickSeconds) || 6),
     autoTickMinutes: Math.max(1, Number(raw?.autoTickMinutes) || 1),
@@ -453,9 +399,7 @@ function icon(name) {
 function iconButton(name, title) {
   const button = el("button", "btn btn-sm btn-outline-secondary");
   button.type = "button";
-  // Bootstrap's own spacing scale jumps straight from p-0 (0) to p-1
-  // (0.25rem) — deliberately finer/shorter than either, since these are
-  // icon-only steppers with no text label to keep clear of.
+  // Bootstrap's spacing scale jumps from p-0 to p-1; finer than either since these are icon-only steppers.
   button.style.padding = "0.1rem 0.4rem";
   button.appendChild(icon(name));
   button.setAttribute("aria-label", title);
@@ -474,13 +418,9 @@ export function initCalendarWidget(
     status,
     groupId = "",
     shareToken = "",
-    // Whatever dashboard.js already resolved via resolveGroupContext for
-    // this render pass — read once at mount for settingId/the initial
-    // day/time (a Setting reassignment triggers dashboard.js's own full
-    // rebuild via workbench:active-group-changed, same as every other
-    // groupContext-driven widget, so this never needs to re-resolve
-    // mid-lifetime); day/time themselves stay live afterward via the
-    // campaign-date-changed event below, not by re-reading this object.
+    // Read once at mount for settingId/the initial day/time — a Setting
+    // reassignment triggers dashboard.js's own full rebuild, so this never
+    // re-resolves mid-lifetime; day/time stay live via the campaign-date-changed event below.
     groupContext,
     canToggleVisibility = false,
     setRightAction,
@@ -496,21 +436,14 @@ export function initCalendarWidget(
     return initFollowerCalendar(container, { dataManager, groupId, shareToken, followId: contentRef.followId, setTitle });
   }
 
-  // Same reasoning Clock's own header comment gives for its forcePlayerView
-  // branch: the second-screen mirror is a fully separate JS context (a real
-  // window.open, not shared page state), so treating it as a follower OF
-  // ITSELF — reading back whatever toggleVisibility already broadcasts — is
-  // what makes it a live view instead of one static snapshot at mount time.
+  // The second-screen mirror is a separate JS context (a real window.open),
+  // so treating it as a follower of itself keeps it live instead of a static snapshot.
   if (forcePlayerView && instanceId) {
     return initFollowerCalendar(container, { dataManager, groupId, shareToken, followId: instanceId, setTitle });
   }
 
-  // The campaign's own ambient Setting/day/time (see this file's own header
-  // comment) — settingId is fixed for this instance's lifetime (reassigning
-  // the campaign's Setting rebuilds the whole dashboard); dayIndex/
-  // minutesOfDay stay live via handleCampaignDateChanged below, updated
-  // either by THIS instance's own writes or another instance's/another
-  // tab's.
+  // The campaign's ambient Setting/day/time — settingId is fixed for this
+  // instance's lifetime; dayIndex/minutesOfDay stay live via handleCampaignDateChanged below.
   const settingId = groupContext?.settingId || "";
   let dayIndex = Number(groupContext?.campaignDayIndex) || 0;
   let minutesOfDay = Number(groupContext?.campaignMinutesOfDay) || 0;
@@ -551,12 +484,8 @@ export function initCalendarWidget(
     updateVisibilityAction();
   }
 
-  // Keeps a follower's next poll current with the day/time — called after
-  // every change while this instance is the one currently visible. A plain
-  // spotlight-update (not a fresh `spotlight` entry), same reasoning
-  // Clock's own pushVisibleUpdate gives: a fresh `spotlight` would
-  // re-trigger every other viewer's accept-prompt/Game Log row on every
-  // single day/time advance.
+  // A plain spotlight-update, not a fresh `spotlight` entry — that would
+  // re-trigger every viewer's accept-prompt/Game Log row on every day/time advance.
   async function pushVisibleUpdate() {
     if (!visible || !instanceId || !groupId) return;
     try {
@@ -585,10 +514,9 @@ export function initCalendarWidget(
         await dataManager.clearSpotlight({ groupId, kind: "calendar", id: instanceId });
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } else {
-        // Grants read access to the Setting's own vocabulary — this
-        // widget's own spotlight entry (below) carries no Library record at
-        // all (skipShare:true), only the current day/time; a follower needs
-        // this separate grant to fetch the Setting for `.calendar`.
+        // Grants read access to the Setting — the spotlight entry itself
+        // carries no Library record (skipShare:true), only day/time; a
+        // follower needs this separate grant to fetch `.calendar`.
         await dataManager.shareWithGroup({ contentType: "setting", contentId: settingId, groupId, permissions: "view" });
         await dataManager.spotlightToGroup({
           groupId,
@@ -619,13 +547,9 @@ export function initCalendarWidget(
   }
 
   // The ambient write — day and/or minutesOfDay. Optimistic (renders
-  // immediately off the local variables, same responsiveness the old
-  // purely-local contentRef write had) with the actual server write and its
-  // own cross-instance broadcast (data-manager.js's own
-  // "undercroft:campaign-date-changed" event, see handleCampaignDateChanged
-  // below) following in the background — a failure just leaves a toast, the
-  // next successful write (or another instance's own) will still catch this
-  // one up.
+  // immediately off local variables) with the server write and its
+  // cross-instance broadcast following in the background — a failure just
+  // leaves a toast; the next successful write catches this one up.
   function persistDate(patch) {
     if (patch.dayIndex !== undefined) dayIndex = patch.dayIndex;
     if (patch.minutesOfDay !== undefined) minutesOfDay = patch.minutesOfDay;
@@ -637,9 +561,7 @@ export function initCalendarWidget(
     });
   }
 
-  // The per-instance display-preference write (whether this card shows/
-  // auto-ticks time at all) — local to this widget, same shape/mechanism
-  // every other widget's own contentRef write already uses.
+  // The per-instance display-preference write (whether this card shows/auto-ticks time), local to this widget.
   function persistTimeConfig(patch) {
     time = { ...time, ...patch };
     setContentRef?.({ time });
@@ -651,11 +573,9 @@ export function initCalendarWidget(
     persistDate({ dayIndex: dayIndex + deltaDays });
   }
 
-  // Walks month-by-month (not a fixed day count — months can have different
-  // lengths), accumulating each traversed month's own day count so this
-  // works correctly across year boundaries and multi-month jumps alike.
-  // Clamps the resulting day-of-month to the target month's own length
-  // (Jan 31 + 1 month lands on Feb 28/29, not a nonexistent Feb 31).
+  // Walks month-by-month (months can have different lengths), so this works
+  // across year boundaries. Clamps the result to the target month's own
+  // length (Jan 31 + 1 month lands on Feb 28/29, not a nonexistent Feb 31).
   function advanceMonth(deltaMonths) {
     const calendar = settingRecord?.calendar;
     if (!calendar?.months?.length) return;
@@ -678,12 +598,8 @@ export function initCalendarWidget(
   }
 
   // Shifts by whole years — the same month/day-of-month, `deltaYears` years
-  // later (or earlier). Replaces the old Day stepper's own single-arrow
-  // buttons in the toolbar (see render() below) — clicking any visible day
-  // in the month grid already jumps straight to it, so a day-by-day stepper
-  // was redundant; a year-by-year one wasn't available at all before. Also
-  // what the editable Year heading (buildEditableHeading's own onSetYear)
-  // computes its jump through, via setYear just below.
+  // later. Replaces the old single-day stepper (redundant with clicking any
+  // visible day in the month grid). Also what the editable Year heading's onSetYear jumps through via setYear.
   function advanceYear(deltaYears) {
     const calendar = settingRecord?.calendar;
     if (!calendar?.months?.length || !deltaYears) return;
@@ -705,11 +621,8 @@ export function initCalendarWidget(
     advanceYear(targetYear - year);
   }
 
-  // Rolls over into dayIndex when minutesOfDay crosses midnight in either
-  // direction, so advancing time never leaves the calendar's own date out
-  // of sync with the clock. Both land in the same persistDate call (one
-  // ambient write), not two — a day-crossing time advance is never visible
-  // to another reader half-updated.
+  // Rolls into dayIndex when minutesOfDay crosses midnight. Both land in one
+  // persistDate call — a day-crossing time advance is never visible to another reader half-updated.
   function advanceTime(deltaMinutes) {
     const total = minutesOfDay + deltaMinutes;
     const dayDelta = Math.floor(total / MINUTES_PER_DAY);
@@ -722,9 +635,7 @@ export function initCalendarWidget(
   }
 
   // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
-  // Same reasoning as Clock's own runMacroAction: no portable target, only
-  // "whichever calendar is currently shown" (dashboard.js's
-  // findActiveWidgetInstance, driven by isVisible() below).
+  // No portable target, only "whichever calendar is currently shown" (dashboard.js's findActiveWidgetInstance).
   async function runMacroAction(action) {
     const params = action?.params || {};
     if (action?.action === "show" || action?.action === "create") {
@@ -822,11 +733,7 @@ export function initCalendarWidget(
 
   function render() {
     if (destroyed) return;
-    // Disposed before the wipe, not just left to be garbage-collected — see
-    // BUG CLASS 2 in tooltips.js's own header comment for why the ordering
-    // matters (the month/year stepper buttons and the click-to-edit
-    // month/year heading below all carry real tooltips now).
-    disposeTooltips(container);
+    disposeTooltips(container); // before the wipe — see tooltips.js's own header comment on why the ordering matters
     container.innerHTML = "";
     const calendar = settingRecord?.calendar;
     if (!settingId || !calendar) {
@@ -846,12 +753,7 @@ export function initCalendarWidget(
     }
     setTitle?.(settingRecord?.name ? `${settingRecord.name} Calendar` : "Calendar");
 
-    // Two clearly separate, clearly labeled groups — double chevrons (a
-    // bigger step) for Month, single chevrons for Year, plus text labels, so
-    // the two are never confused for each other at a glance. Year replaces
-    // the old Day stepper here — a day-by-day stepper was redundant with
-    // clicking any visible day in the month grid below (onDayClick), and a
-    // year-by-year jump wasn't available anywhere before this.
+    // Double chevrons for Month, single chevrons for Year, plus text labels, so the two are never confused.
     const stepGroup = el("div", "d-flex align-items-center gap-2 flex-shrink-0");
     const monthGroup = el("div", "d-flex align-items-center gap-1");
     monthGroup.appendChild(el("span", "small text-body-secondary", "Month"));
@@ -875,10 +777,8 @@ export function initCalendarWidget(
     wrap.style.minHeight = "0";
     wrap.style.overflowY = "auto";
     const displayHost = el("div");
-    // No `time` passed here — the interactive section below is this view's
-    // own, more capable replacement (display + controls), not a second,
-    // redundant read-only line. onDayClick lets the GM click straight into
-    // any visible day of the current month instead of stepping one at a time.
+    // No `time` passed — the interactive section below is a more capable
+    // replacement, not a redundant read-only line. onDayClick jumps straight to any visible day.
     renderCalendarView(displayHost, calendar, dayIndex, {
       headingExtra: stepGroup,
       headingContent: buildEditableHeading(calendar, dayIndex, { onSetMonth: setMonth, onSetYear: setYear }),
@@ -890,14 +790,9 @@ export function initCalendarWidget(
     refreshTooltips(container);
   }
 
-  // Keeps this instance's own day/time mirror current with whatever ANY
-  // Calendar widget — this one, another instance on the same dashboard, or
-  // another of the GM's own tabs — just wrote via setCampaignDate, without
-  // needing this instance to re-fetch or re-resolve anything: the event
-  // already carries the new values. Filtered to this widget's own campaign
-  // (a GM could in principle have widgets from more than one group's own
-  // history mounted at once, though not simultaneously visible in
-  // practice) so an unrelated campaign's own date change is ignored.
+  // Keeps this instance's day/time mirror current with whatever ANY
+  // Calendar widget just wrote via setCampaignDate — the event already
+  // carries the new values. Filtered to this widget's own campaign.
   function handleCampaignDateChanged(event) {
     if (destroyed || event.detail?.groupId !== groupId) return;
     if (event.detail?.dayIndex !== undefined) dayIndex = Number(event.detail.dayIndex) || 0;
@@ -917,11 +812,9 @@ export function initCalendarWidget(
   return {
     runMacroAction,
     isVisible: () => visible,
-    // `removed` is only ever true from dashboard.js's removeWidget — the
-    // one moment this instance's own still-active spotlight (if any) needs
-    // clearing, same orphan-prevention reasoning Clock/Browser's own
-    // destroy(removed) gives (there's no Library record for the widget
-    // instance itself to make this automatic).
+    // `removed` is only true from dashboard.js's removeWidget — the one
+    // moment this instance's still-active spotlight needs clearing (no
+    // Library record exists to make this automatic).
     async destroy(removed) {
       destroyed = true;
       stopAutoTick();

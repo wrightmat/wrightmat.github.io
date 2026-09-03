@@ -1,13 +1,8 @@
 // Which tool "owns" each Library kind, and how to build a deep link into it
-// for one specific record — shared by Repository's own reference-chip open
-// action (journal-kind-reference.js/app.js) and Orrery/Map widget's marker
-// "Open in <Tool>" link-out (map-viewer.js), rather than two independently
-// maintained copies of the same routing table silently drifting apart.
-//
-// Every route's own `value()` reads nothing off `record` but `.id` — so
-// building a URL never needs the full fetched entity, just the id already
-// known locally (a marker's own refId, a reference chip's own resolved
-// record id).
+// for one record — shared by Repository's reference-chip open action and
+// Orrery/Map widget's marker "Open in <Tool>" link-out, one routing table
+// instead of two copies drifting apart. Every route's `value()` reads only
+// `.id` off `record`, so building a URL never needs the full fetched entity.
 import { resolveToolHref, resolveToolContextPath } from "./app-shell.js";
 
 export const KIND_TOOL_ROUTE = {

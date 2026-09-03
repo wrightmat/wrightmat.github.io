@@ -1,26 +1,18 @@
 import { createCollapseToggleButton, setElementCollapsed } from "./collapsible.js";
 import { createFormFloatingField, createButtonCheckGroup, createCheckField } from "./ui-components.js";
 
-// Re-exported so Workbench's Template-view inspector (and any future
-// inspector) only ever needs one import source for "plain field" shapes —
-// these three live in ui-components.js because they're generic enough for
-// non-inspector callers too (Press's Component Inspector uses them
-// directly), not because they belong to some other module.
+// Re-exported so every inspector (Workbench Template-view, Press) needs
+// only one import source for "plain field" shapes, even though these three
+// live in ui-components.js for generic non-inspector callers too.
 export { createFormFloatingField, createButtonCheckGroup, createCheckField };
 
 // Shared component-inspector control kit — one canonical "labeled field"
-// shape used by every tool, replacing what used to be ~8 independently
-// hand-built label+input implementations in Workbench alone (see
-// feedback_suite_wide_parity_principle / feedback_workbench_renderer_parity
-// memory for the full history of why duplicated UI code is the thing to
-// avoid in this codebase). Deliberately NOT built on
-// workbench/js/lib/component-layout.js's createLabeledField — that helper
-// positions a label relative to a rendered COMPONENT's own content
-// (component.labelPosition, component.textColor/font via applyFormatting),
-// which is the wrong concern for INSPECTOR chrome: an inspector field's own
-// label must always look like a normal, static form label regardless of
-// whatever the component being edited happens to be configured to look
-// like.
+// shape for every tool. Deliberately NOT built on component-layout.js's
+// createLabeledField: that helper positions a label relative to a rendered
+// COMPONENT's own formatting (labelPosition, textColor/font), which is the
+// wrong concern for inspector chrome — an inspector field's label must
+// always look like a plain static form label regardless of how the
+// component being edited is configured to look.
 
 let idCounter = 0;
 function nextId(prefix) {
@@ -54,12 +46,10 @@ function createField({ labelText = "", control, labelFor = "", labelTag = "label
   return wrapper;
 }
 
-// Responsive compaction for numeric/short-value fields that belong on one
-// row — matches Press's own row g-2/col-* convention exactly (Position,
-// Image size, Pan X/Y/Zoom). Pass `columns` for an even N-up grid; omit it
-// for a flex-wrap row of variable-width fields. Selects/textareas/choice
-// groups should NOT be passed here — they stay full-width, matching
-// Press's own rule.
+// Responsive compaction for numeric/short-value fields on one row (Position,
+// Pan X/Y/Zoom) — matches Press's row g-2/col-* convention. Pass `columns`
+// for an even N-up grid; omit for a flex-wrap row of variable widths.
+// Selects/textareas/choice groups stay full-width, never passed here.
 export function createFieldRow(fields, { columns } = {}) {
   const validFields = (fields || []).filter((field) => field instanceof Node);
   if (!validFields.length) {
@@ -86,25 +76,17 @@ export function createFieldRow(fields, { columns } = {}) {
   return row;
 }
 
-// A stacked small-label-above-input field meant to be paired two-up in a
-// createFieldRow(fields, { columns: 2 }) — half the row's width each, not
-// the old fixed 4.5rem .inline-compact-input box (too narrow once you're
-// actually looking at Thickness/Corner radius or Font size/Line height side
-// by side; they should fill the row, same field width Press's own Position
-// row uses). Label is .extra-small (0.75rem, common/css/shell.css) rather
-// than Bootstrap's .small (0.875em) — a bit smaller again, since these are
-// secondary/dense fields, not primary ones. Border's Thickness/Corner
-// radius and Text's Font size/Line height both use this pair.
+// A stacked small-label-above-input field, paired two-up via
+// createFieldRow(fields, { columns: 2 }) — fills the row rather than a
+// fixed narrow box, since dense pairs like Thickness/Corner radius need
+// full width. Label uses .extra-small (0.75rem) rather than Bootstrap's
+// .small, since these are secondary fields.
 export function createHalfWidthNumberField(labelText, value, onChange, {
   min, max, step = 1, placeholder = "",
-  // Workbench's Template editor rebuilds this field fresh per selection and
-  // never needs to find it again afterward, so it's fine self-generating an
-  // id via nextId(). Press mounts it once and reads/writes it later through
-  // its own external data-attribute query (its whole inspector's
-  // convention — see mountInspectorField), so it needs a stable, caller-
-  // chosen id/dataAttr instead. `onChange` is optional for exactly that
-  // reason too: Press wires its own "input" listener externally rather than
-  // through this callback.
+  // Workbench's Template editor rebuilds this fresh per selection, so a
+  // self-generated id is fine. Press mounts it once and re-queries it later
+  // by a stable caller-chosen id/dataAttr, and wires its own "input"
+  // listener externally rather than through `onChange`.
   id: explicitId, dataAttr, tooltip, tooltipPlacement = "top",
 } = {}) {
   const id = explicitId || nextId(labelText);
@@ -166,21 +148,15 @@ export function createSwitchField(labelText, checked, onChange) {
   return wrapper;
 }
 
-// The unified toggle/formula control — a label, a real toggle switch, and
-// a binding/formula input, for boolean-ish properties that plausibly vary
-// by character (Visible, Collapsible, Locked). Manually clicking the
-// switch works when the binding/formula field is EMPTY. Typing a
-// "@binding" or "=formula" into the field is evaluated live (on every
-// keystroke) via the injected `evaluate(raw)` callback — the switch
-// immediately reflects the truthy/falsy result and becomes disabled
-// (visually shows state, isn't manually clickable) while the field has
-// content, mirroring the existing componentHasFormula()/isEditable()
-// precedent already in this codebase (a formula, when present, always
-// wins over manual control). Clearing the field returns manual control.
-// `evaluate` is injected rather than imported so this module stays
-// dependency-free of any one tool's binding/formula-resolution internals —
-// each caller supplies its own (e.g. Workbench's Template editor evaluates
-// against sample/preview data via resolvePreviewBindingValue).
+// The unified toggle/formula control for boolean-ish properties that
+// plausibly vary by character (Visible, Collapsible, Locked): a switch plus
+// a binding/formula input. The switch is manually clickable only while the
+// field is empty; typing "@binding"/"=formula" evaluates live via the
+// injected `evaluate(raw)` callback, and the switch becomes disabled and
+// shows that result instead (a formula always wins over manual control).
+// `evaluate` is injected, not imported, so each caller supplies its own
+// resolution against its own data (e.g. Workbench evaluates against preview
+// data via resolvePreviewBindingValue).
 export function createFormulaToggleField(labelText, {
   checked = false,
   bindingValue = "",
@@ -221,13 +197,9 @@ export function createFormulaToggleField(labelText, {
     }
     input.disabled = true;
     if (typeof evaluate === "function") {
-      // `evaluate` may return true/false (a real preview result, e.g. an
-      // "@path" resolved against sample data) or undefined (a case the
-      // caller genuinely can't preview — e.g. Workbench's Template editor
-      // never evaluates "=formula" expressions at all, only bindings, since
-      // there's no live record to run a formula against). undefined shows
-      // as the checkbox's own native indeterminate (dash) state instead of
-      // guessing true or false.
+      // undefined means the caller genuinely can't preview this (e.g.
+      // Template editor never evaluates "=formula", only bindings, since
+      // there's no live record) — shown as native indeterminate, not a guess.
       const result = evaluate(bindingInput.value.trim());
       if (result === undefined) {
         input.indeterminate = true;
@@ -253,12 +225,10 @@ export function createFormulaToggleField(labelText, {
   row.append(switchWrapper, bindingInput);
   const field = createField({ labelText, control: row, labelFor: id });
 
-  // For callers that mount this field ONCE and need to push a *different*
-  // record's state into it later (Press's static-DOM inspector: one
-  // Visible field, re-synced on every canvas selection change) rather than
-  // rebuilding it fresh per selection the way Workbench's Template editor
-  // does. Bypasses the change/input listeners above (no onManualChange/
-  // onBindingChange echo) — this is a resync FROM a node, not a user edit.
+  // For callers (Press's static-DOM inspector) that mount this field once
+  // and resync it to a different record's state on each selection change,
+  // rather than rebuilding fresh like Workbench does. Bypasses the change/
+  // input listeners — this is a resync FROM a node, not a user edit.
   field.switchInput = input;
   field.bindingInput = bindingInput;
   field.syncToggleState = ({ checked: nextChecked = false, bindingValue: nextBindingValue = "" } = {}) => {
@@ -270,31 +240,19 @@ export function createFormulaToggleField(labelText, {
   return field;
 }
 
-// Replaces the old, non-collapsible createSection — same visual heading,
-// now with a real chevron toggle (createCollapseToggleButton, shared with
-// canvas-card.js's collapse-toggle-button usage elsewhere). `defaultCollapsed`
-// is the section's normal resting state; `forceOpen` overrides it (e.g. the
-// component already has non-default values set for this section — see
-// each render*Inspector's own default-open logic). Every *named* section in
-// this inspector is collapsible — there's no non-collapsible variant; fields
-// that come before the first named section (Type/ID/Label/Binding-Text/etc.)
-// are just left unheaded rather than forced into a section that can't
-// collapse.
+// Every *named* inspector section is collapsible (createCollapseToggleButton)
+// — there's no non-collapsible variant. `defaultCollapsed` is the section's
+// resting state; `forceOpen` overrides it when the component already has
+// non-default values in that section. Fields before the first named section
+// (Type/ID/Label/etc.) are left unheaded rather than forced into a section.
 //
-// The heading's own class ("text-uppercase fs-6 fw-semibold
-// text-body-secondary") is deliberately the exact literal string Press's
-// static per-group headings use (press/index.html's data-inspector-*-group
-// divs). Press can't call this function — its inspector is static HTML +
-// imperative JS show/hide, a different architecture kept as-is on purpose
-// (see undercroft/README.md's Code Conventions section, Component Inspector
-// standards) — so the two
-// tools can't share one runtime code path here. What they DO share: this
-// exact class string, the section name list and order (Text, Colors, Border,
-// Behavior, Advanced), and the same createCollapseToggleButton primitive
-// (common/js/lib/collapsible.js) building the header row's toggle in both
-// places (see press/js/app.js's makeInspectorGroupCollapsible). If you
-// change this heading's classes, change press/index.html's matching divs
-// in the same commit, or the two will drift again.
+// The heading class string ("text-uppercase fs-6 fw-semibold
+// text-body-secondary") deliberately matches Press's static per-group
+// headings (press/index.html's data-inspector-*-group divs) literally —
+// Press's inspector is static HTML, a different architecture kept as-is, so
+// it can't call this function, but shares this exact class string and the
+// same createCollapseToggleButton primitive (see press/js/app.js's
+// makeInspectorGroupCollapsible). Change both together or they drift.
 export function createCollapsibleSection(title, fields, { defaultCollapsed = false, forceOpen = false } = {}) {
   const collapsed = forceOpen ? false : defaultCollapsed;
   const section = document.createElement("section");
@@ -322,10 +280,9 @@ export function createCollapsibleSection(title, fields, { defaultCollapsed = fal
   return section;
 }
 
-// The Press-style type-summary header: icon + type label + description +
-// an optional "In [parent]" breadcrumb when the component is nested inside
-// a Container/Repeater. Matches Press's own markup exactly
-// (border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 p-3).
+// Press-style type-summary header: icon + type label + description + an
+// optional "In [parent]" breadcrumb for a component nested in a
+// Container/Repeater. Markup matches Press's own exactly.
 export function createTypeSummaryHeader({ icon, label, description, parentLabel, onSelectParent } = {}) {
   const wrapper = document.createElement("div");
   wrapper.className = "border rounded-3 shadow-sm bg-body d-flex align-items-center gap-2 p-3";
@@ -334,11 +291,8 @@ export function createTypeSummaryHeader({ icon, label, description, parentLabel,
   iconEl.setAttribute("aria-hidden", "true");
   if (icon) iconEl.dataset.icon = icon;
   const textWrap = document.createElement("div");
-  // flex-grow-1 + min-width:0 — a flex item's default min-width is `auto`
-  // (sizes to fit its content), which silently defeats descEl's own
-  // text-truncate below: without this, a long description (e.g. Toggle's)
-  // just widens the whole card instead of ellipsizing, forcing the entire
-  // right pane into horizontal scroll.
+  // min-width:0 overrides a flex item's default `auto`, which would
+  // otherwise defeat descEl's text-truncate and widen the whole card.
   textWrap.className = "d-flex flex-column flex-grow-1";
   textWrap.style.minWidth = "0";
   const labelEl = document.createElement("div");

@@ -1,23 +1,16 @@
-// Reads a System's own `levelUpBindings` field — the same role-bound-array
-// convention `combatBindings` already established (bindings.js's own
-// findBindingByRole/findBindingsByRole), just describing WHERE choice-
+// Reads a System's own `levelUpBindings` field — same role-bound-array
+// convention as `combatBindings` (bindings.js), describing where choice-
 // bearing data lives on reference-kind records (Class/Background/Variant)
-// for this System, and where a resolved value should land on a Character,
-// instead of where a live stat lives. A generic level-up/build engine reads
-// these roles — never a hardcoded field name like "proficiency_choices" —
-// so a System whose own Class-equivalent kind names things differently (or
-// a System with no such kind at all) needs zero engine code changes, only
-// its own levelUpBindings authored. A System with none authored at all
-// simply has no level-up/build wizard available yet, same graceful
-// degradation every optional System field in this suite already follows.
+// and where a resolved value lands on a Character. A generic engine reads
+// these roles, never a hardcoded field name — a System with none authored
+// simply has no level-up/build wizard yet.
 //
-// Roles in use today (see sys.dnd5e.json's own levelUpBindings for the real
-// values): "proficiencyChoices", "equipmentChoices", "featureLevels",
-// "resourceGrowth". Each entry also carries `kind` (which Library kind this
-// binding applies to — a role can have more than one, e.g. proficiency
-// choices exist on both Class and Background records) and `path` (the field
-// on THAT kind's own records holding the raw data). `targetPath` (when
-// present) is where a resolved choice should be written on the Character.
+// Roles in use today (see sys.dnd5e.json): "proficiencyChoices",
+// "equipmentChoices", "featureLevels", "resourceGrowth". Each entry carries
+// `kind` (which Library kind this binding applies to — a role can have more
+// than one) and `path` (the field on that kind holding the raw data).
+// `targetPath`, when present, is where a resolved choice lands on the
+// Character.
 export function findLevelUpBinding(bindings, role, kind) {
   return (bindings || []).find((entry) => entry && entry.role === role && (!kind || entry.kind === kind)) || null;
 }
@@ -27,15 +20,12 @@ export function findLevelUpBindings(bindings, role) {
 }
 
 // Normalizes a Class/Background record's own `proficiency_choices` (or any
-// field shaped the same way) into a flat, render-ready list. This is
-// already the real 5e-API choice shape sitting on every imported Class and
-// Background record today — `{ desc, choose, type, from: { option_set_type,
-// options: [{ option_type: "reference", item: { index, name } }] } }` — a
-// generic reader for it, not a new schema. Non-"reference" option shapes
-// (equipment's own "multiple"/"counted_reference"/"money" bundles) are left
-// under each entry's own `raw` for a future equipment-specific renderer —
-// a bundle of items plus currency needs its own interpretation, not a flat
-// pick-one-of-N list, so this function doesn't force it into one.
+// field shaped the same way) into a flat, render-ready list — a generic
+// reader for the real 5e-API choice shape (`{desc, choose, type, from:
+// {options: [{option_type: "reference", item: {index, name}}]}}`), not a
+// new schema. Non-"reference" option shapes (equipment's own bundles) are
+// left under each entry's own `raw`, since a bundle of items plus currency
+// needs its own interpretation, not a flat pick-one-of-N list.
 export function resolveChoiceList(rawChoices) {
   if (!Array.isArray(rawChoices)) return [];
   return rawChoices
@@ -60,31 +50,21 @@ export function resolveChoiceList(rawChoices) {
     });
 }
 
-// A Feature's own optional `grants` array (see the character-builder
-// roadmap's own Phase 2 write-up) reuses this exact `{choose, from:
-// {options}}` shape for the one place Class/Background data doesn't
-// already have it structured — per-level Class/Subclass Features and
-// Species traits — rather than inventing a competing schema. Each entry
-// also carries a `type` describing what kind of grant it is
-// ("abilityScoreIncrease", "skillProficiency", "toolProficiency",
+// A Feature's own optional `grants` array reuses the same `{choose, from:
+// {options}}` shape for per-level Class/Subclass Features and Species
+// traits, rather than inventing a competing schema. Each entry also carries
+// a `type` ("abilityScoreIncrease", "skillProficiency",
 // "languageProficiency", "spellKnown", "resourceGrowth", ...); resolving a
-// grant's OWN effect (applying a flat bonus, prompting a choice) is a
-// per-type concern for whatever calls this — same reasoning
-// resolveChoiceList above already documents for equipment bundles. Grants
-// with no `choose` at all (a flat, unconditional effect) aren't "choices"
-// in the sense resolveChoiceList's caller needs — this only ever normalizes
-// entries that actually offer a pick.
-// A grant's own `from` is either a static `{options: [...]}` list (handled
-// directly by resolveGrantChoices below) or a DYNAMIC `{source: "..."}`
-// naming a pool that only exists on the character being leveled up (e.g.
-// feat.skill-expertise's own `{source: "proficientSkills"}` — "choose 2 of
-// your own CURRENT skill proficiencies," a pool with no fixed list at all).
-// Resolving one of these needs the live character, so it's a separate,
-// optional step a caller runs before resolveGrantChoices rather than
-// something resolveGrantChoices could ever do itself (it has no character
-// to read). Source names are plain data on the grant, never inferred from
-// a Feature's own id/name — a new source needs a new `case` here, same as
-// any other small, closed vocabulary in this suite.
+// grant's own effect is a per-type concern for the caller. Grants with no
+// `choose` (a flat effect) aren't "choices" — this only normalizes entries
+// that offer a pick.
+// A grant's `from` is either a static `{options: [...]}` list or a dynamic
+// `{source: "..."}` naming a pool that only exists on the live character
+// (e.g. `{source: "proficientSkills"}` — "choose 2 of your CURRENT skill
+// proficiencies"). Resolving a dynamic source needs the character, so it's
+// a separate step a caller runs before resolveGrantChoices, which has no
+// character to read. Source names are plain data — a new source needs a new
+// `case` below, same as any other small closed vocabulary in this suite.
 export function resolveDynamicGrantOptions(source, character) {
   if (source === "proficientSkills") {
     const skills = Array.isArray(character?.stats?.skills) ? character.stats.skills : [];
@@ -92,13 +72,10 @@ export function resolveDynamicGrantOptions(source, character) {
       .filter((skill) => skill && Number(skill.proficiency) >= 2)
       .map((skill) => ({ id: skill.name, name: skill.friendlyName || skill.name }));
   }
-  // Every key on the character's own stats.abilities object — whatever the
-  // active System's ability field actually defines, never a hardcoded
-  // STR/DEX/... list. Full names ("Strength"), not the shortName ("STR")
-  // Background's own bespoke ability-bonus UI shows — this function is
-  // synchronous and character-only, with no System field-def lookup
-  // available to resolve a shortName from, unlike that UI's own async
-  // context (loadAbilityFieldDefs).
+  // Every key on the character's own stats.abilities object, whatever the
+  // active System defines — never a hardcoded STR/DEX/... list. Full names,
+  // not shortNames, since this is synchronous/character-only with no System
+  // field-def lookup available (unlike Background's async loadAbilityFieldDefs).
   if (source === "allAbilities") {
     const abilities =
       character?.stats?.abilities && typeof character.stats.abilities === "object" ? character.stats.abilities : {};
@@ -129,20 +106,15 @@ export function resolveGrantChoices(grants, character) {
 }
 
 // Matches a reference-kind record's own level-tagged `features[]` (each
-// entry `{name, level, description}`) against its own parallel
-// `featureIds[]` (the already-promoted real `feature` kind ids) — shared by
-// Level Up (class, one level at a time) and character creation (species —
-// every entry at once, no level gate; class's own level-1 entries). NOT a
-// blind index pairing: real class records have been confirmed to have the
-// two arrays drift out of alignment partway through (a pre-existing content
-// gap, not something to silently trust) — the same INDEX is checked first
-// as the fast/common-case match, falling back to a name-matched search
-// across the whole list otherwise. `targetLevel: null` means "every entry,
-// regardless of level" (Species has no level concept of its own at all);
-// a number means "only entries at exactly this level" (Class). Entries
-// already present in `existingFeatureIds` are skipped so re-running this
-// (e.g. reopening the Level Up modal) never re-offers something already
-// granted.
+// `{name, level, description}`) against its parallel `featureIds[]` — shared
+// by Level Up (class, one level at a time) and character creation (species,
+// every entry at once). NOT a blind index pairing: real class records have
+// the two arrays drift out of alignment partway through, so index is
+// checked first as the fast path, falling back to a name-matched search.
+// `targetLevel: null` means every entry regardless of level (Species has no
+// level concept); a number means only entries at exactly that level.
+// Entries already in `existingFeatureIds` are skipped so reopening Level Up
+// never re-offers something already granted.
 export function matchFeaturesAtLevel(sourceFeatures, sourceFeatureIds, featureNameById, targetLevel, existingFeatureIds) {
   const features = Array.isArray(sourceFeatures) ? sourceFeatures : [];
   const featureIds = Array.isArray(sourceFeatureIds) ? sourceFeatureIds : [];
@@ -165,16 +137,13 @@ export function matchFeaturesAtLevel(sourceFeatures, sourceFeatureIds, featureNa
   return matched;
 }
 
-// Which level a Class record's own data says it grants its subclass choice
-// at — read generically from the class's own `features[]` (an entry named
-// "{ClassName} Subclass"), never assumed to be a fixed level. This matters:
-// every class record in THIS repo currently grants it at level 3, but
-// other rulesets (5e 2014's Cleric/Sorcerer/Warlock grant it at level 1)
-// or other Systems entirely may say otherwise — callers (Level Up AND the
-// Build wizard) both have to react to whatever this returns, including 1.
-// Soft-fails (console.warn, null) rather than throwing if a class record
-// doesn't follow the naming convention — a content gap to flag, not a
-// crash.
+// Which level a Class record grants its subclass choice at — read
+// generically from `features[]` (an entry named "{ClassName} Subclass"),
+// never assumed fixed. Different rulesets grant it at different levels (5e
+// 2014's Cleric/Sorcerer/Warlock at 1, this repo's own records at 3), so
+// callers must react to whatever this returns. Soft-fails (console.warn,
+// null) rather than throwing when a class record doesn't follow the naming
+// convention.
 export function getSubclassGrantLevel(classRecord) {
   const target = `${(classRecord?.name || "").trim().toLowerCase()} subclass`;
   const entry = (Array.isArray(classRecord?.features) ? classRecord.features : []).find(
@@ -190,26 +159,21 @@ export function getSubclassGrantLevel(classRecord) {
   return Number.isFinite(level) ? level : null;
 }
 
-// Grants a chosen subclass's own level-tagged features, up through
-// targetLevel — a thin, explicitly-named wrapper around matchFeaturesAtLevel
-// reading the SAME `features`/`featureIds` property pair off a Variant
-// record that the class-level granting code already reads off a Class
-// record (matching that existing precedent, not a stricter one). One
-// shared implementation, called identically by Level Up's own
-// "subclassChoice" resolution and the Build wizard's own in-creation
-// subclass pick — never two separate copies of this logic.
+// Grants a chosen subclass's level-tagged features up through targetLevel —
+// a thin wrapper around matchFeaturesAtLevel reading the same
+// `features`/`featureIds` pair off a Variant record. One shared
+// implementation, called by both Level Up's subclassChoice resolution and
+// the Build wizard's in-creation subclass pick.
 export function grantSubclassFeaturesAtLevel(variantRecord, targetLevel, featureNameById, existingFeatureIds) {
   if (!variantRecord) return [];
   return matchFeaturesAtLevel(variantRecord.features, variantRecord.featureIds, featureNameById, targetLevel, existingFeatureIds);
 }
 
-// Formats a Class record's own `multiclassPrerequisites` (an array of
-// {any:[{ability,minimum}]} groups — every GROUP is required, each group
-// satisfied by meeting ANY one of its own entries, modeling both 5e's
-// single-ability classes and its either/or ones like Fighter, and its
-// both-required ones like Paladin/Monk/Ranger) into display text, resolving
-// ability keys against the active System's own ability labels rather than
-// hardcoding ability names.
+// Formats a Class record's `multiclassPrerequisites` (an array of
+// {any:[{ability,minimum}]} groups — every group required, each satisfied
+// by meeting ANY one entry, modeling both single-ability classes and
+// either/or ones like Fighter) into display text, resolving ability keys
+// against the active System's own labels rather than hardcoding names.
 export function describeMulticlassPrerequisites(prerequisites, abilityLabelByKey) {
   const groups = Array.isArray(prerequisites) ? prerequisites : [];
   if (!groups.length) return "";
@@ -220,10 +184,8 @@ export function describeMulticlassPrerequisites(prerequisites, abilityLabelByKey
     .join(", ");
 }
 
-// Non-blocking check — this suite's own standing policy (restated across
-// every phase of this roadmap) is that GM/player judgment stays
-// authoritative over rules legality; this exists purely to surface a
-// warning in the Add-a-Class picker, never to gate anything.
+// Non-blocking check — GM/player judgment stays authoritative over rules
+// legality; this only surfaces a warning in the Add-a-Class picker.
 export function characterMeetsMulticlassPrerequisites(prerequisites, abilities) {
   const groups = Array.isArray(prerequisites) ? prerequisites : [];
   if (!groups.length) return true;
@@ -235,19 +197,14 @@ export function characterMeetsMulticlassPrerequisites(prerequisites, abilities) 
   });
 }
 
-// Full/half/third/pact caster-level math, generalized across every class a
-// character has (multiclass-aware from the ground up, not bolted on) —
-// each class's EFFECTIVE caster type is its active subclass's own
-// `caster_type` when set, else the base class's own value, so a
-// third-caster subclass (Eldritch Knight/Arcane Trickster) correctly
-// overrides an otherwise-"none" base class the moment it's picked, with
-// zero extra authoring for every subclass that doesn't change casting at
-// all. `classRecordsById`/`variantRecordsById` are plain Maps (refId ->
-// record) — callers already have these from whatever fetch populated the
-// Level Up/Build preview. Returns limitedUses[]-shaped entries (no
-// `used`/`available` yet — that's mergeLimitedUses' own job) for every
-// nonzero slot count, same shape already sitting in real imported
-// character data.
+// Full/half/third/pact caster-level math, multiclass-aware from the ground
+// up. Each class's EFFECTIVE caster type is its active subclass's own
+// `caster_type` when set, else the base class's value — so a third-caster
+// subclass (Eldritch Knight) correctly overrides an otherwise-"none" base
+// class with zero extra authoring for subclasses that don't change casting.
+// `classRecordsById`/`variantRecordsById` are plain refId->record Maps.
+// Returns limitedUses[]-shaped entries (no `used`/`available` yet — that's
+// mergeLimitedUses' job) for every nonzero slot count.
 export function computeSpellSlots(classes, classRecordsById, variantRecordsById, spellSlotProgression, pactMagicProgression) {
   const list = Array.isArray(classes) ? classes : [];
   const slotTable = Array.isArray(spellSlotProgression) ? spellSlotProgression : [];
@@ -285,17 +242,14 @@ export function computeSpellSlots(classes, classRecordsById, variantRecordsById,
 
 const SPELL_SLOT_NAME_PATTERN = /^Level \d+ Spell Slots$/;
 
-// Writes computeSpellSlots' own output into a character's real
-// `limitedUses[]`, WITHOUT ever clobbering a player's already-tracked
-// `used` count, and WITHOUT touching any entry this function doesn't own
-// (Ki points, Second Wind, any other DDB-imported limited-use pool —
-// those are matched by name against this function's own two managed
-// shapes, "Level N Spell Slots" and "Pact Magic," and left completely
-// alone otherwise). An entry whose total changed keeps its `used`, shifts
-// `available` by the same delta. An entry that would disappear entirely
-// (character no longer qualifies for that slot level) is only actually
-// dropped if nothing's been used from it; otherwise it's kept with a
-// console warning — never silently destroying tracked play state.
+// Writes computeSpellSlots' output into a character's real `limitedUses[]`
+// without clobbering an already-tracked `used` count, and without touching
+// any entry this function doesn't own (Ki points, Second Wind, ... matched
+// by name against only "Level N Spell Slots"/"Pact Magic", left alone
+// otherwise). An entry whose total changed keeps `used`, shifts `available`
+// by the delta. An entry that would disappear entirely is only dropped if
+// nothing's been used from it; otherwise kept with a console warning —
+// never silently destroying tracked play state.
 export function mergeLimitedUses(existingLimitedUses, computedEntries) {
   const existing = Array.isArray(existingLimitedUses) ? existingLimitedUses : [];
   const computed = Array.isArray(computedEntries) ? computedEntries : [];
@@ -329,13 +283,11 @@ export function mergeLimitedUses(existingLimitedUses, computedEntries) {
 
 // Equipment's own bundle shape (option_type: "multiple"/"counted_reference"/
 // "reference"/"money") deliberately isn't forced into resolveChoiceList's
-// flat {id, name} shape (see that function's own comment) — this is the
-// dedicated reader for it. Options carry {id, label, bundle}: `label` a
-// human-readable rendering of the whole bundle ("Chain Shirt, Shield, Mace,
-// Holy Symbol, Priest's Pack, 7 GP"), `bundle` the raw option kept for
-// applyEquipmentBundle below to actually apply. `id` is a stable synthetic
-// index (equipment options have no natural id of their own the way a
-// {option_type:"reference"} skill pick does).
+// flat {id, name} shape — this is the dedicated reader. Options carry {id,
+// label, bundle}: `label` a human-readable rendering of the whole bundle
+// ("Chain Shirt, Shield, Mace, Holy Symbol, Priest's Pack, 7 GP"), `bundle`
+// the raw option for applyEquipmentBundle to apply, `id` a stable synthetic
+// index (equipment options have no natural id).
 function describeEquipmentBundle(option) {
   if (!option || typeof option !== "object") return "";
   if (option.option_type === "money") {
@@ -371,12 +323,10 @@ export function resolveEquipmentChoice(rawChoice) {
   };
 }
 
-// Applies a PICKED equipment bundle (one option's own `bundle`, from
-// resolveEquipmentChoice above) onto a character: each item leaf becomes an
-// ordinary freeform inventory entry (the same {name, quantity} shape the
-// Add/Remove picker's own custom-add path already produces — no refKind/
-// refId, since starting equipment here is named text, not a Library pick),
-// each money leaf adds onto the matching currencies.* field.
+// Applies a picked equipment bundle onto a character: each item leaf
+// becomes an ordinary freeform inventory entry {name, quantity} — no
+// refKind/refId, since starting equipment here is named text, not a Library
+// pick — each money leaf adds onto the matching currencies.* field.
 export function applyEquipmentBundle(bundle, character) {
   if (!bundle || typeof bundle !== "object" || !character) return;
   if (bundle.option_type === "multiple" && Array.isArray(bundle.items)) {
@@ -401,21 +351,17 @@ export function applyEquipmentBundle(bundle, character) {
 }
 
 // Background's own flat, hard-granted `proficiencies[]` (role
-// "proficiencyGrants" — NOT a choice, unlike Class/Background's own
-// `proficiency_choices`) names each entry with the real 5e-API convention
-// ("Skill: Insight", "Tool: Calligrapher's Supplies") — a fixed external
-// data format, not System-configurable vocabulary, the same treatment this
-// suite already gives DDB's own field names elsewhere (mapping-custom-
-// functions.js). Dispatches by prefix onto whichever existing field
-// actually models that proficiency type: a Skill sets the matching
-// stats.skills[] entry's own `proficiency` to (at least) 2 — proficient,
-// never downgrading an existing Expertise (3); everything else dedup-pushes
-// the bare name onto the matching Phase 1 proficiency field — confirmed
-// via a real character record (not guessed) that these are NOT all under
-// one prefix: armor/weapons/tools sit at the Character's own top-level
-// `proficiencies.*`, but languages sits at `stats.proficiencies.languages`
-// — an existing, real inconsistency in this data model, matched exactly
-// rather than "cleaned up" as a side effect of this function.
+// "proficiencyGrants" — not a choice) names each entry with the real
+// 5e-API convention ("Skill: Insight", "Tool: Calligrapher's Supplies") — a
+// fixed external data format, not System-configurable vocabulary.
+// Dispatches by prefix onto whichever field models that proficiency type: a
+// Skill sets the matching stats.skills[] entry's `proficiency` to at least
+// 2, never downgrading an existing Expertise (3); everything else
+// dedup-pushes the bare name onto the matching field. Confirmed against a
+// real character record that armor/weapons/tools sit at the Character's
+// top-level `proficiencies.*` while languages sits at
+// `stats.proficiencies.languages` — a real inconsistency, matched exactly
+// rather than "cleaned up" here.
 const PROFICIENCY_GRANT_TARGETS = [
   { prefix: "Skill:", target: "skill" },
   { prefix: "Tool:", path: ["proficiencies", "tools"] },

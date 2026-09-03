@@ -1,30 +1,25 @@
 // The "vitals" half of the Dashboard's Character widget — mounted by
 // character-summary.js underneath its own name/character-picker card, for
-// whichever of the viewer's own characters is currently selected there.
-// Always the viewer's own character (character-summary.js only ever lists
-// their own characters), so unlike Card/Map there's no read-only mode to
-// consider — everything here is editable.
+// whichever of the viewer's own characters is currently selected. Always
+// the viewer's own character, so unlike Card/Map there's no read-only mode.
 //
-// Shows whatever fields the character's own System marks as combat-bound
+// Shows whatever fields the character's System marks as combat-bound
 // (resource/value/tags/modifier — the same Role vocabulary combat-tracker.js
-// and Workbench's own character view already key off, see bindings.js's
-// findRoleBoundField), writing straight back through the same setAtBinding
-// path combat-tracker.js's writeThroughToCharacter already uses, so this
-// widget, Workbench, and the GM's Combat Tracker all read/write one real
-// value instead of three drifting copies. The Conditions field reuses
-// combat-tracker.js's own tag-badge/input UI verbatim (tag-editor.js) rather
-// than a second hand-copied version. Initiative is a one-way roll-and-push
-// exactly like Workbench's own pushInitiativeToActiveEncounter: it isn't
-// persistent character state, so rolling it here just updates whichever
-// encounter is currently spotlighted to this character's group, the same
-// place Workbench's sheet and the Combat Tracker both already read it from.
+// and Workbench's character view key off, bindings.js's findRoleBoundField),
+// writing back through the same setAtBinding path combat-tracker.js's
+// writeThroughToCharacter uses, so this widget, Workbench, and the Combat
+// Tracker read/write one real value instead of three drifting copies. The
+// Conditions field reuses combat-tracker.js's own tag-badge/input UI
+// verbatim. Initiative is a one-way roll-and-push, exactly like Workbench's
+// pushInitiativeToActiveEncounter — not persistent character state, so
+// rolling it here just updates whichever encounter is currently
+// spotlighted to this character's group.
 //
-// A full arbitrary-template sheet (every component a System/Template define,
-// not just the combat-bound ones) is deliberately out of scope — that engine
-// lives in Workbench (workbench-character-view.js) as a whole-page controller
-// with nothing factored out for reuse, and duplicating it here would be a
-// second, weaker implementation of the same thing (see character-summary.js's
-// own header comment for the identical reasoning).
+// A full arbitrary-template sheet (every component a System/Template
+// define, not just combat-bound ones) is out of scope — that engine lives
+// in Workbench (workbench-character-view.js) as a whole-page controller
+// with nothing factored out for reuse; duplicating it here would be a
+// second, weaker implementation of the same thing.
 import { resolveBinding, setAtBinding, findRoleBoundField, findBindingByRole } from "../bindings.js";
 import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
 import { connectLiveStream } from "../live.js";
@@ -72,9 +67,7 @@ function saveNotes(characterId, value) {
   try {
     localStorage.setItem(`${NOTES_PREFIX}${characterId}`, value);
   } catch (error) {
-    // Local storage unavailable (private browsing, quota) — notes just won't
-    // persist past this session, same graceful-degrade as dashboard.js's own
-    // saveLocalSetting.
+    // Local storage unavailable (private browsing, quota) — notes just won't persist past this session.
   }
 }
 
@@ -93,32 +86,22 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   let conditionsVocabulary = null;
   let tempHpFallback; // only used when the System has no tempPath binding — ephemeral, not persisted
   let lastInitiativeRoll = null;
-  // Section 2's active-System resolution — the active campaign Group's own
-  // System (if any) wins over this character's own Assigned Systems for
-  // Initiative's dice. Empty until loadActiveDice resolves (see load()
-  // below); an empty array is exactly "no named dice," so rollExpression's
-  // named-die lookup is simply unused until this is populated.
+  // The active campaign Group's own System (if any) wins over this
+  // character's own Assigned Systems for Initiative's dice. Empty until
+  // loadActiveDice resolves — an empty array is exactly "no named dice."
   let activeDice = [];
 
-  // Every field on this card writes through with its own fetch-modify-save
-  // round trip against the character record (see persistBinding below) — if
-  // two edits (e.g. Current HP then Max HP, right next to each other on the
-  // same line) fire in quick succession, the second one's fetch could land
-  // before the first one's save finishes, and whichever save completes last
-  // would silently overwrite the other's change. Chaining every persistBinding
-  // call through this one promise serializes them, so a field's fetch always
-  // sees the previous field's save already applied — this is what was making
-  // HP/AC edits look like they weren't sticking.
+  // Every field writes through its own fetch-modify-save round trip (see
+  // persistBinding below) — two edits fired in quick succession could
+  // otherwise race, with whichever save completes last silently
+  // overwriting the other. Chaining every call through this one promise
+  // serializes them so a field's fetch always sees the prior save applied.
   let pendingSave = Promise.resolve();
 
-  // Ephemeral UI-only state (not persisted, not part of `character`) for the
-  // Add Tag row's own visibility toggle — whether the NEXT condition added
-  // should be suppressed from map marker badges. Lives here rather than
-  // inside buildTagInputRow's own closure since this widget fully rebuilds
-  // on every render() call; a caller-owned flag plus buildTagInputRow's
-  // controlled hidden/onToggleHidden props keeps this widget consistent
-  // with combat-tracker.js's own equivalent, even though THIS widget's
-  // simpler full-rebuild-every-render approach wouldn't strictly need it.
+  // Ephemeral UI-only state for the Add Tag row's visibility toggle —
+  // whether the NEXT condition added should be suppressed from map marker
+  // badges. Kept consistent with combat-tracker.js's equivalent flag, even
+  // though this widget's full-rebuild-every-render approach wouldn't strictly need it.
   let pendingConditionHidden = false;
 
   let liveStream = null;
@@ -133,9 +116,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   async function loadSystemContext(systemId) {
     if (!systemId) return;
     try {
-      // preferLocal: false — a Loom edit to the System's role bindings/
-      // conditions vocabulary must be visible immediately, same reasoning as
-      // combat-tracker.js's own loadSystemFields.
+      // preferLocal: false — a Loom edit to the System's role bindings/conditions vocabulary must be visible immediately.
       const result = await dataManager.get("system", systemId, { preferLocal: false });
       const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
       const field = findRoleBoundField(fields);
@@ -148,10 +129,8 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   }
 
   // Read-modify-write against a *fresh* fetch (preferLocal: false), not the
-  // in-memory `character` this widget last loaded — same reasoning as
-  // combat-tracker.js's own writeThroughToCharacter: this character's sheet
-  // could have just changed elsewhere (Workbench, the GM's combat tracker) in
-  // the moments since. Queued through `pendingSave` — see its own comment.
+  // in-memory `character` — the sheet could have just changed elsewhere
+  // (Workbench, the Combat Tracker). Queued through `pendingSave`.
   function persistBinding(binding, value) {
     if (!binding) return Promise.resolve();
     pendingSave = pendingSave.then(() => doPersistBinding(binding, value));
@@ -172,16 +151,11 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     }
   }
 
-  // Same read-modify-write shape as doPersistBinding above, but sets TWO
-  // things in the one round trip: the tags-binding's own list, and
-  // hiddenTags — a fixed-key, suite-level field (not a System binding; see
-  // combat-tracker.js's own writeThroughToCharacter for the identical
-  // reasoning) tracking which of this character's own tags are hidden from
-  // map marker badges (buildTagInputRow's own visibility toggle,
-  // tag-editor.js; filtered in map-viewer.js's resolveMarkerConditionIcons).
-  // Combined into one save rather than two persistBinding calls so a
-  // hide-on-add can't race a separate hiddenTags write and land only
-  // half-applied.
+  // Same shape as doPersistBinding, but sets TWO things in one round trip:
+  // the tags-binding's list, and hiddenTags — a fixed-key, suite-level
+  // field (not a System binding) tracking which tags are hidden from map
+  // marker badges (filtered in map-viewer.js's resolveMarkerConditionIcons).
+  // Combined into one save so a hide-on-add can't race a separate write and land only half-applied.
   function persistTagsAndHiddenTags(binding, list, hiddenList) {
     pendingSave = pendingSave.then(() => doPersistTagsAndHiddenTags(binding, list, hiddenList));
     return pendingSave;
@@ -225,11 +199,9 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   }
 
   // One-way roll-and-push, not a synced field — mirrors Workbench's own
-  // pushInitiativeToActiveEncounter (workbench-character-view.js) exactly:
-  // finds whichever encounter is currently spotlighted to this character's
-  // group, and updates this character's combatant entry there. Initiative
-  // isn't persistent character state, so there's nothing to write back to
-  // the character record itself.
+  // pushInitiativeToActiveEncounter: finds whichever encounter is currently
+  // spotlighted to this character's group and updates the combatant entry
+  // there. Initiative isn't persistent character state.
   async function pushInitiativeToActiveEncounter(value) {
     if (!groupId && !shareToken) {
       status?.show("No active campaign to send initiative to.", { type: "warning", timeout: 2500 });
@@ -312,9 +284,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
           numberInput(typeof max === "number" ? max : undefined, (next) => persistBinding(resource.maxPath, next))
         );
       } else if (typeof resource.max === "number") {
-        // A literal ceiling (e.g. Daggerheart's Hope: max 6) is fixed System
-        // data, not a per-character field — nowhere to persist an edit, so
-        // it's shown as plain text instead of an editable input.
+        // A literal ceiling (e.g. Daggerheart's Hope: max 6) is fixed System data — shown as plain text, not editable.
         row.appendChild(el("span", "text-body-secondary", "/"));
         row.appendChild(el("span", "small", String(resource.max)));
       }
@@ -349,8 +319,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       const row = el("div", "d-flex align-items-center gap-2 flex-wrap");
       row.appendChild(icon("tabler:dice-5"));
       row.appendChild(el("span", "small text-body-secondary", modifier.name || "Initiative"));
-      // Shows the modifier being rolled with, right on the button, so it's
-      // never ambiguous whether it's being added — e.g. "Roll (+3)".
+      // Shows the modifier right on the button so it's never ambiguous — e.g. "Roll (+3)".
       const rollButton = el(
         "button",
         "btn btn-outline-secondary btn-sm",
@@ -421,12 +390,9 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     }
     if (destroyed) return;
     character = result.payload || {};
-    // Assigned Systems (systemIds — see Loom's own "Assigned Systems"
-    // checkboxes) replaces the old singular `system` field; a character can
-    // have more than one assigned, but this widget's combat-binding/
-    // conditions lookup only ever needs one System, so the first entry
-    // wins. `character.system` stays a fallback for any not-yet-resaved
-    // record that still only has the legacy field.
+    // Assigned Systems (systemIds) replaces the old singular `system` field
+    // — this widget only needs one System, so the first entry wins.
+    // `character.system` stays a fallback for a not-yet-resaved record.
     const systemId = Array.isArray(character.systemIds) ? character.systemIds[0] : character.system;
     await loadSystemContext(systemId);
     if (destroyed) return;
@@ -435,13 +401,10 @@ export function initCharacterVitals(container, { dataManager, status, characterI
     render();
   }
 
-  // Resolves which System's own dice (if any) currently govern this
-  // character's Initiative roll — the active campaign Group's System first
-  // (Section 2), then this character's own Assigned Systems. A System's
-  // Rolls/Moves and any Tier-3 symbol dice are NOT surfaced here — they're a
-  // System-level dice-rolling concept, not a combat-binding one, so they
-  // live in the Dashboard's Dice Roller widget (dice-roller.js) instead,
-  // alongside Workbench's own equivalent Dice pane.
+  // Resolves which System's dice (if any) govern this character's
+  // Initiative roll — the active campaign Group's System first, then this
+  // character's Assigned Systems. A System's Rolls/Moves and any Tier-3
+  // symbol dice are NOT surfaced here — that's the Dashboard's Dice Roller widget's job.
   async function loadActiveDice() {
     const groupContext = await resolveGroupContext(dataManager, { shareToken }).catch(() => null);
     const systemDefinition = await resolveActiveDice({ dataManager, groupContext, character }).catch(() => null);
@@ -467,9 +430,8 @@ export function initCharacterVitals(container, { dataManager, status, characterI
 
 // --- Macro action support (common/js/lib/widgets/macro-runner.js) ---
 // Standalone — no mounted widget instance required. Same fetch → resolve
-// combat bindings → mutate → save shape as doPersistBinding/
-// loadSystemContext above, just against a character id passed in per call
-// rather than this widget's own closure state.
+// combat bindings → mutate → save shape as above, against a character id
+// passed in per call rather than this widget's closure state.
 
 export const CHARACTER_MACRO_ACTIONS = {
   adjustVital: { label: "Adjust HP/AC", params: ["field", "value", "delta"] },
@@ -496,9 +458,7 @@ export async function runCharacterMacroAction(action, { dataManager } = {}) {
   if (!characterId) {
     throw new Error("No character id given.");
   }
-  // preferLocal: false — a read-modify-write round trip against whatever
-  // the character record actually is right now, same reasoning
-  // doPersistBinding/combat-tracker.js's own writeThroughToCharacter apply.
+  // preferLocal: false — a read-modify-write round trip against whatever the character record actually is right now.
   const result = await dataManager.get("character", characterId, { preferLocal: false });
   const character = result?.payload;
   if (!character) {

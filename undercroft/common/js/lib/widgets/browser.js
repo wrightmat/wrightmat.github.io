@@ -1,42 +1,24 @@
 // A widget that shows an arbitrary external URL — deliberately NOT a
-// Library kind of its own (same reasoning clocks.js gives for its own
-// config): the URL is small enough to live entirely in this widget
-// instance's own persisted contentRef (dashboard.js's layout.widgets), not
-// a server-backed kind. Showing this to the table does NOT touch any
-// Library record at all — the spotlight entry itself carries the URL
-// inline, as its own `data` payload (see server/groups.py's own
-// _INLINE_SPOTLIGHT_KINDS, and data-manager.js's spotlightToGroup/
-// updateSpotlightData) — every viewer that needs it either already has it
-// from their own copy of the same dashboard layout (the GM's own dashboard,
-// the second-screen mirror — see dashboard.js's own refreshScreen, which
-// re-mounts a widget whenever its contentRef changes), or, for another
-// player who accepted this spotlight onto their own separate dashboard,
-// reads it straight from the spotlight entry's own data via
-// initFollowerBrowser below (same pattern clocks.js uses for its own
-// follower — the two widgets share this design, not two parallel ones).
+// Library kind (same reasoning as clocks.js): the URL is small enough to
+// live in this widget instance's own persisted contentRef. Showing this to
+// the table doesn't touch any Library record — the spotlight entry carries
+// the URL inline as its own `data` payload (server/groups.py's
+// _INLINE_SPOTLIGHT_KINDS; data-manager.js's spotlightToGroup/
+// updateSpotlightData), read by a follower via initFollowerBrowser below
+// (same pattern as clocks.js's follower).
 //
-// Renders as an <img> when the URL looks like a direct image file (common
-// extensions), or an <iframe> otherwise (an arbitrary webpage). This is a
-// best-effort heuristic, not a live probe: browsers give no reliable way to
-// detect from the parent page whether a cross-origin iframe's content was
-// blocked by the target site's own X-Frame-Options/CSP — a genuinely
-// successful cross-origin embed and a silently-refused one both look
-// identical to this page's own JS (same cross-origin isolation that makes
-// embedding safe in the first place). An "Open in new tab" link sits next
-// to the iframe as the escape hatch for exactly that case.
+// Renders as an <img> when the URL looks like a direct image file, or an
+// <iframe> otherwise. This is a best-effort heuristic, not a live probe —
+// there's no reliable cross-origin way to detect a target site's own
+// X-Frame-Options/CSP blocking the embed; "Open in new tab" is the escape hatch.
 //
 // A file: URL (or a raw Windows path normalizeUrl converts to one) is
-// embedded through this server's own /local-file route (server/app.py)
-// instead of used directly as an iframe/img src — browsers refuse file:
-// as a subresource outright, but a normal http(s) response from THIS
-// server has no such restriction. That server route is loopback-only, so
-// it only ever actually works from the same physical machine the server
-// runs on — which the GM's own dashboard tab satisfies, and so does the
-// second-screen mirror (it reads this same widget instance's own
-// contentRef directly, same-origin, same machine — see dashboard.js's own
-// renderScreenView). A genuinely remote follower on a different machine
-// just gets a failed embed for a local file — see renderLocalFile's own
-// comment for the full reasoning.
+// embedded through this server's own /local-file route instead of used
+// directly — browsers refuse file: as a subresource outright, but a normal
+// http(s) response from THIS server doesn't have that restriction. That
+// route is loopback-only, so it only actually works from the same physical
+// machine the server runs on (the GM's dashboard tab, the second-screen
+// mirror) — a remote follower just gets a failed embed. See renderLocalFile.
 import { el } from "../dom.js";
 import { connectLiveStream } from "../live.js";
 import { resolveIsSpotlighted, resolveSpotlightData } from "../spotlight.js";
@@ -44,16 +26,11 @@ import { createReliableInterval } from "../reliable-interval.js";
 import { resolveApiBase } from "../api.js";
 
 const IMAGE_EXTENSION_PATTERN = /\.(avif|bmp|gif|jpe?g|png|svg|webp)(\?.*)?(#.*)?$/i;
-// 5s — same cadence clocks.js's own follower/GM poll uses; a second-screen
-// display or an accepted follower's dashboard both want this to feel live.
-const POLL_INTERVAL_MS = 5000;
-// A Windows drive-letter path (`C:\...` or `C:/...`) or a UNC path
-// (`\\server\share\...`), pasted raw — e.g. straight out of Explorer's own
-// address bar, which is exactly how a GM would actually have this on hand,
-// not as a hand-typed `file:///` URI. Deliberately narrow (only these two
-// unambiguous Windows shapes) rather than also guessing at a bare leading
-// "/some/path" — that's indistinguishable from a site-relative URL
-// fragment someone might paste for an entirely different reason.
+const POLL_INTERVAL_MS = 5000; // same cadence as clocks.js's own follower/GM poll
+// A Windows drive-letter path (`C:\...`) or UNC path (`\\server\share\...`)
+// pasted raw, e.g. straight from Explorer's address bar — deliberately
+// narrow to these two unambiguous shapes rather than also guessing at a
+// bare leading "/some/path", which is indistinguishable from a relative URL.
 const WINDOWS_DRIVE_PATH_PATTERN = /^[a-zA-Z]:[\\/]/;
 const WINDOWS_UNC_PATH_PATTERN = /^\\\\/;
 
@@ -65,9 +42,7 @@ function isFileUrl(url) {
   return /^file:\/\//i.test(String(url || "").trim());
 }
 
-// null when `raw` doesn't look like a Windows path at all — lets
-// normalizeUrl fall through to its other cases instead of assuming every
-// non-URL string was meant to be a local path.
+// null when `raw` doesn't look like a Windows path — lets normalizeUrl fall through to its other cases.
 function windowsPathToFileUrl(raw) {
   const trimmed = raw.trim();
   if (WINDOWS_UNC_PATH_PATTERN.test(trimmed)) {
@@ -79,12 +54,8 @@ function windowsPathToFileUrl(raw) {
   return null;
 }
 
-// A bare "example.com/thing.png" pasted without a scheme would otherwise
-// resolve as a relative link on THIS site and 404 — be forgiving about what
-// the GM pastes, same as most URL-accepting fields are. Same reasoning
-// extends to a local file: a raw Windows path is far more likely to be
-// what's actually on the GM's clipboard (from Explorer, or their Nextcloud
-// folder) than a properly escaped file:// URI — see windowsPathToFileUrl.
+// Forgiving about what's pasted — a bare "example.com/thing.png" without a
+// scheme would otherwise resolve as a relative link on this site and 404.
 function normalizeUrl(raw) {
   const trimmed = String(raw || "").trim();
   if (!trimmed) return "";
@@ -97,9 +68,7 @@ function normalizeUrl(raw) {
 function titleFor(url) {
   if (!url) return "Browser";
   if (isFileUrl(url)) {
-    // A file:// URL's own "hostname" is empty for a local drive path, so
-    // the hostname-based title below would just fall back to "Browser" —
-    // the filename itself is far more useful here.
+    // A file:// URL's "hostname" is empty for a local drive path, so the filename is more useful than the hostname title below.
     try {
       const name = decodeURI(url).split(/[\\/]/).filter(Boolean).pop();
       return name || "Local file";
@@ -114,12 +83,10 @@ function titleFor(url) {
   }
 }
 
-// Reverses windowsPathToFileUrl (or any other file: URL) back into a plain
-// filesystem path string — /local-file needs a real path to open, not a
-// URI. Goes through the URL parser itself rather than hand-rolled scheme-
-// stripping, since a UNC path (file://server/share/...) and a drive-letter
-// path (file:///C:/...) put the same information in different parts of the
-// URL (hostname vs pathname).
+// Reverses a file: URL back into a plain filesystem path — /local-file
+// needs a real path. Goes through the URL parser since a UNC path
+// (file://server/share/...) and a drive-letter path (file:///C:/...) put
+// the info in different parts of the URL (hostname vs pathname).
 function fileUrlToPath(fileUrl) {
   try {
     const parsed = new URL(fileUrl);
@@ -138,13 +105,8 @@ function buildLocalFileEmbedSrc(fileUrl, token) {
   return `${resolveApiBase()}/local-file?${params.toString()}`;
 }
 
-// Builds the actual <img>/<iframe> element for content confirmed reachable
-// at `embedSrc` — which may differ from `url` itself (renderLocalFile
-// passes the /local-file proxy URL here, while `url` — the original
-// file:/http(s) address — still decides image-vs-iframe via
-// looksLikeImageUrl, since that's about the CONTENT's type, not where it's
-// being fetched from, and still backs the "open natively"/"open in new
-// tab" link everywhere it's shown).
+// `embedSrc` (what's actually fetched) may differ from `url` (the original
+// address, which still decides image-vs-iframe via looksLikeImageUrl and backs the "open" links).
 function buildEmbedElement(url, embedSrc, { allowSameOrigin = true } = {}) {
   if (looksLikeImageUrl(url)) {
     const wrap = el("div", "d-flex align-items-center justify-content-center flex-grow-1");
@@ -158,15 +120,10 @@ function buildEmbedElement(url, embedSrc, { allowSameOrigin = true } = {}) {
     img.style.maxHeight = "100%";
     img.style.objectFit = "contain";
     // A flex item's min-width/min-height default to `auto`, which for a
-    // replaced element like <img> resolves to its own INTRINSIC (natural
-    // pixel) size — that floor can win out over max-width/max-height:100%
-    // in the flex sizing algorithm, pinning the image at its natural size
-    // regardless of how big or small this wrap actually is. Confirmed real:
-    // under an ancestor's CSS zoom (mountWidget's own widget-zoom feature),
-    // this showed up as text scaling normally while the image itself never
-    // changed size at all. Explicit 0 here removes that floor, letting
-    // max-width/max-height (and so the zoom scaling everything else in this
-    // subtree already responds to) actually govern the image's size.
+    // replaced element like <img> resolves to its intrinsic size — that
+    // floor can win over max-width/max-height:100% and pin the image at
+    // natural size regardless of the wrap's actual size (confirmed under
+    // ancestor CSS zoom: text scaled, the image didn't). Explicit 0 removes it.
     img.style.minWidth = "0";
     img.style.minHeight = "0";
     img.addEventListener("error", () => {
@@ -184,50 +141,33 @@ function buildEmbedElement(url, embedSrc, { allowSameOrigin = true } = {}) {
   frame.style.width = "100%";
   frame.style.border = "1px solid var(--bs-border-color)";
   frame.style.borderRadius = "0.5rem";
-  // Permissive enough that most embedded pages still render (scripts,
-  // same-origin, forms, popups a page opens itself), but withholds
-  // top-level navigation — an embedded page hijacking this whole dashboard
-  // tab isn't something a "show this URL" widget should allow.
-  //
-  // allow-same-origin is safe for a genuinely cross-origin remote URL (the
-  // default case) — combined with allow-scripts, it just lets the embedded
-  // page run normally as ITS OWN origin, which still can't reach this
-  // parent page at all (an ordinary cross-origin iframe boundary, sandbox
-  // or not). renderLocalFile passes allowSameOrigin: false for exactly the
-  // one case where that's NOT true: /local-file's response is SAME-origin
-  // as this dashboard itself, so allow-same-origin there would hand a
-  // local HTML file's own script the full same-origin access allow-scripts
-  // alone doesn't grant — including this page's own localStorage (the
-  // signed-in session token) and DOM. Dropping it forces the frame into an
-  // opaque origin instead, same as any other sandboxed-without-
-  // allow-same-origin embed — scripts still run, they just can't reach out.
+  // Permissive enough for most embedded pages (scripts, same-origin, forms,
+  // popups) but withholds top-level navigation, so an embedded page can't hijack this tab.
+  // allow-same-origin is safe for a genuinely cross-origin remote URL — it
+  // just lets the page run as ITS OWN origin, still unable to reach this
+  // parent. renderLocalFile passes allowSameOrigin: false because
+  // /local-file's response IS same-origin as this dashboard, so
+  // allow-same-origin there would hand a local HTML file's script full
+  // access to this page's own localStorage (the session token) and DOM.
   const sandboxTokens = ["allow-scripts", "allow-forms", "allow-popups"];
   if (allowSameOrigin) sandboxTokens.push("allow-same-origin");
   frame.setAttribute("sandbox", sandboxTokens.join(" "));
   return frame;
 }
 
-// Browsers flatly refuse to load a file: URL as a subresource (iframe/img)
-// from an http(s) page — confirmed Chromium behavior: "Not allowed to load
-// local resource" in the console, a hardcoded scheme restriction rather
-// than a CORS check, so no sandbox attribute fixes it. Routing the embed
-// itself through this server's own /local-file endpoint (server/app.py)
-// sidesteps that entirely — from the browser's point of view it's just an
-// ordinary same-origin http(s) resource, exactly as embeddable as anything
-// else this widget already shows. That endpoint refuses anything but a
-// loopback (same-machine) request, so this only actually renders inline
-// for the GM's own dashboard tab and the second-screen mirror (also the
-// same machine) — a genuinely remote follower gets a failed embed instead,
-// which is the honest outcome for a file that only ever existed on someone
-// else's computer.
+// Browsers flatly refuse to load a file: URL as a subresource from an
+// http(s) page (a hardcoded scheme restriction, not a CORS check — no
+// sandbox attribute fixes it). Routing through this server's own
+// /local-file endpoint sidesteps that: from the browser's view it's an
+// ordinary same-origin http(s) resource. That endpoint refuses anything but
+// a loopback request, so this only renders inline on the GM's own dashboard
+// tab and the second-screen mirror — a remote follower gets a failed embed,
+// the honest outcome for a file that only exists on someone else's machine.
 function renderLocalFile(target, url, dataManager) {
   const token = dataManager?.session?.token || "";
   if (!token) {
-    // Not signed in (or no dataManager at all) — /local-file requires
-    // GM-tier auth and there's no token to send it. Falls back to the one
-    // thing that still works with no server round-trip at all: a direct
-    // top-level navigation via a real link click, same as "Open in new
-    // tab" already relies on for a blocked cross-origin iframe below.
+    // No session token to send /local-file (GM-tier auth required) — falls
+    // back to a direct top-level navigation link, the one thing that works with no server round-trip.
     const wrap = el(
       "div",
       "d-flex flex-column align-items-center justify-content-center gap-2 flex-grow-1 text-center p-3"
@@ -262,9 +202,7 @@ function renderLocalFile(target, url, dataManager) {
   target.appendChild(wrap);
 }
 
-// Fills whatever height/width its own parent gives it — same "the grid
-// already decided this widget's real size, content should just fill it"
-// convention map.js/handout.js's own journal view use.
+// Fills whatever height/width its parent gives it — same convention map.js/handout.js's journal view use.
 function renderContent(target, url, { dataManager } = {}) {
   target.innerHTML = "";
   if (!url) {
@@ -296,14 +234,11 @@ function renderFollowerEmpty(container) {
   container.appendChild(el("p", "text-body-secondary small mb-0", "The GM isn't showing this link right now."));
 }
 
-// contentRef.followKind === "browser" marks a "follower" instance — created
+// contentRef.followKind === "browser" marks a "follower" instance, created
 // by acceptSpotlight (dashboard.js) when a player accepts a GM's Browser
-// spotlight, never by manually adding the Browser widget from the toolbar.
-// Purely a read-only mirror: no URL input, nothing persisted locally, just
-// whatever the GM's own instance last showed — read via resolveSpotlightData
-// (the spotlight entry's own inline `data`), since there's no Library record
-// to fetch the way a Handout/Map follower would. Same shape as clocks.js's
-// own initFollowerClock.
+// spotlight, never by manually adding this widget. Read-only mirror: no
+// input, nothing persisted locally — reads via resolveSpotlightData since
+// there's no Library record to fetch (same shape as clocks.js's follower).
 function initFollowerBrowser(container, { dataManager, groupId = "", shareToken = "", followId, setTitle }) {
   let destroyed = false;
   let pollTimer = 0;
@@ -325,15 +260,10 @@ function initFollowerBrowser(container, { dataManager, groupId = "", shareToken 
   }
 
   void refresh();
-  // createReliableInterval (not plain window.setInterval) — a followed
-  // widget popped out onto a physical second screen, or just left unfocused
-  // in a background tab, sits unfocused for the whole session; plain
-  // setInterval was confirmed to stall there. See reliable-interval.js's own
-  // header.
+  // createReliableInterval, not plain setInterval — a followed widget on a
+  // popped-out second screen or unfocused background tab needs this to not stall (see reliable-interval.js).
   pollTimer = createReliableInterval(() => void refresh(), POLL_INTERVAL_MS);
-  // The group log itself is the one live channel every inline-kind follower
-  // watches (no dedicated "browser" kind live-stream, since there's no
-  // Library record to key one off of) — matches clocks.js's own follower.
+  // The group log is the one live channel an inline-kind follower watches — matches clocks.js's own follower.
   const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
   liveStream.subscribe("group_log", () => void refresh());
 
@@ -405,11 +335,8 @@ export function initBrowserWidget(
         await dataManager.clearSpotlight({ groupId, kind: "browser", id: instanceId });
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } else {
-        // skipShare — there's no Library record to grant view permission on
-        // at all (see this file's own header comment); the server enforces
-        // the same allowance independently for kind "browser". `data` is
-        // the URL itself — the only "content" a follower or the second
-        // screen needs, carried inline rather than fetched.
+        // skipShare — no Library record to grant view permission on (see header comment); the
+        // server enforces the same allowance for kind "browser" independently. `data` carries the URL inline.
         await dataManager.spotlightToGroup({
           groupId,
           contentType: "browser",
@@ -425,10 +352,8 @@ export function initBrowserWidget(
     await refreshVisibility();
   }
 
-  // Keeps a follower's next poll (or live-stream nudge) current with the URL
-  // — a plain spotlight-update, not a fresh `spotlight` entry, so editing the
-  // URL while shown doesn't re-trigger every other viewer's accept-prompt or
-  // add a new Game Log row (see data-manager.js's own updateSpotlightData).
+  // A plain spotlight-update, not a fresh entry — editing the URL while
+  // shown shouldn't re-trigger every viewer's accept-prompt or add a Game Log row.
   async function pushVisibleUpdate() {
     if (!visible || !dataManager || !instanceId || !groupId) return;
     try {
@@ -450,11 +375,8 @@ export function initBrowserWidget(
     if (destroyed) return;
     container.innerHTML = "";
     if (forcePlayerView) {
-      // Read-only — same "no editing controls" convention every other
-      // widget's forced-player-view uses. Also the second-screen mirror's
-      // own render path (dashboard.js mounts screenMode widgets with this
-      // set) — see this file's own header for why passing dataManager here
-      // is what actually lets a local file show up there.
+      // Read-only, same convention every widget's forced-player-view uses —
+      // also the second-screen mirror's own render path.
       renderContent(container, config.url, { dataManager });
       return;
     }
@@ -467,19 +389,12 @@ export function initBrowserWidget(
       persist({ ...config, url: normalizeUrl(urlInput.value) });
     });
     // plainMountContainer — dashboard.js's own never-zoomed sibling mount
-    // for this widget type (see mountWidget's own isBrowser comment) — is
-    // what keeps zooming in to read small embedded content from also
-    // blowing the address bar up into something absurd; only the content
-    // (rendered into `container` itself, which DOES get zoomed) is what
-    // the zoom controls are actually for. Falls back to building both in
-    // `container` together, same as before this split existed, for any
-    // caller that doesn't supply one.
+    // for this widget type — keeps zooming in to read small embedded
+    // content from also blowing up the address bar; only `container`
+    // itself gets zoomed. Falls back to building both together in
+    // `container` for a caller that doesn't supply one.
     if (plainMountContainer) {
-      // mb-2 lives on the input itself, not the (otherwise-empty, in
-      // forcePlayerView/the second screen) plainMountContainer wrapper —
-      // a static margin on that wrapper would leave a small, pointless gap
-      // above the content even when nothing renders into it at all.
-      urlInput.classList.add("mb-2");
+      urlInput.classList.add("mb-2"); // margin on the input, not the otherwise-empty wrapper
       plainMountContainer.innerHTML = "";
       plainMountContainer.appendChild(urlInput);
       const contentHost = el("div", "d-flex flex-column flex-grow-1");
@@ -500,20 +415,13 @@ export function initBrowserWidget(
 
   render();
   setTitle?.(titleFor(config.url));
-  // First mount with nothing saved yet — persist the default immediately so
-  // a reload doesn't silently regenerate/lose it (same convention clocks.js
-  // uses for its own default config).
-  if (!contentRef) setContentRef?.(config);
+  if (!contentRef) setContentRef?.(config); // persist the default immediately so a reload doesn't lose it
   void refreshVisibility();
 
   return {
-    // `removed` is only ever true from dashboard.js's removeWidget — the one
-    // moment this instance's own still-active spotlight (if any) needs
-    // clearing. There's no Library record here to make this automatic (see
-    // this file's own header comment) — without this, removing a currently-
-    // shown Browser widget would orphan any follower/second-screen view on
-    // frozen, never-clearable stale data, since nothing could ever toggle
-    // this instance's own id off again.
+    // `removed` is only true from dashboard.js's removeWidget — the one
+    // moment this instance's own still-active spotlight needs clearing;
+    // there's no Library record to make this automatic (see header comment).
     async destroy(removed) {
       destroyed = true;
       container.innerHTML = "";

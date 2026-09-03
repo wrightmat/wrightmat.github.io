@@ -30,11 +30,9 @@ const BASE_FUNCTIONS = {
   and: (...values) => values.every(Boolean),
   or: (...values) => values.some(Boolean),
   not: (value) => !value,
-  // String helpers — deliberately plain, no regex (a regex literal isn't
-  // expressible through SAFE_PATTERN/the @-substitution step anyway, and
-  // a template author shouldn't need to know regex to substitute text).
-  // `value` first on all of these, same subject-first argument order as
-  // clamp/mod/pow above, not JS's own String.prototype order.
+  // String helpers — deliberately plain, no regex (SAFE_PATTERN can't
+  // express a regex literal, and a template author shouldn't need to know
+  // regex). `value` is always the first arg, unlike String.prototype's order.
   len: (value) => {
     if (Array.isArray(value)) return value.length;
     if (value === undefined || value === null) return 0;
@@ -43,9 +41,8 @@ const BASE_FUNCTIONS = {
   upper: (value) => String(value ?? "").toUpperCase(),
   lower: (value) => String(value ?? "").toLowerCase(),
   split: (value, separator) => String(value ?? "").split(separator ?? ""),
-  // Whole-string substitution (every occurrence), not just the first —
-  // split/join instead of String.prototype.replace so a literal search
-  // string never gets misread as regex syntax.
+  // split/join (not String.prototype.replace) for whole-string, all-
+  // occurrence substitution with no regex reinterpretation of the search term.
   replace: (value, search, replacement) => {
     const str = String(value ?? "");
     const searchStr = String(search ?? "");
@@ -117,21 +114,16 @@ export function evaluateFormula(formula, context = {}, options = {}) {
     `const { ${functionNames.join(", ")} } = __fn; return (${normalizedExpression});`
   );
 
-  // coerceValue turns a missing path into 0 — correct here since a formula
-  // is always a math context, but bindings.js deliberately does NOT do this
-  // (see its own comment) since a resolved binding can be a string/array/
-  // boolean where coercing to 0 would be wrong.
+  // Missing path coerces to 0 here since a formula is always a math context;
+  // bindings.js deliberately does NOT do this (see its own comment).
   const getter = (path) => coerceValue(resolveDottedPath(context, path));
   return evaluator(getter, runtimeFunctions);
 }
 
-// "roller", "lookup" and "lookupField" aren't in BASE_FUNCTIONS itself —
-// all three are injected per-caller via options.functions instead (see
-// roller's own inline definition above and bindings.js's createLookupFn/
-// createLookupFieldFn). Every real caller provides all three in practice
-// though, so they belong in the advertised function list too — otherwise
-// the inspector's own autocomplete (formula-metadata.js) would never
-// suggest any of them.
+// roller/lookup/lookupField are injected per-caller via options.functions
+// (see roller above, bindings.js's createLookupFn/createLookupFieldFn) rather
+// than living in BASE_FUNCTIONS, but every real caller provides all three —
+// listed here anyway so formula-metadata.js's autocomplete suggests them.
 export function listFormulaFunctions() {
   return [...new Set([...Object.keys(BASE_FUNCTIONS), "roller", "lookup", "lookupField"])];
 }

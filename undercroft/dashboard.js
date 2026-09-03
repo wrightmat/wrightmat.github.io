@@ -35,25 +35,22 @@ import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
 import { el } from "./common/js/lib/dom.js";
 
 // Every per-browser local copy of a Dashboard setting lives under this same
-// prefix + a short key — "layout" preserves the exact pre-existing
+// prefix + a short key — "layout" preserves the pre-existing
 // "undercroft.dashboard.layout" key so nobody's saved local layout goes
-// missing after this file's own settings model grew beyond just layout (see
-// saveLocalSetting/loadLocalSetting below). Server-side, all of these settings
-// share one merge-patch JSON blob (DataManager#saveUserSettings/
-// getUserSettings) keyed by the matching dashboard*-prefixed name — adding a
-// new setting is just a new key in that same blob, no server changes needed.
+// missing after this file's settings model grew beyond just layout. Server-
+// side, all of these settings share one merge-patch JSON blob keyed by the
+// matching dashboard*-prefixed name — adding a new setting is just a new
+// key, no server changes needed.
 const LOCAL_SETTINGS_PREFIX = "undercroft.dashboard.";
 const SORTABLE_GROUP = "dashboard-widgets";
-// The grid's own lane count (CSS `grid-template-columns: repeat(N, 1fr)`,
-// `common/css/shell.css`'s .dashboard-grid — driven by a CSS custom property
-// set from layout.columnCount, not a fixed value; see applyGridDimensions).
-// Every widget has an explicit `col`/`row` (0-indexed top-left cell) plus
-// `colSpan`/`rowSpan` — real 2D placement, not list order + auto-flow (that
-// broke down for SortableJS once widgets had different heights — see
-// renderWidgetGrid's own comment for the drop-zone mechanism that replaced
-// it). Both column and row count are per-layout, GM-configurable settings
-// (the Columns/Rows inputs in Edit layout), not fixed constants — these are
-// just the fallback/clamp bounds.
+// The grid's lane count (CSS `grid-template-columns: repeat(N, 1fr)`,
+// driven by a CSS custom property set from layout.columnCount, not a fixed
+// value). Every widget has an explicit `col`/`row` (0-indexed top-left
+// cell) plus `colSpan`/`rowSpan` — real 2D placement, not list order +
+// auto-flow (that broke down for SortableJS once widgets had different
+// heights — see renderWidgetGrid's own drop-zone mechanism). Both column
+// and row count are per-layout, GM-configurable settings, not fixed
+// constants — these are just the fallback/clamp bounds.
 const DEFAULT_COLUMN_COUNT = 8;
 const DEFAULT_ROW_COUNT = 8;
 const GRID_COLUMN_COUNT_MIN = 2;
@@ -75,14 +72,13 @@ function clampInt(value, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.round(num)));
 }
 
-// Reads the CURRENT layout's own grid dimensions — these are per-layout
-// settings (the Columns/Rows inputs in Edit layout), not fixed constants;
-// every caller that needs "how many columns/rows does THIS grid have right
-// now" goes through these rather than a hardcoded number, so changing the
-// setting takes effect everywhere at once. Only ever called once `layout`
-// is populated (mid-boot onward) — normalizeLayout/normalizeWidgetEntry/
-// packLayout run BEFORE that and take the dimensions as explicit params
-// instead, since they're what's building `layout` in the first place.
+// Reads the CURRENT layout's grid dimensions — per-layout settings, not
+// fixed constants; every caller needing "how many columns/rows right now"
+// goes through these rather than a hardcoded number. Only ever called once
+// `layout` is populated (mid-boot onward) — normalizeLayout/
+// normalizeWidgetEntry/packLayout run BEFORE that and take the dimensions
+// as explicit params, since they're what's building `layout` in the first
+// place.
 function getColumnCount() {
   return layout?.columnCount || DEFAULT_COLUMN_COUNT;
 }
@@ -94,38 +90,33 @@ const { status } = initAppShell({
   namespace: "dashboard",
   leftPane: { size: "default", initial: "collapsed" },
   rightPane: { size: "lg", initial: "collapsed" },
-  // Same header slot (and same gear-button styling, wired below rather than
-  // through tool-settings.js — see the modal-building comment further down
-  // for why) Vault/Forge/Crucible/Repository already reserve for their own
-  // Settings button — upper-left, before the pane toggle/title.
+  // Same header slot (and gear-button styling, wired below rather than
+  // through tool-settings.js) Vault/Forge/Crucible/Repository reserve for
+  // their own Settings button — upper-left, before the pane toggle/title.
   settingsSlotAttr: "data-dashboard-settings-slot",
 });
 const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
 initAuthControls({ root: document, status, dataManager });
 // This page lives at the suite root, one level shallower than every other
-// tool page initHelpSystem's default topicsUrl assumes — same "home is the
-// one exception" theme as app-shell.js's resolveToolHref/resolveAccountHref.
+// tool page initHelpSystem's default topicsUrl assumes.
 initHelpSystem({ root: document, topicsUrl: "common/data/help-topics.json" });
 
-// `multiple: false` (the default when omitted) means only one instance of
-// that widget type can exist at once — character/gamelog/combat are each
-// tied to one thing (your pinned character, the one group log, one active
-// encounter per group), so more than one copy would just show the same data
-// twice. Card/Map set `multiple: true` since several different pieces of
-// content can meaningfully coexist (several spotlighted NPCs, several maps).
-// `icon` drives the add-widget toolbar button and its tooltip;
+// `multiple: false` (default) means only one instance of that widget type
+// can exist at once — character/gamelog/combat are each tied to one thing
+// (your pinned character, the one group log, one active encounter per
+// group), so more than one copy would just show the same data twice.
+// Card/Map set `multiple: true` since several pieces of content can
+// meaningfully coexist. `icon` drives the add-widget toolbar button;
 // `addableFromToolbar: false` (Card only) hides a type from that toolbar
-// entirely when a blind "add one" click wouldn't have anything meaningful to
-// show — Card only ever gets added with a real contentRef in hand, via
-// acceptSpotlight below (see populateAddToolbar). Map DOES need a specific
-// contentRef too, but unlike Card there's always something sensible to pick
-// it from (the viewer's own saved maps) — `pickContentRef(ctx)` supplies
-// that: an async function returning a `contentRef` (or null if the user
-// cancelled), run from the toolbar button before addWidget is called (see
-// populateAddToolbar's click handler and pickLibraryContentRef below).
-// `setTitle` (passed to every widget's init via buildCtx) lets a widget
-// suffix its own card header with whatever it's actually showing (a map's
-// name, a character's name) — see mountWidget's own setTitle closure.
+// when a blind "add one" click wouldn't have anything meaningful to show —
+// Card only ever gets added with a real contentRef in hand, via
+// acceptSpotlight below. Map needs a specific contentRef too, but unlike
+// Card there's always something sensible to pick it from (the viewer's own
+// saved maps) — `pickContentRef(ctx)` supplies that: an async function
+// returning a `contentRef` (or null if cancelled), run from the toolbar
+// button before addWidget is called. `setTitle` (passed to every widget's
+// init via buildCtx) lets a widget suffix its card header with whatever
+// it's showing.
 const WIDGET_CATALOG = [
   {
     id: "character",
@@ -194,9 +185,9 @@ const WIDGET_CATALOG = [
     id: "calculator",
     label: "Calculator",
     icon: "tabler:calculator",
-    // contentRef holds this instance's own Setting scope + rollable-table
-    // references (see calculator.js) — the same generic per-instance slot
-    // every widget type gets, threaded through automatically by buildCtx.
+    // contentRef holds this instance's Setting scope + rollable-table
+    // references — the same generic per-instance slot every widget type
+    // gets, threaded through automatically by buildCtx.
     init: (container, ctx) =>
       initCalculatorWidget(container, {
         status: ctx.status,
@@ -214,15 +205,13 @@ const WIDGET_CATALOG = [
     multiple: true,
     // contentRef holds only which shop Location this instance shows (id) —
     // the shop's own live state (open/closed, stock, treasury) lives on the
-    // campaign Group instead (a Group Property, see shop-transactions.js's
-    // own header), not here, so every player's copy of this widget for the
-    // same Location always shows the same thing. Same show-to-table eye
-    // icon as Map/Handout (canToggleVisibility/setRightAction) — a GM picks
+    // campaign Group instead (a Group Property), not here, so every
+    // player's copy of this widget for the same Location always shows the
+    // same thing. Same show-to-table eye icon as Map/Handout — a GM picks
     // the shop Location and toggles it visible; a player who doesn't
-    // already have this widget gets it via the spotlight panel's own Accept
+    // already have this widget gets it via the spotlight panel's Accept
     // (acceptSpotlight, INLINE_FOLLOW_KINDS branch — "shop" has no Library
-    // record of its own to fetch, see that Set's own comment), landing on
-    // the exact same Location automatically.
+    // record to fetch), landing on the same Location automatically.
     init: (container, ctx) => {
       const canToggleVisibility = ctx.groupContext?.access === "owner" && !ctx.forcePlayerView;
       return initShopWidget(container, {
@@ -243,15 +232,14 @@ const WIDGET_CATALOG = [
     icon: "tabler:bulb",
     multiple: true,
     // Account-scoped device config (wledDevices, above) with no campaign/
-    // role concept at all, unlike Combat Tracker/Calendar/Soundboard below —
-    // tier alone is the right (and only meaningful) gate here.
+    // role concept, unlike Combat Tracker/Calendar/Soundboard below — tier
+    // alone is the right gate here.
     canAdd: () => dataManager.meetsTier("gm"),
-    // The known-devices LIST is account-wide (wledDevices, above — GM-tied,
-    // not per-card), threaded straight from module scope rather than through
-    // ctx (nothing else needs it, and every mount reads the current value at
-    // mount time same as ctx.layout would). Which device THIS card shows is
-    // per-instance instead, via the usual contentRef/setContentRef — see
-    // wled.js's own header comment for the full split.
+    // The known-devices LIST is account-wide (wledDevices, above —
+    // GM-tied, not per-card), threaded straight from module scope rather
+    // than through ctx. Which device THIS card shows is per-instance
+    // instead, via the usual contentRef/setContentRef — see wled.js's own
+    // header comment for the full split.
     init: (container, ctx) =>
       initWledWidget(container, {
         contentRef: ctx.contentRef,
@@ -260,9 +248,8 @@ const WIDGET_CATALOG = [
         status: ctx.status,
         devices: wledDevices,
         onDevicesChange: persistWledDevices,
-        // Phase 2 — "Follow a Clock" (wled.js's own live-binding section)
-        // needs these to poll/subscribe to the spotlight transport, same as
-        // every other follower in the suite.
+        // "Follow a Clock" needs these to poll/subscribe to the spotlight
+        // transport, same as every other follower in the suite.
         dataManager: ctx.dataManager,
         groupContext: ctx.groupContext,
       }),
@@ -271,14 +258,13 @@ const WIDGET_CATALOG = [
     id: "audioRecorder",
     label: "Audio Recorder",
     icon: "tabler:microphone",
-    // GM-only, local-only recording/transcription — same bar as Lighting
-    // above. One at a time is the sane default for "recording this session's
-    // audio"; revisit `multiple` if a real need for more than one concurrent
-    // recording ever comes up. groupId/shareToken ARE passed through now
-    // (unlike most of this widget's own local-only design) — only for its
-    // combined session-record export, which reads (never writes) the active
-    // campaign's own Game Log to interleave with the transcript; nothing
-    // about the recording itself becomes shared/server-side because of this.
+    // GM-only, local-only recording/transcription — same bar as Lighting.
+    // One at a time is the sane default; revisit `multiple` if a real need
+    // for concurrent recording comes up. groupId/shareToken ARE passed
+    // through (unlike most of this widget's local-only design) — only for
+    // its combined session-record export, which reads (never writes) the
+    // active campaign's Game Log to interleave with the transcript;
+    // nothing about the recording itself becomes shared/server-side.
     canAdd: () => dataManager.meetsTier("gm"),
     init: (container, ctx) =>
       initAudioRecorderWidget(container, {
@@ -296,12 +282,11 @@ const WIDGET_CATALOG = [
     icon: "tabler:layout-kanban",
     multiple: true,
     // No Library kind of its own — like Clock, the whole board (name +
-    // buckets + cards) lives directly in this instance's own contentRef
-    // (see board.js's own header comment). Generalizes what used to be two
-    // separate widgets: a hand-curated reference/link board, and the old
-    // Macro board (now retired — a card whose whole text is one
-    // `` `macro:Name` `` reference renders as the same kind of big
-    // icon+color button that widget used to show).
+    // buckets + cards) lives directly in this instance's contentRef.
+    // Generalizes what used to be two separate widgets: a hand-curated
+    // reference/link board, and the old Macro board (retired — a card
+    // whose whole text is one `` `macro:Name` `` reference renders as the
+    // same big icon+color button that widget used to show).
     init: (container, ctx) =>
       initBoardWidget(container, {
         contentRef: ctx.contentRef,
@@ -313,22 +298,20 @@ const WIDGET_CATALOG = [
         instanceId: ctx.instanceId,
         // Auto-adds a live control surface (WLED/Soundboard/Combat) for
         // whatever a macro action just touched, if one isn't already on
-        // this dashboard — see ensureWidgetForMacroAction's own comment.
+        // this dashboard.
         ensureWidget: ensureWidgetForMacroAction,
-        // Live-read, not the mount-time snapshot — see buildCtx's own
-        // comment. Clicking a macro-button card while rearranging the
-        // layout makes no sense as "run the real macro" (lights/sound
-        // firing for real while you're just dragging cards around);
+        // Live-read, not the mount-time snapshot. Clicking a macro-button
+        // card while rearranging the layout shouldn't run the real macro
+        // (lights/sound firing while you're just dragging cards around);
         // board.js checks this at click time to redirect to Loom's Macro
-        // editor instead — same behavior the old Macro board widget had.
+        // editor instead, same behavior the old Macro board widget had.
         isEditing: ctx.isEditing,
-        // Keeps this dashboard's own in-memory wledDevices (read by the WLED
-        // widget's own rendering) in sync the instant a macro-button card's
-        // click resolves an unconfigured alias via wled.js's own
-        // promptForWledAlias — otherwise an already-mounted WLED widget
-        // wouldn't reflect the new alias until a full reload. The alias
-        // itself is ALWAYS persisted durably regardless (saveWledDevices,
-        // called from inside the prompt) — this is purely a live-cache sync.
+        // Keeps this dashboard's in-memory wledDevices (read by the WLED
+        // widget's rendering) in sync the instant a macro-button card
+        // resolves an unconfigured alias via wled.js's promptForWledAlias
+        // — otherwise an already-mounted WLED widget wouldn't reflect the
+        // new alias until a full reload. The alias is ALWAYS persisted
+        // durably regardless; this is purely a live-cache sync.
         onWledDevicesChange: persistWledDevices,
       }),
   },
@@ -337,18 +320,18 @@ const WIDGET_CATALOG = [
     label: "Handout",
     icon: "tabler:file-text",
     multiple: true,
-    // Unlike the old Card widget (addableFromToolbar: false — it only ever
-    // got added via acceptSpotlight, with a contentRef already in hand), a
-    // Handout is directly addable: openHandoutPicker lets the GM pick the
-    // record + a print template right from the toolbar, since this widget IS
-    // now the "show something to the table" entry point (see handout.js's
-    // own header comment) — there's no separate per-tool button anymore.
+    // Unlike the old Card widget (addableFromToolbar: false — only added
+    // via acceptSpotlight, with a contentRef already in hand), a Handout is
+    // directly addable: openHandoutPicker lets the GM pick the record + a
+    // print template right from the toolbar, since this widget IS the
+    // "show something to the table" entry point — no separate per-tool
+    // button anymore.
     pickContentRef: (ctx) => openHandoutPicker({ dataManager: ctx.dataManager }),
     init: (container, ctx) => {
-      // Only the group's own GM can toggle table visibility — a player who
-      // accepted someone else's spotlighted Handout onto their own
-      // dashboard has no spotlight to control. Also always false inside the
-      // second-screen mirror (forcePlayerView) — see buildCtx's own comment.
+      // Only the group's GM can toggle table visibility — a player who
+      // accepted someone else's spotlighted Handout has no spotlight to
+      // control. Also always false inside the second-screen mirror
+      // (forcePlayerView).
       const canToggleVisibility = ctx.groupContext?.access === "owner" && !ctx.forcePlayerView;
       return initHandoutWidget(container, {
         dataManager: ctx.dataManager,
@@ -362,12 +345,10 @@ const WIDGET_CATALOG = [
         forcePlayerView: ctx.forcePlayerView,
         plainMountContainer: ctx.plainMountContainer,
         // A Journal page rendered in here can embed its own `` `macro:...` ``
-        // triggers (journal-macro.js) — this is what gives THOSE the same
-        // "auto-add/reuse a live control surface" treatment the Macro board
-        // widget's own runs already get, instead of always falling back to
-        // the standalone, no-widget-grid path. See ensureWidgetForMacroAction's
-        // own comment; only ever wired up for a real widget grid to add to,
-        // same restriction as the Macro board's own use of it.
+        // triggers — this gives THOSE the same "auto-add/reuse a live
+        // control surface" treatment the Macro board's own runs get,
+        // instead of always falling back to the standalone, no-widget-grid
+        // path.
         ensureWidget: ensureWidgetForMacroAction,
       });
     },
@@ -404,11 +385,10 @@ const WIDGET_CATALOG = [
         setRightAction: ctx.setRightAction,
         canToggleVisibility,
         editing: ctx.editing,
-        // The sibling half of Combat Tracker's own resolveActiveMapId —
-        // see that widget's own init option comment. A marker click always
-        // FORCE-selects (never toggles/deselects on a second click of the
-        // same marker) — that's Combat Tracker's own selectCombatantByRef
-        // decision, not this callback's.
+        // The sibling half of Combat Tracker's own resolveActiveMapId. A
+        // marker click always FORCE-selects (never toggles/deselects on a
+        // second click) — that's selectCombatantByRef's decision, not
+        // this callback's.
         onMarkerSelected: (refKind, refId, linkedCombatantId) =>
           findActiveWidgetInstance("combat")?.selectCombatantByRef(refKind, refId, linkedCombatantId),
       });
@@ -430,9 +410,8 @@ const WIDGET_CATALOG = [
     label: "Browser",
     icon: "tabler:world",
     multiple: true,
-    // No pickContentRef — unlike Handout/Map, there's no existing record to
-    // pick from at all (see browser.js's own header comment); it's added
-    // blank and the GM pastes a URL directly into the widget itself.
+    // No pickContentRef — unlike Handout/Map, there's no existing record
+    // to pick from; it's added blank and the GM pastes a URL directly in.
     init: (container, ctx) =>
       initBrowserWidget(container, {
         contentRef: ctx.contentRef,
@@ -455,44 +434,36 @@ const WIDGET_CATALOG = [
     icon: "tabler:swords",
     // Tier OR campaign ownership — either qualifies. A gm+/creator+/admin
     // account can always add one; so can a player-tier account that GMs
-    // their own active campaign (ctx.groupContext.access === "owner", the
-    // same role-based signal this catalog entry's own mode below already
-    // uses) — a mere player joining someone else's game can't. Matches this
-    // entry's own comment just below on why tier alone can't stand in for
-    // "am I GMing THIS campaign."
+    // their own active campaign (ctx.groupContext.access === "owner") — a
+    // mere player joining someone else's game can't.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // GM vs player mode is which ROLE this viewer has in the active
     // CAMPAIGN (groupContext.access — "owner" means this viewer GMs this
-    // specific group; group-context.js's own comment already names Combat
-    // Tracker's player mode as a consumer), not their account tier. A
-    // gm/creator/admin-tier user who's just a PLAYER in someone else's game
-    // was mounting in "gm" mode here — which never polls the group log for
-    // a spotlighted encounter at all (see combat-tracker.js's init(): gm
-    // mode only ever loads this viewer's own owned encounters) — so their
-    // tracker looked permanently empty no matter what the GM spotlighted.
+    // specific group), not their account tier. A gm/creator/admin-tier
+    // user who's just a PLAYER in someone else's game mounting in "gm"
+    // mode would never poll the group log for a spotlighted encounter
+    // (combat-tracker.js's gm mode only loads this viewer's own owned
+    // encounters), so their tracker would look permanently empty no
+    // matter what the GM spotlighted.
     init: (container, ctx) =>
       initCombatTrackerWidget(container, {
         dataManager: ctx.dataManager,
         status: ctx.status,
         // Also always "player" inside the second-screen mirror
-        // (forcePlayerView), regardless of who opened it — see buildCtx's
-        // own comment.
+        // (forcePlayerView), regardless of who opened it.
         mode: ctx.forcePlayerView ? "player" : ctx.groupContext?.access === "owner" ? "gm" : "player",
         groupId: ctx.groupContext?.groupId || "",
         shareToken: ctx.groupContext?.shareToken || ctx.shareParam || "",
         encounterId: ctx.encounterParam || "",
         setRightAction: ctx.setRightAction,
         // Lets a GM prep "hidden from players" state on a map BEFORE
-        // spotlighting it (a real, common workflow — see combat-tracker.js's
-        // own isCombatantHiddenFromPlayers comment) by resolving straight
-        // off a live Map widget elsewhere on THIS SAME dashboard, the same
-        // findActiveWidgetInstance mechanism Clock/Calendar/WLED/Soundboard
-        // macro actions already use to find a sibling widget — combat-
-        // tracker.js falls back to the spotlighted map (resolveActiveSpotlightId)
-        // when this returns nothing, e.g. no Map card is open right now, or
-        // in player mode (never passed there — a player can't legitimately
-        // see anything that isn't spotlighted anyway, so spotlight alone is
-        // already correct for them).
+        // spotlighting it by resolving straight off a live Map widget
+        // elsewhere on THIS SAME dashboard, the same findActiveWidgetInstance
+        // mechanism Clock/Calendar/WLED/Soundboard macro actions use to
+        // find a sibling widget — combat-tracker.js falls back to the
+        // spotlighted map when this returns nothing (no Map card open, or
+        // in player mode, never passed there since a player can't see
+        // anything that isn't spotlighted anyway).
         resolveActiveMapId:
           ctx.groupContext?.access === "owner" ? () => findActiveWidgetInstance("map")?.mapId || "" : undefined,
       }),
@@ -502,13 +473,12 @@ const WIDGET_CATALOG = [
     label: "Clock",
     icon: "tabler:clock",
     multiple: true,
-    // Authoring a clock touches no Library kind at all — it's just {name,
+    // Authoring a clock touches no Library kind — it's just {name,
     // segments, filled, direction}, small enough to live entirely in this
-    // instance's own contentRef (see setContentRef below) rather than
-    // round-tripping through a server-backed kind. Purely local to this
-    // GM's own dashboard, same as Dice Roller — except for the visibility
-    // toggle (below), which is the one time clocks.js briefly touches a
-    // disposable "clock" record; see that file's own comment.
+    // instance's own contentRef rather than round-tripping through a
+    // server-backed kind. Purely local to this GM's dashboard, same as
+    // Dice Roller — except for the visibility toggle below, which is the
+    // one time clocks.js briefly touches a disposable "clock" record.
     init: (container, ctx) =>
       initClockWidget(container, {
         contentRef: ctx.contentRef,
@@ -529,15 +499,12 @@ const WIDGET_CATALOG = [
     label: "Calendar",
     icon: "tabler:calendar-time",
     multiple: true,
-    // Tier OR campaign ownership — same rule/reasoning as Combat Tracker's
-    // own canAdd just above.
+    // Tier OR campaign ownership — same rule as Combat Tracker's canAdd.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
-    // No pickContentRef any more — the Setting this widget tracks a day
-    // count against is now the campaign's own ambient one (whatever the
-    // active Group's own settingId is, same tier as its systemId), not a
-    // per-widget pick. contentRef only still holds this instance's own
-    // display preferences (whether to show/auto-tick time of day) — see
-    // calendar.js's own header comment.
+    // No pickContentRef — the Setting this widget tracks a day count
+    // against is the campaign's own ambient one (the active Group's
+    // settingId), not a per-widget pick. contentRef only holds this
+    // instance's own display preferences (show/auto-tick time of day).
     init: (container, ctx) =>
       initCalendarWidget(container, {
         contentRef: ctx.contentRef,
@@ -559,16 +526,14 @@ const WIDGET_CATALOG = [
     label: "Soundboard",
     icon: "tabler:music",
     multiple: true,
-    // Tier OR campaign ownership — same rule/reasoning as Combat Tracker's
-    // own canAdd above.
+    // Tier OR campaign ownership — same rule as Combat Tracker's canAdd.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
-    // No pickContentRef, and the widget itself never calls setContentRef —
-    // clip definitions live in a shared, server-persisted library
-    // (audio-clip-library.js) now, not per-instance, so there's nothing of
-    // its own left to persist. contentRef is still threaded through and
-    // read (for the accepted-follower `{followKind, followId}` shape
-    // acceptSpotlight hands a new instance — see this widget's own entry
-    // point), just never written back.
+    // No pickContentRef, and the widget never calls setContentRef — clip
+    // definitions live in a shared, server-persisted library
+    // (audio-clip-library.js), not per-instance. contentRef is still
+    // threaded through and read (for the accepted-follower
+    // `{followKind, followId}` shape acceptSpotlight hands a new
+    // instance), just never written back.
     init: (container, ctx) =>
       initSoundboardWidget(container, {
         contentRef: ctx.contentRef,
@@ -589,10 +554,9 @@ function findCatalogEntry(widgetType) {
   return WIDGET_CATALOG.find((entry) => entry.id === widgetType);
 }
 
-// Used by Map's own `pickContentRef` above — opens the generic "pick one of
-// my saved records" modal (content-picker.js) and wraps the chosen id as a
-// contentRef, or returns null if the user cancelled (populateAddToolbar's
-// click handler treats null as "don't add anything").
+// Used by Map's `pickContentRef` above — opens the generic "pick one of my
+// saved records" modal and wraps the chosen id as a contentRef, or returns
+// null if cancelled (populateAddToolbar treats null as "don't add anything").
 async function pickLibraryContentRef(dataManager, kind, title) {
   const id = await openContentPicker({ dataManager, kind, title });
   return id ? { id } : null;
@@ -602,19 +566,16 @@ function generateInstanceId() {
   return `w_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// Accepts a bare catalog-id string (both the pre-instance-model saved shape,
-// and computeDefaultWidgets()'s own return shape) or an already-instance-
-// shaped object (any prior saved shape, with or without colSpan/rowSpan/
-// zoom/col/row), normalizing either into a real instance — or null for an
+// Accepts a bare catalog-id string (both the pre-instance-model saved shape
+// and computeDefaultWidgets()'s return shape) or an already-instance-shaped
+// object, normalizing either into a real instance — or null for an
 // unrecognized/malformed entry (dropped rather than carried forward, e.g. a
 // widgetType removed from WIDGET_CATALOG since a layout was last saved).
-// `col`/`row` are left absent (not defaulted here) when the source doesn't
-// have them — packLayout (below) is what assigns a real position to any
-// entry still missing one, since doing that correctly means knowing about
-// every OTHER widget's position too, not just this one entry in isolation.
-// `columnCount`/`rowCount` bound colSpan/col and rowSpan/row respectively —
-// passed in explicitly (this runs before `layout` itself exists, while
-// normalizeLayout is still building it, so it can't just read
+// `col`/`row` are left absent when the source doesn't have them —
+// packLayout (below) assigns a real position to any entry still missing
+// one, since doing that correctly means knowing every OTHER widget's
+// position too. `columnCount`/`rowCount` are passed in explicitly (this
+// runs before `layout` itself exists, so it can't read
 // getColumnCount()/getRowCount()).
 function normalizeWidgetEntry(raw, columnCount, rowCount) {
   if (typeof raw === "string") {
@@ -642,8 +603,8 @@ function normalizeWidgetEntry(raw, columnCount, rowCount) {
     if (Number.isInteger(raw.col) && Number.isInteger(raw.row)) {
       // Bounded by columnCount/rowCount minus their own span, not just
       // columnCount - 1 — a col/row within range on its own (e.g. 5 of 6)
-      // can still push the widget's own footprint (colSpan 3 from col 5)
-      // past the grid's edge.
+      // can still push the widget's footprint (colSpan 3 from col 5) past
+      // the grid's edge.
       entry.col = clampInt(raw.col, 0, Math.max(0, columnCount - entry.colSpan), 0);
       entry.row = clampInt(raw.row, 0, Math.max(0, rowCount - entry.rowSpan), 0);
     }
@@ -652,22 +613,16 @@ function normalizeWidgetEntry(raw, columnCount, rowCount) {
   return null;
 }
 
-// Assigns col/row to any widget that doesn't already have one (a fresh
-// widgetType-string entry, or one saved before this file tracked position at
-// all — every existing user's layout, the first time it loads after this
-// change), via simple top-left-first shelf packing: scan cells in reading
-// order, place each such widget in the first spot its own colSpan/rowSpan
-// footprint fits without overlapping anything already placed (including
-// OTHER widgets that already have a real position, reserved first so this
-// never displaces them). Existing explicit positions are always left alone —
-// this only ever fills in the gaps, never rearranges what's already placed.
-// `columnCount`/`rowCount` — see normalizeWidgetEntry's own comment on why
-// they're params here rather than getColumnCount()/getRowCount(). Both are
-// now hard boundaries (not just a starting search size) — a widget that
-// genuinely doesn't fit anywhere within them falls back to (0,0), overlapping
-// whatever's there, rather than being placed off-grid; the GM can always
-// grow the grid or move things to make room, same as filling a real grid
-// full of furniture.
+// Assigns col/row to any widget that doesn't already have one, via simple
+// top-left-first shelf packing: scan cells in reading order, place each
+// such widget in the first spot its colSpan/rowSpan footprint fits without
+// overlapping anything already placed (including OTHER widgets that
+// already have a real position, reserved first so this never displaces
+// them). Existing explicit positions are always left alone — this only
+// fills in gaps, never rearranges what's already placed. `columnCount`/
+// `rowCount` are hard boundaries — a widget that doesn't fit anywhere
+// falls back to (0,0), overlapping whatever's there, rather than placed
+// off-grid; the GM can grow the grid or move things to make room.
 function packLayout(widgets, columnCount, rowCount) {
   const occupied = []; // occupied[row] is a Set of occupied columns in that row.
   const isFree = (col, row, colSpan, rowSpan) => {
@@ -712,13 +667,10 @@ function packLayout(widgets, columnCount, rowCount) {
 
 // Accepts the current flat `{widgets: [{instanceId,widgetType,contentRef,
 // colSpan,rowSpan,zoom}, ...]}` shape, the pre-grid `{columns: [[...], ...]}`
-// shape (every existing user's actual saved layout as of this file's own
-// grid rework — flattened here column-major, preserving each column's own
-// top-to-bottom reading order, with normalizeWidgetEntry defaulting the new
-// size fields), or the original pre-columns `{widgets: [id, ...]}` shape
-// (bare string ids — normalizeWidgetEntry handles those too) — so an
-// existing user's customization survives this file's data-model changes
-// instead of being dropped on first load after one.
+// shape (flattened here column-major, preserving each column's top-to-
+// bottom reading order), or the original pre-columns `{widgets: [id, ...]}`
+// shape (bare string ids) — so an existing user's customization survives
+// this file's data-model changes instead of being dropped on first load.
 function normalizeLayout(raw) {
   const columnCount = clampInt(raw?.columnCount, GRID_COLUMN_COUNT_MIN, GRID_COLUMN_COUNT_MAX, DEFAULT_COLUMN_COUNT);
   const rowCount = clampInt(raw?.rowCount, GRID_ROW_COUNT_MIN, GRID_ROW_COUNT_MAX, DEFAULT_ROW_COUNT);
@@ -769,8 +721,8 @@ function saveLocalSetting(key, value) {
   }
 }
 
-// Shared by every persist*() below — local copy always, server copy too once
-// signed in (a merge-patch, so writing one key here never clobbers another).
+// Shared by every persist*() below — local copy always, server copy too
+// once signed in (a merge-patch, so writing one key never clobbers another).
 function persistSetting(localKey, serverKey, value) {
   saveLocalSetting(localKey, value);
   if (dataManager.isAuthenticated()) {
@@ -781,9 +733,8 @@ function persistSetting(localKey, serverKey, value) {
 }
 
 // Only affects the very first load, before anyone has customized anything —
-// an anonymous/no-context visitor now just gets an empty layout (there's no
-// longer a "Jump to a tool" catch-all widget to fall back to; the tool
-// switcher in the header already covers that job). Nothing defaults to a
+// an anonymous/no-context visitor just gets an empty layout (the tool
+// switcher in the header covers "jump to a tool"). Nothing defaults to a
 // Card widget since there's nothing to show one of yet — the Game Log and
 // the spotlight-accept toast (acceptSpotlight below) are how those show up.
 async function computeDefaultWidgets() {
@@ -798,9 +749,9 @@ async function computeDefaultWidgets() {
 }
 
 // One settings fetch (when signed in) backs layout, background, and header
-// title alike, instead of three separate GET /auth/profile/settings round
-// trips for the same blob — see loadLayout/loadBackground/loadHeaderTitle
-// below, each of which takes this as a parameter rather than fetching its own.
+// title alike, instead of three separate round trips for the same blob —
+// loadLayout/loadBackground/loadHeaderTitle below each take this as a
+// parameter rather than fetching their own.
 async function loadServerSettings() {
   if (!dataManager.isAuthenticated()) return null;
   try {
@@ -847,9 +798,9 @@ function applyBackground(color) {
   mainEl.style.backgroundColor = color || "";
 }
 
-// "" means no override — falls back to the computed default (campaign name →
-// signed-in user's name → "Welcome!") every time it's applied, so switching
-// campaigns (via onPinCharacter) or signing in later updates it live.
+// "" means no override — falls back to the computed default (campaign name
+// → signed-in user's name → "Welcome!") every time it's applied, so
+// switching campaigns or signing in later updates it live.
 function loadHeaderTitle(serverSettings) {
   if (typeof serverSettings?.dashboardHeaderTitle === "string") return serverSettings.dashboardHeaderTitle;
   const local = loadLocalSetting("headerTitle");
@@ -865,9 +816,9 @@ function computeDefaultHeaderTitle() {
   if (groupContext?.groupName) return groupContext.groupName;
   const username = dataManager.session?.user?.username;
   if (username) return username;
-  // No campaign, not signed in — the exact same condition
-  // shouldShowWelcomeScreen checks (that one also requires an empty
-  // layout), so this heading and the welcome cards below it always agree.
+  // No campaign, not signed in — the same condition shouldShowWelcomeScreen
+  // checks (which also requires an empty layout), so this heading and the
+  // welcome cards below it always agree.
   return "Welcome!";
 }
 
@@ -908,13 +859,11 @@ function loadWledDevices(serverSettings) {
 
 // Delegates to wled.js's own saveWledDevices rather than the generic
 // persistSetting helper every other Dashboard setting uses — that module
-// owns the exact two key strings ("undercroft.dashboard.wledDevices" local /
-// "dashboardWledDevices" server) this function's own literals used to
-// duplicate, and promptForWledAlias (wled.js, invoked from anywhere a macro
-// runs — see macro-runner.js's own runMacro) needs to write through that
-// exact same pair too. One canonical read/write path for this one setting,
-// not two independently-typed copies of the same key names that could
-// quietly drift apart.
+// owns the exact two key strings this function's literals used to
+// duplicate, and promptForWledAlias (invoked from anywhere a macro runs)
+// needs to write through that same pair too. One canonical read/write
+// path for this setting, not two copies of the same key names that could
+// drift apart.
 function persistWledDevices(devices) {
   wledDevices = Array.isArray(devices) ? devices : [];
   void saveWledDevices(dataManager, wledDevices).catch((error) => {
@@ -922,14 +871,10 @@ function persistWledDevices(devices) {
   });
 }
 
-// Which widget type a spotlighted library kind turns into on Accept. Was
-// missing "journal" — handout.js's own HANDOUT_KINDS (its picker's real,
-// full list of spotlightable kinds) includes it alongside npc/location/
-// monster/wonder, but it had no entry here at all. Confirmed real bug:
-// spotlighting a Journal page as a Handout produced a real `spotlight` log
-// entry same as any other kind, but acceptSpotlight below bailed silently
-// the instant `KIND_WIDGET_MAP[kind]` came back undefined — no prompt, no
-// Game Log toggle, no error, nothing.
+// Which widget type a spotlighted library kind turns into on Accept —
+// covers every kind in handout.js's own HANDOUT_KINDS (npc/location/
+// monster/wonder/journal); a kind missing here makes acceptSpotlight below
+// bail silently with no prompt, no toggle, no error.
 const KIND_WIDGET_MAP = {
   npc: "handout",
   location: "handout",
@@ -949,31 +894,26 @@ const KIND_WIDGET_MAP = {
 // _INLINE_SPOTLIGHT_KINDS) — accepting one of these can't hand the new
 // widget a `{kind, id, templateId}` contentRef to fetch, since there's
 // nothing to fetch; instead it becomes a read-only follower that polls the
-// spotlight entry's own inline `data` (spotlight.js's resolveSpotlightData).
-// `shop` piggybacks on this same list for a different reason — see
-// game-log.js's own SPOTLIGHT_INLINE_KINDS comment (the shared superset this
-// mirrors): its `id` is a real Location id, not an ephemeral instance to
-// follow, but there's still no "shop" Library record to fetch a title for,
-// so acceptSpotlight below hands it the exact same `{followId: id}` shape
-// (shop.js just reads it straight, it never actually polls a leader).
+// spotlight entry's own inline `data`. `shop` piggybacks on this same list
+// for a different reason: its `id` is a real Location id, not an ephemeral
+// instance to follow, but there's still no "shop" Library record to fetch
+// a title for, so acceptSpotlight below hands it the same `{followId: id}`
+// shape (shop.js just reads it straight, never polls a leader).
 const INLINE_FOLLOW_KINDS = new Set(["clock", "browser", "calendar", "soundboard", "shop"]);
 
-// Widget types that auto-discover whatever's currently spotlighted on their
-// own poll/live-stream cycle (combat-tracker.js's resolveActiveEncounterId)
-// — accepting one of these just means "make sure one instance exists,"
-// never a contentRef.
+// Widget types that auto-discover whatever's currently spotlighted on
+// their own poll/live-stream cycle — accepting one of these just means
+// "make sure one instance exists," never a contentRef.
 const AUTO_DISCOVER_WIDGET_TYPES = new Set(["combat"]);
 
-// Widget types with their own "show to table" visibility toggle (handout/
-// map/clock/browser via canToggleVisibility, combat via its own internal
-// mode-gated eye icon) — exactly the ones eligible to appear on the
-// second-screen mirror (renderScreenView), since a widget type with no
-// visibility concept at all (character/gamelog/diceroller) has no notion
-// of "shown to table."
+// Widget types with their own "show to table" visibility toggle — exactly
+// the ones eligible to appear on the second-screen mirror, since a widget
+// type with no visibility concept (character/gamelog/diceroller) has no
+// notion of "shown to table."
 const TABLE_WIDGET_TYPES = new Set(["handout", "map", "clock", "combat", "browser", "calendar", "soundboard", "shop"]);
 
-// Widget types that never get the per-widget zoom stepper at all (no zoom
-// control shown, always mounted unzoomed) — CSS zoom conflicts with
+// Widget types that never get the per-widget zoom stepper (no zoom control
+// shown, always mounted unzoomed) — CSS zoom conflicts with
 // JS-measurement-based scaling for these. Handout opts individual content
 // out itself (ctx.plainMountContainer) since only SOME of what it renders
 // (Press-templated cards) has that same conflict — journal pages don't.
@@ -981,27 +921,22 @@ const ZOOM_EXCLUDED_WIDGET_TYPES = new Set(["map"]);
 
 // Resource title lookup, shared by the spotlight panel's own tooltips and
 // the Game Log's per-entry detail text — one cache, not two independently-
-// fetched copies. Also shared, literally (not just in shape), with
-// Workbench's own read-only "Now Showing" panel — see spotlight.js's own
-// createSpotlightTitleCache. Only meaningful for Library-backed kinds (npc/
-// location/monster/wonder/journal/map/encounter — all real, individually
-// fetchable Library records); the four inline kinds (clock/browser/calendar/
-// soundboard) have no record to fetch at all, see game-log.js's own
-// SPOTLIGHT_INLINE_KINDS.
+// fetched copies. Also shared, literally, with Workbench's read-only "Now
+// Showing" panel. Only meaningful for Library-backed kinds (npc/location/
+// monster/wonder/journal/map/encounter); the four inline kinds have no
+// record to fetch at all.
 const spotlightTitleCache = createSpotlightTitleCache(dataManager, () => groupContext?.shareToken || shareParam);
 
-// The Dashboard's own floating "what's shown to the table" icon strip —
-// see spotlight-panel.js's own createSpotlightPanel for why this is a
-// factory now (Workbench mounts a second, independent, non-floating,
-// read-only instance of the exact same renderer for its own Now Showing
-// section) rather than the bare singleton this used to be.
+// The Dashboard's floating "what's shown to the table" icon strip —
+// createSpotlightPanel is a factory (Workbench mounts a second,
+// independent, non-floating, read-only instance of the same renderer for
+// its own Now Showing section) rather than the bare singleton it used to be.
 const spotlightPanel = createSpotlightPanel();
 
 // Given {kind,id} from a spotlight's own payload, does THIS viewer already
 // have a matching widget on their own dashboard — the inverse question of
-// isInstanceSpotlighted below (which starts from a widget and asks "is it
-// currently the active spotlight"). Mirrors acceptSpotlight's own kind
-// branching exactly (same three cases: auto-discover, inline-follow, plain
+// "is it currently the active spotlight." Mirrors acceptSpotlight's own
+// kind branching exactly (auto-discover, inline-follow, plain
 // contentRef-matched), since "am I showing this" and "would accepting this
 // be a no-op" are the same underlying question from opposite directions.
 function isSpotlightItemOnMyDashboard({ kind, id }) {
@@ -1018,11 +953,11 @@ function isSpotlightItemOnMyDashboard({ kind, id }) {
     );
   }
   if (widgetType === "map") {
-    // Map's own toolbar pickContentRef (pickLibraryContentRef) hands back a
+    // Map's toolbar pickContentRef (pickLibraryContentRef) hands back a
     // bare {id} — NOT {kind,id,templateId} like every other non-inline,
-    // non-auto-discover kind below. A GM's own directly-added map has
-    // contentRef.kind === undefined; matching on contentRef.kind here would
-    // wrongly report their own map as "not on my dashboard."
+    // non-auto-discover kind below. A GM's directly-added map has
+    // contentRef.kind === undefined; matching on contentRef.kind here
+    // would wrongly report their own map as "not on my dashboard."
     return layout.widgets.some((instance) => instance.widgetType === "map" && instance.contentRef?.id === id);
   }
   return layout.widgets.some(
@@ -1032,20 +967,16 @@ function isSpotlightItemOnMyDashboard({ kind, id }) {
 
 // The "toggle off" half — finds and removes whatever widget instance
 // isSpotlightItemOnMyDashboard just confirmed exists, using the identical
-// matching rules. Combat (kind "encounter") only special-cases the GM: their
-// own Combat Tracker widget doubles as the thing announcing the encounter to
-// the table, so its own destroy(removed) (combat-tracker.js) clears the
-// spotlight for the WHOLE table the moment it's removed — too big a
-// surprise for what looks like a lightweight "take this off just my own
-// dashboard" toggle, so the GM has to use the widget's own Remove button
-// instead, where that consequence is unambiguous. A PLAYER's own Combat
-// Tracker instance has no such side effect (destroy(removed)'s
-// clearSpotlight branch is gated on mode === "gm", which a player's never
-// is) — removing theirs is exactly as safe and local as removing a Map,
-// confirmed real bug this fixes: this used to block everyone unconditionally,
-// so a player toggling combat off got the same "go remove the widget
-// yourself" refusal a GM's own genuinely-riskier action needs, for an
-// action that was actually perfectly safe for them.
+// matching rules. Combat (kind "encounter") only special-cases the GM:
+// their own Combat Tracker widget doubles as the thing announcing the
+// encounter to the table, so its own destroy(removed) clears the spotlight
+// for the WHOLE table the moment it's removed — too big a surprise for a
+// lightweight "take this off just my dashboard" toggle, so the GM has to
+// use the widget's own Remove button instead, where that consequence is
+// unambiguous. A PLAYER's own Combat Tracker instance has no such side
+// effect (destroy(removed)'s clearSpotlight branch is gated on
+// mode === "gm") — removing theirs is exactly as safe and local as
+// removing a Map.
 function removeSpotlightItemFromDashboard({ kind, id }) {
   const widgetType = KIND_WIDGET_MAP[kind];
   if (widgetType === "combat") {
@@ -1068,14 +999,13 @@ function removeSpotlightItemFromDashboard({ kind, id }) {
   if (instance) removeWidget(instance.instanceId);
 }
 
-// The single accept path both the spotlight panel and the Game Log widget's
-// own clickable icon call when a spotlighted item isn't yet on this
-// dashboard — "one accept path, multiple places to trigger it."
+// The single accept path both the spotlight panel and the Game Log
+// widget's clickable icon call when a spotlighted item isn't yet on this
+// dashboard — one accept path, multiple places to trigger it.
 function acceptSpotlight({ kind, id, templateId }) {
   // Idempotent — a real two-way toggle (toggleSpotlightItem below) needs
   // "accept something already accepted" to be a safe no-op, not a
-  // duplicate widget instance. Confirmed real gap before this: neither this
-  // function nor addWidget ever checked for an existing match.
+  // duplicate widget instance.
   if (isSpotlightItemOnMyDashboard({ kind, id })) return;
   const widgetType = KIND_WIDGET_MAP[kind];
   if (!widgetType || !findCatalogEntry(widgetType)) {
@@ -1086,9 +1016,8 @@ function acceptSpotlight({ kind, id, templateId }) {
     addWidget(widgetType);
   } else if (INLINE_FOLLOW_KINDS.has(kind)) {
     // No Library record to reference here — `id` is the GM's own widget
-    // instance id, and the follower just polls that instance's own spotlight
-    // entry for its latest `data` (see clocks.js/browser.js's own follower
-    // paths, and spotlight.js's resolveSpotlightData).
+    // instance id, and the follower just polls that instance's spotlight
+    // entry for its latest `data`.
     addWidget(widgetType, { followKind: kind, followId: id });
   } else {
     addWidget(widgetType, { kind, id, templateId: templateId || "" });
@@ -1115,11 +1044,10 @@ let lastActiveSpotlights = [];
 let knownActiveSpotlightKeys = new Set();
 function refreshSpotlightPanel(activeEntries) {
   if (Array.isArray(activeEntries)) lastActiveSpotlights = activeEntries;
-  // A spotlight flagged data.hidden (combat-tracker.js's own hideFromTable
-  // — "run this encounter without showing it to the table," while staying
+  // A spotlight flagged data.hidden (combat-tracker.js's hideFromTable —
+  // "run this encounter without showing it to the table," while staying
   // findable for character-sheet.js's own initiative push) is deliberately
-  // invisible everywhere, not just to players — no icon, no flourish, full
-  // stop, per the confirmed intent behind that flag.
+  // invisible everywhere, not just to players — no icon, no flourish.
   const items = lastActiveSpotlights
     .filter((entry) => entry.payload?.data?.hidden !== true)
     .map((entry) => {
@@ -1128,12 +1056,10 @@ function refreshSpotlightPanel(activeEntries) {
     const key = `${kind}:${id}`;
     const widgetType = KIND_WIDGET_MAP[kind];
     const catalogEntry = widgetType ? findCatalogEntry(widgetType) : null;
-    // Only Library-backed kinds have a record to fetch a title from at all
-    // — confirmed real bug: calling this unconditionally for an inline kind
-    // (clock/browser/calendar/soundboard, which spotlight by this widget's
-    // own instanceId, not a Library record id) fired a doomed
-    // GET /content/soundboard/<instanceId> every single poll, 404-ing
-    // forever since no such record has ever existed.
+    // Only Library-backed kinds have a record to fetch a title from — an
+    // inline kind (clock/browser/calendar/soundboard) spotlights by this
+    // widget's own instanceId, not a Library record id, so calling this
+    // unconditionally would fire a doomed fetch every poll, 404-ing forever.
     if (!INLINE_FOLLOW_KINDS.has(kind)) {
       spotlightTitleCache.ensure(kind, id, () => refreshSpotlightPanel());
     }
@@ -1154,16 +1080,14 @@ function refreshSpotlightPanel(activeEntries) {
   // mid-animation could be cut off by the very click that triggered it.
   if (Array.isArray(activeEntries)) knownActiveSpotlightKeys = new Set(items.map((item) => item.key));
   // Force-clear is a destructive, table-wide action (removes it from
-  // EVERYONE's view, not just this viewer's own dashboard) — gating it on
-  // `editing` alone was wrong: that flag just means "I'm customizing MY OWN
-  // dashboard layout," which any player can trivially turn on. Confirmed
-  // real bug: a plain player, in their own layout-edit mode, got the same
-  // "x" force-clear badge a GM does. Scoped to groupContext.access ===
-  // "owner" (the GM of THIS specific active campaign) — not
-  // dataManager.meetsTier("gm"), which every widget-add gate elsewhere uses
-  // instead: a gm-tier account who merely joined someone else's campaign as
-  // a player has no more business force-clearing that table's spotlights
-  // than any other player does.
+  // EVERYONE's view, not just this viewer's dashboard) — gating it on
+  // `editing` alone would be wrong: that flag just means "I'm customizing
+  // MY OWN dashboard layout," which any player can trivially turn on.
+  // Scoped to groupContext.access === "owner" (the GM of THIS specific
+  // active campaign) — not dataManager.meetsTier("gm"), since a gm-tier
+  // account who merely joined someone else's campaign as a player has no
+  // more business force-clearing that table's spotlights than any other
+  // player does.
   spotlightPanel.render(items, {
     onToggle: toggleSpotlightItem,
     onClear: forceClearSpotlight,
@@ -1172,16 +1096,12 @@ function refreshSpotlightPanel(activeEntries) {
 }
 
 // The "little red X" escape hatch — force-clears a spotlight log entry
-// directly, bypassing the whole widget-instance/ownership question
-// entirely. Only shown (spotlight-panel.js) in edit mode, for exactly the
-// case toggleSpotlightItem/removeSpotlightItemFromDashboard can't already
-// handle cleanly: a STALE or orphaned spotlight — e.g. from before a given
-// widget type's own destroy(removed) learned to clear itself, or from a
-// kind this dashboard's normal add/remove machinery can't resolve to a
-// specific widget instance at all. Confirmed real need: an old encounter/
-// soundboard spotlight from earlier testing, left behind by a gap this
-// session's own destroy(removed) fixes don't retroactively cover, showed up
-// in the panel with no live widget anywhere to toggle it via.
+// directly, bypassing the whole widget-instance/ownership question. Only
+// shown in edit mode, for exactly the case toggleSpotlightItem/
+// removeSpotlightItemFromDashboard can't already handle cleanly: a STALE or
+// orphaned spotlight — e.g. from before a widget type's destroy(removed)
+// learned to clear itself, or a kind this dashboard's normal add/remove
+// machinery can't resolve to a specific widget instance at all.
 function forceClearSpotlight({ kind, id }) {
   const groupId = groupContext?.groupId;
   if (!groupId) return;
@@ -1209,22 +1129,19 @@ function startSpotlightPanelWatcher() {
   });
 }
 
-// Broadcast-mode dice rolls/card draws (Cards/Decks plan, Parts 2/5) need to
-// reach every Dashboard tab watching this campaign, not just tabs that
-// happen to have the Game Log widget mounted (confirmed: a player without
-// Game Log open never opens the live-stream connection at all, so a
-// subscription living inside game-log.js's own init never runs for them).
-// Both reveal overlays are page-level singletons regardless of which
-// widget's code triggers them, so the subscription belongs at the same page
-// level — started once per groupContext, mirroring startSpotlightPanelWatcher
-// just above. Cards were originally delivered through the spotlight
-// mechanism instead (a "card" spotlight kind) — confirmed real bug with that
-// design: spotlight is persistent "currently shown to the table" state, so
-// a draw kept replaying on every later page load until explicitly cleared,
-// and cluttered the "what's shown to the table" icon tray with an entry
-// nobody could do anything with. Both now use this same ephemeral,
-// never-persisted broadcast shape instead — nothing to clear, nothing to
-// replay, nothing in the tray.
+// Broadcast-mode dice rolls/card draws need to reach every Dashboard tab
+// watching this campaign, not just tabs that happen to have the Game Log
+// widget mounted — a player without Game Log open never opens the
+// live-stream connection, so a subscription living inside game-log.js's
+// own init would never run for them. Both reveal overlays are page-level
+// singletons regardless of which widget's code triggers them, so the
+// subscription belongs at the same page level — started once per
+// groupContext, mirroring startSpotlightPanelWatcher above. Cards were
+// originally delivered through the spotlight mechanism instead (a "card"
+// spotlight kind) — spotlight is persistent "currently shown" state, so a
+// draw kept replaying on every later page load until explicitly cleared,
+// and cluttered the icon tray with an entry nobody could act on. Both now
+// use this ephemeral, never-persisted broadcast shape instead.
 function startDiceRevealWatcher() {
   diceRevealLiveStream?.close();
   const currentUserId = dataManager.session?.user?.id ?? null;
@@ -1244,11 +1161,10 @@ function startDiceRevealWatcher() {
     if (currentUserId != null && payload?.by === currentUserId) return;
     playCardReveal({ cards: payload?.cards, backImage: payload?.backImage });
   });
-  // Shapes & Effects plan, Part 5 — a GM's Orrery "Play" button or a macro's
-  // "Trigger an effect" action both post this. Only a Map widget instance
-  // that's actually showing the SAME map the effect lives on can do anything
-  // with it; any other mounted Map (or none at all) just sees nothing, same
-  // as pings.
+  // A GM's Orrery "Play" button or a macro's "Trigger an effect" action
+  // both post this. Only a Map widget instance actually showing the SAME
+  // map the effect lives on can do anything with it; any other mounted Map
+  // (or none) just sees nothing, same as pings.
   diceRevealLiveStream.subscribe("effectTrigger", (payload) => {
     if (currentUserId != null && payload?.by === currentUserId) return;
     const mapApi = findActiveWidgetInstance("map");
@@ -1260,12 +1176,9 @@ function startDiceRevealWatcher() {
 
 // Registered once (not re-added on every campaign switch — always reads
 // spotlightPanelWatcher fresh via closure) — reacts to THIS tab's own
-// dataManager.spotlightToGroup/clearSpotlight calls (data-manager.js's own
-// _emit) with an immediate re-fetch, instead of leaving the GM's own "show
-// to table" action waiting on the panel's own poll/live-stream cadence to
-// notice. Confirmed real complaint: a several-second gap between toggling a
-// widget's own visibility and the icon tray reflecting it read as "is this
-// even working."
+// dataManager.spotlightToGroup/clearSpotlight calls with an immediate
+// re-fetch, instead of leaving the "show to table" action waiting on the
+// panel's own poll/live-stream cadence, which read as "is this even working."
 window.addEventListener("undercroft:spotlight-changed", () => {
   spotlightPanelWatcher?.refresh();
 });
@@ -1282,39 +1195,33 @@ let groupContext = null;
 let background = "";
 let headerTitleOverride = "";
 let pinnedHelpTopics = [];
-// Known WLED devices ({ip,label}) — account-wide (GM-tied, not per-widget-
-// card or per-suite) via persistSetting, same local+server merge-patch sync
-// every other setting on this page uses. Which one a given WLED widget CARD
-// is showing/controlling is separate, per-instance state (see that widget's
-// own contentRef) — see wled.js's own header comment for the full split.
+// Known WLED devices ({ip,label}) — account-wide via persistSetting, same
+// local+server merge-patch sync every other setting on this page uses.
+// Which one a given WLED widget CARD is showing/controlling is separate,
+// per-instance state (see that widget's own contentRef).
 let wledDevices = [];
 let selectedWidgetInstanceId = "";
 let editing = false;
 const mounted = new Map(); // instanceId -> { destroy() }
-// instanceId -> the widget's own already-mounted card element — kept
-// separately from `mounted` (which is api/destroy-focused) because
-// renderWidgetGrid needs to move these between anchor wrappers on every
-// reposition/resize without re-mounting (losing polling/listeners/etc).
+// instanceId -> the widget's already-mounted card element — kept
+// separately from `mounted` (api/destroy-focused) because renderWidgetGrid
+// needs to move these between anchor wrappers on every reposition/resize
+// without re-mounting (losing polling/listeners/etc).
 const cardElements = new Map();
-// zone element -> its own Sortable instance (createSortable, dnd.js), one
-// per `[data-grid-zone]" — torn down and rebuilt each time renderWidgetGrid
-// runs (see that function's own comment).
+// zone element -> its own Sortable instance, one per `[data-grid-zone]` —
+// torn down and rebuilt each time renderWidgetGrid runs.
 const gridZoneRegistry = new Map();
 
 // Built and mounted before the querySelector("[data-*]") lines below query
 // for these buttons, so every existing selector/event-listener call site
-// elsewhere in this file keeps working unchanged. Dashboard's chrome uses
-// its own `btn-dark` color (not the generator tools' outline-secondary/
-// primary/success/danger palette) and top-placed tooltips (not the other
-// tools' bottom) — both passed as explicit overrides rather than through
-// ACTION_PRESETS/kind defaults, which assume the generator-tool convention.
-// GM-and-above only — a second screen/TV mirror is a table-running tool, not
-// something a player-tier account has any use for. Simply never mounted
-// below that tier, rather than mounted-but-hidden — screenViewButton (below)
-// ends up null for everyone else, and every other reference to it already
-// null-checks/optional-chains (updateScreenToggleState's own early return,
-// the click listener's `?.`), so nothing else needs to change to accommodate
-// that.
+// keeps working unchanged. Dashboard's chrome uses its own `btn-dark`
+// color and top-placed tooltips — passed as explicit overrides rather than
+// through ACTION_PRESETS/kind defaults, which assume the generator-tool
+// convention. GM-and-above only — a second screen/TV mirror is a
+// table-running tool, not something a player-tier account has any use for.
+// Simply never mounted below that tier, rather than mounted-but-hidden —
+// screenViewButton (below) ends up null for everyone else, and every
+// other reference to it already null-checks/optional-chains.
 if (dataManager.meetsTier("gm")) {
   document.querySelector("[data-dashboard-screen-toggle-mount]")?.appendChild(
     createIconButton({
@@ -1366,11 +1273,11 @@ function findInstance(instanceId) {
 }
 
 // The one instance-mutating operation besides add/remove — lets a widget
-// with no Library kind of its own (Clock) persist a change to its own
-// contentRef in place, without needing to remove-and-re-add itself. Doesn't
-// re-render the widget itself (the caller already knows its own new state
-// and renders accordingly) — just keeps the layout's own persisted copy in
-// sync so a reload doesn't lose it.
+// with no Library kind of its own (Clock) persist a change to its
+// contentRef in place, without needing to remove-and-re-add itself.
+// Doesn't re-render the widget (the caller already knows its new state and
+// renders accordingly) — just keeps the layout's persisted copy in sync so
+// a reload doesn't lose it.
 function updateInstanceContentRef(instanceId, contentRef) {
   const instance = findInstance(instanceId);
   if (!instance) return;
@@ -1383,37 +1290,34 @@ function createWidgetCard(instance, label) {
   card.dataset.widgetInstanceId = instance.instanceId;
   card.dataset.widgetType = instance.widgetType;
   const body = el("div", "card-body d-flex flex-column gap-2");
-  // CSS Grid stretches this card to fill its own colSpan/rowSpan footprint
-  // by default (align-items: stretch) — min-height:0 down this whole chain
-  // (body here, mount below) is what lets a widget that wants to actually
-  // fill that footprint (forcePlayerView Map/journal Handout, Combat
-  // Tracker, Clock) do so via its own `flex: 1 1 0`, instead of the flex
-  // column refusing to shrink below its content's natural height and
-  // overflowing the grid cell.
+  // CSS Grid stretches this card to fill its colSpan/rowSpan footprint by
+  // default (align-items: stretch) — min-height:0 down this whole chain
+  // (body here, mount below) is what lets a widget that wants to fill that
+  // footprint (forcePlayerView Map/journal Handout, Combat Tracker, Clock)
+  // do so via its own `flex: 1 1 0`, instead of the flex column refusing
+  // to shrink below its content's natural height and overflowing the cell.
   body.style.minHeight = "0";
   const header = el("div", "d-flex justify-content-between align-items-center gap-2");
   header.dataset.widgetHeader = "";
-  // Holds an optional per-widget action button (e.g. Character sheet's "Open
-  // in Workbench") to the left of the title — see setHeaderAction in
-  // mountWidget below. Title lives in here too (not a header-level sibling)
-  // so the action button reads as "attached to the title," not floating
-  // separately from the remove button on the header's other side.
+  // Holds an optional per-widget action button (e.g. Character sheet's
+  // "Open in Workbench") to the left of the title. Title lives in here too
+  // (not a header-level sibling) so the action button reads as "attached
+  // to the title," not floating separately from the remove button.
   const leftGroup = el("div", "d-flex align-items-center gap-2");
   const titleEl = el("h3", "h6 mb-0", label);
   leftGroup.appendChild(titleEl);
   header.appendChild(leftGroup);
   // header is `justify-content-between` — that only pushes its two ENDS
   // apart; with 3+ direct children it spreads space between EVERY adjacent
-  // pair equally, which is exactly what put Game Log's Clear-log button in
-  // the middle instead of snug against Remove. Grouping every right-side
-  // button (Remove, plus any setRightAction button — see mountWidget) inside
-  // this one rightGroup keeps header itself down to just two children
-  // (leftGroup, rightGroup), so space-between only ever separates those two,
-  // while rightGroup's own small gap keeps its own buttons adjacent.
+  // pair equally, which put Game Log's Clear-log button in the middle
+  // instead of snug against Remove. Grouping every right-side button
+  // (Remove, plus any setRightAction button) inside this one rightGroup
+  // keeps header down to just two children, so space-between only
+  // separates those two.
   const rightGroup = el("div", "d-flex align-items-center gap-2");
-  // `invisible` (visibility:hidden), not `d-none` — the button still occupies
-  // its box even when not editing, so the header's height (and everything
-  // below it) never shifts the instant edit mode is toggled on.
+  // `invisible` (visibility:hidden), not `d-none` — the button still
+  // occupies its box even when not editing, so the header's height never
+  // shifts the instant edit mode is toggled on.
   const removeButton = el("button", "btn btn-sm btn-outline-danger invisible");
   removeButton.type = "button";
   removeButton.dataset.widgetRemove = "";
@@ -1431,30 +1335,25 @@ function createWidgetCard(instance, label) {
   });
   rightGroup.appendChild(removeButton);
   header.appendChild(rightGroup);
-  // flex-grow-1 + min-height:0 — see body's own comment above; this is what
-  // actually lets a forcePlayerView widget's own `flex: 1 1 0` content fill
-  // the rest of the card's grid-stretched height. overflowY:auto — the grid
-  // gives every card a FIXED height (colSpan/rowSpan-driven) rather than
-  // letting it grow to fit content the way the old flex-column layout did;
-  // content taller than that needs to scroll within mount instead of
-  // spilling past the card's visible boundary (confirmed directly: a
-  // Character sheet's notes field rendered outside the card box without
-  // this). Scoped to mount, not the whole card-body, so the header stays
-  // pinned in view rather than scrolling away with the content.
+  // flex-grow-1 + min-height:0 — see body's own comment above; this lets a
+  // forcePlayerView widget's `flex: 1 1 0` content fill the rest of the
+  // card's grid-stretched height. overflowY:auto — the grid gives every
+  // card a FIXED height (colSpan/rowSpan-driven), so content taller than
+  // that needs to scroll within mount instead of spilling past the card's
+  // visible boundary. Scoped to mount, not the whole card-body, so the
+  // header stays pinned in view rather than scrolling with the content.
   const mount = el("div", "d-flex flex-column flex-grow-1");
   mount.style.minHeight = "0";
   mount.style.overflowY = "auto";
   body.append(header, mount);
   card.appendChild(body);
-  // A drag-to-resize handle in the card's bottom-right corner — the standard
-  // convention. Native pointer events, not SortableJS — SortableJS only does
-  // list reordering, resizing is a different interaction entirely and
-  // there's no single helper in this codebase (or really anywhere) that does
-  // both. Hidden unless editing (plain inline style.display, not the
-  // .d-none/.d-flex Bootstrap utility classes used elsewhere in this file —
-  // those carry !important, and this toggles often enough that inline keeps
-  // it unambiguous). Absolutely positioned against `card` itself (not
-  // `mount`, which scrolls) so it stays pinned to the actual corner.
+  // A drag-to-resize handle in the card's bottom-right corner. Native
+  // pointer events, not SortableJS — SortableJS only does list reordering,
+  // resizing is a different interaction entirely. Hidden unless editing
+  // (plain inline style.display, not the Bootstrap utility classes used
+  // elsewhere — those carry !important, and this toggles often enough that
+  // inline keeps it unambiguous). Absolutely positioned against `card`
+  // itself (not `mount`, which scrolls) so it stays pinned to the corner.
   card.style.position = "relative";
   const resizeHandle = el("div");
   resizeHandle.style.display = "none";
@@ -1488,66 +1387,59 @@ function buildCtx(instance, { setTitle, setHeaderAction, setHeaderContent, setRi
     onToggleSpotlight: toggleSpotlightItem,
     // Deliberately no fallback icon here (unlike refreshSpotlightPanel's own
     // resolution above) — undefined is exactly the signal game-log.js uses
-    // to know a kind isn't recognized and render its icon as plain/non-
-    // interactive instead of a dead click target (mirrors the old toast's
-    // own findCatalogEntry gate, which the log's Accept button never had).
+    // to know a kind isn't recognized and render its icon as plain/
+    // non-interactive instead of a dead click target.
     resolveSpotlightKindIcon: (kind) => findCatalogEntry(KIND_WIDGET_MAP[kind])?.icon,
     isSpotlightOnDashboard: isSpotlightItemOnMyDashboard,
     ensureSpotlightTitleCached: spotlightTitleCache.ensure,
     getCachedSpotlightTitle: spotlightTitleCache.get,
     instanceId: instance?.instanceId || "",
     contentRef: instance?.contentRef || null,
-    // Lets a widget with no Library kind of its own (Clock) persist its own
-    // small bit of local state directly into this instance's contentRef slot
-    // — the same generic per-instance storage Map/Card use for "which record
-    // to show," just repurposed here since there's no record to reference.
+    // Lets a widget with no Library kind of its own (Clock) persist a small
+    // bit of local state directly into this instance's contentRef slot —
+    // the same generic per-instance storage Map/Card use for "which record
+    // to show," repurposed here since there's no record to reference.
     setContentRef: (next) => updateInstanceContentRef(instance?.instanceId, next),
     setTitle: setTitle || (() => {}),
     setHeaderAction: setHeaderAction || (() => {}),
     setHeaderContent: setHeaderContent || (() => {}),
     setRightAction: setRightAction || (() => {}),
-    // True only inside the second-screen mirror window (renderScreenView) —
-    // every widget type that has its own "show to table" visibility toggle
-    // reads this to always render its player-safe view there, regardless of
-    // who actually opened the mirror (a GM opening it for the table's own TV
-    // should see the same restricted view everyone else at the table sees).
+    // True only inside the second-screen mirror window — every widget type
+    // with its own "show to table" visibility toggle reads this to always
+    // render its player-safe view there, regardless of who opened the
+    // mirror (a GM opening it for the table's own TV should see the same
+    // restricted view everyone at the table sees).
     forcePlayerView: screenMode,
     // An alternate, never-zoomed mount point — set per-instance by
     // mountWidget for Handout (only SOME of what it renders — Press-
-    // templated cards, not journal pages — conflicts with a CSS zoom; see
-    // ZOOM_EXCLUDED_WIDGET_TYPES's own comment) and Browser (its own URL
-    // input specifically, not its embedded content — see mountWidget's own
-    // isBrowser comment). null for every other widget type.
+    // templated cards, not journal pages — conflicts with CSS zoom) and
+    // Browser (its own URL input specifically, not its embedded content).
+    // null for every other widget type.
     plainMountContainer: null,
     // Only meaningful as the value *at mount time* — dashboard.js never
-    // remounts a widget just because edit mode toggled (see editToggle's own
-    // handler, which only calls applyEditingState()), so a widget that needs
-    // to react LIVE to later toggles (Map's zoom panel) has to expose a DOM
-    // hook applyEditingState can find and flip itself, using this only for
-    // the initial state.
+    // remounts a widget just because edit mode toggled, so a widget that
+    // needs to react LIVE to later toggles (Map's zoom panel) has to
+    // expose a DOM hook applyEditingState can find and flip, using this
+    // only for the initial state.
     editing,
     // A live-read counterpart to `editing` above, for the rarer case of a
-    // widget that needs the CURRENT value at some later moment (a click
-    // handler), not just its value at mount time — a plain closure over the
-    // same `let editing`, so calling it always reads whatever's true right
-    // now regardless of when ctx was built. See board.js's own use
-    // (deciding whether a macro-button card runs the macro or opens it in
-    // Loom).
+    // widget needing the CURRENT value at some later moment (a click
+    // handler) — a plain closure over the same `let editing`. See board.js's
+    // own use (deciding whether a macro-button card runs the macro or
+    // opens it in Loom).
     isEditing: () => editing,
   };
 }
 
-// `screenMode` — mounted into the second-screen mirror's own grid
-// (renderScreenView) instead of the GM's own editable dashboard grid: no
-// remove button, no drag handle, no selection outline, no resize handle, no
-// zoom controls (the mirror only ever displays whatever arrangement the GM
-// already built in Edit layout — see buildCtx's own forcePlayerView, which
-// this flag also drives). For the real dashboard (not screenMode), this
-// builds the card and its content but does NOT place it in the grid or
-// append it anywhere — `cardElements` records it, and renderWidgetGrid is
-// what actually positions every card (into its own explicit col/row anchor)
-// and builds the empty-cell drop zones around them; see that function's own
-// comment for why placement is a separate pass now.
+// `screenMode` — mounted into the second-screen mirror's grid instead of
+// the GM's editable dashboard grid: no remove button, no drag handle, no
+// selection outline, no resize handle, no zoom controls (the mirror only
+// displays whatever arrangement the GM already built in Edit layout — see
+// buildCtx's forcePlayerView, which this flag also drives). For the real
+// dashboard, this builds the card and its content but does NOT place it in
+// the grid or append it anywhere — `cardElements` records it, and
+// renderWidgetGrid is what actually positions every card into its explicit
+// col/row anchor and builds the empty-cell drop zones around them.
 function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
   const entry = findCatalogEntry(instance.widgetType);
   if (!entry || (isScreenCard && !screenGridEl) || (!isScreenCard && !gridEl)) return;
@@ -1560,9 +1452,9 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     resizeHandle.remove();
     card.style.gridColumn = `${instance.col + 1} / span ${instance.colSpan}`;
     card.style.gridRow = `${instance.row + 1} / span ${instance.rowSpan}`;
-    // Starts hidden — renderScreenView's own visibility poll unhides it the
-    // moment it confirms this instance is actually spotlighted, avoiding a
-    // flash of every eligible widget before that first check resolves.
+    // Starts hidden — renderScreenView's visibility poll unhides it the
+    // moment it confirms this instance is spotlighted, avoiding a flash of
+    // every eligible widget before that first check resolves.
     card.classList.add("d-none");
     screenGridEl.appendChild(card);
   } else {
@@ -1577,19 +1469,16 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
   }
   // Handout is the one widget type whose own content KIND decides, at
   // render time, whether zoom is safe (a journal page — plain flow, zoom is
-  // fine) or not (a Press-templated card — its own JS-measurement scale-to-
-  // fit conflicts with CSS zoom, same as Map). It always gets both a zoomed
-  // wrapper and a never-zoomed sibling — handout.js itself picks which ONE
-  // to actually render into (see its own plainMountContainer/renderTarget
-  // comment) — the two are never both visible at once there.
+  // fine) or not (a Press-templated card — its own JS-measurement
+  // scale-to-fit conflicts with CSS zoom, same as Map). It always gets
+  // both a zoomed wrapper and a never-zoomed sibling — handout.js picks
+  // which ONE to actually render into; the two are never both visible.
   //
-  // Browser is a different shape of the same underlying need: BOTH its own
-  // URL input (never zoomed — an address bar that grows with the content
-  // zoom is disorienting, and zooming it does nothing for legibility the
-  // way zooming the actual embedded page does) and its embedded content
-  // (the part zoom is actually FOR) are always visible together, not a
-  // per-instance either/or — see browser.js's own render, which puts the
-  // input in plainMountContainer and the content in `container` itself.
+  // Browser is a different shape of the same need: BOTH its URL input
+  // (never zoomed — an address bar that grows with content zoom is
+  // disorienting) and its embedded content (the part zoom is actually FOR)
+  // are always visible together, not a per-instance either/or — browser.js
+  // puts the input in plainMountContainer and the content in `container`.
   //
   // Every other widget type just mounts straight into `mount`.
   const isHandout = instance.widgetType === "handout";
@@ -1611,13 +1500,12 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
   }
   const isPressCard = isHandout && instance.contentRef?.kind && instance.contentRef.kind !== "journal";
   const skipZoom = ZOOM_EXCLUDED_WIDGET_TYPES.has(instance.widgetType) || isPressCard;
-  // Marks the actual zoom target on the DOM itself (only when zoom is
-  // meaningful for this instance at all) — the GM's own zoom stepper
-  // buttons don't need this (they close over zoomTargetEl directly), but
-  // the second-screen mirror does: its own refresh loop (renderScreenView)
-  // has to re-apply a changed zoom to an ALREADY-mounted card from outside
-  // mountWidget entirely, with no closure to call, since re-fetching the
-  // GM's layout on a poll is the only way it learns the value changed.
+  // Marks the actual zoom target on the DOM (only when zoom is meaningful
+  // for this instance) — the GM's zoom stepper buttons don't need this
+  // (they close over zoomTargetEl directly), but the second-screen mirror
+  // does: its refresh loop has to re-apply a changed zoom to an
+  // ALREADY-mounted card from outside mountWidget entirely, with no
+  // closure to call.
   if (!skipZoom) zoomTargetEl.dataset.widgetZoomTarget = "";
   const applyZoom = () => {
     if (skipZoom) return;
@@ -1626,9 +1514,8 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
   applyZoom();
   if (!isScreenCard) {
     // Initial visibility at mount time — matches editing's CURRENT value,
-    // same as removeButton's own toggle just above. Later toggles (the user
-    // clicking Edit layout without a full re-mount) go through
-    // applyEditingState instead.
+    // same as removeButton's toggle above. Later toggles (clicking Edit
+    // layout without a full re-mount) go through applyEditingState instead.
     resizeHandle.style.display = editing ? "block" : "none";
     const buildIconButton = (iconName, label, onClick) => {
       const button = el("button", "btn btn-outline-secondary");
@@ -1646,27 +1533,25 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     };
     // Resizing only ever changes colSpan/rowSpan on the anchor wrapper
     // renderWidgetGrid put this card inside (card.parentElement) — the card
-    // itself just fills that wrapper at 100%/100% (shell.css). Live-updates
-    // during the drag for visual feedback; a full renderWidgetGrid() only
-    // happens once, on release (see onResizePointerUp), since resizing can
-    // change which cells are free and the empty-zone layer needs to reflect
-    // that — doing that mid-drag on every pointermove would be constantly
-    // destroying/recreating the very Sortable instance the drag is using.
+    // itself just fills that wrapper at 100%/100%. Live-updates during the
+    // drag for visual feedback; a full renderWidgetGrid() only happens once,
+    // on release, since resizing can change which cells are free and doing
+    // that mid-drag on every pointermove would be constantly destroying/
+    // recreating the very Sortable instance the drag is using.
     const applyGridSpan = () => {
       const anchor = card.parentElement;
       if (!anchor) return;
       anchor.style.gridColumn = `${instance.col + 1} / span ${instance.colSpan}`;
       anchor.style.gridRow = `${instance.row + 1} / span ${instance.rowSpan}`;
     };
-    // Drag-to-resize — grab the handle, move the pointer, release. Reads the
-    // grid's own actual computed cell size (not a hardcoded guess) so it
+    // Drag-to-resize — grab the handle, move the pointer, release. Reads
+    // the grid's actual computed cell size (not a hardcoded guess) so it
     // stays correct regardless of viewport width, column count, or CSS
-    // changes: cell width from the grid's own rendered box divided by the
-    // CURRENT column count, cell height from the grid's own computed
-    // `grid-auto-rows`. Snaps to whole
-    // cells/rows (Math.round). setPointerCapture means the drag keeps
-    // tracking even if the pointer strays off the small handle element
-    // mid-drag.
+    // changes: cell width from the grid's rendered box divided by the
+    // CURRENT column count, cell height from the grid's computed
+    // `grid-auto-rows`. Snaps to whole cells/rows. setPointerCapture keeps
+    // the drag tracking even if the pointer strays off the small handle
+    // element mid-drag.
     let resizeStartX = 0;
     let resizeStartY = 0;
     let resizeStartColSpan = instance.colSpan;
@@ -1680,10 +1565,10 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
       const cellWidth = (gridEl.getBoundingClientRect().width - gap * (columnCount - 1)) / columnCount;
       const deltaCols = Math.round((event.clientX - resizeStartX) / (cellWidth + gap));
       const deltaRows = Math.round((event.clientY - resizeStartY) / (rowHeight + gap));
-      // Max bound is columnCount/rowCount minus the widget's own fixed
-      // col/row anchor, not the raw grid size — resizing never moves the
-      // anchor, so a widget starting at col 5 of an 8-wide grid can only
-      // grow to colSpan 3, not 8.
+      // Max bound is columnCount/rowCount minus the widget's fixed col/row
+      // anchor, not the raw grid size — resizing never moves the anchor,
+      // so a widget starting at col 5 of an 8-wide grid can only grow to
+      // colSpan 3, not 8.
       instance.colSpan = clampInt(
         resizeStartColSpan + deltaCols,
         COL_SPAN_MIN,
@@ -1722,13 +1607,12 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
       resizeHandle.addEventListener("pointermove", onResizePointerMove);
       resizeHandle.addEventListener("pointerup", onResizePointerUp);
     });
-    // Zoom controls — in the header, next to the visibility toggle (if this
-    // widget type has one — see setRightAction below), not with the resize
-    // handle. These are view-mode controls (adjusting how YOU see the
-    // widget on YOUR OWN screen), the opposite gating sense from
-    // resizeHandle/editing: visible only OUTSIDE Edit layout, hidden while
-    // editing. Skipped entirely for widget types/content where zoom does
-    // nothing (skipZoom — Map, and Handout showing a Press-templated card).
+    // Zoom controls — in the header, next to the visibility toggle (if
+    // this widget type has one), not with the resize handle. These are
+    // view-mode controls, the opposite gating sense from resizeHandle/
+    // editing: visible only OUTSIDE Edit layout, hidden while editing.
+    // Skipped entirely where zoom does nothing (Map, Handout showing a
+    // Press-templated card).
     if (!skipZoom) {
       const zoomGroup = el("div", "btn-group btn-group-sm");
       zoomGroup.dataset.widgetZoomControls = "";
@@ -1755,9 +1639,9 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     }
   }
   // Lets a widget put a single icon-button action (e.g. Character sheet's
-  // "Open in Workbench") to the left of its own title — pass null to clear
-  // it. Disposes/re-arms the button's own Bootstrap tooltip around the swap,
-  // same "dynamic DOM needs a rescan" reasoning as populateAddToolbar.
+  // "Open in Workbench") to the left of its title — pass null to clear it.
+  // Disposes/re-arms the button's Bootstrap tooltip around the swap, same
+  // "dynamic DOM needs a rescan" reasoning as populateAddToolbar.
   let headerActionEl = null;
   const setHeaderAction = (action) => {
     if (headerActionEl) {
@@ -1786,10 +1670,10 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     headerActionEl = button;
     refreshTooltips(header);
   };
-  // Same left-of-header slot as setHeaderAction, but for a widget that needs
-  // to mount an actual control (a <select>, not a fixed icon-button shape) —
-  // Calculator's own Type select is the first user of this. Appended AFTER
-  // the title (reads "Calculator [Type ▾]"), pass null/undefined to clear.
+  // Same left-of-header slot as setHeaderAction, but for a widget that
+  // needs to mount an actual control (a <select>, not a fixed icon-button
+  // shape) — Calculator's Type select is the first user of this. Appended
+  // AFTER the title (reads "Calculator [Type ▾]"), pass null to clear.
   let headerContentEl = null;
   const setHeaderContent = (element) => {
     if (headerContentEl) {
@@ -1801,18 +1685,16 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     headerContentEl = element;
   };
   // The right-side counterpart — always inserted into rightGroup BEFORE
-  // Remove (not header directly: see createWidgetCard's own comment — header
-  // is justify-content-between, which spreads space between EVERY adjacent
-  // child once there are 3+, which is what put a right-side action in the
-  // middle instead of snug against Remove when this was header-level).
+  // Remove (not header directly: header is justify-content-between, which
+  // spreads space between EVERY adjacent child once there are 3+, which
+  // put a right-side action in the middle instead of snug against Remove).
   // Always visible regardless of edit mode (a visibility toggle needs to
-  // work while just viewing the dashboard, not only while editing layout),
-  // and — same size as Remove (`btn-sm`) per that convention — Remove has to
-  // actually leave the layout (`d-none`, not the usual `invisible`) while
-  // hidden, or its reserved space would keep this action pinned one slot
-  // short of rightGroup's true edge instead of shifting into Remove's place.
+  // work while just viewing the dashboard), and Remove has to actually
+  // leave the layout (`d-none`, not the usual `invisible`) while hidden,
+  // or its reserved space would keep this action pinned one slot short of
+  // rightGroup's true edge instead of shifting into Remove's place.
   // Widgets that never call this keep Remove's original invisible-but-
-  // space-reserving behavior, so their header height still never shifts on
+  // space-reserving behavior, so their header height never shifts on
   // edit-toggle.
   let rightActionEl = null;
   const setRightAction = (action) => {
@@ -1831,11 +1713,10 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     removeButton.classList.remove("invisible");
     removeButton.classList.toggle("d-none", !editing);
     // `active` — Map/Handout/Combat Tracker/Clock's own visibility toggles
-    // pass this when the thing they're attached to is currently shown to the
-    // table. A SOLID primary fill (not just an outline) is deliberate here —
-    // this needs to read as "on" at a glance, not just on close inspection,
-    // since it's the one place the whole dashboard shows what the table can
-    // currently see.
+    // pass this when the thing they're attached to is currently shown to
+    // the table. A SOLID primary fill (not just an outline) is deliberate
+    // — this needs to read as "on" at a glance, since it's the one place
+    // the whole dashboard shows what the table can currently see.
     const button = el("button", `btn btn-sm ${action.active ? "btn-primary" : "btn-outline-secondary"}`);
     button.type = "button";
     button.dataset.bsToggle = "tooltip";
@@ -1887,8 +1768,7 @@ async function isInstanceSpotlighted(instance) {
       if (!kind || !id) return false;
       // Per-instance, not just per-kind — two Handouts of the same kind
       // (two NPCs) must show/hide independently, same as the widget's own
-      // eye-icon toggle now checks (handout.js's refreshVisibility) — see
-      // resolveIsSpotlighted's own comment.
+      // eye-icon toggle checks (handout.js's refreshVisibility).
       return resolveIsSpotlighted(dataManager, { groupId, shareToken, kind, id });
     }
     case "map": {
@@ -1906,23 +1786,18 @@ async function isInstanceSpotlighted(instance) {
       return resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "soundboard", id: instance.instanceId });
     case "shop": {
       // Unlike clock/browser/calendar/soundboard above, "shop"'s own id is
-      // a real Location id (contentRef.followId), not this instance's own
-      // instanceId — see INLINE_FOLLOW_KINDS' own comment for why it still
-      // shares their shape regardless. Confirmed real gap this fixes: this
-      // switch had no "shop" case at all, so the second-screen mirror's own
-      // poll (refreshScreen below) silently treated a spotlighted Shop as
-      // never shown, via the same `default: return false` every OTHER
-      // missing case would also hit.
+      // a real Location id (contentRef.followId), not this instance's
+      // instanceId — see INLINE_FOLLOW_KINDS' comment for why it still
+      // shares their shape regardless.
       const id = instance.contentRef?.followId;
       if (!id) return false;
       return resolveIsSpotlighted(dataManager, { groupId, shareToken, kind: "shop", id });
     }
     case "combat":
-      // AUTO_DISCOVER — same as combat-tracker.js's own resolution: any
-      // active encounter at all means "show it," not a specific id match
-      // (Combat Tracker is `multiple: false` — only one instance can ever
-      // exist on a dashboard, so there's no same-kind collision to worry
-      // about here the way there is for Handout/Map/Clock).
+      // AUTO_DISCOVER — any active encounter at all means "show it," not a
+      // specific id match (Combat Tracker is `multiple: false` — only one
+      // instance can exist on a dashboard, no same-kind collision to worry
+      // about the way there is for Handout/Map/Clock).
       return Boolean(await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" }));
     default:
       return false;
@@ -1934,35 +1809,28 @@ let screenZoomEl = null;
 let screenPollTimer = null;
 let screenInstances = [];
 
-// The second-screen mirror's own boot path (see boot()'s own screenMode
-// branch) — reuses mountWidget/buildCtx exactly like the GM's own dashboard
-// does, just: (a) filtered to TABLE_WIDGET_TYPES (character/gamelog/
-// diceroller have no "shown to table" concept, so never appear here), (b)
-// every mounted instance is a screenMode card (no remove/drag/size
-// controls — see mountWidget's own isScreenCard branches), and (c) a
-// background poll both toggles each card's own d-none based on whether it's
-// currently spotlighted AND re-fetches the GM's own layout to catch
-// add/remove/reposition/resize made after this window opened — this window
-// is a completely separate JS realm from the dashboard tab actually being
-// edited (window.open, not a shared in-page render), so polling the same
-// persisted layout the GM's own edits write to is the only way to learn
-// about those (confirmed directly: without this, resizing/moving a widget
-// on the GM's own dashboard never showed up here, even once already-visible
-// content kept updating live via each widget's own separate polling).
-// Whole-window scale (loadScreenSettings().zoom) — distinct from a single
-// widget instance's own `instance.zoom` (mountWidget's data-widget-zoom-
-// target, re-applied separately inside refreshScreen below).
+// The second-screen mirror's boot path — reuses mountWidget/buildCtx
+// exactly like the GM's own dashboard does, just: (a) filtered to
+// TABLE_WIDGET_TYPES (character/gamelog/diceroller have no "shown to
+// table" concept), (b) every mounted instance is a screenMode card (no
+// remove/drag/size controls), and (c) a background poll both toggles each
+// card's d-none based on whether it's currently spotlighted AND re-fetches
+// the GM's layout to catch add/remove/reposition/resize made after this
+// window opened — this window is a completely separate JS realm
+// (window.open, not a shared in-page render), so polling the same
+// persisted layout the GM's edits write to is the only way to learn about
+// those. Whole-window scale (loadScreenSettings().zoom) is distinct from a
+// single widget instance's own `instance.zoom`.
 //
-// CSS `zoom` was tried first and dropped: it grows the ZOOMED element's own
+// CSS `zoom` was tried first and dropped: it grows the ZOOMED element's
 // rendered box as seen by ITS PARENT (the same thing a browser's native
-// Ctrl+ page zoom does) — so screenRootEl itself ballooned past the actual
+// Ctrl+ page zoom does), so screenRootEl itself ballooned past the actual
 // window bounds, and that overflow happens one level up, at the document,
-// where no `overflow: hidden` set ON screenRootEl could ever catch it.
-// `transform: scale` doesn't touch layout size at all, so instead
-// screenZoomEl is deliberately pre-shrunk to 1/factor of screenRootEl's own
-// real, stable (unscaled) content box, then visually scaled back up —
-// screenZoomEl's OWN footprint never changes, so there's nothing left for
-// the document to overflow around.
+// where no `overflow: hidden` on screenRootEl could catch it.
+// `transform: scale` doesn't touch layout size, so instead screenZoomEl is
+// deliberately pre-shrunk to 1/factor of screenRootEl's real, stable
+// content box, then visually scaled back up — screenZoomEl's own footprint
+// never changes, so there's nothing left for the document to overflow around.
 function applyScreenZoom() {
   if (!screenRootEl || !screenZoomEl) return;
   const factor = (loadScreenSettings().zoom || DEFAULT_SCREEN_ZOOM) / 100;
@@ -1976,20 +1844,19 @@ function renderScreenView() {
   if (!screenRootEl) return;
   screenRootEl.classList.remove("d-none");
   screenRootEl.classList.add("d-flex");
-  // Belt-and-suspenders no-scrollbar: screenZoomEl's own compensated sizing
-  // (applyScreenZoom) already keeps screenRootEl's box from ever growing
-  // past the window, but clipping at every level (document + screenRootEl
-  // itself) guarantees no scrollbar can appear regardless of source — the
-  // GM running this window can't see it (it's on the table's own display),
-  // so there's nothing here to scroll to, ever.
+  // Belt-and-suspenders no-scrollbar: screenZoomEl's compensated sizing
+  // already keeps screenRootEl's box from growing past the window, but
+  // clipping at every level guarantees no scrollbar can appear — the GM
+  // running this window can't see it (it's on the table's own display), so
+  // there's nothing to scroll to.
   document.documentElement.style.overflow = "hidden";
   document.body.style.overflow = "hidden";
   screenRootEl.style.overflow = "hidden";
   document.title = "Second screen — Undercroft";
-  // screenZoomEl is the thing that actually gets scaled (applyScreenZoom) —
-  // transformOrigin fixed at top-left here since it never changes; width/
-  // height are set per-render by applyScreenZoom itself, which needs
-  // screenRootEl already laid out to measure its real content-box size.
+  // screenZoomEl is what actually gets scaled — transformOrigin fixed at
+  // top-left since it never changes; width/height are set per-render by
+  // applyScreenZoom, which needs screenRootEl already laid out to measure
+  // its real content-box size.
   screenZoomEl = el("div", "d-flex flex-column");
   screenZoomEl.style.transformOrigin = "top left";
   screenGridEl = el("div", "dashboard-grid flex-grow-1");
@@ -1997,10 +1864,9 @@ function renderScreenView() {
   screenZoomEl.appendChild(screenGridEl);
   screenRootEl.appendChild(screenZoomEl);
   applyScreenZoom();
-  // A resized mirror window (the GM dragging its edge, or the OS itself
-  // repositioning it back onto a screen) changes screenRootEl's own content-
-  // box size — re-measure and re-apply so screenZoomEl's compensated size
-  // stays correct instead of drifting stale and reintroducing overflow.
+  // A resized mirror window changes screenRootEl's content-box size —
+  // re-measure and re-apply so screenZoomEl's compensated size stays
+  // correct instead of drifting stale and reintroducing overflow.
   window.addEventListener("resize", applyScreenZoom);
   screenInstances = layout.widgets.filter((instance) => TABLE_WIDGET_TYPES.has(instance.widgetType));
   screenInstances.forEach((instance) => mountWidget(instance, { screenMode: true }));
@@ -2022,13 +1888,11 @@ function renderScreenView() {
       mounted.delete(instance.instanceId);
       screenGridEl?.querySelector(`[data-widget-instance-id="${instance.instanceId}"]`)?.remove();
     });
-    // Re-mount anything whose own content changed (a Browser widget's URL
-    // is the one case this matters for today — every OTHER widget type's
-    // contentRef never changes after it's first added). A widget's own
-    // render() only ever runs against the contentRef it was mounted with —
-    // a plain reposition/re-zoom pass below wouldn't pick up a content
-    // change on its own, it would just keep showing whatever URL was
-    // current the moment this window opened.
+    // Re-mount anything whose content changed (a Browser widget's URL is
+    // the one case this matters for — every OTHER widget type's contentRef
+    // never changes after it's first added). A widget's render() only runs
+    // against the contentRef it was mounted with — a plain reposition/
+    // re-zoom pass wouldn't pick up a content change on its own.
     screenInstances.forEach((instance) => {
       const fresh = freshById.get(instance.instanceId);
       if (!fresh || JSON.stringify(fresh.contentRef) === JSON.stringify(instance.contentRef)) return;
@@ -2044,16 +1908,15 @@ function renderScreenView() {
     });
     // Reposition/resize/re-zoom whatever already existed both before and
     // after — cheap style updates only, never a remount (which would drop
-    // that widget's own live polling/state for no reason; the content-change
-    // pass above already handled the one case that DOES need a remount).
+    // that widget's live polling/state; the content-change pass above
+    // already handled the one case that DOES need a remount).
     freshInstances.forEach((instance) => {
       if (!previousById.has(instance.instanceId)) return;
       const card = screenGridEl?.querySelector(`[data-widget-instance-id="${instance.instanceId}"]`);
       if (!card) return;
       card.style.gridColumn = `${instance.col + 1} / span ${instance.colSpan}`;
       card.style.gridRow = `${instance.row + 1} / span ${instance.rowSpan}`;
-      // Only present at all when zoom is meaningful for this instance (see
-      // mountWidget's own data-widget-zoom-target comment) — Map and a
+      // Only present when zoom is meaningful for this instance — Map and a
       // Press-templated Handout card never get one, so this is a no-op there.
       const zoomTarget = card.querySelector("[data-widget-zoom-target]");
       if (zoomTarget) zoomTarget.style.zoom = `${instance.zoom}%`;
@@ -2075,34 +1938,28 @@ function renderScreenView() {
 
 // Positions every already-mounted widget card into the grid and — while
 // editing — builds the empty-cell drop zones around them, wiring the whole
-// thing up as one big SortableJS group (createSortable, dnd.js — one
-// instance per zone, not dnd.js's own initSortableGroup/setupDropzones
-// helpers, since both of those also treat their own root element as an
-// extra zone, which here would make gridEl itself a Sortable list nested
-// one level above the per-widget zones — see below) so a widget can be
-// dragged to ANY open cell, not just reordered in a list. This is a
-// deliberately different architecture from the old single-list/auto-flow
-// approach: SortableJS fundamentally reasons about ordering within ONE
-// list, but a real 2D grid needs to know WHICH cell a drop landed on — the
-// standard way to get that out of SortableJS is many small lists sharing one
-// group (exactly what the original 3-column layout already did, just
-// generalized from 3 columns to every individual cell). Concretely:
+// thing up as one big SortableJS group (one instance per zone, not dnd.js's
+// initSortableGroup/setupDropzones helpers, since both also treat their
+// own root element as an extra zone, which would make gridEl itself a
+// Sortable list nested one level above the per-widget zones) so a widget
+// can be dragged to ANY open cell, not just reordered in a list. SortableJS
+// fundamentally reasons about ordering within ONE list, but a real 2D grid
+// needs to know WHICH cell a drop landed on — the standard way to get that
+// out of SortableJS is many small lists sharing one group. Concretely:
 //   - Every widget gets its own "anchor" wrapper, spanning its own
 //     colSpan/rowSpan, holding its card as the sole child.
 //   - Every OTHER (empty) cell gets its own 1x1 "zone" wrapper.
 //   - Both anchors and zones are Sortable "lists" in the same group — a
 //     drag moves the card's DOM node from its anchor into whichever
 //     zone/anchor it's dropped on. onMove rejects dropping onto a
-//     non-empty target (no swap/overlap semantics — only genuinely open
-//     cells accept a drop); onEnd reads the target's own col/row dataset
-//     and writes it onto the instance, then re-renders.
+//     non-empty target; onEnd reads the target's col/row dataset and
+//     writes it onto the instance, then re-renders.
 // True only for a genuinely fresh, never-signed-in, never-customized visit
-// — NOT just "not signed in" on its own, which would also cover an
-// anonymous visitor who's already built their own local-only dashboard
-// (layout.widgets loaded straight from local storage — see loadLayout).
-// That dashboard is exactly what "many of the tools are free and don't
-// require a login at all" means in practice; showing a marketing screen
-// over top of it every visit would be actively hostile to that use case.
+// — NOT just "not signed in," which would also cover an anonymous visitor
+// who's already built their own local-only dashboard. That dashboard is
+// exactly what "many tools are free and don't require login" means in
+// practice; showing a marketing screen over top of it would be hostile to
+// that use case.
 function shouldShowWelcomeScreen() {
   return !dataManager.isAuthenticated() && layout.widgets.length === 0;
 }
@@ -2169,10 +2026,8 @@ function renderWelcomeScreen() {
   `;
   const ctaButton = welcomeEl.querySelector("[data-dashboard-welcome-auth]");
   if (ctaButton) {
-    // Reuses the header's own auth control (app-shell.js's initAppShell +
-    // auth-ui.js's initAuthControls, already mounted by the time boot()
-    // reaches this) rather than a second, separate way to open the same
-    // modal.
+    // Reuses the header's own auth control rather than a second, separate
+    // way to open the same modal.
     ctaButton.addEventListener("click", () => {
       document.querySelector("[data-auth-control] button")?.click();
     });
@@ -2181,9 +2036,8 @@ function renderWelcomeScreen() {
 
 // Called after every mount, add, remove, resize-release, and editing
 // toggle — always a full rebuild of the zone/anchor structure, but NEVER
-// re-mounts a widget's own card (see cardElements — the same DOM node just
-// moves to a new parent), so no widget ever loses its live polling/state
-// over a reposition.
+// re-mounts a widget's card (the same DOM node just moves to a new
+// parent), so no widget ever loses its live polling/state over a reposition.
 function renderWidgetGrid() {
   if (!gridEl) return;
   const showWelcome = shouldShowWelcomeScreen();
@@ -2204,12 +2058,10 @@ function renderWidgetGrid() {
       }
     }
   });
-  // A hard bound (same as columnCount), not a minimum — resize/drag/pack
-  // already all clamp against it, so nothing should ever occupy a row past
-  // this, but Math.max defends against genuinely stale/corrupt data (e.g. a
+  // A hard bound, not a minimum — resize/drag/pack already clamp against
+  // it, but Math.max defends against genuinely stale/corrupt data (a
   // layout saved under a larger rowCount, edited elsewhere, then reloaded
-  // here with a smaller one) rendering as silently clipped/invisible rather
-  // than at least still showing up.
+  // with a smaller one) rendering as silently clipped rather than showing up.
   let totalRows = getRowCount();
   layout.widgets.forEach((instance) => {
     totalRows = Math.max(totalRows, instance.row + instance.rowSpan);
@@ -2229,9 +2081,8 @@ function renderWidgetGrid() {
     gridEl.appendChild(anchor);
   });
   // Teardown-then-rebuild, every time — never incremental (leaking or
-  // double-binding a Sortable instance on a zone that gets torn down and
-  // recreated a moment later is worse than the modest cost of rebuilding a
-  // handful of small instances each pass).
+  // double-binding a Sortable instance on a zone torn down a moment later
+  // is worse than the modest cost of rebuilding a handful each pass).
   gridZoneRegistry.forEach((sortable) => sortable?.destroy?.());
   gridZoneRegistry.clear();
   if (!editing) return;
@@ -2248,12 +2099,9 @@ function renderWidgetGrid() {
     }
   }
   // Deliberately NOT dnd.js's initSortableGroup/setupDropzones — every
-  // `[data-grid-zone]` element (each widget's own anchor wrapper, plus every
+  // `[data-grid-zone]` element (each widget's anchor wrapper, plus every
   // empty-cell placeholder) becomes its own Sortable "list" directly, so
-  // gridEl ITSELF never becomes a Sortable list too (setupDropzones treats
-  // its own root as an extra zone, which — nested one level above the
-  // per-widget anchors that already are zones — risks SortableJS attributing
-  // a drag started on a card's own header handle to the wrong nesting level).
+  // gridEl ITSELF never becomes a Sortable list too.
   gridEl.querySelectorAll("[data-grid-zone]").forEach((zone) => {
     const sortable = createSortable(zone, {
       group: { name: SORTABLE_GROUP, pull: true, put: true },
@@ -2272,16 +2120,13 @@ function renderWidgetGrid() {
           instance.row = clampInt(targetZone.dataset.row, 0, getRowCount() - 1, instance.row);
           persistLayout();
         }
-        // Deferred, not synchronous — this callback is firing from INSIDE
-        // one of the very Sortable instances renderWidgetGrid is about to
+        // Deferred, not synchronous — this callback fires from INSIDE one
+        // of the very Sortable instances renderWidgetGrid is about to
         // destroy() and rebuild. Doing that immediately, before SortableJS
-        // has finished its own post-drag cleanup for THIS instance (it isn't
-        // done the moment onEnd fires — animation/DOM teardown still runs
-        // after), is exactly what caused a real bug: the dropped widget kept
-        // whatever 1x1 size its target zone had instead of its own
-        // colSpan/rowSpan, because the rebuilt anchor's sizing got stomped
-        // by SortableJS's own cleanup running after it. Letting the current
-        // call stack finish first (setTimeout 0) avoids the collision.
+        // finishes its own post-drag cleanup (animation/DOM teardown still
+        // runs after onEnd fires), caused the dropped widget to keep its
+        // target zone's 1x1 size instead of its own colSpan/rowSpan.
+        // Letting the current call stack finish first avoids the collision.
         setTimeout(() => renderWidgetGrid(), 0);
       },
     });
@@ -2303,10 +2148,9 @@ function destroyAllWidgets() {
   gridZoneRegistry.forEach((sortable) => sortable?.destroy?.());
   gridZoneRegistry.clear();
   if (gridEl) {
-    // Widget-card headers can carry their own tooltip-bearing buttons now
-    // (setHeaderAction/setRightAction) — dispose before wiping, same "don't
-    // orphan a shown tooltip" reasoning as everywhere else this convention
-    // is used (see populateAddToolbar's own comment).
+    // Widget-card headers can carry their own tooltip-bearing buttons
+    // (setHeaderAction/setRightAction) — dispose before wiping, same
+    // "don't orphan a shown tooltip" reasoning as populateAddToolbar.
     disposeTooltips(gridEl);
     gridEl.innerHTML = "";
   }
@@ -2322,14 +2166,11 @@ function renderWidgets() {
   refreshWidgetInspector();
 }
 
-// Mirrors Loom's Property Inspector selection pattern
-// ([data-system-row-selected="true"] + refreshSystemInspector) — one widget
-// selected at a time, outlined via CSS. Selecting a widget no longer forces
-// the right pane open (and deselecting no longer closes it) — the pane only
-// ever opens/closes from its own toggle button (initPaneToggles) now;
-// selection just keeps whatever's already open in sync via
-// refreshWidgetInspector below, so opening the pane later always reflects
-// whichever widget is currently selected.
+// Mirrors Loom's Property Inspector selection pattern — one widget selected
+// at a time, outlined via CSS. Selecting a widget no longer forces the
+// right pane open (and deselecting no longer closes it) — the pane only
+// opens/closes from its own toggle button now; selection just keeps
+// whatever's already open in sync via refreshWidgetInspector below.
 function selectWidget(instanceId) {
   if (selectedWidgetInstanceId === instanceId) return;
   const previousCard = selectedWidgetInstanceId
@@ -2354,9 +2195,9 @@ function refreshWidgetInspector() {
   const instance = selectedWidgetInstanceId ? findInstance(selectedWidgetInstanceId) : null;
   const entry = instance ? findCatalogEntry(instance.widgetType) : null;
   widgetInspectorEmpty.hidden = Boolean(instance);
-  // Same orphaned-tooltip failure mode fixed elsewhere on this page — the
-  // Remove button (and any per-widget actions renderInspector adds) can
-  // still be mid-tooltip when the details panel hides.
+  // Same orphaned-tooltip failure mode fixed elsewhere — the Remove button
+  // (and any per-widget actions renderInspector adds) can still be
+  // mid-tooltip when the details panel hides.
   if (!instance) disposeTooltips(widgetInspectorDetails);
   widgetInspectorDetails.classList.toggle("d-none", !instance);
   if (!instance || !entry) return;
@@ -2394,10 +2235,9 @@ function removeWidget(instanceId) {
   // The one destroy() call that means "gone for good" (as opposed to
   // destroyAllWidgets()'s routine teardown-before-remount) — Clock and
   // Browser's own destroy uses this to know it's safe to clear whatever
-  // spotlight this instance may still hold (their content lives only in the
-  // spotlight entry itself, not a Library record — see clocks.js/browser.js
-  // — so a removed instance left spotlighted would otherwise orphan any
-  // follower/second-screen view on frozen, never-clearable stale data).
+  // spotlight this instance may still hold (their content lives only in
+  // the spotlight entry, not a Library record) — a removed instance left
+  // spotlighted would otherwise orphan any follower on frozen stale data.
   api?.destroy?.(true);
   mounted.delete(instanceId);
   cardElements.get(instanceId)?.remove();
@@ -2442,24 +2282,21 @@ function addWidget(widgetType, contentRef = null) {
 // Which macro action types get an auto-added, ongoing control surface on
 // THIS dashboard when none already exists — not every type: Character
 // shows whichever character is PINNED (a GM-wide preference a macro
-// shouldn't silently override to whatever character it happened to touch),
-// and Handout/Map/Game Log/Browser/Dice Roller are all "fire and forget"
-// outcomes the group-log/spotlight broadcast itself already delivers in
-// full — a widget on the GM's OWN dashboard was never needed for any of
-// those to have worked. WLED/Soundboard/Combat are the three where a macro
-// changes something genuinely ONGOING that benefits from staying visible
-// and adjustable afterward (lights, currently-playing music, a running
-// encounter) — matching the user's own "Haunted Forest" example.
+// shouldn't silently override), and Handout/Map/Game Log/Browser/Dice
+// Roller are all "fire and forget" outcomes the group-log/spotlight
+// broadcast already delivers in full — a widget on the GM's own dashboard
+// was never needed for any of those to work. WLED/Soundboard/Combat are
+// the three where a macro changes something genuinely ONGOING that
+// benefits from staying visible and adjustable afterward (lights,
+// currently-playing music, a running encounter).
 const MACRO_ACTION_WIDGET_TYPES = { wled: "wled", soundboard: "soundboard", combat: "combat" };
 
 // Backs Clock/Calendar's own show/hide/advance/set actions — unlike WLED/
-// Soundboard/Combat (one meaningful instance, or a clearly-resolvable
-// target), those four can't sensibly conjure a Clock/Calendar into existence
-// (which of possibly several would it even mean?), so this only ever finds
-// an already-mounted, already-visible instance of that type — see
-// clocks.js/calendar.js's own isVisible() — returning null (a clear "nothing
-// shown right now" error from macro-runner.js's own handler) when none
-// qualifies, rather than guessing. "create" is the one action exempted from
+// Soundboard/Combat, those four can't sensibly conjure a Clock/Calendar
+// into existence (which of possibly several would it mean?), so this only
+// finds an already-mounted, already-visible instance of that type,
+// returning null (a clear "nothing shown right now" error) when none
+// qualifies rather than guessing. "create" is the one action exempted from
 // this restriction — see ensureLiveWidgetInstance just below.
 function findActiveWidgetInstance(widgetType) {
   const candidates = layout.widgets.filter((widget) => widget.widgetType === widgetType);
@@ -2470,16 +2307,14 @@ function findActiveWidgetInstance(widgetType) {
   return null;
 }
 
-// "create" is the one Clock/Calendar action that's allowed to add a widget —
-// see ensureWidgetForMacroAction's own comment on why show/hide/advance/set
+// "create" is the one Clock/Calendar action allowed to add a widget — see
+// ensureWidgetForMacroAction's own comment on why show/hide/advance/set
 // stay restricted to whatever's already visible. Reuses whatever's already
-// visible (a no-op "create" is harmless, same as running "show" twice), else
-// the first already-mounted-but-hidden instance of that type if one exists
-// (nothing ambiguous about reusing the only candidate — the "which of
-// possibly several" problem only applies when picking among MULTIPLE), else
-// adds a brand new one — Calendar needs no contentRef to add any more than
-// Clock does, now that the Setting it tracks is the campaign's own ambient
-// one rather than a per-widget pick.
+// visible (a no-op "create" is harmless, same as running "show" twice),
+// else the first already-mounted-but-hidden instance of that type if one
+// exists, else adds a brand new one — Calendar needs no contentRef to add
+// any more than Clock does, now that the Setting it tracks is the
+// campaign's own ambient one rather than a per-widget pick.
 async function ensureLiveWidgetInstance(widgetType) {
   const active = findActiveWidgetInstance(widgetType);
   if (active) return active;
@@ -2489,25 +2324,22 @@ async function ensureLiveWidgetInstance(widgetType) {
   return instance ? mounted.get(instance.instanceId) || null : null;
 }
 
-// Passed into runMacro (macro-runner.js) as `ensureWidget`, called once per
-// action before that action's own handler runs. Only ever wired up here —
-// the Dashboard's own Macro board widget — never for a Journal-embedded
-// macro trigger (journal-macro.js), since there's no widget grid to add to
-// on a Repository page at all.
+// Passed into runMacro (macro-runner.js) as `ensureWidget`, called once
+// per action before that action's own handler runs. Only ever wired up
+// here — the Dashboard's own Macro board widget — never for a Journal-
+// embedded macro trigger, since there's no widget grid to add to on a
+// Repository page at all.
 //
 // WLED/Combat both externalize their real state (the physical device, the
 // saved encounter record) — once a widget exists and is pointed at the
-// right target, it just shows the correct thing on its own next
-// fetch/mount, no extra plumbing needed (WLED's own contentRef is set to
-// the resolved device below; Combat Tracker already defaults to whichever
-// encounter is currently active/spotlighted with no contentRef needed, the
-// same resolution startEncounter's own navigation already relies on).
-// Soundboard is the one exception — playback lives in an ephemeral
-// in-browser Audio object a freshly-mounted widget has nothing to
-// "reconnect" to on its own — see soundboard.js's own exposed
-// runMacroAction (returned from initSoundboardWidget, called by
-// runSoundboardMacroAction) for how macro playback gets routed through
-// whichever Soundboard widget instance actually ends up existing instead.
+// right target, it just shows the correct thing on its next fetch/mount
+// (WLED's contentRef is set to the resolved device below; Combat Tracker
+// already defaults to whichever encounter is active/spotlighted with no
+// contentRef needed). Soundboard is the one exception — playback lives in
+// an ephemeral in-browser Audio object a freshly-mounted widget has
+// nothing to "reconnect" to on its own — see soundboard.js's own exposed
+// runMacroAction for how macro playback routes through whichever
+// Soundboard widget instance ends up existing instead.
 async function ensureWidgetForMacroAction(action) {
   if (action?.type === "clock" || action?.type === "calendar") {
     if (action?.action === "create") {
@@ -2515,11 +2347,10 @@ async function ensureWidgetForMacroAction(action) {
     }
     return findActiveWidgetInstance(action.type);
   }
-  // Effects (Shapes & Effects plan, Part 5) has no widget of its own — it
-  // targets whichever Map widget is currently shown, same "can't conjure one
-  // into existence, which of possibly several would it even mean" reasoning
-  // as Clock/Calendar just above, and no "create" action to exempt (a macro
-  // can't sensibly add a Map with no map picked).
+  // Effects has no widget of its own — it targets whichever Map widget is
+  // currently shown, same "can't conjure one into existence" reasoning as
+  // Clock/Calendar above, and no "create" action to exempt (a macro can't
+  // sensibly add a Map with no map picked).
   if (action?.type === "effects") {
     return findActiveWidgetInstance("map");
   }
@@ -2528,13 +2359,11 @@ async function ensureWidgetForMacroAction(action) {
   if (catalogId === "wled") {
     // Multiple WLED cards can exist (one per lighting zone) — reusing
     // whichever one happens to be first in layout.widgets regardless of
-    // which device IT's pointed at would route the command through a card
-    // showing the WRONG device's state (confirmed: this is exactly why the
-    // "Haunted Forest" macro turned the lights on for real but the on-screen
-    // card kept reading "Off" — the command itself went straight to the
-    // device either way, but no card that actually shows that device ever
-    // got a chance to refresh). Matches by the resolved device's own ip
-    // against each existing card's persisted contentRef.selectedIp first.
+    // which device it's pointed at would route the command through a card
+    // showing the WRONG device's state (the command reaches the physical
+    // device either way, but no card showing that device ever refreshes).
+    // Matches by the resolved device's ip against each existing card's
+    // persisted contentRef.selectedIp first.
     const device = resolveWledDeviceByAlias(wledDevices, action?.target);
     const matching = device
       ? layout.widgets.find((widget) => widget.widgetType === "wled" && widget.contentRef?.selectedIp === device.ip)
@@ -2546,17 +2375,13 @@ async function ensureWidgetForMacroAction(action) {
   // Prefers a candidate whose mounted api actually exposes runMacroAction
   // over just "whichever matches this widgetType first" — a Soundboard (or
   // Combat) card can be mounted as a read-only FOLLOWER instead of the real
-  // authoring one (contentRef.followKind — created by acceptSpotlight when
-  // this account accepted someone else's spotlight, or the second-screen
-  // mirror's own forcePlayerView self-follow), which has no runMacroAction
-  // at all despite sharing the same widgetType. Silently grabbing that one
+  // authoring one (contentRef.followKind), which has no runMacroAction at
+  // all despite sharing the same widgetType. Silently grabbing that one
   // would send a macro's soundboard action down the standalone fallback
-  // path (soundboard.js's own runSoundboardMacroAction) instead — audio
-  // would still start (the fallback plays it too), but THIS card, being
-  // read-only, would never reflect it either way. Falls back to the first
-  // match if nothing qualifies (Combat, whose handler doesn't care about
-  // widgetInstance at all) rather than null, so behavior for non-follower
-  // cases is unchanged.
+  // path instead — audio would still start, but that read-only card would
+  // never reflect it. Falls back to the first match if nothing qualifies
+  // (Combat, whose handler doesn't care about widgetInstance) rather than
+  // null, so behavior for non-follower cases is unchanged.
   const candidates = layout.widgets.filter((widget) => widget.widgetType === catalogId);
   const capable = candidates.find((widget) => typeof mounted.get(widget.instanceId)?.runMacroAction === "function");
   const existing = capable || candidates[0];
@@ -2573,9 +2398,8 @@ function populateAddToolbar() {
   if (!addToolbar) return;
   // These buttons carry live Bootstrap Tooltip instances — wiping them via
   // innerHTML without disposing first orphans any currently-shown tooltip
-  // popup on <body> forever (see tooltips.js's own comment on this exact
-  // failure mode), which is what made tooltips here "stick" after adding or
-  // removing a widget rebuilt this toolbar mid-hover.
+  // popup on <body> forever, which is what made tooltips here "stick"
+  // after adding or removing a widget rebuilt this toolbar mid-hover.
   disposeTooltips(addToolbar);
   addToolbar.innerHTML = "";
   const present = allWidgetTypes();
@@ -2589,9 +2413,8 @@ function populateAddToolbar() {
     const button = document.createElement("button");
     button.type = "button";
     // Fixed dark background (not outline-secondary's transparent one) so
-    // these stay visible no matter what background color the user picks for
-    // the canvas behind them — same reasoning as the static color-picker/
-    // reset buttons and the Edit layout toggle beside them.
+    // these stay visible regardless of the canvas background color, same
+    // reasoning as the static color-picker/reset buttons beside them.
     button.className = "btn btn-dark p-2";
     button.dataset.bsToggle = "tooltip";
     button.dataset.bsPlacement = "top";
@@ -2616,17 +2439,15 @@ function populateAddToolbar() {
     addToolbar.appendChild(button);
   });
   // Freshly-created buttons have no live Bootstrap Tooltip instance yet —
-  // same "dynamic DOM needs a rescan" reasoning as everywhere else this
-  // convention is used (see Loom's Property Inspector).
+  // same "dynamic DOM needs a rescan" reasoning as Loom's Property Inspector.
   refreshTooltips(addToolbar);
 }
 
 function applyEditingState() {
-  // Rebuilds the grid's own anchor/zone structure for the new editing
-  // state (empty-cell drop zones + their Sortable wiring only exist while
-  // editing — see renderWidgetGrid's own comment) — every widget card is
-  // still findable via gridEl.querySelectorAll below afterward, just
-  // relocated, not recreated.
+  // Rebuilds the grid's anchor/zone structure for the new editing state
+  // (empty-cell drop zones + their Sortable wiring only exist while
+  // editing) — every widget card is still findable via
+  // gridEl.querySelectorAll below afterward, just relocated, not recreated.
   renderWidgetGrid();
   const headers = gridEl ? Array.from(gridEl.querySelectorAll("[data-widget-header]")) : [];
   headers.forEach((header) => {
@@ -2637,37 +2458,34 @@ function applyEditingState() {
     }
   });
   if (gridEl) {
-    // A Remove button paired with a setRightAction button (Game Log's Clear
-    // log, Map/Combat Tracker/Handout's visibility toggle) collapses out of
-    // the layout entirely (d-none) instead of just going invisible, so that
-    // action can shift into its place — see mountWidget's own setRightAction.
+    // A Remove button paired with a setRightAction button (Game Log's
+    // Clear log, Map/Combat Tracker/Handout's visibility toggle) collapses
+    // out of the layout entirely (d-none) instead of going invisible, so
+    // that action can shift into its place.
     gridEl
       .querySelectorAll("[data-widget-remove-collapsible]")
       .forEach((button) => button.classList.toggle("d-none", !editing));
     gridEl
       .querySelectorAll("[data-widget-remove]:not([data-widget-remove-collapsible])")
       .forEach((button) => button.classList.toggle("invisible", !editing));
-    // Map's zoom control panel overlays the map itself (not the header), so
-    // this is the opposite sense from Remove/setRightAction above — shown
-    // only while NOT editing, hidden while editing rather than the reverse.
+    // Map's zoom control panel overlays the map itself (not the header),
+    // so this is the opposite sense from Remove/setRightAction above —
+    // shown only while NOT editing.
     gridEl.querySelectorAll("[data-map-zoom-panel]").forEach((panel) => panel.classList.toggle("d-none", editing));
-    // Board widget macro-button cards (board.js's own renderMacroButtonCard)
-    // — the click BEHAVIOR already switches live via ctx.isEditing()
-    // (buildCtx), this just keeps the visible hint in sync so it doesn't
-    // read stale after a toggle with no other reason for the widget itself
-    // to re-render.
+    // Board widget macro-button cards — the click BEHAVIOR already
+    // switches live via ctx.isEditing(), this just keeps the visible hint
+    // in sync so it doesn't read stale after a toggle.
     gridEl.querySelectorAll("[data-macro-run-button]").forEach((button) => {
       updateTooltipContent(button, editing ? "Edit in Loom" : "Run macro");
     });
-    // The drag-to-resize handle (mountWidget) — editing-only. Plain inline
-    // style.display, not the .d-none/.d-flex classes used elsewhere here —
-    // see that element's own comment (createWidgetCard) on why.
+    // The drag-to-resize handle — editing-only. Plain inline style.display,
+    // not the .d-none/.d-flex classes used elsewhere — see createWidgetCard.
     gridEl.querySelectorAll("[data-widget-resize-handle]").forEach((handle) => {
       handle.style.display = editing ? "block" : "none";
     });
-    // The header zoom controls (mountWidget) — the OPPOSITE sense from the
-    // resize handle: view-mode-only, hidden while editing (they're literally
-    // view controls, adjusting how YOU see the widget, not the layout).
+    // The header zoom controls — the OPPOSITE sense from the resize
+    // handle: view-mode-only, hidden while editing (they adjust how YOU
+    // see the widget, not the layout).
     gridEl.querySelectorAll("[data-widget-zoom-controls]").forEach((group) => {
       if (editing) {
         disposeTooltips(group);
@@ -2679,14 +2497,12 @@ function applyEditingState() {
     });
   }
   if (layoutTools) {
-    // Same orphaned-tooltip failure mode as populateAddToolbar — hiding this
-    // toolbar via d-none (not a size/visibility change Bootstrap's own
-    // mouseleave handling reliably catches) can leave a shown tooltip
-    // floating with no trigger left to dismiss it. Dispose right before
-    // hiding, re-arm right after showing. Grid size/background used to live
-    // here too — now in the Dashboard Settings modal (openDashboardSettingsModal),
-    // which reads straight from `layout` fresh on every open, so there's no
-    // separate sync to do for those anymore.
+    // Same orphaned-tooltip failure mode as populateAddToolbar — hiding
+    // this toolbar via d-none can leave a shown tooltip floating with no
+    // trigger left to dismiss it. Dispose right before hiding, re-arm
+    // right after showing. Grid size/background used to live here too —
+    // now in the Dashboard Settings modal, which reads straight from
+    // `layout` fresh on every open.
     if (editing) {
       layoutTools.classList.remove("d-none");
       refreshTooltips(layoutTools);
@@ -2703,14 +2519,13 @@ function applyEditingState() {
 async function onPinCharacter(characterId) {
   layout.pinnedCharacterId = characterId;
   persistLayout();
-  // Pinning a character no longer touches groupContext (and so can't change
-  // the dashboard's own campaign-name header title, or which group's log the
-  // spotlight watcher follows) — see group-context.js's own
-  // resolveGroupContext comment: the header's Campaign dropdown is the sole
-  // source of truth for which campaign is active, independent of which
-  // character happens to be pinned here. Still re-renders, since the
-  // Character Sheet widget itself reads layout.pinnedCharacterId directly
-  // and needs to pick up the new one.
+  // Pinning a character no longer touches groupContext (and so can't
+  // change the dashboard's campaign-name header title, or which group's
+  // log the spotlight watcher follows) — the header's Campaign dropdown is
+  // the sole source of truth for which campaign is active, independent of
+  // which character happens to be pinned here. Still re-renders, since the
+  // Character Sheet widget reads layout.pinnedCharacterId directly and
+  // needs to pick up the new one.
   renderWidgets();
 }
 
@@ -2718,42 +2533,38 @@ editToggle?.addEventListener("click", () => {
   const enteringEdit = !editing;
   editing = !editing;
   applyEditingState();
-  // The panel's own per-icon "clear this" affordance only shows in edit
-  // mode (see refreshSpotlightPanel/spotlight-panel.js) — re-render so
-  // toggling edit mode shows/hides it immediately, not just on the next
-  // poll tick.
+  // The panel's per-icon "clear this" affordance only shows in edit mode —
+  // re-render so toggling edit mode shows/hides it immediately, not just
+  // on the next poll tick.
   refreshSpotlightPanel();
   // Seed the input with the actual current (default) text so it reads as
   // real, easy-to-tweak content instead of starting blank behind a grey
   // placeholder — clearing it back to empty on blur/Enter still reverts to
-  // the placeholder-shown default (applyHeaderTitle's normal binding).
+  // the placeholder-shown default.
   if (enteringEdit && titleInput && !headerTitleOverride) {
     titleInput.value = computeDefaultHeaderTitle();
   }
 });
 
 gridEl?.addEventListener("click", (event) => {
-  // A click that landed on the canvas itself (not inside any widget card) —
-  // e.g. empty grid space — deselects, same as clicking a Remove/Cancel
-  // action would; a widget click below re-selects normally.
+  // A click on the canvas itself (not inside any widget card) — e.g.
+  // empty grid space — deselects; a widget click below re-selects normally.
   const card = event.target.closest("[data-widget-instance-id]");
   selectWidget(card ? card.dataset.widgetInstanceId : "");
 });
 
-// A real on/off toggle now (not "open, or refocus if already open") — blue
+// A real on/off toggle (not "open, or refocus if already open") — blue
 // (btn-primary) while the mirror window is open, same "on" convention as a
-// widget's own show-to-table button (mountWidget's setRightAction), and a
-// second click closes that window outright rather than just focusing it.
-// screenWindowRef is the actual WindowProxy window.open() hands back, which
-// is also what lets this close it later — a *name* alone (the old
-// "undercroft-screen" target) only lets you reopen/refocus, not close.
+// widget's own show-to-table button, and a second click closes that
+// window outright rather than just focusing it. screenWindowRef is the
+// actual WindowProxy window.open() hands back, which is also what lets
+// this close it later — a *name* alone only lets you reopen/refocus.
 let screenWindowRef = null;
 let screenWindowWatchTimer = 0;
 let lastTrackedScreenPosition = null;
 
-// Common physical second-monitor/TV resolutions — a GM picks one instead of
-// guessing pixel values, since "everyone's second screen is different" (the
-// exact ask this exists for). SCREEN_RESOLUTION_CUSTOM opens up the two raw
+// Common physical second-monitor/TV resolutions — a GM picks one instead
+// of guessing pixel values. SCREEN_RESOLUTION_CUSTOM opens up the two raw
 // width/height fields in the settings modal for anything not listed here.
 const SCREEN_RESOLUTION_PRESETS = [
   { value: "1024x768", label: "1024 × 768", width: 1024, height: 768 },
@@ -2767,21 +2578,17 @@ const SCREEN_RESOLUTION_PRESETS = [
 const SCREEN_RESOLUTION_CUSTOM = "custom";
 const DEFAULT_SCREEN_RESOLUTION = "1920x1080";
 // Same steps Windows' own display-scaling control offers — a familiar set
-// rather than an arbitrary one, and it directly covers the "displays things
-// smaller at such a high resolution" complaint this exists to fix.
+// rather than an arbitrary one.
 const SCREEN_ZOOM_OPTIONS = [100, 110, 125, 150, 175, 200];
 const DEFAULT_SCREEN_ZOOM = 100;
 const SCREEN_SETTINGS_LOCAL_KEY = "screenSettings";
 const DASHBOARD_SETTINGS_MODAL_ID = "undercroft-dashboard-settings-modal";
 
-// Deliberately local-only — NOT run through persistSetting()/
-// dataManager.saveUserSettings like every other dashboard setting (layout,
-// background, header title). Which physical display is "second," what
+// Deliberately local-only — NOT run through persistSetting() like every
+// other dashboard setting. Which physical display is "second," what
 // resolution/zoom it runs, and where the mirror window last sat are all
-// properties of THIS machine's own monitor arrangement, not something that
-// should follow a signed-in account to a different computer. loadLocalSetting/
-// saveLocalSetting (this file's own local-only pair) already stop short of
-// that server round trip, so no separate storage mechanism is needed here.
+// properties of THIS machine's own monitor arrangement, not something
+// that should follow a signed-in account to a different computer.
 function loadScreenSettings() {
   const raw = loadLocalSetting(SCREEN_SETTINGS_LOCAL_KEY) || {};
   return {
@@ -2790,7 +2597,7 @@ function loadScreenSettings() {
     customHeight: clampInt(raw.customHeight, 240, 4320, 1080),
     zoom: SCREEN_ZOOM_OPTIONS.includes(Number(raw.zoom)) ? Number(raw.zoom) : DEFAULT_SCREEN_ZOOM,
     // Wherever the GM last dragged the mirror window to — null until the
-    // first time it's moved (see watchScreenWindow's own tracking below).
+    // first time it's moved.
     left: Number.isFinite(raw.left) ? raw.left : null,
     top: Number.isFinite(raw.top) ? raw.top : null,
   };
@@ -2808,16 +2615,13 @@ function resolveScreenSize(settings) {
   return preset ? { width: preset.width, height: preset.height } : { width: 1920, height: 1080 };
 }
 
-// Window Management API (`getScreenDetails`) — Chromium-only as of this
-// writing, no Firefox/Safari support, and gated behind a one-time permission
-// prompt the first time a page actually calls it. Tried first every time
-// per the "automatic when possible" ask: once granted it resolves near-
-// instantly with no prompt, so this costs nothing on the common case, and it
-// simply returns null on anything else (unsupported browser, denied/
-// dismissed permission, or a single-display machine with no "second" screen
-// to find) — resolveWindowPlacement's remembered-position fallback covers
-// every one of those cases identically, so nothing here needs to know WHY
-// auto-placement didn't happen, just that it didn't.
+// Window Management API (`getScreenDetails`) — Chromium-only, no Firefox/
+// Safari support, gated behind a one-time permission prompt the first time
+// a page calls it. Tried first every time: once granted it resolves
+// near-instantly with no prompt, and simply returns null on anything else
+// (unsupported browser, denied permission, single-display machine) —
+// resolveWindowPlacement's remembered-position fallback covers every case
+// identically, so nothing here needs to know WHY auto-placement failed.
 async function detectSecondScreenPlacement(width, height) {
   if (typeof window.getScreenDetails !== "function") return null;
   try {
@@ -2838,9 +2642,8 @@ async function detectSecondScreenPlacement(width, height) {
 
 // Auto-placement first (the "right browser, permission given" case), the
 // remembered last-dragged position as the always-on backup otherwise, and
-// no explicit left/top at all (the browser's own default placement) if
-// neither is available yet — e.g. a brand-new install of an unsupported
-// browser that's never had the window moved.
+// no explicit left/top (the browser's default placement) if neither is
+// available yet.
 async function resolveWindowPlacement(settings, width, height) {
   const auto = await detectSecondScreenPlacement(width, height);
   if (auto) return auto;
@@ -2872,11 +2675,10 @@ function stopWatchingScreenWindow() {
 // There's no reliable cross-browser event for "a window I opened just got
 // closed" (by its own OS close button, not through this toggle) — polling
 // its own `.closed` flag is the standard workaround, so the button still
-// reverts to inactive if the GM closes the mirror window directly instead
-// of clicking this toggle again. The same tick also captures screenX/screenY
-// into the remembered-position setting above — harmless to keep recording
-// even when this open used auto-placement, since a GM who drags it
-// afterward wants THAT new spot remembered as the backup, not the stale one.
+// reverts to inactive if the GM closes the mirror window directly. The
+// same tick also captures screenX/screenY into the remembered-position
+// setting — harmless even when this open used auto-placement, since a GM
+// who drags it afterward wants THAT spot remembered as the backup.
 function watchScreenWindow() {
   stopWatchingScreenWindow();
   lastTrackedScreenPosition = null;
@@ -2916,12 +2718,11 @@ async function openScreenWindow() {
   const features = buildScreenWindowFeatures(width, height, placement);
   screenWindowRef = window.open(url, "undercroft-screen", features);
   // null when the browser's popup blocker stepped in — nothing opened, so
-  // the button should stay showing "off." The one case this can legitimately
-  // happen even with a real click behind it: the very first time
-  // getScreenDetails() has to show its own permission prompt, the wait for
-  // a human response can outlast the click's "user activation" window. A
-  // second click right after granting works normally, since the permission
-  // is then already decided and getScreenDetails() resolves instantly.
+  // the button should stay showing "off." Can also legitimately happen
+  // behind a real click: the first time getScreenDetails() shows its own
+  // permission prompt, the wait for a human response can outlast the
+  // click's "user activation" window. A second click right after granting
+  // works normally, since the permission is then already decided.
   if (screenWindowRef) {
     setScreenButtonActive(true);
     watchScreenWindow();
@@ -2942,8 +2743,8 @@ screenViewButton?.addEventListener("click", () => {
 function applyColumnCount(value) {
   layout.columnCount = clampInt(value, GRID_COLUMN_COUNT_MIN, GRID_COLUMN_COUNT_MAX, layout.columnCount);
   // A shrunk grid can leave existing widgets extending past the new right
-  // edge — clamp their own colSpan/col to fit rather than leaving them
-  // hanging off the grid entirely.
+  // edge — clamp their colSpan/col to fit rather than leaving them hanging
+  // off the grid entirely.
   layout.widgets.forEach((instance) => {
     instance.colSpan = Math.min(instance.colSpan, layout.columnCount);
     instance.col = Math.min(instance.col, layout.columnCount - instance.colSpan);
@@ -2970,14 +2771,12 @@ function applyRowCount(value) {
 // generic per-tool settings module — that module's rows are flat
 // boolean/select/multiselect fields with no support for a conditionally-
 // shown custom width/height pair or a plain action button ("Forget
-// remembered position"), and teaching it those shapes just for this one
-// caller isn't worth it. Built the same way that module builds its own
-// modal (a detached wrapper appended to document.body once, rebuilt fresh
-// on every open) — same convention, just not the same shared instance. Two
-// sections (Layout, Second Screen) under one "Dashboard Settings" header,
-// same "one settings home per tool" shape Vault/Forge/Crucible/Repository's
-// own gear button already establishes — this just has two groups of
-// settings instead of one flat list.
+// remembered position"), and teaching it those shapes for one caller isn't
+// worth it. Built the same way that module builds its own modal (a
+// detached wrapper appended to document.body once, rebuilt fresh on every
+// open). Two sections (Layout, Second Screen) under one "Dashboard
+// Settings" header, same "one settings home per tool" shape Vault/Forge/
+// Crucible/Repository's gear button establishes.
 function ensureDashboardSettingsModal() {
   let modal = document.getElementById(DASHBOARD_SETTINGS_MODAL_ID);
   if (modal) return modal;
@@ -3125,14 +2924,12 @@ function renderScreenSettingsSection() {
   });
 
   // Scales everything the mirror window renders (same mechanism as a
-  // browser's own Ctrl+/Ctrl- page zoom) — a high-resolution second display
-  // often renders the same physical UI smaller than a lower-resolution one
-  // would, since more CSS pixels fit in the same physical inches; this is
-  // the direct fix for that, independent of the resolution chosen above.
-  // Takes effect on an already-open mirror window too — applyScreenZoom
-  // (dashboard.js's own screen-mode code) re-reads this same localStorage
-  // setting on every 5s refreshScreen poll, so there's no need to close and
-  // reopen the window after changing it here.
+  // browser's Ctrl+/Ctrl- page zoom) — a high-resolution second display
+  // often renders the same physical UI smaller, since more CSS pixels fit
+  // in the same physical inches; this is the direct fix, independent of
+  // the resolution chosen above. Takes effect on an already-open mirror
+  // window too — applyScreenZoom re-reads this localStorage setting on
+  // every refreshScreen poll, no need to close and reopen the window.
   const zoomRow = el("div", "d-flex flex-column gap-1");
   zoomRow.append(el("label", "form-label fw-semibold mb-0", "Zoom"));
   const zoomSelect = document.createElement("select");
@@ -3173,10 +2970,9 @@ function renderScreenSettingsSection() {
 }
 
 // Rebuilds every section's elements fresh every open (same pattern
-// tool-settings.js's own renderModalBody uses) rather than reusing/mutating
-// existing nodes — the simplest way to avoid stale event listeners piling up
-// across repeated opens, and it means each section always reflects whatever
-// changed (layout, background, campaign) since the modal was last open.
+// tool-settings.js's renderModalBody uses) rather than reusing/mutating
+// existing nodes — avoids stale event listeners piling up across repeated
+// opens, and each section always reflects whatever changed since last open.
 function renderDashboardSettingsModal(modal) {
   const body = modal.querySelector("[data-dashboard-settings-body]");
   if (!body) return;
@@ -3193,11 +2989,10 @@ function openDashboardSettingsModal() {
   bsModal?.show();
 }
 
-// Same button shape tool-settings.js's own mountButton builds for Vault/
-// Forge/Crucible/Repository (outline-secondary gear icon, bottom tooltip) —
-// not built through that module itself, since its modal doesn't fit this
-// tool's needs (see renderDashboardSettingsModal's own comment), but the
-// button belongs in the exact same upper-left header slot those tools use.
+// Same button shape tool-settings.js's mountButton builds for Vault/Forge/
+// Crucible/Repository (outline-secondary gear icon, bottom tooltip) — not
+// built through that module, since its modal doesn't fit this tool's
+// needs, but the button belongs in the same upper-left header slot.
 const dashboardSettingsButton = el("button", "btn btn-outline-secondary d-flex align-items-center justify-content-center");
 dashboardSettingsButton.type = "button";
 dashboardSettingsButton.setAttribute("aria-label", "Dashboard Settings");
@@ -3233,12 +3028,11 @@ async function boot() {
   const serverSettings = await loadServerSettings();
   layout = await loadLayout(serverSettings);
   if (screenMode) {
-    // The second-screen mirror, alone, no dashboard chrome at all — none of
-    // the rest of boot()'s own setup (background, header title, help
-    // browser, the add-widget toolbar, the spotlight watcher) applies to a
-    // window whose only job is to display whatever's currently shown to the
-    // table. See renderScreenView's own comment for why this still needs
-    // groupContext resolved first.
+    // The second-screen mirror, alone, no dashboard chrome — none of the
+    // rest of boot()'s setup (background, header title, help browser, the
+    // add-widget toolbar, the spotlight watcher) applies to a window whose
+    // only job is to display whatever's currently shown to the table.
+    // Still needs groupContext resolved first — see renderScreenView.
     groupContext = await resolveGroupContext(dataManager, { shareToken: shareParam });
     renderScreenView();
     return;
@@ -3275,18 +3069,14 @@ async function boot() {
   startDiceRevealWatcher();
   // Activates the static data-bs-toggle="tooltip" markup (color picker,
   // reset button) — populateAddToolbar already covers its own dynamically
-  // built buttons on its own.
+  // built buttons.
   refreshTooltips(document);
-  // Picking a different campaign from the header's own Campaign dropdown
-  // while the Dashboard is already open (not landing here fresh after
-  // switching it elsewhere) needs to actually take effect live — the header
-  // selector is now the sole source of truth for groupContext (see
-  // group-context.js's own resolveGroupContext comment), not just a value
-  // read once at boot. Mirrors Workbench's own identical listener
-  // (workbench-character-view.js). Skipped entirely for shareToken sessions
-  // (an anonymous/share viewer has no header dropdown to change) and the
-  // screen-mirror mode (no chrome at all — see this function's own early
-  // return above).
+  // Picking a different campaign from the header's Campaign dropdown while
+  // the Dashboard is already open needs to take effect live — the header
+  // selector is the sole source of truth for groupContext, not just a
+  // value read once at boot. Mirrors Workbench's identical listener.
+  // Skipped for shareToken sessions (an anonymous/share viewer has no
+  // header dropdown to change) and screen-mirror mode (no chrome at all).
   if (!shareParam) {
     window.addEventListener("workbench:active-group-changed", async () => {
       groupContext = await resolveGroupContext(dataManager, { shareToken: shareParam });
@@ -3300,13 +3090,12 @@ async function boot() {
 }
 
 // The welcome screen only makes sense pre-login — a full reload after
-// successfully signing in FROM it (its own CTA, or the header's own
-// button) is the simplest, safest way to pick up the real experience
-// (computeDefaultWidgets, a real header title, group context, ...) through
-// the same boot() sequence every fresh load already goes through, rather
-// than trying to re-run pieces of it live. Checked via the welcome screen's
-// OWN current visibility (not a snapshot) — a normal logout, or an auth
-// change on an already-populated dashboard, needs no reaction here.
+// successfully signing in FROM it is the simplest, safest way to pick up
+// the real experience (computeDefaultWidgets, a real header title, group
+// context) through the same boot() sequence every fresh load goes through,
+// rather than re-running pieces of it live. Checked via the welcome
+// screen's OWN current visibility (not a snapshot) — a normal logout, or
+// an auth change on an already-populated dashboard, needs no reaction here.
 window.addEventListener("undercroft:auth-changed", () => {
   if (welcomeEl && !welcomeEl.classList.contains("d-none") && dataManager.isAuthenticated()) {
     window.location.reload();

@@ -1,88 +1,75 @@
 // Markdown → sanitized HTML, via the `marked`/`DOMPurify` CDN globals loaded
-// by repository/index.html (deferred, after this page's own module script —
-// see that file's own script-ordering comment). Both are only ever touched
-// inside renderMarkdown itself, never at module load time, so it's safe for
-// this module to be imported before those scripts finish fetching.
+// by repository/index.html (deferred, after this page's own module script).
+// Both are only ever touched inside renderMarkdown itself, never at module
+// load time, so it's safe for this module to be imported before those
+// scripts finish fetching.
 //
 // [[Page Title]] wiki-links are NOT part of CommonMark, so they're rewritten
 // into plain markdown links *before* handing the text to marked — each
 // becomes `[Page Title](#journal:<id-or-title>)`, resolved via the caller's
 // own `resolveWikiLink(title)` (journal-links.js's buildTitleIndex, kept
-// entirely out of this module — this file only knows how to render text, not
-// how to look pages up). A title that doesn't resolve still becomes a link
-// so it's clickable in the rendered preview — see applyWikiLinkStyling below
-// for how a missing target gets flagged visually (and why the "#").
+// entirely out of this module — this file only renders text, it doesn't
+// look pages up). A title that doesn't resolve still becomes a link so it's
+// clickable in the preview — see applyWikiLinkStyling for how a missing
+// target gets flagged (and why the "#").
 //
 // `dice:1d4`-style inline code spans get the same after-the-fact treatment —
 // see journal-dice.js's own header comment.
 import { applyDiceRollers } from "./journal-dice.js";
 // `- [ ]`/`- [x]` task-list checkboxes are standard GFM, already rendered by
-// marked itself (disabled by default) — see journal-tasks.js's own header
-// comment for what enabling them after the fact does.
+// marked itself (disabled by default) — see journal-tasks.js for what
+// enabling them after the fact does.
 import { applyTaskCheckboxes } from "./journal-tasks.js";
-// `` `encounter:...` `` inline code spans, same "post-process a rendered
-// <code> element" treatment as dice: blocks — see journal-encounter.js's own
-// header comment and applyEncounterBlocks below.
+// `` `encounter:...` `` inline code spans, same post-process treatment as
+// dice: blocks — see journal-encounter.js and applyEncounterBlocks below.
 import { parseEncounterBlock } from "./journal-encounter.js";
-// `` `macro:...` `` inline code spans — fully self-contained (parsing,
-// chip, AND resolution/execution all live in journal-macro.js), same shape
-// journal-dice.js already uses, unlike encounter blocks (which need this
-// page's own id, so their execution is a caller-supplied callback instead —
-// see journal-macro.js's own header comment for why macros don't need that).
+// `` `macro:...` `` inline code spans — fully self-contained (parsing, chip,
+// AND resolution/execution all live in journal-macro.js), unlike encounter
+// blocks (which need this page's own id, so execution is a caller-supplied
+// callback instead).
 import { applyMacroBlocks } from "./journal-macro.js";
 // Every OTHER Library kind's own `` `kindId:Name` `` inline code spans —
-// same treatment, but generic instead of one bespoke module per kind; see
-// journal-kind-reference.js's own header comment for why dice/encounter/
-// macro (and journal/kind) are excluded from it.
+// same treatment, generic instead of one bespoke module per kind; see
+// journal-kind-reference.js for why dice/encounter/macro (and journal/kind)
+// are excluded from it.
 import { applyKindReferenceBlocks } from "./journal-kind-reference.js";
-// `` `date:<dayIndex>` `` inline code spans — same "post-process a rendered
-// <code> element" treatment, but not a kind reference (there's no "date"
-// Library entity); see journal-date.js's own header comment.
+// `` `date:<dayIndex>` `` inline code spans — same treatment, but not a kind
+// reference (there's no "date" Library entity); see journal-date.js.
 import { applyDateReferences } from "./journal-date.js";
 // `> [!type]` callout blockquotes — parsing/color-icon lookup lives in
-// journal-callouts.js (same split as journal-encounter.js's own
-// parseEncounterBlock: that module parses, this one renders); see
-// ensureCalloutRenderer/applyCalloutStyling below for how the two halves fit
-// together.
+// journal-callouts.js (same split as journal-encounter.js: that module
+// parses, this one renders); see ensureCalloutRenderer/applyCalloutStyling.
 import { parseCallout, resolveCalloutStyle, resolveColor } from "./journal-callouts.js";
-// Quest-specific decoration for a `[!quest]` callout's own title row — see
-// applyCalloutStyling's own quest branch below. Everything else about a
-// quest callout renders through the exact same generic path every other
-// callout type does.
+// Quest-specific decoration for a `[!quest]` callout's own title row —
+// everything else about a quest callout renders through the same generic
+// path every other callout type does.
 import { computeQuestStatus, QUEST_STATUS_META } from "./journal-quests.js";
 // `^blockId` marker lines under a named, rollable table — stripped from the
 // raw text before rendering, same stage as rewriteWikiLinks below, since
-// CommonMark doesn't know that syntax and would otherwise render a stray
-// paragraph for it. See journal-tables.js's own header comment for the
-// feature this supports (`dice:[[Page#^blockId]]`, resolved by dice-roll.js).
+// CommonMark doesn't know that syntax and would render a stray paragraph.
+// See journal-tables.js (`dice:[[Page#^blockId]]`, resolved by dice-roll.js).
 import { stripNamedTableMarkers } from "./journal-tables.js";
 import { el } from "../../../common/js/lib/dom.js";
 import { wikiLinkPattern } from "./wiki-link-syntax.js";
 
-// Two independent things have to survive between here and applyWikiLinkStyling
-// actually finding this anchor again below:
+// Two things have to survive between here and applyWikiLinkStyling finding
+// this anchor again below:
 //   1. CommonMark link destinations without angle brackets can't contain a
 //      raw space (or unbalanced parens) — a title like "Maris Wavedeep"
 //      turned straight into `journal-missing:Maris Wavedeep` isn't a valid
-//      destination at all, so marked doesn't parse it as a link and just
-//      leaves the literal `[label](journal-missing:Maris Wavedeep)` text
-//      sitting there unrendered. encodeURIComponent keeps the destination a
-//      single space-free token.
+//      destination, so marked leaves the literal `[label](journal-missing:
+//      Maris Wavedeep)` text unrendered. encodeURIComponent keeps the
+//      destination a single space-free token.
 //   2. DOMPurify's default allowed-URI check only recognizes a fixed list of
-//      real schemes (http, mailto, tel, ...) — an arbitrary custom scheme
-//      like a bare "journal:" is exactly the shape of URI that check exists
-//      to reject, so it strips the `href` attribute entirely before this
-//      code ever runs. Leading with "#" sidesteps that: DOMPurify treats
-//      anything starting with a non-letter as a same-page fragment, always
-//      allowed, regardless of what follows. The "#" is never actually used
-//      as a fragment navigation — applyWikiLinkStyling strips `href`
-//      entirely (and wires a real click handler) before a user could ever
-//      click it.
-// `heading` (from a `[[Page#Heading]]` link) rides along as a second
-// colon-separated encoded segment — safe to split on a raw `:` afterward
-// since encodeURIComponent always escapes `:` to `%3A` within each segment
-// itself, so it can never appear un-encoded except as the delimiter this
-// function itself inserts.
+//      real schemes (http, mailto, tel, ...) — a bare "journal:" scheme gets
+//      its `href` stripped before this code ever runs. Leading with "#"
+//      sidesteps that: DOMPurify treats anything starting with a non-letter
+//      as a same-page fragment, always allowed. The "#" is never actually
+//      used for navigation — applyWikiLinkStyling strips `href` entirely
+//      (and wires a real click handler) before a user could click it.
+// `heading` (from `[[Page#Heading]]`) rides along as a second colon-
+// separated encoded segment — safe to split on a raw `:` since
+// encodeURIComponent always escapes `:` within each segment itself.
 function buildLinkTarget(prefix, value, heading) {
   const base = `#${prefix}:${encodeURIComponent(value)}`;
   return heading ? `${base}:${encodeURIComponent(heading)}` : base;
@@ -90,31 +77,25 @@ function buildLinkTarget(prefix, value, heading) {
 
 // Single-backtick inline code spans (`` `dice:...` ``, `` `encounter:...` ``)
 // — split out and left untouched by rewriteWikiLinks below, so a literal
-// `[[Page#^blockId]]` table reference inside a `` `dice:...` `` span survives
-// as-is instead of being rewritten into a markdown link before
-// journal-dice.js/dice-roll.js ever see the original syntax (confirmed bug:
-// a `dice:[[...]]` chip silently turned into `dice:[Title](#journal:...)`,
-// which the numeric dice parser then choked on). Doesn't attempt full
-// CommonMark code-span fidelity (multi-backtick delimiters, escaped
-// backticks) — single backticks are the only kind any convention in this
-// suite actually uses.
+// `[[Page#^blockId]]` table reference inside a `` `dice:...` `` span
+// survives as-is instead of being rewritten into a markdown link before
+// journal-dice.js/dice-roll.js ever see the original syntax. Doesn't attempt
+// full CommonMark code-span fidelity (multi-backtick delimiters, escaped
+// backticks) — single backticks are the only kind this suite uses.
 const CODE_SPAN_SPLIT_PATTERN = /(`[^`\n]*`)/g;
 
-// A GFM task-list line with NOTHING (or only trailing whitespace) after its
-// own `[ ]`/`[x]` marker — `- [ ]` on its own, meant as a plain unlabeled
-// checkbox — can fail to render an actual checkbox `<input>` at all in
-// marked's own GFM extension, falling back to plain list text instead
-// (confirmed against Obsidian, which renders these fine — this is a
-// marked-specific edge case, not a markdown authoring mistake). Appending a
-// zero-width space gives marked SOME real inline content to anchor the
+// A GFM task-list line with nothing (or only trailing whitespace) after its
+// `[ ]`/`[x]` marker can fail to render an actual checkbox `<input>` in
+// marked's GFM extension, falling back to plain list text instead (Obsidian
+// renders these fine — this is a marked-specific edge case). Appending a
+// zero-width space gives marked real inline content to anchor the
 // checkbox+text rendering to; invisible to the reader, and this only ever
 // runs on the render-time copy — the stored source is never touched.
 // Tolerates the same optional blockquote prefix (`> - [ ]`, inside a
-// `[!quest]` callout) journal-tasks.js's own TASK_LINE_PATTERN does.
+// `[!quest]` callout) journal-tasks.js's TASK_LINE_PATTERN does.
 const EMPTY_TASK_LINE_PATTERN = /^((?:>\s?)*\s*[-*+]\s+\[[ xX]\])\s*$/;
-// U+200B zero-width space, via String.fromCharCode (not a literal invisible
-// character in this source file) so it's unambiguous on disk and in any
-// future diff.
+// U+200B zero-width space, via String.fromCharCode so it's unambiguous on
+// disk and in any future diff.
 const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
 function ensureNonEmptyTaskContent(rawBody) {
   return String(rawBody || "")
@@ -137,13 +118,12 @@ function rewriteWikiLinksInSegment(rawBody, resolveWikiLink) {
     const resolved = typeof resolveWikiLink === "function" ? resolveWikiLink(trimmedTitle) : null;
     const label = (aliasLabel || trimmedTitle).trim();
     // A heading anchor only makes sense for a link that actually resolves —
-    // a not-yet-created page has nothing to jump to inside it. The link's
-    // own explicit `#Heading` always wins; `resolved.heading` is a resolver
-    // supplying an IMPLICIT one — e.g. a bare [[Quest Title]] that only
-    // matched via a quest-title index (repository/js/app.js's own
-    // resolveWikiLinkTarget) carries the quest's own title here, so the
-    // link still lands on that quest's own callout, not just the top of
-    // its page, despite no #Heading ever being typed.
+    // a not-yet-created page has nothing to jump to. The link's own explicit
+    // `#Heading` always wins; `resolved.heading` is a resolver supplying an
+    // IMPLICIT one — e.g. a bare [[Quest Title]] that only matched via the
+    // quest-title index (repository/js/app.js's resolveWikiLinkTarget)
+    // carries the quest's own title here, so the link lands on that quest's
+    // callout, not just the top of its page.
     const effectiveHeading = (heading || resolved?.heading || "").trim();
     const target = resolved?.id
       ? buildLinkTarget("journal", resolved.id, effectiveHeading)
@@ -154,27 +134,25 @@ function rewriteWikiLinksInSegment(rawBody, resolveWikiLink) {
 
 // Runs after marked+DOMPurify have already turned the rewritten links above
 // into real `<a href="#journal:...">`/`<a href="#journal-missing:...">` tags
-// — this is what actually makes them behave like internal links instead of
-// the browser trying to jump to a same-page fragment.
+// — this is what makes them behave like internal links instead of the
+// browser trying to jump to a same-page fragment.
 //
-// Wikipedia-style: a link to a page that exists reads as a normal (blue)
-// link; a link to a page that doesn't exist yet reads red, with a tooltip
-// naming what's missing, and clicking it starts a new page pre-filled with
-// that title — same "redlink" convention Wikipedia itself uses. Removing
-// `href` below drops the browser's own default link styling entirely, so
-// both cases get their color/underline set inline here (not just via the
-// `.journal-link`/`.journal-link-missing` classes in repository/css/
-// styles.css) — this module is also imported by handout.js to render a
-// journal page inside a Dashboard widget, a page that never loads
-// Repository's own stylesheet, so the classes alone wouldn't be enough
-// there.
+// Wikipedia-style: a link to a page that exists reads as normal (blue); a
+// link to a page that doesn't exist yet reads red, with a tooltip naming
+// what's missing, and clicking it starts a new page pre-filled with that
+// title — the "redlink" convention. Removing `href` drops the browser's
+// default link styling, so both cases get their color/underline set inline
+// here (not just via the `.journal-link`/`.journal-link-missing` classes in
+// repository/css/styles.css) — this module is also imported by handout.js
+// to render a journal page inside a Dashboard widget, which never loads
+// Repository's own stylesheet.
 function applyWikiLinkStyling(container, { onNavigate } = {}) {
   container.querySelectorAll('a[href^="#journal:"], a[href^="#journal-missing:"]').forEach((anchor) => {
     const href = anchor.getAttribute("href") || "";
     const isMissing = href.startsWith("#journal-missing:");
     // "<encodedValue>" or "<encodedValue>:<encodedHeading>" — see
-    // buildLinkTarget's own comment for why splitting on the first
-    // remaining raw ":" is safe here.
+    // buildLinkTarget for why splitting on the first remaining raw ":" is
+    // safe here.
     const rest = href.slice(href.indexOf(":") + 1);
     const headingSplit = rest.indexOf(":");
     const value = decodeURIComponent(headingSplit === -1 ? rest : rest.slice(0, headingSplit));
@@ -200,11 +178,10 @@ function applyWikiLinkStyling(container, { onNavigate } = {}) {
 }
 
 // Runs AFTER applyWikiLinkStyling — every internal wiki-link anchor already
-// had its own `href` removed by that point (see above), so a plain
-// `a[href]` selector here only ever finds genuine external links (a real
-// `[text](https://...)` markdown link, a mailto:, ...), never re-touches an
-// internal one. `rel="noopener noreferrer"` is the standard, required
-// pairing with `target="_blank"` — without it, the opened page gets a live
+// had its `href` removed by that point, so a plain `a[href]` selector here
+// only ever finds genuine external links, never re-touches an internal one.
+// `rel="noopener noreferrer"` is the standard required pairing with
+// `target="_blank"` — without it, the opened page gets a live
 // `window.opener` reference back to this one.
 function applyExternalLinkTargets(container) {
   container.querySelectorAll("a[href]").forEach((anchor) => {
@@ -218,8 +195,8 @@ function applyExternalLinkTargets(container) {
 const ENCOUNTER_CODE_PATTERN = /^encounter:\s*(.+)$/i;
 
 // Same "inline styles, not CSS classes" reasoning as journal-dice.js's own
-// chip — this can render inside handout.js's Dashboard widget, a page that
-// never loads Repository's own stylesheet.
+// chip — this can render inside handout.js's Dashboard widget, which never
+// loads Repository's own stylesheet.
 function styleAsChip(button) {
   button.style.display = "inline-flex";
   button.style.alignItems = "center";
@@ -252,16 +229,14 @@ function buildEncounterChip(creatures, blockIndex, { interactive, onStartEncount
   return button;
 }
 
-// Runs after marked+DOMPurify — CommonMark's own backtick syntax already
-// turned `` `encounter: 1: Giant Shark, 2: Merfolk` `` into a plain
-// <code>...</code>; this finds those and swaps each one for a chip. The chip
-// always renders (a readable summary), but only gets a click handler when
-// `interactive` is true — starting combat (unlike rolling dice) is a GM-only
-// action, so a player viewing a shown-to-the-table page must never be able
-// to trigger it, while still seeing something more useful than raw
-// `encounter:` code text. `blockIndex` (0-based, among encounter blocks on
-// THIS page only, in document order) is handed back to `onStartEncounter` so
-// the caller can derive a stable id for this specific block — see
+// Runs after marked+DOMPurify — CommonMark's backtick syntax already turned
+// `` `encounter: 1: Giant Shark, 2: Merfolk` `` into a plain <code>...</code>;
+// this finds those and swaps each for a chip. The chip always renders, but
+// only gets a click handler when `interactive` is true — starting combat
+// (unlike rolling dice) is GM-only, so a player viewing a shown-to-the-table
+// page must never be able to trigger it. `blockIndex` (0-based, among
+// encounter blocks on THIS page only) is handed back to `onStartEncounter`
+// so the caller can derive a stable id for this block — see
 // journal-encounter.js's deterministicEncounterId.
 function applyEncounterBlocks(container, { interactive = false, onStartEncounter } = {}) {
   let blockIndex = 0;
@@ -279,8 +254,7 @@ function applyEncounterBlocks(container, { interactive = false, onStartEncounter
 // renderer, once — guarded so every renderMarkdown call (every keystroke in
 // Preview, every widget mount) doesn't keep re-registering the same
 // override. Deferred to first call rather than module load, same reason as
-// this file's own top-of-file comment: `marked` may not have finished
-// loading yet when this module is first imported.
+// this file's own top comment: `marked` may not have finished loading yet.
 let calloutRendererRegistered = false;
 function ensureCalloutRenderer(marked) {
   if (calloutRendererRegistered) return;
@@ -288,21 +262,17 @@ function ensureCalloutRenderer(marked) {
   marked.use({
     renderer: {
       // Token-based renderer API (marked v5+) — `token.text` is this
-      // blockquote's own dedented raw markdown source (every leading `>`
-      // and the one space after it already stripped, multi-line structure
-      // otherwise intact), exactly what journal-callouts.js's parseCallout
-      // expects. Falling through to the default rendering (via the
-      // already-parsed `token.tokens`) for anything that isn't a callout
-      // leaves ordinary blockquotes completely untouched — this only ever
-      // fires for a blockquote whose very first line is a `[!type]` marker.
+      // blockquote's own dedented raw markdown source, exactly what
+      // journal-callouts.js's parseCallout expects. Falling through to the
+      // default rendering for anything that isn't a callout leaves ordinary
+      // blockquotes untouched — this only fires when the blockquote's very
+      // first line is a `[!type]` marker.
       //
-      // Deliberately no color/icon baked into this HTML — this string still
-      // has to pass through DOMPurify.sanitize() below, and (same reasoning
-      // applyWikiLinkStyling/styleAsChip already document) this module also
-      // renders inside handout.js's Dashboard widget, which never loads
-      // Repository's own stylesheet — so the actual look is applied as
-      // inline styles by applyCalloutStyling, after sanitization, exactly
-      // like every other cross-tool-reused piece of this renderer.
+      // Deliberately no color/icon baked into this HTML — it still has to
+      // pass through DOMPurify.sanitize() below, and this module also
+      // renders inside handout.js's Dashboard widget (no stylesheet loaded
+      // there) — so the actual look is applied as inline styles by
+      // applyCalloutStyling, after sanitization.
       blockquote(token) {
         const parsed = parseCallout(token.text);
         if (!parsed) {
@@ -333,24 +303,20 @@ function ensureCalloutRenderer(marked) {
 
 // Runs after DOMPurify — fills in what the renderer override above
 // deliberately left as bare structure: per-type border/background/title
-// color (resolveCalloutStyle, keyed off the `data-callout` attribute), the
-// actual icon (same "build an iconify span via DOM API" convention
-// buildEncounterChip uses, not baked into the HTML string), and — for a
-// foldable callout only — the rotating chevron and its `toggle` listener.
-// `<details>`/`<summary>` already provide the actual open/close behavior
-// natively, no click handling needed here at all.
+// color (resolveCalloutStyle, keyed off `data-callout`), the actual icon
+// (same "build an iconify span via DOM API" convention buildEncounterChip
+// uses, not baked into the HTML string), and — for a foldable callout only —
+// the rotating chevron and its `toggle` listener. `<details>`/`<summary>`
+// already provide native open/close behavior, no click handling needed here.
 // Quest-specific: a status badge (Not Started/Active/Complete), derived from
-// the checkboxes already rendered inside this callout's own content — reuses
-// computeQuestStatus (journal-quests.js) rather than re-deriving the
-// not-started/active/complete rule a second time. Factored out of
-// applyCalloutStyling's own loop (called from there on first render) so
-// app.js's own handleToggleTask can also call it directly after toggling one
-// checkbox — checking a box doesn't trigger a full renderPreview (see that
-// function's own comment, it would disturb scroll position), so without this
-// the badge would otherwise sit stale until the next full render. Reuses the
-// existing badge element (by its own stable class) on every call after the
-// first rather than rebuilding it, so this is cheap enough to call on every
-// single toggle.
+// the checkboxes already rendered inside this callout's content — reuses
+// computeQuestStatus (journal-quests.js) rather than re-deriving that rule.
+// Factored out of applyCalloutStyling's own loop so app.js's
+// handleToggleTask can also call it directly after toggling one checkbox —
+// checking a box doesn't trigger a full renderPreview (would disturb scroll
+// position), so without this the badge would sit stale until the next full
+// render. Reuses the existing badge element (by its own stable class) after
+// the first call rather than rebuilding it.
 export function refreshQuestBadge(calloutEl) {
   if (!calloutEl || calloutEl.dataset.callout !== "quest") return;
   const titleEl = calloutEl.firstElementChild;
@@ -371,10 +337,9 @@ export function refreshQuestBadge(calloutEl) {
     badge.style.fontSize = "0.72em";
     badge.style.fontWeight = "600";
     // Inserted before the chevron (if this callout is foldable and already
-    // has one) so a foldable quest reads [title] [badge] [chevron], not
-    // [title] [chevron] [badge] — matters on a later call only; on the very
-    // first call (from applyCalloutStyling, before the chevron is ever
-    // added) this just appends, same net order either way.
+    // has one) so a foldable quest reads [title] [badge] [chevron]; matters
+    // only on a later call — on the very first call (before the chevron is
+    // ever added) this just appends, same net order either way.
     const chevron = titleEl.querySelector(":scope > .iconify[data-icon^='tabler:chevron']");
     if (chevron) titleEl.insertBefore(badge, chevron);
     else titleEl.appendChild(badge);
@@ -413,22 +378,19 @@ function applyCalloutStyling(container) {
         refreshQuestBadge(calloutEl);
       }
       // A generic, always-reserved slot for a compact View toggle
-      // (common/js/lib/ui-components.js's own createCycleToggleButton) any
-      // callout-specific mounting code wants in its own title bar —
-      // Story Board's Corkboard/Swimlane toggle (repository/js/app.js's own
+      // (ui-components.js's createCycleToggleButton) any callout-specific
+      // mounting code wants in its own title bar — Story Board's
+      // Corkboard/Swimlane toggle (repository/js/app.js's
       // mountStoryBoardsInPreview) is the first consumer, but this function
-      // itself has NO knowledge of story boards or any other specific
-      // callout type; it's callout-type-agnostic by design, the same way
-      // `.callout-icon-slot` below is. An empty span costs nothing when no
-      // caller ever fills it. Inserted before the fold chevron (if any).
-      // Carries `marginLeft: auto` itself (not the chevron, see below) —
-      // in a flex row, whichever element has the auto margin is what gets
-      // pushed all the way to the far right, dragging anything AFTER it
-      // along in normal flow with no gap of its own; putting the auto
-      // margin here (not on the chevron) is what pins [mode-slot, chevron]
-      // together as one unit at the title bar's own right edge, rather than
-      // leaving the mode slot sitting right after the title text with the
-      // chevron alone pushed away from it.
+      // has no knowledge of story boards or any specific callout type; it's
+      // callout-type-agnostic by design, same as `.callout-icon-slot`
+      // below. An empty span costs nothing when no caller fills it.
+      // Inserted before the fold chevron. Carries `marginLeft: auto` itself
+      // (not the chevron) — in a flex row, whichever element has the auto
+      // margin gets pushed to the far right, dragging anything after it
+      // along; putting it here pins [mode-slot, chevron] together at the
+      // title bar's right edge, rather than leaving the mode slot right
+      // after the title text with the chevron alone pushed away.
       const modeSlot = el("span", "callout-mode-slot d-inline-flex align-items-center gap-1");
       modeSlot.style.marginLeft = "auto";
       titleEl.appendChild(modeSlot);
@@ -466,42 +428,32 @@ function applyCalloutStyling(container) {
 // renderMarkdown(rawBody, {resolveWikiLink, onNavigate, status,
 // interactiveCheckboxes, onToggleTask, interactiveEncounters,
 // onStartEncounter, interactiveDice, interactiveMacros, groupContext,
-// dataManager}) → a detached DOM node ready to append
-// (not an HTML string) — building the click handlers here, once, is simpler
-// than the caller re-querying the rendered markup afterward. `status` is
-// only used for the dice-roller toast (rollExpression's own — see
-// journal-dice.js). `dataManager` is likewise only needed for a
-// `` `dice:[[Page#^blockId]]` `` rollable-table reference — a plain
-// `` `dice:2d6` `` chip never touches it; omitted, a table-reference chip
-// still renders, just permanently shows "—" (rollExpression's own "not
-// available here" case). `interactiveCheckboxes`/`interactiveEncounters`/
-// `interactiveDice`/`interactiveMacros` are NOT user-facing settings —
-// Repository's own editor always passes all four true (checking a box off,
-// starting an encounter, rolling dice, or running a macro always works
-// there); handout.js's read-only Dashboard rendering leaves
-// interactiveCheckboxes false always, and
-// interactiveEncounters/interactiveDice/interactiveMacros true only for the
+// dataManager}) → a detached DOM node ready to append (not an HTML string) —
+// building the click handlers here, once, is simpler than the caller
+// re-querying the rendered markup afterward. `status` is only used for the
+// dice-roller toast (see journal-dice.js). `dataManager` is only needed for
+// a `` `dice:[[Page#^blockId]]` `` rollable-table reference — omitted, that
+// chip still renders, just permanently shows "—". `interactiveCheckboxes`/
+// `interactiveEncounters`/`interactiveDice`/`interactiveMacros` are NOT
+// user-facing settings — Repository's own editor always passes all four
+// true; handout.js's read-only Dashboard rendering leaves
+// interactiveCheckboxes false always, and the other three true only for the
 // owning GM's own dashboard (same gate as the eye-icon visibility toggle) —
 // a player looking at a shown-to-the-table page must never be able to edit
-// the GM's note source, start combat, roll dice, or fire a macro (WLED
-// commands, table-wide sound/handouts, ...) by clicking something in it.
-// `groupContext` is only needed for `` `macro:...` `` — see
-// journal-macro.js's own runMacroReference for what it's used for.
+// the GM's note source, start combat, roll dice, or fire a macro by
+// clicking something in it. `groupContext` is only needed for
+// `` `macro:...` `` (see journal-macro.js's runMacroReference).
 // `validKindIds`/`kindLabels`/`onOpenReference` are for every OTHER kind's
-// own `` `kindId:Name` `` chip (journal-kind-reference.js) — `validKindIds`
-// a Set, `kindLabels` a {id: label} map (both from loadLibraryKinds(),
-// fetched once by the caller, never by this module itself — renderMarkdown
-// stays fully synchronous). Interactive unconditionally (unlike
-// interactiveEncounters/interactiveDice/interactiveMacros above) — opening
-// a reference is read-only, the same as clicking a wiki-link, not a GM-only
-// action like starting combat or firing a macro. `activeCalendar` is the
-// active Setting's own `.calendar` field (or omitted/null when there isn't
-// one) — same pre-fetched-by-the-caller convention, used only by
-// `` `date:...` `` chips (journal-date.js); omitted, a date chip still
-// renders, just as a plain "Day <N>" reading instead of a formatted date.
-// `currentDayIndex` is the ambient campaign date (same pre-fetched
-// convention) — only consulted by a `` `date:current` ``/`` `date:today` ``
-// span; omitted, that chip reads "No campaign date set" instead.
+// `` `kindId:Name` `` chip (journal-kind-reference.js) — `validKindIds` a
+// Set, `kindLabels` a {id: label} map, both fetched once by the caller via
+// loadLibraryKinds(), never by this module — renderMarkdown stays fully
+// synchronous. Interactive unconditionally (unlike the GM-only flags above)
+// — opening a reference is read-only, like a wiki-link click, not a GM-only
+// action. `activeCalendar` is the active Setting's own `.calendar` field
+// (or omitted), used only by `` `date:...` `` chips; omitted, a date chip
+// renders as a plain "Day <N>" reading. `currentDayIndex` is the ambient
+// campaign date, consulted only by `` `date:current` ``/`` `date:today` ``;
+// omitted, that chip reads "No campaign date set".
 export function renderMarkdown(
   rawBody,
   {
@@ -530,21 +482,20 @@ export function renderMarkdown(
   const marked = window.marked;
   const DOMPurify = window.DOMPurify;
   if (!marked || !DOMPurify) {
-    // CDN scripts (marked/DOMPurify) haven't finished loading yet — extremely
-    // unlikely in practice (they're tiny and this only ever runs from a user
-    // clicking "Preview", well after page load), but render the raw text
-    // rather than either silently showing nothing or risking unsanitized
-    // HTML.
+    // CDN scripts haven't finished loading yet — unlikely in practice (tiny
+    // files, and this only runs from a user clicking "Preview" well after
+    // page load), but render the raw text rather than showing nothing or
+    // risking unsanitized HTML.
     container.textContent = rawBody || "";
     return container;
   }
   ensureCalloutRenderer(marked);
   // `breaks: true` — plain CommonMark treats a single newline inside a
-  // paragraph as a soft wrap (rendered as a space, invisible), only a
-  // BLANK line starts a new paragraph. Every Notes-style field across this
-  // suite is typed like a casual text box (hit Enter, expect a line
-  // break), not authored CommonMark prose, so without this a note that
-  // looks multi-line in Edit mode silently runs together in View mode.
+  // paragraph as a soft wrap (invisible), only a blank line starts a new
+  // paragraph. Every Notes-style field in this suite is typed like a casual
+  // text box (hit Enter, expect a line break), not authored CommonMark
+  // prose, so without this a note that looks multi-line in Edit mode
+  // silently runs together in View mode.
   const html = DOMPurify.sanitize(marked.parse(withLinks, { async: false, breaks: true }));
   container.innerHTML = html;
   applyWikiLinkStyling(container, { onNavigate });

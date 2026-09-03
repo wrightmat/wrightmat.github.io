@@ -264,11 +264,9 @@ export class DataManager {
     return this._session ? this._session.user : null;
   }
 
-  // "Open a campaign" once (any tool, any page) and every tool sees the same
-  // selection without re-picking it — mirrors the session key's shared,
-  // unprefixed storage exactly. Cleared automatically on logout (see
-  // _persistSession above), since it's meaningless without being signed in
-  // as that group's owner.
+  // "Open a campaign" once and every tool/page sees the same selection —
+  // shared, unprefixed storage, same as the session key. Cleared
+  // automatically on logout (see _persistSession above).
   getActiveGroup() {
     try {
       const storage = this._requireStorage();
@@ -284,26 +282,15 @@ export class DataManager {
   }
 
   // A true no-op (same groupId AND name already active) skips both the
-  // write AND the event entirely — confirmed real bug this fixes: several
-  // listeners of "workbench:active-group-changed" (dashboard.js's own full
-  // renderWidgets(), auth-ui.js's own resyncActiveGroup) can themselves,
-  // directly or indirectly, call setActiveGroup again in response to the
-  // very event that woke them — auth-ui.js's resyncActiveGroup in
-  // particular re-derives `name` from a fresh (cached) listGroups() call
-  // every time it runs and calls this again whenever that disagrees with
-  // whatever's currently stored, with no guard against calling it with the
-  // literal value already in effect. Previously, since this always fired
-  // the event unconditionally, that could re-trigger the exact same chain
-  // of listeners indefinitely — dashboard.js's own listener alone tears
-  // down and rebuilds every widget on the page each time (including their
-  // live-stream connections), which is likely why Character/Combat Tracker
-  // updates were landing late or not at all: their live-stream got torn
-  // down and reconnected mid-flight, over and over, rather than staying up
-  // long enough to actually receive anything. Also why `/list/character`
-  // was observed being hit several times a second — that request happens
-  // on every Character widget remount. Comparing here, once, at the single
-  // source of the event, is more robust than trying to make every current
-  // (and future) listener individually idempotent.
+  // write AND the event entirely. Without this, listeners of
+  // "workbench:active-group-changed" (dashboard.js's renderWidgets(),
+  // auth-ui.js's resyncActiveGroup) can call setActiveGroup again in
+  // response to the very event that woke them, re-triggering the same
+  // listener chain indefinitely — dashboard.js tearing down and rebuilding
+  // every widget's live-stream connection on each firing was why Character/
+  // Combat Tracker updates landed late or not at all. Comparing here, once,
+  // at the single source of the event, is more robust than making every
+  // current and future listener individually idempotent.
   setActiveGroup(groupId, name = "") {
     const storage = this._requireStorage();
     const current = this.getActiveGroup();
@@ -432,21 +419,17 @@ export class DataManager {
     return { id, payload };
   }
 
-  // Browsers disagree on exactly how a full storage quota surfaces
-  // (Chrome/Edge/Safari: DOMException name "QuotaExceededError"; older
-  // Firefox: name "NS_ERROR_DOM_QUOTA_REACHED"; both also expose code 22
-  // per the legacy DOM exception codes) — checked defensively across all
-  // three rather than trusting one browser's own naming.
+  // Browsers disagree on how a full storage quota surfaces (Chrome/Edge/
+  // Safari: "QuotaExceededError"; older Firefox: "NS_ERROR_DOM_QUOTA_
+  // REACHED"; both also expose legacy code 22) — checked defensively across all.
   _isQuotaExceededError(error) {
     return Boolean(error) && (error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED" || error.code === 22);
   }
 
-  // For a signed-in user the local bucket cache is entirely disposable —
-  // the server copy (already written by the time save() ever calls this)
-  // is authoritative, and listLocal/getLocal transparently re-hydrate from
-  // an empty bucket on the next read. Wiping it is therefore a SAFE way to
-  // recover room after a QuotaExceededError, unlike removeLocal (which only
-  // ever drops one record) — see save()'s own retry below.
+  // For a signed-in user the local bucket cache is entirely disposable — the
+  // server copy is authoritative, and listLocal/getLocal transparently
+  // re-hydrate from an empty bucket. Safe way to recover room after a
+  // QuotaExceededError, unlike removeLocal (drops only one record).
   clearLocalBucket(bucket) {
     try {
       this._writeLocal(bucket, {});
@@ -663,24 +646,15 @@ export class DataManager {
     }
     if (!response.ok) {
       const message = data && data.error ? data.error : response.statusText;
-      // Every non-2xx failure gets logged here, once — not just 5xx.
-      // Confirmed real gap: a 4xx (401/403/404/...) previously logged
-      // NOTHING at all, so a caller whose own catch block doesn't print the
-      // error either (several don't) left a failure with zero trace
-      // anywhere a developer could find it — "the log won't load" with no
-      // way to tell auth/routing/server-error apart without re-deriving it
-      // from scratch each time. Always visible now regardless of status.
+      // Every non-2xx failure gets logged here, once — not just 5xx. A 4xx
+      // previously logged nothing, leaving a failure with zero trace when
+      // a caller's own catch block doesn't print the error either.
       console.warn(`DataManager: request failed (${response.status}) on ${method} ${path}`, message);
       if (response.status >= 500) {
-        // A 5xx means an uncaught exception on the server (a Python
-        // traceback's own str(), e.g. a raw "[WinError 5] Access is
-        // denied: ...\.tmp -> ...json" from a transient file-lock
-        // collision) — not a client mistake, and not something a user can
-        // act on by reading it. Every existing call site across the suite
-        // just does `status.show(error.message)` on catch with no
-        // per-site handling of this case, so the fix belongs here, once:
-        // the console already has the real detail (just above); let
-        // `error.message` be a clean, generic string instead.
+        // A 5xx means an uncaught server exception (a raw Python traceback
+        // string) — not something a user can act on by reading it. The
+        // console already has the real detail above; let `error.message`
+        // be a clean, generic string every call site's status.show() can use.
         const error = new Error("Something went wrong on the server. Please try again.");
         error.status = response.status;
         error.payload = data;
@@ -843,24 +817,13 @@ export class DataManager {
   }
 
   // preferLocal's default is intentionally auth-dependent, not a flat
-  // `true` — getLocal's mirror means two different things depending on who's
-  // asking. For an anonymous user it's the ONLY copy (no server account),
-  // so local-first isn't an optimization, it's correct by necessity. For a
-  // signed-in user it's "purely a read-acceleration cache" (see save()'s
-  // own comment) sitting on top of an authoritative server, with NO
-  // invalidation signal from any other writer — another tool, another tab,
-  // another device, another player in the same campaign. A flat default of
-  // `true` silently carried the anonymous-only assumption into that
-  // multi-writer case, where it's wrong far more often than not: confirmed
-  // as the root cause behind three separate live-sync bugs traced to this
-  // file this session (Orrery's loadMapById/refreshPreview serving a stale
-  // local mirror even on a hard refresh; Combat Tracker changes never
-  // reaching an already-open Orrery), and 83 of this suite's 105 call sites
-  // already had to override it explicitly (almost all to `false`) rather
-  // than rely on the bare default — strong evidence the default itself,
-  // not each individual call site, was the actual bug. Passing `preferLocal`
-  // explicitly (true OR false) always wins outright; only the unspecified
-  // (`null`) case is resolved here, per-call, against live auth state.
+  // `true` — for an anonymous user the local mirror is the only copy, so
+  // local-first is correct by necessity; for a signed-in user it's purely a
+  // read-acceleration cache with no invalidation signal from another
+  // writer (tool, tab, device, campaign member), so a flat `true` default
+  // is wrong far more often than not there. Passing `preferLocal` explicitly
+  // always wins outright; only the unspecified (`null`) case is resolved
+  // here, per-call, against live auth state.
   async get(bucket, id, { preferLocal = null, shareToken = "" } = {}) {
     const token = shareToken ? String(shareToken) : "";
     const effectivePreferLocal = preferLocal === null ? !this.isAuthenticated() : preferLocal;
@@ -875,14 +838,10 @@ export class DataManager {
     return { source: "remote", payload };
   }
 
-  // One request, N `{id, body}` pairs back (not bare bodies — a record's own
-  // JSON doesn't always embed its own id, see get_items_bulk's own comment,
-  // server/storage.py) — server/app.py's POST /content/{bucket}/bulk,
-  // replacing the old "one GET per record" pattern content-fetch.js's
-  // fetchKindEntriesWithIds used to do. No local-cache fast path the way
-  // get() has (preferLocal) — this is always used for a bulk library load
-  // where content-fetch.js's own caching layer sits above this call, not
-  // below it.
+  // One request, N `{id, body}` pairs back (not bare bodies — a record's
+  // JSON doesn't always embed its own id) — POST /content/{bucket}/bulk. No
+  // local-cache fast path the way get() has: content-fetch.js's own caching
+  // layer sits above this call, not below it.
   async getBulk(bucket, { ids, systemIds } = {}) {
     const body = {};
     if (Array.isArray(ids) && ids.length) body.ids = ids;
@@ -895,20 +854,13 @@ export class DataManager {
     if (!id) {
       throw new Error("Record id is required");
     }
-    // A record's own kind is which BUCKET it's stored under (this call's own
-    // `bucket` argument) — never a field inside the record body itself.
-    // Several Loom import mappings (5e-api-monster.json, ddb-character.json,
-    // markdown-item.json, ...) bind a `kind` field for their OWN internal
-    // routing/validity purposes (deriveEntities' filter, loom/js/app.js) but
-    // that value stays baked into the mapped object all the way through to
-    // here unless something strips it — confirmed real: 1,370 existing
-    // records across 9 kinds carried a dead `kind: "<old-name>"` string that
-    // drifted out of sync the instant that kind was ever renamed (the
-    // Effect→Wonder rename this session), since nothing ever re-derived it.
-    // Stripped here, at the one place every save in the entire suite already
-    // funnels through (Loom's own saveEntity AND Workbench's Re-import path,
-    // both otherwise independent), so no current or future mapping/importer
-    // can ever reintroduce it, and it never needs auditing again.
+    // A record's own kind is which bucket it's stored under (this call's
+    // `bucket` argument) — never a field inside the record body. Several
+    // Loom import mappings bind their own `kind` field for internal
+    // routing purposes, but that value can stay baked into the mapped
+    // object all the way through here unless stripped, drifting stale the
+    // instant a kind gets renamed. Stripped here, the one place every save
+    // in the suite funnels through, so no mapping/importer can reintroduce it.
     if (payload && typeof payload === "object" && !Array.isArray(payload) && "kind" in payload) {
       const { kind: _kind, ...rest } = payload;
       payload = rest;
@@ -929,25 +881,16 @@ export class DataManager {
       body: payload,
       auth: true,
     });
-    // The server write above is the AUTHORITATIVE copy for a signed-in
+    // The server write above is the authoritative copy for a signed-in
     // user — this local write is purely a read-acceleration cache. Left
-    // unguarded, a QuotaExceededError here (confirmed live: a growing
-    // `feature`/`wonder` bucket's whole-array JSON blob exceeding the
-    // browser's per-origin localStorage cap during a large bulk import)
-    // propagated as if the ENTIRE save had failed, even though the real,
-    // authoritative server copy had already succeeded — every caller
-    // (Loom's saveEntity, vault-feature-matching.js's own per-Feature
-    // saves) treated a perfectly good save as an error, discarding
-    // recoverable in-progress conversion state along the way. Best-effort
-    // only: never lets a stale/oversized local cache turn a successful
-    // save into a reported failure. On a genuine quota hit specifically
-    // (not just any local-write error), self-heals by purging THIS one
+    // unguarded, a QuotaExceededError here (a growing bucket's whole-array
+    // JSON blob exceeding the browser's per-origin localStorage cap)
+    // propagates as if the entire save had failed, even though the real
+    // server copy already succeeded. Best-effort only: never lets a stale/
+    // oversized local cache turn a successful save into a reported failure.
+    // On a genuine quota hit specifically, self-heals by purging this one
     // bucket's stale cache and retrying once — otherwise the bucket would
-    // stay permanently over quota and silently fail this same way on every
-    // future save, forever, once it first happened. Anything OTHER than a
-    // quota error (a truly unexpected local-storage failure) still only
-    // warns, same as before — no reason to nuke a healthy bucket's cache
-    // over an unrelated problem.
+    // stay permanently over quota and fail this way on every future save.
     try {
       this.saveLocal(bucket, id, payload);
     } catch (error) {
@@ -1124,13 +1067,9 @@ export class DataManager {
   }
 
   // Deployment-wide auth credentials (D&D Beyond session cookie, Anthropic
-  // API key) — Loom's own Auth tab is the intended caller. No client-side
-  // tier check here (unlike getHaConnection's isAuthenticated guard above,
-  // which is about "is there even a session," not a tier) — the server
-  // independently enforces gm-reads/admin-writes (require_gm/require_admin,
-  // server/app.py), same convention listUsers() above already follows.
-  // Never returns either secret value, only {configured, ...} — see
-  // server/integrations.py's own header comment on why.
+  // API key) — Loom's Auth tab is the intended caller. No client-side tier
+  // check here — the server independently enforces gm-reads/admin-writes.
+  // Never returns either secret value, only {configured, ...}.
   async getAuthCredentialsStatus() {
     return this._request("/auth/credentials", { method: "GET", auth: true });
   }
@@ -1186,13 +1125,10 @@ export class DataManager {
   }
 
   // Not routed through _request — that helper always JSON-encodes the body,
-  // and this needs to send one recording chunk's raw audio bytes with its
-  // own Content-Type instead. Mirrors _request's own auth-header handling
-  // and error-message extraction so this still behaves the same way as
-  // every other call here for an unauthenticated/failed request. `serverId`
-  // picks which of the deployment's own saved transcription servers to use
-  // (see listTranscriptionServers below) — sent as a query param since the
-  // body here is the raw audio, not JSON.
+  // and this needs to send raw audio bytes with its own Content-Type
+  // instead. Mirrors _request's own auth-header handling and error-message
+  // extraction. `serverId` picks a saved transcription server, sent as a
+  // query param since the body here is raw audio, not JSON.
   async transcribeAudioChunk(blob, serverId) {
     if (!this.isAuthenticated()) {
       throw new Error("Sign in to use live transcription.");
@@ -1266,14 +1202,11 @@ export class DataManager {
     return result;
   }
 
-  // Admin-only (server/storage.py's own rename_item enforces this — no
-  // client-side tier check duplicated here, same "server is the one real
-  // gate" convention every other admin-only route already follows). Two
-  // calls, same route: `dryRun: true` scans and reports what WOULD change
-  // (Loom's own confirm prompt calls this first) with nothing written;
-  // `dryRun: false` performs the rename and the same reference repair for
-  // real. Both return `{ok, kind, oldId, newId, dryRun, referenceCount,
-  // touched: [{kind, id, count}]}`.
+  // Admin-only (server enforces this, no client-side tier check duplicated
+  // here). Two calls, same route: `dryRun: true` scans and reports what
+  // would change with nothing written; `dryRun: false` performs the rename
+  // and reference repair for real. Both return `{ok, kind, oldId, newId,
+  // dryRun, referenceCount, touched: [{kind, id, count}]}`.
   async renameContent(bucket, id, newId, { dryRun = false } = {}) {
     if (!newId) {
       throw new Error("New id is required");
@@ -1284,12 +1217,10 @@ export class DataManager {
       auth: true,
     });
     if (!dryRun) {
-      // A real rename invalidates far more than this one bucket's own list
-      // (every OTHER kind whose records may have just been rewritten too) —
-      // clearing every cached list/bulk entry is the only way to guarantee
-      // nothing stale survives, same reasoning invalidateBulkCacheForKind's
-      // own "content-saved" listener already applies per-kind, just widened
-      // here since a rename's own blast radius isn't confined to one kind.
+      // A real rename invalidates far more than this one bucket's list —
+      // every other kind whose records may have just been rewritten too —
+      // so clearing every cached list/bulk entry is the only way to
+      // guarantee nothing stale survives.
       this._listCache.clear();
       this._ownedCache.clear();
       this.removeLocal(bucket, id);
@@ -1322,14 +1253,10 @@ export class DataManager {
     return payload;
   }
 
-  // Server-side half of the suite-wide header search (common/js/lib/
-  // suite-search.js) — every kind at once, filtered to this signed-in
-  // user's own owned/shared content (see storage.py's own search_content).
-  // Uncached (unlike list/listOwnedContent above) — a search box firing a
-  // fresh query on every keystroke has nothing sensible to cache against.
-  // Returns [] uncalled for an anonymous session — nothing server-side is
-  // an anonymous user's to own/be shared, so suite-search.js skips this
-  // call entirely rather than making a request guaranteed to 401.
+  // Server-side half of the suite-wide header search — every kind at once,
+  // filtered to this signed-in user's own owned/shared content. Uncached
+  // (unlike list/listOwnedContent above) — a search box firing a fresh
+  // query on every keystroke has nothing sensible to cache against.
   async searchContent(query) {
     if (!this.isAuthenticated() || !query || !query.trim()) return [];
     const params = new URLSearchParams({ q: query.trim() });
@@ -1338,16 +1265,12 @@ export class DataManager {
   }
 
   // includeMemberGroups (opt-in) also lists groups you don't own but have a
-  // character added to (server's own ?scope=member — see groups.py's own
-  // list_groups) — what auth-ui.js's account-menu campaign selector wants
-  // ("which campaigns am I part of"), but NOT what Loom's own group-
-  // management tab wants (default scope, owner-only — that UI offers
-  // rename/delete/member-editing controls that only work on groups you
-  // actually own). Cached per-scope (a plain Map, not a single value) so
-  // one caller's broader request can never leak into the other's — every
-  // existing `this._groupCache = null` invalidation elsewhere in this class
-  // still works unchanged, since a falsy cache just gets rebuilt as a fresh
-  // Map here regardless of which scope asks for it first.
+  // character added to (`?scope=member`) — what auth-ui.js's account-menu
+  // campaign selector wants, but not Loom's group-management tab (default
+  // scope, owner-only, since that UI offers rename/delete/member-editing
+  // controls that only work on groups you own). Cached per-scope (a Map,
+  // not a single value) so one caller's broader request can't leak into
+  // the other's.
   async listGroups({ refresh = false, includeMemberGroups = false } = {}) {
     if (!this.isAuthenticated()) {
       this._groupCache = null;
@@ -1408,14 +1331,11 @@ export class DataManager {
   }
 
   // Thin, purpose-named wrapper over updateGroup for the one common write
-  // every campaign-date UI (the Calendar widget, currently the only one)
-  // actually needs — advance the day, optionally the time of day too.
-  // Emits its own event (unlike updateGroup itself, which has no reason to
-  // — most callers already re-render off their own await) since the
-  // ambient date is meant to be visible to every tool: more than one
-  // Calendar widget can be on the same dashboard at once, each reading
-  // this same shared value, and only the ONE that made this particular
-  // change already knows to re-render itself.
+  // every campaign-date UI needs — advance the day, optionally the time of
+  // day too. Emits its own event (unlike updateGroup, whose callers already
+  // re-render off their own await): more than one Calendar widget can be on
+  // the same dashboard, each reading this shared value, and only the one
+  // that made this change already knows to re-render itself.
   async setCampaignDate(groupId, { dayIndex, minutesOfDay } = {}) {
     const payload = await this.updateGroup({ id: groupId, campaignDayIndex: dayIndex, campaignMinutesOfDay: minutesOfDay });
     this._emit("undercroft:campaign-date-changed", {
@@ -1520,15 +1440,12 @@ export class DataManager {
     return payload;
   }
 
-  // `types` (optional) restricts the LIMIT-bounded server query to specific
+  // `types` (optional) restricts the limit-bounded server query to specific
   // entry types instead of the group's raw, most-recent-N-of-everything log
-  // — see groups.py's _fetch_group_log_entries's own comment for why this
-  // matters: spotlight.js's own resolution passes the three spotlight-
-  // related types so ordinary chat/roll entries (and a single chatty
-  // inline-kind widget's own frequent spotlight-update refreshes) can't
-  // crowd an unrelated widget's still-active spotlight entry out of the
-  // fetched window. Omit for the Game Log widget's own read, which wants
-  // everything, unfiltered, exactly as before.
+  // — spotlight.js's own resolution passes the three spotlight-related
+  // types so ordinary chat/roll entries can't crowd an unrelated widget's
+  // still-active spotlight entry out of the fetched window. Omit for the
+  // Game Log widget's read, which wants everything, unfiltered.
   async getGroupLog({ groupId = "", shareToken = "", limit = undefined, types = undefined } = {}) {
     const token = shareToken ? String(shareToken) : "";
     const params = new URLSearchParams();
@@ -1583,11 +1500,9 @@ export class DataManager {
   }
 
   // A transient pointer broadcast (Orrery's click-to-ping map tool) —
-  // deliberately NOT createGroupLogEntry: a ping never touches the
-  // database/group log at all (see server/state.py's ServerState.
-  // pending_pings for why), it only ever exists in-memory server-side long
-  // enough for the /live/{groupId} SSE stream's "ping" kind to relay it to
-  // whoever's currently subscribed.
+  // deliberately not createGroupLogEntry: a ping never touches the
+  // database/group log at all, it only exists in-memory server-side long
+  // enough for the live SSE stream's "ping" kind to relay it to subscribers.
   async postMapPing({ groupId = "", shareToken = "", position } = {}) {
     const body = { position };
     const token = shareToken ? String(shareToken) : "";
@@ -1609,18 +1524,13 @@ export class DataManager {
   }
 
   // Same transient, never-persisted shape as postMapPing above — "here are
-  // the REAL settled per-die values, go show them on everyone else's
-  // screen," relayed through the /live stream's own "diceRoll" kind
-  // (Cards/Decks plan, Part 2). `dieResults` ({sides, value}[]) is what
-  // dice-reveal.js's tiles actually display — confirmed dice-box can't be
-  // told to land on a chosen result, so a remote viewer's own animation is
-  // never a physics roll, just a display of these already-known values (see
-  // dice-reveal.js's own header). No share-token variant: Broadcast mode is
-  // GM-only (server-enforced in record_dice_roll_broadcast, groups.py), and
-  // a share-link viewer's own access never resolves to "owner"
-  // (resolveGroupContext, group-context.js) — the Dice Roller widget's own
-  // mode switcher never even offers this option outside a real, signed-in
-  // GM session, so there's nothing for a share-token caller to reach here.
+  // the real settled per-die values, go show them on everyone else's
+  // screen," relayed through the /live stream's "diceRoll" kind.
+  // `dieResults` ({sides, value}[]) is what dice-reveal.js's tiles display —
+  // dice-box can't be told to land on a chosen result, so a remote viewer's
+  // animation is never a physics roll, just a display of these known
+  // values. No share-token variant: Broadcast mode is GM-only, server-
+  // enforced, and a share-link viewer's access never resolves to "owner."
   async postDiceRollBroadcast({ groupId = "", label = "", total = "", dieResults = [] } = {}) {
     if (!groupId) {
       throw new Error("Group id is required to broadcast a roll");
@@ -1633,12 +1543,9 @@ export class DataManager {
   }
 
   // Same transient "go animate this now" shape as postDiceRollBroadcast
-  // above, for a Broadcast-mode card draw (Cards/Decks plan, Part 5
-  // revised — replaces the original spotlight-based design; see
-  // record_card_broadcast's own comment, server/groups.py, for why). No
-  // share-token variant, same reasoning as the dice broadcast: Broadcast
-  // mode is GM-only, server-enforced, and never reachable from a share-link
-  // session.
+  // above, for a Broadcast-mode card draw. No share-token variant, same
+  // reasoning: Broadcast mode is GM-only and never reachable from a
+  // share-link session.
   async postCardBroadcast({ groupId = "", deckLabel = "", backImage = "", cards = [] } = {}) {
     if (!groupId) {
       throw new Error("Group id is required to broadcast a draw");
@@ -1661,45 +1568,29 @@ export class DataManager {
     });
   }
 
-  // "Show to table": one call does both halves of the one-click ask — make
-  // sure the group can actually see this record (share_with_group is an
-  // idempotent upsert, safe to call every time, not just the first), then
-  // post the spotlight log entry the group's share-link page polls for.
-  // Also shares the template (if any) for the same reason: a private,
-  // GM-authored template needs the same visibility grant as the entity
-  // itself, or an anonymous share-link viewer's card render 403s on the
-  // template fetch even though the entity fetch succeeds.
-  // `skipShare` — for a widget type with no real Library record behind it at
-  // all (the Dashboard's own Browser/Clock widgets: their content lives
-  // entirely in this log entry's own `data` payload, not a shareable record
-  // — see server/groups.py's own _INLINE_SPOTLIGHT_KINDS) — there's nothing
-  // to grant view permission ON, so this skips straight to posting the log
-  // entry; the server enforces the same "only these specific kinds may skip
-  // sharing" rule independently, this flag is just what avoids a doomed
-  // share_with_group call for one of them here.
-  // `data` — the inline payload for those same kinds (e.g. Browser's
-  // `{url}`, Clock's own config object). Ignored by the server for any kind
-  // with a real Library record, since that record is always the source of
-  // truth for those.
+  // "Show to table": one call does both halves — grant the group view
+  // access (share_with_group is an idempotent upsert, safe on every call),
+  // then post the spotlight log entry the group's share-link page polls
+  // for. Also shares the template (if any): a private, GM-authored
+  // template needs the same visibility grant, or an anonymous viewer's card
+  // render 403s on the template fetch even though the entity fetch succeeds.
+  // `skipShare` — for a widget type with no real Library record behind it
+  // (Dashboard's Browser/Clock widgets, whose content lives entirely in
+  // this log entry's `data` payload) — nothing to grant view permission on,
+  // so this skips straight to posting the log entry.
+  // `data` — the inline payload for those same kinds. Ignored by the server
+  // for any kind with a real Library record.
   async spotlightToGroup({ groupId, contentType, contentId, templateId = "", skipShare = false, data = undefined } = {}) {
     if (!groupId || !contentType || !contentId) {
       throw new Error("groupId, contentType, and contentId are required");
     }
     if (!skipShare) {
       // "map" and "encounter" are the spotlighted kinds a player is ever
-      // expected to write back to (their own character's token position —
-      // see map.js's own isMarkerDraggable/ownership check; their own
-      // combatant's initiative — see character-sheet.js's own
-      // pushInitiativeToActiveEncounter) — every other kind (npc, location,
-      // handout content, ...) is genuinely read-only for a player, so "view"
-      // stays correct there. Confirmed real bug (map, fixed first): a
-      // view-only share left save_item's own is_shared(require_edit:true)
-      // check failing for a player writing their own narrow update into a
-      // shared record, surfacing as "Edit not permitted" even after the
-      // client-side write itself was already correctly scoped to just that
-      // player's own data. Confirmed the identical bug for "encounter" —
-      // rolling initiative from a shown-to-table combat failed the exact
-      // same way, since only "map" had this carve-out.
+      // expected to write back to (their own token position; their own
+      // combatant's initiative) — every other kind is genuinely read-only
+      // for a player, so "view" stays correct there. A view-only share left
+      // save_item's is_shared(require_edit:true) check failing for a
+      // player's own narrow write, surfacing as "Edit not permitted."
       const spotlightPermissions = contentType === "map" || contentType === "encounter" ? "edit" : "view";
       await this.shareWithGroup({ contentType, contentId, groupId, permissions: spotlightPermissions });
       if (templateId) {
@@ -1711,28 +1602,21 @@ export class DataManager {
       type: "spotlight",
       payload: { kind: contentType, id: contentId, templateId: templateId || undefined, data },
     });
-    // Lets anything watching THIS browser tab's own actions (dashboard.js's
-    // spotlight panel) refresh immediately instead of waiting for its own
-    // poll/live-stream round-trip — confirmed real complaint: a GM's own
-    // "show to table" toggle could take several seconds to show up in their
-    // own icon tray, reading as "is this even working." A live-stream event
-    // still has to round-trip through the server; this fires synchronously,
-    // in-page, the instant the action this tab itself took has actually
-    // succeeded.
+    // Lets anything watching this browser tab's own actions (dashboard.js's
+    // spotlight panel) refresh immediately instead of waiting on the
+    // poll/live-stream round-trip, which otherwise left a GM's own "show to
+    // table" toggle taking several seconds to show up in their own icon tray.
     this._emit("undercroft:spotlight-changed", { groupId, kind: contentType, id: contentId });
     return result;
   }
 
-  // Refreshes the `data` payload on an ALREADY-shown inline-kind spotlight
+  // Refreshes the `data` payload on an already-shown inline-kind spotlight
   // (a clock tick, a Browser URL edit) without re-announcing it as a new
-  // "show to table" — a fresh `spotlight` entry would re-trigger every other
-  // viewer's accept-prompt/Game Log row on every single edit, which is not
-  // what a live content update should do. Followers (spotlight.js's
-  // resolveSpotlightData/resolveIsSpotlighted) treat this the same as
-  // `spotlight` for "is this still active, and with what data" purposes;
-  // only a `spotlight-clear` ends it. Only valid for
-  // server/groups.py's own _INLINE_SPOTLIGHT_KINDS — the server rejects it
-  // for anything else.
+  // "show to table" — a fresh `spotlight` entry would re-trigger every
+  // other viewer's accept-prompt/Game Log row on every single edit.
+  // Followers treat this the same as `spotlight` for "is this still active"
+  // purposes; only `spotlight-clear` ends it. Only valid for the server's
+  // inline-spotlight kinds — rejected for anything else.
   async updateSpotlightData({ groupId, shareToken = "", kind, id, data } = {}) {
     if ((!groupId && !shareToken) || !kind || !id) {
       throw new Error("groupId (or shareToken), kind, and id are required");
@@ -1741,20 +1625,13 @@ export class DataManager {
   }
 
   // The other half of "show to table" — posts a `spotlight-clear` entry, so
-  // anything reading "what's currently shown" (Now Showing panels, the
-  // Combat Tracker's player view, the anonymous share-link's narrow
-  // get_item exception) sees nothing again, without deleting log history.
-  // `kind` + `id` scope the clear to just that ONE instance (a widget's own
-  // eye-icon toggling off should only ever affect ITS OWN spotlight, not
-  // every other instance of the same kind shown alongside it — two
-  // Handouts, two Maps, two Clocks — see spotlight.js's own
-  // resolveIsSpotlighted comment). `id` alone with no `kind` doesn't scope
-  // anything (there's nothing to disambiguate an id by), so it's ignored
-  // unless `kind` is also given; `kind` with no `id` clears every instance
-  // of that kind; omitting both is a deliberate "clear whatever's currently
-  // shown, of any kind" (the one legitimate use of that: auth-ui.js's global
-  // "stop showing to the table" header action, which isn't tied to any one
-  // tool/kind/instance).
+  // anything reading "what's currently shown" sees nothing again, without
+  // deleting log history. `kind` + `id` scope the clear to just that one
+  // instance (a widget's eye-icon toggling off shouldn't affect another
+  // instance of the same kind shown alongside it). `id` alone is ignored
+  // (nothing to disambiguate by); `kind` alone clears every instance of that
+  // kind; omitting both clears whatever's currently shown, of any kind
+  // (auth-ui.js's global "stop showing to the table" header action).
   async clearSpotlight({ groupId, shareToken = "", kind = "", id = "" } = {}) {
     if (!groupId && !shareToken) {
       throw new Error("groupId is required");

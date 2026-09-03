@@ -2,24 +2,18 @@
 // one floating instance (bottom-right, self-appended to document.body,
 // interactive: tap an icon to add/remove it from your own dashboard), and
 // Workbench's own "Now Showing" collapsible section mounts a second,
-// independent, non-floating, read-only instance inline in its own layout
-// (see workbench-character-view.js) — same renderer, same visual language,
-// two different hosts. Originally a bare module-level singleton hardcoded to
-// float on document.body; generalized into this factory specifically so
-// Workbench could reuse the real rendering code instead of a second,
-// independently-drifting copy (per this suite's own top-priority parity
-// rule) — every instance still shares the exact same item shape, CSS
-// classes, and flourish animation.
+// independent, non-floating, read-only instance inline in its own layout —
+// same renderer, same visual language, two different hosts. A factory
+// rather than a module-level singleton specifically so Workbench can reuse
+// the real rendering code instead of an independently-drifting copy.
 //
 // Pure renderer — no polling, no state of its own beyond the one DOM node
 // each instance owns. The caller (dashboard.js, workbench-character-view.js)
-// is the one that knows what's active (spotlight-inbox.js's own
-// watchActiveSpotlights), what's on THIS viewer's own dashboard (dashboard.js
+// knows what's active, what's on THIS viewer's dashboard (dashboard.js
 // only — Workbench has no such concept, see `interactive` below), and what
 // counts as "new since last render" — this module just draws whatever it's
-// told, every time it's told to. Same "everything caller-specific is a
-// callback, this module just renders" split orrery/js/lib/map-viewer.js
-// already establishes for its own shared rendering.
+// told. Same "everything caller-specific is a callback, this module just
+// renders" split map-viewer.js establishes for its own shared rendering.
 import { el } from "../dom.js";
 import { refreshTooltips, disposeTooltips, setDisabledTooltip } from "../tooltips.js";
 
@@ -36,21 +30,17 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
   }
 
   // items: [{ key, kind, id, templateId, icon, title, isOnDashboard, isNew }]
-  // `onToggle({kind, id, templateId})` fires on the icon itself — the caller
-  // decides whether that means "accept" or "remove," this module doesn't
-  // care which. `onClear({kind,id})`, shown only while `editing` is true (a
-  // small "x" badge in the icon's own corner), force-clears the underlying
-  // spotlight directly — the escape hatch for a stale/orphaned entry (e.g.
-  // left behind by a widget type whose own cleanup has a gap, or one this
-  // dashboard's normal add/remove machinery can't resolve to any live widget
-  // at all) that the ordinary toggle can't clean up on its own.
+  // `onToggle({kind, id, templateId})` fires on the icon itself — the
+  // caller decides whether that means "accept" or "remove." `onClear
+  // ({kind,id})`, shown only while `editing` is true (a small "x" badge in
+  // the icon's corner), force-clears the underlying spotlight directly —
+  // the escape hatch for a stale/orphaned entry the ordinary toggle can't
+  // clean up on its own.
   // `interactive` (default true) — false renders every icon disabled, with
-  // no click handler and no mine/available distinction (a single neutral
-  // "currently shown" style) — for a read-only host with no per-viewer
-  // "dashboard" of its own to toggle membership in (Workbench's Now
-  // Showing), where a clickable-looking icon that does nothing would read as
-  // broken, not informational. `editing` is meaningless when `interactive`
-  // is false and is ignored in that case.
+  // no click handler and no mine/available distinction — for a read-only
+  // host with no per-viewer "dashboard" to toggle membership in (Workbench's
+  // Now Showing), where a clickable-looking icon that does nothing would
+  // read as broken. `editing` is ignored when `interactive` is false.
   function render(items, { onToggle, onClear, editing = false, interactive = true } = {}) {
     disposeTooltips(panelEl);
     panelEl.innerHTML = "";
@@ -62,13 +52,10 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
 
       const button = el("button", "spotlight-panel-icon");
       button.type = "button";
-      // Non-interactive icons are genuinely disabled (no click handler makes
-      // sense for them) — their explanatory tooltip has to go on a separate
-      // wrapper via setDisabledTooltip below (called once button is in its
-      // final DOM position, after wrap.appendChild(button) further down),
-      // since a real `disabled` attribute blocks hover on the button itself.
-      // See tooltips.js's own header for why the previous same-element
-      // version of this never actually showed a tooltip.
+      // Non-interactive icons are genuinely disabled — their explanatory
+      // tooltip has to go on a separate wrapper via setDisabledTooltip
+      // below, since a real `disabled` attribute blocks hover on the
+      // button itself. See tooltips.js's own header.
       let disabledReason = "";
       if (interactive) {
         button.classList.add(item.isOnDashboard ? "spotlight-panel-icon--mine" : "spotlight-panel-icon--available");
@@ -91,9 +78,9 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
       if (item.isNew) {
         button.classList.add("is-new");
         // Self-cleans once the flourish keyframe finishes — same
-        // append-then-animationend-cleanup shape orrery/js/lib/map-viewer.js's
-        // own createPingMarker already uses, just clearing a class here
-        // instead of removing the (persistent, not transient) element itself.
+        // append-then-animationend-cleanup shape map-viewer.js's
+        // createPingMarker uses, just clearing a class instead of removing
+        // the (persistent, not transient) element itself.
         button.addEventListener(
           "animationend",
           () => button.classList.remove("is-new"),
@@ -102,9 +89,8 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
       }
       wrap.appendChild(button);
       // Must run AFTER button is in its final DOM position — setDisabledTooltip
-      // inserts its wrapper span as a sibling right before `button` in
-      // whatever button.parentElement currently is, which is only correct
-      // once that parent is this item's own wrap, not still null/detached.
+      // inserts its wrapper span as a sibling right before `button`, which
+      // is only correct once that parent is this item's own wrap.
       if (disabledReason) setDisabledTooltip(button, disabledReason);
 
       if (interactive && editing) {
@@ -117,9 +103,8 @@ export function createSpotlightPanel({ container = null, floating = true } = {})
         clearIcon.dataset.icon = "tabler:circle-x-filled";
         clearIcon.setAttribute("aria-hidden", "true");
         clearButton.appendChild(clearIcon);
-        // stopPropagation — this sits directly on top of the icon button
-        // above; without it, a click here would also fire the toggle click
-        // underneath.
+        // stopPropagation — sits directly on top of the icon button above;
+        // without it a click here would also fire the toggle click underneath.
         clearButton.addEventListener("click", (event) => {
           event.stopPropagation();
           onClear?.({ kind: item.kind, id: item.id });

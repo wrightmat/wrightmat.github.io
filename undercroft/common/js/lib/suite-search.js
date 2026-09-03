@@ -1,33 +1,26 @@
 // Suite-wide header search — one box, every tool, searching every Library
-// kind (npc/monster/location/feature/... including Repository's own
-// `journal` kind, which is just another Library kind by this point) at
-// once, plus the current user's own local-only (not-yet-synced or genuinely
-// anonymous) saved content. Wikipedia-style rich results: icon, title, a
-// short "{Kind} · {Tool}" detail line underneath. Click/Enter navigates
-// straight into the right tool via kind-tool-route.js's own routing table —
-// the same one relationship-editor.js's "Open in X" action and Orrery's
-// marker link-out already use, so a kind that isn't deep-linkable there
-// isn't searchable here either (nothing to navigate to).
+// kind (including Repository's `journal` kind, just another Library kind)
+// at once, plus the current user's local-only content. Wikipedia-style rich
+// results: icon, title, a short "{Kind} · {Tool}" line underneath.
+// Click/Enter navigates via kind-tool-route.js's routing table — the same
+// one relationship-editor.js's "Open in X" and Orrery's marker link-out
+// use, so a kind that isn't deep-linkable there isn't searchable here.
 //
-// Fully self-contained: builds its own DataManager instance(s) rather than
-// taking one as a parameter, so app-shell.js can wire this in once, for
-// every page, with no per-tool app.js changes needed. Session state is
-// shared across every DataManager instance regardless of storagePrefix (see
-// data-manager.js's own DEFAULT_SESSION_KEY comment), so "am I signed in"
-// resolves correctly here without needing the page's own already-constructed
-// instance.
+// Fully self-contained: builds its own DataManager instance rather than
+// taking one as a parameter, so app-shell.js wires this in once for every
+// page, no per-tool app.js changes needed. Session state is shared across
+// every DataManager instance regardless of storagePrefix, so "am I signed
+// in" resolves correctly without the page's own already-constructed instance.
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { buildKindToolUrl, kindToolLabel } from "./kind-tool-route.js";
 import { initTooltip } from "./tooltips.js";
 
 // Icon/label per kind — deliberately NOT loaded from common/data/kind/*.json
-// (loadLibraryKinds(), content-fetch.js) to keep this header widget light on
-// every single page load; content-fetch.js pulls in the whole D&D Beyond/
-// mapping-engine import chain for a feature this doesn't need. Restricted to
-// exactly the kinds KIND_TOOL_ROUTE can actually navigate to — a kind with
-// no route (group, encounter, kind, relationship) has nothing to click
-// through to, so it's not offered as a search result either.
+// (content-fetch.js pulls in the whole D&D Beyond/mapping-engine import
+// chain, unneeded here) to keep this header widget light on every page
+// load. Restricted to kinds KIND_TOOL_ROUTE can actually navigate to — a
+// kind with no route (group, encounter, kind, relationship) isn't offered.
 const KIND_META = {
   npc: { label: "NPC", icon: "tabler:users" },
   monster: { label: "Monster", icon: "tabler:skull" },
@@ -53,13 +46,9 @@ const KIND_META = {
   variant: { label: "Variant", icon: "tabler:copy" },
 };
 
-// Every kind's LOCAL (browser-only, not-yet-synced-or-genuinely-anonymous)
-// content now lives under the one shared "undercroft" DataManager
-// storagePrefix — every tool unified onto it (see data-manager.js's own
-// DEFAULT_STORAGE_PREFIX). Used to need a per-kind prefix lookup here
-// (Repository's journal/Workbench's character/template each had their own
-// tool-specific prefix) purely to work around that fragmentation; not needed
-// anymore now that every tool's local bucket cache lives in the same place.
+// Every kind's LOCAL content now lives under the one shared "undercroft"
+// DataManager storagePrefix (data-manager.js's DEFAULT_STORAGE_PREFIX) —
+// no per-kind prefix lookup needed anymore.
 
 const MIN_QUERY_LENGTH = 2;
 const SERVER_DEBOUNCE_MS = 250;
@@ -69,12 +58,10 @@ function resolveLocalTitle(payload, id) {
   return payload?.title || payload?.name || payload?.data?.name || id;
 }
 
-// Client-side mirror of storage.py's own _collect_searchable_strings/
+// Client-side mirror of storage.py's _collect_searchable_strings/
 // _collect_reference_ids/_build_snippet — same deep-search treatment for a
-// user's own LOCAL (not-yet-synced or genuinely anonymous) content as the
-// server gives everything else, same length/key thresholds so the two
-// halves of this feature behave identically regardless of which one a
-// given record happens to be found through.
+// user's LOCAL content as the server gives everything else, same
+// length/key thresholds so both halves behave identically.
 const SEARCH_MIN_BODY_STRING_LENGTH = 12;
 const SEARCH_REFERENCE_KEYS = ["featureIds", "synergizesWith", "conflictsWith", "dependsOn"];
 
@@ -184,9 +171,8 @@ async function searchServer(query, dataManager) {
         snippet: row.snippet || null,
       }));
   } catch (error) {
-    // A signed-out session, an offline/dev server with no /content/search
-    // route yet, or a genuine network hiccup — none of these should ever
-    // break the search box; local results still stand on their own.
+    // A signed-out session, an offline/dev server, or a network hiccup —
+    // none of these should break the search box; local results stand alone.
     console.warn("Suite search: server search failed", error);
     return [];
   }
@@ -194,12 +180,10 @@ async function searchServer(query, dataManager) {
 
 const MATCH_TYPE_RANK = { title: 0, body: 1, reference: 2 };
 
-// Server results win over a local mirror of the same record (richer —
-// owner info the local copy never carries). Ranked title matches first,
-// then body matches, then reference matches (mirrors storage.py's own
-// search_content sort so server and local results interleave sensibly);
-// within "title", prefix matches ("Fire" -> "Fire Elemental") sort ahead of
-// mid-string ones ("Fire" -> "Adult Fire Giant"), then alphabetically.
+// Server results win over a local mirror of the same record (richer — owner
+// info the local copy never carries). Ranked title matches first, then
+// body, then reference (mirrors storage.py's search_content sort); within
+// "title", prefix matches sort ahead of mid-string ones, then alphabetically.
 function mergeResults(localResults, serverResults, query) {
   const merged = new Map();
   [...localResults, ...serverResults].forEach((entry) => {
@@ -224,10 +208,9 @@ function mergeResults(localResults, serverResults, query) {
     .slice(0, MAX_RESULTS);
 }
 
-// Wraps the (case-insensitive) query substring in <mark> within a snippet —
-// same "bold the matched term" treatment Wikipedia's own search dropdown
-// uses — via textContent-built fragments, never innerHTML, so a note's own
-// body text can never inject markup here.
+// Wraps the (case-insensitive) query substring in <mark> — via
+// textContent-built fragments, never innerHTML, so a note's body text can
+// never inject markup here.
 function appendHighlighted(el, text, query) {
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
   if (idx === -1) {
@@ -244,22 +227,15 @@ function appendHighlighted(el, text, query) {
 
 // The row is a plain <div> (not itself a link) containing two SIBLING
 // interactive children — `.suite-search-result-main` (the real navigating
-// link, icon+title+subtitle+snippet) and `.suite-search-result-popout` (a
-// small "open in a new tab" button on the row's right edge, for when a GM
-// doesn't want their current tab overwritten by clicking a result). Nesting
-// the popout <button> INSIDE an outer <a> would be invalid HTML (interactive
-// content can't contain interactive content) and unreliable for screen
-// readers, hence the sibling structure — .suite-search-result's own CSS
-// still draws one unified hover/active card across both, so visually this
-// still reads as a single row.
+// link) and `.suite-search-result-popout` (an "open in new tab" button).
+// Nesting the popout <button> inside an outer <a> would be invalid HTML
+// (interactive content can't contain interactive content); .suite-search-
+// result's CSS still draws one unified hover/active card across both.
 function buildResultRow(entry, currentUsername, query) {
   const meta = KIND_META[entry.kind] || { label: entry.kind, icon: "tabler:file" };
   // A journal body match carries the query along as `?q=` — Repository's
-  // own deep-link handling (see repository/js/app.js's own jumpToSearchQuery)
-  // uses it to scroll/highlight the actual match, the same experience its
-  // own in-page search already gives, rather than just landing at the top
-  // of the note. Title matches and other kinds don't need this — there's
-  // nothing buried in the body to scroll to.
+  // deep-link handling (jumpToSearchQuery) uses it to scroll/highlight the
+  // match instead of landing at the top of the note.
   const extraParams = entry.kind === "journal" && entry.matchType === "body" ? { q: query } : undefined;
   const href = buildKindToolUrl(entry.kind, entry.id, { extraParams });
 
@@ -296,10 +272,9 @@ function buildResultRow(entry, currentUsername, query) {
   subtitleEl.textContent = subtitleParts.join(" · ");
   textWrap.appendChild(subtitleEl);
 
-  // Wikipedia-style context line — only for a body/reference match, where
-  // the title itself doesn't already explain why this result showed up.
-  // A reference match's snippet ("References Feature: Void Body") has no
-  // literal query substring to highlight, so it renders as plain text.
+  // Context line only for a body/reference match. A reference match's
+  // snippet ("References Feature: Void Body") has no literal query
+  // substring to highlight, so it renders as plain text.
   if (entry.snippet) {
     const snippetEl = document.createElement("span");
     snippetEl.className = "suite-search-result-snippet";
@@ -314,11 +289,10 @@ function buildResultRow(entry, currentUsername, query) {
   main.appendChild(textWrap);
   row.appendChild(main);
 
-  // Same icon + window.open(url, "_blank", "noopener,noreferrer") convention
-  // relationship-editor.js's own "Open in X" row action already uses —
-  // doesn't call closeResults()/closeCompact() the way a real navigation
-  // implicitly would (the page never unloads), so the results list stays
-  // open for popping out more than one match in a row.
+  // Same window.open(url, "_blank", "noopener,noreferrer") convention as
+  // relationship-editor.js's "Open in X" — doesn't call closeResults()/
+  // closeCompact() since the page never unloads, so the list stays open
+  // for popping out more than one match.
   if (href) {
     const popout = document.createElement("button");
     popout.type = "button";
@@ -347,14 +321,11 @@ export function initSuiteSearch({ container } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "suite-search";
 
-  // When .workbench-header-middle doesn't have room to spare (see shell.
-  // css's container-query rules), the persistent input would eat into the
-  // header's limited width for no benefit most of the time search isn't in
-  // active use — this icon-only trigger reveals the same input+icon inline
-  // instead. Search is deliberately the FIRST control to give up its full
-  // form as space tightens (the widest container-query threshold of the
-  // three staged controls) — it's the single widest piece of header
-  // content, and losing it first buys the most room back per pixel.
+  // When .workbench-header-middle is tight on room (shell.css's container
+  // query), the persistent input would eat into the header for no benefit
+  // most of the time — this icon-only trigger reveals it inline instead.
+  // Search gives up its full form first as space tightens (the widest
+  // threshold of the staged controls) since it's the widest header piece.
   const trigger = document.createElement("button");
   trigger.type = "button";
   trigger.className = "btn btn-outline-secondary suite-search-trigger undercroft-header-icon-btn";
@@ -368,10 +339,9 @@ export function initSuiteSearch({ container } = {}) {
   trigger.appendChild(triggerIcon);
 
   const inputWrap = document.createElement("div");
-  // Hidden until either the container query in common/css/shell.css
-  // reveals it (enough room in .workbench-header-middle) or the trigger
-  // opens it (see openCompact/closeCompact below) — display rules live in
-  // shell.css, not here.
+  // Hidden until either shell.css's container query reveals it or the
+  // trigger opens it (openCompact/closeCompact below) — display rules live
+  // in shell.css, not here.
   inputWrap.className = "suite-search-input-wrap";
   const searchIcon = document.createElement("span");
   searchIcon.className = "iconify suite-search-icon";
@@ -395,10 +365,8 @@ export function initSuiteSearch({ container } = {}) {
   container.innerHTML = "";
   container.appendChild(wrap);
 
-  // Whether the trigger is currently the way to reach the input at all —
-  // read off its own rendered state (shell.css's container query is what
-  // actually governs this) rather than re-declaring the threshold here,
-  // one source of truth for it.
+  // Read off the trigger's own rendered state (shell.css's container query
+  // governs this) rather than re-declaring the threshold here.
   function isCompactViewport() {
     return getComputedStyle(trigger).display !== "none";
   }
