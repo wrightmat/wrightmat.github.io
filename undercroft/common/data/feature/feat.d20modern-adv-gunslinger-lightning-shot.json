@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-lightning-shot",
+  "name": "Lightning Shot",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Gunslinger may make one extra ranged attack with a personal firearm in a round at his highest base attack bonus; this attack and every other attack that round take a -2 penalty.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Gunslinger may make one extra ranged attack with a personal firearm in a round at his highest base attack bonus; this attack and every other attack that round take a -2 penalty."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

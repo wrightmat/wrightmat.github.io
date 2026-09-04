@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-archaic-weapons-proficiency",
+  "name": "Archaic Weapons Proficiency",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character takes no penalty on attack rolls when using any kind of archaic weapon.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with archaic weapons.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character takes no penalty on attack rolls when using any kind of archaic weapon.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with archaic weapons."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

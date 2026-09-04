@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-charismatic-hero-charm",
+  "name": "Charm",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Charismatic hero gets a competence bonus on all Charisma-based skill checks made to influence members of his chosen gender. The bonus is equal to the character’s Charismatic level.\nA Charismatic hero can only charm Gamemaster characters with attitudes of indifferent or better. The charm bonus can’t be used against characters who are unfriendly or hostile. This ability can be taken more than once (for another gender).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Charismatic hero gets a competence bonus on all Charisma-based skill checks made to influence members of his chosen gender. The bonus is equal to the character’s Charismatic level.\nA Charismatic hero can only charm Gamemaster characters with attitudes of indifferent or better. The charm bonus can’t be used against characters who are unfriendly or hostile. This ability can be taken more than once (for another gender)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

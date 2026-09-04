@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-weapon-focus",
+  "name": "Weapon Focus",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Choose a specific weapon. A character can choose unarmed strike or grapple for your weapon for purposes of this feat.\nPrerequisites: Proficient with weapon, base attack bonus +1.\nBenefit: The character gains a +1 bonus on all attack rolls he or she makes using the selected weapon.\nSpecial: A character can gain this feat multiple times. Each time the character takes the feat, the character must select a different weapon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Choose a specific weapon. A character can choose unarmed strike or grapple for your weapon for purposes of this feat.\nPrerequisites: Proficient with weapon, base attack bonus +1.\nBenefit: The character gains a +1 bonus on all attack rolls he or she makes using the selected weapon.\nSpecial: A character can gain this feat multiple times. Each time the character takes the feat, the character must select a different weapon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

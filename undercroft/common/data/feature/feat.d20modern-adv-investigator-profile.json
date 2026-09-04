@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-investigator-profile",
+  "name": "Profile",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A successful DC 15 Gather Information check from witnesses gives the Investigator a physical description of a suspect; a follow-up DC 15 Investigate check on the crime scene grants a +2 circumstance bonus on checks to locate or capture that suspect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A successful DC 15 Gather Information check from witnesses gives the Investigator a physical description of a suspect; a follow-up DC 15 Investigate check on the crime scene grants a +2 circumstance bonus on checks to locate or capture that suspect."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

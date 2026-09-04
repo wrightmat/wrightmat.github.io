@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-medic-medical-miracle",
+  "name": "Medical Miracle",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "If the Field Medic reaches a character at -10 hit points or lower within 3 minutes of death, a DC 40 Treat Injury check (no take 10/20) lets the dead character attempt a DC 20 Fortitude save to be restored to 1d6 hit points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the Field Medic reaches a character at -10 hit points or lower within 3 minutes of death, a DC 40 Treat Injury check (no take 10/20) lets the dead character attempt a DC 20 Fortitude save to be restored to 1d6 hit points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

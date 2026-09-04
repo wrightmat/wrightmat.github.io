@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-agile-riposte",
+  "name": "Agile Riposte",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Dexterity 13, Dodge.\nBenefit: Once per round, if the opponent the character has designated as his or her dodge target (see the Dodge feat) makes a melee attack or melee touch attack against the character and misses, the character may make an attack of opportunity against that opponent. Resolve and apply the effects from both attacks simultaneously.\nEven a character with the Combat Reflexes feat can’t use the Agile Riposte feat more than once per round. This feat does not grant more attacks of opportunity than the character is normally allowed in a round.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Dexterity 13, Dodge.\nBenefit: Once per round, if the opponent the character has designated as his or her dodge target (see the Dodge feat) makes a melee attack or melee touch attack against the character and misses, the character may make an attack of opportunity against that opponent. Resolve and apply the effects from both attacks simultaneously.\nEven a character with the Combat Reflexes feat can’t use the Agile Riposte feat more than once per round. This feat does not grant more attacks of opportunity than the character is normally allowed in a round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

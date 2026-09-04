@@ -15,26 +15,32 @@
   "features": [
     {
       "name": "Foundation: Powerhouse",
+      "tier": 1,
       "description": "Increase the d8 damage dice for your unarmed attack to d10s. Additionally, you can mark a Stress to target two creatures within Melee range with a single attack roll."
     },
     {
       "name": "Foundation: Overwhelm",
+      "tier": 1,
       "description": "On a successful attack, you can spend a Hope to force the target to mark a Stress or to throw them within Close range."
     },
     {
       "name": "Specialization: Rugged",
+      "tier": 2,
       "description": "Gain a permanent +3 bonus to your Severe damage threshold. Additionally, your Powerhouse feature can target up to three creatures instead of two."
     },
     {
       "name": "Specialization: Eye for an Eye",
+      "tier": 2,
       "description": "When you mark more than one Hit Point from an attack in Melee range, the attacker must make a Reaction Roll (13). On a failure, once per rest, they immediately mark the same number of Hit Points in return."
     },
     {
       "name": "Mastery: Pummeljoy",
+      "tier": 3,
       "description": "When you critically succeed on a weapon attack in Melee range, you gain an additional Hope, clear an additional Stress, and gain a +1 bonus to your Proficiency for the attack."
     },
     {
       "name": "Mastery: Not Done Yet",
+      "tier": 3,
       "description": "When you mark more than one HP from an attack, you can gain a Hope or clear a Stress."
     }
   ],

@@ -1,0 +1,212 @@
+{
+  "index": "soldier",
+  "name": "Soldier",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A trained military combatant, disciplined in weapons, tactics, and teamwork.",
+  "keyBasicClass": "Strong Hero",
+  "prerequisites": "Base Attack Bonus +3; Knowledge (tactics) 3 ranks; Personal Firearms Proficiency feat.",
+  "hitDie": 10,
+  "classSkills": [
+    "demolitions",
+    "drive",
+    "intimidate",
+    "jump",
+    "knowledge",
+    "listen",
+    "navigate",
+    "profession",
+    "readwritelanguage",
+    "speaklanguage",
+    "spot",
+    "survival",
+    "swim"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Weapon Focus (Soldier)",
+      "level": 1
+    },
+    {
+      "name": "Weapon Specialization",
+      "level": 2
+    },
+    {
+      "name": "Tactical Aid",
+      "level": 4
+    },
+    {
+      "name": "Improved Critical (Soldier)",
+      "level": 5
+    },
+    {
+      "name": "Improved Reaction (Soldier)",
+      "level": 7
+    },
+    {
+      "name": "Greater Weapon Specialization",
+      "level": 8
+    },
+    {
+      "name": "Critical Strike",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-soldier-weapon-focus",
+    "feat.d20modern-adv-soldier-weapon-specialization",
+    "feat.d20modern-adv-soldier-tactical-aid",
+    "feat.d20modern-adv-soldier-improved-critical",
+    "feat.d20modern-adv-soldier-improved-reaction",
+    "feat.d20modern-adv-soldier-greater-weapon-specialization",
+    "feat.d20modern-adv-soldier-critical-strike"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Advanced Firearms Proficiency"
+    },
+    {
+      "name": "Archaic Weapons Proficiency"
+    },
+    {
+      "name": "Armor Proficiency (light)"
+    },
+    {
+      "name": "Armor Proficiency (medium)"
+    },
+    {
+      "name": "Armor Proficiency (heavy)"
+    },
+    {
+      "name": "Brawl"
+    },
+    {
+      "name": "Burst Fire"
+    },
+    {
+      "name": "Cleave"
+    },
+    {
+      "name": "Combat Reflexes"
+    },
+    {
+      "name": "Exotic Firearms Proficiency"
+    },
+    {
+      "name": "Exotic Melee Weapon Proficiency"
+    },
+    {
+      "name": "Far Shot"
+    },
+    {
+      "name": "Great Cleave"
+    },
+    {
+      "name": "Improved Brawl"
+    },
+    {
+      "name": "Improved Knockout Punch"
+    },
+    {
+      "name": "Knockout Punch"
+    },
+    {
+      "name": "Power Attack"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 1,
+      "ref": 1,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 2,
+      "ref": 2,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 2,
+      "ref": 2,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 2,
+      "ref": 2,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 3,
+      "ref": 3,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 3,
+      "ref": 3,
+      "will": 2,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 4,
+      "ref": 4,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 4,
+      "ref": 4,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 4,
+      "ref": 4,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 2
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 5,
+      "ref": 5,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 2
+    }
+  ]
+}

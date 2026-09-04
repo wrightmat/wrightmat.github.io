@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-investigator-nonlethal-force",
+  "name": "Nonlethal Force",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Investigator can deal nonlethal damage with a normally-lethal weapon without the usual -4 attack penalty.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Investigator can deal nonlethal damage with a normally-lethal weapon without the usual -4 attack penalty."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

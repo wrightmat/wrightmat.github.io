@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-trustworthy",
+  "name": "Trustworthy",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Diplomacy checks and Gather Information checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Diplomacy checks and Gather Information checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

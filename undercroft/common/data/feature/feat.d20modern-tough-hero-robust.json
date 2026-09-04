@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-tough-hero-robust",
+  "name": "Robust",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Tough hero becomes especially robust, gaining a number of hit points equal to his or her Tough level as soon as he or she selects this talent. Thereafter, the hero gains +1 hit point with each level of Tough he or she gains.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Tough hero becomes especially robust, gaining a number of hit points equal to his or her Tough level as soon as he or she selects this talent. Thereafter, the hero gains +1 hit point with each level of Tough he or she gains."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

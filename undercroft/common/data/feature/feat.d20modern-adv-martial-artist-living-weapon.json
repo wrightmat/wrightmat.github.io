@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-martial-artist-living-weapon",
+  "name": "Living Weapon (1d10)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Martial Artist's unarmed strike damage increases to 1d10.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Martial Artist's unarmed strike damage increases to 1d10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

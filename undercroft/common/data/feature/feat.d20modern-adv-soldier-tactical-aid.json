@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-tactical-aid",
+  "name": "Tactical Aid",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "As a full-round action costing 1 action point, the Soldier provides all allies within sight and voice range (including himself) a +1 competence bonus on attack rolls for a number of rounds equal to half his class level, rounded down.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a full-round action costing 1 action point, the Soldier provides all allies within sight and voice range (including himself) a +1 competence bonus on attack rolls for a number of rounds equal to half his class level, rounded down."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

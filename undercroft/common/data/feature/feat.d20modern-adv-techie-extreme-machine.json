@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-techie-extreme-machine",
+  "name": "Extreme Machine",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "By spending 1 action point and a Craft check, the Techie can temporarily push a mechanical or electronic device beyond its normal limits (extra damage, range, or vehicle performance), at the risk of the device needing repairs once the effect (lasting minutes equal to his class level) ends.",
+  "mechanics": {
+    "type": "passive",
+    "text": "By spending 1 action point and a Craft check, the Techie can temporarily push a mechanical or electronic device beyond its normal limits (extra damage, range, or vehicle performance), at the risk of the device needing repairs once the effect (lasting minutes equal to his class level) ends."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

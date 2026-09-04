@@ -1205,6 +1205,229 @@
           "sides": 100
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "derivedFormulas",
+      "label": "Derived Formulas",
+      "values": [
+        {
+          "role": "abilityModifier",
+          "formula": "floor((@score-10)/2)",
+          "name": "abilityModifier"
+        },
+        {
+          "role": "hitPointsPerLevelAverage",
+          "formula": "floor(@sides/2)+1",
+          "name": "hitPointsPerLevelAverage"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "levelUpBindings",
+      "label": "Level Up Bindings",
+      "values": [
+        {
+          "name": "Class Hit Die Growth",
+          "role": "resourceGrowth",
+          "kind": "class",
+          "path": "hitDie",
+          "resourceRole": "resource",
+          "abilityBinding": "@abilities.constitution"
+        },
+        {
+          "role": "classProgressionTable",
+          "kind": "class",
+          "path": "progressionTable",
+          "columns": [
+            {
+              "source": "bab",
+              "targetPath": "@baseAttackBonus"
+            },
+            {
+              "source": "fort",
+              "targetPath": "@saves.fortitude",
+              "abilityBinding": "@abilities.constitution"
+            },
+            {
+              "source": "ref",
+              "targetPath": "@saves.reflex",
+              "abilityBinding": "@abilities.dexterity"
+            },
+            {
+              "source": "will",
+              "targetPath": "@saves.will",
+              "abilityBinding": "@abilities.wisdom"
+            },
+            {
+              "source": "defenseBonus",
+              "targetPath": "@defense.normal",
+              "base": 10,
+              "abilityBinding": "@abilities.dexterity"
+            },
+            {
+              "source": "reputationBonus",
+              "targetPath": "@reputation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "buildSteps",
+      "label": "Build Wizard Steps",
+      "values": [
+        {
+          "step": "class",
+          "kind": "class",
+          "matchField": "form",
+          "matchValue": "basic",
+          "name": "Basic Class"
+        },
+        {
+          "step": "background",
+          "kind": "background",
+          "name": "Starting Occupation"
+        },
+        {
+          "step": "abilities",
+          "methods": [
+            {
+              "name": "roll",
+              "formula": "4d6d1",
+              "count": 6,
+              "label": "4d6, drop lowest"
+            }
+          ],
+          "name": "Ability Scores"
+        },
+        {
+          "step": "occupationSkillChoices",
+          "type": "listPick",
+          "desc": "Your starting Occupation grants a number of permanent class skills, chosen from its own list.",
+          "source": {
+            "from": "background",
+            "field": "skillChoices"
+          },
+          "picksFrom": {
+            "from": "background",
+            "field": "skillChoiceCount"
+          },
+          "targetArrayPath": "@occupationSkills",
+          "name": "Occupation Skills"
+        },
+        {
+          "step": "occupationBonusFeat",
+          "type": "listPick",
+          "desc": "Some Occupations grant a bonus feat, chosen from a short list of options — this step is empty for an Occupation that doesn't.",
+          "source": {
+            "from": "background",
+            "field": "bonusFeatChoices"
+          },
+          "idField": "bonusFeatChoiceIds",
+          "picksFrom": {
+            "from": "background",
+            "field": "bonusFeatCount"
+          },
+          "targetArrayPath": "@featureIds",
+          "searchable": true,
+          "name": "Occupation Bonus Feat"
+        },
+        {
+          "step": "generalFeats",
+          "type": "listPick",
+          "desc": "Every character picks 2 feats at 1st level from the full Feat list, in addition to any Occupation or Basic Class feats.",
+          "source": {
+            "from": "library",
+            "kind": "feature",
+            "matchCategory": "feat"
+          },
+          "picks": [
+            {},
+            {}
+          ],
+          "targetArrayPath": "@featureIds",
+          "searchable": true,
+          "name": "General Feats"
+        },
+        {
+          "step": "talent",
+          "type": "listPick",
+          "desc": "Choose one talent from your Basic Class's own talent trees.",
+          "source": {
+            "from": "class",
+            "field": "talents"
+          },
+          "idField": "talentIds",
+          "picks": [
+            {}
+          ],
+          "targetArrayPath": "@featureIds",
+          "searchable": true,
+          "name": "Talent"
+        },
+        {
+          "step": "details",
+          "name": "Details"
+        },
+        {
+          "step": "review",
+          "name": "Review"
+        },
+        {
+          "step": "choices",
+          "name": "Finish Choices"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "combatBindings",
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings"
+        },
+        {
+          "role": "abilityScores",
+          "name": "abilities → abilityScores",
+          "sourceField": "abilities"
+        },
+        {
+          "role": "savingThrows",
+          "name": "saves → savingThrows",
+          "sourceField": "saves"
+        },
+        {
+          "role": "combatScaling",
+          "name": "challengeRating → combatScaling",
+          "sourceField": "challengeRating"
+        },
+        {
+          "role": "archetypeTable",
+          "name": "occupations → archetypeTable",
+          "sourceField": "occupations"
+        },
+        {
+          "role": "environment",
+          "name": "environment → environment",
+          "sourceField": "environment"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "restriction → generatorProperty",
+          "sourceField": "restriction"
+        },
+        {
+          "role": "budgetCeiling",
+          "name": "restriction → budgetCeiling",
+          "sourceField": "restriction"
+        }
+      ]
     }
   ]
 }

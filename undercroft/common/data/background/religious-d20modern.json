@@ -1,0 +1,35 @@
+{
+  "index": "religious",
+  "name": "Religious",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Clergy and the devout, whose calling shapes how they see the world.",
+  "skillChoices": [
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Diplomacy"
+    },
+    {
+      "name": "Sense Motive"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Iron Will",
+      "description": "Benefit: The character gets a +2 bonus on all Will saving throws."
+    },
+    {
+      "name": "Trustworthy",
+      "description": "Benefit: The character gets a +2 bonus on all Diplomacy checks and Gather Information checks."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-iron-will",
+    "feat.d20modern-trustworthy"
+  ],
+  "bonusFeatCount": 1
+}

@@ -15,26 +15,32 @@
   "features": [
     {
       "name": "Foundation: First Strike",
+      "tier": 1,
       "description": "The first time in a scene you succeed on an attack roll, double the damage of the attack."
     },
     {
       "name": "Foundation: Ambush",
+      "tier": 1,
       "description": "Your Marked for Death feature uses d6s instead of d4s."
     },
     {
       "name": "Specialization: Death Strike",
+      "tier": 2,
       "description": "When you deal Severe damage to a creature, you can mark a Stress to make them mark an additional Hit Point."
     },
     {
       "name": "Specialization: Scorpion's Poise",
+      "tier": 2,
       "description": "You gain a +2 bonus to your Evasion against any attacks made by a creature Marked for Death."
     },
     {
       "name": "Mastery: True Strike",
+      "tier": 3,
       "description": "Once per long rest, when you fail an attack roll, you can spend a Hope to make it a success instead."
     },
     {
       "name": "Mastery: Backstab",
+      "tier": 3,
       "description": "Your Marked for Death feature uses d8s instead of d6s."
     }
   ],

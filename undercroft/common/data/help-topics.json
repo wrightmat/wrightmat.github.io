@@ -547,6 +547,18 @@
       "href": "../loom/index.html#loom-systems"
     },
     {
+      "id": "loom.reservedKeys",
+      "title": "Reserved Keys",
+      "summary": "Properties whose key name is read by name elsewhere in the suite (Workbench's Build Wizard, Combat Tracker, Crucible, Vault, Forge, Sanctum, ...) — shown here separately so it's obvious a property is more than just a display field.",
+      "details": [
+        "A property lands here automatically the moment its Key matches one of the suite's known reserved names (buildSteps, levelUpBindings, derivedFormulas, fieldRoles, dice, rolls, decks, currency, inventory, travelMeans, levels, casterTypes) — nothing to opt into.",
+        "The Reserved Key Diagnostics section (below the Property Inspector) checks these against their expected shape and flags anything wrong.",
+        "fieldRoles is itself a reserved key — the one that says which of your OTHER properties plays which role (ability scores, combat bindings, creature type, ...) for tools that need to find them."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
       "id": "loom.groupSystem",
       "title": "Group System",
       "summary": "The System this campaign runs — its dice and vocabulary become the default for everyone playing in it.",
@@ -1233,42 +1245,6 @@
       "href": "../crucible/index.html#crucible-overrides"
     },
     {
-      "id": "crucible.combatScalingField",
-      "title": "Combat scaling field",
-      "summary": "Which of this System's Array properties Crucible reads as its Combat Scaling levels.",
-      "details": [
-        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
-        "Defaults to a property literally named \"combatScaling\" if one exists and nothing is picked here, so existing Systems keep working without needing to set anything.",
-        "A different System might use that property for something else, or have no combat-scaling concept at all — picking None here just means Crucible generates without a scaling axis."
-      ],
-      "category": "Crucible",
-      "href": "../crucible/index.html#crucible-overrides"
-    },
-    {
-      "id": "crucible.creatureTypeField",
-      "title": "Creature type field",
-      "summary": "Which of this System's Array properties Crucible reads as its Creature Type vocabulary.",
-      "details": [
-        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
-        "Defaults to a property literally named \"creatureTypes\" if one exists and nothing is picked here, so existing Systems keep working without needing to set anything.",
-        "Different Systems use different names for this concept (5e's own Creature Type vocabulary vs. another game's \"Kind\"/\"Origin\"/whatever it calls its own version) — picking None here just means Crucible generates with no creature-type axis."
-      ],
-      "category": "Crucible",
-      "href": "../crucible/index.html#crucible-overrides"
-    },
-    {
-      "id": "crucible.abilityField",
-      "title": "Ability field",
-      "summary": "Which of this System's Object properties Crucible reads as its ability/stat-block scores.",
-      "details": [
-        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
-        "Whichever Object property looks like a stat block (its children are all number-valued) is already selected for you, marked \"(auto-detected)\" — preferring one literally named Abilities/Characteristics/Attributes/Stats if more than one qualifies — so most Systems need nothing picked here at all.",
-        "Pick a different field yourself if a System's stat block lives under a different name (Call of Cthulhu's own Characteristics field, for example) or the auto-detected one is wrong — your own pick sticks and the \"(auto-detected)\" label goes away."
-      ],
-      "category": "Crucible",
-      "href": "../crucible/index.html#crucible-overrides"
-    },
-    {
       "id": "crucible.lockedFeatures",
       "title": "Locked Features",
       "summary": "Pin one or more Features to guarantee they're included, instead of leaving traversal to pick everything on its own.",
@@ -1385,37 +1361,12 @@
       "href": "../vault/index.html#vault-generate"
     },
     {
-      "id": "vault.budgetCeilingField",
-      "title": "Budget ceiling field",
-      "summary": "Which one Property Vault treats as the generator economy's ceiling-setter, for the currently selected System.",
-      "details": [
-        "Picks exactly one of this System's generator-property fields (e.g. Rarity) whose chosen value's Target budget becomes the overall budget ceiling for generation — every other Property with Cost values spends from that ceiling.",
-        "This is a personal preference for this browser — setting it here won't affect anyone else, or show up when editing the System in Loom. A different System can have a completely different field (or none) picked here with zero effect on any other System.",
-        "A Property can carry Target budget values without being the ceiling-setter (e.g. Combat Scaling tracks its own per-CR budget, unrelated to this economy) — this setting is what tells Vault which one actually counts.",
-        "Leave at None to fall back to Vault's built-in default target budget with no field-driven ceiling."
-      ],
-      "category": "Vault",
-      "href": "../vault/index.html#vault-generate"
-    },
-    {
-      "id": "vault.abilityField",
-      "title": "Ability field",
-      "summary": "Which of this System's Object properties Vault reads as its ability/stat-block scores.",
-      "details": [
-        "This is a personal preference for this browser, not something saved into the System itself — setting it here won't affect anyone else, or show up when editing the System in Loom.",
-        "Whichever Object property looks like a stat block (its children are all number-valued) is already selected for you, marked \"(auto-detected)\" — preferring one literally named Abilities/Characteristics/Attributes/Stats if more than one qualifies — so most Systems need nothing picked here at all.",
-        "Pick a different field yourself if a System's stat block lives under a different name or the auto-detected one is wrong — your own pick sticks and the \"(auto-detected)\" label goes away. This feeds the same ability list an Ability-Score-Increase-style Feature's own \"which ability\" choice reads."
-      ],
-      "category": "Vault",
-      "href": "../vault/index.html#vault-generate"
-    },
-    {
       "id": "vault.identity",
       "title": "Identity",
       "summary": "The resolved Properties (Rarity, Activation, Item Form, etc.) for this wonder, plus its Name — edit the Name directly; the rest comes from generation.",
       "details": [
         "Each Property is either what you pinned in the overrides above, or a random eligible value if you left it blank.",
-        "Whichever Property is picked as the Budget ceiling field (see that topic) sets the Feature budget's target ceiling; every other Property's chosen value spends from (or refunds into) that budget.",
+        "Whichever Property the System's own Field Roles declare as the budget ceiling (set in Loom) sets the Feature budget's target ceiling; every other Property's chosen value spends from (or refunds into) that budget.",
         "The Name field is the only thing here you edit directly; regenerate the wonder to get a new resolved set of Properties instead."
       ],
       "category": "Vault",

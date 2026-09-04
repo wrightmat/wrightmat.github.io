@@ -1,0 +1,198 @@
+{
+  "index": "negotiator",
+  "name": "Negotiator",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A master of leverage, persuasion, and the art of getting what they want from people.",
+  "keyBasicClass": "Charismatic Hero",
+  "prerequisites": "Bluff 6 ranks; Diplomacy 6 ranks; Alertness feat.",
+  "hitDie": 8,
+  "classSkills": [
+    "bluff",
+    "computeruse",
+    "diplomacy",
+    "drive",
+    "gamble",
+    "gatherinformation",
+    "intimidate",
+    "investigate",
+    "knowledge",
+    "profession",
+    "readwritelanguage",
+    "sensemotive",
+    "speaklanguage",
+    "spot"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Conceal Motive",
+      "level": 1
+    },
+    {
+      "name": "React First",
+      "level": 2
+    },
+    {
+      "name": "Talk Down (one opponent)",
+      "level": 4
+    },
+    {
+      "name": "No Sweat",
+      "level": 5
+    },
+    {
+      "name": "Talk Down (several opponents)",
+      "level": 7
+    },
+    {
+      "name": "Sow Distrust",
+      "level": 8
+    },
+    {
+      "name": "Talk Down (all opponents)",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-negotiator-conceal-motive",
+    "feat.d20modern-adv-negotiator-react-first",
+    "feat.d20modern-adv-negotiator-talk-down",
+    "feat.d20modern-adv-negotiator-no-sweat",
+    "feat.d20modern-adv-negotiator-talk-down",
+    "feat.d20modern-adv-negotiator-sow-distrust",
+    "feat.d20modern-adv-negotiator-talk-down"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Advanced Firearms Proficiency"
+    },
+    {
+      "name": "Armor Proficiency (light)"
+    },
+    {
+      "name": "Armor Proficiency (medium)"
+    },
+    {
+      "name": "Attentive"
+    },
+    {
+      "name": "Confident"
+    },
+    {
+      "name": "Dead Aim"
+    },
+    {
+      "name": "Deceptive"
+    },
+    {
+      "name": "Educated"
+    },
+    {
+      "name": "Far Shot"
+    },
+    {
+      "name": "Iron Will"
+    },
+    {
+      "name": "Personal Firearms Proficiency"
+    },
+    {
+      "name": "Trustworthy"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 1,
+      "ref": 0,
+      "will": 2,
+      "defenseBonus": 0,
+      "reputationBonus": 1
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 2,
+      "ref": 0,
+      "will": 3,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 2,
+      "ref": 1,
+      "will": 3,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 2,
+      "ref": 1,
+      "will": 4,
+      "defenseBonus": 1,
+      "reputationBonus": 2
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 3,
+      "ref": 1,
+      "will": 4,
+      "defenseBonus": 2,
+      "reputationBonus": 2
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 3,
+      "ref": 2,
+      "will": 5,
+      "defenseBonus": 2,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 4,
+      "ref": 2,
+      "will": 5,
+      "defenseBonus": 2,
+      "reputationBonus": 3
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 4,
+      "ref": 2,
+      "will": 6,
+      "defenseBonus": 3,
+      "reputationBonus": 3
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 4,
+      "ref": 3,
+      "will": 6,
+      "defenseBonus": 3,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 5,
+      "ref": 3,
+      "will": 7,
+      "defenseBonus": 3,
+      "reputationBonus": 4
+    }
+  ]
+}

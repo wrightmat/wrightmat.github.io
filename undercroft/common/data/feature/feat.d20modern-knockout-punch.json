@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-knockout-punch",
+  "name": "Knockout Punch",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making the character’s first unarmed attack against a flat-footed opponent, treat a successful attack as a critical hit. This damage is nonlethal damage.\nSpecial: Even if the character has the ability to treat unarmed damage as lethal damage, the damage from a knockout punch is always nonlethal.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making the character’s first unarmed attack against a flat-footed opponent, treat a successful attack as a critical hit. This damage is nonlethal damage.\nSpecial: Even if the character has the ability to treat unarmed damage as lethal damage, the damage from a knockout punch is always nonlethal."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-daredevil-fearless",
+  "name": "Fearless",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Daredevil gains a +4 morale bonus on Will saves to resist fear effects and on level checks to oppose Intimidate checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Daredevil gains a +4 morale bonus on Will saves to resist fear effects and on level checks to oppose Intimidate checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

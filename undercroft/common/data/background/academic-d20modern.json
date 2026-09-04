@@ -1,0 +1,38 @@
+{
+  "index": "academic",
+  "name": "Academic",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Librarians, archaeologists, and scholars — a life spent in research and study.",
+  "skillChoices": [
+    {
+      "name": "Research"
+    },
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Decipher Script"
+    },
+    {
+      "name": "Read/Write Language"
+    }
+  ],
+  "skillChoiceCount": 3,
+  "bonusFeatChoices": [
+    {
+      "name": "Educated",
+      "description": "Benefit: Pick two Knowledge skills. The character gets a +2 bonus on all checks with those skills.\nSpecial: A character can select this feat as many as seven times. Each time, the character selects two new Knowledge skills."
+    },
+    {
+      "name": "Studious",
+      "description": "Benefit: The character gets a +2 bonus on all Decipher Script checks and Research checks."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-educated",
+    "feat.d20modern-studious"
+  ],
+  "bonusFeatCount": 1
+}

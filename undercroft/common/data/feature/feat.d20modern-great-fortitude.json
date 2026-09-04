@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-great-fortitude",
+  "name": "Great Fortitude",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Fortitude saving throws.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Fortitude saving throws."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

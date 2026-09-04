@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-techie-jury-rig-+2",
+  "name": "Jury-Rig +2",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Techie gains a +2 competence bonus on Repair skill checks made to attempt temporary or jury-rigged repairs.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Techie gains a +2 competence bonus on Repair skill checks made to attempt temporary or jury-rigged repairs."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

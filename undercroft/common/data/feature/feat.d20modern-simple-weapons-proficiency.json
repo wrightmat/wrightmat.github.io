@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-simple-weapons-proficiency",
+  "name": "Simple Weapons Proficiency",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character makes attack rolls with simple weapons normally.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with simple weapons.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character makes attack rolls with simple weapons normally.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with simple weapons."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-strong-hero-melee-smash",
+  "name": "Melee Smash",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Strong hero has an innate talent that increases melee damage.\nThe Strong hero receives a +1 bonus on melee damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Strong hero has an innate talent that increases melee damage.\nThe Strong hero receives a +1 bonus on melee damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-defensive-martial-arts",
+  "name": "Defensive Martial Arts",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gains a +1 dodge bonus to Defense against melee attacks.\nSpecial: A condition that makes the character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack, unlike most other types of bonuses.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gains a +1 dodge bonus to Defense against melee attacks.\nSpecial: A condition that makes the character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack, unlike most other types of bonuses."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

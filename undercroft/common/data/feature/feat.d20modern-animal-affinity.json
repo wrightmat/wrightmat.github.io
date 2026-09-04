@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-animal-affinity",
+  "name": "Animal Affinity",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Handle Animal checks and Ride checks. \nSpecial: Remember that the Handle Animal skill can’t be used untrained.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Handle Animal checks and Ride checks. \nSpecial: Remember that the Handle Animal skill can’t be used untrained."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

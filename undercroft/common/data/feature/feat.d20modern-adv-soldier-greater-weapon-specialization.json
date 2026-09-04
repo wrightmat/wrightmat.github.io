@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-greater-weapon-specialization",
+  "name": "Greater Weapon Specialization",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Soldier's damage bonus from weapon specialization increases to +4 with the selected weapon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Soldier's damage bonus from weapon specialization increases to +4 with the selected weapon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

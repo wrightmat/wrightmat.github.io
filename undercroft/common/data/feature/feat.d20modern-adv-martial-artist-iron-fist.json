@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-martial-artist-iron-fist",
+  "name": "Iron Fist (all attacks)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Martial Artist's Iron Fist ability now adds the action point roll's result to all successful attacks made in the round, not just one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Martial Artist's Iron Fist ability now adds the action point roll's result to all successful attacks made in the round, not just one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

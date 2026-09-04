@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-weapon-specialization",
+  "name": "Weapon Specialization",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Soldier gains weapon specialization with the weapon chosen for Weapon Focus, adding a +2 bonus on damage rolls with it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Soldier gains weapon specialization with the weapon chosen for Weapon Focus, adding a +2 bonus on damage rolls with it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

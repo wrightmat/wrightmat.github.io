@@ -1,0 +1,30 @@
+{
+  "index": "creative",
+  "name": "Creative",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Artists, writers, and performers who make a living from imagination.",
+  "skillChoices": [
+    {
+      "name": "Craft"
+    },
+    {
+      "name": "Perform"
+    },
+    {
+      "name": "Sleight of Hand"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Creative",
+      "description": "Benefit: Pick two of the following skills: Craft (visual art), Craft (writing), Perform (act), Perform (dance), Perform (keyboards), Perform (percussion instruments), Perform (sing), Perform (stand-up), Perform (string instruments), and Perform (wind instruments). The character gets a +2 bonus on all checks with those two skills.\nSpecial: A character can select this feat as many as five times. Each time, the character selects two new skills from the choices given above."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-creative"
+  ],
+  "bonusFeatCount": 1
+}

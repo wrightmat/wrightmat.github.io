@@ -1,0 +1,192 @@
+{
+  "index": "martial-artist",
+  "name": "Martial Artist",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A master of unarmed and melee combat, striking with speed and precision.",
+  "keyBasicClass": "Strong Hero",
+  "prerequisites": "Base Attack Bonus +3; Jump 3 ranks; Combat Martial Arts and Defensive Martial Arts feats.",
+  "hitDie": 8,
+  "classSkills": [
+    "balance",
+    "climb",
+    "escapeartist",
+    "hide",
+    "intimidate",
+    "jump",
+    "knowledge",
+    "movesilently",
+    "perform",
+    "profession",
+    "readwritelanguage",
+    "speaklanguage",
+    "spot",
+    "tumble"
+  ],
+  "skillPointsBase": 3,
+  "features": [
+    {
+      "name": "Living Weapon (1d6)",
+      "level": 1
+    },
+    {
+      "name": "Flying Kick",
+      "level": 2
+    },
+    {
+      "name": "Living Weapon (1d8)",
+      "level": 4
+    },
+    {
+      "name": "Iron Fist (one attack)",
+      "level": 5
+    },
+    {
+      "name": "Flurry of Blows",
+      "level": 7
+    },
+    {
+      "name": "Living Weapon (1d10)",
+      "level": 8
+    },
+    {
+      "name": "Iron Fist (all attacks)",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-martial-artist-living-weapon",
+    "feat.d20modern-adv-martial-artist-flying-kick",
+    "feat.d20modern-adv-martial-artist-living-weapon",
+    "feat.d20modern-adv-martial-artist-iron-fist",
+    "feat.d20modern-adv-martial-artist-flurry-of-blows",
+    "feat.d20modern-adv-martial-artist-living-weapon",
+    "feat.d20modern-adv-martial-artist-iron-fist"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Acrobatic"
+    },
+    {
+      "name": "Advanced Combat Martial Arts"
+    },
+    {
+      "name": "Archaic Weapons Proficiency"
+    },
+    {
+      "name": "Combat Reflexes"
+    },
+    {
+      "name": "Combat Throw"
+    },
+    {
+      "name": "Elusive Target"
+    },
+    {
+      "name": "Exotic Melee Weapon Proficiency"
+    },
+    {
+      "name": "Improved Combat Throw"
+    },
+    {
+      "name": "Improved Combat Martial Arts"
+    },
+    {
+      "name": "Unbalance Opponent"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 1,
+      "fort": 0,
+      "ref": 2,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 2,
+      "fort": 0,
+      "ref": 3,
+      "will": 0,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 3,
+      "fort": 1,
+      "ref": 3,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 4,
+      "bab": 4,
+      "fort": 1,
+      "ref": 4,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 0
+    },
+    {
+      "level": 5,
+      "bab": 5,
+      "fort": 1,
+      "ref": 4,
+      "will": 1,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 6,
+      "fort": 2,
+      "ref": 5,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 7,
+      "bab": 7,
+      "fort": 2,
+      "ref": 5,
+      "will": 2,
+      "defenseBonus": 5,
+      "reputationBonus": 1
+    },
+    {
+      "level": 8,
+      "bab": 8,
+      "fort": 2,
+      "ref": 6,
+      "will": 2,
+      "defenseBonus": 6,
+      "reputationBonus": 1
+    },
+    {
+      "level": 9,
+      "bab": 9,
+      "fort": 3,
+      "ref": 6,
+      "will": 3,
+      "defenseBonus": 6,
+      "reputationBonus": 2
+    },
+    {
+      "level": 10,
+      "bab": 10,
+      "fort": 3,
+      "ref": 7,
+      "will": 3,
+      "defenseBonus": 7,
+      "reputationBonus": 2
+    }
+  ]
+}

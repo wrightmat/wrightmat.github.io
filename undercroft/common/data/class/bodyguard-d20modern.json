@@ -1,0 +1,210 @@
+{
+  "index": "bodyguard",
+  "name": "Bodyguard",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A protector, trained to keep someone else alive at any cost.",
+  "keyBasicClass": "Tough Hero",
+  "prerequisites": "Base Attack Bonus +2; Concentration 6 ranks; Intimidate 6 ranks; Personal Firearms Proficiency feat.",
+  "hitDie": 12,
+  "classSkills": [
+    "concentration",
+    "disguise",
+    "drive",
+    "forgery",
+    "gatherinformation",
+    "intimidate",
+    "knowledge",
+    "listen",
+    "profession",
+    "readwritelanguage",
+    "search",
+    "sensemotive",
+    "speaklanguage",
+    "spot"
+  ],
+  "skillPointsBase": 3,
+  "features": [
+    {
+      "name": "Harm's Way",
+      "level": 1
+    },
+    {
+      "name": "Combat Sense +1",
+      "level": 2
+    },
+    {
+      "name": "Sudden Action",
+      "level": 4
+    },
+    {
+      "name": "Improved Charge",
+      "level": 5
+    },
+    {
+      "name": "Defensive Strike",
+      "level": 7
+    },
+    {
+      "name": "Combat Sense +2",
+      "level": 8
+    },
+    {
+      "name": "Blanket Protection",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-bodyguard-harms-way",
+    "feat.d20modern-adv-bodyguard-combat-sense-+1",
+    "feat.d20modern-adv-bodyguard-sudden-action",
+    "feat.d20modern-adv-bodyguard-improved-charge",
+    "feat.d20modern-adv-bodyguard-defensive-strike",
+    "feat.d20modern-adv-bodyguard-combat-sense-+2",
+    "feat.d20modern-adv-bodyguard-blanket-protection"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Advanced Firearms Proficiency"
+    },
+    {
+      "name": "Armor Proficiency (light)"
+    },
+    {
+      "name": "Armor Proficiency (medium)"
+    },
+    {
+      "name": "Attentive"
+    },
+    {
+      "name": "Combat Expertise"
+    },
+    {
+      "name": "Combat Reflexes"
+    },
+    {
+      "name": "Double Tap"
+    },
+    {
+      "name": "Improved Brawl"
+    },
+    {
+      "name": "Improved Feint"
+    },
+    {
+      "name": "Improved Knockout Punch"
+    },
+    {
+      "name": "Knockout Punch"
+    },
+    {
+      "name": "Precise Shot"
+    },
+    {
+      "name": "Quick Draw"
+    },
+    {
+      "name": "Quick Reload"
+    },
+    {
+      "name": "Streetfighting"
+    },
+    {
+      "name": "Vehicle Expert"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 1,
+      "ref": 2,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 2,
+      "ref": 3,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 2,
+      "ref": 3,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 2,
+      "ref": 4,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 3,
+      "ref": 4,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 3,
+      "ref": 5,
+      "will": 2,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 4,
+      "ref": 5,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 4,
+      "ref": 6,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 4,
+      "ref": 6,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 5,
+      "ref": 7,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 3
+    }
+  ]
+}

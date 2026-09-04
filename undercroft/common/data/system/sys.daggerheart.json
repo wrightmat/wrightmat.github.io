@@ -1263,19 +1263,18 @@
       "values": [
         {
           "step": "class",
-          "label": "Class",
-          "kind": "class"
+          "kind": "class",
+          "name": "Class"
         },
         {
           "step": "subclass",
           "atCreation": true,
-          "label": "Subclass",
           "kind": "variant",
-          "parentKind": "class"
+          "parentKind": "class",
+          "name": "Subclass"
         },
         {
           "step": "heritage",
-          "label": "Heritage",
           "picks": [
             {
               "kind": "species",
@@ -1286,11 +1285,11 @@
               "label": "Community"
             }
           ],
-          "allowMixedAncestry": true
+          "allowMixedAncestry": true,
+          "name": "Heritage"
         },
         {
           "step": "abilities",
-          "label": "Traits",
           "methods": [
             {
               "name": "array",
@@ -1321,11 +1320,11 @@
                 }
               ]
             }
-          ]
+          ],
+          "name": "Traits"
         },
         {
           "step": "input",
-          "label": "Experiences",
           "targetArrayPath": "@stats.experiences",
           "itemKey": "name",
           "itemDefaults": {
@@ -1340,19 +1339,19 @@
               "label": "Experience 2",
               "placeholder": "e.g. Quick Reflexes"
             }
-          ]
+          ],
+          "name": "Experiences"
         },
         {
           "step": "details",
-          "label": "Details"
+          "name": "Details"
         },
         {
           "step": "review",
-          "label": "Review"
+          "name": "Review"
         },
         {
           "step": "choices",
-          "label": "Finish Choices",
           "equipmentChoices": [
             {
               "name": "Primary Weapon",
@@ -1391,7 +1390,8 @@
               ]
             }
           ],
-          "startingDomainCards": 2
+          "startingDomainCards": 2,
+          "name": "Finish Choices"
         }
       ]
     },
@@ -2017,19 +2017,51 @@
       "values": [
         {
           "role": "proficiencyBonusForLevel",
-          "formula": "1"
+          "formula": "1",
+          "name": "proficiencyBonusForLevel"
         },
         {
           "role": "damageDiceCount",
-          "formula": "@stats.proficiencyBonus"
+          "formula": "@stats.proficiencyBonus",
+          "name": "damageDiceCount"
         },
         {
           "role": "unarmoredMajorThreshold",
-          "formula": "@level"
+          "formula": "@level",
+          "name": "unarmoredMajorThreshold"
         },
         {
           "role": "unarmoredSevereThreshold",
-          "formula": "@level*2"
+          "formula": "@level*2",
+          "name": "unarmoredSevereThreshold"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "combatBindings",
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings"
+        },
+        {
+          "role": "abilityScores",
+          "targetPath": "@stats.abilities",
+          "name": "traits → abilityScores",
+          "sourceField": "traits"
+        },
+        {
+          "role": "combatScaling",
+          "name": "tier → combatScaling",
+          "sourceField": "tier"
+        },
+        {
+          "role": "archetypeTable",
+          "name": "npcTypes → archetypeTable",
+          "sourceField": "npcTypes"
         }
       ]
     }

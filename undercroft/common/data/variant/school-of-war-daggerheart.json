@@ -16,26 +16,32 @@
   "features": [
     {
       "name": "Foundation: Battlemage",
+      "tier": 1,
       "description": "You've focused your studies on becoming an unconquerable force on the battlefield. Gain an additional Hit Point slot."
     },
     {
       "name": "Foundation: Face Your Fear",
+      "tier": 1,
       "description": "When you succeed with Fear on an attack roll, you deal an extra 1d10 magic damage."
     },
     {
       "name": "Specialization: Conjure Shield",
+      "tier": 2,
       "description": "You can maintain a protective barrier of magic. While you have at least 2 Hope, you add your Proficiency to your Evasion."
     },
     {
       "name": "Specialization: Fueled by Fear",
+      "tier": 2,
       "description": "The extra magic damage from your “Face Your Fear” feature increases to 2d10."
     },
     {
       "name": "Mastery: Thrive in Chaos",
+      "tier": 3,
       "description": "When you succeed on an attack, you can mark a Stress after rolling damage to force the target to mark an additional Hit Point."
     },
     {
       "name": "Mastery: Have No Fear",
+      "tier": 3,
       "description": "The extra magic damage from your “Face Your Fear” feature increases to 3d10."
     }
   ],

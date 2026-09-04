@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-investigator-discern-lie",
+  "name": "Discern Lie",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "With a Sense Motive check opposed by the subject's Bluff (or DC 10, whichever is higher), the Investigator can tell whether the subject is knowingly lying.",
+  "mechanics": {
+    "type": "passive",
+    "text": "With a Sense Motive check opposed by the subject's Bluff (or DC 10, whichever is higher), the Investigator can tell whether the subject is knowingly lying."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

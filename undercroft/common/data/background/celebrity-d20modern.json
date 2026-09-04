@@ -1,0 +1,35 @@
+{
+  "index": "celebrity",
+  "name": "Celebrity",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Someone famous, for better or worse — an actor, musician, or public figure whose name opens doors.",
+  "skillChoices": [
+    {
+      "name": "Bluff"
+    },
+    {
+      "name": "Perform"
+    },
+    {
+      "name": "Gather Information"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Renown",
+      "description": "Benefit: The character’s Reputation bonus increases by +3."
+    },
+    {
+      "name": "Trustworthy",
+      "description": "Benefit: The character gets a +2 bonus on all Diplomacy checks and Gather Information checks."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-renown",
+    "feat.d20modern-trustworthy"
+  ],
+  "bonusFeatCount": 1
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-medic-medical-mastery",
+  "name": "Medical Mastery",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Medic may take 10 on Treat Injury checks even under stress or distraction.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Medic may take 10 on Treat Injury checks even under stress or distraction."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -11,6 +11,8 @@
 // than one) and `path` (the field on that kind holding the raw data).
 // `targetPath`, when present, is where a resolved choice lands on the
 // Character.
+import { fieldByKey } from "./bindings.js";
+
 export function findLevelUpBinding(bindings, role, kind) {
   return (bindings || []).find((entry) => entry && entry.role === role && (!kind || entry.kind === kind)) || null;
 }
@@ -105,23 +107,22 @@ export function resolveGrantChoices(grants, character) {
     });
 }
 
-// Matches a reference-kind record's own level-tagged `features[]` (each
-// `{name, level, description}`) against its parallel `featureIds[]` — shared
-// by Level Up (class, one level at a time) and character creation (species,
-// every entry at once). NOT a blind index pairing: real class records have
-// the two arrays drift out of alignment partway through, so index is
+// Shared core for matchFeaturesAtLevel/matchFeaturesAtTier — filters a
+// reference-kind record's own `features[]` (each `{name, description, ...}`)
+// to entries whose own `fieldKey` matches `targetValue` (or every entry when
+// `targetValue` is null/undefined), then resolves each to its real featureId
+// via its parallel `featureIds[]`. NOT a blind index pairing: real records
+// have the two arrays drift out of alignment partway through, so index is
 // checked first as the fast path, falling back to a name-matched search.
-// `targetLevel: null` means every entry regardless of level (Species has no
-// level concept); a number means only entries at exactly that level.
 // Entries already in `existingFeatureIds` are skipped so reopening Level Up
 // never re-offers something already granted.
-export function matchFeaturesAtLevel(sourceFeatures, sourceFeatureIds, featureNameById, targetLevel, existingFeatureIds) {
+function matchFeaturesByField(sourceFeatures, sourceFeatureIds, featureNameById, fieldKey, targetValue, existingFeatureIds) {
   const features = Array.isArray(sourceFeatures) ? sourceFeatures : [];
   const featureIds = Array.isArray(sourceFeatureIds) ? sourceFeatureIds : [];
   const existing = Array.isArray(existingFeatureIds) ? existingFeatureIds : [];
   const matched = [];
   features.forEach((entry, index) => {
-    if (targetLevel !== null && targetLevel !== undefined && Number(entry?.level) !== Number(targetLevel)) {
+    if (targetValue !== null && targetValue !== undefined && Number(entry?.[fieldKey]) !== Number(targetValue)) {
       return;
     }
     const targetName = (entry?.name || "").trim().toLowerCase();
@@ -135,6 +136,24 @@ export function matchFeaturesAtLevel(sourceFeatures, sourceFeatureIds, featureNa
     }
   });
   return matched;
+}
+
+// Matches on a record's own `level` field — shared by Level Up (class, one
+// level at a time) and character creation (species, every entry at once).
+// `targetLevel: null` means every entry regardless of level (Species has no
+// level concept); a number means only entries at exactly that level.
+export function matchFeaturesAtLevel(sourceFeatures, sourceFeatureIds, featureNameById, targetLevel, existingFeatureIds) {
+  return matchFeaturesByField(sourceFeatures, sourceFeatureIds, featureNameById, "level", targetLevel, existingFeatureIds);
+}
+
+// Matches on a record's own `tier` field — the same shape as `level` for a
+// System whose progression isn't per-character-level but per discrete
+// milestone (Daggerheart's subclass Foundation/Specialization/Mastery,
+// granted by an "advancement" pick rather than at a fixed level). A
+// subclass record's own `tier` (a plain integer on each feature entry) is
+// real System-authored data, never inferred from the feature's own name.
+export function matchFeaturesAtTier(sourceFeatures, sourceFeatureIds, featureNameById, targetTier, existingFeatureIds) {
+  return matchFeaturesByField(sourceFeatures, sourceFeatureIds, featureNameById, "tier", targetTier, existingFeatureIds);
 }
 
 // Which level a Class record grants its subclass choice at — read
@@ -169,6 +188,32 @@ export function grantSubclassFeaturesAtLevel(variantRecord, targetLevel, feature
   return matchFeaturesAtLevel(variantRecord.features, variantRecord.featureIds, featureNameById, targetLevel, existingFeatureIds);
 }
 
+// Tier-based counterpart to grantSubclassFeaturesAtLevel, for a subclass
+// whose features[] carry `tier` instead of `level` (Daggerheart). One
+// shared implementation, called by both the Build wizard's creation-time
+// Foundation grant (tier 1) and Level Up's Advancement-Menu subclassUpgrade
+// (tier 2/3).
+export function grantSubclassFeaturesAtTier(variantRecord, targetTier, featureNameById, existingFeatureIds) {
+  if (!variantRecord) return [];
+  return matchFeaturesAtTier(variantRecord.features, variantRecord.featureIds, featureNameById, targetTier, existingFeatureIds);
+}
+
+// Looks up one row of a Class record's own level-keyed progression table —
+// a reserved array field (named by the "classProgressionTable"
+// levelUpBindings role's own `path`), each row `{level, ...namedColumns}`.
+// Same level-keyed-row convention `spellSlotProgression`/computeSpellSlots
+// (above) already use, generalized from that one hardcoded `slots` column
+// to an arbitrary class-scoped table with arbitrary named columns — d20
+// Modern's Base Attack Bonus/Fort/Ref/Will/Defense Bonus/Reputation Bonus
+// all vary independently by BOTH class and level, unlike anything a single
+// System-wide table (spellSlotProgression) or flat per-class value
+// (resourceGrowth) can express. A System whose classes declare no such
+// field simply never resolves a row here.
+export function resolveClassProgressionRow(classRecord, path, targetLevel) {
+  const table = Array.isArray(classRecord?.[path]) ? classRecord[path] : [];
+  return table.find((row) => Number(row?.level) === Number(targetLevel)) || null;
+}
+
 // Formats a Class record's `multiclassPrerequisites` (an array of
 // {any:[{ability,minimum}]} groups — every group required, each satisfied
 // by meeting ANY one entry, modeling both single-ability classes and
@@ -197,30 +242,50 @@ export function characterMeetsMulticlassPrerequisites(prerequisites, abilities) 
   });
 }
 
-// Full/half/third/pact caster-level math, multiclass-aware from the ground
-// up. Each class's EFFECTIVE caster type is its active subclass's own
-// `caster_type` when set, else the base class's value — so a third-caster
-// subclass (Eldritch Knight) correctly overrides an otherwise-"none" base
-// class with zero extra authoring for subclasses that don't change casting.
-// `classRecordsById`/`variantRecordsById` are plain refId->record Maps.
-// Returns limitedUses[]-shaped entries (no `used`/`available` yet — that's
-// mergeLimitedUses' job) for every nonzero slot count.
-export function computeSpellSlots(classes, classRecordsById, variantRecordsById, spellSlotProgression, pactMagicProgression) {
+// Caster-level math, multiclass-aware from the ground up, generic over
+// whatever caster types the active System declares in its own `casterTypes`
+// reserved field (each value `{id, divisor?, ownProgression?, name?, reset?}`
+// — D&D 5e's own "full"/"half"/"third"/"pact" become this System's data,
+// not JS string literals). Each class's EFFECTIVE caster type is its active
+// subclass's own `caster_type` when set, else the base class's value — so a
+// third-caster subclass (Eldritch Knight) correctly overrides an otherwise-
+// uncastered base class with zero extra authoring for subclasses that don't
+// change casting. A `divisor` entry (D&D's full/half/third) accumulates
+// `floor(level/divisor)` into the shared main caster-level total, resolved
+// against `spellSlotProgression`. An `ownProgression` entry (D&D's pact/
+// Warlock) accumulates its own independent level pool instead, resolved
+// against whichever OTHER reserved field its `ownProgression` names (its own
+// level-keyed `{level, slots, slotLevel}` rows, same shape as
+// spellSlotProgression's `slots` column) — generalizing the one hardcoded
+// pact/warlock special case to however many independent slot pools a System
+// declares. `name`/`reset` label that pool's own limitedUses entry (default
+// "Pact Magic"/"Short Rest", matching D&D 5e's own convention, for a System
+// that doesn't bother overriding them). `classRecordsById`/
+// `variantRecordsById` are plain refId->record Maps. `systemFields` is the
+// active System's own top-level `fields` array. Returns limitedUses[]-shaped
+// entries (no `used`/`available` yet — that's mergeLimitedUses' job) for
+// every nonzero slot count.
+export function computeSpellSlots(classes, classRecordsById, variantRecordsById, systemFields) {
   const list = Array.isArray(classes) ? classes : [];
-  const slotTable = Array.isArray(spellSlotProgression) ? spellSlotProgression : [];
-  const pactTable = Array.isArray(pactMagicProgression) ? pactMagicProgression : [];
+  const fields = Array.isArray(systemFields) ? systemFields : [];
+  const slotTable = fieldByKey(fields, "spellSlotProgression")?.values || [];
+  const casterTypes = fieldByKey(fields, "casterTypes")?.values || [];
+  const casterTypeById = new Map(casterTypes.filter((entry) => entry?.id).map((entry) => [entry.id, entry]));
   let casterLevel = 0;
-  let warlockLevel = 0;
+  const ownProgressionLevels = new Map();
   list.forEach((cls) => {
     const classRecord = classRecordsById?.get(cls?.refId);
     if (!classRecord) return;
     const variantRecord = cls?.subclass?.refId ? variantRecordsById?.get(cls.subclass.refId) : null;
-    const casterType = variantRecord?.caster_type || classRecord.caster_type || "none";
+    const casterTypeId = variantRecord?.caster_type || classRecord.caster_type || "";
+    const casterType = casterTypeById.get(casterTypeId);
+    if (!casterType) return;
     const level = Number(cls?.level) || 0;
-    if (casterType === "full") casterLevel += level;
-    else if (casterType === "half") casterLevel += Math.floor(level / 2);
-    else if (casterType === "third") casterLevel += Math.floor(level / 3);
-    else if (casterType === "pact") warlockLevel += level;
+    if (casterType.ownProgression) {
+      ownProgressionLevels.set(casterType, (ownProgressionLevels.get(casterType) || 0) + level);
+    } else if (Number(casterType.divisor) > 0) {
+      casterLevel += Math.floor(level / Number(casterType.divisor));
+    }
   });
   const entries = [];
   const slotsRow = slotTable.find((row) => Number(row.level) === casterLevel);
@@ -231,12 +296,19 @@ export function computeSpellSlots(classes, classRecordsById, variantRecordsById,
       }
     });
   }
-  if (warlockLevel > 0) {
-    const pactRow = pactTable.find((row) => Number(row.level) === warlockLevel);
-    if (pactRow && Number(pactRow.slots) > 0) {
-      entries.push({ name: "Pact Magic", level: Number(pactRow.slotLevel) || 1, total: Number(pactRow.slots), reset: "Short Rest" });
+  ownProgressionLevels.forEach((ownLevel, casterType) => {
+    if (ownLevel <= 0) return;
+    const table = fieldByKey(fields, casterType.ownProgression)?.values || [];
+    const row = table.find((entry) => Number(entry.level) === ownLevel);
+    if (row && Number(row.slots) > 0) {
+      entries.push({
+        name: casterType.name || "Pact Magic",
+        level: Number(row.slotLevel) || 1,
+        total: Number(row.slots),
+        reset: casterType.reset || "Short Rest",
+      });
     }
-  }
+  });
   return entries;
 }
 

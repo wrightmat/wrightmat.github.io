@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-smart-weapon",
+  "name": "Smart Weapon",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Scientist selects one one-handed weapon he is proficient with and may use his Intelligence modifier instead of Strength or Dexterity on attack rolls with it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Scientist selects one one-handed weapon he is proficient with and may use his Intelligence modifier instead of Strength or Dexterity on attack rolls with it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

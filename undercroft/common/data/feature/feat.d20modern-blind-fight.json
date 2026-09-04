@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-blind-fight",
+  "name": "Blind-Fight",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: In melee combat, every time the character misses because of concealment, the character can reroll the miss chance roll one time to see if the character actually hits.\nThe character takes only half the usual penalty to speed for being unable to see. Darkness and poor visibility in general reduces the character’s speed to three-quarters of normal, instead of one-half.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: In melee combat, every time the character misses because of concealment, the character can reroll the miss chance roll one time to see if the character actually hits.\nThe character takes only half the usual penalty to speed for being unable to see. Darkness and poor visibility in general reduces the character’s speed to three-quarters of normal, instead of one-half."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

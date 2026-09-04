@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-windfall",
+  "name": "Windfall",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character’s Wealth bonus increases by +3. Also, this feat provides a +1 bonus on all Profession checks.\nSpecial: A character can select this feat multiple times. Each time, both of its effects stack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character’s Wealth bonus increases by +3. Also, this feat provides a +1 bonus on all Profession checks.\nSpecial: A character can select this feat multiple times. Each time, both of its effects stack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

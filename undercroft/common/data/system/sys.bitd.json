@@ -1298,15 +1298,18 @@
       "values": [
         {
           "role": "attributeRatingInsight",
-          "formula": "if(@hunt>=1,1,0)+if(@study>=1,1,0)+if(@survey>=1,1,0)+if(@tinker>=1,1,0)"
+          "formula": "if(@hunt>=1,1,0)+if(@study>=1,1,0)+if(@survey>=1,1,0)+if(@tinker>=1,1,0)",
+          "name": "attributeRatingInsight"
         },
         {
           "role": "attributeRatingProwess",
-          "formula": "if(@finesse>=1,1,0)+if(@prowl>=1,1,0)+if(@skirmish>=1,1,0)+if(@wreck>=1,1,0)"
+          "formula": "if(@finesse>=1,1,0)+if(@prowl>=1,1,0)+if(@skirmish>=1,1,0)+if(@wreck>=1,1,0)",
+          "name": "attributeRatingProwess"
         },
         {
           "role": "attributeRatingResolve",
-          "formula": "if(@attune>=1,1,0)+if(@command>=1,1,0)+if(@consort>=1,1,0)+if(@sway>=1,1,0)"
+          "formula": "if(@attune>=1,1,0)+if(@command>=1,1,0)+if(@consort>=1,1,0)+if(@sway>=1,1,0)",
+          "name": "attributeRatingResolve"
         }
       ]
     },
@@ -1318,25 +1321,24 @@
         "tpl.bitd.character": [
           {
             "step": "class",
-            "label": "Playbook",
             "kind": "class",
             "matchField": "form",
-            "matchValue": "character"
+            "matchValue": "character",
+            "name": "Playbook"
           },
           {
             "step": "species",
-            "label": "Heritage",
-            "kind": "species"
+            "kind": "species",
+            "name": "Heritage"
           },
           {
             "step": "background",
-            "label": "Background",
-            "kind": "background"
+            "kind": "background",
+            "name": "Background"
           },
           {
             "step": "actionDots",
             "type": "pointAllocation",
-            "label": "Actions",
             "budget": 4,
             "targetPath": "actions",
             "maxRating": 2,
@@ -1348,12 +1350,12 @@
               "primaryValue": 2,
               "secondaryValue": 1
             },
-            "desc": "Your playbook has already placed three dots. Put one more dot in an action that reflects your heritage, one in an action that reflects your background, and two more anywhere you please — no action may start higher than 2."
+            "desc": "Your playbook has already placed three dots. Put one more dot in an action that reflects your heritage, one in an action that reflects your background, and two more anywhere you please — no action may start higher than 2.",
+            "name": "Actions"
           },
           {
             "step": "specialAbility",
             "type": "listPick",
-            "label": "Special Ability",
             "desc": "Choose one special ability for your playbook. If you can't decide, the first one listed is a good default.",
             "source": {
               "from": "class",
@@ -1364,12 +1366,12 @@
             "searchable": true,
             "picks": [
               {}
-            ]
+            ],
+            "name": "Special Ability"
           },
           {
             "step": "friendRival",
             "type": "listPick",
-            "label": "Friend & Rival",
             "desc": "Choose one close friend and one rival from your playbook's own list of NPCs.",
             "source": {
               "from": "class",
@@ -1390,12 +1392,12 @@
                   "relationship": "Rival"
                 }
               }
-            ]
+            ],
+            "name": "Friend & Rival"
           },
           {
             "step": "vice",
             "type": "listPick",
-            "label": "Vice",
             "source": {
               "from": "system",
               "field": "vices"
@@ -1403,11 +1405,11 @@
             "targetPath": "@vice",
             "picks": [
               {}
-            ]
+            ],
+            "name": "Vice"
           },
           {
             "step": "input",
-            "label": "Alias & Look",
             "inputs": [
               {
                 "label": "Alias",
@@ -1427,29 +1429,29 @@
               "@alias",
               "@look",
               "@vicePurveyor"
-            ]
+            ],
+            "name": "Alias & Look"
           },
           {
             "step": "details",
-            "label": "Details"
+            "name": "Details"
           },
           {
             "step": "review",
-            "label": "Review"
+            "name": "Review"
           }
         ],
         "tpl.bitd.crew": [
           {
             "step": "class",
-            "label": "Crew Type",
             "kind": "class",
             "matchField": "form",
-            "matchValue": "crew"
+            "matchValue": "crew",
+            "name": "Crew Type"
           },
           {
             "step": "reputation",
             "type": "listPick",
-            "label": "Reputation",
             "source": {
               "from": "system",
               "field": "crewReputationTags"
@@ -1457,12 +1459,12 @@
             "targetArrayPath": "@reputation",
             "picks": [
               {}
-            ]
+            ],
+            "name": "Reputation"
           },
           {
             "step": "favoredOperation",
             "type": "listPick",
-            "label": "Preferred Operation",
             "desc": "Choose the type of operation your hunting grounds are best suited for.",
             "source": {
               "from": "class",
@@ -1471,12 +1473,12 @@
             "targetPath": "@preferredOperation",
             "picks": [
               {}
-            ]
+            ],
+            "name": "Preferred Operation"
           },
           {
             "step": "specialAbility",
             "type": "listPick",
-            "label": "Special Ability",
             "desc": "Choose one special ability for your crew. If you can't decide, the first one listed is a good default.",
             "source": {
               "from": "class",
@@ -1487,12 +1489,12 @@
             "searchable": true,
             "picks": [
               {}
-            ]
+            ],
+            "name": "Special Ability"
           },
           {
             "step": "crewUpgrades",
             "type": "listPick",
-            "label": "Upgrades",
             "desc": "Your crew type has already granted two starting upgrades. Choose two more, from either the general upgrade list or your crew type's own.",
             "source": [
               {
@@ -1512,12 +1514,12 @@
             "picks": [
               {},
               {}
-            ]
+            ],
+            "name": "Upgrades"
           },
           {
             "step": "favoriteContact",
             "type": "listPick",
-            "label": "Favorite Contact",
             "source": {
               "from": "class",
               "field": "contacts"
@@ -1526,14 +1528,37 @@
             "itemKey": "name",
             "picks": [
               {}
-            ]
+            ],
+            "name": "Favorite Contact"
           },
           {
             "step": "review",
-            "label": "Review"
+            "name": "Review"
           }
         ]
       }
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "abilityScores",
+          "name": "xp → abilityScores",
+          "sourceField": "xp"
+        },
+        {
+          "role": "combatScaling",
+          "name": "combatScaling → combatScaling",
+          "sourceField": "combatScaling"
+        },
+        {
+          "role": "archetypeTable",
+          "name": "npcTypes → archetypeTable",
+          "sourceField": "npcTypes"
+        }
+      ]
     }
   ],
   "preview": {

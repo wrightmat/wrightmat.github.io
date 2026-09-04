@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-negotiator-conceal-motive",
+  "name": "Conceal Motive",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Negotiator adds a bonus equal to his class level whenever he opposes a Sense Motive check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Negotiator adds a bonus equal to his class level whenever he opposes a Sense Motive check."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

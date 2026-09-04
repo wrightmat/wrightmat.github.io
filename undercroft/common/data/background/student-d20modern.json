@@ -1,0 +1,20 @@
+{
+  "index": "student",
+  "name": "Student",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Still in school — high school, college, or graduate study — with a major field in mind.",
+  "skillChoices": [
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Computer Use"
+    },
+    {
+      "name": "Research"
+    }
+  ],
+  "skillChoiceCount": 2
+}

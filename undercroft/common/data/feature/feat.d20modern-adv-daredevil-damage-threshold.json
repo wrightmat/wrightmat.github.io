@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-daredevil-damage-threshold",
+  "name": "Damage Threshold",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Daredevil increases his massive damage threshold by 3 points, stacking with the Improved Damage Threshold feat.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Daredevil increases his massive damage threshold by 3 points, stacking with the Improved Damage Threshold feat."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,185 @@
+{
+  "index": "techie",
+  "name": "Techie",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A builder and hacker who can jury-rig, repair, or improve almost any piece of technology.",
+  "keyBasicClass": "Smart Hero",
+  "prerequisites": "Computer Use 6 ranks; Craft (electronic) 6 ranks or Craft (mechanical) 6 ranks; Disable Device 6 ranks.",
+  "hitDie": 6,
+  "classSkills": [
+    "computeruse",
+    "craft",
+    "demolitions",
+    "disabledevice",
+    "drive",
+    "knowledge",
+    "navigate",
+    "profession",
+    "readwritelanguage",
+    "repair",
+    "research",
+    "speaklanguage",
+    "spot"
+  ],
+  "skillPointsBase": 7,
+  "features": [
+    {
+      "name": "Jury-Rig +2",
+      "level": 1
+    },
+    {
+      "name": "Extreme Machine",
+      "level": 2
+    },
+    {
+      "name": "Build Robot",
+      "level": 4
+    },
+    {
+      "name": "Mastercraft (electronic or mechanical)",
+      "level": 5
+    },
+    {
+      "name": "Jury-Rig +4",
+      "level": 7
+    },
+    {
+      "name": "Mastercraft (second skill or +2)",
+      "level": 8
+    },
+    {
+      "name": "Mastercraft (+3)",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-techie-jury-rig-+2",
+    "feat.d20modern-adv-techie-extreme-machine",
+    "feat.d20modern-adv-techie-build-robot",
+    "feat.d20modern-adv-techie-mastercraft",
+    "feat.d20modern-adv-techie-jury-rig-+4",
+    "feat.d20modern-adv-techie-mastercraft",
+    "feat.d20modern-adv-techie-mastercraft"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Builder"
+    },
+    {
+      "name": "Cautious"
+    },
+    {
+      "name": "Combat Expertise"
+    },
+    {
+      "name": "Educated"
+    },
+    {
+      "name": "Gearhead"
+    },
+    {
+      "name": "Personal Firearms Proficiency"
+    },
+    {
+      "name": "Point Blank Shot"
+    },
+    {
+      "name": "Studious"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 0,
+      "ref": 0,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 0,
+      "ref": 0,
+      "will": 3,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 1,
+      "fort": 1,
+      "ref": 1,
+      "will": 3,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 2,
+      "fort": 1,
+      "ref": 1,
+      "will": 4,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 5,
+      "bab": 2,
+      "fort": 1,
+      "ref": 1,
+      "will": 4,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 3,
+      "fort": 2,
+      "ref": 2,
+      "will": 5,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 3,
+      "fort": 2,
+      "ref": 2,
+      "will": 5,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 8,
+      "bab": 4,
+      "fort": 2,
+      "ref": 2,
+      "will": 6,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 9,
+      "bab": 4,
+      "fort": 3,
+      "ref": 3,
+      "will": 6,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 5,
+      "fort": 3,
+      "ref": 3,
+      "will": 7,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    }
+  ]
+}

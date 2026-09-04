@@ -1,0 +1,198 @@
+{
+  "index": "investigator",
+  "name": "Investigator",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A detective who reads a scene, a suspect, and a lie better than anyone else in the room.",
+  "keyBasicClass": "Dedicated Hero",
+  "prerequisites": "Base Attack Bonus +2; Investigate 6 ranks; Listen 6 ranks; Sense Motive 6 ranks.",
+  "hitDie": 6,
+  "classSkills": [
+    "bluff",
+    "computeruse",
+    "disabledevice",
+    "drive",
+    "forgery",
+    "gatherinformation",
+    "intimidate",
+    "investigate",
+    "knowledge",
+    "listen",
+    "profession",
+    "readwritelanguage",
+    "research",
+    "search",
+    "sensemotive",
+    "speaklanguage",
+    "spot"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Profile",
+      "level": 1
+    },
+    {
+      "name": "Contact, low-level",
+      "level": 2
+    },
+    {
+      "name": "Nonlethal Force",
+      "level": 4
+    },
+    {
+      "name": "Contact, mid-level",
+      "level": 5
+    },
+    {
+      "name": "Discern Lie",
+      "level": 7
+    },
+    {
+      "name": "Contact, high-level",
+      "level": 8
+    },
+    {
+      "name": "Sixth Sense",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-investigator-profile",
+    "feat.d20modern-adv-investigator-contact-low-level",
+    "feat.d20modern-adv-investigator-nonlethal-force",
+    "feat.d20modern-adv-investigator-contact-mid-level",
+    "feat.d20modern-adv-investigator-discern-lie",
+    "feat.d20modern-adv-investigator-contact-high-level",
+    "feat.d20modern-adv-investigator-sixth-sense"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Advanced Firearms Proficiency"
+    },
+    {
+      "name": "Armor Proficiency (light)"
+    },
+    {
+      "name": "Armor Proficiency (medium)"
+    },
+    {
+      "name": "Brawl"
+    },
+    {
+      "name": "Defensive Martial Arts"
+    },
+    {
+      "name": "Dodge"
+    },
+    {
+      "name": "Double Tap"
+    },
+    {
+      "name": "Educated"
+    },
+    {
+      "name": "Knockout Punch"
+    },
+    {
+      "name": "Personal Firearms Proficiency"
+    },
+    {
+      "name": "Point Blank Shot"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 0,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 0,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 1,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 1,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 2
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 1,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 2,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 2,
+      "ref": 4,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 3
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 2,
+      "ref": 4,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 3
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 3,
+      "ref": 4,
+      "will": 4,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 3,
+      "ref": 5,
+      "will": 5,
+      "defenseBonus": 5,
+      "reputationBonus": 4
+    }
+  ]
+}

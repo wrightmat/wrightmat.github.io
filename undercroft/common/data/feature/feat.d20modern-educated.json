@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-educated",
+  "name": "Educated",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: Pick two Knowledge skills. The character gets a +2 bonus on all checks with those skills.\nSpecial: A character can select this feat as many as seven times. Each time, the character selects two new Knowledge skills.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: Pick two Knowledge skills. The character gets a +2 bonus on all checks with those skills.\nSpecial: A character can select this feat as many as seven times. Each time, the character selects two new Knowledge skills."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

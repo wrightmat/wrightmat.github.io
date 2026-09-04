@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-defensive-strike",
+  "name": "Defensive Strike",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "If an opponent's melee attack against the Bodyguard misses while he uses total defense, the Bodyguard can attack that opponent on his next turn with a +4 bonus on the attack roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If an opponent's melee attack against the Bodyguard misses while he uses total defense, the Bodyguard can attack that opponent on his next turn with a +4 bonus on the attack roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

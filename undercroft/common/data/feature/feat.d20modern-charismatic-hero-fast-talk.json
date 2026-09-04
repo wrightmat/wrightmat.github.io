@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-charismatic-hero-fast-talk",
+  "name": "Fast-Talk",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Charismatic hero has a way with words when attempting to con and deceive. With this talent, he or she applies his or her Charismatic level as a competence bonus on any Bluff, Diplomacy, or Gamble checks the hero makes while attempting to lie, cheat, or otherwise bend the truth.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Charismatic hero has a way with words when attempting to con and deceive. With this talent, he or she applies his or her Charismatic level as a competence bonus on any Bluff, Diplomacy, or Gamble checks the hero makes while attempting to lie, cheat, or otherwise bend the truth."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

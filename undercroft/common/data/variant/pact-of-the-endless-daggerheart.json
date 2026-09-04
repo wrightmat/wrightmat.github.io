@@ -15,22 +15,27 @@
   "features": [
     {
       "name": "Foundation: Patron's Mantle",
+      "tier": 1,
       "description": "Mark a Stress to cloak yourself in a terrifying aspect of your Patron that lasts until you take Severe damage or the scene ends:\n\n- When you would mark an Armor Slot, you can spend 2 Favor instead.\n- You gain a bonus equal to your tier on action rolls to intimidate a target."
     },
     {
       "name": "Foundation: Deadly Devotion",
+      "tier": 1,
       "description": "On a successful attack, you can spend a Favor to gain a +1 bonus to your Evasion until you mark a Hit Point or take a rest."
     },
     {
       "name": "Specialization: Draining Invocation",
+      "tier": 2,
       "description": "When an adversary attacks you or an ally within Very Close range, you can spend a Favor to make them use a d12 instead of a d20 for the attack roll. Additionally, the adversary must mark a Stress, and you can clear a Stress."
     },
     {
       "name": "Mastery: Dark Aegis",
+      "tier": 3,
       "description": "Once per long rest, when you would mark any number of Hit Points, you can spend a Favor instead."
     },
     {
       "name": "Mastery: Draining Bane",
+      "tier": 3,
       "description": "When an adversary attacks you or an ally within Very Close range, you can spend 2 Favor to temporarily Drain them. When you do, they must mark a Stress and you can clear a Stress. A Drained creature uses a d12 instead of a d20 for attack rolls."
     }
   ],

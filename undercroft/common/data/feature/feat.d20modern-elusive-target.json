@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-elusive-target",
+  "name": "Elusive Target",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Dexterity 13, Defensive Martial Arts.\nBenefit: When fighting an opponent or multiple opponents in melee, other opponents attempting to target the character with ranged attacks take a –4 penalty. This penalty is in addition to the normal –4 penalty for firing into melee, making the penalty to target to character –8.\nSpecial: An opponent with the Precise Shot feat has the penalty lessened to –4 when targeting the character.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Dexterity 13, Defensive Martial Arts.\nBenefit: When fighting an opponent or multiple opponents in melee, other opponents attempting to target the character with ranged attacks take a –4 penalty. This penalty is in addition to the normal –4 penalty for firing into melee, making the penalty to target to character –8.\nSpecial: An opponent with the Precise Shot feat has the penalty lessened to –4 when targeting the character."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

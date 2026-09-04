@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-toughness",
+  "name": "Toughness",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gains +3 hit points.\nSpecial: A character may gain this feat multiple times. Its effects stack.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gains +3 hit points.\nSpecial: A character may gain this feat multiple times. Its effects stack."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-medic-medical-specialist-+1",
+  "name": "Medical Specialist +1",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Medic gets a +1 competence bonus on Treat Injury checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Medic gets a +1 competence bonus on Treat Injury checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

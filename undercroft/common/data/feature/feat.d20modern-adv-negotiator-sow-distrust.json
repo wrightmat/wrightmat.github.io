@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-negotiator-sow-distrust",
+  "name": "Sow Distrust",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "By spending a full-round action, the Negotiator forces a target to make a Will save (DC 10 + class level + Charisma bonus) or have his attitude toward a named other character worsen by one step; repeatable each round the save fails.",
+  "mechanics": {
+    "type": "passive",
+    "text": "By spending a full-round action, the Negotiator forces a target to make a Will save (DC 10 + class level + Charisma bonus) or have his attitude toward a named other character worsen by one step; repeatable each round the save fails."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

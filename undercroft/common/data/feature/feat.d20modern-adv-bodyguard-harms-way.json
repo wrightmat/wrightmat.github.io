@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-harms-way",
+  "name": "Harm's Way",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Once per round, if an ally adjacent to the Bodyguard is targeted by a direct attack, the Bodyguard can declare (before the attack roll) that he takes the attack in the ally's stead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per round, if an ally adjacent to the Bodyguard is targeted by a direct attack, the Bodyguard can declare (before the attack roll) that he takes the attack in the ally's stead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,41 @@
+{
+  "index": "athlete",
+  "name": "Athlete",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A professional or amateur competitor whose training has honed body and reflexes alike.",
+  "skillChoices": [
+    {
+      "name": "Balance"
+    },
+    {
+      "name": "Climb"
+    },
+    {
+      "name": "Jump"
+    },
+    {
+      "name": "Swim"
+    },
+    {
+      "name": "Tumble"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Athletic",
+      "description": "Benefit: The character gets a +2 bonus on all Climb checks and Swim checks."
+    },
+    {
+      "name": "Endurance",
+      "description": "Benefit: The character gains a +4 bonus on the following checks and saves: hourly Swim checks to avoid becoming fatigued, Constitution checks to continue running, Constitution checks to hold the character’s breath, Constitution checks to avoid damage from starvation or thirst, Fortitude saves to avoid damage from hot or cold environments, and Fortitude saves to resist suffocation or drowning.\nAlso, the character may sleep in medium or light armor without becoming fatigued.\nNormal: A character without this feat who sleeps in armor is automatically fatigued the following day."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-athletic",
+    "feat.d20modern-endurance"
+  ],
+  "bonusFeatCount": 1
+}

@@ -25,12 +25,13 @@ import { applyComponentStyles, applyTextFormatting } from "../lib/component-styl
 import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField, findBindingByRole, fieldByKey } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField, findBindingByRole, fieldByKey, setAtBinding } from "../../../common/js/lib/bindings.js";
 // Same name-or-id macro resolver Board and Journal's inline `macro:Name` chips use.
 import { runMacroReference } from "../../../repository/js/lib/journal-macro.js";
 import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.js";
-import { loadAbilityFieldDefs, loadArrayFieldValues, guessAbilityFieldKey } from "../../../common/js/lib/generator-kit.js";
+import { loadAbilityFieldDefs, loadArrayFieldValues } from "../../../common/js/lib/generator-kit.js";
+import { resolveFieldRole } from "../../../common/js/lib/field-roles.js";
 import {
   findLevelUpBinding,
   resolveGrantChoices,
@@ -41,6 +42,8 @@ import {
   applyProficiencyGrant,
   getSubclassGrantLevel,
   grantSubclassFeaturesAtLevel,
+  grantSubclassFeaturesAtTier,
+  resolveClassProgressionRow,
   describeMulticlassPrerequisites,
   characterMeetsMulticlassPrerequisites,
   computeSpellSlots,
@@ -546,25 +549,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildHeritageBackgroundMount: document.querySelector("[data-build-heritage-background-mount]"),
     buildAbilitiesMount: document.querySelector("[data-build-abilities-mount]"),
     buildInputMount: document.querySelector("[data-build-input-mount]"),
-    // One mount per pointAllocation USAGE (step id), not per step TYPE —
-    // BitD's Actions step and CoC's Occupation Skills/Personal Interest
-    // steps each need their own panel despite sharing the same mechanism.
-    buildPointAllocationMounts: {
-      actionDots: document.querySelector("[data-build-point-allocation-mount='actionDots']"),
-      occupationSkills: document.querySelector("[data-build-point-allocation-mount='occupationSkills']"),
-      personalInterest: document.querySelector("[data-build-point-allocation-mount='personalInterest']"),
-    },
-    // One mount per listPick USAGE (step id), not per step TYPE — a wizard
-    // can declare more than one listPick step, each needing its own panel.
-    buildListPickMounts: {
-      specialAbility: document.querySelector("[data-build-listpick-mount='specialAbility']"),
-      friendRival: document.querySelector("[data-build-listpick-mount='friendRival']"),
-      crewUpgrades: document.querySelector("[data-build-listpick-mount='crewUpgrades']"),
-      favoriteContact: document.querySelector("[data-build-listpick-mount='favoriteContact']"),
-      vice: document.querySelector("[data-build-listpick-mount='vice']"),
-      reputation: document.querySelector("[data-build-listpick-mount='reputation']"),
-      favoredOperation: document.querySelector("[data-build-listpick-mount='favoredOperation']"),
-    },
+    // Anchor point ensureDynamicBuildStepPanels appends generated
+    // pointAllocation/listPick panels into — see that function for why
+    // these two step types build their own DOM at runtime instead of each
+    // usage needing a hand-authored HTML panel.
+    buildDynamicStepsMount: document.querySelector("[data-build-dynamic-steps]"),
+    // One mount per pointAllocation/listPick step USAGE (step id), not per
+    // step TYPE — a wizard can declare more than one of either, each
+    // needing its own panel. Populated by ensureDynamicBuildStepPanels,
+    // rebuilt every time the active System changes.
+    buildPointAllocationMounts: {},
+    buildListPickMounts: {},
     buildReviewMount: document.querySelector("[data-build-review-mount]"),
     buildResolveMount: document.querySelector("[data-build-resolve-mount]"),
     buildBackButton: document.querySelector("[data-build-back]"),
@@ -1637,9 +1632,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // Recomputes multiclass-aware spell slots for `draft`'s full class list —
   // shared by every place classes[] changes (Level Up, Add a Class, Build
   // creation) so there's one implementation of resolving each class's
-  // caster type against the System's spellSlotProgression/
-  // pactMagicProgression tables and merging into limitedUses[] without
-  // clobbering tracked `used`. A no-op if the System authored neither table.
+  // caster type (against the System's own `casterTypes` reserved field)
+  // into spellSlotProgression/its own named progression tables and merging
+  // into limitedUses[] without clobbering tracked `used`. A no-op if the
+  // System authored no `casterTypes` at all.
   async function refreshCharacterSpellSlots(draft) {
     const classes = Array.isArray(draft?.identity?.classes) ? draft.identity.classes : [];
     if (!classes.length) {
@@ -1658,9 +1654,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       variantIds.map((id, index) => [id, variantResults[index]?.payload]).filter(([, record]) => record)
     );
     const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
-    const spellSlotProgression = fields.find((field) => field?.key === "spellSlotProgression")?.values || [];
-    const pactMagicProgression = fields.find((field) => field?.key === "pactMagicProgression")?.values || [];
-    const computed = computeSpellSlots(classes, classRecordsById, variantRecordsById, spellSlotProgression, pactMagicProgression);
+    const computed = computeSpellSlots(classes, classRecordsById, variantRecordsById, fields);
     draft.limitedUses = mergeLimitedUses(draft.limitedUses, computed);
   }
 
@@ -1777,6 +1771,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     }
 
+    const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
+
     // Resource growth (HP) — no-op if the System hasn't authored this
     // levelUpBindings role.
     const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
@@ -1784,7 +1780,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let resourceBinding = null;
     if (growthBinding?.path) {
       const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
-      const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
       growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
       if (growth && growthBinding.abilityBinding) {
         const score = resolveBinding(growthBinding.abilityBinding, state.draft);
@@ -1798,6 +1793,33 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const classes = Array.isArray(allClasses) && allClasses.length ? allClasses : [cls];
     const totalLevel = classes.reduce((sum, entry) => sum + (entry === cls ? nextLevel : Number(entry.level) || 0), 0);
 
+    // Class+level progression table (d20 Modern: Base Attack Bonus, Fort/
+    // Ref/Will, Defense Bonus, Reputation Bonus — all independently varying
+    // by class AND level, unlike 5e's single universal proficiency-bonus
+    // curve above). No-op unless the System declares a "classProgressionTable"
+    // levelUpBindings role — every other System just gets an empty array here.
+    // Each column's own optional `base`/`abilityBinding` (same shape
+    // resourceGrowth/armorClassBinding already use elsewhere in this file)
+    // covers a save/Defense total needing its own ability modifier (and,
+    // for Defense, a flat +10) added on top of the table's raw value — a
+    // column with neither is a bare passthrough (Base Attack Bonus,
+    // Reputation Bonus, neither of which is ability-modified).
+    const classProgressionBinding = findLevelUpBinding(getLevelUpBindings(), "classProgressionTable", "class");
+    const classProgressionWrites = [];
+    if (classProgressionBinding?.path && Array.isArray(classProgressionBinding.columns)) {
+      const row = resolveClassProgressionRow(classRecord, classProgressionBinding.path, nextLevel);
+      if (row) {
+        classProgressionBinding.columns.forEach((column) => {
+          const raw = row[column.source];
+          if (raw == null) return;
+          const abilityMod = column.abilityBinding
+            ? evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: resolveBinding(column.abilityBinding, state.draft) }) || 0
+            : 0;
+          classProgressionWrites.push({ targetPath: column.targetPath, value: Number(raw) + (Number(column.base) || 0) + abilityMod });
+        });
+      }
+    }
+
     return {
       nextLevel,
       className: cls.name || "this class",
@@ -1806,6 +1828,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       growth,
       resourceBinding,
       newProficiencyBonus: evaluateDerivedFormula(systemFieldValues(state.systemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: totalLevel }) || 0,
+      classProgressionWrites,
       subclassChoiceOptions,
       featChoiceOptions,
       deferredFeatureId,
@@ -2251,25 +2274,25 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           pushAdvancementPendingChoice(newlyPending, opt, "domainCardAccess", "Choose an additional domain card at or below your level.", domainCardOptions);
           break;
         case "subclassUpgrade": {
-          // No choice here — always "take the next card" (Specialization
+          // No choice here — always "take the next tier" (Specialization
           // if only Foundation is owned, Mastery otherwise), applied
-          // directly. Grants the matching tier's own features, not just
-          // the tier counter, using the same "Foundation:"/
-          // "Specialization:"/"Mastery:" name-prefix convention
-          // buildCharacterFromWizard's Foundation grant reads.
+          // directly. Grants the matching tier's own features via the
+          // subclass record's own `tier` field (grantSubclassFeaturesAtTier,
+          // level-up-bindings.js) — the same mechanism
+          // buildCharacterFromWizard's Foundation grant uses.
           const nextTier = Math.min(3, (Number(state.draft.stats.subclassTier) || 1) + 1);
           state.draft.stats.subclassTier = nextTier;
-          const tierPrefix = ["Foundation", "Foundation", "Specialization", "Mastery"][nextTier];
           const subclassRefId = cls?.subclass?.refId;
-          if (tierPrefix && subclassRefId) {
+          if (subclassRefId) {
             try {
-              const variantResult = await dataManager.get("variant", subclassRefId, { preferLocal: false });
+              const [variantResult, featureEntries] = await Promise.all([
+                dataManager.get("variant", subclassRefId, { preferLocal: false }),
+                fetchKindEntriesWithIds(dataManager, "feature"),
+              ]);
               const variantRecord = variantResult?.payload;
-              const tierIndexes = (Array.isArray(variantRecord?.features) ? variantRecord.features : [])
-                .map((entry, index) => ({ entry, index }))
-                .filter(({ entry }) => new RegExp(`^${tierPrefix}:`).test(entry?.name || ""));
-              const tierFeatureIds = tierIndexes.map(({ index }) => variantRecord.featureIds[index]).filter(Boolean);
+              const featureNameById = new Map(featureEntries.map((entry) => [entry.id, (entry.entity?.name || "").trim().toLowerCase()]));
               if (!Array.isArray(state.draft.featureIds)) state.draft.featureIds = [];
+              const tierFeatureIds = grantSubclassFeaturesAtTier(variantRecord, nextTier, featureNameById, state.draft.featureIds);
               tierFeatureIds.forEach((fid) => {
                 if (!state.draft.featureIds.includes(fid)) state.draft.featureIds.push(fid);
               });
@@ -2643,6 +2666,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       state.draft.stats = {};
     }
     state.draft.stats.proficiencyBonus = preview.newProficiencyBonus;
+
+    // Class+level progression table writes (see computeLevelUpPreview) —
+    // empty for every System except one declaring "classProgressionTable".
+    (preview.classProgressionWrites || []).forEach(({ targetPath, value }) => {
+      const segs = resolveBindingPath(targetPath);
+      if (segs) setValueAtPath(segs, value);
+    });
 
     cls.level = preview.nextLevel;
     if (!state.draft.identity || typeof state.draft.identity !== "object") {
@@ -9023,8 +9053,53 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       .map((entry) => entry?.step)
       .filter((step) => step && (step !== "subclass" || buildWizardState.needsSubclassStep));
     const steps = ["required", ...contentSteps];
-    const labels = [REQUIRED_STEP_LABEL, ...contentSteps.map((step) => stepEntryById.get(step)?.label || step)];
+    const labels = [REQUIRED_STEP_LABEL, ...contentSteps.map((step) => stepEntryById.get(step)?.name || step)];
     return { steps, labels };
+  }
+
+  // pointAllocation/listPick step panels are generated at runtime, one per
+  // step a System's own buildSteps entry declares — never a hand-authored
+  // HTML panel per usage — so a new System reusing either step type is a
+  // pure data change, the same guarantee every other buildStep mechanism in
+  // this file already gives. Rebuilt from scratch on every call (cheap — a
+  // handful of DOM nodes) since the declared step set can change whenever
+  // the active System changes (a Template switch mid-wizard, or
+  // reactivating the wizard against a different System entirely) — a stale
+  // panel or mount from the PREVIOUS System must never linger.
+  function ensureDynamicBuildStepPanels() {
+    const mount = elements.buildDynamicStepsMount;
+    if (!mount) {
+      return;
+    }
+    mount.innerHTML = "";
+    elements.buildPointAllocationMounts = {};
+    elements.buildListPickMounts = {};
+    const attributeByType = {
+      pointAllocation: "data-build-point-allocation-mount",
+      listPick: "data-build-listpick-mount",
+    };
+    const registryByType = {
+      pointAllocation: elements.buildPointAllocationMounts,
+      listPick: elements.buildListPickMounts,
+    };
+    getDeclaredBuildSteps(buildWizardState.systemDefinition).forEach((entry) => {
+      const attribute = attributeByType[entry?.type];
+      if (!entry?.step || !attribute) {
+        return;
+      }
+      const panel = document.createElement("div");
+      panel.className = "d-none d-flex flex-column gap-3";
+      panel.dataset.buildStep = entry.step;
+      const label = document.createElement("label");
+      label.className = "form-label fw-semibold";
+      label.dataset.buildStepCaption = entry.step;
+      label.textContent = entry.name || entry.step;
+      const stepMount = document.createElement("div");
+      stepMount.setAttribute(attribute, entry.step);
+      panel.append(label, stepMount);
+      mount.appendChild(panel);
+      registryByType[entry.type][entry.step] = stepMount;
+    });
   }
 
   const buildWizardState = {
@@ -9048,6 +9123,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     subclassName: "",
     backgroundId: "",
     backgroundName: "",
+    // Mirrors classRecord above — needed so a listPick step can source its
+    // options from the chosen Occupation/Background's own data (d20 Modern:
+    // permanent class-skill choices, an optional bonus feat), not just its
+    // id/name. Not populated until buildCharacterFromWizard for the other
+    // three Systems today, since none of them need it before creation.
+    backgroundRecord: null,
     abilityMethod: "pointBuy",
     abilityScores: {},
     abilityDefs: [],
@@ -9080,6 +9161,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.subclassName = "";
     buildWizardState.backgroundId = "";
     buildWizardState.backgroundName = "";
+    buildWizardState.backgroundRecord = null;
     buildWizardState.abilityMethod = "pointBuy";
     buildWizardState.abilityScores = {};
     buildWizardState.abilityDefs = [];
@@ -9113,6 +9195,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const systemId = templateCatalog.get(templateId)?.schema || "";
     buildWizardState.systemDefinition = await fetchSystemDefinition(systemId);
     buildWizardState.abilityDefs = [];
+    // Rebuilt before anything below reads elements.build*Mounts — a
+    // Template switch can change the whole declared step set.
+    ensureDynamicBuildStepPanels();
     // Species/Class/Background are System-filtered — a Template switch can
     // change the System, so prior picks/lists can no longer be trusted.
     await refreshBuildLibraryPickers();
@@ -9137,6 +9222,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.subclassName = "";
     buildWizardState.backgroundId = "";
     buildWizardState.backgroundName = "";
+    buildWizardState.backgroundRecord = null;
     if (elements.buildMixedAncestryCheckbox) {
       elements.buildMixedAncestryCheckbox.checked = false;
     }
@@ -9180,6 +9266,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       renderBuildLibraryPicker(backgroundMount, backgroundKind, (option) => {
         buildWizardState.backgroundId = option?.id || "";
         buildWizardState.backgroundName = option?.label || "";
+        buildWizardState.backgroundRecord = option?.raw || null;
         updateBuildNextState();
       }),
       renderBuildLibraryPicker(elements.buildSecondSpeciesMount, speciesKind, (option) => {
@@ -9284,7 +9371,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // alongside it so they can't drift apart. Heritage is a composite (2 kinds in
     // one step) so it reads `picks[].label` instead of a single step label.
     document.querySelectorAll("[data-build-step-caption]").forEach((el) => {
-      el.textContent = getBuildStepEntry(el.dataset.buildStepCaption)?.label || el.dataset.buildStepCaption;
+      el.textContent = getBuildStepEntry(el.dataset.buildStepCaption)?.name || el.dataset.buildStepCaption;
     });
     const heritagePicks = getBuildStepEntry("heritage")?.picks;
     document.querySelectorAll("[data-build-heritage-pick-label]").forEach((el) => {
@@ -9325,7 +9412,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       renderBuildPointAllocationStep(steps[clamped]);
     }
     if (getBuildStepEntry(steps[clamped])?.type === "listPick") {
-      renderBuildListPickStep(steps[clamped]);
+      void renderBuildListPickStep(steps[clamped]);
     }
     if (steps[clamped] === "review") {
       renderBuildReview();
@@ -9381,7 +9468,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         const spent = Object.values(allocations).reduce((total, value) => total + (Number(value) || 0), 0);
         valid = budget > 0 && spent === budget;
       } else if (stepEntry?.type === "listPick") {
-        const picks = Array.isArray(stepEntry.picks) && stepEntry.picks.length ? stepEntry.picks : [{}];
+        const picks = resolveListPickSlots(stepEntry);
         const selections = buildWizardState.listPicks[step] || {};
         valid = picks.every((_, slotIndex) => Boolean(selections[slotIndex]));
       }
@@ -10002,26 +10089,61 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   // Generic "choose N mutually-exclusive items from a curated list" step,
   // not feature/NPC-specific. `source.from` is "class" (a field off the
-  // resolved class record) or "system" (a System-level reserved field,
-  // matching `choices.equipmentChoices.sourceField`); `source` may also
-  // be an array of `{from, field}` entries whose candidates are unioned.
+  // resolved class record), "background" (same, off the resolved Occupation/
+  // Background record — d20 Modern's own permanent-class-skill/bonus-feat
+  // grants), "system" (a System-level reserved field, matching
+  // `choices.equipmentChoices.sourceField`), or "library" (every Library
+  // record of a whole kind, matched by `tags.categories` — d20 Modern's own
+  // "pick 2 Feats from the entire game's list," not scoped to any one class
+  // or System-flat field). `source` may also be an array of `{from, ...}`
+  // entries whose candidates are unioned. `async` because "library" is a
+  // real fetch (fetchKindEntriesWithIds) — every other source just reads
+  // already-cached wizard state, resolved instantly.
   //
-  // `idField` (class-sourced only) — when the display list and the real
-  // value to write differ (a Playbook's `features[]` display objects vs.
-  // its parallel `featureIds[]`), each option's value comes from
-  // `idField`'s array at the same index, not from `source.field` itself.
-  function resolveListPickSource(source, idField) {
+  // `idField` (class/background-sourced only) — when the display list and
+  // the real value to write differ (a Playbook's `features[]` display
+  // objects vs. its parallel `featureIds[]`), each option's value comes
+  // from `idField`'s array at the same index, not from `source.field` itself.
+  async function resolveListPickSource(source, idField) {
     const sources = Array.isArray(source) ? source : [source].filter(Boolean);
     const seen = new Set();
     const options = [];
-    sources.forEach((entry) => {
+    for (const entry of sources) {
       let raw;
       let idList;
       if (entry?.from === "class") {
         raw = buildWizardState.classRecord?.[entry.field];
         idList = idField ? buildWizardState.classRecord?.[idField] : null;
+      } else if (entry?.from === "background") {
+        raw = buildWizardState.backgroundRecord?.[entry.field];
+        idList = idField ? buildWizardState.backgroundRecord?.[idField] : null;
       } else if (entry?.from === "system") {
         raw = systemFieldValues(buildWizardState.systemDefinition, entry.field);
+      } else if (entry?.from === "library") {
+        // Same systemIds-filtered, tags.categories-matched shape
+        // computeLevelUpPreview's own featChoice option list already uses
+        // (its "categories.includes('feat')" filter for the Ability Score
+        // Improvement feat pick) — reused here rather than a second
+        // one-off filter.
+        let entries = [];
+        try {
+          entries = await fetchKindEntriesWithIds(dataManager, entry.kind);
+        } catch (error) {
+          console.warn("Character editor: unable to fetch library options for listPick", entry.kind, error);
+        }
+        // Same templateId -> schema lookup renderBuildLibraryPicker already
+        // uses for its own systemIds filter — buildWizardState.systemDefinition
+        // itself carries no `id` field (it's a raw fetched payload), so the
+        // active System's id has to come from the picked Template instead.
+        const templateId = elements.buildCharacterTemplate?.value || "";
+        const systemId = templateCatalog.get(templateId)?.schema || "";
+        raw = entries
+          .filter((libEntry) => {
+            const systemIds = libEntry.entity?.systemIds;
+            return !Array.isArray(systemIds) || !systemIds.length || systemIds.includes(systemId);
+          })
+          .filter((libEntry) => !entry.matchCategory || (Array.isArray(libEntry.entity?.tags?.categories) && libEntry.entity.tags.categories.includes(entry.matchCategory)))
+          .map((libEntry) => ({ ...libEntry.entity, id: libEntry.id }));
       }
       (Array.isArray(raw) ? raw : []).forEach((value, index) => {
         const baseLabel = typeof value === "string" ? value : value?.name;
@@ -10033,22 +10155,52 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         const label = typeof value === "object" && value?.descriptor ? `${baseLabel}, ${value.descriptor}` : baseLabel;
         if (seen.has(label)) return;
         seen.add(label);
-        const id = Array.isArray(idList) ? idList[index] : undefined;
+        // "library" entries carry their own real Library id directly
+        // (`value.id`, set above) rather than a parallel idList lookup.
+        const id = entry?.from === "library" ? value.id : Array.isArray(idList) ? idList[index] : undefined;
         options.push({ label, raw: value, id });
       });
-    });
+    }
     return options;
   }
 
-  function renderBuildListPickStep(stepId) {
+  // A listPick step's own pick SLOTS — either a static array declared right
+  // on the step (every System so far), or (d20 Modern: an Occupation's own
+  // permanent-class-skill count varies 2-3 per Occupation, and its optional
+  // bonus feat is 0-or-1 — both chosen live in the wizard, not knowable
+  // ahead of time in buildSteps) a `picksFrom: {from, field}` source
+  // resolving the COUNT off the already-picked class/background record,
+  // generating that many unlabeled slots. A picksFrom source resolving to 0
+  // is a real, valid "nothing to pick" step (an Occupation with no bonus
+  // feat) — the `[{}]` single-blank-slot default only applies when NEITHER
+  // `picks` nor `picksFrom` is declared at all.
+  function resolveListPickSlots(stepEntry) {
+    if (Array.isArray(stepEntry?.picks) && stepEntry.picks.length) {
+      return stepEntry.picks;
+    }
+    if (stepEntry?.picksFrom) {
+      const { from, field } = stepEntry.picksFrom;
+      const record = from === "class" ? buildWizardState.classRecord : from === "background" ? buildWizardState.backgroundRecord : null;
+      const count = Number(record?.[field]) || 0;
+      return Array.from({ length: count }, () => ({}));
+    }
+    return [{}];
+  }
+
+  async function renderBuildListPickStep(stepId) {
     const mount = elements.buildListPickMounts?.[stepId];
     if (!mount) {
       return;
     }
-    mount.innerHTML = "";
+    // Only a "library" source (Part 3) is a real async fetch — every other
+    // source resolves from already-cached wizard state — but showing a
+    // loading state unconditionally costs nothing and matches
+    // renderBuildSubclassPicker/renderBuildLibraryPicker's own convention.
+    mount.textContent = "Loading…";
     const stepEntry = getBuildStepEntry(stepId);
-    const options = resolveListPickSource(stepEntry?.source, stepEntry?.idField);
-    const picks = Array.isArray(stepEntry?.picks) && stepEntry.picks.length ? stepEntry.picks : [{}];
+    const options = await resolveListPickSource(stepEntry?.source, stepEntry?.idField);
+    mount.innerHTML = "";
+    const picks = resolveListPickSlots(stepEntry);
     if (!options.length) {
       mount.textContent = "This System hasn't declared any options for this step yet.";
       return;
@@ -10183,13 +10335,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     activeSteps.forEach((step) => {
       const entry = getBuildStepEntry(step);
       if (step === "species") {
-        lines.push(`${entry?.label || step}: ${buildWizardState.speciesName || "—"}`);
+        lines.push(`${entry?.name || step}: ${buildWizardState.speciesName || "—"}`);
       } else if (step === "class") {
-        lines.push(`${entry?.label || step}: ${buildWizardState.className || "—"}`);
+        lines.push(`${entry?.name || step}: ${buildWizardState.className || "—"}`);
       } else if (step === "subclass") {
-        lines.push(`${entry?.label || step}: ${buildWizardState.subclassName || "—"}`);
+        lines.push(`${entry?.name || step}: ${buildWizardState.subclassName || "—"}`);
       } else if (step === "background") {
-        lines.push(`${entry?.label || step}: ${buildWizardState.backgroundName || "—"}`);
+        lines.push(`${entry?.name || step}: ${buildWizardState.backgroundName || "—"}`);
       } else if (step === "heritage") {
         const picks = Array.isArray(entry?.picks) ? entry.picks : [];
         lines.push(`${picks[0]?.label || "heritage"}: ${buildWizardState.speciesName || "—"}`);
@@ -10217,10 +10369,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           });
         });
       } else if (entry?.type === "listPick") {
-        const picks = Array.isArray(entry.picks) && entry.picks.length ? entry.picks : [{}];
+        const picks = resolveListPickSlots(entry);
         const selections = buildWizardState.listPicks[step] || {};
         picks.forEach((pick, slotIndex) => {
-          lines.push(`${pick?.label || entry?.label || step}: ${selections[slotIndex]?.label || "—"}`);
+          lines.push(`${pick?.label || entry?.name || step}: ${selections[slotIndex]?.label || "—"}`);
         });
       }
     });
@@ -10425,11 +10577,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const rawScore = buildWizardState.abilityScores[def.key];
       abilities[def.key] = rawScore != null ? Number(rawScore) : 10;
     });
-    // Same auto-detection loadAbilityFieldDefs uses to find the System's
-    // ability field (D&D's "abilities" vs CoC's "characteristics") —
-    // without this, scores were always written to `stats.abilities`
-    // regardless of what the System actually calls that field.
-    const abilityFieldKey = guessAbilityFieldKey(buildWizardState.systemDefinition?.fields) || "abilities";
+    // Which field is the System's ability/stat block, and where its data
+    // actually gets written, is the System's own explicit `fieldRoles`
+    // declaration (role "abilityScores") — see field-roles.js. `targetPath`
+    // (an ordinary @-prefixed dotted binding path) says where; absent means
+    // top-level, matching every other buildStep target path in this file.
+    const abilityRole = resolveFieldRole(buildWizardState.systemDefinition, "abilityScores");
+    const abilityFieldKey = abilityRole?.sourceField || "abilities";
+    const abilityTargetPath = abilityRole?.targetPath || `@${abilityFieldKey}`;
     const imageUrl = (elements.buildCharacterImage?.value || "").trim();
     const pronouns = (elements.buildCharacterPronouns?.value || "").trim();
     const draft = {
@@ -10477,23 +10632,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
             }
           : {}),
       },
-      // D&D/Daggerheart's own historical convention nests scores under
-      // `stats.abilities` — kept exactly as-is, zero behavior change,
-      // when the detected key literally IS "abilities". Any OTHER
-      // detected key (Call of Cthulhu's own "characteristics") is a
-      // TOP-LEVEL reserved field on the System, matching every other
-      // buildStep target path in this whole file (skills, actions, vice,
-      // ... — none of those get an implicit "stats." wrapper either), so
-      // it's placed there instead — the `stats.abilities` nesting was
-      // D&D-sheet-shape baggage, never a rule every System should inherit.
-      stats: { ...(abilityFieldKey === "abilities" ? { abilities } : {}) },
-      ...(abilityFieldKey !== "abilities" ? { [abilityFieldKey]: abilities } : {}),
+      stats: {},
       featureIds: [],
       currencies: {},
       inventory: [],
       proficiencies: {},
       pendingChoices: [],
     };
+    // See abilityRole/abilityTargetPath above — placement is read entirely
+    // off the System's own fieldRoles declaration, never guessed from the
+    // field's key.
+    setAtBinding(abilityTargetPath, draft, abilities);
 
     // Building a character for `initialSchema`, which isn't necessarily the
     // System currently loaded as state.systemDefinition (that's whatever
@@ -10509,6 +10658,32 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const hasProficiencyBonusRole = systemFieldValues(buildSystemDefinition, "derivedFormulas").some((entry) => entry?.role === "proficiencyBonusForLevel");
     if (hasProficiencyBonusRole) {
       draft.stats.proficiencyBonus = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: 1 }) || 0;
+    }
+
+    // Class+level progression table (d20 Modern: Base Attack Bonus, Fort/
+    // Ref/Will, Defense Bonus, Reputation Bonus — see computeLevelUpPreview's
+    // own identical lookup, the ordinary Level Up counterpart to this) — the
+    // level-1 row, read off buildSystemDefinition (not getLevelUpBindings(),
+    // for the same reason proficiencyBonus above reads buildSystemDefinition
+    // directly). No-op for every System that doesn't declare this role.
+    const classProgressionBinding = findLevelUpBinding(systemFieldValues(buildSystemDefinition, "levelUpBindings"), "classProgressionTable", "class");
+    if (classProgressionBinding?.path && Array.isArray(classProgressionBinding.columns)) {
+      const progressionRow = resolveClassProgressionRow(classRecord, classProgressionBinding.path, 1);
+      if (progressionRow) {
+        // Each column's own optional `base`/`abilityBinding` (same shape as
+        // computeLevelUpPreview's identical lookup) covers a save/Defense
+        // total needing its own ability modifier — Fort+CON, Ref+DEX,
+        // Will+WIS, Defense+DEX+10 — added on top of the table's raw value.
+        classProgressionBinding.columns.forEach((column) => {
+          const raw = progressionRow[column.source];
+          if (raw == null) return;
+          const abilityMod = column.abilityBinding
+            ? evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: resolveBinding(column.abilityBinding, draft) }) || 0
+            : 0;
+          const segs = resolveBindingPath(column.targetPath);
+          if (segs) setValueAtContext(draft, segs, Number(raw) + (Number(column.base) || 0) + abilityMod);
+        });
+      }
     }
 
     // Generic "compute starting resource pools from this character's own
@@ -10656,11 +10831,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // not display-ready). Class grants a fixed 2-save proficiency via
     // whatever field the System's own "savingThrowGrants" levelUpBindings
     // role names (never a literal "saving_throws") — a hard grant, not a
-    // choice. Only built when the System actually declares a "saves"
-    // field at all (D&D 5e) — a System with no such concept (Call of
-    // Cthulhu, Blades in the Dark, Daggerheart) has nothing to bind
-    // these entries to.
-    const hasSavesField = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).some((entry) => entry?.key === "saves");
+    // choice. Only built when the System actually declares the
+    // "savingThrows" fieldRoles role (D&D 5e) — a System with no such
+    // concept (Call of Cthulhu, Blades in the Dark, Daggerheart) has
+    // nothing to bind these entries to.
+    const hasSavesField = Boolean(resolveFieldRole(buildSystemDefinition, "savingThrows"));
     if (hasSavesField) {
       const buildLevelUpBindings = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).find(
         (entry) => entry?.key === "levelUpBindings"
@@ -10783,21 +10958,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       ? []
       : matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, classFeaturesAreLevelTagged ? 1 : null, grantedFromSpecies);
     // Same class of gap as classFeatures above, but Daggerheart's subclass
-    // features carry tier ("Foundation:"/"Specialization:"/"Mastery:") as
-    // a name prefix (no numeric per-level table exists), not a `level`
-    // field. Scoped to the Build wizard, not the shared
-    // matchFeaturesAtLevel, since this prefix convention is local to how
-    // this repo's Daggerheart content was imported. At creation only
-    // Foundation is granted — the rest come via subclassUpgrade.
-    const subclassIsTierPrefixed = Array.isArray(subclassRecord?.features) && subclassRecord.features.some((entry) => /^(Foundation|Specialization|Mastery):/.test(entry?.name || ""));
+    // features carry a discrete `tier` (1 Foundation / 2 Specialization / 3
+    // Mastery), granted by Level Up's own subclassUpgrade advancement pick
+    // rather than at a numeric character level — real System-authored data
+    // on each feature entry, not inferred from its name. At creation only
+    // tier 1 (Foundation) is granted — the rest come via subclassUpgrade
+    // (see grantSubclassFeaturesAtTier, shared by both call sites).
+    const subclassIsTiered = Array.isArray(subclassRecord?.features) && subclassRecord.features.some((entry) => Number.isFinite(Number(entry?.tier)));
     let grantedFromSubclass = [];
-    if (subclassRecord && subclassIsTierPrefixed) {
-      const foundationIndexes = subclassRecord.features
-        .map((entry, index) => ({ entry, index }))
-        .filter(({ entry }) => /^Foundation:/.test(entry?.name || ""));
-      const foundationFeatures = foundationIndexes.map(({ entry }) => ({ name: entry.name, level: null }));
-      const foundationFeatureIds = foundationIndexes.map(({ index }) => subclassRecord.featureIds[index]);
-      grantedFromSubclass = matchFeaturesAtLevel(foundationFeatures, foundationFeatureIds, featureNameById, null, [...grantedFromSpecies, ...grantedFromClass]);
+    if (subclassRecord && subclassIsTiered) {
+      grantedFromSubclass = grantSubclassFeaturesAtTier(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass]);
     } else if (subclassRecord) {
       grantedFromSubclass = grantSubclassFeaturesAtLevel(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass]);
     }
@@ -11058,7 +11228,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     getDeclaredBuildSteps(buildSystemDefinition)
       .filter((entry) => entry?.type === "listPick")
       .forEach((entry) => {
-        const picks = Array.isArray(entry.picks) && entry.picks.length ? entry.picks : [{}];
+        const picks = resolveListPickSlots(entry);
         const selections = buildWizardState.listPicks[entry.step] || {};
         const pickedValues = picks
           .map((pickDef, slotIndex) => ({ pickDef, selection: selections[slotIndex] }))

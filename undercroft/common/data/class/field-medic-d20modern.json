@@ -1,0 +1,195 @@
+{
+  "index": "field-medic",
+  "name": "Field Medic",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A combat medic, trained to keep people alive when the nearest hospital is nowhere close.",
+  "keyBasicClass": "Dedicated Hero",
+  "prerequisites": "Base Attack Bonus +2; Treat Injury 6 ranks; Spot 6 ranks; Surgery feat.",
+  "hitDie": 8,
+  "classSkills": [
+    "computeruse",
+    "concentration",
+    "craft",
+    "diplomacy",
+    "drive",
+    "knowledge",
+    "listen",
+    "pilot",
+    "profession",
+    "readwritelanguage",
+    "research",
+    "speaklanguage",
+    "spot",
+    "treatinjury"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Medical Specialist +1",
+      "level": 1
+    },
+    {
+      "name": "Expert Healer",
+      "level": 2
+    },
+    {
+      "name": "Medical Mastery",
+      "level": 4
+    },
+    {
+      "name": "Medical Specialist +2",
+      "level": 5
+    },
+    {
+      "name": "Minor Medical Miracle",
+      "level": 7
+    },
+    {
+      "name": "Medical Specialist +3",
+      "level": 8
+    },
+    {
+      "name": "Medical Miracle",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-field-medic-medical-specialist-+1",
+    "feat.d20modern-adv-field-medic-expert-healer",
+    "feat.d20modern-adv-field-medic-medical-mastery",
+    "feat.d20modern-adv-field-medic-medical-specialist-+2",
+    "feat.d20modern-adv-field-medic-minor-medical-miracle",
+    "feat.d20modern-adv-field-medic-medical-specialist-+3",
+    "feat.d20modern-adv-field-medic-medical-miracle"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Armor Proficiency (light)"
+    },
+    {
+      "name": "Armor Proficiency (medium)"
+    },
+    {
+      "name": "Cautious"
+    },
+    {
+      "name": "Defensive Martial Arts"
+    },
+    {
+      "name": "Dodge"
+    },
+    {
+      "name": "Educated"
+    },
+    {
+      "name": "Improved Initiative"
+    },
+    {
+      "name": "Medical Expert"
+    },
+    {
+      "name": "Personal Firearms Proficiency"
+    },
+    {
+      "name": "Surface Vehicle Operation"
+    },
+    {
+      "name": "Vehicle Expert"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 2,
+      "ref": 0,
+      "will": 1,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 3,
+      "ref": 0,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 3,
+      "bab": 1,
+      "fort": 3,
+      "ref": 1,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 2,
+      "fort": 4,
+      "ref": 1,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 2
+    },
+    {
+      "level": 5,
+      "bab": 2,
+      "fort": 4,
+      "ref": 1,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 6,
+      "bab": 3,
+      "fort": 5,
+      "ref": 2,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 3,
+      "fort": 5,
+      "ref": 2,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 3
+    },
+    {
+      "level": 8,
+      "bab": 4,
+      "fort": 6,
+      "ref": 2,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 3
+    },
+    {
+      "level": 9,
+      "bab": 4,
+      "fort": 6,
+      "ref": 3,
+      "will": 4,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 5,
+      "fort": 7,
+      "ref": 3,
+      "will": 5,
+      "defenseBonus": 5,
+      "reputationBonus": 4
+    }
+  ]
+}

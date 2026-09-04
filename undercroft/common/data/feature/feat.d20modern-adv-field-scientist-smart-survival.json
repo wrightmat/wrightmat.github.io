@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-smart-survival",
+  "name": "Smart Survival",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Scientist can spend 1 action point to reduce the damage dealt by a single attack or effect by 5 points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Scientist can spend 1 action point to reduce the damage dealt by a single attack or effect by 5 points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

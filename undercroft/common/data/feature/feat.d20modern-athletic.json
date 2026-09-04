@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-athletic",
+  "name": "Athletic",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Climb checks and Swim checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Climb checks and Swim checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

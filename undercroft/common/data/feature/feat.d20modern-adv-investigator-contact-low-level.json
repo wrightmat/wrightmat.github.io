@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-investigator-contact-low-level",
+  "name": "Contact, low-level",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Investigator cultivates a low-level contact (an ordinary NPC) who can provide information or perform a skill check on his behalf, once per week, generally in exchange for a favor or a Wealth check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Investigator cultivates a low-level contact (an ordinary NPC) who can provide information or perform a skill check on his behalf, once per week, generally in exchange for a favor or a Wealth check."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

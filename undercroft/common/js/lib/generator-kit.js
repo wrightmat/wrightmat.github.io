@@ -8,6 +8,7 @@
 // closing over module-level state, so one copy works for all callers.
 
 import { setDisabledTooltip, disposeTooltips, refreshTooltips } from "./tooltips.js";
+import { resolveFieldRole } from "./field-roles.js";
 
 export async function listAllSystems(dataManager) {
   if (!dataManager) return [];
@@ -268,65 +269,19 @@ const DEFAULT_ABILITY_FIELD_DEFS = [
   { key: "charisma", label: "CHA" },
 ];
 
-// Best-effort guess for which object field IS the ability/stat block, used
-// only to pre-fill the abilityField settings preference when a GM hasn't
-// explicitly chosen one — never the sole source of truth. Shape-detects an
-// object field whose children are uniformly number-typed (so e.g. "hitPoints"
-// with {current, max} children doesn't qualify), preferring a conventional
-// name below when more than one candidate qualifies.
-const ABILITY_FIELD_NAME_PREFERENCE = ["abilities", "characteristics", "attributes", "stats"];
-
-function isStatBlockShaped(field) {
-  return (
-    field?.type === "object" &&
-    Array.isArray(field.children) &&
-    field.children.length > 0 &&
-    field.children.every((child) => child.type === "number")
-  );
-}
-
-export function guessAbilityFieldKey(fields) {
-  const candidates = (Array.isArray(fields) ? fields : []).filter(isStatBlockShaped);
-  if (!candidates.length) return "";
-  const preferred = ABILITY_FIELD_NAME_PREFERENCE.map((name) => candidates.find((field) => field.key === name)).find(Boolean);
-  return (preferred || candidates[0]).key;
-}
-
-// Every top-level object-type field the active System defines — the
-// candidate list for the abilityField settings preference. An ability/stat
-// block is always an object field, unlike Combat Scaling/Archetype/Budget
-// Ceiling, which are always array fields (a separate list, see
-// listArrayFieldOptions). `guessedKey` rides along in the same fetch so the
-// settings dropdown can pre-select and label it as auto-detected.
-export async function listObjectFieldOptions(dataManager, systemId) {
-  if (!dataManager || !systemId) return { options: [], guessedKey: "" };
-  try {
-    const result = await dataManager.get("systems", systemId, { preferLocal: false });
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const options = fields.filter((entry) => entry.type === "object").map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
-    return { options, guessedKey: guessAbilityFieldKey(fields) };
-  } catch (error) {
-    return { options: [], guessedKey: "" };
-  }
-}
-
-// `preferredKey` — the GM's own configured ability-field preference (mirrors
-// archetypeField/combatScalingField/budgetCeilingField). Falls back to
-// guessAbilityFieldKey's shape-based guess, then the literal "abilities" key
-// as a last resort — never hardcoded as the only option, since a System like
-// CoC authors its stat block under a completely different key.
-export async function loadAbilityFieldDefs(dataManager, systemId, preferredKey = "") {
+// Which object field IS the ability/stat block is the System's own explicit
+// `fieldRoles` declaration (role "abilityScores") — see field-roles.js.
+export async function loadAbilityFieldDefs(dataManager, systemId) {
   if (!dataManager || !systemId) return DEFAULT_ABILITY_FIELD_DEFS;
   try {
     const result = await dataManager.get("systems", systemId, { preferLocal: false });
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const key = preferredKey || guessAbilityFieldKey(fields) || "abilities";
-    const field = fields.find((entry) => entry.type === "object" && entry.key === key);
+    const field = resolveFieldRole(result?.payload, "abilityScores")?.fieldDef;
+    const fieldKey = field?.key || "";
     const defs = (field?.children || [])
       .map((child) => {
         const raw = String(child.key || "");
         return {
-          key: raw.startsWith(`${key}.`) ? raw.slice(key.length + 1) : raw,
+          key: raw.startsWith(`${fieldKey}.`) ? raw.slice(fieldKey.length + 1) : raw,
           // Full name preferred over the abbreviation whenever declared.
           label: child.label || child.shortName || "",
           // Carried separately from `label` — Workbench's Build Character

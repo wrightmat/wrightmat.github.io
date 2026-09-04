@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-studious",
+  "name": "Studious",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Decipher Script checks and Research checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Decipher Script checks and Research checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

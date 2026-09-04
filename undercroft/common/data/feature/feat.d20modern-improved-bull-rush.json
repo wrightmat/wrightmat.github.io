@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-improved-bull-rush",
+  "name": "Improved Bull Rush",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Strength 13, Power Attack.\nBenefit: When the character performs a bull rush, the character does not provoke an attack of opportunity from the defender.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Strength 13, Power Attack.\nBenefit: When the character performs a bull rush, the character does not provoke an attack of opportunity from the defender."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

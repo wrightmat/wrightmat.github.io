@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-weapon-focus",
+  "name": "Weapon Focus (Soldier)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Soldier gains the Weapon Focus class feature with a chosen weapon (or unarmed strike/grapple), adding +1 to attack rolls made with it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Soldier gains the Weapon Focus class feature with a chosen weapon (or unarmed strike/grapple), adding +1 to attack rolls made with it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

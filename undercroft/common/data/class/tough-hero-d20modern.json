@@ -1,0 +1,245 @@
+{
+  "index": "tough-hero",
+  "name": "Tough Hero",
+  "form": "basic",
+  "description": "Improved physical fitness, health, and stamina — built to take a hit and keep standing.",
+  "keyAbility": "constitution",
+  "hitDie": 10,
+  "classSkills": [
+    "climb",
+    "concentration",
+    "craft",
+    "drive",
+    "intimidate",
+    "knowledge",
+    "profession",
+    "readwritelanguage",
+    "ride",
+    "speaklanguage",
+    "spot",
+    "survival"
+  ],
+  "skillPointsBase": 3,
+  "features": [
+    {
+      "name": "Simple Weapons Proficiency",
+      "level": 1
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-simple-weapons-proficiency"
+  ],
+  "talents": [
+    {
+      "name": "Acid Resistance",
+      "description": "The Tough hero ignores an amount of acid damage equal to his or her Constitution modifier."
+    },
+    {
+      "name": "Cold Resistance",
+      "description": "The Tough hero ignores an amount of cold damage equal to his or her Constitution modifier."
+    },
+    {
+      "name": "Electricity Resistance",
+      "description": "The Tough hero ignores an amount of electricity damage equal to his or her Constitution modifier."
+    },
+    {
+      "name": "Fire Resistance",
+      "description": "The Tough hero ignores an amount of fire damage equal to his or her Constitution modifier."
+    },
+    {
+      "name": "Sonic/Concussion Resistance",
+      "description": "The Tough hero ignores an amount of sonic or concussion damage equal to his or her Constitution modifier."
+    },
+    {
+      "name": "Remain Conscious",
+      "description": "The Tough hero gains the ability to continue to perform actions when he or she would otherwise be considered unconscious and dying. When the Tough hero’s hit points reach –1, the hero can perform as though he or she were disabled, making either an attack action or a move action every round until the hero reaches –10 hit points (and dies) or the hero’s hit points return to 1 or higher. The hero can choose to succumb to unconsciousness if he or she thinks that doing so might prevent him or her from taking more damage."
+    },
+    {
+      "name": "Robust",
+      "description": "The Tough hero becomes especially robust, gaining a number of hit points equal to his or her Tough level as soon as he or she selects this talent. Thereafter, the hero gains +1 hit point with each level of Tough he or she gains."
+    },
+    {
+      "name": "Second Wind",
+      "description": "The Tough hero can spend 1 action point to gain a second wind. When the hero does this, he or she recovers a number of hit points equal to his or her Constitution modifier. This talent does not increase the Tough hero’s hit points beyond the character’s full normal total."
+    }
+  ],
+  "talentIds": [
+    "feat.d20modern-tough-hero-acid-resistance",
+    "feat.d20modern-tough-hero-cold-resistance",
+    "feat.d20modern-tough-hero-electricity-resistance",
+    "feat.d20modern-tough-hero-fire-resistance",
+    "feat.d20modern-tough-hero-sonic-concussion-resistance",
+    "feat.d20modern-tough-hero-remain-conscious",
+    "feat.d20modern-tough-hero-robust",
+    "feat.d20modern-tough-hero-second-wind"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Alertness",
+      "description": "Benefit: The character gets a +2 bonus on all Listen checks and Spot checks."
+    },
+    {
+      "name": "Athletic",
+      "description": "Benefit: The character gets a +2 bonus on all Climb checks and Swim checks."
+    },
+    {
+      "name": "Brawl",
+      "description": "Benefit: When making an unarmed attack, the character receives a +1 competence bonus on attack rolls, and the character deals nonlethal damage equal to 1d6 + his or her Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier."
+    },
+    {
+      "name": "Confident",
+      "description": "Benefit: The character gets a +2 bonus on all Gamble checks and Intimidate checks, and on level checks to resist intimidation."
+    },
+    {
+      "name": "Endurance",
+      "description": "Benefit: The character gains a +4 bonus on the following checks and saves: hourly Swim checks to avoid becoming fatigued, Constitution checks to continue running, Constitution checks to hold the character’s breath, Constitution checks to avoid damage from starvation or thirst, Fortitude saves to avoid damage from hot or cold environments, and Fortitude saves to resist suffocation or drowning.\nAlso, the character may sleep in medium or light armor without becoming fatigued.\nNormal: A character without this feat who sleeps in armor is automatically fatigued the following day."
+    },
+    {
+      "name": "Great Fortitude",
+      "description": "Benefit: The character gets a +2 bonus on all Fortitude saving throws."
+    },
+    {
+      "name": "Improved Brawl",
+      "description": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making an unarmed attack, the character receives a +2 competence bonus on his or her attack roll, and the character deals nonlethal damage equal to 1d8 + the character’s Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier."
+    },
+    {
+      "name": "Improved Bull Rush",
+      "description": "Prerequisites: Strength 13, Power Attack.\nBenefit: When the character performs a bull rush, the character does not provoke an attack of opportunity from the defender."
+    },
+    {
+      "name": "Improved Feint",
+      "description": "Prerequisites: Intelligence 13, Brawl, Streetfighting.\nBenefit: The character can make a Bluff check in combat as a move action. The character receives a +2 bonus on Bluff checks made to feint in melee combat.\nNormal: Feinting in combat requires an attack action."
+    },
+    {
+      "name": "Knockout Punch",
+      "description": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making the character’s first unarmed attack against a flat-footed opponent, treat a successful attack as a critical hit. This damage is nonlethal damage.\nSpecial: Even if the character has the ability to treat unarmed damage as lethal damage, the damage from a knockout punch is always nonlethal."
+    },
+    {
+      "name": "Power Attack",
+      "description": "Prerequisite: Strength 13.\nBenefit: On the character’s action, before making attack rolls for a round, the character may choose to subtract a number from all melee attack rolls and add the same number to all melee damage rolls. This number may not exceed the character’s base attack bonus. The penalty on attacks and bonus on damage applies until the character’s next action."
+    },
+    {
+      "name": "Streetfighting",
+      "description": "Prerequisites: Brawl, base attack bonus +2.\nBenefit: Once per round, if the character makes a successful melee attack with an unarmed strike or a light weapon, the character deals an extra 1d4 points of damage."
+    },
+    {
+      "name": "Toughness",
+      "description": "Benefit: The character gains +3 hit points.\nSpecial: A character may gain this feat multiple times. Its effects stack."
+    },
+    {
+      "name": "Vehicle Expert",
+      "description": "Benefit: The character gets a +2 bonus on all Drive checks and Pilot checks."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-alertness",
+    "feat.d20modern-athletic",
+    "feat.d20modern-brawl",
+    "feat.d20modern-confident",
+    "feat.d20modern-endurance",
+    "feat.d20modern-great-fortitude",
+    "feat.d20modern-improved-brawl",
+    "feat.d20modern-improved-bull-rush",
+    "feat.d20modern-improved-feint",
+    "feat.d20modern-knockout-punch",
+    "feat.d20modern-power-attack",
+    "feat.d20modern-streetfighting",
+    "feat.d20modern-toughness",
+    "feat.d20modern-vehicle-expert"
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 1,
+      "ref": 0,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 2,
+      "ref": 0,
+      "will": 0,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 2,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 2,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 3,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 3,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 4,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 4,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 4,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 5,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    }
+  ],
+  "systemIds": [
+    "sys.d20modern"
+  ]
+}

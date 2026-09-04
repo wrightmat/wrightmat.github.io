@@ -523,6 +523,38 @@
           "shortName": "Fate"
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "combatBindings",
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings"
+        },
+        {
+          "role": "abilityScores",
+          "name": "skills → abilityScores",
+          "sourceField": "skills"
+        },
+        {
+          "role": "environment",
+          "name": "environment → environment",
+          "sourceField": "environment"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "rarity → generatorProperty",
+          "sourceField": "rarity"
+        },
+        {
+          "role": "budgetCeiling",
+          "name": "rarity → budgetCeiling",
+          "sourceField": "rarity"
+        }
+      ]
     }
   ]
 }

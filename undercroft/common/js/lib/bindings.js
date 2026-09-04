@@ -1,5 +1,5 @@
 import { evaluateFormula } from "./formula-engine.js";
-import { resolveDottedPath } from "./dotted-path.js";
+import { resolveDottedPath, setAtDottedPath } from "./dotted-path.js";
 
 const SIMPLE_BINDING_PATTERN = /^@[A-Za-z0-9_.]+$/;
 const FORMULA_HINT_PATTERN = /[+*/<>=!?&|()-]|\bif\s*\(/;
@@ -102,27 +102,14 @@ export function resolveBinding(binding, context, formulaOptions) {
 // intermediate objects, so every consumer (Press, Workbench, Combat
 // Tracker) shares one implementation instead of three.
 export function setAtBinding(binding, context, value) {
-  if (typeof binding !== "string" || !context || typeof context !== "object") {
+  if (typeof binding !== "string") {
     return false;
   }
   const trimmed = binding.trim();
   if (!trimmed.startsWith("@")) {
     return false;
   }
-  const segments = trimmed.slice(1).split(".").filter(Boolean);
-  if (!segments.length) {
-    return false;
-  }
-  let cursor = context;
-  for (let index = 0; index < segments.length - 1; index += 1) {
-    const key = segments[index];
-    if (!cursor[key] || typeof cursor[key] !== "object") {
-      cursor[key] = {};
-    }
-    cursor = cursor[key];
-  }
-  cursor[segments[segments.length - 1]] = value;
-  return true;
+  return setAtDottedPath(context, trimmed.slice(1), value);
 }
 
 function normalizeLookupKey(value) {
@@ -213,27 +200,45 @@ export function createLookupFieldFn(rootContext) {
 // always undefined. A scalar field's value lives at
 // `fieldByKey(fields, key)?.default`, an array field's at `?.values`, an
 // object field's nested values at `?.children`.
+//
+// `key` may itself be dot-nested (e.g. "inventory.quantity") — the System's
+// own field list is an array-of-keyed-objects at every level (top-level
+// `fields`, an object field's own `children`, a records-mode array field's
+// `item.children`), so walking a deeper segment means the same
+// find-by-key lookup again, one level in, not a plain object-property
+// walk (that's what resolveDottedPath is for, against a plain nested
+// object like a Character or Library record). Every existing call site
+// passes a single, dot-free key, so this is purely additive.
 export function fieldByKey(fields, key) {
-  return (Array.isArray(fields) ? fields : []).find((entry) => entry?.key === key) || null;
+  const segments = String(key ?? "").split(".");
+  let current = (Array.isArray(fields) ? fields : []).find((entry) => entry?.key === segments[0]) || null;
+  for (let index = 1; index < segments.length && current; index += 1) {
+    const nested = Array.isArray(current.children)
+      ? current.children
+      : Array.isArray(current.item?.children)
+        ? current.item.children
+        : null;
+    current = nested ? nested.find((entry) => entry?.key === segments[index]) || null : null;
+  }
+  return current;
 }
 
-const ROLE_BOUND_ROLES = new Set(["resource", "value", "tags", "modifier"]);
-
 // A System's live play-state (HP, AC, conditions, initiative) lives on an
-// ordinary array field, identified purely by its values carrying a `role`
-// — a generic vocabulary (Loom's "Role" help topic), not combat-specific.
-// Combat Tracker and Workbench's character view both resolve it this way,
-// so a System only authors Role/Binding once for both to pick it up.
+// ordinary array field, whose VALUES carry a `role` — a generic vocabulary
+// (Loom's "Role" help topic: resource/value/tags/modifier), not
+// combat-specific. Which field that is is the System's own explicit
+// `fieldRoles` declaration (role "combatBindings") — see field-roles.js's
+// resolveFieldRole, which this mirrors locally rather than importing (to
+// avoid a circular dependency, since field-roles.js is itself built on
+// fieldByKey below) — so a System only authors that mapping once, in Loom,
+// for both Combat Tracker and Workbench's character view to pick up.
 export function findRoleBoundField(fields) {
   const list = Array.isArray(fields) ? fields : [];
-  return (
-    list.find(
-      (entry) =>
-        entry?.type === "array" &&
-        Array.isArray(entry.values) &&
-        entry.values.some((value) => value && ROLE_BOUND_ROLES.has(value.role))
-    ) || null
+  const fieldRolesField = fieldByKey(list, "fieldRoles");
+  const entry = (Array.isArray(fieldRolesField?.values) ? fieldRolesField.values : []).find(
+    (candidate) => candidate?.role === "combatBindings"
   );
+  return (entry?.field && fieldByKey(list, entry.field)) || null;
 }
 
 // Finds one entry of a given role within a role-bound field's `.values`

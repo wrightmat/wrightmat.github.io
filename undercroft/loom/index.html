@@ -361,19 +361,31 @@
                       <div class="col-12 col-md-4" data-field-mount="system-title"></div>
                       <div class="col-12 col-md-4" data-field-mount="system-version"></div>
                     </div>
-                    <section class="d-flex flex-column gap-2">
-                      <div class="d-flex align-items-center justify-content-between gap-2">
+                    <div class="d-flex flex-column gap-3" data-system-properties-wrapper>
+                      <section class="d-flex flex-column gap-2 d-none" data-system-reserved-properties-section>
                         <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                          <span>Properties</span>
-                          <span class="align-middle" data-help-topic="loom.systemProperties" data-help-insert="replace"></span>
+                          <span>Reserved Keys</span>
+                          <span class="align-middle" data-help-topic="loom.reservedKeys" data-help-insert="replace"></span>
                         </h3>
-                        <span data-system-add-property-mount></span>
-                      </div>
-                      <div
-                        class="d-flex flex-column gap-2 border rounded-3 p-2"
-                        data-system-property-rows
-                      ></div>
-                    </section>
+                        <div
+                          class="d-flex flex-column gap-2 border rounded p-2"
+                          data-system-reserved-property-rows
+                        ></div>
+                      </section>
+                      <section class="d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                          <h3 class="fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
+                            <span>Properties</span>
+                            <span class="align-middle" data-help-topic="loom.systemProperties" data-help-insert="replace"></span>
+                          </h3>
+                          <span data-system-add-property-mount></span>
+                        </div>
+                        <div
+                          class="d-flex flex-column gap-2 border rounded p-2"
+                          data-system-property-rows
+                        ></div>
+                      </section>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -702,6 +714,7 @@
                 <div class="d-flex flex-column gap-2" data-system-inspector-fields></div>
               </div>
             </div>
+            <div data-system-diagnostics-mount></div>
           </div>
           <div class="d-flex flex-column gap-3" data-loom-view-panel="groups" hidden>
             <div data-loom-group-inspector-mount></div>

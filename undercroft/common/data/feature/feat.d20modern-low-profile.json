@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-low-profile",
+  "name": "Low Profile",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: Reduce the character’s Reputation bonus by 3 points.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: Reduce the character’s Reputation bonus by 3 points."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
