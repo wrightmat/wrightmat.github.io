@@ -16,18 +16,22 @@
   "features": [
     {
       "name": "Foundation: Rousing Speech",
+      "tier": 1,
       "description": "Once per long rest, you can give a heartfelt, inspiring speech. All allies within Far range clear 2 Stress."
     },
     {
       "name": "Foundation: Heart of a Poet",
+      "tier": 1,
       "description": "After you make an action roll to impress, persuade, or offend someone, you can spend a Hope to add a d4 to the roll."
     },
     {
       "name": "Specialization: Eloquent",
+      "tier": 2,
       "description": "Your moving words boost morale. Once per session, when you encourage an ally, you can do one of the following:\n\n- Allow them to find a mundane object or tool they need.\n- Help an Ally without spending Hope.\n- Give them an additional downtime move during their next rest."
     },
     {
       "name": "Mastery: Epic Poetry",
+      "tier": 3,
       "description": "Your Rally Die increases to a d10. Additionally, when you Help an Ally, you can narrate the moment as if you were writing the tale of their heroism in a memoir. When you do, roll a d10 as your advantage die."
     }
   ],

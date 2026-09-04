@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-sudden-action",
+  "name": "Sudden Action",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Once per day, the Bodyguard can move higher in the initiative order by a number of places up to his class level, declared at the start of any round before anyone acts.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per day, the Bodyguard can move higher in the initiative order by a number of places up to his class level, declared at the start of any round before anyone acts."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

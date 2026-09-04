@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-improved-charge",
+  "name": "Improved Charge",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Bodyguard can make a charge without moving in a straight line, altering direction to avoid obstacles.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Bodyguard can make a charge without moving in a straight line, altering direction to avoid obstacles."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

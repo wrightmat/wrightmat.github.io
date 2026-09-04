@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-combat-sense-+2",
+  "name": "Combat Sense +2",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The competence bonus from Combat Sense increases to +2.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The competence bonus from Combat Sense increases to +2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

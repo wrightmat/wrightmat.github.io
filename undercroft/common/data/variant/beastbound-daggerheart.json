@@ -16,22 +16,27 @@
   "features": [
     {
       "name": "Foundation: Companion",
+      "tier": 1,
       "description": "You have an animal companion of your choice (at the GM's discretion). They stay by your side unless you tell them otherwise.\n\nTake the Ranger Companion sheet. When you level up your character, choose a level-up option for your companion from this sheet as well."
     },
     {
       "name": "Specialization: Expert Training",
+      "tier": 2,
       "description": "Choose an additional level-up option for your companion."
     },
     {
       "name": "Specialization: Battle-Bonded",
+      "tier": 2,
       "description": "When an adversary attacks you while they're within your companion's Melee range, you gain a +2 bonus to your Evasion against the attack."
     },
     {
       "name": "Mastery: Advanced Training",
+      "tier": 3,
       "description": "Choose two additional level-up options for your companion."
     },
     {
       "name": "Mastery: Loyal Friend",
+      "tier": 3,
       "description": "Once per long rest, when the damage from an attack would mark your companion's last Stress or your last Hit Point and you're within Close range of each other, you or your companion can rush to the other's side and take that damage instead."
     }
   ],

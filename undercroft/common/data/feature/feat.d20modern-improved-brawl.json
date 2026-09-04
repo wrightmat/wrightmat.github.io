@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-improved-brawl",
+  "name": "Improved Brawl",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making an unarmed attack, the character receives a +2 competence bonus on his or her attack roll, and the character deals nonlethal damage equal to 1d8 + the character’s Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making an unarmed attack, the character receives a +2 competence bonus on his or her attack roll, and the character deals nonlethal damage equal to 1d8 + the character’s Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

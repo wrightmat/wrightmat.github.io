@@ -1,0 +1,35 @@
+{
+  "index": "doctor",
+  "name": "Doctor",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A physician, surgeon, or psychiatrist trained to heal the human body and mind.",
+  "skillChoices": [
+    {
+      "name": "Treat Injury"
+    },
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Craft"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Medical Expert",
+      "description": "Benefit: The character gets a +2 bonus on all Craft (pharmaceutical) checks and Treat Injury checks.\nSpecial: Remember that the Craft (pharmaceutical) skill can’t be used untrained."
+    },
+    {
+      "name": "Surgery",
+      "description": "Prerequisite: Treat Injury 4 ranks.\nBenefit: The character can use the Treat Injury skill to perform surgery without penalty.  See the Treat Injury skill description.\nNormal: Characters without this feat take a –4 penalty on Treat Injury checks made to perform surgery."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-medical-expert",
+    "feat.d20modern-surgery"
+  ],
+  "bonusFeatCount": 1
+}

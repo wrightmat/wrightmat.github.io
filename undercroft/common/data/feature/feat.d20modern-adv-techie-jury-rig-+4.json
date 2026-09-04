@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-techie-jury-rig-+4",
+  "name": "Jury-Rig +4",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Techie's Jury-Rig competence bonus on Repair checks increases to +4.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Techie's Jury-Rig competence bonus on Repair checks increases to +4."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-improved-disarm",
+  "name": "Improved Disarm",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Intelligence 13, Combat Expertise.\nBenefit: The character does not provoke an attack of opportunity when the character attempts to disarm an opponent, nor does the opponent get a chance to disarm the character.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Intelligence 13, Combat Expertise.\nBenefit: The character does not provoke an attack of opportunity when the character attempts to disarm an opponent, nor does the opponent get a chance to disarm the character."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

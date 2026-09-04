@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-brawl",
+  "name": "Brawl",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: When making an unarmed attack, the character receives a +1 competence bonus on attack rolls, and the character deals nonlethal damage equal to 1d6 + his or her Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: When making an unarmed attack, the character receives a +1 competence bonus on attack rolls, and the character deals nonlethal damage equal to 1d6 + his or her Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

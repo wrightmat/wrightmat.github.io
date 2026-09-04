@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-close-combat-shot",
+  "name": "Close Combat Shot",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Gunslinger can make a ranged attack with a Medium-size or smaller firearm while in a threatened area without provoking an attack of opportunity.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Gunslinger can make a ranged attack with a Medium-size or smaller firearm while in a threatened area without provoking an attack of opportunity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-bullseye",
+  "name": "Bullseye",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "On a successful attack with the firearm chosen for Weapon Focus and Greater Weapon Focus, the Gunslinger can spend 1 action point before damage is rolled to deal +3d6 points of damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On a successful attack with the firearm chosen for Weapon Focus and Greater Weapon Focus, the Gunslinger can spend 1 action point before damage is rolled to deal +3d6 points of damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

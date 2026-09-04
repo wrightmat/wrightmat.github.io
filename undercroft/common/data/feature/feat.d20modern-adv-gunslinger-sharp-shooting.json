@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-sharp-shooting",
+  "name": "Sharp-Shooting",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "When the Gunslinger attacks a target with a personal firearm, the target's cover bonus to Defense is reduced by 2.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When the Gunslinger attacks a target with a personal firearm, the target's cover bonus to Defense is reduced by 2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

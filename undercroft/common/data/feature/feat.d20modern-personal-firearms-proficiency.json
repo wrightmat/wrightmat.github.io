@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-personal-firearms-proficiency",
+  "name": "Personal Firearms Proficiency",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character can fire any personal firearm without penalty.\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character can fire any personal firearm without penalty.\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

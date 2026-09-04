@@ -1,0 +1,221 @@
+{
+  "index": "daredevil",
+  "name": "Daredevil",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A death-defying stunt performer who pushes body and luck past their limits.",
+  "keyBasicClass": "Tough Hero",
+  "prerequisites": "Base Attack Bonus +2 (per class table context); typically drawn from the Tough Hero.",
+  "hitDie": 8,
+  "classSkills": [
+    "balance",
+    "bluff",
+    "climb",
+    "drive",
+    "escapeartist",
+    "jump",
+    "knowledge",
+    "pilot",
+    "profession",
+    "readwritelanguage",
+    "ride",
+    "speaklanguage",
+    "tumble"
+  ],
+  "skillPointsBase": 4,
+  "features": [
+    {
+      "name": "Fearless",
+      "level": 1
+    },
+    {
+      "name": "Nip-Up",
+      "level": 2
+    },
+    {
+      "name": "Action Boost",
+      "level": 4
+    },
+    {
+      "name": "Adrenaline Rush (one ability score)",
+      "level": 5
+    },
+    {
+      "name": "Delay Damage",
+      "level": 7
+    },
+    {
+      "name": "Adrenaline Rush (two ability scores)",
+      "level": 8
+    },
+    {
+      "name": "Damage Threshold",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-daredevil-fearless",
+    "feat.d20modern-adv-daredevil-nip-up",
+    "feat.d20modern-adv-daredevil-action-boost",
+    "feat.d20modern-adv-daredevil-adrenaline-rush",
+    "feat.d20modern-adv-daredevil-delay-damage",
+    "feat.d20modern-adv-daredevil-adrenaline-rush",
+    "feat.d20modern-adv-daredevil-damage-threshold"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Acrobatic"
+    },
+    {
+      "name": "Armor Proficiency (light)"
+    },
+    {
+      "name": "Armor Proficiency (medium)"
+    },
+    {
+      "name": "Athletic"
+    },
+    {
+      "name": "Brawl"
+    },
+    {
+      "name": "Cautious"
+    },
+    {
+      "name": "Dodge"
+    },
+    {
+      "name": "Force Stop"
+    },
+    {
+      "name": "Improved Brawl"
+    },
+    {
+      "name": "Improved Damage Threshold"
+    },
+    {
+      "name": "Improved Knockout Punch"
+    },
+    {
+      "name": "Knockout Punch"
+    },
+    {
+      "name": "Mobility"
+    },
+    {
+      "name": "Nimble"
+    },
+    {
+      "name": "Spring Attack"
+    },
+    {
+      "name": "Streetfighting"
+    },
+    {
+      "name": "Surface Vehicle Operation"
+    },
+    {
+      "name": "Toughness"
+    },
+    {
+      "name": "Vehicle Dodge"
+    },
+    {
+      "name": "Vehicle Expert"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 2,
+      "ref": 0,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 3,
+      "ref": 0,
+      "will": 0,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 1,
+      "fort": 3,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 2,
+      "fort": 4,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 5,
+      "bab": 2,
+      "fort": 4,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 3,
+      "fort": 5,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 3,
+      "fort": 5,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 5,
+      "reputationBonus": 2
+    },
+    {
+      "level": 8,
+      "bab": 4,
+      "fort": 6,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 6,
+      "reputationBonus": 2
+    },
+    {
+      "level": 9,
+      "bab": 4,
+      "fort": 6,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 6,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 5,
+      "fort": 7,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 7,
+      "reputationBonus": 3
+    }
+  ]
+}

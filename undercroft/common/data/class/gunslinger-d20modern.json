@@ -1,0 +1,206 @@
+{
+  "index": "gunslinger",
+  "name": "Gunslinger",
+  "form": "advanced",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A firearms specialist whose speed and accuracy with a gun border on legend.",
+  "keyBasicClass": "Fast Hero",
+  "prerequisites": "Base Attack Bonus +2; Sleight of Hand 6 ranks; Tumble 6 ranks; Personal Firearms Proficiency feat.",
+  "hitDie": 10,
+  "classSkills": [
+    "bluff",
+    "demolitions",
+    "drive",
+    "escapeartist",
+    "gamble",
+    "intimidate",
+    "knowledge",
+    "movesilently",
+    "profession",
+    "readwritelanguage",
+    "ride",
+    "sleightofhand",
+    "speaklanguage",
+    "spot",
+    "survival",
+    "tumble"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Close Combat Shot",
+      "level": 1
+    },
+    {
+      "name": "Weapon Focus (Gunslinger)",
+      "level": 2
+    },
+    {
+      "name": "Defensive Position",
+      "level": 4
+    },
+    {
+      "name": "Lightning Shot",
+      "level": 5
+    },
+    {
+      "name": "Sharp-Shooting",
+      "level": 7
+    },
+    {
+      "name": "Greater Weapon Focus",
+      "level": 8
+    },
+    {
+      "name": "Bullseye",
+      "level": 10
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-adv-gunslinger-close-combat-shot",
+    "feat.d20modern-adv-gunslinger-weapon-focus",
+    "feat.d20modern-adv-gunslinger-defensive-position",
+    "feat.d20modern-adv-gunslinger-lightning-shot",
+    "feat.d20modern-adv-gunslinger-sharp-shooting",
+    "feat.d20modern-adv-gunslinger-greater-weapon-focus",
+    "feat.d20modern-adv-gunslinger-bullseye"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Advanced Firearms Proficiency"
+    },
+    {
+      "name": "Advanced Two-Weapon Fighting"
+    },
+    {
+      "name": "Burst Fire"
+    },
+    {
+      "name": "Dead Aim"
+    },
+    {
+      "name": "Double Tap"
+    },
+    {
+      "name": "Far Shot"
+    },
+    {
+      "name": "Improved Two-Weapon Fighting"
+    },
+    {
+      "name": "Precise Shot"
+    },
+    {
+      "name": "Quick Draw"
+    },
+    {
+      "name": "Quick Reload"
+    },
+    {
+      "name": "Shot on the Run"
+    },
+    {
+      "name": "Skip Shot"
+    },
+    {
+      "name": "Strafe"
+    },
+    {
+      "name": "Two-Weapon Fighting"
+    }
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 0,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 0,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 1,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 1,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 1,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 2,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 2,
+      "ref": 4,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 2,
+      "ref": 4,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 2
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 3,
+      "ref": 4,
+      "will": 4,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 3,
+      "ref": 5,
+      "will": 5,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    }
+  ]
+}

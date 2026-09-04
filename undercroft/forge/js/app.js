@@ -32,7 +32,6 @@ import {
   getAttitudeLabel,
   loadAlignmentFaces,
   loadAbilityFieldDefs,
-  listArrayFieldOptions,
   loadArchetypeTable,
   loadNpcAttitudes,
   listFeaturesForSystem,
@@ -52,6 +51,7 @@ import { buildLocationPressTemplate } from "./lib/press-export.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import { abilityModifier } from "../../common/js/lib/derived-formulas.js";
 import { findBindingByRole, findBindingsByRole, setAtBinding } from "../../common/js/lib/bindings.js";
+import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
 import { loadSystemFields, deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
 import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
 import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
@@ -63,7 +63,6 @@ import {
   renderRequiredSelectOptions,
   renderOptionalSelectOptions,
   setGenerateButtonReadiness,
-  listObjectFieldOptions,
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
@@ -503,32 +502,15 @@ const FOURD_FIELD_DEFS = [
 let ABILITY_FIELD_DEFS = [];
 let ABILITY_KEYS = new Set();
 
-// Every top-level array field the active System defines, used to populate
-// the Settings modal's Archetype/Attitude field pickers. The guess values
-// are which field guessArchetypeFieldKey/guessAttitudeFieldKey would
-// auto-pick, so each dropdown can pre-select and label it.
-let arrayFieldOptions = [];
-let archetypeFieldGuess = "";
-let attitudeFieldGuess = "";
-
-// Every top-level object field the active System defines, used to populate
-// the Settings modal's Ability field picker. Separate from arrayFieldOptions
-// since an ability/stat block is always authored as an object field, never
-// an array one.
-let objectFieldOptions = [];
-let abilityFieldGuess = "";
-
 // Every key (besides `name`) present on any entry of the currently-resolved
 // Archetype table, used to populate the Settings modal's Stats picker.
 // Empty for a System whose archetype entries carry nothing but a name.
 let archetypeStatKeyOptions = [];
 
-// Which array field on the active System supplies the Archetype roll table
-// — a per-tool preference, not System data, mirroring Crucible's own
-// Combat Scaling/Creature Type field settings: one merged per-System record
-// (saveLocal replaces the whole record for a (bucket, id), so writing one
-// setting straight through would wipe the other's value), removed entirely
-// once both preferences are unset.
+// Which of an archetype's own extra keys become NPC Stats is a genuinely
+// tool-local preference (not a "which field" question — fieldRoles already
+// names the Archetype field itself; this picks a subset of ITS keys), so it
+// keeps its own small per-System settings record.
 const FORGE_SETTINGS_BUCKET = "forge-settings";
 
 function getForgeSystemSettings(systemId) {
@@ -541,41 +523,11 @@ function setForgeSystemSetting(systemId, key, value) {
   const next = { ...getForgeSystemSettings(systemId), [key]: value };
   // An empty statsKeys carries no information (treated the same as never
   // having set it), so it doesn't keep this record alive on its own.
-  if (!next.archetypeField && !next.attitudeField && !next.abilityField && !(next.statsKeys && next.statsKeys.length)) {
+  if (!(next.statsKeys && next.statsKeys.length)) {
     dataManager.removeLocal(FORGE_SETTINGS_BUCKET, systemId);
   } else {
     dataManager.saveLocal(FORGE_SETTINGS_BUCKET, systemId, next);
   }
-}
-
-function getArchetypeFieldPreference(systemId) {
-  return getForgeSystemSettings(systemId).archetypeField || "";
-}
-
-function setArchetypeFieldPreference(systemId, fieldKey) {
-  setForgeSystemSetting(systemId, "archetypeField", fieldKey || "");
-}
-
-// Which array field on the active System supplies NPC Attitude levels —
-// same per-tool preference pattern as Archetype's own field preference above.
-function getAttitudeFieldPreference(systemId) {
-  return getForgeSystemSettings(systemId).attitudeField || "";
-}
-
-function setAttitudeFieldPreference(systemId, fieldKey) {
-  setForgeSystemSetting(systemId, "attitudeField", fieldKey || "");
-}
-
-// Which object field is this System's ability/stat block — same per-System
-// preference shape as archetypeField/attitudeField, feeding
-// loadAbilityFieldDefs' preferredKey instead of assuming a field literally
-// named "abilities". Empty falls through to its own shape-based guess.
-function getAbilityFieldPreference(systemId) {
-  return getForgeSystemSettings(systemId).abilityField || "";
-}
-
-function setAbilityFieldPreference(systemId, fieldKey) {
-  setForgeSystemSetting(systemId, "abilityField", fieldKey || "");
 }
 
 // An empty selection is treated exactly like "never configured" — both
@@ -591,23 +543,6 @@ function getStatsKeysPreference(systemId) {
 
 function setStatsKeysPreference(systemId, keys) {
   setForgeSystemSetting(systemId, "statsKeys", Array.isArray(keys) ? keys : []);
-}
-
-// Every array field the active System defines, for the Archetype/Attitude
-// field pickers — "None" is a real, deliberate choice. `guessedKey`/
-// `rawPreference` parameterize which setting this call is for, so each gets
-// its own "(auto-detected)" labeling on whichever option was guessed.
-function fieldPreferenceOptions(guessedKey, rawPreference) {
-  return [
-    { value: "", label: "None" },
-    ...arrayFieldOptions.map((field) => ({
-      value: field.key,
-      label:
-        field.key === guessedKey && !rawPreference
-          ? `${field.label || field.key} (auto-detected)`
-          : field.label || field.key,
-    })),
-  ];
 }
 
 // Every key (besides `name`) present on any archetype entry, nice-labeled —
@@ -658,31 +593,21 @@ function resolveArchetypeStats(statsByName, systemId) {
 // ability-score card labels/keys, and the Archetype table (Stats included)
 // in sync with whichever System is currently active.
 async function refreshSystemVocabulary(systemId) {
-  const archetypeField = getArchetypeFieldPreference(systemId);
-  const attitudeField = getAttitudeFieldPreference(systemId);
   // abilityFieldDefs resolved first, on its own — loadIndependentStatRanges
   // below needs its already-resolved minimum/maximum data, so it can't join
   // the same Promise.all as everything else that doesn't depend on it.
-  const abilityFieldDefs = await loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId));
-  const [alignmentFaces, fieldOptions, objFieldOptions, archetypeTable, npcAttitudes, systemFeatures, independentStatRanges, skillGenerationConfig, systemFields] =
-    await Promise.all([
-      loadAlignmentFaces(dataManager, systemId),
-      listArrayFieldOptions(dataManager, systemId),
-      listObjectFieldOptions(dataManager, systemId),
-      loadArchetypeTable(dataManager, systemId, archetypeField || undefined),
-      loadNpcAttitudes(dataManager, systemId, attitudeField || undefined),
-      listFeaturesForSystem(dataManager, systemId),
-      loadIndependentStatRanges(dataManager, systemId, abilityFieldDefs),
-      loadSkillGenerationConfig(dataManager, systemId),
-      loadSystemFields(dataManager, systemId),
-    ]);
+  const abilityFieldDefs = await loadAbilityFieldDefs(dataManager, systemId);
+  const [alignmentFaces, archetypeTable, npcAttitudes, systemFeatures, independentStatRanges, skillGenerationConfig, systemFields] = await Promise.all([
+    loadAlignmentFaces(dataManager, systemId),
+    loadArchetypeTable(dataManager, systemId),
+    loadNpcAttitudes(dataManager, systemId),
+    listFeaturesForSystem(dataManager, systemId),
+    loadIndependentStatRanges(dataManager, systemId, abilityFieldDefs),
+    loadSkillGenerationConfig(dataManager, systemId),
+    loadSystemFields(dataManager, systemId),
+  ]);
   features = systemFeatures;
   populateAddFeatureSelect();
-  arrayFieldOptions = fieldOptions.options;
-  archetypeFieldGuess = fieldOptions.guessedArchetypeKey;
-  attitudeFieldGuess = fieldOptions.guessedAttitudeKey;
-  objectFieldOptions = objFieldOptions.options;
-  abilityFieldGuess = objFieldOptions.guessedKey;
   ABILITY_FIELD_DEFS = abilityFieldDefs;
   ABILITY_KEYS = new Set(abilityFieldDefs.map((entry) => entry.key));
   archetypeStatKeyOptions = statsKeyOptionsFrom(archetypeTable.statsByName);
@@ -695,7 +620,7 @@ async function refreshSystemVocabulary(systemId) {
     // score apart from any other stat and bundle it into stats.<key> — the
     // System's own resolved ability-block field key, never hardcoded.
     tables.abilityKeys = ABILITY_KEYS;
-    tables.abilityFieldKey = getAbilityFieldPreference(systemId) || abilityFieldGuess || "abilities";
+    tables.abilityFieldKey = resolveFieldRole({ fields: systemFields }, "abilityScores")?.sourceField || "abilities";
     // The System's own live-play-state bindings (HP/AC/Initiative/...) —
     // getStatsForArchetype writes each one through setAtBinding against
     // whatever path THIS System's combatBindings declare, never a hardcoded
@@ -2407,10 +2332,10 @@ async function init() {
   });
   dataManager = auth.dataManager;
 
-  // Archetype field picker + Stats key checklist, in a gear-icon Settings
-  // modal. Each definition's getValue/setValue defers to the per-System
-  // dataManager.getLocal/saveLocal helpers above rather than this module's
-  // own flat store, since the value is scoped per-System, not per-tool.
+  // Stats key checklist, in a gear-icon Settings modal — which of an
+  // Archetype entry's own extra keys become NPC Stats. Which field IS the
+  // Archetype table (and NPC Attitude/ability block) is the System's own
+  // fieldRoles declaration now, not a tool preference — see field-roles.js.
   initToolSettings({
     toolId: "forge",
     dataManager,
@@ -2419,48 +2344,6 @@ async function init() {
     definitions: () => {
       const systemId = systemSelect.value;
       return [
-        {
-          key: "archetypeField",
-          type: "select",
-          label: "Archetype field",
-          options: fieldPreferenceOptions(archetypeFieldGuess, getArchetypeFieldPreference(systemId)),
-          getValue: () => getArchetypeFieldPreference(systemId) || archetypeFieldGuess,
-          setValue: (value) => {
-            setArchetypeFieldPreference(systemId, value);
-            refreshSystemVocabulary(systemId);
-          },
-        },
-        {
-          key: "attitudeField",
-          type: "select",
-          label: "Attitude field",
-          options: fieldPreferenceOptions(attitudeFieldGuess, getAttitudeFieldPreference(systemId)),
-          getValue: () => getAttitudeFieldPreference(systemId) || attitudeFieldGuess,
-          setValue: (value) => {
-            setAttitudeFieldPreference(systemId, value);
-            refreshSystemVocabulary(systemId);
-          },
-        },
-        {
-          key: "abilityField",
-          type: "select",
-          label: "Ability field",
-          // No separate "Auto-detect" option — the guessed field IS the
-          // selected value until the GM picks a different one, with
-          // "(auto-detected)" as the only indicator.
-          options: objectFieldOptions.map((field) => ({
-            value: field.key,
-            label:
-              field.key === abilityFieldGuess && !getAbilityFieldPreference(systemId)
-                ? `${field.label || field.key} (auto-detected)`
-                : field.label || field.key,
-          })),
-          getValue: () => getAbilityFieldPreference(systemId) || abilityFieldGuess,
-          setValue: (value) => {
-            setAbilityFieldPreference(systemId, value);
-            refreshSystemVocabulary(systemId);
-          },
-        },
         {
           key: "statsKeys",
           type: "multiselect",

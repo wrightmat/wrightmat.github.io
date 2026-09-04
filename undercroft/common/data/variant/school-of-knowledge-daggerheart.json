@@ -16,26 +16,32 @@
   "features": [
     {
       "name": "Foundation: Prepared",
+      "tier": 1,
       "description": "Take an additional domain card of your level or lower from a domain you have access to."
     },
     {
       "name": "Foundation: Adept",
+      "tier": 1,
       "description": "When you Utilize an Experience, you can mark a Stress instead of spending a Hope. If you do, double your Experience modifier for that roll."
     },
     {
       "name": "Specialization: Accomplished",
+      "tier": 2,
       "description": "Take an additional domain card of your level or lower from a domain you have access to."
     },
     {
       "name": "Specialization: Perfect Recall",
+      "tier": 2,
       "description": "Once per rest, when you recall a domain card in your vault, you can reduce its Recall Cost by 1."
     },
     {
       "name": "Mastery: Brilliant",
+      "tier": 3,
       "description": "Take an additional domain card of your level or lower from a domain you have access to."
     },
     {
       "name": "Mastery: Honed Expertise",
+      "tier": 3,
       "description": "When you use an Experience, roll a d6. On a result of 5 or higher, you can use it without spending Hope."
     }
   ],

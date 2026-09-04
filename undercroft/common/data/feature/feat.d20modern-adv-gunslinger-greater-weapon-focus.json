@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-greater-weapon-focus",
+  "name": "Greater Weapon Focus",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Gunslinger gains an additional +1 competence bonus on attack rolls with the firearm chosen for Weapon Focus, stacking with the earlier bonus.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Gunslinger gains an additional +1 competence bonus on attack rolls with the firearm chosen for Weapon Focus, stacking with the earlier bonus."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

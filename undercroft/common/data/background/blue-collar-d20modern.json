@@ -1,0 +1,35 @@
+{
+  "index": "blue-collar",
+  "name": "Blue Collar",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Tradespeople and laborers — mechanics, electricians, construction workers — who know how things actually get built and fixed.",
+  "skillChoices": [
+    {
+      "name": "Craft"
+    },
+    {
+      "name": "Repair"
+    },
+    {
+      "name": "Drive"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Builder",
+      "description": "Benefit: Pick two of the following skills: Craft (chemical), Craft (electronic), Craft (mechanical), and Craft (structural). The character gets a +2 bonus on all checks with those skills.\nSpecial: The character can select this feat twice. The second time, the character applies it to the two skills he or she didn’t pick originally. Remember that Craft (chemical), Craft (electronic), and Craft (mechanical) cannot be used untrained."
+    },
+    {
+      "name": "Gearhead",
+      "description": "Benefit: The character gets a +2 bonus on all Computer Use checks and Repair checks. \nSpecial: Remember that the Computer Use skill and the Repair skill can only be used untrained in certain situations."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-builder",
+    "feat.d20modern-gearhead"
+  ],
+  "bonusFeatCount": 1
+}

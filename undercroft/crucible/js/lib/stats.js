@@ -113,13 +113,11 @@ function buildActions(features, damagePerRound, attackBonus, damageTypeList) {
 // `role`/`creatureType`/`features` are the already-resolved records
 // generateMonster produced. Every input degrades gracefully: a System with
 // no combatScaling/damageTypes data still produces a bare-minimum stat block
-// instead of an error. `combatScalingField` is the GM's configured Combat
-// Scaling field preference — must be threaded through, or this silently
-// falls back to the hardcoded "combatScaling" default even when a System
-// (e.g. D&D 5e's "challengeRating") uses a different field name.
+// instead of an error. Which field IS the Combat Scaling data is the
+// System's own `fieldRoles` declaration — loadCombatScalingLevels resolves
+// it internally, nothing to thread through here any more.
 export async function deriveStats({
   systemId,
-  combatScalingField = "",
   combatScalingId = "",
   role = null,
   creatureType = null,
@@ -136,7 +134,7 @@ export async function deriveStats({
   derivedFormulas = [],
 }) {
   const [levels, damageTypeList] = await Promise.all([
-    loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
+    loadCombatScalingLevels(dataManager, systemId),
     loadDamageTypesPropertyType(dataManager, systemId),
   ]);
 

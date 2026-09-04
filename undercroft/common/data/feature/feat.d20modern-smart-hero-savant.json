@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-smart-hero-savant",
+  "name": "Savant",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Select one of the skills listed in the following paragraph. The hero must have ranks in the skill if it is Trained Only. The Smart hero gets to add a bonus equal to his or her Smart level when making checks with that skill. A Smart hero can take this talent multiple times; each time it applies to a different skill.\nComputer Use, Craft (any single skill), Decipher Script, Demolitions, Disable Device, Forgery, Investigate, Knowledge (any single skill), Navigate, Repair, Research, Search.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Select one of the skills listed in the following paragraph. The hero must have ranks in the skill if it is Trained Only. The Smart hero gets to add a bonus equal to his or her Smart level when making checks with that skill. A Smart hero can take this talent multiple times; each time it applies to a different skill.\nComputer Use, Craft (any single skill), Decipher Script, Demolitions, Disable Device, Forgery, Investigate, Knowledge (any single skill), Navigate, Repair, Research, Search."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

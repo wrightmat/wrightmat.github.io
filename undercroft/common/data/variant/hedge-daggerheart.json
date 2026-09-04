@@ -15,22 +15,27 @@
   "features": [
     {
       "name": "Foundation: Herbal Remedies",
+      "tier": 1,
       "description": "When you or an ally clear one or more Hit Points or Stress as the result of using a consumable, increase the number cleared by one."
     },
     {
       "name": "Foundation: Tethered Talisman",
+      "tier": 1,
       "description": "Once per rest, you can imbue a small item with your protective essence. When the person holding the talisman takes damage, you can expend its magic to reduce the number of Hit Points they mark by one. You can't create a new talisman until the old one has been used."
     },
     {
       "name": "Specialization: Walk Between Worlds",
+      "tier": 2,
       "description": "Make a Spellcast Roll (13) to step beyond the veil of death and converse with any nearby spirits. Place a number of tokens equal to your Spellcast trait on this card and remove one each time a spirit answers a question. You return to the mortal realm when the last token is removed."
     },
     {
       "name": "Specialization: Enhanced Hex",
+      "tier": 2,
       "description": "Attacks you make against Hexed creatures gain a damage bonus equal to your Proficiency."
     },
     {
       "name": "Mastery: Circle of Power",
+      "tier": 3,
       "description": "Once per rest, mark a circle on the ground around you up to Very Close range and place a number of tokens equal to your Spellcast Trait on this card. Each time you or any ally within the circle makes an action roll or is hit with an attack, remove a token. This spell lasts until the last token is removed or you step out of the circle. While within this circle, you and any allies:\n\n- Gain a +4 bonus to your damage thresholds.\n- Gain a +2 bonus to your attack rolls.\n- Gain a +1 bonus to your Evasion."
     }
   ],

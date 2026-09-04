@@ -1,0 +1,210 @@
+{
+  "index": "charismatic-hero",
+  "name": "Charismatic Hero",
+  "form": "basic",
+  "description": "Training in winning friends and influencing people — a leader, a celebrity, a con artist, or a flirt.",
+  "keyAbility": "charisma",
+  "hitDie": 6,
+  "classSkills": [
+    "bluff",
+    "craft",
+    "diplomacy",
+    "disguise",
+    "gatherinformation",
+    "handleanimal",
+    "intimidate",
+    "knowledge",
+    "perform",
+    "profession",
+    "readwritelanguage",
+    "speaklanguage"
+  ],
+  "skillPointsBase": 7,
+  "features": [
+    {
+      "name": "Simple Weapons Proficiency",
+      "level": 1
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-simple-weapons-proficiency"
+  ],
+  "talents": [
+    {
+      "name": "Charm",
+      "description": "The Charismatic hero gets a competence bonus on all Charisma-based skill checks made to influence members of his chosen gender. The bonus is equal to the character’s Charismatic level.\nA Charismatic hero can only charm Gamemaster characters with attitudes of indifferent or better. The charm bonus can’t be used against characters who are unfriendly or hostile. This ability can be taken more than once (for another gender)."
+    },
+    {
+      "name": "Fast-Talk",
+      "description": "The Charismatic hero has a way with words when attempting to con and deceive. With this talent, he or she applies his or her Charismatic level as a competence bonus on any Bluff, Diplomacy, or Gamble checks the hero makes while attempting to lie, cheat, or otherwise bend the truth."
+    },
+    {
+      "name": "Coordinate",
+      "description": "The Charismatic hero has a knack for getting people to work together. When the hero can spend a full round directing his or her allies and makes a Charisma check (DC 10), the hero provides any of his or her allies within 30 feet a +1 bonus on their attack rolls and skill checks. The bonus lasts for a number of rounds equal to the hero’s Charisma modifier.\nThe hero can coordinate a number of allies equal to one-half his or her Charismatic level, rounded down (to a minimum of one ally)."
+    }
+  ],
+  "talentIds": [
+    "feat.d20modern-charismatic-hero-charm",
+    "feat.d20modern-charismatic-hero-fast-talk",
+    "feat.d20modern-charismatic-hero-coordinate"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Agile Riposte",
+      "description": "Prerequisites: Dexterity 13, Dodge.\nBenefit: Once per round, if the opponent the character has designated as his or her dodge target (see the Dodge feat) makes a melee attack or melee touch attack against the character and misses, the character may make an attack of opportunity against that opponent. Resolve and apply the effects from both attacks simultaneously.\nEven a character with the Combat Reflexes feat can’t use the Agile Riposte feat more than once per round. This feat does not grant more attacks of opportunity than the character is normally allowed in a round."
+    },
+    {
+      "name": "Creative",
+      "description": "Benefit: Pick two of the following skills: Craft (visual art), Craft (writing), Perform (act), Perform (dance), Perform (keyboards), Perform (percussion instruments), Perform (sing), Perform (stand-up), Perform (string instruments), and Perform (wind instruments). The character gets a +2 bonus on all checks with those two skills.\nSpecial: A character can select this feat as many as five times. Each time, the character selects two new skills from the choices given above."
+    },
+    {
+      "name": "Deceptive",
+      "description": "Benefit: The character gets a +2 bonus on all Bluff checks and Disguise checks."
+    },
+    {
+      "name": "Dodge",
+      "description": "Prerequisite: Dexterity 13.\nBenefit: During the character’s action, the character designates an opponent and receives a +1 dodge bonus to Defense against any subsequent attacks from that opponent. The character can select a new opponent on any action.\nSpecial: A condition that makes the character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack with each other, unlike most other types of bonuses."
+    },
+    {
+      "name": "Frightful Presence",
+      "description": "Prerequisites: Charisma 15, Intimidate 9 ranks.\nBenefit: When the character uses this feat, all opponents within 10 feet who have fewer levels than the character must make a Will saving throw (DC 10 + ½ the character’s level + the character’s Charisma modifier). An opponent who fails his or her save is shaken, taking a –2 penalty on attack rolls, saves, and skill checks for a number of rounds equal to 1d6 + the character’s Charisma modifier. The character can use the feat once per round as a free action.\nA successful save indicates that the opponent is immune to the character’s use of this feat for 24 hours. This feat does not affect creatures with an Intelligence of 3 or lower.\nIf the character has the Renown feat, the Will saving throw’s DC increases by 5."
+    },
+    {
+      "name": "Iron Will",
+      "description": "Benefit: The character gets a +2 bonus on all Will saving throws."
+    },
+    {
+      "name": "Lightning Reflexes",
+      "description": "Benefit: The character gets a +2 bonus on all Reflex saving throws."
+    },
+    {
+      "name": "Low Profile",
+      "description": "Benefit: Reduce the character’s Reputation bonus by 3 points."
+    },
+    {
+      "name": "Point Blank Shot",
+      "description": "Benefit: The character gets a +1 bonus on attack and damage rolls with ranged weapons against opponents within 30 feet."
+    },
+    {
+      "name": "Renown",
+      "description": "Benefit: The character’s Reputation bonus increases by +3."
+    },
+    {
+      "name": "Trustworthy",
+      "description": "Benefit: The character gets a +2 bonus on all Diplomacy checks and Gather Information checks."
+    },
+    {
+      "name": "Windfall",
+      "description": "Benefit: The character’s Wealth bonus increases by +3. Also, this feat provides a +1 bonus on all Profession checks.\nSpecial: A character can select this feat multiple times. Each time, both of its effects stack."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-agile-riposte",
+    "feat.d20modern-creative",
+    "feat.d20modern-deceptive",
+    "feat.d20modern-dodge",
+    "feat.d20modern-frightful-presence",
+    "feat.d20modern-iron-will",
+    "feat.d20modern-lightning-reflexes",
+    "feat.d20modern-low-profile",
+    "feat.d20modern-point-blank-shot",
+    "feat.d20modern-renown",
+    "feat.d20modern-trustworthy",
+    "feat.d20modern-windfall"
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 1,
+      "ref": 1,
+      "will": 0,
+      "defenseBonus": 0,
+      "reputationBonus": 2
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 2,
+      "ref": 2,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 2
+    },
+    {
+      "level": 3,
+      "bab": 1,
+      "fort": 2,
+      "ref": 2,
+      "will": 1,
+      "defenseBonus": 1,
+      "reputationBonus": 2
+    },
+    {
+      "level": 4,
+      "bab": 2,
+      "fort": 2,
+      "ref": 2,
+      "will": 1,
+      "defenseBonus": 1,
+      "reputationBonus": 3
+    },
+    {
+      "level": 5,
+      "bab": 2,
+      "fort": 3,
+      "ref": 3,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 3
+    },
+    {
+      "level": 6,
+      "bab": 3,
+      "fort": 3,
+      "ref": 3,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 3
+    },
+    {
+      "level": 7,
+      "bab": 3,
+      "fort": 4,
+      "ref": 4,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 4
+    },
+    {
+      "level": 8,
+      "bab": 4,
+      "fort": 4,
+      "ref": 4,
+      "will": 2,
+      "defenseBonus": 3,
+      "reputationBonus": 4
+    },
+    {
+      "level": 9,
+      "bab": 4,
+      "fort": 4,
+      "ref": 4,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 4
+    },
+    {
+      "level": 10,
+      "bab": 5,
+      "fort": 5,
+      "ref": 5,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 5
+    }
+  ],
+  "systemIds": [
+    "sys.d20modern"
+  ]
+}

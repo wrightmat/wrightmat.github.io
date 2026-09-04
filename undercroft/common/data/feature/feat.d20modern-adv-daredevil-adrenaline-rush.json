@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-daredevil-adrenaline-rush",
+  "name": "Adrenaline Rush (two ability scores)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Daredevil's Adrenaline Rush now increases two physical ability scores at once, with a 1d6+2 round fatigue afterward.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Daredevil's Adrenaline Rush now increases two physical ability scores at once, with a 1d6+2 round fatigue afterward."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

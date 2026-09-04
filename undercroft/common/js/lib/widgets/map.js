@@ -1048,11 +1048,11 @@ export function initMapWidget(
 
   // Reads Orrery's own per-System "which resource is the Marker Resource
   // Bar" preference straight out of its `orrery-settings` localStorage
-  // bucket — same precedent as the Dashboard's Encounter Difficulty
-  // calculator widget reading Crucible's `crucible-settings` bucket
-  // directly, rather than owning a second, independent copy of the
-  // setting. Read-only here; falls back to the same guessBarResourceName
-  // heuristic Orrery uses when nothing's explicitly set yet.
+  // bucket — a genuinely Orrery-local display preference (which of a
+  // System's several resource/value combatBindings gets its own bar),
+  // not a "which field" question fieldRoles resolves. Read-only here;
+  // falls back to the same guessBarResourceName heuristic Orrery uses
+  // when nothing's explicitly set yet.
   function resolveEffectiveBarResourceName(systemId) {
     if (!systemId) return "";
     const explicit = dataManager?.getLocal?.("orrery-settings", systemId)?.barResourceName || "";

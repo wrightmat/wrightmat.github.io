@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-minor-breakthrough",
+  "name": "Minor Breakthrough",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Scientist gains recognition for a minor scientific breakthrough in a chosen Knowledge field, granting a +2 bonus on Reputation checks with others trained in that field and a +3 Wealth bonus increase.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Scientist gains recognition for a minor scientific breakthrough in a chosen Knowledge field, granting a +2 bonus on Reputation checks with others trained in that field and a +3 Wealth bonus increase."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

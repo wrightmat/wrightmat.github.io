@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-focused",
+  "name": "Focused",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets get a +2 bonus on all Balance checks and Concentration checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets get a +2 bonus on all Balance checks and Concentration checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

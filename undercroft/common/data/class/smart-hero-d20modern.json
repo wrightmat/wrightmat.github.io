@@ -1,0 +1,213 @@
+{
+  "index": "smart-hero",
+  "name": "Smart Hero",
+  "form": "basic",
+  "description": "Improved reasoning and applied knowledge — research, technology, and outthinking the opposition.",
+  "keyAbility": "intelligence",
+  "hitDie": 6,
+  "classSkills": [
+    "computeruse",
+    "craft",
+    "decipherscript",
+    "demolitions",
+    "disabledevice",
+    "forgery",
+    "investigate",
+    "knowledge",
+    "navigate",
+    "profession",
+    "readwritelanguage",
+    "repair",
+    "research",
+    "search",
+    "speaklanguage"
+  ],
+  "skillPointsBase": 9,
+  "features": [
+    {
+      "name": "Simple Weapons Proficiency",
+      "level": 1
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-simple-weapons-proficiency"
+  ],
+  "talents": [
+    {
+      "name": "Savant",
+      "description": "Select one of the skills listed in the following paragraph. The hero must have ranks in the skill if it is Trained Only. The Smart hero gets to add a bonus equal to his or her Smart level when making checks with that skill. A Smart hero can take this talent multiple times; each time it applies to a different skill.\nComputer Use, Craft (any single skill), Decipher Script, Demolitions, Disable Device, Forgery, Investigate, Knowledge (any single skill), Navigate, Repair, Research, Search."
+    },
+    {
+      "name": "Linguist",
+      "description": "With this talent, the Smart hero becomes a master linguist. Whenever the hero encounters a new language, either spoken or written, that he or she does not know the Smart hero can make an Intelligence check to determine if he or she can understand it. The check is made with a bonus equal to the hero’s Smart level. For a written language, the bonus applies to a Decipher Script check instead.\nPrerequisite: At least 1 rank in either Read/Write Language or Speak Language for each of three different languages."
+    }
+  ],
+  "talentIds": [
+    "feat.d20modern-smart-hero-savant",
+    "feat.d20modern-smart-hero-linguist"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Builder",
+      "description": "Benefit: Pick two of the following skills: Craft (chemical), Craft (electronic), Craft (mechanical), and Craft (structural). The character gets a +2 bonus on all checks with those skills.\nSpecial: The character can select this feat twice. The second time, the character applies it to the two skills he or she didn’t pick originally. Remember that Craft (chemical), Craft (electronic), and Craft (mechanical) cannot be used untrained."
+    },
+    {
+      "name": "Cautious",
+      "description": "Benefit: The character gets a +2 bonus on all Demolitions checks and Disable Device checks.\nSpecial: Remember that the Demolitions skill and the Disable Device skill can’t be used untrained."
+    },
+    {
+      "name": "Combat Expertise",
+      "description": "Prerequisite: Intelligence 13.\nBenefit: When the character uses the attack action or the full attack action in melee, the character can take a penalty of up to –5 on his or her attack roll and add the same number (up to +5) to the character’s Defense. This number may not exceed the character’s base attack bonus. The changes to attack rolls and Defense last until the character’s next action. The bonus to the character’s Defense is a dodge bonus (and as such it stacks with other dodge bonuses the character may have).\nNormal: A character without the Combat Expertise feat can fight defensively while using the attack or full attack action to take a –4 penalty on attacks and gain a +2 dodge bonus to Defense."
+    },
+    {
+      "name": "Educated",
+      "description": "Benefit: Pick two Knowledge skills. The character gets a +2 bonus on all checks with those skills.\nSpecial: A character can select this feat as many as seven times. Each time, the character selects two new Knowledge skills."
+    },
+    {
+      "name": "Gearhead",
+      "description": "Benefit: The character gets a +2 bonus on all Computer Use checks and Repair checks. \nSpecial: Remember that the Computer Use skill and the Repair skill can only be used untrained in certain situations."
+    },
+    {
+      "name": "Improved Disarm",
+      "description": "Prerequisites: Intelligence 13, Combat Expertise.\nBenefit: The character does not provoke an attack of opportunity when the character attempts to disarm an opponent, nor does the opponent get a chance to disarm the character."
+    },
+    {
+      "name": "Improved Trip",
+      "description": "Prerequisites: Intelligence 13, Combat Expertise.\nBenefit: The character does not provoke an attack of opportunity when the character tries to trip an opponent while the character is unarmed.\nIf the character trips an opponent in melee combat, the character immediately gets to make a melee attack against that opponent as if the character had not used his or her attack action for the trip attempt."
+    },
+    {
+      "name": "Iron Will",
+      "description": "Benefit: The character gets a +2 bonus on all Will saving throws."
+    },
+    {
+      "name": "Lightning Reflexes",
+      "description": "Benefit: The character gets a +2 bonus on all Reflex saving throws."
+    },
+    {
+      "name": "Meticulous",
+      "description": "Benefit: The character gets a +2 bonus on all Forgery checks and Search checks."
+    },
+    {
+      "name": "Studious",
+      "description": "Benefit: The character gets a +2 bonus on all Decipher Script checks and Research checks."
+    },
+    {
+      "name": "Vehicle Expert",
+      "description": "Benefit: The character gets a +2 bonus on all Drive checks and Pilot checks."
+    },
+    {
+      "name": "Weapon Focus",
+      "description": "Choose a specific weapon. A character can choose unarmed strike or grapple for your weapon for purposes of this feat.\nPrerequisites: Proficient with weapon, base attack bonus +1.\nBenefit: The character gains a +1 bonus on all attack rolls he or she makes using the selected weapon.\nSpecial: A character can gain this feat multiple times. Each time the character takes the feat, the character must select a different weapon."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-builder",
+    "feat.d20modern-cautious",
+    "feat.d20modern-combat-expertise",
+    "feat.d20modern-educated",
+    "feat.d20modern-gearhead",
+    "feat.d20modern-improved-disarm",
+    "feat.d20modern-improved-trip",
+    "feat.d20modern-iron-will",
+    "feat.d20modern-lightning-reflexes",
+    "feat.d20modern-meticulous",
+    "feat.d20modern-studious",
+    "feat.d20modern-vehicle-expert",
+    "feat.d20modern-weapon-focus"
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 0,
+      "ref": 0,
+      "will": 1,
+      "defenseBonus": 0,
+      "reputationBonus": 1
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 0,
+      "ref": 0,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 3,
+      "bab": 1,
+      "fort": 1,
+      "ref": 1,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 2,
+      "fort": 1,
+      "ref": 1,
+      "will": 2,
+      "defenseBonus": 1,
+      "reputationBonus": 2
+    },
+    {
+      "level": 5,
+      "bab": 2,
+      "fort": 1,
+      "ref": 1,
+      "will": 3,
+      "defenseBonus": 2,
+      "reputationBonus": 2
+    },
+    {
+      "level": 6,
+      "bab": 3,
+      "fort": 2,
+      "ref": 2,
+      "will": 3,
+      "defenseBonus": 2,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 3,
+      "fort": 2,
+      "ref": 2,
+      "will": 4,
+      "defenseBonus": 2,
+      "reputationBonus": 3
+    },
+    {
+      "level": 8,
+      "bab": 4,
+      "fort": 2,
+      "ref": 2,
+      "will": 4,
+      "defenseBonus": 3,
+      "reputationBonus": 3
+    },
+    {
+      "level": 9,
+      "bab": 4,
+      "fort": 3,
+      "ref": 3,
+      "will": 4,
+      "defenseBonus": 3,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 5,
+      "fort": 3,
+      "ref": 3,
+      "will": 5,
+      "defenseBonus": 3,
+      "reputationBonus": 4
+    }
+  ],
+  "systemIds": [
+    "sys.d20modern"
+  ]
+}

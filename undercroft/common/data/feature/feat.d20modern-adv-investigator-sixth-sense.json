@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-investigator-sixth-sense",
+  "name": "Sixth Sense",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Whenever the Investigator spends an action point to improve a Gather Information, Investigate, Listen, Research, Search, or Spot check, he adds an extra 1d6 to the result.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever the Investigator spends an action point to improve a Gather Information, Investigate, Listen, Research, Search, or Spot check, he adds an extra 1d6 to the result."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

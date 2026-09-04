@@ -1,0 +1,35 @@
+{
+  "index": "military",
+  "name": "Military",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Trained soldiers, veterans of a service branch, disciplined in combat and command.",
+  "skillChoices": [
+    {
+      "name": "Survival"
+    },
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Intimidate"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Archaic Weapons Proficiency",
+      "description": "Benefit: The character takes no penalty on attack rolls when using any kind of archaic weapon.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with archaic weapons."
+    },
+    {
+      "name": "Personal Firearms Proficiency",
+      "description": "Benefit: The character can fire any personal firearm without penalty.\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-archaic-weapons-proficiency",
+    "feat.d20modern-personal-firearms-proficiency"
+  ],
+  "bonusFeatCount": 1
+}

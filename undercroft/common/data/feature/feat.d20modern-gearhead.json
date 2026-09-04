@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-gearhead",
+  "name": "Gearhead",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Computer Use checks and Repair checks. \nSpecial: Remember that the Computer Use skill and the Repair skill can only be used untrained in certain situations.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Computer Use checks and Repair checks. \nSpecial: Remember that the Computer Use skill and the Repair skill can only be used untrained in certain situations."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

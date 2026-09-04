@@ -9,6 +9,31 @@
 import { escapeHtml } from "./auth-ui.js";
 import { createSortable } from "./dnd.js";
 import { initHelpSystem } from "./help.js";
+import { loadReservedKeysSchema } from "./system-validation.js";
+
+// One shared <datalist> of the true-reserved-key names (buildSteps,
+// derivedFormulas, fieldRoles, ...) — a suggestion, not a restriction, so
+// it's harmless to also show on Group Properties' or a nested Sub-field's
+// own Key input, not just a System's own top-level fields. Built lazily,
+// once, the first time any Key input needs it.
+const RESERVED_KEY_DATALIST_ID = "undercroft-reserved-key-datalist";
+let reservedKeyDatalistReady = null;
+function ensureReservedKeyDatalist() {
+  if (!reservedKeyDatalistReady) {
+    reservedKeyDatalistReady = loadReservedKeysSchema().then((schema) => {
+      let datalist = document.getElementById(RESERVED_KEY_DATALIST_ID);
+      if (!datalist) {
+        datalist = document.createElement("datalist");
+        datalist.id = RESERVED_KEY_DATALIST_ID;
+        document.body.appendChild(datalist);
+      }
+      datalist.innerHTML = (schema.keys || [])
+        .map((entry) => `<option value="${escapeHtml(entry.key)}" label="${escapeHtml(entry.description || "")}"></option>`)
+        .join("");
+    });
+  }
+  return reservedKeyDatalistReady;
+}
 
 // The type control is a single icon button that cycles through these on
 // click (see renderPropertyRow) rather than a dropdown, so a row's whole
@@ -61,9 +86,27 @@ export function fieldValueColumnState(field) {
   const anyValueHas = (key) => values.some((entry) => entry && typeof entry === "object" && entry[key] !== undefined);
   const state = {};
   VALUE_COLUMNS.forEach((column) => {
-    state[column.key] = anyValueHas(column.key);
+    // A select column only auto-activates for a value actually using one of
+    // its own known options — bare key-presence isn't enough. `role` in
+    // particular is shared, unintentionally, by combatBindings' own
+    // resource/value/tags/modifier vocabulary AND by derivedFormulas'/
+    // levelUpBindings'/fieldRoles' completely unrelated `role` property;
+    // without this, this generic column would auto-activate for those too,
+    // show a Role dropdown whose 4 options can't represent their actual
+    // value, and silently overwrite it on the next save.
+    state[column.key] =
+      column.type === "select"
+        ? values.some((entry) => entry && typeof entry === "object" && (column.options || []).some((option) => option.value && option.value === entry[column.key]))
+        : anyValueHas(column.key);
   });
   state.libraryLinked = Boolean(field.entityKind) || anyValueHas("entityId");
+  // fieldRoles' own values always carry a real `sourceField` (every entry
+  // names a sibling field), which would otherwise auto-activate the
+  // generic Source field text column right alongside its own dedicated
+  // Field select (renderValueRow) — same value, two inputs. fieldRoles is
+  // the one field where that concept is fully handled by the dedicated
+  // select instead, never the generic column.
+  if (field.key === "fieldRoles") state.sourceField = false;
   return state;
 }
 
@@ -153,6 +196,7 @@ export function applyPropertyType(row, typeButton, value, { refreshTooltips } = 
 //     caller's own render+collect pair).
 export function renderPropertyRow(field = {}, container, ctx = {}) {
   if (!container) return null;
+  void ensureReservedKeyDatalist();
   const row = document.createElement("div");
   row.className = "border rounded-3 p-2 d-flex flex-column gap-2";
   // Kept so collectFieldFromRow can merge its output back over this instead
@@ -197,7 +241,7 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
       >
         <span class="iconify" data-icon="${currentTypeMeta.icon}" aria-hidden="true"></span>
       </button>
-      <input class="form-control form-control-sm" style="max-width: 8rem;" placeholder="key (e.g. abilities.strength)" value="${escapeHtml(field.key || "")}" data-property-key />
+      <input class="form-control form-control-sm" style="max-width: 8rem;" placeholder="key (e.g. abilities.strength)" value="${escapeHtml(field.key || "")}" list="${RESERVED_KEY_DATALIST_ID}" data-property-key />
       <input class="form-control form-control-sm flex-grow-1" style="min-width: 5rem;" placeholder="Label" value="${escapeHtml(field.label || "")}" data-property-label />
       <select class="form-select form-select-sm flex-shrink-0" style="max-width: 8rem;" data-property-array-mode hidden>
         <option value="values"${arrayMode === "values" ? " selected" : ""}>Enum</option>
@@ -379,8 +423,9 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
   // roster (names, order, which ones are still just placeholders) while
   // pointing directly at real data once it exists, rather than duplicating
   // it. Re-populated whenever the Library kind changes.
+  const valueRowRenderCtx = { isFieldRoles: field.key === "fieldRoles", listSiblingFieldKeys: ctx.listSiblingFieldKeys };
   (Array.isArray(field.values) ? field.values : []).forEach((entry) => {
-    const valueRow = renderValueRow(entry, valueRowsContainer);
+    const valueRow = renderValueRow(entry, valueRowsContainer, valueRowRenderCtx);
     const entityId = typeof entry === "object" && entry !== null ? entry.entityId || "" : "";
     void populateValueEntitySelect(valueRow.querySelector("[data-value-entity-select]"), field.entityKind, entityId, ctx);
   });
@@ -416,10 +461,20 @@ export function applyValueRowColumns(valueRow, state) {
   }
 }
 
-export function renderValueRow(entry = {}, container) {
+export function renderValueRow(entry = {}, container, renderCtx = {}) {
   if (!container) return null;
   const name = typeof entry === "string" ? entry : entry?.name || "";
   const source = typeof entry === "object" && entry !== null ? entry : {};
+  // fieldRoles is "pick one of N known roles, pick one of your own fields" —
+  // strictly friendlier as two selects than free-typed columns, and the
+  // natural replacement for what the retired per-tool Settings-modal
+  // dropdowns used to offer (now visible in Loom instead of hidden
+  // per-tool). Populated async below (populateFieldRolesValueSelects),
+  // same pattern as the Library-entity select's own async population.
+  const fieldRolesSelects = renderCtx.isFieldRoles
+    ? `<select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-fieldroles-role></select>
+       <select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-fieldroles-field></select>`
+    : "";
   // Kept so collectValueRow's value collection can merge its output back
   // over this instead of reconstructing from scratch — same reasoning as
   // row._originalField above.
@@ -460,6 +515,7 @@ export function renderValueRow(entry = {}, container) {
   row._originalValue = entry;
   row.innerHTML = `
     <input class="form-control form-control-sm flex-shrink-0" style="width: 9rem;" placeholder="Name" value="${escapeHtml(name)}" data-value-name />
+    ${fieldRolesSelects}
     ${columnInputs}
     <select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-entity-select hidden>
       <option value="">Not in Library yet</option>
@@ -470,7 +526,51 @@ export function renderValueRow(entry = {}, container) {
     </button>
   `;
   container.appendChild(row);
+  if (renderCtx.isFieldRoles) {
+    void populateFieldRolesValueSelects(row, source, renderCtx);
+  }
   return row;
+}
+
+// Populates fieldRoles' own dedicated Role/Field selects (see
+// renderValueRow above) — Role options come from reserved-keys.json's
+// closed fieldRoleEnum (with each role's own description as the option's
+// title tooltip); Field options come from this System's own OTHER
+// top-level field keys, live via renderCtx.listSiblingFieldKeys() so a
+// field added/renamed elsewhere in the editor shows up without a reload.
+async function populateFieldRolesValueSelects(valueRow, source, renderCtx) {
+  const roleSelect = valueRow.querySelector("[data-value-fieldroles-role]");
+  const fieldSelect = valueRow.querySelector("[data-value-fieldroles-field]");
+  if (!roleSelect || !fieldSelect) return;
+  const schema = await loadReservedKeysSchema();
+  roleSelect.innerHTML = `<option value="">Role…</option>`;
+  (schema.fieldRoleEnum || []).forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.role;
+    option.textContent = entry.role;
+    option.title = entry.description || "";
+    if (entry.role === source.role) option.selected = true;
+    roleSelect.appendChild(option);
+  });
+  const siblingKeys = renderCtx.listSiblingFieldKeys ? renderCtx.listSiblingFieldKeys() : [];
+  fieldSelect.innerHTML = `<option value="">Field…</option>`;
+  siblingKeys.forEach((key) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = key;
+    if (key === source.sourceField) option.selected = true;
+    fieldSelect.appendChild(option);
+  });
+  // The System's own field for this role may not be in the sibling list yet
+  // (e.g. a stored value pointing at a field renamed/removed since) — kept
+  // as a selected option anyway so saving doesn't silently discard it.
+  if (source.sourceField && !siblingKeys.includes(source.sourceField)) {
+    const option = document.createElement("option");
+    option.value = source.sourceField;
+    option.textContent = `${source.sourceField} (not found)`;
+    option.selected = true;
+    fieldSelect.appendChild(option);
+  }
 }
 
 // Sequential (not concurrent) fetches — Properties editing is a
@@ -519,14 +619,13 @@ export async function populateValueEntitySelect(select, entityKind, currentValue
 
 export function collectValueRow(valueRow, options, ctx = {}) {
   const name = valueRow.querySelector("[data-value-name]")?.value.trim() || "";
-  if (!name) return null;
   const extraRaw = valueRow.querySelector("[data-value-extra]")?.value.trim() || "";
   let extra = {};
   if (extraRaw) {
     try {
       extra = JSON.parse(extraRaw);
     } catch (error) {
-      ctx.status?.show(`"${name}"'s extra properties aren't valid JSON — saved without them.`, {
+      ctx.status?.show(`"${name || "This entry"}"'s extra properties aren't valid JSON — saved without them.`, {
         type: "warning",
         timeout: 4000,
       });
@@ -536,11 +635,19 @@ export function collectValueRow(valueRow, options, ctx = {}) {
   // covered by a column input or the extra-JSON box — a field-specific stat
   // this editor doesn't know about yet — still survives.
   const original = valueRow._originalValue && typeof valueRow._originalValue === "object" ? valueRow._originalValue : {};
-  const value = { ...original, ...extra, name };
+  const value = { ...original, ...extra };
   delete value.entityId;
+  delete value.name;
+  if (name) value.name = name;
+  // Only a column this field actually opted into (its own checkbox) is
+  // managed here at all — deleting a VALUE_COLUMNS key unconditionally
+  // would silently wipe a same-named property this UI was never given
+  // control over (derivedFormulas'/levelUpBindings'/fieldRoles' own bare
+  // `role`, distinct from combatBindings' opt-in Role column), the exact
+  // kind of silent data loss this editor is supposed to never do.
   VALUE_COLUMNS.forEach((column) => {
-    delete value[column.key];
     if (!options[column.key]) return;
+    delete value[column.key];
     const raw = valueRow.querySelector(`[data-value-column-input="${column.key}"]`)?.value ?? "";
     if (raw === "") return;
     value[column.key] = column.type === "number" ? Number(raw) : raw;
@@ -549,7 +656,49 @@ export function collectValueRow(valueRow, options, ctx = {}) {
     const entityId = valueRow.querySelector("[data-value-entity-select]")?.value || "";
     if (entityId) value.entityId = entityId;
   }
-  return value;
+  // fieldRoles' own dedicated Role/Field selects (renderValueRow) — present
+  // only on a fieldRoles value row, so this is a no-op for every other
+  // field's rows. Read after the generic VALUE_COLUMNS loop above — that
+  // loop never touches "role" (fieldRoles' own role values never match the
+  // combatBindings resource/value/tags/modifier options) or "sourceField"
+  // (fieldValueColumnState explicitly forces it off for this one field) —
+  // but this stays the authoritative source regardless.
+  const fieldRolesRoleSelect = valueRow.querySelector("[data-value-fieldroles-role]");
+  const fieldRolesFieldSelect = valueRow.querySelector("[data-value-fieldroles-field]");
+  if (fieldRolesRoleSelect || fieldRolesFieldSelect) {
+    delete value.role;
+    delete value.sourceField;
+    if (fieldRolesRoleSelect?.value) value.role = fieldRolesRoleSelect.value;
+    if (fieldRolesFieldSelect?.value) value.sourceField = fieldRolesFieldSelect.value;
+  }
+  // Only a genuinely empty row (no Name, no columns, no extra JSON, no
+  // original data) is dropped now — a blank Name alone used to silently
+  // discard the whole row, which lost real data for buildSteps (keyed by
+  // `step`), derivedFormulas (keyed by `role`), and fieldRoles (keyed by
+  // `field`+`role`), none of which use `name` at all. See
+  // findUnnamedValueEntries for the save-time nudge toward adding one.
+  return Object.keys(value).length ? value : null;
+}
+
+// Walks a collected `fields` array (post-collectFieldsFromContainer, so
+// already recursed through object/array-of-object nesting) for array value
+// entries with no `name` — used at save time to prompt rather than silently
+// accept, since collectValueRow itself no longer drops or invents one.
+export function findUnnamedValueEntries(fields) {
+  const found = [];
+  const walk = (list) => {
+    (list || []).forEach((field) => {
+      if (Array.isArray(field.values)) {
+        field.values.forEach((value) => {
+          if (value && typeof value === "object" && !value.name) found.push({ field, value });
+        });
+      }
+      if (Array.isArray(field.children)) walk(field.children);
+      if (field.item?.children) walk(field.item.children);
+    });
+  };
+  walk(fields);
+  return found;
 }
 
 export function collectFieldFromRow(row, ctx = {}) {
@@ -668,7 +817,8 @@ export function wirePropertyContainerEvents(container, ctx = {}) {
       const entityKind = arraySection?.querySelector("[data-property-entity-kind]")?.value.trim() || "";
       if (target) {
         ctx.runChange(() => {
-          const valueRow = renderValueRow({}, target);
+          const fieldKey = propertyRow?.querySelector("[data-property-key]")?.value.trim() || "";
+          const valueRow = renderValueRow({}, target, { isFieldRoles: fieldKey === "fieldRoles", listSiblingFieldKeys: ctx.listSiblingFieldKeys });
           void populateValueEntitySelect(valueRow.querySelector("[data-value-entity-select]"), entityKind, "", ctx);
           const state = {};
           VALUE_COLUMNS.forEach((column) => {

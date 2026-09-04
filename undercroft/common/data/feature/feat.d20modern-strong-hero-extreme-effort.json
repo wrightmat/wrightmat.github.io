@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-strong-hero-extreme-effort",
+  "name": "Extreme Effort",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A Strong hero can push him or herself to make an extreme effort. The effort must relate either to a Strength check or a Strength-based skill check. You must decide to use this ability before making the check.\nThe effort requires a full-round action and provides a +2 bonus on the check.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A Strong hero can push him or herself to make an extreme effort. The effort must relate either to a Strength check or a Strength-based skill check. You must decide to use this ability before making the check.\nThe effort requires a full-round action and provides a +2 bonus on the check."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,21 @@
+{
+  "index": "white-collar",
+  "name": "White Collar",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Office professionals — accountants, lawyers, managers — who navigate institutions for a living.",
+  "skillChoices": [
+    {
+      "name": "Computer Use"
+    },
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Diplomacy"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "wealthBonus": 1
+}

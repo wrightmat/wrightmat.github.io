@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-skill-mastery",
+  "name": "Skill Mastery",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Scientist selects a number of class skills equal to 3 + his Intelligence modifier; he may take 10 on checks with those skills even under stress or distraction.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Scientist selects a number of class skills equal to 3 + his Intelligence modifier; he may take 10 on checks with those skills even under stress or distraction."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-techie-mastercraft",
+  "name": "Mastercraft (+3)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Techie's mastercraft ability improves further — a single focused skill reaches a +3 bonus, or if both Craft skills already have mastercraft, one improves to +2.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Techie's mastercraft ability improves further — a single focused skill reaches a +3 bonus, or if both Craft skills already have mastercraft, one improves to +2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

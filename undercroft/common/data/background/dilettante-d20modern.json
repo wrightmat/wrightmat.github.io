@@ -1,0 +1,21 @@
+{
+  "index": "dilettante",
+  "name": "Dilettante",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Independently wealthy, with no need to work — free to pursue whatever catches their interest.",
+  "skillChoices": [
+    {
+      "name": "Gamble"
+    },
+    {
+      "name": "Knowledge"
+    },
+    {
+      "name": "Ride"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "wealthBonus": 2
+}

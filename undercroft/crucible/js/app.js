@@ -21,9 +21,9 @@ import {
   listFeaturesForSystem,
   listMonstersForSystem,
   loadCombatScalingLevels,
-  listArrayFieldOptions,
   loadAbilityFieldDefs,
 } from "./lib/tables.js";
+import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
 import { generateMonster, getMonsterGenerationBlockReason, matchesCategory, rerollAttribute } from "./lib/generator.js";
 import { deriveStats } from "./lib/stats.js";
 import { loadSystemFields, deriveCombatBindings } from "../../common/js/lib/widgets/combat-bindings.js";
@@ -54,13 +54,11 @@ import {
   renderRequiredSelectOptions,
   renderOptionalSelectOptions,
   setGenerateButtonReadiness,
-  listObjectFieldOptions,
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl, setElementVisible } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
-import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { abilityModifier, averageDiceRoll, computeAttackBonus, computeSaveDC, computeAverageDamage } from "../../common/js/lib/derived-formulas.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
@@ -76,16 +74,6 @@ let archetypes = [];
 let roles = [];
 let features = [];
 let combatScalingLevels = [];
-let arrayFieldOptions = [];
-// Which array field guessCombatScalingFieldKey/guessCreatureTypeFieldKey
-// would auto-pick — ride along with the options fetch so each settings
-// dropdown can pre-select and label its own guess.
-let combatScalingFieldGuess = "";
-let creatureTypeFieldGuess = "";
-// Candidate list for the abilityField preference below — every object-type
-// field the active System defines, plus which one would be auto-picked.
-let objectFieldOptions = [];
-let abilityFieldGuess = "";
 // The active System's own ability key/label list, so renderStats' display
 // rows use the System's real vocabulary instead of a hardcoded STR/DEX/...
 let abilityFieldDefs = [];
@@ -457,78 +445,6 @@ function currentSystemId() {
 
 // Which array field Crucible treats as combat-scaling/creature-type data is
 // a Crucible tool preference, not System data — lives in local storage
-// (keyed per System), never in the System record itself. Both settings
-// share one per-System record (via the helpers below, not saveLocal
-// directly) since saveLocal replaces the whole record for a (bucket, id) —
-// writing one setting straight through it would wipe the other's value.
-const CRUCIBLE_SETTINGS_BUCKET = "crucible-settings";
-
-function getCrucibleSystemSettings(systemId) {
-  if (!dataManager || !systemId) return {};
-  return dataManager.getLocal(CRUCIBLE_SETTINGS_BUCKET, systemId) || {};
-}
-
-function setCrucibleSystemSetting(systemId, key, value) {
-  if (!dataManager || !systemId) return;
-  const next = { ...getCrucibleSystemSettings(systemId), [key]: value };
-  if (!next.combatScalingField && !next.creatureTypeField && !next.abilityField) {
-    dataManager.removeLocal(CRUCIBLE_SETTINGS_BUCKET, systemId);
-  } else {
-    dataManager.saveLocal(CRUCIBLE_SETTINGS_BUCKET, systemId, next);
-  }
-}
-
-function getCombatScalingFieldPreference(systemId) {
-  return getCrucibleSystemSettings(systemId).combatScalingField || "";
-}
-
-function setCombatScalingFieldPreference(systemId, fieldKey) {
-  setCrucibleSystemSetting(systemId, "combatScalingField", fieldKey || "");
-}
-
-// Different Systems use different nomenclature for this concept, so which
-// array field supplies it is configurable exactly like combatScalingField
-// above, defaulting to "creatureTypes" when unset.
-function getCreatureTypeFieldPreference(systemId) {
-  return getCrucibleSystemSettings(systemId).creatureTypeField || "";
-}
-
-function setCreatureTypeFieldPreference(systemId, fieldKey) {
-  setCrucibleSystemSetting(systemId, "creatureTypeField", fieldKey || "");
-}
-
-// Which object field is this System's ability/stat block — same per-System
-// preference shape as combatScalingField/creatureTypeField, feeding
-// loadAbilityFieldDefs' preferredKey instead of assuming a field literally
-// named "abilities". Empty falls through to its own shape-based guess, not
-// a fixed default — unlike the other two, there's no one "usual" key name.
-function getAbilityFieldPreference(systemId) {
-  return getCrucibleSystemSettings(systemId).abilityField || "";
-}
-
-function setAbilityFieldPreference(systemId, fieldKey) {
-  setCrucibleSystemSetting(systemId, "abilityField", fieldKey || "");
-}
-
-// combatScalingField/creatureTypeField share the same candidate list, but
-// each has its own guessed key — `guessedKey`/`rawPreference` parameterize
-// which. A real "None" option lets a GM explicitly force "no field" for a
-// System with neither concept, distinguishing that from "never configured".
-// The guessed field IS the selected value until the GM picks something
-// else, labeled "(auto-detected)" rather than a separate placeholder.
-function fieldPreferenceOptions(guessedKey, rawPreference) {
-  return [
-    { value: "", label: "None" },
-    ...arrayFieldOptions.map((field) => ({
-      value: field.key,
-      label:
-        field.key === guessedKey && !rawPreference
-          ? `${field.label || field.key} (auto-detected)`
-          : field.label || field.key,
-    })),
-  ];
-}
-
 async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
   // Disabled, not just blank — a real System is required before anything
@@ -595,32 +511,20 @@ function populateLockedFeaturesSelect() {
 
 async function reloadReferenceData() {
   const systemId = currentSystemId();
-  const combatScalingField = getCombatScalingFieldPreference(systemId);
-  const creatureTypeField = getCreatureTypeFieldPreference(systemId);
   let fetchedFeatures;
-  let objectFieldResult;
-  let arrayFieldResult;
   let systemFields;
-  [creatureTypes, archetypes, roles, fetchedFeatures, combatScalingLevels, arrayFieldResult, objectFieldResult, abilityFieldDefs, systemFields] =
-    await Promise.all([
-      listCreatureTypesForSystem(dataManager, systemId, creatureTypeField || undefined),
-      listArchetypesForSystem(dataManager, systemId),
-      listRolesForSystem(dataManager, systemId),
-      listFeaturesForSystem(dataManager, systemId),
-      loadCombatScalingLevels(dataManager, systemId, combatScalingField || undefined),
-      listArrayFieldOptions(dataManager, systemId),
-      listObjectFieldOptions(dataManager, systemId),
-      loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId)),
-      loadSystemFields(dataManager, systemId),
-    ]);
-  objectFieldOptions = objectFieldResult.options;
-  abilityFieldGuess = objectFieldResult.guessedKey;
-  abilityFieldKey = getAbilityFieldPreference(systemId) || abilityFieldGuess || "abilities";
+  [creatureTypes, archetypes, roles, fetchedFeatures, combatScalingLevels, abilityFieldDefs, systemFields] = await Promise.all([
+    listCreatureTypesForSystem(dataManager, systemId),
+    listArchetypesForSystem(dataManager, systemId),
+    listRolesForSystem(dataManager, systemId),
+    listFeaturesForSystem(dataManager, systemId),
+    loadCombatScalingLevels(dataManager, systemId),
+    loadAbilityFieldDefs(dataManager, systemId),
+    loadSystemFields(dataManager, systemId),
+  ]);
+  abilityFieldKey = resolveFieldRole({ fields: systemFields }, "abilityScores")?.sourceField || "abilities";
   combatBindings = deriveCombatBindings(systemFields);
   derivedFormulas = (systemFields || []).find((entry) => entry?.key === "derivedFormulas")?.values || [];
-  arrayFieldOptions = arrayFieldResult.options;
-  combatScalingFieldGuess = arrayFieldResult.guessedCombatScalingKey;
-  creatureTypeFieldGuess = arrayFieldResult.guessedCreatureTypeKey;
   // The shared `feature` kind also holds Sanctum's location features and
   // Vault's spell/item features — filtered here, once, so every consumer of
   // the module-level `features` array only ever sees Crucible's own.
@@ -2154,7 +2058,6 @@ async function handleGenerate() {
     });
     const { stats } = await deriveStats({
       systemId,
-      combatScalingField: getCombatScalingFieldPreference(systemId),
       combatScalingId: elements.combatScalingOverride?.value || "",
       role: findById(roles, generated.roleId),
       creatureType: findById(creatureTypes, generated.type),
@@ -2430,7 +2333,6 @@ async function init() {
   const shell = initAppShell({
     namespace: "crucible",
     storagePrefix: "undercroft.crucible.undo",
-    settingsSlotAttr: "data-crucible-settings-slot",
     onUndo: (entry) => {
       if (!entry) return null;
       applyRecordSnapshot(entry.before);
@@ -2517,75 +2419,6 @@ async function init() {
     } catch (error) {
       status?.show(`Unable to load monster: ${error.message}`, { type: "error", timeout: 4000 });
     }
-  });
-
-  // Combat Scaling/Creature Type field pickers, in a gear-icon Settings
-  // modal. Each definition's getValue/setValue defers to the per-System
-  // dataManager.getLocal/saveLocal helpers above rather than this module's
-  // own flat store, since the value is scoped per-System, not per-tool.
-  initToolSettings({
-    toolId: "crucible",
-    dataManager,
-    status,
-    title: "Crucible Settings",
-    definitions: () => {
-      const systemId = currentSystemId();
-      return [
-        {
-          key: "combatScalingField",
-          type: "select",
-          label: "Combat scaling field",
-          helpTopic: "crucible.combatScalingField",
-          options: fieldPreferenceOptions(combatScalingFieldGuess, getCombatScalingFieldPreference(systemId)),
-          getValue: () => getCombatScalingFieldPreference(systemId) || combatScalingFieldGuess,
-          setValue: (value) => {
-            setCombatScalingFieldPreference(systemId, value);
-            reloadReferenceData();
-          },
-        },
-        {
-          key: "creatureTypeField",
-          type: "select",
-          label: "Creature type field",
-          helpTopic: "crucible.creatureTypeField",
-          options: fieldPreferenceOptions(creatureTypeFieldGuess, getCreatureTypeFieldPreference(systemId)),
-          getValue: () => getCreatureTypeFieldPreference(systemId) || creatureTypeFieldGuess,
-          setValue: (value) => {
-            setCreatureTypeFieldPreference(systemId, value);
-            reloadReferenceData();
-          },
-        },
-        {
-          key: "abilityField",
-          type: "select",
-          label: "Ability field",
-          helpTopic: "crucible.abilityField",
-          // No separate "Auto-detect" option — the guessed field (whichever
-          // Object property guessAbilityFieldKey picked) IS the selected
-          // value until the GM actually picks a different one, with " (auto-
-          // detected)" on its own option label as the only indicator. Once a
-          // real preference is stored (even re-picking the same field
-          // explicitly), that suffix drops — see getValue below.
-          options: objectFieldOptions.map((field) => ({
-            value: field.key,
-            label:
-              field.key === abilityFieldGuess && !getAbilityFieldPreference(systemId)
-                ? `${field.label || field.key} (auto-detected)`
-                : field.label || field.key,
-          })),
-          getValue: () => getAbilityFieldPreference(systemId) || abilityFieldGuess,
-          setValue: (value) => {
-            setAbilityFieldPreference(systemId, value);
-            reloadReferenceData();
-          },
-        },
-      ];
-    },
-    // Queried live (not via `elements`) because the header — and this
-    // mount point inside it — is now built by initAppShell() itself, which
-    // runs after `elements` above is already constructed; an eager query
-    // here would have captured null.
-    mountButton: (button) => document.querySelector("[data-crucible-settings-slot]")?.appendChild(button),
   });
 
   // Name/Notes aren't written back into currentRecord until Save/Export

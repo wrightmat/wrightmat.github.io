@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-tough-hero-electricity-resistance",
+  "name": "Electricity Resistance",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Tough hero ignores an amount of electricity damage equal to his or her Constitution modifier.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Tough hero ignores an amount of electricity damage equal to his or her Constitution modifier."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

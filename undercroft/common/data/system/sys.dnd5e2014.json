@@ -1160,31 +1160,38 @@
       "values": [
         {
           "role": "diceAverage",
-          "formula": "floor(@count*(@sides+1)/2)+@modifier"
+          "formula": "floor(@count*(@sides+1)/2)+@modifier",
+          "name": "diceAverage"
         },
         {
           "role": "abilityModifier",
-          "formula": "floor((@score-10)/2)"
+          "formula": "floor((@score-10)/2)",
+          "name": "abilityModifier"
         },
         {
           "role": "hitPointsPerLevelAverage",
-          "formula": "floor(@sides/2)+1"
+          "formula": "floor(@sides/2)+1",
+          "name": "hitPointsPerLevelAverage"
         },
         {
           "role": "proficiencyBonusForLevel",
-          "formula": "2+floor((@level-1)/4)"
+          "formula": "2+floor((@level-1)/4)",
+          "name": "proficiencyBonusForLevel"
         },
         {
           "role": "attackBonus",
-          "formula": "@abilityModifier+@proficiencyBonus"
+          "formula": "@abilityModifier+@proficiencyBonus",
+          "name": "attackBonus"
         },
         {
           "role": "saveDC",
-          "formula": "8+@abilityModifier+@proficiencyBonus"
+          "formula": "8+@abilityModifier+@proficiencyBonus",
+          "name": "saveDC"
         },
         {
           "role": "averageDamage",
-          "formula": "floor(@count*(@sides+1)/2)+@modifier+@abilityModifier"
+          "formula": "floor(@count*(@sides+1)/2)+@modifier+@abilityModifier",
+          "name": "averageDamage"
         }
       ]
     },
@@ -1195,28 +1202,27 @@
       "values": [
         {
           "step": "species",
-          "label": "Species",
-          "kind": "species"
+          "kind": "species",
+          "name": "Species"
         },
         {
           "step": "class",
-          "label": "Class",
-          "kind": "class"
+          "kind": "class",
+          "name": "Class"
         },
         {
           "step": "subclass",
-          "label": "Subclass",
           "kind": "variant",
-          "parentKind": "class"
+          "parentKind": "class",
+          "name": "Subclass"
         },
         {
           "step": "background",
-          "label": "Background",
-          "kind": "background"
+          "kind": "background",
+          "name": "Background"
         },
         {
           "step": "abilities",
-          "label": "Abilities",
           "methods": [
             {
               "name": "array",
@@ -1269,19 +1275,20 @@
               "count": 6,
               "label": "4d6, drop lowest"
             }
-          ]
+          ],
+          "name": "Abilities"
         },
         {
           "step": "details",
-          "label": "Details"
+          "name": "Details"
         },
         {
           "step": "review",
-          "label": "Review"
+          "name": "Review"
         },
         {
           "step": "choices",
-          "label": "Finish Choices"
+          "name": "Finish Choices"
         }
       ]
     },
@@ -1676,6 +1683,34 @@
           "level": 20,
           "slots": 4,
           "slotLevel": 5
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "casterTypes",
+      "label": "Caster Types",
+      "values": [
+        {
+          "id": "full",
+          "divisor": 1,
+          "name": "full"
+        },
+        {
+          "id": "half",
+          "divisor": 2,
+          "name": "half"
+        },
+        {
+          "id": "third",
+          "divisor": 3,
+          "name": "third"
+        },
+        {
+          "id": "pact",
+          "ownProgression": "pactMagicProgression",
+          "name": "Pact Magic",
+          "reset": "Short Rest"
         }
       ]
     },
@@ -4840,6 +4875,79 @@
               "perMiles": 15
             }
           }
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "combatBindings",
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings"
+        },
+        {
+          "role": "abilityScores",
+          "targetPath": "@stats.abilities",
+          "name": "abilities → abilityScores",
+          "sourceField": "abilities"
+        },
+        {
+          "role": "savingThrows",
+          "name": "saves → savingThrows",
+          "sourceField": "saves"
+        },
+        {
+          "role": "creatureType",
+          "name": "creatureTypes → creatureType",
+          "sourceField": "creatureTypes"
+        },
+        {
+          "role": "combatScaling",
+          "name": "challengeRating → combatScaling",
+          "sourceField": "challengeRating"
+        },
+        {
+          "role": "archetypeTable",
+          "name": "npcTypes → archetypeTable",
+          "sourceField": "npcTypes"
+        },
+        {
+          "role": "npcAttitude",
+          "name": "npcAttitudes → npcAttitude",
+          "sourceField": "npcAttitudes"
+        },
+        {
+          "role": "environment",
+          "name": "environment → environment",
+          "sourceField": "environment"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "rarity → generatorProperty",
+          "sourceField": "rarity"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "activation → generatorProperty",
+          "sourceField": "activation"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "form → generatorProperty",
+          "sourceField": "form"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "spellLevels → generatorProperty",
+          "sourceField": "spellLevels"
+        },
+        {
+          "role": "budgetCeiling",
+          "name": "rarity → budgetCeiling",
+          "sourceField": "rarity"
         }
       ]
     }

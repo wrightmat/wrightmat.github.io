@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-scientific-improvisation",
+  "name": "Scientific Improvisation",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "By spending 1 action point and a full-round action, the Field Scientist combines common objects with a Craft check (DC 5 + the purchase DC of the closest matching object) to build a tool or device that functions for a number of rounds equal to his class level, or until the encounter ends, before breaking down.",
+  "mechanics": {
+    "type": "passive",
+    "text": "By spending 1 action point and a full-round action, the Field Scientist combines common objects with a Craft check (DC 5 + the purchase DC of the closest matching object) to build a tool or device that functions for a number of rounds equal to his class level, or until the encounter ends, before breaking down."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

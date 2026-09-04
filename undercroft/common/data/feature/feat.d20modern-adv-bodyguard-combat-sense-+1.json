@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-combat-sense-+1",
+  "name": "Combat Sense +1",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Bodyguard designates a single opponent during his action and gains a +1 competence bonus on attacks against that opponent; he can change targets on any action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Bodyguard designates a single opponent during his action and gains a +1 competence bonus on attacks against that opponent; he can change targets on any action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-improved-reaction",
+  "name": "Improved Reaction (Soldier)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Soldier gains a +2 competence bonus on initiative checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Soldier gains a +2 competence bonus on initiative checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

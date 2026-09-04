@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-surgery",
+  "name": "Surgery",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisite: Treat Injury 4 ranks.\nBenefit: The character can use the Treat Injury skill to perform surgery without penalty.  See the Treat Injury skill description.\nNormal: Characters without this feat take a –4 penalty on Treat Injury checks made to perform surgery.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisite: Treat Injury 4 ranks.\nBenefit: The character can use the Treat Injury skill to perform surgery without penalty.  See the Treat Injury skill description.\nNormal: Characters without this feat take a –4 penalty on Treat Injury checks made to perform surgery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

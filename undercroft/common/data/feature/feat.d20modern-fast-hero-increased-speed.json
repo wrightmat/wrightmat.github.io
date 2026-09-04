@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-fast-hero-increased-speed",
+  "name": "Increased Speed",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Fast hero’s base speed increases by 5 feet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Fast hero’s base speed increases by 5 feet."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

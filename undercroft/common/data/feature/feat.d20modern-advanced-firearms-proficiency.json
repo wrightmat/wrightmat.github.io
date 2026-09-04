@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-advanced-firearms-proficiency",
+  "name": "Advanced Firearms Proficiency",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisite: Personal Firearms Proficiency.\nBenefit: The character can fire any personal firearm on autofire without penalty (provided, of course, that it has an autofire setting).\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms set on autofire.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisite: Personal Firearms Proficiency.\nBenefit: The character can fire any personal firearm on autofire without penalty (provided, of course, that it has an autofire setting).\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms set on autofire."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

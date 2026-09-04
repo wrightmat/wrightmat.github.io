@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-combat-throw",
+  "name": "Combat Throw",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisite: Defensive Martial Arts.\nBenefit: The character gains a +2 bonus on opposed Strength and Dexterity checks any time the character attempts trip or grapple attacks, or when the character trys to avoid a trip or grapple attack made against him or her.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisite: Defensive Martial Arts.\nBenefit: The character gains a +2 bonus on opposed Strength and Dexterity checks any time the character attempts trip or grapple attacks, or when the character trys to avoid a trip or grapple attack made against him or her."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

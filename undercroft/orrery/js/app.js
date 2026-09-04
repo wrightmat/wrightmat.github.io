@@ -5081,8 +5081,9 @@ function ensureSystemResourceBarConfigCached(systemId, onLoaded) {
 }
 
 // Which named `resource`-role binding the Marker Resource Bar represents
-// for a given System — per-System, per-browser, same storage shape
-// Crucible's combatScalingField/creatureTypeField preferences use.
+// for a given System — a genuinely Orrery-local display preference (which
+// of a System's several resource-role combatBindings gets its own bar),
+// not a "which field" question fieldRoles resolves.
 const ORRERY_SETTINGS_BUCKET = "orrery-settings";
 function getOrrerySystemSettings(systemId) {
   if (!dataManager || !systemId) return {};

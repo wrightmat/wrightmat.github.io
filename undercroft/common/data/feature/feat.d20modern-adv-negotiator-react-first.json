@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-negotiator-react-first",
+  "name": "React First",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Having made contact with all parties before combat starts, the Negotiator gains a free readied move or attack action if hostilities break out, acting before initiative is rolled.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Having made contact with all parties before combat starts, the Negotiator gains a free readied move or attack action if hostilities break out, acting before initiative is rolled."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

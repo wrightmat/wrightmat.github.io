@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-martial-artist-flying-kick",
+  "name": "Flying Kick",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "At the end of a charge, the Martial Artist adds his class level as a bonus to the damage dealt with an unarmed strike.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the end of a charge, the Martial Artist adds his class level as a bonus to the damage dealt with an unarmed strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

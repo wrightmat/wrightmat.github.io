@@ -1,0 +1,119 @@
+{
+  "bindings": {
+    "fieldRoles": [
+      { "name": "abilityScores", "scope": "once", "description": "Which object field is this System's ability/stat block. Optional `targetPath` (a dotted write path) says where resolved scores are written on a Character; absent means top-level." },
+      { "name": "combatBindings", "scope": "once", "description": "Which array field carries this System's live play-state bindings (HP/AC/Initiative/...) — each value tagged with a combatBindings binding (resource/value/tags/modifier)." },
+      { "name": "combatScaling", "scope": "once", "description": "Which array field is this System's Combat Scaling / Challenge Rating table (Crucible)." },
+      { "name": "creatureType", "scope": "once", "description": "Which array field is this System's Creature Type vocabulary (Crucible, Loom)." },
+      { "name": "archetypeTable", "scope": "once", "description": "Which array field is this System's NPC Archetype roll table (Forge)." },
+      { "name": "npcAttitude", "scope": "once", "description": "Which array field is this System's NPC Attitude level table (Forge)." },
+      { "name": "generatorProperty", "scope": "unlimited", "description": "An array field whose values carry a `cost` — one of Vault's generator-property tables (Rarity, Activation, ...). A System declares one entry per property-bearing field." },
+      { "name": "budgetCeiling", "scope": "once", "description": "Which one generatorProperty field's chosen value sets Vault's overall budget ceiling." },
+      { "name": "environment", "scope": "once", "description": "Which array field is this System's Environment/biome vocabulary (Sanctum)." },
+      { "name": "savingThrows", "scope": "once", "description": "Which array field is this System's saving-throws display list (Workbench's Build Wizard)." }
+    ],
+    "combatBindings": [
+      { "name": "resource", "scope": "unlimited", "description": "A value with a current amount and (optionally) a max/temp — renders as number inputs for each, read/write via recordField/maxPath/tempPath. E.g. Hit Points, Daggerheart's Hope/Stress." },
+      { "name": "value", "scope": "unlimited", "description": "A single flat number — renders as one number input, read/write via recordField. E.g. Armor Class." },
+      { "name": "tags", "scope": "unlimited", "description": "A list of string tags — renders as a tag-badge/tag-input widget, read/write via recordField (as an array); optional sourceField names which other field supplies the tag vocabulary. E.g. Conditions." },
+      { "name": "modifier", "scope": "unlimited", "description": "A read-only number feeding a Roll button — read via recordField, never written. E.g. Initiative." }
+    ],
+    "derivedFormulas": [
+      { "name": "abilityModifier", "scope": "once", "description": "Given an ability score, the modifier applied to rolls using it." },
+      { "name": "hitPointsPerLevelAverage", "scope": "once", "description": "Average HP gained per level from a hit-die-shaped resource, used for level-up growth." },
+      { "name": "proficiencyBonusForLevel", "scope": "once", "description": "The proficiency bonus for a given total character level." },
+      { "name": "diceAverage", "scope": "once", "description": "The average result of a parsed dice expression." },
+      { "name": "attackBonus", "scope": "once", "description": "An attack roll's total bonus from ability modifier + proficiency bonus." },
+      { "name": "saveDC", "scope": "once", "description": "A save DC derived from ability modifier + proficiency bonus." },
+      { "name": "averageDamage", "scope": "once", "description": "The average damage of a parsed dice expression plus an ability modifier." },
+      { "name": "moveRate", "scope": "once", "description": "A derived movement rate from an ability score (e.g. Call of Cthulhu's Move)." },
+      { "name": "hitPoints", "scope": "once", "description": "A resource-pool's own max-value formula, read generically alongside magicPoints/sanityStart for any System with a matching resource." },
+      { "name": "magicPoints", "scope": "once", "description": "Call of Cthulhu's Magic Points pool max-value formula." },
+      { "name": "sanityStart", "scope": "once", "description": "Call of Cthulhu's starting Sanity formula." }
+    ],
+    "levelUpBindings": [
+      { "name": "resourceGrowth", "scope": "perKind", "description": "Per-level growth of a hit-die-shaped resource, sourced from the named Library kind's own record." },
+      { "name": "featureLevels", "scope": "perKind", "description": "Which levels grant new class/subclass features, per the named Library kind." },
+      { "name": "equipmentChoices", "scope": "perKind", "description": "Starting-equipment choice options declared on the named Library kind's own record." },
+      { "name": "proficiencyChoices", "scope": "perKind", "description": "Proficiency choice options declared on the named Library kind's own record." },
+      { "name": "proficiencyGrants", "scope": "perKind", "description": "Fixed (non-chosen) proficiency grants declared on the named Library kind's own record." },
+      { "name": "savingThrowGrants", "scope": "perKind", "description": "Which saving throws a class/kind grants proficiency in." },
+      { "name": "classProgressionTable", "scope": "perKind", "description": "A per-level table of named columns (BAB, Fort/Ref/Will, ...) declared on the named Library kind's own record." }
+    ]
+  },
+  "keys": [
+    {
+      "key": "fieldRoles",
+      "type": "array",
+      "description": "The single explicit, Loom-authored mapping of \"which field plays this role\" — see bindings.fieldRoles above for the closed set. Each value is {sourceField, role, ...role-specific extras} — sourceField names a sibling field on this System (dot-nestable), the same concept combatBindings' own tags binding sourceField already uses.",
+      "valueRequires": ["sourceField", "role"]
+    },
+    {
+      "key": "buildSteps",
+      "type": "array",
+      "perTemplateMapType": "object",
+      "description": "Workbench's Build Character wizard — the entire step sequence for this System, in array order. Each value is {step, name, ...step-specific data} — name is the step's own display text, the same Name every other reserved-key value uses to identify itself, not a separate label. A System with more than one creatable Template sharing it (Blades in the Dark: Character AND Crew) may instead declare this as type \"object\", keyed by Template id, each value an ordinary buildSteps array.",
+      "valueRequires": ["step", "name"]
+    },
+    {
+      "key": "levelUpBindings",
+      "type": "array",
+      "description": "Role-dispatch bindings the level-up engine reads generically — see bindings.levelUpBindings above for the closed set, each scoped per `kind` (a role may exist once for \"class\" and once for \"background\"). Each value is {role, kind, libraryField, ...}.",
+      "valueRequires": ["role", "kind"]
+    },
+    {
+      "key": "derivedFormulas",
+      "type": "array",
+      "description": "Named `=formula` expressions (ability modifiers, proficiency bonus, damage averages, ...) evaluated generically via derived-formulas.js — see bindings.derivedFormulas above for the closed set. Each value is {role, formula}.",
+      "valueRequires": ["role", "formula"]
+    },
+    {
+      "key": "casterTypes",
+      "type": "array",
+      "description": "Which caster-type strings (a class/subclass's own `caster_type`) mean what — a `divisor` entry accumulates into spellSlotProgression's caster-level total; an `ownProgression` entry accumulates into its own named progression table instead. Each value is {id, divisor?, ownProgression?, name?, reset?}.",
+      "valueRequires": ["id"],
+      "valueRequiresOneOf": ["divisor", "ownProgression"]
+    },
+    {
+      "key": "dice",
+      "type": "array",
+      "description": "This System's own named dice (d4, d20, ...) for the dice-roller widget. Each value is {name, sides}.",
+      "valueRequires": ["sides"]
+    },
+    {
+      "key": "rolls",
+      "type": "array",
+      "description": "Named Rolls/Moves (a fixed dice expression with result bands) for the dice-roller widget. Each value is {name, expression}.",
+      "valueRequires": ["expression"]
+    },
+    {
+      "key": "decks",
+      "type": "array",
+      "description": "Named card decks for the deck-of-cards widget. Each value is {name, cards: [...]}.",
+      "valueRequires": ["cards"]
+    },
+    {
+      "key": "currency",
+      "type": "array",
+      "description": "This System's own coin/currency denominations, each with a conversion-rate `cost` (and optionally `weight` for the Inventory Weight calculator). Each value is {name, cost}.",
+      "valueRequires": ["cost"]
+    },
+    {
+      "key": "inventory",
+      "type": "array",
+      "description": "This System's own starting-inventory vocabulary. No fixed per-value shape."
+    },
+    {
+      "key": "travelMeans",
+      "type": "array",
+      "description": "Named travel speeds (On Foot, Mounted, ...) for overland-travel calculations. Each value is {name, speedMph}.",
+      "valueRequires": ["speedMph"]
+    },
+    {
+      "key": "levels",
+      "type": "array",
+      "description": "Dashboard's character-level XP-threshold/encounter-difficulty table. Each value is {level, xpToLevel, easy, medium, hard, deadly}.",
+      "valueRequires": ["level"]
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "index": "strong-hero",
+  "name": "Strong Hero",
+  "form": "basic",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Trained in athletic endeavors and raw physical power — excels at melee combat and feats of Strength.",
+  "keyAbility": "strength",
+  "hitDie": 8,
+  "actionPointsFormula": "5 + floor(@level/2)",
+  "classSkills": [
+    "climb",
+    "craft",
+    "handleanimal",
+    "jump",
+    "knowledge",
+    "profession",
+    "readwritelanguage",
+    "repair",
+    "speaklanguage",
+    "swim"
+  ],
+  "skillPointsBase": 3,
+  "features": [
+    {
+      "name": "Simple Weapons Proficiency",
+      "level": 1
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-simple-weapons-proficiency"
+  ],
+  "talents": [
+    {
+      "name": "Extreme Effort",
+      "description": "A Strong hero can push him or herself to make an extreme effort. The effort must relate either to a Strength check or a Strength-based skill check. You must decide to use this ability before making the check.\nThe effort requires a full-round action and provides a +2 bonus on the check."
+    },
+    {
+      "name": "Ignore Hardness",
+      "description": "The Strong hero has an innate talent for finding weaknesses in objects. This allows a Strong hero to ignore some of an object’s hardness when making a melee attack to break it.\nThe Strong hero ignores 2 points of an object’s hardness."
+    },
+    {
+      "name": "Melee Smash",
+      "description": "The Strong hero has an innate talent that increases melee damage.\nThe Strong hero receives a +1 bonus on melee damage."
+    }
+  ],
+  "talentIds": [
+    "feat.d20modern-strong-hero-extreme-effort",
+    "feat.d20modern-strong-hero-ignore-hardness",
+    "feat.d20modern-strong-hero-melee-smash"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Animal Affinity",
+      "description": "Benefit: The character gets a +2 bonus on all Handle Animal checks and Ride checks. \nSpecial: Remember that the Handle Animal skill can’t be used untrained."
+    },
+    {
+      "name": "Archaic Weapons Proficiency",
+      "description": "Benefit: The character takes no penalty on attack rolls when using any kind of archaic weapon.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with archaic weapons."
+    },
+    {
+      "name": "Athletic",
+      "description": "Benefit: The character gets a +2 bonus on all Climb checks and Swim checks."
+    },
+    {
+      "name": "Blind-Fight",
+      "description": "Benefit: In melee combat, every time the character misses because of concealment, the character can reroll the miss chance roll one time to see if the character actually hits.\nThe character takes only half the usual penalty to speed for being unable to see. Darkness and poor visibility in general reduces the character’s speed to three-quarters of normal, instead of one-half."
+    },
+    {
+      "name": "Brawl",
+      "description": "Benefit: When making an unarmed attack, the character receives a +1 competence bonus on attack rolls, and the character deals nonlethal damage equal to 1d6 + his or her Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier."
+    },
+    {
+      "name": "Cleave",
+      "description": "Prerequisites: Strength 13, Power Attack.\nBenefit: If the character deals an opponent enough damage to make the opponent drop (either by knocking the opponent out due to massive damage or by reducing the opponent’s hit points to less than 0), the character gets an immediate extra melee attack against another opponent adjacent to the character. The character can’t take a 5-foot step before making this extra attack. The extra attack is with the same weapon and at the same bonus as the attack that dropped the previous opponent. The character can use this ability once per round."
+    },
+    {
+      "name": "Combat Martial Arts",
+      "description": "Prerequisite: Base attack bonus +1.\nBenefit: With an unarmed strike, the character deals lethal or nonlethal damage (the character’s choice) equal to 1d4 + the character’s Strength modifier. The character’s unarmed attacks count as armed, which means that opponents do not get attacks of opportunity when the character attacks them unarmed. The character may make attacks of opportunity against opponents who provoke such attacks.\nNormal: Without this feat, a character deals only 1d3 points of nonlethal damage. Unarmed attacks normally provoke attacks of opportunity, and unarmed combatants cannot normally make attacks of opportunity."
+    },
+    {
+      "name": "Combat Reflexes",
+      "description": "Benefit: The maximum number of attacks of opportunity the character may make each round is equal to the character’s Dexterity modifier + 1.  The character can still only make one attack of opportunity on a single opponent.\nWith this feat, the character may also make attacks of opportunity when flat-footed.\nNormal: A character without the Combat Reflexes feat can make only one attack of opportunity per round and can’t make attacks of opportunity when flat-footed.\nSpecial: The Combat Reflexes feat doesn’t allow a Fast hero with the opportunist talent to use that talent more than once per round."
+    },
+    {
+      "name": "Great Cleave",
+      "description": "Prerequisites: Strength 13, Power Attack, Cleave, base attack bonus +4.\nBenefit: As Cleave, except that the character has no limit to the number of times he or she can use it per round."
+    },
+    {
+      "name": "Improved Brawl",
+      "description": "Prerequisites: Brawl, base attack bonus +3.\nBenefit: When making an unarmed attack, the character receives a +2 competence bonus on his or her attack roll, and the character deals nonlethal damage equal to 1d8 + the character’s Strength modifier.\nNormal: Unarmed attacks normally deal nonlethal damage equal to 1d3 + Strength modifier."
+    },
+    {
+      "name": "Improved Combat Martial Arts",
+      "description": "Prerequisites: Combat Martial Arts, base attack bonus +4.\nBenefit: The character’s threat range on an unarmed strike improves to 19–20.\nNormal: A character without this feat threatens a critical hit with an unarmed strike only on a 20."
+    },
+    {
+      "name": "Power Attack",
+      "description": "Prerequisite: Strength 13.\nBenefit: On the character’s action, before making attack rolls for a round, the character may choose to subtract a number from all melee attack rolls and add the same number to all melee damage rolls. This number may not exceed the character’s base attack bonus. The penalty on attacks and bonus on damage applies until the character’s next action."
+    },
+    {
+      "name": "Weapon Focus",
+      "description": "Choose a specific weapon. A character can choose unarmed strike or grapple for your weapon for purposes of this feat.\nPrerequisites: Proficient with weapon, base attack bonus +1.\nBenefit: The character gains a +1 bonus on all attack rolls he or she makes using the selected weapon.\nSpecial: A character can gain this feat multiple times. Each time the character takes the feat, the character must select a different weapon."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-animal-affinity",
+    "feat.d20modern-archaic-weapons-proficiency",
+    "feat.d20modern-athletic",
+    "feat.d20modern-blind-fight",
+    "feat.d20modern-brawl",
+    "feat.d20modern-cleave",
+    "feat.d20modern-combat-martial-arts",
+    "feat.d20modern-combat-reflexes",
+    "feat.d20modern-great-cleave",
+    "feat.d20modern-improved-brawl",
+    "feat.d20modern-improved-combat-martial-arts",
+    "feat.d20modern-power-attack",
+    "feat.d20modern-weapon-focus"
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 1,
+      "fort": 1,
+      "ref": 0,
+      "will": 0,
+      "defenseBonus": 1,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 2,
+      "fort": 2,
+      "ref": 0,
+      "will": 0,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 3,
+      "fort": 2,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 2,
+      "reputationBonus": 0
+    },
+    {
+      "level": 4,
+      "bab": 4,
+      "fort": 2,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 0
+    },
+    {
+      "level": 5,
+      "bab": 5,
+      "fort": 3,
+      "ref": 1,
+      "will": 1,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 6,
+      "fort": 3,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 3,
+      "reputationBonus": 1
+    },
+    {
+      "level": 7,
+      "bab": 7,
+      "fort": 4,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 8,
+      "bab": 8,
+      "fort": 4,
+      "ref": 2,
+      "will": 2,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 9,
+      "bab": 9,
+      "fort": 4,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 2
+    },
+    {
+      "level": 10,
+      "bab": 10,
+      "fort": 5,
+      "ref": 3,
+      "will": 3,
+      "defenseBonus": 5,
+      "reputationBonus": 2
+    }
+  ]
+}

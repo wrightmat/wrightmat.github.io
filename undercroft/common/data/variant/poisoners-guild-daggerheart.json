@@ -15,26 +15,32 @@
   "features": [
     {
       "name": "Foundation: Toxic Concoctions",
+      "tier": 1,
       "description": "Mark a Stress to add 1d4+1 tokens to this card. On your next long rest, clear this card. You know these poisons:\n\n- Gorgon Root: The target gains a permanent -1 penalty to their Difficulty. This can only affect them once.\n- Grave Spore: The target must also mark a Stress.\n- Leech Weed: Gain a +1d6 damage bonus on this attack."
     },
     {
       "name": "Foundation: Envenomate",
+      "tier": 1,
       "description": "When you make a successful weapon attack, you can spend a token from this card to afflict the target with a known poison's effect."
     },
     {
       "name": "Specialization: Poison Compendium",
+      "tier": 2,
       "description": "You also know these poisons:\n\n- Midnight's Veil: The target gains a permanent -2 penalty to attack rolls. This can only affect them once.\n- Ghost Petal: Permanently decrease the damage dice of the target's standard attack by one step (d10 to d8, d8 to d6, etc.). This can only affect them once."
     },
     {
       "name": "Specialization: Adder's Blessing",
+      "tier": 2,
       "description": "You are immune to poisons and other toxins."
     },
     {
       "name": "Mastery: Venomancer",
+      "tier": 3,
       "description": "You also know these poisons:\n\n- Blight Seed: The target gains a permanent -3 penalty to their damage thresholds. This can only affect them once.\n- Fear Leaf: This attack gains a damage bonus equal to the result of your Fear Die."
     },
     {
       "name": "Mastery: Twin Fang",
+      "tier": 3,
       "description": "When you afflict a target with a known poison's effect, you can spend an additional token to inflict the effect of a second known poison."
     }
   ],

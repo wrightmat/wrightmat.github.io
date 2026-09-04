@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-medic-expert-healer",
+  "name": "Expert Healer",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Medic restores an additional 1 hit point per class level whenever he heals with a medical kit or surgery kit, on top of the normal recovery rate.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Medic restores an additional 1 hit point per class level whenever he heals with a medical kit or surgery kit, on top of the normal recovery rate."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

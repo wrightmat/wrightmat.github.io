@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-techie-build-robot",
+  "name": "Build Robot",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Techie can build a remote-controlled Tiny or Diminutive robot programmed with one skill (Computer Use, Demolitions, Disable Device, Listen, Repair, or Spot) he has ranks in, built through a Wealth check, a Craft (mechanical) check for the frame, a Craft (electronic) check for the electronics, and a Computer Use check to program it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Techie can build a remote-controlled Tiny or Diminutive robot programmed with one skill (Computer Use, Demolitions, Disable Device, Listen, Repair, or Spot) he has ranks in, built through a Wealth check, a Craft (mechanical) check for the frame, a Craft (electronic) check for the electronics, and a Computer Use check to program it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

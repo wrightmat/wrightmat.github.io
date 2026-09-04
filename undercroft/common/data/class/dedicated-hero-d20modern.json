@@ -1,0 +1,220 @@
+{
+  "index": "dedicated-hero",
+  "name": "Dedicated Hero",
+  "form": "basic",
+  "description": "A devotion to a cause, an ideal, or a higher purpose — investigative, empathic, healing, and spiritual talents.",
+  "keyAbility": "wisdom",
+  "hitDie": 6,
+  "classSkills": [
+    "craft",
+    "gamble",
+    "investigate",
+    "knowledge",
+    "listen",
+    "profession",
+    "readwritelanguage",
+    "sensemotive",
+    "speaklanguage",
+    "spot",
+    "survival",
+    "treatinjury"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Simple Weapons Proficiency",
+      "level": 1
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-simple-weapons-proficiency"
+  ],
+  "talents": [
+    {
+      "name": "Empathy",
+      "description": "The Dedicated hero has a knack for being sensitive to the feelings and thoughts of others without having those feelings and thoughts communicated in any objectively explicit manner. This innate talent provides a bonus on checks involving interaction skills (Bluff, Diplomacy, Handle Animal, Intimidate, Perform, and Sense Motive), provided the hero spends at least 1 minute observing his or her target prior to making the skill check. The bonus is equal to the hero’s Dedicated level."
+    },
+    {
+      "name": "Healing Knack",
+      "description": "The hero has a knack for the healing arts. The hero receives a +2 bonus on all Treat Injury skill checks."
+    },
+    {
+      "name": "Skill Emphasis",
+      "description": "The Dedicated hero chooses a single skill and receives a +3 bonus on all checks with that skill. This bonus does not allow the hero to make checks for a trained-only skill if the hero has no ranks in the skill."
+    }
+  ],
+  "talentIds": [
+    "feat.d20modern-dedicated-hero-empathy",
+    "feat.d20modern-dedicated-hero-healing-knack",
+    "feat.d20modern-dedicated-hero-skill-emphasis"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Advanced Firearms Proficiency",
+      "description": "Prerequisite: Personal Firearms Proficiency.\nBenefit: The character can fire any personal firearm on autofire without penalty (provided, of course, that it has an autofire setting).\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms set on autofire."
+    },
+    {
+      "name": "Alertness",
+      "description": "Benefit: The character gets a +2 bonus on all Listen checks and Spot checks."
+    },
+    {
+      "name": "Archaic Weapons Proficiency",
+      "description": "Benefit: The character takes no penalty on attack rolls when using any kind of archaic weapon.\nNormal: A character without this feat takes the –4 nonproficient penalty when making attacks with archaic weapons."
+    },
+    {
+      "name": "Attentive",
+      "description": "Benefit: The character gets a +2 bonus on all Investigate checks and Sense Motive checks. \nSpecial: Remember that the Investigate skill can’t be used untrained."
+    },
+    {
+      "name": "Blind-Fight",
+      "description": "Benefit: In melee combat, every time the character misses because of concealment, the character can reroll the miss chance roll one time to see if the character actually hits.\nThe character takes only half the usual penalty to speed for being unable to see. Darkness and poor visibility in general reduces the character’s speed to three-quarters of normal, instead of one-half."
+    },
+    {
+      "name": "Deceptive",
+      "description": "Benefit: The character gets a +2 bonus on all Bluff checks and Disguise checks."
+    },
+    {
+      "name": "Educated",
+      "description": "Benefit: Pick two Knowledge skills. The character gets a +2 bonus on all checks with those skills.\nSpecial: A character can select this feat as many as seven times. Each time, the character selects two new Knowledge skills."
+    },
+    {
+      "name": "Far Shot",
+      "description": "Benefit: When the character uses a firearm or archaic ranged weapon, its range increment increases by one-half (multiply by 1.5). When the character throws a weapon, its range increment is doubled."
+    },
+    {
+      "name": "Iron Will",
+      "description": "Benefit: The character gets a +2 bonus on all Will saving throws."
+    },
+    {
+      "name": "Medical Expert",
+      "description": "Benefit: The character gets a +2 bonus on all Craft (pharmaceutical) checks and Treat Injury checks.\nSpecial: Remember that the Craft (pharmaceutical) skill can’t be used untrained."
+    },
+    {
+      "name": "Meticulous",
+      "description": "Benefit: The character gets a +2 bonus on all Forgery checks and Search checks."
+    },
+    {
+      "name": "Surgery",
+      "description": "Prerequisite: Treat Injury 4 ranks.\nBenefit: The character can use the Treat Injury skill to perform surgery without penalty.  See the Treat Injury skill description.\nNormal: Characters without this feat take a –4 penalty on Treat Injury checks made to perform surgery."
+    },
+    {
+      "name": "Track",
+      "description": "Benefit: To find tracks or follow them for one mile requires a Survival check. The character must make another Survival check every time the tracks become difficult to follow.\nThe character moves at half his or her normal speed (or at the character’s normal speed with a –5 penalty on the check, or at up to twice the character’s speed with a –20 penalty on the check). The DC depends on the surface and the prevailing conditions.\nSurface|Track DC|\nVery soft|5|\nSoft|10|\nFirm|15|\nHard|20|\nVery Soft: Any surface (fresh snow, thick dust, wet mud) that holds deep, clear impressions of footprints.\nSoft: Any surface soft enough to yield to pressure, but firmer than wet mud or fresh snow, in which the quarry leaves frequent but shallow footprints.\nFirm: Most normal outdoor or exceptionally soft or dirty indoor surfaces. The quarry might leave some traces of its passage, but only occasional or partial footprints can be found.\nHard: Any surface that doesn’t hold footprints at all, such as bare rock, concrete, metal deckings, or indoor floors. The quarry leaves only traces, such as scuff marks.\nIf the character fails a Survival check, he or she can retry after 1 hour (outdoors) or 10 minutes (indoors) of searching.\nNormal: A character without this feat can use the Survival skill to find tracks, but can only follow tracks if the DC is 10 or less. A character can use the Search skill to find individual footprints, but cannot follow tracks using Search.\nCondition|DC Modifier|\nEvery three targets in the group being tracked|–1|\nSize of targets being tracked: 1||\nFine|+8|\nDiminutive|+4|\nTiny|+2|\nSmall|+1|\nMedium-size|+0|\nLarge|–1|\nHuge|–2|\nGargantuan|–4|\nColossal|-8|\nEvery 24 hours since the trail was made|+1|\nEvery hour of rain since the trail was made|+1|\nFresh snow cover since the trail was made|+10|\nPoor visibility: 2||\nOvercast or moonless night|+6|\nMoonlight|+3|\nFog or precipitation|+3|\nTracked target hides trail (and moves at half speed)|+5|\n1 For a group of mixed sizes, apply only the modifier for the largest size category represented.|\n2 Apply only the largest modifier from this category.|"
+    },
+    {
+      "name": "Weapon Focus",
+      "description": "Choose a specific weapon. A character can choose unarmed strike or grapple for your weapon for purposes of this feat.\nPrerequisites: Proficient with weapon, base attack bonus +1.\nBenefit: The character gains a +1 bonus on all attack rolls he or she makes using the selected weapon.\nSpecial: A character can gain this feat multiple times. Each time the character takes the feat, the character must select a different weapon."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-advanced-firearms-proficiency",
+    "feat.d20modern-alertness",
+    "feat.d20modern-archaic-weapons-proficiency",
+    "feat.d20modern-attentive",
+    "feat.d20modern-blind-fight",
+    "feat.d20modern-deceptive",
+    "feat.d20modern-educated",
+    "feat.d20modern-far-shot",
+    "feat.d20modern-iron-will",
+    "feat.d20modern-medical-expert",
+    "feat.d20modern-meticulous",
+    "feat.d20modern-surgery",
+    "feat.d20modern-track",
+    "feat.d20modern-weapon-focus"
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 1,
+      "ref": 0,
+      "will": 1,
+      "defenseBonus": 1,
+      "reputationBonus": 1
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 2,
+      "ref": 0,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 2,
+      "ref": 1,
+      "will": 2,
+      "defenseBonus": 2,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 2,
+      "ref": 1,
+      "will": 2,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 3,
+      "ref": 1,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 3,
+      "ref": 2,
+      "will": 3,
+      "defenseBonus": 3,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 4,
+      "ref": 2,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 3
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 4,
+      "ref": 2,
+      "will": 4,
+      "defenseBonus": 4,
+      "reputationBonus": 3
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 4,
+      "ref": 3,
+      "will": 4,
+      "defenseBonus": 5,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 5,
+      "ref": 3,
+      "will": 5,
+      "defenseBonus": 5,
+      "reputationBonus": 4
+    }
+  ],
+  "systemIds": [
+    "sys.d20modern"
+  ]
+}

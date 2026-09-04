@@ -16,18 +16,22 @@
   "features": [
     {
       "name": "Foundation: Courage",
+      "tier": 1,
       "description": "When you fail a roll with Fear, you gain a Hope."
     },
     {
       "name": "Foundation: Battle Ritual",
+      "tier": 1,
       "description": "Once per long rest, before you attempt something incredibly dangerous or face off against a foe who clearly outmatches you, describe what ritual you perform or preparations you make. When you do, clear 2 Stress and gain 2 Hope."
     },
     {
       "name": "Specialization: Rise to the Challenge",
+      "tier": 2,
       "description": "You are vigilant in the face of mounting danger. While you have 2 or fewer Hit Points unmarked, you can roll a d20 as your Hope Die."
     },
     {
       "name": "Mastery: Camaraderie",
+      "tier": 3,
       "description": "Your unwavering bravery is a rallying point for your allies. You can initiate a Tag Team Roll one additional time per session. Additionally, when an ally initiates a Tag Team Roll with you, they only need to spend 2 Hope to do so."
     }
   ],

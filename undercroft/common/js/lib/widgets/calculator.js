@@ -26,6 +26,7 @@ import {
 } from "../calculator-modes/encounter-xp.js";
 import { computeCharacterTotalWeight, resolveWeightUnitLabel } from "../calculator-modes/inventory-weight.js";
 import { loadRarityPriceRanges, rollItemPrices, PRICE_CHECK_TIERS } from "../item-pricing.js";
+import { resolveFieldRole } from "../field-roles.js";
 // Cross-tool import of Vault's own reference-data loader, guaranteeing the
 // same list Vault itself uses rather than re-fetching it a second way.
 import { listWondersForSystem } from "../../../../vault/js/lib/tables.js";
@@ -862,9 +863,9 @@ export function initCalculatorWidget(
     setElementVisible(tierUnavailableNotice, !hasTiers);
 
     const systemId = groupContext?.systemId || "";
-    // Reuses Crucible's own configured preference rather than a second, separately maintained setting.
-    const combatScalingField = dataManager?.getLocal?.("crucible-settings", systemId)?.combatScalingField || undefined;
-    encounterCombatScalingLevels = systemId ? await loadCombatScalingLevels(dataManager, systemId, combatScalingField) : [];
+    // Which field is Combat Scaling is the System's own fieldRoles
+    // declaration now (see field-roles.js) — same one Crucible resolves.
+    encounterCombatScalingLevels = systemId ? await loadCombatScalingLevels(dataManager, systemId) : [];
     monsterSelect.innerHTML = "";
     encounterCombatScalingLevels.forEach((level) => {
       const option = document.createElement("option");
@@ -1086,9 +1087,10 @@ export function initCalculatorWidget(
 
   async function loadItemPriceOptions() {
     const systemId = groupContext?.systemId || "";
-    // Reuses Vault's own configured Budget ceiling field preference rather than a second, separately maintained setting.
-    const storedField = dataManager?.getLocal?.("vault-settings", systemId)?.budgetCeilingField;
-    itemPriceRarityFieldKey = storedField || "rarity";
+    // Which field is the budget ceiling is the System's own fieldRoles
+    // declaration now (see field-roles.js) — same one Vault resolves.
+    const systemResult = systemId ? await dataManager?.get?.("systems", systemId, { preferLocal: false }).catch(() => null) : null;
+    itemPriceRarityFieldKey = resolveFieldRole(systemResult?.payload, "budgetCeiling")?.sourceField || "rarity";
     itemPriceRanges = systemId ? await loadRarityPriceRanges(dataManager, systemId, itemPriceRarityFieldKey) : [];
 
     itemRaritySelect.innerHTML = "";

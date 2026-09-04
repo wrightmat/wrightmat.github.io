@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-smart-defense",
+  "name": "Smart Defense",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Scientist applies both his Intelligence bonus and his Dexterity bonus to Defense; anything that denies the Dexterity bonus also denies the Intelligence bonus.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Scientist applies both his Intelligence bonus and his Dexterity bonus to Defense; anything that denies the Dexterity bonus also denies the Intelligence bonus."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

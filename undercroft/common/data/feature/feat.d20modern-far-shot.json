@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-far-shot",
+  "name": "Far Shot",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: When the character uses a firearm or archaic ranged weapon, its range increment increases by one-half (multiply by 1.5). When the character throws a weapon, its range increment is doubled.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: When the character uses a firearm or archaic ranged weapon, its range increment increases by one-half (multiply by 1.5). When the character throws a weapon, its range increment is doubled."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

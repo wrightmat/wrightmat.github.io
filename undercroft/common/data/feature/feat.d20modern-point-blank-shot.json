@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-point-blank-shot",
+  "name": "Point Blank Shot",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +1 bonus on attack and damage rolls with ranged weapons against opponents within 30 feet.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +1 bonus on attack and damage rolls with ranged weapons against opponents within 30 feet."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

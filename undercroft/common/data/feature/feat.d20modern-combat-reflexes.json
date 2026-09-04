@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-combat-reflexes",
+  "name": "Combat Reflexes",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The maximum number of attacks of opportunity the character may make each round is equal to the character’s Dexterity modifier + 1.  The character can still only make one attack of opportunity on a single opponent.\nWith this feat, the character may also make attacks of opportunity when flat-footed.\nNormal: A character without the Combat Reflexes feat can make only one attack of opportunity per round and can’t make attacks of opportunity when flat-footed.\nSpecial: The Combat Reflexes feat doesn’t allow a Fast hero with the opportunist talent to use that talent more than once per round.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The maximum number of attacks of opportunity the character may make each round is equal to the character’s Dexterity modifier + 1.  The character can still only make one attack of opportunity on a single opponent.\nWith this feat, the character may also make attacks of opportunity when flat-footed.\nNormal: A character without the Combat Reflexes feat can make only one attack of opportunity per round and can’t make attacks of opportunity when flat-footed.\nSpecial: The Combat Reflexes feat doesn’t allow a Fast hero with the opportunist talent to use that talent more than once per round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

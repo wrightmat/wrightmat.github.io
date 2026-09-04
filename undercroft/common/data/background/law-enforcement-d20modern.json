@@ -1,0 +1,38 @@
+{
+  "index": "law-enforcement",
+  "name": "Law Enforcement",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Police officers and detectives sworn to uphold the law.",
+  "skillChoices": [
+    {
+      "name": "Gather Information"
+    },
+    {
+      "name": "Intimidate"
+    },
+    {
+      "name": "Sense Motive"
+    },
+    {
+      "name": "Spot"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Point Blank Shot",
+      "description": "Benefit: The character gets a +1 bonus on attack and damage rolls with ranged weapons against opponents within 30 feet."
+    },
+    {
+      "name": "Personal Firearms Proficiency",
+      "description": "Benefit: The character can fire any personal firearm without penalty.\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-point-blank-shot",
+    "feat.d20modern-personal-firearms-proficiency"
+  ],
+  "bonusFeatCount": 1
+}

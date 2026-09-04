@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-daredevil-delay-damage",
+  "name": "Delay Damage",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Once per day, the Daredevil can delay the damage dealt by a single attack or effect for a number of rounds equal to his class level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Once per day, the Daredevil can delay the damage dealt by a single attack or effect for a number of rounds equal to his class level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

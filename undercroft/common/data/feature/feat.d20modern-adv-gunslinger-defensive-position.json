@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-defensive-position",
+  "name": "Defensive Position",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Whenever the Gunslinger has cover, he gains an additional +2 cover bonus to Defense and an additional +2 cover bonus on Reflex saves.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever the Gunslinger has cover, he gains an additional +2 cover bonus to Defense and an additional +2 cover bonus on Reflex saves."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

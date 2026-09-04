@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-bodyguard-blanket-protection",
+  "name": "Blanket Protection",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "By spending 1 action point and a full-round action, the Bodyguard grants up to six allies within sight and voice range a +1 insight bonus to Defense for 3 rounds.",
+  "mechanics": {
+    "type": "passive",
+    "text": "By spending 1 action point and a full-round action, the Bodyguard grants up to six allies within sight and voice range a +1 insight bonus to Defense for 3 rounds."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -18,7 +18,7 @@ import { renderRelationshipEditor } from "../../common/js/lib/relationship-edito
 import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
-import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses, guessBudgetCeilingFieldKey } from "./lib/tables.js";
+import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
 import { generateWonder, getWonderGenerationBlockReason, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
 import { createWonderRecord, toPressExportShape } from "./lib/wonder-schema.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
@@ -42,10 +42,8 @@ import {
   renderOptionalSelectOptions,
   loadAbilityFieldDefs,
   setGenerateButtonReadiness,
-  listObjectFieldOptions,
 } from "../../common/js/lib/generator-kit.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
-import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { setElementVisible, markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 // Repository's own markdown renderer, reused for the Notes View mode — same
@@ -59,10 +57,6 @@ let performRedo = null;
 let dataManager = null;
 let features = [];
 let propertyTypes = [];
-// Which propertyTypes entry guessBudgetCeilingFieldKey would auto-pick for
-// the active System — computed straight from propertyTypes, same "ride
-// along" shape as abilityFieldGuess below.
-let budgetCeilingFieldGuess = "";
 // The active System's own casting classes (Wizard, Cleric, ...) — empty for
 // a System with no "classes" field, which hides the Casting Class select.
 let classes = [];
@@ -74,10 +68,6 @@ let selectedFeatureId = null;
 // "active"-type Feature's own `ability` param renders as a real select
 // instead of free text (see feature-params-editor.js's ABILITY_LIKE_PARAM_KEYS).
 let abilityFieldDefs = [];
-// Candidate object-type fields for the abilityField preference below, plus
-// which one guessAbilityFieldKey would auto-pick.
-let objectFieldOptions = [];
-let abilityFieldGuess = "";
 const featureParamsEditor = createFeatureParamsEditor({
   getRecord: () => currentRecord,
   // A tier change now routes through this same hook as an ordinary params
@@ -383,52 +373,6 @@ function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
 
-// Which generator-property field Vault treats as the budget ceiling is a
-// Vault tool preference, not System data — it's not game content, so it
-// lives in this browser's local storage (keyed per System), never on the
-// System record edited in Loom.
-const BUDGET_CEILING_BUCKET = "vault-settings";
-
-// Both budgetCeilingField and abilityField share this one merged per-System
-// record — dataManager.getLocal/saveLocal replaces the whole record for a
-// given (bucket, id), so writing one setting straight through saveLocal
-// would silently wipe the other's already-saved value. Mirrors Forge's/
-// Crucible's own per-System settings pattern exactly.
-function getVaultSystemSettings(systemId) {
-  if (!dataManager || !systemId) return {};
-  return dataManager.getLocal(BUDGET_CEILING_BUCKET, systemId) || {};
-}
-
-function setVaultSystemSetting(systemId, key, value) {
-  if (!dataManager || !systemId) return;
-  const next = { ...getVaultSystemSettings(systemId), [key]: value };
-  if (!next.budgetCeilingField && !next.abilityField) {
-    dataManager.removeLocal(BUDGET_CEILING_BUCKET, systemId);
-  } else {
-    dataManager.saveLocal(BUDGET_CEILING_BUCKET, systemId, next);
-  }
-}
-
-function getBudgetCeilingFieldPreference(systemId) {
-  return getVaultSystemSettings(systemId).budgetCeilingField || "";
-}
-
-function setBudgetCeilingFieldPreference(systemId, fieldKey) {
-  setVaultSystemSetting(systemId, "budgetCeilingField", fieldKey || "");
-}
-
-// Which object field is this System's ability/stat block — same per-System
-// preference shape as budgetCeilingField, feeding loadAbilityFieldDefs'
-// preferredKey instead of assuming a field literally named "abilities".
-// Empty/unset falls through to loadAbilityFieldDefs' own shape-based guess.
-function getAbilityFieldPreference(systemId) {
-  return getVaultSystemSettings(systemId).abilityField || "";
-}
-
-function setAbilityFieldPreference(systemId, fieldKey) {
-  setVaultSystemSetting(systemId, "abilityField", fieldKey || "");
-}
-
 async function populateSystemSelect() {
   const systems = await listAllSystems(dataManager);
   // Disabled, not just blank — a real System is required before anything
@@ -578,22 +522,13 @@ function populateAddFeatureSelect() {
 
 async function reloadReferenceData() {
   const systemId = currentSystemId();
-  const budgetCeilingField = getBudgetCeilingFieldPreference(systemId);
   let fetchedFeatures;
-  let objectFieldResult;
-  [fetchedFeatures, propertyTypes, classes, objectFieldResult, abilityFieldDefs] = await Promise.all([
+  [fetchedFeatures, propertyTypes, classes, abilityFieldDefs] = await Promise.all([
     listFeaturesForSystem(dataManager, systemId),
-    // `|| undefined` (not the stored "" directly) so an unconfigured System
-    // falls through to getSystemPropertyTypes' own guess (then "rarity" as
-    // last resort) instead of resolving to no ceiling field at all.
-    getSystemPropertyTypes(dataManager, systemId, budgetCeilingField || undefined),
+    getSystemPropertyTypes(dataManager, systemId),
     getSystemClasses(dataManager, systemId),
-    listObjectFieldOptions(dataManager, systemId),
-    loadAbilityFieldDefs(dataManager, systemId, getAbilityFieldPreference(systemId)),
+    loadAbilityFieldDefs(dataManager, systemId),
   ]);
-  objectFieldOptions = objectFieldResult.options;
-  abilityFieldGuess = objectFieldResult.guessedKey;
-  budgetCeilingFieldGuess = guessBudgetCeilingFieldKey(propertyTypes.map((propertyType) => propertyType.id));
   // The shared `feature` kind also holds Sanctum's location features and
   // Crucible's monster features — filtered here, once, so every consumer of
   // the module-level `features` array only ever sees Vault's own spell/item
@@ -1665,7 +1600,6 @@ async function init() {
   const shell = initAppShell({
     namespace: "vault",
     storagePrefix: "undercroft.vault.undo",
-    settingsSlotAttr: "data-vault-settings-slot",
     onUndo: (entry) => {
       if (!entry) return null;
       applyRecordSnapshot(entry.before);
@@ -1794,74 +1728,6 @@ async function init() {
     } catch (error) {
       status?.show(`Unable to load wonder: ${error.message}`, { type: "error", timeout: 4000 });
     }
-  });
-
-  // Budget ceiling field picker, in the gear-icon Settings modal (upper-left
-  // of the header) — same shared module and visual pattern Repository's own
-  // Settings button uses. getValue/setValue defer to the per-System
-  // dataManager.getLocal/saveLocal preference above rather than this
-  // module's own flat store.
-  initToolSettings({
-    toolId: "vault",
-    dataManager,
-    status,
-    title: "Vault Settings",
-    definitions: () => [
-      {
-        key: "budgetCeilingField",
-        type: "select",
-        label: "Budget ceiling field",
-        helpTopic: "vault.budgetCeilingField",
-        // "(auto-detected)" on the guessed field's own option label, plus a
-        // real "None" option so a GM can explicitly force no ceiling field
-        // for a System that wants every property type treated as pure spend.
-        options: [
-          { value: "", label: "None" },
-          ...propertyTypes.map((propertyType) => ({
-            value: propertyType.id,
-            label:
-              propertyType.id === budgetCeilingFieldGuess && !getBudgetCeilingFieldPreference(currentSystemId())
-                ? `${propertyType.label || propertyType.id} (auto-detected)`
-                : propertyType.label || propertyType.id,
-          })),
-        ],
-        getValue: () => getBudgetCeilingFieldPreference(currentSystemId()) || budgetCeilingFieldGuess,
-        setValue: async (fieldKey) => {
-          setBudgetCeilingFieldPreference(currentSystemId(), fieldKey);
-          await reloadReferenceData();
-          if (currentRecord) {
-            recomputeBudget(currentRecord);
-            refreshWonderView();
-          }
-        },
-      },
-      {
-        key: "abilityField",
-        type: "select",
-        label: "Ability field",
-        helpTopic: "vault.abilityField",
-        // No separate "Auto-detect" option — the guessed field IS the
-        // selected value until the GM picks a different one, with "
-        // (auto-detected)" on its option label as the only indicator. Once
-        // a real preference is stored, that suffix drops.
-        options: objectFieldOptions.map((field) => ({
-          value: field.key,
-          label:
-            field.key === abilityFieldGuess && !getAbilityFieldPreference(currentSystemId())
-              ? `${field.label || field.key} (auto-detected)`
-              : field.label || field.key,
-        })),
-        getValue: () => getAbilityFieldPreference(currentSystemId()) || abilityFieldGuess,
-        setValue: async (fieldKey) => {
-          setAbilityFieldPreference(currentSystemId(), fieldKey);
-          await reloadReferenceData();
-        },
-      },
-    ],
-    // Queried live (not via `elements`) because the header — and this mount
-    // point inside it — is built by initAppShell() itself, which runs after
-    // `elements` above is already constructed.
-    mountButton: (button) => document.querySelector("[data-vault-settings-slot]")?.appendChild(button),
   });
 
   // Name/Notes aren't written back into currentRecord until Save/Export

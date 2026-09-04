@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-critical-strike",
+  "name": "Critical Strike",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Soldier automatically confirms a threat as a critical hit when attacking with the weapon he applied weapon specialization to, with no roll needed to confirm.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Soldier automatically confirms a threat as a critical hit when attacking with the weapon he applied weapon specialization to, with no roll needed to confirm."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

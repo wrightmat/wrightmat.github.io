@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-fast-hero-evasion",
+  "name": "Evasion",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "If the Fast hero is exposed to any effect that normally allows a character to attempt a Reflex saving throw for half damage, the Fast hero suffers no damage if he or she makes a successful saving throw. Evasion can only be used when wearing light armor or no armor.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If the Fast hero is exposed to any effect that normally allows a character to attempt a Reflex saving throw for half damage, the Fast hero suffers no damage if he or she makes a successful saving throw. Evasion can only be used when wearing light armor or no armor."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

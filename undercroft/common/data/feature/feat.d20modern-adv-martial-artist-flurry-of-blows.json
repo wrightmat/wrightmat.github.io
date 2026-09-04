@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-martial-artist-flurry-of-blows",
+  "name": "Flurry of Blows",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "While unarmored and making unarmed strikes, the Martial Artist may make one extra attack in a round at his highest base attack bonus; this attack and every other attack that round take a -2 penalty.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While unarmored and making unarmed strikes, the Martial Artist may make one extra attack in a round at his highest base attack bonus; this attack and every other attack that round take a -2 penalty."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

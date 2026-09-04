@@ -961,6 +961,23 @@
           "description": "At a disadvantage in melee until you stand back up."
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "abilityScores",
+          "name": "stats → abilityScores",
+          "sourceField": "stats"
+        },
+        {
+          "role": "archetypeTable",
+          "name": "backgrounds → archetypeTable",
+          "sourceField": "backgrounds"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-daredevil-action-boost",
+  "name": "Action Boost",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Daredevil can spend 2 action points on a single action in a round, seeing the result of the first roll before deciding whether to spend the second.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Daredevil can spend 2 action points on a single action in a round, seeing the result of the first roll before deciding whether to spend the second."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

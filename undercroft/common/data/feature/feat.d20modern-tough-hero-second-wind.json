@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-tough-hero-second-wind",
+  "name": "Second Wind",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Tough hero can spend 1 action point to gain a second wind. When the hero does this, he or she recovers a number of hit points equal to his or her Constitution modifier. This talent does not increase the Tough hero’s hit points beyond the character’s full normal total.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Tough hero can spend 1 action point to gain a second wind. When the hero does this, he or she recovers a number of hit points equal to his or her Constitution modifier. This talent does not increase the Tough hero’s hit points beyond the character’s full normal total."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

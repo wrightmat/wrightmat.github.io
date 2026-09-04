@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-improved-combat-martial-arts",
+  "name": "Improved Combat Martial Arts",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Combat Martial Arts, base attack bonus +4.\nBenefit: The character’s threat range on an unarmed strike improves to 19–20.\nNormal: A character without this feat threatens a critical hit with an unarmed strike only on a 20.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Combat Martial Arts, base attack bonus +4.\nBenefit: The character’s threat range on an unarmed strike improves to 19–20.\nNormal: A character without this feat threatens a critical hit with an unarmed strike only on a 20."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

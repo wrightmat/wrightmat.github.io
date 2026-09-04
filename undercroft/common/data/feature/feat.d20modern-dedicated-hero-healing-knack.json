@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-dedicated-hero-healing-knack",
+  "name": "Healing Knack",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The hero has a knack for the healing arts. The hero receives a +2 bonus on all Treat Injury skill checks.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The hero has a knack for the healing arts. The hero receives a +2 bonus on all Treat Injury skill checks."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

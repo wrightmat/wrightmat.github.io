@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-great-cleave",
+  "name": "Great Cleave",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Strength 13, Power Attack, Cleave, base attack bonus +4.\nBenefit: As Cleave, except that the character has no limit to the number of times he or she can use it per round.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Strength 13, Power Attack, Cleave, base attack bonus +4.\nBenefit: As Cleave, except that the character has no limit to the number of times he or she can use it per round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

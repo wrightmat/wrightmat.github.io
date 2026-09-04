@@ -1,4 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
@@ -589,16 +590,16 @@ async function reloadReferenceData() {
   populateAssetNeedKindSelects();
 }
 
-// Environment is just the "environment"-keyed array field on the active
-// System's `fields` (Loom's Properties editor) — no separate propertyTypes
-// concept. Translated to the legacy {id, label, values: [{id, label}]}
-// shape so the rest of this file needs no changes.
+// Environment is the array field the active System's own `fieldRoles`
+// declaration names for role "environment" (see field-roles.js) — no
+// separate propertyTypes concept. Translated to the legacy
+// {id, label, values: [{id, label}]} shape so the rest of this file needs
+// no changes.
 async function loadEnvironmentPropertyType(systemId) {
   if (!systemId) return null;
   try {
     const result = await dataManager.get("systems", systemId);
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const field = fields.find((entry) => entry.type === "array" && entry.key === "environment");
+    const field = resolveFieldRole(result?.payload, "environment")?.fieldDef;
     if (!field) return null;
     return {
       id: field.key,

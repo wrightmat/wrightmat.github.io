@@ -1,0 +1,21 @@
+{
+  "index": "entrepreneur",
+  "name": "Entrepreneur",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "A business owner who built something from nothing, and knows how to make a deal.",
+  "skillChoices": [
+    {
+      "name": "Diplomacy"
+    },
+    {
+      "name": "Profession"
+    },
+    {
+      "name": "Gather Information"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "wealthBonus": 1
+}

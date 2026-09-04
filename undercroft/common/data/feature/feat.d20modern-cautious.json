@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-cautious",
+  "name": "Cautious",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Benefit: The character gets a +2 bonus on all Demolitions checks and Disable Device checks.\nSpecial: Remember that the Demolitions skill and the Disable Device skill can’t be used untrained.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Benefit: The character gets a +2 bonus on all Demolitions checks and Disable Device checks.\nSpecial: Remember that the Demolitions skill and the Disable Device skill can’t be used untrained."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

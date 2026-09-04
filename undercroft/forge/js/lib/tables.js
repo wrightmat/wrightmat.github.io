@@ -8,6 +8,7 @@ import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.
 import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
 export { loadAbilityFieldDefs };
 import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
+import { resolveFieldRole } from "../../../common/js/lib/field-roles.js";
 
 // Re-exported so forge/js/app.js's own import (from this file) keeps
 // working unchanged — the implementation moved to content-fetch.js since
@@ -142,66 +143,17 @@ export async function loadAlignmentFaces(dataManager, systemId) {
   return faces.length ? faces : DEFAULT_ALIGNMENT_FACES;
 }
 
-// Best-effort guess for which array field IS a System's Archetype table,
-// used only to pre-fill the archetypeField settings preference — never the
-// sole source of truth. Name-preference only — an Archetype table's value
-// shape varies too much per System to shape-detect. "occupations" (CoC, d20
-// Modern) and "backgrounds" (Pathfinder 2E, Starfinder 2E) are real,
-// recurring alternates for the same underlying concept.
-const ARCHETYPE_FIELD_NAME_PREFERENCE = ["npcTypes", "occupations", "backgrounds"];
-
-export function guessArchetypeFieldKey(fields) {
-  const arrayFieldKeys = new Set((Array.isArray(fields) ? fields : []).filter((f) => f?.type === "array").map((f) => f.key));
-  return ARCHETYPE_FIELD_NAME_PREFERENCE.find((name) => arrayFieldKeys.has(name)) || "";
-}
-
-// Same reasoning as guessArchetypeFieldKey above, for NPC Attitude levels —
-// kept as a preference list (not a hardcoded string) so a future System's
-// alternate name has an obvious place to be added.
-const ATTITUDE_FIELD_NAME_PREFERENCE = ["npcAttitudes"];
-
-export function guessAttitudeFieldKey(fields) {
-  const arrayFieldKeys = new Set((Array.isArray(fields) ? fields : []).filter((f) => f?.type === "array").map((f) => f.key));
-  return ATTITUDE_FIELD_NAME_PREFERENCE.find((name) => arrayFieldKeys.has(name)) || "";
-}
-
 // Which array field on the active System supplies NPC Attitude levels is
-// Forge's own tool preference. `attitudeField` is the GM's stored
-// preference; empty falls through to guessAttitudeFieldKey's guess, then
-// the literal "npcAttitudes" key. Falls back to DEFAULT_ATTITUDES if
-// nothing resolves to a valid {value, label} shape.
-export async function loadNpcAttitudes(dataManager, systemId, attitudeField = "") {
+// the System's own explicit `fieldRoles` declaration (role "npcAttitude") —
+// see field-roles.js. Falls back to DEFAULT_ATTITUDES if nothing resolves
+// to a valid {value, label} shape.
+export async function loadNpcAttitudes(dataManager, systemId) {
   const system = await fetchSystemRecord(dataManager, systemId);
-  const fields = Array.isArray(system?.fields) ? system.fields : [];
-  const key = attitudeField || guessAttitudeFieldKey(fields) || "npcAttitudes";
-  const field = fields.find((entry) => entry.type === "array" && entry.key === key);
+  const field = resolveFieldRole(system, "npcAttitude")?.fieldDef;
   const attitudes = (field?.values || [])
     .map((value) => ({ value: Number(value.value), label: value.name || "" }))
     .filter((entry) => entry.label && Number.isFinite(entry.value));
   return attitudes.length ? attitudes : DEFAULT_ATTITUDES;
-}
-
-// Every top-level array field on the active System, so Forge's Settings
-// modal (Archetype/Attitude field pickers) can list all real candidates —
-// deliberately unfiltered, unlike Vault's own cost/targetBudget-shaped
-// field lister. `guessedArchetypeKey`/`guessedAttitudeKey` ride along in
-// the same fetch so each dropdown can pre-select its own guess.
-export async function listArrayFieldOptions(dataManager, systemId) {
-  if (!dataManager || !systemId) return { options: [], guessedArchetypeKey: "", guessedAttitudeKey: "" };
-  try {
-    const result = await dataManager.get("systems", systemId, { preferLocal: false });
-    const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-    const options = fields
-      .filter((entry) => entry.type === "array")
-      .map((entry) => ({ key: entry.key, label: entry.label || entry.key }));
-    return {
-      options,
-      guessedArchetypeKey: guessArchetypeFieldKey(fields),
-      guessedAttitudeKey: guessAttitudeFieldKey(fields),
-    };
-  } catch (error) {
-    return { options: [], guessedArchetypeKey: "", guessedAttitudeKey: "" };
-  }
 }
 
 // {key, min, max} for every stat Forge can roll WITHOUT it coming from the
@@ -277,25 +229,23 @@ export async function loadSkillGenerationConfig(dataManager, systemId) {
 // Archetype — one System-defined array field ("NPC Types") carries
 // everything: each value's `name` (the roll table) AND whatever other keys
 // that entry has (Stats). One field, not two — a name and its stat block
-// are one concept. Which field supplies it is Forge's own tool preference —
-// empty falls through to guessArchetypeFieldKey's guess, then the literal
-// "npcTypes" key. Values are zipped to rolls 2-21; a value with no name is
-// skipped rather than producing a blank entry. Rolls 22/23 (location
-// override) and 24 (Wildcard) are a fixed Forge convention layered on top
-// of every System's own table, not per-system data.
+// are one concept. Which field supplies it is the System's own explicit
+// `fieldRoles` declaration (role "archetypeTable") — see field-roles.js.
+// Values are zipped to rolls 2-21; a value with no name is skipped rather
+// than producing a blank entry. Rolls 22/23 (location override) and 24
+// (Wildcard) are a fixed Forge convention layered on top of every System's
+// own table, not per-system data.
 //
 // Returns `{ entries, statsByName }`: `entries` is the roll table, and
 // `statsByName` is every value keyed by its own name, unfiltered — which
 // keys actually become a generated NPC's Stats is a separate Forge tool
 // preference, since a System might carry extra metadata not meant as a Stat.
-export async function loadArchetypeTable(dataManager, systemId, archetypeField = "") {
+export async function loadArchetypeTable(dataManager, systemId) {
   const rawValues = [];
   if (dataManager && systemId) {
     try {
       const result = await dataManager.get("systems", systemId, { preferLocal: false });
-      const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-      const key = archetypeField || guessArchetypeFieldKey(fields) || "npcTypes";
-      const field = fields.find((entry) => entry.type === "array" && entry.key === key);
+      const field = resolveFieldRole(result?.payload, "archetypeTable")?.fieldDef;
       (field?.values || []).slice(0, 20).forEach((value) => {
         if (value?.name) rawValues.push(value);
       });

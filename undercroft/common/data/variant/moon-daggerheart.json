@@ -15,18 +15,22 @@
   "features": [
     {
       "name": "Foundation: Night's Glamour",
+      "tier": 1,
       "description": "Mark a Stress to Glamour yourself in a magical facade that lasts until you mark a Hit Point, make an attack, or take a rest. While Glamoured, you can:\n\n- Disguise yourself to look like any creature of your approximate size that you've seen.\n- Enhance your own appearance. You gain advantage on Presence Rolls that leverage this change."
     },
     {
       "name": "Specialization: Moonbeam",
+      "tier": 2,
       "description": "Once per session, you can conjure a column of moonlight that illuminates the area within Close range until the end of the scene. While bathed in this moonlight, you and any allies gain a +1 bonus to Spellcast Rolls and advantage on rolls to see through illusions."
     },
     {
       "name": "Specialization: Ire of Pale Light",
+      "tier": 2,
       "description": "When a Hexed creature within Far range fails an attack roll, they must mark a Stress."
     },
     {
       "name": "Mastery: Lunar Phases",
+      "tier": 3,
       "description": "Your spirit ebbs and flows like the phases of the moon. At the beginning of each session, roll a d4 and gain the matching effect until the end of the session:\n\n- 1: New - You can always spend a Hope to reduce Minor damage to None.\n- 2: Waxing - Gain a +2 bonus to your damage rolls.\n- 3: Full - Gain a +2 bonus to your damage thresholds.\n- 4: Waning - Gain a +1 bonus to your Evasion."
     }
   ],

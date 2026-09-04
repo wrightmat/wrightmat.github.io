@@ -1,0 +1,38 @@
+{
+  "index": "criminal",
+  "name": "Criminal",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Someone who's lived on the wrong side of the law — a thief, a con artist, or worse.",
+  "skillChoices": [
+    {
+      "name": "Bluff"
+    },
+    {
+      "name": "Sleight of Hand"
+    },
+    {
+      "name": "Hide"
+    },
+    {
+      "name": "Forgery"
+    }
+  ],
+  "skillChoiceCount": 2,
+  "bonusFeatChoices": [
+    {
+      "name": "Deceptive",
+      "description": "Benefit: The character gets a +2 bonus on all Bluff checks and Disguise checks."
+    },
+    {
+      "name": "Stealthy",
+      "description": "Benefit: The character gets a +2 bonus on all Hide checks and Move Silently checks."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-deceptive",
+    "feat.d20modern-stealthy"
+  ],
+  "bonusFeatCount": 1
+}

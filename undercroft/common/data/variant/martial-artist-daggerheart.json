@@ -15,22 +15,27 @@
   "features": [
     {
       "name": "Foundation: Martial Form",
+      "tier": 1,
       "description": "Take the Martial Form sheet. You start with two martial stances from Tier 1. When you reach a new tier, take two additional stances at your tier or lower."
     },
     {
       "name": "Foundation: Focus",
+      "tier": 1,
       "description": "During a rest, roll a number of d6s equal to your Instinct and place a number of Focus tokens equal to the highest value rolled on this card. Spend a Focus to shift into a stance until you take Severe damage, the scene ends, you mark your last Hit Point, or you shift into another stance."
     },
     {
       "name": "Specialization: Keen Defenses",
+      "tier": 2,
       "description": "When you are targeted by an attack, you can spend a Focus to give the attack roll disadvantage."
     },
     {
       "name": "Specialization: Spirit Blast",
+      "tier": 2,
       "description": "Spend a Focus to make an Instinct Roll against an adversary within Close range. On a success, deal d20+3 magic damage using your Proficiency, and you can spend an additional Focus to make them temporarily Vulnerable."
     },
     {
       "name": "Mastery: Limit Breaker",
+      "tier": 3,
       "description": "Once per rest, you can perform an unbelievable feat such as running across water, leaping between distant rooftops, or scaling the side of a building without needing to roll. When you do, gain a Hope and clear a Stress."
     }
   ],

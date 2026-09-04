@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-field-scientist-major-breakthrough",
+  "name": "Major Breakthrough",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Field Scientist's Reputation bonus for breakthroughs increases and now applies across a wider set of Knowledge fields, and grants an additional +3 Wealth bonus increase, stacking with Minor Breakthrough.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Field Scientist's Reputation bonus for breakthroughs increases and now applies across a wider set of Knowledge fields, and grants an additional +3 Wealth bonus increase, stacking with Minor Breakthrough."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

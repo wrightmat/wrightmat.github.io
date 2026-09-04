@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-gunslinger-weapon-focus",
+  "name": "Weapon Focus (Gunslinger)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Gunslinger gains the Weapon Focus class feature with a chosen personal firearm, adding +1 to attack rolls made with it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Gunslinger gains the Weapon Focus class feature with a chosen personal firearm, adding +1 to attack rolls made with it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

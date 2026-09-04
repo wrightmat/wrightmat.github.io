@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-negotiator-talk-down",
+  "name": "Talk Down (all opponents)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Negotiator's Talk Down now extends to 30 feet and affects every opponent who can hear and understand him.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Negotiator's Talk Down now extends to 30 feet and affects every opponent who can hear and understand him."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

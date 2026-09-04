@@ -1179,19 +1179,23 @@
       "values": [
         {
           "role": "hitPoints",
-          "formula": "floor((@size + @constitution) / 10)"
+          "formula": "floor((@size + @constitution) / 10)",
+          "name": "hitPoints"
         },
         {
           "role": "magicPoints",
-          "formula": "floor(@power / 5)"
+          "formula": "floor(@power / 5)",
+          "name": "magicPoints"
         },
         {
           "role": "sanityStart",
-          "formula": "@power"
+          "formula": "@power",
+          "name": "sanityStart"
         },
         {
           "role": "moveRate",
-          "formula": "if(and(@strength < @size, @dexterity < @size), 7, if(and(@strength > @size, @dexterity > @size), 9, 8))"
+          "formula": "if(and(@strength < @size, @dexterity < @size), 7, if(and(@strength > @size, @dexterity > @size), 9, 8))",
+          "name": "moveRate"
         }
       ]
     },
@@ -1202,7 +1206,6 @@
       "values": [
         {
           "step": "abilities",
-          "label": "Characteristics",
           "desc": "Assign your investigator's eight characteristics — either the standard point array, or roll for them (Strength/Constitution/Dexterity/Appearance/Power use 3D6×5; Size/Intelligence/Education use (2D6+6)×5).",
           "methods": [
             {
@@ -1253,18 +1256,18 @@
                 "education": "(2d6+6)*5"
               }
             }
-          ]
+          ],
+          "name": "Characteristics"
         },
         {
           "step": "class",
-          "label": "Occupation",
           "kind": "class",
-          "desc": "Your Occupation grants a Credit Rating range and a skill-point budget you'll spend on its own list of occupation skills next."
+          "desc": "Your Occupation grants a Credit Rating range and a skill-point budget you'll spend on its own list of occupation skills next.",
+          "name": "Occupation"
         },
         {
           "step": "occupationSkills",
           "type": "pointAllocation",
-          "label": "Occupation Skills",
           "targetPath": "skills",
           "budgetSource": {
             "from": "class",
@@ -1275,23 +1278,23 @@
             "field": "occupationSkills"
           },
           "unitLabel": "points",
-          "desc": "Spend your Occupation's own skill-point budget across the skills it grants access to — including Credit Rating itself."
+          "desc": "Spend your Occupation's own skill-point budget across the skills it grants access to — including Credit Rating itself.",
+          "name": "Occupation Skills"
         },
         {
           "step": "personalInterest",
           "type": "pointAllocation",
-          "label": "Personal Interest",
           "targetPath": "skills",
           "budgetFormula": "@intelligence * 2",
           "exclude": [
             "skills.cthulhuMythos"
           ],
           "unitLabel": "points",
-          "desc": "Spend a budget equal to twice your Intelligence on any skills you like, reflecting interests outside your Occupation — Cthulhu Mythos excluded."
+          "desc": "Spend a budget equal to twice your Intelligence on any skills you like, reflecting interests outside your Occupation — Cthulhu Mythos excluded.",
+          "name": "Personal Interest"
         },
         {
           "step": "input",
-          "label": "Personal Details & Backstory",
           "inputs": [
             {
               "label": "Player",
@@ -1376,15 +1379,16 @@
             "@background.phobiasManias",
             "@background.arcaneTomes",
             "@background.encounters"
-          ]
+          ],
+          "name": "Personal Details & Backstory"
         },
         {
           "step": "details",
-          "label": "Details"
+          "name": "Details"
         },
         {
           "step": "review",
-          "label": "Review"
+          "name": "Review"
         }
       ]
     },
@@ -1516,6 +1520,53 @@
           "cashFormula": "50000",
           "assetsFormula": "5000000",
           "spendingLevel": 5000
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "role": "combatBindings",
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings"
+        },
+        {
+          "role": "abilityScores",
+          "name": "characteristics → abilityScores",
+          "sourceField": "characteristics"
+        },
+        {
+          "role": "creatureType",
+          "name": "creatureTypes → creatureType",
+          "sourceField": "creatureTypes"
+        },
+        {
+          "role": "combatScaling",
+          "name": "combatScaling → combatScaling",
+          "sourceField": "combatScaling"
+        },
+        {
+          "role": "archetypeTable",
+          "name": "occupations → archetypeTable",
+          "sourceField": "occupations"
+        },
+        {
+          "role": "environment",
+          "name": "environment → environment",
+          "sourceField": "environment"
+        },
+        {
+          "role": "generatorProperty",
+          "name": "rarity → generatorProperty",
+          "sourceField": "rarity"
+        },
+        {
+          "role": "budgetCeiling",
+          "name": "rarity → budgetCeiling",
+          "sourceField": "rarity"
         }
       ]
     }

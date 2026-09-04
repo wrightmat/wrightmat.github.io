@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-investigator-contact-high-level",
+  "name": "Contact, high-level",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Investigator gains a high-level contact, following the same rules as a low-level contact.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Investigator gains a high-level contact, following the same rules as a low-level contact."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

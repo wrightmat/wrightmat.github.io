@@ -1,0 +1,212 @@
+{
+  "index": "fast-hero",
+  "name": "Fast Hero",
+  "form": "basic",
+  "description": "Trained in agility, hand-eye coordination, and reflexes — excels at ranged combat and getting out of the way.",
+  "keyAbility": "dexterity",
+  "hitDie": 8,
+  "classSkills": [
+    "balance",
+    "craft",
+    "drive",
+    "escapeartist",
+    "hide",
+    "knowledge",
+    "movesilently",
+    "pilot",
+    "profession",
+    "readwritelanguage",
+    "ride",
+    "sleightofhand",
+    "speaklanguage",
+    "tumble"
+  ],
+  "skillPointsBase": 5,
+  "features": [
+    {
+      "name": "Simple Weapons Proficiency",
+      "level": 1
+    }
+  ],
+  "featureIds": [
+    "feat.d20modern-simple-weapons-proficiency"
+  ],
+  "talents": [
+    {
+      "name": "Evasion",
+      "description": "If the Fast hero is exposed to any effect that normally allows a character to attempt a Reflex saving throw for half damage, the Fast hero suffers no damage if he or she makes a successful saving throw. Evasion can only be used when wearing light armor or no armor."
+    },
+    {
+      "name": "Increased Speed",
+      "description": "The Fast hero’s base speed increases by 5 feet."
+    }
+  ],
+  "talentIds": [
+    "feat.d20modern-fast-hero-evasion",
+    "feat.d20modern-fast-hero-increased-speed"
+  ],
+  "bonusFeatChoices": [
+    {
+      "name": "Acrobatic",
+      "description": "Benefit: The character gets a +2 bonus on all Jump checks and Tumble checks.\nSpecial: Remember that the Tumble skill can’t be used untrained."
+    },
+    {
+      "name": "Combat Expertise",
+      "description": "Prerequisite: Intelligence 13.\nBenefit: When the character uses the attack action or the full attack action in melee, the character can take a penalty of up to –5 on his or her attack roll and add the same number (up to +5) to the character’s Defense. This number may not exceed the character’s base attack bonus. The changes to attack rolls and Defense last until the character’s next action. The bonus to the character’s Defense is a dodge bonus (and as such it stacks with other dodge bonuses the character may have).\nNormal: A character without the Combat Expertise feat can fight defensively while using the attack or full attack action to take a –4 penalty on attacks and gain a +2 dodge bonus to Defense."
+    },
+    {
+      "name": "Combat Throw",
+      "description": "Prerequisite: Defensive Martial Arts.\nBenefit: The character gains a +2 bonus on opposed Strength and Dexterity checks any time the character attempts trip or grapple attacks, or when the character trys to avoid a trip or grapple attack made against him or her."
+    },
+    {
+      "name": "Defensive Martial Arts",
+      "description": "Benefit: The character gains a +1 dodge bonus to Defense against melee attacks.\nSpecial: A condition that makes the character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack, unlike most other types of bonuses."
+    },
+    {
+      "name": "Double Tap",
+      "description": "Prerequisites: Dexterity 13, Point Blank Shot.\nBenefit: When using a semiautomatic firearm with at least two bullets loaded, the character may fire two bullets as a single attack against a single target. The character receives a –2 penalty on this attack, but deals +1 die of damage with a successful hit. Using this feat fires two bullets and can only be done if the weapon has two bullets in it."
+    },
+    {
+      "name": "Elusive Target",
+      "description": "Prerequisites: Dexterity 13, Defensive Martial Arts.\nBenefit: When fighting an opponent or multiple opponents in melee, other opponents attempting to target the character with ranged attacks take a –4 penalty. This penalty is in addition to the normal –4 penalty for firing into melee, making the penalty to target to character –8.\nSpecial: An opponent with the Precise Shot feat has the penalty lessened to –4 when targeting the character."
+    },
+    {
+      "name": "Focused",
+      "description": "Benefit: The character gets get a +2 bonus on all Balance checks and Concentration checks."
+    },
+    {
+      "name": "Improved Disarm",
+      "description": "Prerequisites: Intelligence 13, Combat Expertise.\nBenefit: The character does not provoke an attack of opportunity when the character attempts to disarm an opponent, nor does the opponent get a chance to disarm the character."
+    },
+    {
+      "name": "Mobility",
+      "description": "Prerequisites: Dexterity 13, Dodge.\nBenefit: The character gets a +4 dodge bonus to Defense against attacks of opportunity provoked when the character moves out of a threatened square.\nSpecial: A condition that makes a character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack with each other, unlike most other types of bonuses."
+    },
+    {
+      "name": "Personal Firearms Proficiency",
+      "description": "Benefit: The character can fire any personal firearm without penalty.\nNormal: Characters without this feat take a –4 penalty on attack rolls made with personal firearms."
+    },
+    {
+      "name": "Point Blank Shot",
+      "description": "Benefit: The character gets a +1 bonus on attack and damage rolls with ranged weapons against opponents within 30 feet."
+    },
+    {
+      "name": "Stealthy",
+      "description": "Benefit: The character gets a +2 bonus on all Hide checks and Move Silently checks."
+    },
+    {
+      "name": "Weapon Finesse",
+      "description": "Choose one light melee weapon, a rapier (if the character can use it with one hand), or a chain.  A character can choose unarmed strike or grapple as a weapon for the purposes of this feat.\nPrerequisites: Proficient with weapon, base attack bonus +1.\nBenefit: With the selected melee weapon, the character may use his or her Dexterity modifier instead of his or her Strength modifier on attack rolls.\nSpecial: A character can gain this feat multiple times. Each time the character takes the feat, the character selects a different weapon."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-acrobatic",
+    "feat.d20modern-combat-expertise",
+    "feat.d20modern-combat-throw",
+    "feat.d20modern-defensive-martial-arts",
+    "feat.d20modern-double-tap",
+    "feat.d20modern-elusive-target",
+    "feat.d20modern-focused",
+    "feat.d20modern-improved-disarm",
+    "feat.d20modern-mobility",
+    "feat.d20modern-personal-firearms-proficiency",
+    "feat.d20modern-point-blank-shot",
+    "feat.d20modern-stealthy",
+    "feat.d20modern-weapon-finesse"
+  ],
+  "progressionTable": [
+    {
+      "level": 1,
+      "bab": 0,
+      "fort": 0,
+      "ref": 1,
+      "will": 0,
+      "defenseBonus": 3,
+      "reputationBonus": 0
+    },
+    {
+      "level": 2,
+      "bab": 1,
+      "fort": 0,
+      "ref": 2,
+      "will": 0,
+      "defenseBonus": 4,
+      "reputationBonus": 0
+    },
+    {
+      "level": 3,
+      "bab": 2,
+      "fort": 1,
+      "ref": 2,
+      "will": 1,
+      "defenseBonus": 4,
+      "reputationBonus": 1
+    },
+    {
+      "level": 4,
+      "bab": 3,
+      "fort": 1,
+      "ref": 2,
+      "will": 1,
+      "defenseBonus": 5,
+      "reputationBonus": 1
+    },
+    {
+      "level": 5,
+      "bab": 3,
+      "fort": 1,
+      "ref": 3,
+      "will": 1,
+      "defenseBonus": 5,
+      "reputationBonus": 1
+    },
+    {
+      "level": 6,
+      "bab": 4,
+      "fort": 2,
+      "ref": 3,
+      "will": 2,
+      "defenseBonus": 6,
+      "reputationBonus": 2
+    },
+    {
+      "level": 7,
+      "bab": 5,
+      "fort": 2,
+      "ref": 4,
+      "will": 2,
+      "defenseBonus": 6,
+      "reputationBonus": 2
+    },
+    {
+      "level": 8,
+      "bab": 6,
+      "fort": 2,
+      "ref": 4,
+      "will": 2,
+      "defenseBonus": 7,
+      "reputationBonus": 2
+    },
+    {
+      "level": 9,
+      "bab": 6,
+      "fort": 3,
+      "ref": 4,
+      "will": 3,
+      "defenseBonus": 7,
+      "reputationBonus": 3
+    },
+    {
+      "level": 10,
+      "bab": 7,
+      "fort": 3,
+      "ref": 5,
+      "will": 3,
+      "defenseBonus": 8,
+      "reputationBonus": 3
+    }
+  ],
+  "systemIds": [
+    "sys.d20modern"
+  ]
+}

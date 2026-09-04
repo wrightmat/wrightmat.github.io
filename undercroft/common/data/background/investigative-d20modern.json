@@ -1,0 +1,38 @@
+{
+  "index": "investigative",
+  "name": "Investigative",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Private investigators and journalists who dig for the truth others would rather stayed buried.",
+  "skillChoices": [
+    {
+      "name": "Investigate"
+    },
+    {
+      "name": "Gather Information"
+    },
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Sense Motive"
+    }
+  ],
+  "skillChoiceCount": 3,
+  "bonusFeatChoices": [
+    {
+      "name": "Attentive",
+      "description": "Benefit: The character gets a +2 bonus on all Investigate checks and Sense Motive checks. \nSpecial: Remember that the Investigate skill can’t be used untrained."
+    },
+    {
+      "name": "Meticulous",
+      "description": "Benefit: The character gets a +2 bonus on all Forgery checks and Search checks."
+    }
+  ],
+  "bonusFeatChoiceIds": [
+    "feat.d20modern-attentive",
+    "feat.d20modern-meticulous"
+  ],
+  "bonusFeatCount": 1
+}

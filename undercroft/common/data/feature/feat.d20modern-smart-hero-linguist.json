@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-smart-hero-linguist",
+  "name": "Linguist",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "With this talent, the Smart hero becomes a master linguist. Whenever the hero encounters a new language, either spoken or written, that he or she does not know the Smart hero can make an Intelligence check to determine if he or she can understand it. The check is made with a bonus equal to the hero’s Smart level. For a written language, the bonus applies to a Decipher Script check instead.\nPrerequisite: At least 1 rank in either Read/Write Language or Speak Language for each of three different languages.",
+  "mechanics": {
+    "type": "passive",
+    "text": "With this talent, the Smart hero becomes a master linguist. Whenever the hero encounters a new language, either spoken or written, that he or she does not know the Smart hero can make an Intelligence check to determine if he or she can understand it. The check is made with a bonus equal to the hero’s Smart level. For a written language, the bonus applies to a Decipher Script check instead.\nPrerequisite: At least 1 rank in either Read/Write Language or Speak Language for each of three different languages."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

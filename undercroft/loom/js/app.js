@@ -59,7 +59,10 @@ import {
   collectFieldFromRow,
   collectProperties,
   createPropertyInspector,
+  findUnnamedValueEntries,
 } from "../../common/js/lib/property-schema-editor.js";
+import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
+import { validateSystemFields, loadReservedKeysSchema, isReservedKeyName } from "../../common/js/lib/system-validation.js";
 
 // SOURCES now imported from content-fetch.js (shared with Workbench's own
 // player-facing Import Character picker) — see that module's own comment.
@@ -541,6 +544,16 @@ const systemIdInput = document.querySelector("[data-system-id]");
 const systemTitleInput = document.querySelector("[data-system-title]");
 const systemVersionInput = document.querySelector("[data-system-version]");
 const systemPropertyRows = document.querySelector("[data-system-property-rows]");
+// Reserved-key properties (buildSteps, derivedFormulas, fieldRoles, ...)
+// render into their own group, above the ordinary Properties list, so a
+// System-specific field and a suite-read-by-name one are never visually
+// indistinguishable — see isReservedFieldKey/renderSystemFieldIntoGroups
+// below. Kicked off now (not awaited) so the classification schema is
+// already resolved by the time a System is actually loaded.
+void loadReservedKeysSchema();
+const systemReservedPropertyRows = document.querySelector("[data-system-reserved-property-rows]");
+const systemReservedPropertiesSection = document.querySelector("[data-system-reserved-properties-section]");
+const systemPropertiesWrapper = document.querySelector("[data-system-properties-wrapper]");
 const systemNewButton = document.querySelector("[data-system-new]");
 const systemSaveButton = document.querySelector("[data-system-save]");
 const systemDuplicateButton = document.querySelector("[data-system-duplicate]");
@@ -597,6 +610,47 @@ const systemInspectorSection = createCollapsibleSection({
   content: systemInspectorContent,
 }).section;
 document.querySelector("[data-system-inspector-mount]")?.appendChild(systemInspectorSection);
+
+// Reserved Key Diagnostics — validates the currently-loaded System's own
+// buildSteps/levelUpBindings/derivedFormulas/dice/rolls/decks/currency/
+// inventory/travelMeans/levels/casterTypes/fieldRoles against
+// common/data/reserved-keys.json (system-validation.js). Non-blocking: a
+// wrong shape here is a real bug worth surfacing, but never something that
+// stops a save. Collapsed by default — most saves have nothing to report.
+const systemDiagnosticsList = document.createElement("div");
+systemDiagnosticsList.className = "d-flex flex-column gap-2 small";
+systemDiagnosticsList.textContent = "Not checked yet.";
+async function runSystemDiagnostics({ silent = false } = {}) {
+  const findings = await validateSystemFields(buildSystemPayload().fields);
+  systemDiagnosticsList.innerHTML = "";
+  if (!findings.length) {
+    const ok = document.createElement("p");
+    ok.className = "text-body-secondary mb-0";
+    ok.textContent = "No issues found.";
+    systemDiagnosticsList.appendChild(ok);
+  } else {
+    findings.forEach((finding) => {
+      const row = document.createElement("div");
+      row.className = "alert alert-warning py-1 px-2 mb-0";
+      row.textContent = finding.message;
+      systemDiagnosticsList.appendChild(row);
+    });
+    if (!silent) {
+      status?.show(`Reserved Key Diagnostics found ${findings.length} issue${findings.length === 1 ? "" : "s"}.`, {
+        type: "warning",
+        timeout: 4000,
+      });
+    }
+  }
+  return findings;
+}
+const systemDiagnosticsSection = createCollapsibleSection({
+  label: "Reserved Key Diagnostics",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runSystemDiagnostics() }],
+  content: systemDiagnosticsList,
+}).section;
+document.querySelector("[data-system-diagnostics-mount]")?.appendChild(systemDiagnosticsSection);
 
 // Macros tab — its own dedicated authoring UI (mirrors Systems: select +
 // New/Save/Delete), not bolted onto the generic Library JSON editor. The
@@ -4766,20 +4820,18 @@ function collectFeatureRoleVocabulary(systemIds) {
 }
 
 // Creature Types vocabulary — read straight off each Assigned System's own
-// `creatureTypes` array field (System-defined game-rule vocabulary, not a
-// Library kind — see crucible/CLAUDE.md), unioned across every Assigned
-// System since a Feature can carry more than one. Always the conventional
-// "creatureTypes" field key — Loom has no per-browser override concept.
-// Stored as the type's own lowercase `id`, never its display name, same
-// reasoning as Roles above.
+// `fieldRoles` declaration (role "creatureType" — see field-roles.js), the
+// same lookup Crucible's own generator uses, so the two never disagree.
+// Unioned across every Assigned System since a Feature can carry more than
+// one. Stored as the type's own lowercase `id`, never its display name,
+// same reasoning as Roles above.
 async function collectFeatureCreatureTypeVocabulary(systemIds) {
   if (!dataManager || !Array.isArray(systemIds) || !systemIds.length) return [];
   const values = new Map();
   for (const systemId of systemIds) {
     try {
       const result = await dataManager.get("systems", systemId, { preferLocal: false });
-      const fields = Array.isArray(result?.payload?.fields) ? result.payload.fields : [];
-      const field = fields.find((entry) => entry.type === "array" && entry.key === "creatureTypes");
+      const field = resolveFieldRole(result?.payload, "creatureType")?.fieldDef;
       (field?.values || []).forEach((value) => {
         if (value?.id) values.set(value.id, value.name || value.id);
       });
@@ -6564,6 +6616,14 @@ const systemPropertyCtx = {
   get filterSystemId() {
     return (systemIdInput?.value || "").trim();
   },
+  // fieldRoles' own dedicated Field select (property-schema-editor.js)
+  // needs this System's own OTHER top-level field keys — queried live off
+  // the DOM rather than cached, so a field added/renamed elsewhere in the
+  // same editing session shows up without a reload.
+  listSiblingFieldKeys: () =>
+    [...Array.from(systemReservedPropertyRows?.children || []), ...Array.from(systemPropertyRows.children)]
+      .map((row) => row.querySelector("[data-property-key]")?.value.trim())
+      .filter(Boolean),
   captureDragSnapshot: () =>
     !isApplyingHistory && undoStack && SNAPSHOT_HANDLERS.system ? SNAPSHOT_HANDLERS.system.create() : null,
   commitDragSnapshot: (before) => {
@@ -6602,8 +6662,53 @@ function initSystemPropertySortable(container) {
 function applySystemPropertyType(row, typeButton, value) {
   return applyPropertyType(row, typeButton, value, systemPropertyCtx);
 }
+
+// Renders one top-level field into whichever group its CURRENT key belongs
+// in — used only for the "load/rebuild the whole list from data" paths
+// (loadSystemIntoEditor, applySystemSnapshot); the "New Property" button
+// always targets the ordinary group directly (a brand new field starts
+// with a blank key, which is never reserved).
+function renderSystemFieldIntoGroups(field) {
+  const container = isReservedKeyName(field?.key) ? systemReservedPropertyRows : systemPropertyRows;
+  return renderSystemPropertyRow(field, container);
+}
+
+// Reserved section is shown only "when they exist" (never an empty box) —
+// called after every render/add/remove/rename that could change whether
+// either group is populated.
+function updateReservedPropertiesVisibility() {
+  if (!systemReservedPropertiesSection) return;
+  const hasReserved = Boolean(systemReservedPropertyRows?.children.length);
+  systemReservedPropertiesSection.classList.toggle("d-none", !hasReserved);
+}
+
+// A top-level row's own Key input can change at any time (typed by hand, or
+// via the reserved-key datalist) — this keeps its group in sync live,
+// rather than only reclassifying on next load. Delegated once on the
+// shared wrapper so it covers rows in either group without two listeners.
+systemPropertiesWrapper?.addEventListener("input", (event) => {
+  const keyInput = event.target.closest("[data-property-key]");
+  if (!keyInput) return;
+  const row = keyInput.closest(".border.rounded-3");
+  const parent = row?.parentElement;
+  // Only a TOP-LEVEL row's key decides its group — a nested Sub-field's own
+  // Key input bubbles here too, but its closest top-level ancestor row (not
+  // itself) is what actually sits in systemReservedPropertyRows/
+  // systemPropertyRows, so a nested row is never itself relocated.
+  if (parent !== systemReservedPropertyRows && parent !== systemPropertyRows) return;
+  const targetContainer = isReservedKeyName(keyInput.value.trim()) ? systemReservedPropertyRows : systemPropertyRows;
+  if (parent !== targetContainer) {
+    targetContainer?.appendChild(row);
+    updateReservedPropertiesVisibility();
+  }
+});
 function collectSystemProperties() {
-  return collectProperties(systemPropertyRows, systemPropertyCtx);
+  // Reserved keys first, matching how they're always shown first — a
+  // System's own saved `fields` order now mirrors the editor's grouping.
+  return [
+    ...collectProperties(systemReservedPropertyRows, systemPropertyCtx),
+    ...collectProperties(systemPropertyRows, systemPropertyCtx),
+  ];
 }
 
 // The one place that assembles a full System record from the editor's
@@ -6679,7 +6784,9 @@ function applySystemSnapshot(snapshot) {
   if (systemVersionInput) systemVersionInput.value = snapshot.version;
   if (systemPropertyRows) {
     systemPropertyRows.innerHTML = "";
-    (snapshot.properties || []).forEach((field) => renderSystemPropertyRow(field));
+    if (systemReservedPropertyRows) systemReservedPropertyRows.innerHTML = "";
+    (snapshot.properties || []).forEach((field) => renderSystemFieldIntoGroups(field));
+    updateReservedPropertiesVisibility();
   }
   // Undo/redo rebuilds every row from scratch — whatever was selected
   // before is now a detached DOM node, not a meaningful selection to keep.
@@ -6752,6 +6859,8 @@ function newSystemEditor({ reveal = true } = {}) {
   if (systemTitleInput) systemTitleInput.value = "";
   if (systemVersionInput) systemVersionInput.value = "0.1";
   if (systemPropertyRows) systemPropertyRows.innerHTML = "";
+  if (systemReservedPropertyRows) systemReservedPropertyRows.innerHTML = "";
+  updateReservedPropertiesVisibility();
   systemPropertyInspector.selectRow(null);
   if (reveal) setSystemFormVisible(true);
   markClean("system");
@@ -6774,7 +6883,10 @@ async function loadSystemIntoEditor(id) {
     if (systemVersionInput) systemVersionInput.value = payload.version || "";
     if (systemPropertyRows) {
       systemPropertyRows.innerHTML = "";
-      (payload.fields || []).forEach((field) => renderSystemPropertyRow(field));
+      if (systemReservedPropertyRows) systemReservedPropertyRows.innerHTML = "";
+      await loadReservedKeysSchema();
+      (payload.fields || []).forEach((field) => renderSystemFieldIntoGroups(field));
+      updateReservedPropertiesVisibility();
     }
     systemPropertyInspector.selectRow(null);
     markClean("system");
@@ -6841,10 +6953,17 @@ wireUndoTracking(systemVersionInput, "system");
 wireUndoTracking(systemPropertyRows, "system", {
   selector: "input, select, textarea",
 });
+wireUndoTracking(systemReservedPropertyRows, "system", {
+  selector: "input, select, textarea",
+});
 // One persistent instance — unlike nested Sub-fields/Record fields
 // containers (created fresh per row), this top-level container is never
-// recreated, only its children, so it only needs wiring once.
+// recreated, only its children, so it only needs wiring once. Two
+// instances, one per group — reordering never drags a row across groups
+// (renaming its Key to/from a reserved name is what moves it; see the
+// systemPropertiesWrapper "input" listener above).
 initSystemPropertySortable(systemPropertyRows);
+initSystemPropertySortable(systemReservedPropertyRows);
 
 // Delegated add/remove-property/sub-field/record-field/value handling, plus
 // Property Inspector selection/refresh via systemPropertyCtx's own
@@ -6852,6 +6971,7 @@ initSystemPropertySortable(systemPropertyRows);
 // property-schema-editor.js implementation; every recordUndoableChange
 // call routes through systemPropertyCtx.runChange.
 wirePropertyContainerEvents(systemPropertyRows, systemPropertyCtx);
+wirePropertyContainerEvents(systemReservedPropertyRows, systemPropertyCtx);
 
 if (systemSaveButton) {
   systemSaveButton.addEventListener("click", async () => {
@@ -6860,6 +6980,17 @@ if (systemSaveButton) {
     if (!payload.id) {
       status?.show("System id is required.", { type: "error", timeout: 3000 });
       return;
+    }
+    const unnamed = findUnnamedValueEntries(payload.fields);
+    if (unnamed.length) {
+      const plural = unnamed.length === 1 ? "entry has" : "entries have";
+      const proceed = await showConfirmModal({
+        title: "Save without names?",
+        bodyHtml: `<p>${unnamed.length} value ${plural} no name. A name helps identify an entry later — save anyway?</p>`,
+        confirmLabel: "Save anyway",
+        cancelLabel: "Go back",
+      });
+      if (!proceed) return;
     }
     try {
       // A System's own id is filename/library_items metadata, never body
@@ -6872,6 +7003,9 @@ if (systemSaveButton) {
       systemSelect.value = payload.id;
       await populateLibrarySystemCheckboxes(currentLibraryEntity()?.systemIds);
       markClean("system");
+      // Fire-and-forget — a wrong reserved-key shape is worth surfacing, but
+      // never something that should hold up or block the save itself.
+      void runSystemDiagnostics();
     } catch (error) {
       status?.show(`Unable to save system: ${error.message}`, { type: "error", timeout: 4000 });
     }

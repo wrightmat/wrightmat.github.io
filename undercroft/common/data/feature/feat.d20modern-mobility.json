@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-mobility",
+  "name": "Mobility",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "Prerequisites: Dexterity 13, Dodge.\nBenefit: The character gets a +4 dodge bonus to Defense against attacks of opportunity provoked when the character moves out of a threatened square.\nSpecial: A condition that makes a character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack with each other, unlike most other types of bonuses.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Prerequisites: Dexterity 13, Dodge.\nBenefit: The character gets a +4 dodge bonus to Defense against attacks of opportunity provoked when the character moves out of a threatened square.\nSpecial: A condition that makes a character lose his or her Dexterity bonus to Defense also makes the character lose dodge bonuses. Also, dodge bonuses stack with each other, unlike most other types of bonuses."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "feat"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

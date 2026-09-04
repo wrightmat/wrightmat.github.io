@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-adv-soldier-improved-critical",
+  "name": "Improved Critical (Soldier)",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Soldier's threat range with the weapon he applied weapon specialization to increases by one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Soldier's threat range with the weapon he applied weapon specialization to increases by one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "advancedClassFeature"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.d20modern-strong-hero-ignore-hardness",
+  "name": "Ignore Hardness",
+  "systemIds": [
+    "sys.d20modern"
+  ],
+  "description": "The Strong hero has an innate talent for finding weaknesses in objects. This allows a Strong hero to ignore some of an object’s hardness when making a melee attack to break it.\nThe Strong hero ignores 2 points of an object’s hardness.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The Strong hero has an innate talent for finding weaknesses in objects. This allows a Strong hero to ignore some of an object’s hardness when making a melee attack to break it.\nThe Strong hero ignores 2 points of an object’s hardness."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character",
+      "talent"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}
