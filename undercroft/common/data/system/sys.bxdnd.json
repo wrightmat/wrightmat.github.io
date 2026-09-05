@@ -471,18 +471,18 @@
       "values": [
         {
           "name": "Ordinary",
-          "targetBudget": 2,
-          "description": "Available at any market town."
+          "description": "Available at any market town.",
+          "cost": 2
         },
         {
           "name": "Uncommon",
-          "targetBudget": 5,
-          "description": "Found in a larger city or from a specialist."
+          "description": "Found in a larger city or from a specialist.",
+          "cost": 5
         },
         {
           "name": "Magical",
-          "targetBudget": 10,
-          "description": "A genuine magic item, found only through adventure."
+          "description": "A genuine magic item, found only through adventure.",
+          "cost": 10
         }
       ]
     },
@@ -682,31 +682,31 @@
       "label": "Creature Types",
       "values": [
         {
-          "id": "humanoid",
+          "shortName": "humanoid",
           "name": "Humanoid"
         },
         {
-          "id": "animal",
+          "shortName": "animal",
           "name": "Animal"
         },
         {
-          "id": "dragon",
+          "shortName": "dragon",
           "name": "Dragon"
         },
         {
-          "id": "undead",
+          "shortName": "undead",
           "name": "Undead"
         },
         {
-          "id": "giant",
+          "shortName": "giant",
           "name": "Giant"
         },
         {
-          "id": "demonspirit",
+          "shortName": "demonspirit",
           "name": "Demon/Spirit"
         },
         {
-          "id": "enchanted",
+          "shortName": "enchanted",
           "name": "Enchanted"
         }
       ]
@@ -718,20 +718,20 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@hitPoints.max",
-          "binding": "@hitPoints.current",
-          "role": "resource"
+          "maxPath": "hitPoints.max",
+          "recordField": "hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Armor Class",
-          "binding": "@armorClass",
-          "role": "value"
+          "recordField": "armorClass",
+          "binding": "value"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         }
       ]
     },
@@ -838,44 +838,44 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "abilities → abilityScores",
-          "sourceField": "abilities"
+          "sourceField": "abilities",
+          "binding": "abilityScores"
         },
         {
-          "role": "savingThrows",
           "name": "saves → savingThrows",
-          "sourceField": "saves"
+          "sourceField": "saves",
+          "binding": "savingThrows"
         },
         {
-          "role": "creatureType",
           "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes"
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

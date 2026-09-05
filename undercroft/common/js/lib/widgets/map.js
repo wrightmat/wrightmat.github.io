@@ -46,9 +46,9 @@ import { resolveIsSpotlighted, resolveActiveSpotlightId } from "../spotlight.js"
 import { createCharacterOwnershipPrimer, matchesOwner, refreshOwnershipCatalog } from "../ownership.js";
 import { el } from "../dom.js";
 import { getIconTokens } from "../icon-picker.js";
-import { findBindingByRole, findBindingsByRole } from "../bindings.js";
+import { findBindingsByRole } from "../bindings.js";
 import { deriveCombatBindings, guessBarResourceName } from "./combat-bindings.js";
-import { deriveConditionsVocabulary } from "./tag-editor.js";
+import { buildSystemConditions } from "./tag-editor.js";
 // Same icon-picker/overlay-icon shape Orrery's own marker inspector uses for
 // a token's badge icons — reused as-is rather than a second, player-scoped
 // copy. No image field here on purpose — a player can recolor/re-icon their
@@ -900,23 +900,6 @@ export function initMapWidget(
   const systemConditionsCache = new Map();
   function getCachedSystemConditions(systemId) {
     return systemConditionsCache.get(systemId) || null;
-  }
-  function buildSystemConditions(fields) {
-    const bindings = deriveCombatBindings(fields);
-    const tagsEntry = findBindingByRole(bindings, "tags");
-    const vocabulary = deriveConditionsVocabulary(fields, bindings);
-    const iconMap = new Map();
-    if (vocabulary && tagsEntry) {
-      const vocabularyKey = tagsEntry.sourceField || "conditions";
-      const field = fields.find((entry) => entry.type === "array" && entry.key === vocabularyKey);
-      (field?.values || []).forEach((raw, index) => {
-        const entry = vocabulary[index];
-        if (entry && raw && (raw.icon || raw.color)) {
-          iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "" });
-        }
-      });
-    }
-    return { iconMap, tagsBinding: tagsEntry?.binding || "" };
   }
   const pendingSystemConditionsFetches = new Set();
   function ensureSystemConditionsCached(systemId, onLoaded) {

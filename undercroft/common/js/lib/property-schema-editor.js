@@ -10,6 +10,31 @@ import { escapeHtml } from "./auth-ui.js";
 import { createSortable } from "./dnd.js";
 import { initHelpSystem } from "./help.js";
 import { loadReservedKeysSchema } from "./system-validation.js";
+import { loadLibraryKinds } from "./content-fetch.js";
+
+// One shared, lazily-fetched list of the suite's registered Library kinds
+// ({id, label, plural}) — backs the `libraryKind` column's <select> options,
+// the same registry Loom's own Entities/Systems pickers already read.
+let libraryKindsPromise = null;
+function ensureLibraryKinds() {
+  if (!libraryKindsPromise) {
+    libraryKindsPromise = loadLibraryKinds().catch(() => []);
+  }
+  return libraryKindsPromise;
+}
+
+// A field's own reserved-key "binding" vocabulary is its literal key for
+// fieldRoles/derivedFormulas/levelUpBindings, but combatBindings has no
+// fixed key of its own — it's whichever field the System's fieldRoles
+// entries point at (role "combatBindings"). Resolving THAT needs the full
+// sibling fields list, which this module doesn't otherwise track — a caller
+// with that context (Loom's System editor) supplies `ctx.resolveFieldBindingKey`
+// to cover it; this default only handles the 3 keys resolvable from the
+// field alone.
+const LITERAL_BINDING_KEYS = new Set(["fieldRoles", "derivedFormulas", "levelUpBindings"]);
+function defaultResolveFieldBindingKey(field) {
+  return LITERAL_BINDING_KEYS.has(field?.key) ? field.key : null;
+}
 
 // One shared <datalist> of the true-reserved-key names (buildSteps,
 // derivedFormulas, fieldRoles, ...) — a suggestion, not a restriction, so
@@ -48,15 +73,37 @@ export const PROPERTY_TYPES = [
 ];
 
 export const VALUE_COLUMNS = [
-  { key: "binding", label: "Binding", type: "string", placeholder: "@path" },
   // `wide` (flex-grow instead of a fixed narrow width — see renderValueRow)
-  // is Description-only: every other column is a short token (a number, an
-  // @path, a short id) that fits a fixed few rem; Description is prose, the
-  // same reason Extra JSON already grows.
+  // is Description-only: every other column is a short token (a number, a
+  // dotted path, a short id) that fits a fixed few rem; Description is
+  // prose, the same reason Extra JSON already grows.
   { key: "description", label: "Description", type: "string", placeholder: "Description", wide: true },
   { key: "shortName", label: "Short name", type: "string", placeholder: "Short name" },
   { key: "sourceId", label: "Source ID", type: "number", placeholder: "Source ID" },
+  // Library family — `libraryKind` selects a category of Library records
+  // (populated per-render from the suite's registered Library kinds, see
+  // ensureLibraryKinds above); `libraryField` is the pointer *within* that
+  // kind, interpreted per-consumer — a field name to read off a
+  // dynamically-resolved record (levelUpBindings' own use) or, for a
+  // "pick one specific record" array (e.g. a Classes list), the record's own
+  // id. The latter case gets a convenience entity-picker next to the plain
+  // text input (see populateDynamicValueSelects) — this is the one, unified
+  // replacement for the retired field-level entityKind/entityId mechanism.
+  { key: "libraryKind", label: "Library kind", type: "select", options: [] },
+  { key: "libraryField", label: "Library field", type: "string", placeholder: "e.g. hit_die" },
+  // Read/write reference family — one resolution mechanism (dotted-path.js),
+  // varying only in which root object is walked and which direction. No `@`
+  // prefix in any of these — the column itself already fixes what kind of
+  // thing the value holds, so a sigil would be pure redundancy.
+  { key: "recordField", label: "Record field", type: "string", placeholder: "e.g. stats.hitPoints.current" },
   { key: "sourceField", label: "Source field", type: "string", placeholder: "e.g. conditions" },
+  { key: "targetPath", label: "Target path", type: "string", placeholder: "e.g. stats.armorClass" },
+  // A named connection between System-authored data and hardcoded engine
+  // code — options are resolved per-render from reserved-keys.json's
+  // `bindings` map, keyed by which reserved key this field actually is (see
+  // defaultResolveFieldBindingKey/ctx.resolveFieldBindingKey) — no per-key
+  // branch here, just a data lookup.
+  { key: "binding", label: "Binding", type: "select", options: [] },
   { key: "cost", label: "Cost", type: "number", placeholder: "Cost" },
   // Added for the Inventory Weight calculator's currency-weight lookup
   // (common/js/lib/calculator-modes/inventory-weight.js) — e.g. sys.dnd5e's
@@ -65,48 +112,29 @@ export const VALUE_COLUMNS = [
   // the field actually sets it), so this adds nothing to array fields that
   // aren't currency-shaped.
   { key: "weight", label: "Weight", type: "number", placeholder: "Weight" },
-  {
-    key: "role",
-    label: "Role",
-    type: "select",
-    placeholder: "Role",
-    options: [
-      { value: "", label: "—" },
-      { value: "resource", label: "Resource" },
-      { value: "value", label: "Value" },
-      { value: "tags", label: "Tags" },
-      { value: "modifier", label: "Modifier" },
-    ],
-  },
-  { key: "targetBudget", label: "Target budget", type: "number", placeholder: "Budget" },
 ];
 
 export function fieldValueColumnState(field) {
-  const values = Array.isArray(field.values) ? field.values : [];
+  // An object field's own per-Template map (buildSteps — see
+  // renderPropertyRow's hasOpaqueObjectValues) has no single flat `values`
+  // array to read — flatten every Template's own entries together so a
+  // column any Template's steps actually use (e.g. `libraryKind`) still
+  // auto-activates, same as a plain Enum array field would.
+  const values = Array.isArray(field.values)
+    ? field.values
+    : field.values && typeof field.values === "object"
+      ? Object.values(field.values).flatMap((entry) => (Array.isArray(entry) ? entry : []))
+      : [];
   const anyValueHas = (key) => values.some((entry) => entry && typeof entry === "object" && entry[key] !== undefined);
   const state = {};
+  // `binding`/`libraryKind` render as <select>s but their real options are
+  // resolved per-field, asynchronously (see populateDynamicValueSelects) —
+  // fieldValueColumnState itself runs synchronously, so both simply
+  // auto-activate on bare key-presence like any other column, rather than
+  // checking against a fixed option list the way a static select column would.
   VALUE_COLUMNS.forEach((column) => {
-    // A select column only auto-activates for a value actually using one of
-    // its own known options — bare key-presence isn't enough. `role` in
-    // particular is shared, unintentionally, by combatBindings' own
-    // resource/value/tags/modifier vocabulary AND by derivedFormulas'/
-    // levelUpBindings'/fieldRoles' completely unrelated `role` property;
-    // without this, this generic column would auto-activate for those too,
-    // show a Role dropdown whose 4 options can't represent their actual
-    // value, and silently overwrite it on the next save.
-    state[column.key] =
-      column.type === "select"
-        ? values.some((entry) => entry && typeof entry === "object" && (column.options || []).some((option) => option.value && option.value === entry[column.key]))
-        : anyValueHas(column.key);
+    state[column.key] = anyValueHas(column.key);
   });
-  state.libraryLinked = Boolean(field.entityKind) || anyValueHas("entityId");
-  // fieldRoles' own values always carry a real `sourceField` (every entry
-  // names a sibling field), which would otherwise auto-activate the
-  // generic Source field text column right alongside its own dedicated
-  // Field select (renderValueRow) — same value, two inputs. fieldRoles is
-  // the one field where that concept is fully handled by the dedicated
-  // select instead, never the generic column.
-  if (field.key === "fieldRoles") state.sourceField = false;
   return state;
 }
 
@@ -188,12 +216,74 @@ export function applyPropertyType(row, typeButton, value, { refreshTooltips } = 
 //     own DOM is built, so a caller can inject additional per-row UI (e.g.
 //     Group Properties' own top-level-only "Public" checkbox) without this
 //     module needing to know that concept exists.
-//   - dataManager, filterSystemId: passed through to populateValueEntitySelect
-//     for a values entry's own Library-linked <select> (Enum array mode).
+//   - dataManager, filterSystemId: passed through to populateLibraryFieldDatalist
+//     for a values entry's own Library field autocomplete suggestions (Enum array mode).
 //   - status: passed through to collectValueRow's own invalid-JSON warning
 //     (only actually invoked from collectFieldFromRow, not from here, but
 //     accepted here too so one `ctx` object works for every call in a
 //     caller's own render+collect pair).
+// One entry of an object field's Per-Template Values map (see
+// renderPropertyRow's hasOpaqueObjectValues) — a Template id (the entry's
+// own title, playing the same role "Allowed values"' static label plays for
+// an ordinary Enum array field) with its own Add-value button right beside
+// it — same header-then-rows shape as "Allowed values", just repeated once
+// per Template instead of appearing once for the whole field. Rows below
+// are the EXACT SAME value-row editor every Enum-mode array field already
+// uses (VALUE_COLUMNS' shared checkbox row + renderValueRow per entry + an
+// Extra JSON fallback for whatever a step's own heterogeneous shape doesn't
+// map to a structured column) — never a bespoke raw-JSON textarea.
+// buildSteps: a System with more than one creatable Template needing a
+// different wizard for each (Blades in the Dark's Character vs. Crew) is
+// the only reserved key using this shape today.
+function createObjectMapEntryRow(templateKey = "") {
+  const wrap = document.createElement("div");
+  wrap.className = "d-flex flex-column gap-1";
+  wrap.dataset.systemObjectMapEntry = "";
+  wrap.innerHTML = `
+    <div class="d-flex align-items-center justify-content-between gap-2">
+      <input class="form-control form-control-sm fw-semibold" style="max-width: 16rem;" placeholder="Template id (e.g. tpl.bitd.character)" value="${escapeHtml(templateKey)}" data-system-object-map-key />
+      <div class="d-flex align-items-center gap-1 flex-shrink-0">
+        <button
+          class="btn btn-outline-secondary btn-sm p-1"
+          type="button"
+          data-system-add-value
+          aria-label="Add value"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          data-bs-title="Add value"
+        >
+          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+        </button>
+        <button
+          class="btn btn-outline-danger btn-sm p-1"
+          type="button"
+          data-system-remove-object-map-entry
+          aria-label="Remove Template entry"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          data-bs-title="Remove Template entry"
+        >
+          <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+    <div class="d-flex flex-column gap-1" data-system-object-map-value-rows></div>
+  `;
+  return wrap;
+}
+
+// Shared by collectFieldFromRow's array-Enum and object-map branches — both
+// collect the exact same VALUE_COLUMNS checkbox state from this field's one
+// shared checkbox row (see renderPropertyRow's arrayOptionsHtml, shown for
+// either mode — see syncArrayOptionsVisibility).
+function collectValueColumnOptions(row) {
+  const options = {};
+  VALUE_COLUMNS.forEach((column) => {
+    options[column.key] = row.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
+  });
+  return options;
+}
+
 export function renderPropertyRow(field = {}, container, ctx = {}) {
   if (!container) return null;
   void ensureReservedKeyDatalist();
@@ -206,26 +296,55 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
   // save untouched instead of being silently dropped.
   row._originalField = field;
   const currentTypeMeta = PROPERTY_TYPES.find((entry) => entry.value === field.type) || PROPERTY_TYPES[0];
-  const arrayMode = field.item ? "item" : "values";
+  // Records mode ("item") also covers an array field whose own children live
+  // as a bare top-level `children` sibling of `values` — see the
+  // itemChildren fallback below for why that shape exists and is just as
+  // real as `item.children`.
+  const hasBareRecordChildren = field.type === "array" && Array.isArray(field.children) && field.children.length > 0;
+  const arrayMode = field.item || hasBareRecordChildren ? "item" : "values";
   const columnState = fieldValueColumnState(field);
   // Custom-built rather than Bootstrap's .form-check/.form-check-inline —
   // those assume a stacked layout and carry their own ~1rem right margin on
-  // top of this row's own flex `gap`, which is exactly the wasted space
-  // that pushed this row into a horizontal scrollbar. A plain flex pair
-  // (gap-1 between input/label, extra-small text) packs the same 9 options
-  // measurably tighter with no loss of the click target or help icon.
-  const optionCheckbox = (key, label, topicId, extraAttr = "") => {
+  // top of this row's own flex `gap`, which used to push this row into a
+  // horizontal scrollbar. A plain flex pair (gap-1 between one checkbox and
+  // its own label, extra-small text, no Bootstrap form-check margins) packs
+  // each option tighter with no loss of the click target — the container's
+  // own `gap-3` below is the breathing room BETWEEN options. One shared
+  // help icon (loom.systemArrayOptions, added once before the checkboxes
+  // below) documents every column in one place now, instead of a "?" badge
+  // per checkbox eating further width.
+  // `order` (flex order, not DOM position — see reorderArrayOptions) puts a
+  // checked option ahead of every unchecked one, in the same relative
+  // VALUE_COLUMNS sequence a checked column's own value-row input already
+  // collapses to (an unchecked column's input is `hidden`, so the visible
+  // ones already compact to the front there) — this is what makes it
+  // obvious at a glance which checkbox owns which input below, rather than
+  // a checked box sitting wherever its column happens to fall among all 11.
+  const optionCheckbox = (key, label, index, checked) => {
     const inputId = `system-prop-${key}-${Math.random().toString(36).slice(2)}`;
+    const order = checked ? index : index + VALUE_COLUMNS.length;
     return `
-    <div class="form-check form-check-inline mb-0 text-nowrap flex-shrink-0">
-      <input class="form-check-input" type="checkbox" ${extraAttr} id="${inputId}" data-property-option="${key}" />
-      <label class="form-check-label extra-small" for="${inputId}">
-        ${label}
-        <span class="align-middle" data-help-topic="${topicId}" data-help-insert="replace"></span>
-      </label>
+    <div class="d-flex align-items-center gap-1 flex-shrink-0" data-option-wrap="${key}" style="order: ${order};">
+      <input class="form-check-input m-0" type="checkbox" ${checked ? "checked" : ""} id="${inputId}" data-property-option="${key}" style="cursor: pointer;" />
+      <label class="form-check-label extra-small mb-0 text-nowrap" for="${inputId}" style="cursor: pointer;">${label}</label>
     </div>
   `;
   };
+  const arrayOptionsHtml = VALUE_COLUMNS.map((column, index) => optionCheckbox(column.key, column.label, index, columnState[column.key])).join("");
+  // Name isn't a VALUE_COLUMNS entry (it's always present, never optional),
+  // but it IS always the first control in every value row below — this
+  // disabled, always-checked checkbox just labels that column the same way
+  // every other one is labeled, instead of leaving it the one unmarked input.
+  const nameColumnId = `system-prop-name-${Math.random().toString(36).slice(2)}`;
+  // An "object" field's `values` (as opposed to `children`) is opaque here —
+  // this editor only ever reads/writes an object field's Sub-fields. A
+  // reserved key with its own documented alternate shape there (buildSteps'
+  // per-Template-id map, e.g. Blades in the Dark: Character vs. Crew — see
+  // getDeclaredBuildSteps in workbench-character-view.js and reserved-keys.
+  // json's own `perTemplateMapType`) still needs that data to survive a
+  // save untouched even though there's no UI here to show or edit it.
+  const hasOpaqueObjectValues =
+    field.type === "object" && field.values && typeof field.values === "object" && !Array.isArray(field.values);
   row.innerHTML = `
     <div class="d-flex align-items-center gap-2">
       <button
@@ -262,37 +381,72 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
       >
         <span class="iconify" data-icon="tabler:asterisk" aria-hidden="true"></span>
       </button>
-      <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-property-remove aria-label="Remove property">
+      <button
+        class="btn btn-outline-danger btn-sm flex-shrink-0"
+        type="button"
+        data-property-remove
+        aria-label="Remove property"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-title="Remove property"
+      >
         <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
       </button>
     </div>
-    <div class="d-flex flex-nowrap overflow-x-auto gap-2 align-items-center pb-1" data-system-array-options hidden>
-      ${optionCheckbox("binding", "Binding", "loom.systemValueBinding", columnState.binding ? "checked" : "")}
-      ${optionCheckbox("description", "Description", "loom.systemValueDescription", columnState.description ? "checked" : "")}
-      ${optionCheckbox("libraryLinked", "Library", "loom.systemValueLibraryLinked", columnState.libraryLinked ? "checked" : "")}
-      ${optionCheckbox("shortName", "Short name", "loom.systemValueShortName", columnState.shortName ? "checked" : "")}
-      ${optionCheckbox("sourceId", "Source ID", "loom.systemValueSourceId", columnState.sourceId ? "checked" : "")}
-      ${optionCheckbox("sourceField", "Source field", "loom.systemValueSourceField", columnState.sourceField ? "checked" : "")}
-      ${optionCheckbox("cost", "Cost", "loom.systemValueCost", columnState.cost ? "checked" : "")}
-      ${optionCheckbox("weight", "Weight", "loom.systemValueWeight", columnState.weight ? "checked" : "")}
-      ${optionCheckbox("role", "Role", "loom.systemValueRole", columnState.role ? "checked" : "")}
-      ${optionCheckbox("targetBudget", "Budget", "loom.systemValueTargetBudget", columnState.targetBudget ? "checked" : "")}
+    <div class="d-flex flex-nowrap overflow-x-auto gap-3 align-items-center pb-1" data-system-array-options hidden>
+      <span class="align-middle flex-shrink-0" style="order: -2;" data-help-topic="loom.systemArrayOptions" data-help-insert="replace"></span>
+      <div class="d-flex align-items-center gap-1 flex-shrink-0" style="order: -1;">
+        <input class="form-check-input m-0" type="checkbox" checked disabled id="${nameColumnId}" style="cursor: default;" />
+        <label class="form-check-label extra-small mb-0 text-nowrap" for="${nameColumnId}" style="cursor: default;">Name</label>
+      </div>
+      ${arrayOptionsHtml}
     </div>
     <div class="d-flex flex-column gap-2 ps-3 border-start" data-system-object-section hidden>
-      <div class="d-flex align-items-center justify-content-between gap-2">
-        <span class="small fw-semibold text-body-secondary">Sub-fields</span>
-        <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-system-add-child aria-label="Add sub-field">
+      <div class="d-flex align-items-center justify-content-end gap-2">
+        <button
+          class="btn btn-outline-secondary btn-sm p-1"
+          type="button"
+          data-system-add-child
+          aria-label="Add sub-field"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          data-bs-title="Add sub-field"
+        >
           <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
         </button>
       </div>
       <div class="d-flex flex-column gap-2" data-system-children></div>
     </div>
+    <div class="d-flex flex-column gap-2 ps-3 border-start" data-system-object-map-section hidden>
+      <div class="d-flex align-items-center justify-content-between gap-2">
+        <label class="small text-body-secondary mb-0">Per-Template Values</label>
+        <button
+          class="btn btn-outline-secondary btn-sm p-1"
+          type="button"
+          data-system-add-object-map-entry
+          aria-label="Add Template entry"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          data-bs-title="Add Template entry"
+        >
+          <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="d-flex flex-column gap-3" data-system-object-map-entries></div>
+    </div>
     <div class="d-flex flex-column gap-2 ps-3 border-start" data-system-array-section hidden>
-      <input class="form-control form-control-sm" style="max-width: 9rem;" placeholder="Library kind" value="${escapeHtml(field.entityKind || "")}" data-property-entity-kind data-system-library-kind hidden />
       <div class="d-flex flex-column gap-1" data-system-values-section hidden>
         <div class="d-flex align-items-center justify-content-between gap-2">
           <label class="small text-body-secondary mb-0">Allowed values</label>
-          <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-system-add-value aria-label="Add value">
+          <button
+            class="btn btn-outline-secondary btn-sm p-1"
+            type="button"
+            data-system-add-value
+            aria-label="Add value"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            data-bs-title="Add value"
+          >
             <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
           </button>
         </div>
@@ -309,7 +463,15 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
         </div>
         <div class="d-flex align-items-center justify-content-between gap-2">
           <span class="small text-body-secondary">Record fields</span>
-          <button class="btn btn-outline-secondary btn-sm p-1" type="button" data-system-add-item-child aria-label="Add record field">
+          <button
+            class="btn btn-outline-secondary btn-sm p-1"
+            type="button"
+            data-system-add-item-child
+            aria-label="Add record field"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            data-bs-title="Add record field"
+          >
             <span class="iconify" data-icon="tabler:plus" aria-hidden="true"></span>
           </button>
         </div>
@@ -343,12 +505,11 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
   const minInput = row.querySelector("[data-property-minimum]");
   const maxInput = row.querySelector("[data-property-maximum]");
   const objectSection = row.querySelector("[data-system-object-section]");
+  const objectMapSection = row.querySelector("[data-system-object-map-section]");
   const arraySection = row.querySelector("[data-system-array-section]");
   const arrayModeSelect = row.querySelector("[data-property-array-mode]");
   const valuesSection = row.querySelector("[data-system-values-section]");
   const itemSection = row.querySelector("[data-system-item-section]");
-  const libraryKindWrap = row.querySelector("[data-system-library-kind]");
-  const entityKindInput = row.querySelector("[data-property-entity-kind]");
   const valueRowsContainer = row.querySelector("[data-system-value-rows]");
 
   const showHide = (el, show) => {
@@ -356,14 +517,35 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
     el.classList.toggle("d-none", !show);
   };
 
+  // Array Value Options only means anything for Enum mode (a flat,
+  // System-defined `values` list) — Records mode's own rows are Sub-field
+  // definitions (`item.children`), never touched by VALUE_COLUMNS, so the
+  // checkboxes would just sit there doing nothing. Depends on both the
+  // property's own type AND its array mode, so it's kept as one function
+  // both syncTypeSections (type just changed) and syncArrayModeSections
+  // (mode just changed) call, rather than duplicating the condition. An
+  // object field's own Per-Template map (hasOpaqueObjectValues) is the same
+  // "Enum" shape one level down — every Template's own list of values
+  // shares this one checkbox row too, rather than each Template getting its
+  // own separate set.
+  const syncArrayOptionsVisibility = () => {
+    const isEnumArray = typeButton.dataset.value === "array" && arrayModeSelect.value === "values";
+    const isObjectMap = hasOpaqueObjectValues && typeButton.dataset.value === "object";
+    showHide(arrayOptions, isEnumArray || isObjectMap);
+  };
   const syncTypeSections = () => {
     const currentType = typeButton.dataset.value;
     const isObject = currentType === "object";
     const isArray = currentType === "array";
     const isScalar = ["string", "number", "boolean"].includes(currentType);
-    showHide(objectSection, isObject);
+    // A Per-Template map (buildSteps) is a DIFFERENT shape from ordinary
+    // object Sub-fields, never both — Sub-fields' own "Add sub-field" has no
+    // business appearing on a field that's really a named group of Enum
+    // value lists, so the two sections are mutually exclusive, not stacked.
+    showHide(objectSection, isObject && !hasOpaqueObjectValues);
+    showHide(objectMapSection, isObject && hasOpaqueObjectValues);
     showHide(arraySection, isArray);
-    showHide(arrayOptions, isArray);
+    syncArrayOptionsVisibility();
     arrayModeSelect.hidden = !isArray;
     defaultInput.hidden = !isScalar;
     minInput.hidden = currentType !== "number";
@@ -378,19 +560,29 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
     const isValues = arrayModeSelect.value === "values";
     showHide(valuesSection, isValues);
     showHide(itemSection, !isValues);
+    syncArrayOptionsVisibility();
   };
   // Re-applies every value row's column visibility to match this field's own
   // current option checkboxes — called on load and whenever an option is
   // toggled, so a field's rows always reflect what's actually enabled for it
-  // rather than needing a full re-render.
+  // rather than needing a full re-render. Applies to both this field's own
+  // classic Enum value rows AND every Template's own value rows under the
+  // Per-Template map (data-system-object-map-value-rows) — a distinct
+  // attribute from data-system-value-rows specifically so this row's own
+  // (always-present-but-hidden-unless-Enum) array-values container can't
+  // collide with them in a `querySelector` (first-match) lookup.
   const syncValueColumns = () => {
     const state = {};
-    VALUE_COLUMNS.forEach((column) => {
-      state[column.key] = row.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
+    VALUE_COLUMNS.forEach((column, index) => {
+      const checked = row.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
+      state[column.key] = checked;
+      const wrap = row.querySelector(`[data-option-wrap="${column.key}"]`);
+      if (wrap) wrap.style.order = checked ? index : index + VALUE_COLUMNS.length;
     });
-    state.libraryLinked = row.querySelector('[data-property-option="libraryLinked"]')?.checked ?? false;
-    showHide(libraryKindWrap, state.libraryLinked);
     Array.from(valueRowsContainer.children).forEach((valueRow) => applyValueRowColumns(valueRow, state));
+    row.querySelectorAll("[data-system-object-map-value-rows]").forEach((container) => {
+      Array.from(container.children).forEach((valueRow) => applyValueRowColumns(valueRow, state));
+    });
   };
   // Click cycles to the next type in PROPERTY_TYPES (wrapping around) rather
   // than opening a dropdown — see PROPERTY_TYPES' own comment for why. A
@@ -409,34 +601,60 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
   syncTypeSections();
   syncArrayModeSections();
 
+  // An array field's own Records-mode sub-fields have two authored shapes in
+  // the wild — `item.children` (dnd5e/dnd5e2014's own convention, carrying
+  // `item.label`/`item.displayField` alongside) and a bare top-level
+  // `children` sibling to `values` (every other System — see bindings.js'
+  // resolveDottedPath and system-schema.js's collectSystemFields, both of
+  // which already prefer this shape first). Only an "object"-type field's
+  // Sub-fields section owns bare `children`; for "array", it means Records
+  // mode instead, so it renders into the item section, never both.
   const childrenContainer = row.querySelector("[data-system-children]");
-  (field.children || []).forEach((child) => renderPropertyRow(child, childrenContainer, ctx));
-  initPropertySortable(childrenContainer, ctx);
+  if (field.type !== "array") {
+    (field.children || []).forEach((child) => renderPropertyRow(child, childrenContainer, ctx));
+    initPropertySortable(childrenContainer, ctx);
+  }
 
   const itemChildrenContainer = row.querySelector("[data-system-item-children]");
-  (field.item?.children || []).forEach((child) => renderPropertyRow(child, itemChildrenContainer, ctx));
+  const itemChildren = field.item?.children || (field.type === "array" ? field.children : null) || [];
+  itemChildren.forEach((child) => renderPropertyRow(child, itemChildrenContainer, ctx));
   initPropertySortable(itemChildrenContainer, ctx);
 
-  // A values entry can link straight to a real Library entity of the
-  // declared Library kind, instead of just being a hand-typed display
-  // string — this is what lets the schema stay the source of truth for the
-  // roster (names, order, which ones are still just placeholders) while
-  // pointing directly at real data once it exists, rather than duplicating
-  // it. Re-populated whenever the Library kind changes.
-  const valueRowRenderCtx = { isFieldRoles: field.key === "fieldRoles", listSiblingFieldKeys: ctx.listSiblingFieldKeys };
+  // Resolved once and shared by both the classic Enum values loop below AND
+  // the Per-Template map loop — buildSteps isn't itself a bindingKey-bearing
+  // reserved key (fieldRoles/derivedFormulas/levelUpBindings/combatBindings
+  // are), so this resolves falsy for it either way, same as any other
+  // ordinary Enum field with no binding vocabulary of its own.
+  const bindingKey = (ctx.resolveFieldBindingKey || defaultResolveFieldBindingKey)(field, ctx);
+
+  const objectMapEntriesContainer = row.querySelector("[data-system-object-map-entries]");
+  if (hasOpaqueObjectValues && objectMapEntriesContainer) {
+    Object.entries(field.values).forEach(([templateKey, templateValues]) => {
+      const entryRow = createObjectMapEntryRow(templateKey);
+      objectMapEntriesContainer.appendChild(entryRow);
+      // Built well after this field's own row-level refreshTooltips call
+      // already ran (see below) — needs its own, same reasoning as that
+      // call's own comment.
+      ctx.refreshTooltips?.(entryRow);
+      const entryValueRows = entryRow.querySelector("[data-system-object-map-value-rows]");
+      (Array.isArray(templateValues) ? templateValues : []).forEach((entry) => {
+        const valueRow = renderValueRow(entry, entryValueRows);
+        ctx.refreshTooltips?.(valueRow);
+        const source = typeof entry === "object" && entry !== null ? entry : {};
+        void populateDynamicValueSelects(valueRow, bindingKey, source);
+        wireLibraryFieldAutocomplete(valueRow, source.libraryKind || "", !bindingKey, ctx);
+      });
+    });
+  }
+
   (Array.isArray(field.values) ? field.values : []).forEach((entry) => {
-    const valueRow = renderValueRow(entry, valueRowsContainer, valueRowRenderCtx);
-    const entityId = typeof entry === "object" && entry !== null ? entry.entityId || "" : "";
-    void populateValueEntitySelect(valueRow.querySelector("[data-value-entity-select]"), field.entityKind, entityId, ctx);
+    const valueRow = renderValueRow(entry, valueRowsContainer);
+    ctx.refreshTooltips?.(valueRow);
+    const source = typeof entry === "object" && entry !== null ? entry : {};
+    void populateDynamicValueSelects(valueRow, bindingKey, source);
+    wireLibraryFieldAutocomplete(valueRow, source.libraryKind || "", !bindingKey, ctx);
   });
   syncValueColumns();
-  entityKindInput.addEventListener("change", () => {
-    const kind = entityKindInput.value.trim();
-    Array.from(valueRowsContainer.children).forEach((valueRow) => {
-      const select = valueRow.querySelector("[data-value-entity-select]");
-      void populateValueEntitySelect(select, kind, select?.value || "", ctx);
-    });
-  });
 
   ctx.extraRowControls?.(row, field);
 
@@ -454,35 +672,21 @@ export function applyValueRowColumns(valueRow, state) {
       wrap.classList.toggle("d-none", !state[column.key]);
     }
   });
-  const entitySelect = valueRow.querySelector("[data-value-entity-select]");
-  if (entitySelect) {
-    entitySelect.hidden = !state.libraryLinked;
-    entitySelect.classList.toggle("d-none", !state.libraryLinked);
-  }
 }
 
-export function renderValueRow(entry = {}, container, renderCtx = {}) {
+export function renderValueRow(entry = {}, container) {
   if (!container) return null;
   const name = typeof entry === "string" ? entry : entry?.name || "";
   const source = typeof entry === "object" && entry !== null ? entry : {};
-  // fieldRoles is "pick one of N known roles, pick one of your own fields" —
-  // strictly friendlier as two selects than free-typed columns, and the
-  // natural replacement for what the retired per-tool Settings-modal
-  // dropdowns used to offer (now visible in Loom instead of hidden
-  // per-tool). Populated async below (populateFieldRolesValueSelects),
-  // same pattern as the Library-entity select's own async population.
-  const fieldRolesSelects = renderCtx.isFieldRoles
-    ? `<select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-fieldroles-role></select>
-       <select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-fieldroles-field></select>`
-    : "";
   // Kept so collectValueRow's value collection can merge its output back
   // over this instead of reconstructing from scratch — same reasoning as
   // row._originalField above.
+  const libraryFieldDatalistId = `system-value-library-field-${Math.random().toString(36).slice(2)}`;
   const columnInputs = VALUE_COLUMNS.map((column) => {
     const currentValue = source[column.key] ?? "";
     const control =
       column.type === "select"
-        ? `<select class="form-select form-select-sm" style="width: 7rem;" data-value-column-input="${column.key}">
+        ? `<select class="form-select form-select-sm" style="width: 9rem;" data-value-column-input="${column.key}">
             ${(column.options || [])
               .map(
                 (option) =>
@@ -492,12 +696,25 @@ export function renderValueRow(entry = {}, container, renderCtx = {}) {
           </select>`
         : `<input
             class="form-control form-control-sm"
-            style="${column.wide ? "min-width: 12rem;" : "width: 6rem;"}"
+            style="${column.wide ? "min-width: 12rem;" : "width: 9rem;"}"
             type="${column.type === "number" ? "number" : "text"}"
             placeholder="${column.placeholder}"
             value="${escapeHtml(currentValue)}"
             data-value-column-input="${column.key}"
+            ${column.key === "libraryField" ? `list="${libraryFieldDatalistId}"` : ""}
           />`;
+    // `libraryField` gets a paired <datalist> (see wireLibraryFieldAutocomplete)
+    // instead of a second visible control — a datalist never renders its own
+    // element, so this stays exactly one input tall like every other column,
+    // while still offering real entities of the row's own `libraryKind` as
+    // native-autocomplete suggestions. Never required — typing directly
+    // (a field name, for levelUpBindings-style rows) always works regardless.
+    if (column.key === "libraryField") {
+      return `<div class="flex-shrink-0" data-value-column="${column.key}" hidden>
+        ${control}
+        <datalist data-value-library-field-datalist id="${libraryFieldDatalistId}"></datalist>
+      </div>`;
+    }
     return `<div class="${column.wide ? "flex-grow-1" : "flex-shrink-0"}" data-value-column="${column.key}" hidden>${control}</div>`;
   }).join("");
   // Anything beyond the columns above (a field-specific stat block, or
@@ -506,7 +723,6 @@ export function renderValueRow(entry = {}, container, renderCtx = {}) {
   // unknown property is never silently dropped on save.
   const extra = { ...source };
   delete extra.name;
-  delete extra.entityId;
   VALUE_COLUMNS.forEach((column) => delete extra[column.key]);
   const extraJson = Object.keys(extra).length ? JSON.stringify(extra) : "";
   const row = document.createElement("div");
@@ -514,62 +730,75 @@ export function renderValueRow(entry = {}, container, renderCtx = {}) {
   row.dataset.systemValueRow = "";
   row._originalValue = entry;
   row.innerHTML = `
-    <input class="form-control form-control-sm flex-shrink-0" style="width: 9rem;" placeholder="Name" value="${escapeHtml(name)}" data-value-name />
-    ${fieldRolesSelects}
+    <input class="form-control form-control-sm flex-shrink-0" style="width: 10rem;" placeholder="Name" value="${escapeHtml(name)}" data-value-name />
     ${columnInputs}
-    <select class="form-select form-select-sm flex-shrink-0" style="width: 9rem;" data-value-entity-select hidden>
-      <option value="">Not in Library yet</option>
-    </select>
     <input class="form-control form-control-sm font-monospace flex-grow-1" style="min-width: 6rem;" placeholder="Extra JSON" value="${escapeHtml(extraJson)}" data-value-extra />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-value aria-label="Remove value">
+    <button
+      class="btn btn-outline-danger btn-sm flex-shrink-0"
+      type="button"
+      data-remove-value
+      aria-label="Remove value"
+      data-bs-toggle="tooltip"
+      data-bs-placement="top"
+      data-bs-title="Remove value"
+    >
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
   container.appendChild(row);
-  if (renderCtx.isFieldRoles) {
-    void populateFieldRolesValueSelects(row, source, renderCtx);
-  }
   return row;
 }
 
-// Populates fieldRoles' own dedicated Role/Field selects (see
-// renderValueRow above) — Role options come from reserved-keys.json's
-// closed fieldRoleEnum (with each role's own description as the option's
-// title tooltip); Field options come from this System's own OTHER
-// top-level field keys, live via renderCtx.listSiblingFieldKeys() so a
-// field added/renamed elsewhere in the editor shows up without a reload.
-async function populateFieldRolesValueSelects(valueRow, source, renderCtx) {
-  const roleSelect = valueRow.querySelector("[data-value-fieldroles-role]");
-  const fieldSelect = valueRow.querySelector("[data-value-fieldroles-field]");
-  if (!roleSelect || !fieldSelect) return;
-  const schema = await loadReservedKeysSchema();
-  roleSelect.innerHTML = `<option value="">Role…</option>`;
-  (schema.fieldRoleEnum || []).forEach((entry) => {
-    const option = document.createElement("option");
-    option.value = entry.role;
-    option.textContent = entry.role;
-    option.title = entry.description || "";
-    if (entry.role === source.role) option.selected = true;
-    roleSelect.appendChild(option);
-  });
-  const siblingKeys = renderCtx.listSiblingFieldKeys ? renderCtx.listSiblingFieldKeys() : [];
-  fieldSelect.innerHTML = `<option value="">Field…</option>`;
-  siblingKeys.forEach((key) => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.textContent = key;
-    if (key === source.sourceField) option.selected = true;
-    fieldSelect.appendChild(option);
-  });
-  // The System's own field for this role may not be in the sibling list yet
-  // (e.g. a stored value pointing at a field renamed/removed since) — kept
-  // as a selected option anyway so saving doesn't silently discard it.
-  if (source.sourceField && !siblingKeys.includes(source.sourceField)) {
-    const option = document.createElement("option");
-    option.value = source.sourceField;
-    option.textContent = `${source.sourceField} (not found)`;
-    option.selected = true;
-    fieldSelect.appendChild(option);
+// Populates the two dynamically-optioned <select> columns (see VALUE_COLUMNS
+// above) for one value row: `binding` from reserved-keys.json's `bindings`
+// map, keyed by `bindingKey` (this field's own reserved key, resolved once
+// per renderPropertyRow call — see defaultResolveFieldBindingKey/
+// ctx.resolveFieldBindingKey); `libraryKind` from the suite's registered
+// Library kinds, the same registry Loom's own Entities/Systems pickers use.
+// A stored value naming a binding/kind the current lookup doesn't know about
+// (data authored before a rename, or against a since-removed kind) is kept
+// as a selected option anyway, same reasoning as populateValueEntitySelect —
+// saving never silently discards it.
+export async function populateDynamicValueSelects(valueRow, bindingKey, source = {}) {
+  const bindingSelect = valueRow?.querySelector('[data-value-column-input="binding"]');
+  if (bindingSelect) {
+    const schema = await loadReservedKeysSchema();
+    const options = bindingKey ? schema.bindings?.[bindingKey] || [] : [];
+    bindingSelect.innerHTML = `<option value="">—</option>`;
+    options.forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.name;
+      option.textContent = entry.name;
+      option.title = entry.description || "";
+      if (entry.name === source.binding) option.selected = true;
+      bindingSelect.appendChild(option);
+    });
+    if (source.binding && !options.some((entry) => entry.name === source.binding)) {
+      const option = document.createElement("option");
+      option.value = source.binding;
+      option.textContent = `${source.binding} (not found)`;
+      option.selected = true;
+      bindingSelect.appendChild(option);
+    }
+  }
+  const libraryKindSelect = valueRow?.querySelector('[data-value-column-input="libraryKind"]');
+  if (libraryKindSelect) {
+    const kinds = await ensureLibraryKinds();
+    libraryKindSelect.innerHTML = `<option value="">—</option>`;
+    kinds.forEach((kind) => {
+      const option = document.createElement("option");
+      option.value = kind.id;
+      option.textContent = kind.label || kind.id;
+      if (kind.id === source.libraryKind) option.selected = true;
+      libraryKindSelect.appendChild(option);
+    });
+    if (source.libraryKind && !kinds.some((kind) => kind.id === source.libraryKind)) {
+      const option = document.createElement("option");
+      option.value = source.libraryKind;
+      option.textContent = `${source.libraryKind} (not found)`;
+      option.selected = true;
+      libraryKindSelect.appendChild(option);
+    }
   }
 }
 
@@ -581,19 +810,15 @@ async function populateFieldRolesValueSelects(valueRow, source, renderCtx) {
 // System among their own systemIds (System's own editor uses its own,
 // currently-being-edited systemId; a caller with no such concept — Group
 // Properties — omits it and gets every entity of the kind instead).
-export async function populateValueEntitySelect(select, entityKind, currentValue, ctx = {}) {
-  if (!select) return;
-  select.innerHTML = "";
-  const blank = document.createElement("option");
-  blank.value = "";
-  blank.textContent = "Not in Library yet";
-  select.appendChild(blank);
+export async function populateLibraryFieldDatalist(datalist, kind, ctx = {}) {
+  if (!datalist) return;
+  datalist.innerHTML = "";
   const dataManager = ctx.dataManager;
-  if (!entityKind || !dataManager) return;
+  if (!kind || !dataManager) return;
   const filterSystemId = (ctx.filterSystemId || "").trim();
   let ids = [];
   try {
-    const { remote } = await dataManager.list(entityKind, { refresh: true, includeLocal: false });
+    const { remote } = await dataManager.list(kind, { refresh: true, includeLocal: false });
     ids = dataManager.collectListEntries(remote, ["owned", "shared", "public", "items"]).map((entry) => entry.id);
   } catch (error) {
     return;
@@ -601,7 +826,7 @@ export async function populateValueEntitySelect(select, entityKind, currentValue
   for (const id of ids) {
     let entity = null;
     try {
-      entity = (await dataManager.get(entityKind, id))?.payload;
+      entity = (await dataManager.get(kind, id))?.payload;
     } catch (error) {
       continue;
     }
@@ -609,12 +834,38 @@ export async function populateValueEntitySelect(select, entityKind, currentValue
     if (filterSystemId && !systemIds.includes(filterSystemId)) continue;
     const option = document.createElement("option");
     option.value = id;
-    option.textContent = entity?.name || id;
-    select.appendChild(option);
+    option.label = entity?.name || id;
+    datalist.appendChild(option);
   }
-  if (currentValue && Array.from(select.options).some((option) => option.value === currentValue)) {
-    select.value = currentValue;
-  }
+}
+
+// Wires one value row's `libraryField` autocomplete suggestions (see
+// renderValueRow) — the one, unified replacement for the retired
+// entityKind/entityId "Library-linked" mechanism. Only relevant for a
+// "pick one specific record" array (e.g. a System's own Classes list, where
+// libraryField holds that record's own id) — `allowSuggestions` is
+// `!bindingKey` (see renderPropertyRow), since a field WITH a binding
+// vocabulary (fieldRoles/derivedFormulas/levelUpBindings) always uses
+// libraryField as a plain field NAME instead (e.g. "proficiency_choices"),
+// where suggesting record ids would be actively wrong. When allowed,
+// populates the row's paired <datalist> against its own `libraryKind` (via
+// populateLibraryFieldDatalist, sharing the exact same fetch/filter
+// behavior the old mechanism had), re-populating whenever that row's own
+// Library kind select changes. A <datalist> never renders a visible element
+// of its own, so the text input stays the only control the user sees —
+// typing a suggested entity's id (or anything else) is all the same "type
+// into the field" action, unlike the old separate picker <select>.
+// `initialKind` is the row's already-known starting value — read
+// synchronously from the original data rather than the `libraryKind`
+// <select>'s own live value, which populateDynamicValueSelects fills in
+// asynchronously and may not have landed yet at this point in the same
+// render pass.
+export function wireLibraryFieldAutocomplete(valueRow, initialKind, allowSuggestions, ctx = {}) {
+  const kindSelect = valueRow?.querySelector('[data-value-column-input="libraryKind"]');
+  const datalist = valueRow?.querySelector("[data-value-library-field-datalist]");
+  if (!kindSelect || !datalist || !allowSuggestions) return;
+  kindSelect.addEventListener("change", () => populateLibraryFieldDatalist(datalist, kindSelect.value, ctx));
+  void populateLibraryFieldDatalist(datalist, initialKind, ctx);
 }
 
 export function collectValueRow(valueRow, options, ctx = {}) {
@@ -636,15 +887,13 @@ export function collectValueRow(valueRow, options, ctx = {}) {
   // this editor doesn't know about yet — still survives.
   const original = valueRow._originalValue && typeof valueRow._originalValue === "object" ? valueRow._originalValue : {};
   const value = { ...original, ...extra };
-  delete value.entityId;
   delete value.name;
   if (name) value.name = name;
   // Only a column this field actually opted into (its own checkbox) is
   // managed here at all — deleting a VALUE_COLUMNS key unconditionally
   // would silently wipe a same-named property this UI was never given
-  // control over (derivedFormulas'/levelUpBindings'/fieldRoles' own bare
-  // `role`, distinct from combatBindings' opt-in Role column), the exact
-  // kind of silent data loss this editor is supposed to never do.
+  // control over, the exact kind of silent data loss this editor is
+  // supposed to never do.
   VALUE_COLUMNS.forEach((column) => {
     if (!options[column.key]) return;
     delete value[column.key];
@@ -652,30 +901,11 @@ export function collectValueRow(valueRow, options, ctx = {}) {
     if (raw === "") return;
     value[column.key] = column.type === "number" ? Number(raw) : raw;
   });
-  if (options.libraryLinked) {
-    const entityId = valueRow.querySelector("[data-value-entity-select]")?.value || "";
-    if (entityId) value.entityId = entityId;
-  }
-  // fieldRoles' own dedicated Role/Field selects (renderValueRow) — present
-  // only on a fieldRoles value row, so this is a no-op for every other
-  // field's rows. Read after the generic VALUE_COLUMNS loop above — that
-  // loop never touches "role" (fieldRoles' own role values never match the
-  // combatBindings resource/value/tags/modifier options) or "sourceField"
-  // (fieldValueColumnState explicitly forces it off for this one field) —
-  // but this stays the authoritative source regardless.
-  const fieldRolesRoleSelect = valueRow.querySelector("[data-value-fieldroles-role]");
-  const fieldRolesFieldSelect = valueRow.querySelector("[data-value-fieldroles-field]");
-  if (fieldRolesRoleSelect || fieldRolesFieldSelect) {
-    delete value.role;
-    delete value.sourceField;
-    if (fieldRolesRoleSelect?.value) value.role = fieldRolesRoleSelect.value;
-    if (fieldRolesFieldSelect?.value) value.sourceField = fieldRolesFieldSelect.value;
-  }
   // Only a genuinely empty row (no Name, no columns, no extra JSON, no
   // original data) is dropped now — a blank Name alone used to silently
   // discard the whole row, which lost real data for buildSteps (keyed by
-  // `step`), derivedFormulas (keyed by `role`), and fieldRoles (keyed by
-  // `field`+`role`), none of which use `name` at all. See
+  // `step`), derivedFormulas (keyed by `binding`), and fieldRoles (keyed by
+  // `sourceField`+`binding`), none of which use `name` at all. See
   // findUnnamedValueEntries for the save-time nudge toward adding one.
   return Object.keys(value).length ? value : null;
 }
@@ -724,7 +954,6 @@ export function collectFieldFromRow(row, ctx = {}) {
   delete field.maximum;
   delete field.children;
   delete field.item;
-  delete field.entityKind;
   delete field.values;
 
   if (defaultRaw !== "") field.default = defaultRaw;
@@ -736,28 +965,66 @@ export function collectFieldFromRow(row, ctx = {}) {
   if (type === "object") {
     const children = collectFieldsFromContainer(row.querySelector("[data-system-children]"), ctx);
     if (children.length) field.children = children;
+    // Per-Template Values — see renderPropertyRow's
+    // hasOpaqueObjectValues/objectMapEntries. Each Template's own list
+    // collects through the exact same collectValueRow every Enum-mode array
+    // field's values already use (shared VALUE_COLUMNS checkbox state via
+    // collectValueColumnOptions), not a JSON blob. The section's own
+    // `hidden` state (not entry count) says whether this field went through
+    // this editing path at all: a field that never had one stays untouched
+    // below; one that did, but was emptied down to zero entries by the
+    // Remove button, correctly ends up with an empty `values: {}` rather
+    // than having its stale original silently restored.
+    const objectMapSection = row.querySelector("[data-system-object-map-section]");
+    if (objectMapSection && !objectMapSection.hidden) {
+      const options = collectValueColumnOptions(row);
+      const values = {};
+      Array.from(row.querySelectorAll("[data-system-object-map-entry]")).forEach((entryRow) => {
+        const entryKey = entryRow.querySelector("[data-system-object-map-key]")?.value.trim();
+        if (!entryKey) return;
+        const valueRows = Array.from(entryRow.querySelector("[data-system-object-map-value-rows]")?.children || []);
+        values[entryKey] = valueRows.map((valueRow) => collectValueRow(valueRow, options, ctx)).filter(Boolean);
+      });
+      field.values = values;
+    } else if (!children.length) {
+      // Neither Sub-fields nor the Per-Template map UI ever activated for
+      // this field — an opaque original shape round-trips untouched rather
+      // than being silently wiped just because this editor has nothing to
+      // say about it yet.
+      const originalValues = row._originalField?.values;
+      if (originalValues && typeof originalValues === "object" && !Array.isArray(originalValues)) {
+        field.values = originalValues;
+      }
+    }
   }
   if (type === "array") {
     const arrayMode = row.querySelector("[data-property-array-mode]")?.value || "values";
-    const options = {};
-    VALUE_COLUMNS.forEach((column) => {
-      options[column.key] = row.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
-    });
-    options.libraryLinked = row.querySelector('[data-property-option="libraryLinked"]')?.checked ?? false;
     if (arrayMode === "item") {
-      const item = { type: "object" };
       const itemLabel = row.querySelector("[data-item-label]")?.value.trim();
       const displayField = row.querySelector("[data-item-display-field]")?.value.trim();
-      if (itemLabel) item.label = itemLabel;
-      if (displayField) item.displayField = displayField;
       const children = collectFieldsFromContainer(row.querySelector("[data-system-item-children]"), ctx);
-      if (children.length) item.children = children;
-      field.item = item;
-    } else {
-      if (options.libraryLinked) {
-        const entityKind = row.querySelector("[data-property-entity-kind]")?.value.trim() || "";
-        if (entityKind) field.entityKind = entityKind;
+      // A field already using the bare top-level `children` shape (every
+      // System except dnd5e/dnd5e2014 — see renderPropertyRow's
+      // hasBareRecordChildren) keeps using it, unmigrated, since it's
+      // already what bindings.js/system-schema.js both read natively —
+      // unless the user actually types a Record label/Display field, which
+      // has nowhere to live there, promoting it to item.children on this
+      // save. Anything else (dnd5e's own item.children convention, or a
+      // brand-new Records-mode field) keeps the pre-existing item.children
+      // shape, unchanged from before this fallback existed.
+      const originalField = row._originalField || {};
+      const usesBareShape = Array.isArray(originalField.children) && originalField.children.length > 0 && !originalField.item;
+      if (usesBareShape && !itemLabel && !displayField) {
+        if (children.length) field.children = children;
+      } else {
+        const item = { type: "object" };
+        if (itemLabel) item.label = itemLabel;
+        if (displayField) item.displayField = displayField;
+        if (children.length) item.children = children;
+        field.item = item;
       }
+    } else {
+      const options = collectValueColumnOptions(row);
       const valueRows = Array.from(row.querySelector("[data-system-value-rows]")?.children || []);
       const values = valueRows.map((valueRow) => collectValueRow(valueRow, options, ctx)).filter(Boolean);
       if (values.length) field.values = values;
@@ -809,22 +1076,49 @@ export function wirePropertyContainerEvents(container, ctx = {}) {
       if (target) ctx.runChange(() => renderPropertyRow({}, target, ctx));
       return;
     }
+    const addObjectMapEntryButton = event.target.closest("[data-system-add-object-map-entry]");
+    if (addObjectMapEntryButton) {
+      const target = addObjectMapEntryButton
+        .closest("[data-system-object-map-section]")
+        ?.querySelector("[data-system-object-map-entries]");
+      if (target) {
+        ctx.runChange(() => {
+          const entryRow = createObjectMapEntryRow("");
+          target.appendChild(entryRow);
+          ctx.refreshTooltips?.(entryRow);
+        });
+      }
+      return;
+    }
+    const removeObjectMapEntryButton = event.target.closest("[data-system-remove-object-map-entry]");
+    if (removeObjectMapEntryButton) {
+      ctx.runChange(() => removeObjectMapEntryButton.closest("[data-system-object-map-entry]")?.remove());
+      return;
+    }
     const addValueButton = event.target.closest("[data-system-add-value]");
     if (addValueButton) {
       const propertyRow = addValueButton.closest(".border.rounded-3");
+      // Either this field's own classic Enum values list, or (buildSteps'
+      // Per-Template map) one Template entry's own value-rows container —
+      // whichever ancestor is actually present, same shared value-row
+      // machinery either way.
       const arraySection = addValueButton.closest("[data-system-array-section]");
-      const target = arraySection?.querySelector("[data-system-value-rows]");
-      const entityKind = arraySection?.querySelector("[data-property-entity-kind]")?.value.trim() || "";
+      const objectMapEntry = addValueButton.closest("[data-system-object-map-entry]");
+      const target =
+        objectMapEntry?.querySelector("[data-system-object-map-value-rows]") ||
+        arraySection?.querySelector("[data-system-value-rows]");
       if (target) {
         ctx.runChange(() => {
           const fieldKey = propertyRow?.querySelector("[data-property-key]")?.value.trim() || "";
-          const valueRow = renderValueRow({}, target, { isFieldRoles: fieldKey === "fieldRoles", listSiblingFieldKeys: ctx.listSiblingFieldKeys });
-          void populateValueEntitySelect(valueRow.querySelector("[data-value-entity-select]"), entityKind, "", ctx);
+          const valueRow = renderValueRow({}, target);
+          ctx.refreshTooltips?.(valueRow);
+          const bindingKey = (ctx.resolveFieldBindingKey || defaultResolveFieldBindingKey)({ key: fieldKey }, ctx);
+          void populateDynamicValueSelects(valueRow, bindingKey, {});
+          wireLibraryFieldAutocomplete(valueRow, "", !bindingKey, ctx);
           const state = {};
           VALUE_COLUMNS.forEach((column) => {
             state[column.key] = propertyRow?.querySelector(`[data-property-option="${column.key}"]`)?.checked ?? false;
           });
-          state.libraryLinked = propertyRow?.querySelector('[data-property-option="libraryLinked"]')?.checked ?? false;
           applyValueRowColumns(valueRow, state);
         });
       }
@@ -925,7 +1219,7 @@ function createInspectorSelectProxy(row, selector, options) {
   return select;
 }
 
-function createInspectorCheckboxField(row, selector, labelText, topicId) {
+function createInspectorCheckboxField(row, selector, labelText) {
   const source = row.querySelector(selector);
   const wrap = document.createElement("div");
   wrap.className = "form-check mb-0";
@@ -946,13 +1240,6 @@ function createInspectorCheckboxField(row, selector, labelText, topicId) {
   label.textContent = labelText;
   wrap.appendChild(input);
   wrap.appendChild(label);
-  if (topicId) {
-    const help = document.createElement("span");
-    help.className = "align-middle";
-    help.dataset.helpTopic = topicId;
-    help.dataset.helpInsert = "replace";
-    wrap.appendChild(help);
-  }
   return wrap;
 }
 
@@ -982,19 +1269,6 @@ function createInspectorTypeSelect(row, ctx, onTypeChanged) {
   });
   return select;
 }
-
-const INSPECTOR_ARRAY_VALUE_OPTIONS = [
-  ["binding", "Binding", "loom.systemValueBinding"],
-  ["description", "Description", "loom.systemValueDescription"],
-  ["libraryLinked", "Library", "loom.systemValueLibraryLinked"],
-  ["shortName", "Short name", "loom.systemValueShortName"],
-  ["sourceId", "Source ID", "loom.systemValueSourceId"],
-  ["sourceField", "Source field", "loom.systemValueSourceField"],
-  ["cost", "Cost", "loom.systemValueCost"],
-  ["weight", "Weight", "loom.systemValueWeight"],
-  ["role", "Role", "loom.systemValueRole"],
-  ["targetBudget", "Budget", "loom.systemValueTargetBudget"],
-];
 
 function buildInspectorFields(row, ctx, onTypeChanged) {
   const fragment = document.createDocumentFragment();
@@ -1036,20 +1310,21 @@ function buildInspectorFields(row, ctx, onTypeChanged) {
     const optionsWrap = document.createElement("div");
     optionsWrap.className = "d-flex flex-column gap-1";
     const optionsLabel = document.createElement("span");
-    optionsLabel.className = "form-label fw-semibold mb-0 small";
+    optionsLabel.className = "form-label fw-semibold mb-0 small d-flex align-items-center gap-1";
     optionsLabel.textContent = "Array Value Options";
+    const optionsHelp = document.createElement("span");
+    optionsHelp.className = "align-middle";
+    optionsHelp.dataset.helpTopic = "loom.systemArrayOptions";
+    optionsHelp.dataset.helpInsert = "replace";
+    optionsLabel.appendChild(optionsHelp);
     optionsWrap.appendChild(optionsLabel);
     const checkboxGrid = document.createElement("div");
     checkboxGrid.className = "d-flex flex-wrap gap-2";
-    INSPECTOR_ARRAY_VALUE_OPTIONS.forEach(([key, label, topicId]) => {
-      checkboxGrid.appendChild(createInspectorCheckboxField(row, `[data-property-option="${key}"]`, label, topicId));
+    VALUE_COLUMNS.forEach((column) => {
+      checkboxGrid.appendChild(createInspectorCheckboxField(row, `[data-property-option="${column.key}"]`, column.label));
     });
     optionsWrap.appendChild(checkboxGrid);
     fragment.appendChild(optionsWrap);
-
-    if (row.querySelector('[data-property-option="libraryLinked"]')?.checked) {
-      fragment.appendChild(inspectorFieldWrap("Library kind", createInspectorTextProxy(row, "[data-property-entity-kind]")));
-    }
   }
 
   return fragment;
@@ -1098,8 +1373,7 @@ export function createPropertyInspector({
   // input/change proxy), so nothing else needs to move. Selects/checkboxes/
   // buttons have no caret to protect, so a change to one of those always
   // rebuilds immediately — that's what keeps section visibility (Default/
-  // Min/Max, Array options, Library kind, ...) correct as Type/Array
-  // Mode/Library-linked change.
+  // Min/Max, Array options, ...) correct as Type/Array Mode changes.
   function shouldSkipRebuild() {
     const active = document.activeElement;
     if (!fieldsEl || !fieldsEl.contains(active)) return false;

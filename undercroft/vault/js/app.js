@@ -1652,7 +1652,7 @@ async function init() {
     if (featureId) addFeature(featureId);
   });
   // Changing a property value can change the budget (a ceiling-setting
-  // property's own targetBudget, or any other property's cost) — recompute
+  // property's own cost, or any other property's cost) — recompute
   // it the same way add/removeFeature already do, not just re-render.
   elements.identityFields?.addEventListener("change", (event) => {
     const select = event.target.closest("[data-editable-property]");

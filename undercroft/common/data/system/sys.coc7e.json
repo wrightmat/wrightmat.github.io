@@ -671,23 +671,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 3,
-          "description": "Everyday equipment or a widely printed book."
+          "description": "Everyday equipment or a widely printed book.",
+          "cost": 3
         },
         {
           "name": "Uncommon",
-          "targetBudget": 7,
-          "description": "Specialized or hard-to-source gear, or an out-of-print work."
+          "description": "Specialized or hard-to-source gear, or an out-of-print work.",
+          "cost": 7
         },
         {
           "name": "Rare",
-          "targetBudget": 12,
-          "description": "Restricted, expensive, or privately held."
+          "description": "Restricted, expensive, or privately held.",
+          "cost": 12
         },
         {
           "name": "Unique",
-          "targetBudget": 20,
-          "description": "One of a kind — a singular artifact or manuscript."
+          "description": "One of a kind — a singular artifact or manuscript.",
+          "cost": 20
         }
       ]
     },
@@ -767,7 +767,7 @@
           "name": "Standard",
           "shortName": "Standard",
           "sourceId": 1,
-          "targetBudget": 5
+          "cost": 5
         }
       ]
     },
@@ -897,32 +897,32 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@stats.hitPoints.max",
-          "binding": "@stats.hitPoints.current",
-          "role": "resource"
+          "maxPath": "stats.hitPoints.max",
+          "recordField": "stats.hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Magic Points",
-          "maxPath": "@stats.magicPoints.max",
-          "binding": "@stats.magicPoints.current",
-          "role": "resource"
+          "maxPath": "stats.magicPoints.max",
+          "recordField": "stats.magicPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Sanity",
-          "maxPath": "@stats.sanity.max",
-          "binding": "@stats.sanity.current",
-          "role": "resource"
+          "maxPath": "stats.sanity.max",
+          "recordField": "stats.sanity.current",
+          "binding": "resource"
         },
         {
           "name": "Luck",
-          "binding": "@luck",
-          "role": "resource"
+          "recordField": "luck",
+          "binding": "resource"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         }
       ]
     },
@@ -1101,72 +1101,72 @@
       "label": "Creature Types",
       "values": [
         {
-          "id": "great-old-one",
+          "shortName": "great-old-one",
           "name": "Great Old One",
           "description": "A vast, sleeping or imprisoned cosmic entity worshipped by cults across the world."
         },
         {
-          "id": "outer-god",
+          "shortName": "outer-god",
           "name": "Outer God",
           "description": "A being of near-limitless, alien power dwelling beyond ordinary reality, indifferent to mortal concerns."
         },
         {
-          "id": "elder-god",
+          "shortName": "elder-god",
           "name": "Elder God",
           "description": "A rare, comparatively benign cosmic power, sometimes opposed to the Outer Gods and Great Old Ones."
         },
         {
-          "id": "deep-one",
+          "shortName": "deep-one",
           "name": "Deep One",
           "description": "An amphibious, fish-like humanoid dwelling in undersea cities and interbreeding with coastal humans."
         },
         {
-          "id": "ghoul",
+          "shortName": "ghoul",
           "name": "Ghoul",
           "description": "A degenerate, subterranean carrion-eater, once human, dwelling in graveyards and tunnels."
         },
         {
-          "id": "mi-go",
+          "shortName": "mi-go",
           "name": "Mi-Go",
           "description": "A fungoid, crustacean-like being from beyond the stars, harvesting minds and specimens."
         },
         {
-          "id": "byakhee",
+          "shortName": "byakhee",
           "name": "Byakhee",
           "description": "A winged, star-faring horror summoned to carry a cultist across the void."
         },
         {
-          "id": "servitor",
+          "shortName": "servitor",
           "name": "Servitor",
           "description": "A monstrous agent bound or summoned to carry out a greater power's will."
         },
         {
-          "id": "star-vampire",
+          "shortName": "star-vampire",
           "name": "Star Vampire",
           "description": "An invisible, blood-draining horror from beyond the visible spectrum."
         },
         {
-          "id": "hound-of-tindalos",
+          "shortName": "hound-of-tindalos",
           "name": "Hound of Tindalos",
           "description": "A lean, angular predator that hunts time travelers through the angles of reality."
         },
         {
-          "id": "elder-thing",
+          "shortName": "elder-thing",
           "name": "Elder Thing",
           "description": "An ancient, star-headed being, among the first intelligent life on Earth."
         },
         {
-          "id": "shoggoth",
+          "shortName": "shoggoth",
           "name": "Shoggoth",
           "description": "A vast, shapeless mass of protoplasm and eyes, bred as a slave by the Elder Things."
         },
         {
-          "id": "nightgaunt",
+          "shortName": "nightgaunt",
           "name": "Nightgaunt",
           "description": "A faceless, black-winged creature that carries off wanderers in the Dreamlands."
         },
         {
-          "id": "independent-race",
+          "shortName": "independent-race",
           "name": "Independent Race",
           "description": "A Mythos-adjacent race with its own agenda, not bound in service to a greater power."
         }
@@ -1178,24 +1178,24 @@
       "label": "Derived Formulas",
       "values": [
         {
-          "role": "hitPoints",
           "formula": "floor((@size + @constitution) / 10)",
-          "name": "hitPoints"
+          "name": "hitPoints",
+          "binding": "hitPoints"
         },
         {
-          "role": "magicPoints",
           "formula": "floor(@power / 5)",
-          "name": "magicPoints"
+          "name": "magicPoints",
+          "binding": "magicPoints"
         },
         {
-          "role": "sanityStart",
           "formula": "@power",
-          "name": "sanityStart"
+          "name": "sanityStart",
+          "binding": "sanityStart"
         },
         {
-          "role": "moveRate",
           "formula": "if(and(@strength < @size, @dexterity < @size), 7, if(and(@strength > @size, @dexterity > @size), 9, 8))",
-          "name": "moveRate"
+          "name": "moveRate",
+          "binding": "moveRate"
         }
       ]
     },
@@ -1261,37 +1261,37 @@
         },
         {
           "step": "class",
-          "kind": "class",
           "desc": "Your Occupation grants a Credit Rating range and a skill-point budget you'll spend on its own list of occupation skills next.",
-          "name": "Occupation"
+          "name": "Occupation",
+          "libraryKind": "class"
         },
         {
           "step": "occupationSkills",
           "type": "pointAllocation",
-          "targetPath": "skills",
           "budgetSource": {
             "from": "class",
-            "field": "occupationSkillsFormula"
+            "libraryField": "occupationSkillsFormula"
           },
           "scopeSource": {
             "from": "class",
-            "field": "occupationSkills"
+            "libraryField": "occupationSkills"
           },
           "unitLabel": "points",
           "desc": "Spend your Occupation's own skill-point budget across the skills it grants access to — including Credit Rating itself.",
-          "name": "Occupation Skills"
+          "name": "Occupation Skills",
+          "sourceField": "skills"
         },
         {
           "step": "personalInterest",
           "type": "pointAllocation",
-          "targetPath": "skills",
           "budgetFormula": "@intelligence * 2",
           "exclude": [
             "skills.cthulhuMythos"
           ],
           "unitLabel": "points",
           "desc": "Spend a budget equal to twice your Intelligence on any skills you like, reflecting interests outside your Occupation — Cthulhu Mythos excluded.",
-          "name": "Personal Interest"
+          "name": "Personal Interest",
+          "sourceField": "skills"
         },
         {
           "step": "input",
@@ -1364,21 +1364,21 @@
             }
           ],
           "targetPaths": [
-            "@player",
-            "@age",
-            "@sex",
-            "@residence",
-            "@birthplace",
-            "@background.description",
-            "@background.ideology",
-            "@background.significantPeople",
-            "@background.meaningfulLocations",
-            "@background.treasuredPossessions",
-            "@background.traits",
-            "@background.injuriesScars",
-            "@background.phobiasManias",
-            "@background.arcaneTomes",
-            "@background.encounters"
+            "player",
+            "age",
+            "sex",
+            "residence",
+            "birthplace",
+            "background.description",
+            "background.ideology",
+            "background.significantPeople",
+            "background.meaningfulLocations",
+            "background.treasuredPossessions",
+            "background.traits",
+            "background.injuriesScars",
+            "background.phobiasManias",
+            "background.arcaneTomes",
+            "background.encounters"
           ],
           "name": "Personal Details & Backstory"
         },
@@ -1529,44 +1529,44 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "characteristics → abilityScores",
-          "sourceField": "characteristics"
+          "sourceField": "characteristics",
+          "binding": "abilityScores"
         },
         {
-          "role": "creatureType",
           "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes"
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "archetypeTable",
           "name": "occupations → archetypeTable",
-          "sourceField": "occupations"
+          "sourceField": "occupations",
+          "binding": "archetypeTable"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

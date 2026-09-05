@@ -527,23 +527,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 3,
-          "description": "Ordinary gear, freely available."
+          "description": "Ordinary gear, freely available.",
+          "cost": 3
         },
         {
           "name": "Uncommon",
-          "targetBudget": 6,
-          "description": "Specialist or restricted equipment."
+          "description": "Specialist or restricted equipment.",
+          "cost": 6
         },
         {
           "name": "Rare",
-          "targetBudget": 10,
-          "description": "Hard to find, expensive, or setting-specific."
+          "description": "Hard to find, expensive, or setting-specific.",
+          "cost": 10
         },
         {
           "name": "Legendary",
-          "targetBudget": 16,
-          "description": "A singular, one-of-a-kind item."
+          "description": "A singular, one-of-a-kind item.",
+          "cost": 16
         }
       ]
     },
@@ -613,35 +613,35 @@
           "shortName": "Novice",
           "sourceId": 1,
           "xp": 0,
-          "targetBudget": 3
+          "cost": 3
         },
         {
           "name": "Seasoned",
           "shortName": "Seasoned",
           "sourceId": 2,
           "xp": 20,
-          "targetBudget": 5
+          "cost": 5
         },
         {
           "name": "Veteran",
           "shortName": "Veteran",
           "sourceId": 3,
           "xp": 40,
-          "targetBudget": 8
+          "cost": 8
         },
         {
           "name": "Heroic",
           "shortName": "Heroic",
           "sourceId": 4,
           "xp": 80,
-          "targetBudget": 11
+          "cost": 11
         },
         {
           "name": "Legendary",
           "shortName": "Legendary",
           "sourceId": 5,
           "xp": 120,
-          "targetBudget": 14
+          "cost": 14
         }
       ]
     },
@@ -652,24 +652,24 @@
       "values": [
         {
           "name": "Bennies",
-          "binding": "@bennies",
-          "role": "resource"
+          "recordField": "bennies",
+          "binding": "resource"
         },
         {
           "name": "Wounds",
-          "binding": "@wounds.current",
           "max": 3,
-          "role": "resource"
+          "recordField": "wounds.current",
+          "binding": "resource"
         },
         {
           "name": "Toughness",
-          "binding": "@combatStats.toughness",
-          "role": "value"
+          "recordField": "combatStats.toughness",
+          "binding": "value"
         },
         {
           "name": "Parry",
-          "binding": "@combatStats.parry",
-          "role": "value"
+          "recordField": "combatStats.parry",
+          "binding": "value"
         }
       ]
     },
@@ -877,34 +877,34 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "combatStats → abilityScores",
-          "sourceField": "combatStats"
+          "sourceField": "combatStats",
+          "binding": "abilityScores"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

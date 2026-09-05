@@ -8,6 +8,7 @@ import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.
 import { loadAbilityFieldDefs } from "../../../common/js/lib/generator-kit.js";
 export { loadAbilityFieldDefs };
 import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
+import { setAtDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { resolveFieldRole } from "../../../common/js/lib/field-roles.js";
 
 // Re-exported so forge/js/app.js's own import (from this file) keeps
@@ -484,9 +485,9 @@ export function rollAttitude(attitudes, { random = Math.random } = {}) {
 // PARENT segment shared by both paths. A resource with a literal `max`
 // instead has no such parent — the entry's key is the binding's last segment.
 function resourceArchetypeKey(binding) {
-  const path = String(binding?.binding || "").trim();
-  if (!path.startsWith("@")) return "";
-  const segments = path.slice(1).split(".").filter(Boolean);
+  const path = String(binding?.recordField || "").trim();
+  if (!path) return "";
+  const segments = path.split(".").filter(Boolean);
   if (binding.maxPath && segments.length >= 2) return segments[segments.length - 2];
   return segments[segments.length - 1] || "";
 }
@@ -495,9 +496,9 @@ function resourceArchetypeKey(binding) {
 // flat value, never nested) — the archetype entry's key is simply the
 // binding's last path segment.
 function flatArchetypeKey(binding) {
-  const path = String(binding?.binding || "").trim();
-  if (!path.startsWith("@")) return "";
-  const segments = path.slice(1).split(".").filter(Boolean);
+  const path = String(binding?.recordField || "").trim();
+  if (!path) return "";
+  const segments = path.split(".").filter(Boolean);
   return segments[segments.length - 1] || "";
 }
 
@@ -546,8 +547,8 @@ export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abili
     const archetypeKey = resourceArchetypeKey(resource);
     if (!archetypeKey || otherKeys[archetypeKey] === undefined) return;
     const maxValue = Number(otherKeys[archetypeKey]) || 0;
-    setAtBinding(resource.binding, scratch, maxValue);
-    if (resource.maxPath) setAtBinding(resource.maxPath, scratch, maxValue);
+    setAtDottedPath(scratch, resource.recordField, maxValue);
+    if (resource.maxPath) setAtDottedPath(scratch, resource.maxPath, maxValue);
     delete otherKeys[archetypeKey];
   });
 
@@ -556,7 +557,7 @@ export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abili
   if (valueBinding) {
     const archetypeKey = flatArchetypeKey(valueBinding);
     if (archetypeKey && otherKeys[archetypeKey] !== undefined) {
-      setAtBinding(valueBinding.binding, scratch, otherKeys[archetypeKey]);
+      setAtDottedPath(scratch, valueBinding.recordField, otherKeys[archetypeKey]);
       delete otherKeys[archetypeKey];
     }
   }
@@ -570,7 +571,7 @@ export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abili
   const modifierBinding = findBindingByRole(combatBindings, "modifier");
   if (modifierBinding && typeof abilities.dexterity === "number") {
     const modifier = evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: abilities.dexterity }) || 0;
-    setAtBinding(modifierBinding.binding, scratch, modifier);
+    setAtDottedPath(scratch, modifierBinding.recordField, modifier);
   }
 
   // Anything else the archetype entry defines with no matching

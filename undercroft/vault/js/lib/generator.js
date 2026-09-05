@@ -113,7 +113,7 @@ export function computeBudget(selectedFeatures, properties, propertyTypes, featu
     const value = (propertyType.values || []).find((entry) => entry.id === valueId);
     if (!value) return;
     if (propertyType.setsBudgetCeiling) {
-      target = Number(value.targetBudget ?? target);
+      target = Number(value.cost ?? target);
     } else {
       spent += Number(value.cost ?? 0);
     }

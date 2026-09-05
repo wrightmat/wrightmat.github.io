@@ -907,23 +907,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 3,
-          "description": "Ordinary Tech-Level-appropriate gear, freely available."
+          "description": "Ordinary Tech-Level-appropriate gear, freely available.",
+          "cost": 3
         },
         {
           "name": "Uncommon",
-          "targetBudget": 7,
-          "description": "Specialist or restricted equipment."
+          "description": "Specialist or restricted equipment.",
+          "cost": 7
         },
         {
           "name": "Rare",
-          "targetBudget": 12,
-          "description": "Exotic, prototype, or otherwise hard to obtain."
+          "description": "Exotic, prototype, or otherwise hard to obtain.",
+          "cost": 12
         },
         {
           "name": "Unique",
-          "targetBudget": 20,
-          "description": "A singular, one-of-a-kind item or artifact."
+          "description": "A singular, one-of-a-kind item or artifact.",
+          "cost": 20
         }
       ]
     },
@@ -1056,25 +1056,25 @@
           "name": "Unusual (25-50 pts)",
           "shortName": "Unusual",
           "sourceId": 1,
-          "targetBudget": 3
+          "cost": 3
         },
         {
           "name": "Competent (100-150 pts)",
           "shortName": "Competent",
           "sourceId": 2,
-          "targetBudget": 5
+          "cost": 5
         },
         {
           "name": "Exceptional (200-250 pts)",
           "shortName": "Exceptional",
           "sourceId": 3,
-          "targetBudget": 8
+          "cost": 8
         },
         {
           "name": "Larger Than Life (300+ pts)",
           "shortName": "Larger Than Life",
           "sourceId": 4,
-          "targetBudget": 12
+          "cost": 12
         }
       ]
     },
@@ -1085,20 +1085,20 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@hitPoints.max",
-          "binding": "@hitPoints.current",
-          "role": "resource"
+          "maxPath": "hitPoints.max",
+          "recordField": "hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Fatigue Points",
-          "maxPath": "@fatiguePoints.max",
-          "binding": "@fatiguePoints.current",
-          "role": "resource"
+          "maxPath": "fatiguePoints.max",
+          "recordField": "fatiguePoints.current",
+          "binding": "resource"
         },
         {
           "name": "Dodge",
-          "binding": "@secondary.dodge",
-          "role": "value"
+          "recordField": "secondary.dodge",
+          "binding": "value"
         }
       ]
     },
@@ -1179,34 +1179,34 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "attributes → abilityScores",
-          "sourceField": "attributes"
+          "sourceField": "attributes",
+          "binding": "abilityScores"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

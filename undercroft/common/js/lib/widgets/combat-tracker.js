@@ -7,7 +7,8 @@
 // see the Dashboard plan this widget was built for.
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../tooltips.js";
-import { resolveBinding, setAtBinding, findBindingByRole, findBindingsByRole } from "../bindings.js";
+import { findBindingByRole, findBindingsByRole } from "../bindings.js";
+import { resolveDottedPath, setAtDottedPath } from "../dotted-path.js";
 import {
   deriveConditionsVocabulary,
   renderTagBadges,
@@ -578,7 +579,7 @@ export function initCombatTrackerWidget(
     const targets = state.encounter.combatants.filter((c) => c.refKind !== "character");
     if (!targets.length) return;
     const modifierEntry = findBindingByRole(state.combatBindings, "modifier");
-    const modifierPath = modifierEntry?.binding;
+    const modifierPath = modifierEntry?.recordField;
     const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
     await Promise.all(
       targets.map(async (combatant) => {
@@ -586,7 +587,7 @@ export function initCombatTrackerWidget(
         if (modifierPath && combatant.refKind && combatant.refId) {
           try {
             const result = await dataManager.get(combatant.refKind, combatant.refId, { preferLocal: false });
-            const resolved = Number(resolveBinding(modifierPath, result.payload || {}));
+            const resolved = Number(resolveDottedPath(result.payload || {}, modifierPath));
             if (Number.isFinite(resolved)) modifier = resolved;
           } catch (error) {
             // Fall back to +0 — see comment above.
@@ -633,24 +634,24 @@ export function initCombatTrackerWidget(
       const result = await dataManager.get("character", combatant.refId, { preferLocal: false });
       const character = result.payload || {};
       let changed = false;
-      if (updates.hp !== undefined && resource?.binding) {
-        setAtBinding(resource.binding, character, updates.hp);
+      if (updates.hp !== undefined && resource?.recordField) {
+        setAtDottedPath(character, resource.recordField, updates.hp);
         changed = true;
       }
       if (updates.maxHp !== undefined && resource?.maxPath) {
-        setAtBinding(resource.maxPath, character, updates.maxHp);
+        setAtDottedPath(character, resource.maxPath, updates.maxHp);
         changed = true;
       }
       if (updates.tempHp !== undefined && resource?.tempPath) {
-        setAtBinding(resource.tempPath, character, updates.tempHp);
+        setAtDottedPath(character, resource.tempPath, updates.tempHp);
         changed = true;
       }
-      if (updates.ac !== undefined && value?.binding) {
-        setAtBinding(value.binding, character, updates.ac);
+      if (updates.ac !== undefined && value?.recordField) {
+        setAtDottedPath(character, value.recordField, updates.ac);
         changed = true;
       }
-      if (updates.conditions !== undefined && tags?.binding) {
-        setAtBinding(tags.binding, character, updates.conditions);
+      if (updates.conditions !== undefined && tags?.recordField) {
+        setAtDottedPath(character, tags.recordField, updates.conditions);
         changed = true;
       }
       // Not a game-mechanical field a System defines a binding for — a
@@ -884,7 +885,7 @@ export function initCombatTrackerWidget(
       const resource = findBindingByRole(state.combatBindings, "resource");
       const value = findBindingByRole(state.combatBindings, "value");
       const tags = findBindingByRole(state.combatBindings, "tags");
-      if (resource?.binding) {
+      if (resource?.recordField) {
         // Each of current/max/temp updates independently based on whether
         // ITS OWN path resolves to a number — current HP used to only
         // update when max ALSO resolved (nested inside that check), so a
@@ -893,25 +894,25 @@ export function initCombatTrackerWidget(
         // if unresolvable", not resolveCombatantStats' zero-default (that's
         // for seeding a BRAND NEW combatant) — an existing combatant's known
         // value should never reset to 0 just because one field briefly didn't resolve.
-        const current = resolveBinding(resource.binding, payload);
+        const current = resolveDottedPath(payload, resource.recordField);
         if (typeof current === "number") combatant.hp = current;
         if (resource.maxPath) {
-          const max = resolveBinding(resource.maxPath, payload);
+          const max = resolveDottedPath(payload, resource.maxPath);
           if (typeof max === "number") combatant.maxHp = max;
         } else if (typeof resource.max === "number") {
           combatant.maxHp = resource.max; // a literal ceiling (e.g. Hope: max 6) isn't stored on the character record
         }
         if (resource.tempPath) {
-          const temp = resolveBinding(resource.tempPath, payload);
+          const temp = resolveDottedPath(payload, resource.tempPath);
           if (typeof temp === "number") combatant.tempHp = temp;
         }
       }
-      if (value?.binding) {
-        const resolvedValue = resolveBinding(value.binding, payload);
+      if (value?.recordField) {
+        const resolvedValue = resolveDottedPath(payload, value.recordField);
         if (typeof resolvedValue === "number") combatant.ac = resolvedValue;
       }
-      if (tags?.binding) {
-        const resolvedTags = resolveBinding(tags.binding, payload);
+      if (tags?.recordField) {
+        const resolvedTags = resolveDottedPath(payload, tags.recordField);
         if (Array.isArray(resolvedTags)) combatant.conditions = resolvedTags.slice();
       }
       // Every OTHER resource-role binding beyond the primary one — same
@@ -922,17 +923,17 @@ export function initCombatTrackerWidget(
       if (secondaryResources.length && Array.isArray(combatant.resources)) {
         secondaryResources.forEach((binding) => {
           const existing = combatant.resources.find((entry) => entry.name === binding.name);
-          if (!existing || !binding.binding) return;
-          const current = resolveBinding(binding.binding, payload);
+          if (!existing || !binding.recordField) return;
+          const current = resolveDottedPath(payload, binding.recordField);
           if (typeof current === "number") existing.current = current;
           if (binding.maxPath) {
-            const max = resolveBinding(binding.maxPath, payload);
+            const max = resolveDottedPath(payload, binding.maxPath);
             if (typeof max === "number") existing.max = max;
           } else if (typeof binding.max === "number") {
             existing.max = binding.max;
           }
           if (binding.tempPath) {
-            const temp = resolveBinding(binding.tempPath, payload);
+            const temp = resolveDottedPath(payload, binding.tempPath);
             if (typeof temp === "number") existing.temp = temp;
           }
         });
@@ -1918,7 +1919,7 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
       const fields = await loadSystemFields(dataManager, encounter.systemId);
       const combatBindings = deriveCombatBindings(fields);
       const modifierEntry = findBindingByRole(combatBindings, "modifier");
-      const modifierPath = modifierEntry?.binding;
+      const modifierPath = modifierEntry?.recordField;
       const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
       await Promise.all(
         targets.map(async (combatant) => {
@@ -1926,7 +1927,7 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
           if (modifierPath && combatant.refKind && combatant.refId) {
             try {
               const result = await dataManager.get(combatant.refKind, combatant.refId, { preferLocal: false });
-              const resolved = Number(resolveBinding(modifierPath, result.payload || {}));
+              const resolved = Number(resolveDottedPath(result.payload || {}, modifierPath));
               if (Number.isFinite(resolved)) modifier = resolved;
             } catch (error) {
               // Fall back to +0 — same as the live widget's own version.

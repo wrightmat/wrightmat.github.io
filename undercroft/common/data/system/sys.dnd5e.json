@@ -17,11 +17,11 @@
       "type": "array",
       "key": "classes",
       "label": "Classes",
-      "entityKind": "class",
       "values": [
         {
           "name": "Barbarian",
-          "entityId": "barbarian"
+          "libraryKind": "class",
+          "libraryField": "barbarian"
         },
         {
           "name": "Bard",
@@ -37,7 +37,8 @@
             "combat",
             "ritual"
           ],
-          "entityId": "bard"
+          "libraryKind": "class",
+          "libraryField": "bard"
         },
         {
           "name": "Cleric",
@@ -52,7 +53,8 @@
             "protection",
             "ritual"
           ],
-          "entityId": "cleric"
+          "libraryKind": "class",
+          "libraryField": "cleric"
         },
         {
           "name": "Druid",
@@ -68,15 +70,18 @@
             "poisoned",
             "ritual"
           ],
-          "entityId": "druid"
+          "libraryKind": "class",
+          "libraryField": "druid"
         },
         {
           "name": "Fighter",
-          "entityId": "fighter"
+          "libraryKind": "class",
+          "libraryField": "fighter"
         },
         {
           "name": "Monk",
-          "entityId": "monk"
+          "libraryKind": "class",
+          "libraryField": "monk"
         },
         {
           "name": "Paladin",
@@ -91,7 +96,8 @@
             "aura",
             "ritual"
           ],
-          "entityId": "paladin"
+          "libraryKind": "class",
+          "libraryField": "paladin"
         },
         {
           "name": "Ranger",
@@ -106,11 +112,13 @@
             "combat",
             "ritual"
           ],
-          "entityId": "ranger"
+          "libraryKind": "class",
+          "libraryField": "ranger"
         },
         {
           "name": "Rogue",
-          "entityId": "rogue"
+          "libraryKind": "class",
+          "libraryField": "rogue"
         },
         {
           "name": "Sorcerer",
@@ -127,7 +135,8 @@
             "illusion",
             "ritual"
           ],
-          "entityId": "sorcerer"
+          "libraryKind": "class",
+          "libraryField": "sorcerer"
         },
         {
           "name": "Warlock",
@@ -143,7 +152,8 @@
             "duration",
             "ritual"
           ],
-          "entityId": "warlock"
+          "libraryKind": "class",
+          "libraryField": "warlock"
         },
         {
           "name": "Wizard",
@@ -161,7 +171,8 @@
             "disruption",
             "ritual"
           ],
-          "entityId": "wizard"
+          "libraryKind": "class",
+          "libraryField": "wizard"
         },
         {
           "name": "Artificer",
@@ -179,7 +190,8 @@
             "elemental",
             "ritual"
           ],
-          "entityId": "artificer"
+          "libraryKind": "class",
+          "libraryField": "artificer"
         }
       ]
     },
@@ -202,79 +214,79 @@
       "values": [
         {
           "name": "Common",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Common Sign Language",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Draconic",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Dwarvish",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Elvish",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Giant",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Gnomish",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Goblin",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Halfling",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Orc",
-          "shortName": "standard"
+          "category": "standard"
         },
         {
           "name": "Abyssal",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Celestial",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Deep Speech",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Druidic",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Infernal",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Primordial",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Sylvan",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Thieves' Cant",
-          "shortName": "rare"
+          "category": "rare"
         },
         {
           "name": "Undercommon",
-          "shortName": "rare"
+          "category": "rare"
         }
       ]
     },
@@ -631,159 +643,159 @@
       "values": [
         {
           "name": "Alchemist's Supplies",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Brewer's Supplies",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Calligrapher's Supplies",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Carpenter's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Cartographer's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Cobbler's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Cook's Utensils",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Glassblower's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Jeweler's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Leatherworker's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Mason's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Painter's Supplies",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Potter's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Smith's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Tinker's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Weaver's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Woodcarver's Tools",
-          "shortName": "artisan"
+          "category": "artisan"
         },
         {
           "name": "Dice Set",
-          "shortName": "gaming set"
+          "category": "gaming set"
         },
         {
           "name": "Dragonchess Set",
-          "shortName": "gaming set"
+          "category": "gaming set"
         },
         {
           "name": "Playing Card Set",
-          "shortName": "gaming set"
+          "category": "gaming set"
         },
         {
           "name": "Three-Dragon Ante Set",
-          "shortName": "gaming set"
+          "category": "gaming set"
         },
         {
           "name": "Bagpipes",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Drum",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Dulcimer",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Flute",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Horn",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Lute",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Lyre",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Pan Flute",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Shawm",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Viol",
-          "shortName": "musical instrument"
+          "category": "musical instrument"
         },
         {
           "name": "Disguise Kit",
-          "shortName": "kit"
+          "category": "kit"
         },
         {
           "name": "Forgery Kit",
-          "shortName": "kit"
+          "category": "kit"
         },
         {
           "name": "Herbalism Kit",
-          "shortName": "kit"
+          "category": "kit"
         },
         {
           "name": "Navigator's Tools",
-          "shortName": "kit"
+          "category": "kit"
         },
         {
           "name": "Poisoner's Kit",
-          "shortName": "kit"
+          "category": "kit"
         },
         {
           "name": "Thieves' Tools",
-          "shortName": "kit"
+          "category": "kit"
         },
         {
           "name": "Vehicles (Land)",
-          "shortName": "vehicle"
+          "category": "vehicle"
         },
         {
           "name": "Vehicles (Water)",
-          "shortName": "vehicle"
+          "category": "vehicle"
         }
       ]
     },
@@ -796,31 +808,31 @@
           "name": "Common",
           "priceMin": 50,
           "priceMax": 100,
-          "targetBudget": 4
+          "cost": 4
         },
         {
           "name": "Uncommon",
           "priceMin": 101,
           "priceMax": 500,
-          "targetBudget": 8
+          "cost": 8
         },
         {
           "name": "Rare",
           "priceMin": 501,
           "priceMax": 5000,
-          "targetBudget": 12
+          "cost": 12
         },
         {
           "name": "Very Rare",
           "priceMin": 5001,
           "priceMax": 50000,
-          "targetBudget": 18
+          "cost": 18
         },
         {
           "name": "Legendary",
           "priceMin": 50001,
           "priceMax": 200000,
-          "targetBudget": 26
+          "cost": 26
         }
       ]
     },
@@ -1090,30 +1102,30 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@stats.hitPoints.max",
-          "tempPath": "@stats.hitPoints.temp",
-          "binding": "@stats.hitPoints.current",
-          "role": "resource"
+          "maxPath": "stats.hitPoints.max",
+          "tempPath": "stats.hitPoints.temp",
+          "recordField": "stats.hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Armor Class",
-          "binding": "@stats.armorClass",
-          "role": "value",
           "base": 10,
-          "abilityBinding": "@stats.abilities.dexterity"
+          "abilityBinding": "stats.abilities.dexterity",
+          "recordField": "stats.armorClass",
+          "binding": "value"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         },
         {
           "name": "Initiative",
           "die": "d20",
-          "binding": "@stats.initiative.bonus",
-          "role": "modifier",
-          "abilityBinding": "@stats.abilities.dexterity"
+          "abilityBinding": "stats.abilities.dexterity",
+          "recordField": "stats.initiative.bonus",
+          "binding": "modifier"
         }
       ]
     },
@@ -1124,63 +1136,63 @@
       "values": [
         {
           "name": "Class Proficiency Choices",
-          "role": "proficiencyChoices",
-          "kind": "class",
-          "path": "proficiency_choices",
-          "targetPath": "proficiencies"
+          "targetPath": "proficiencies",
+          "libraryField": "proficiency_choices",
+          "binding": "proficiencyChoices",
+          "libraryKind": "class"
         },
         {
           "name": "Background Proficiency Choices",
-          "role": "proficiencyChoices",
-          "kind": "background",
-          "path": "proficiency_choices",
-          "targetPath": "proficiencies"
+          "targetPath": "proficiencies",
+          "libraryField": "proficiency_choices",
+          "binding": "proficiencyChoices",
+          "libraryKind": "background"
         },
         {
           "name": "Class Starting Equipment",
-          "role": "equipmentChoices",
-          "kind": "class",
-          "path": "starting_equipment_options",
-          "targetPath": "inventory"
+          "targetPath": "inventory",
+          "libraryField": "starting_equipment_options",
+          "binding": "equipmentChoices",
+          "libraryKind": "class"
         },
         {
           "name": "Background Equipment",
-          "role": "equipmentChoices",
-          "kind": "background",
-          "path": "equipment_options",
-          "targetPath": "inventory"
+          "targetPath": "inventory",
+          "libraryField": "equipment_options",
+          "binding": "equipmentChoices",
+          "libraryKind": "background"
         },
         {
           "name": "Class Features by Level",
-          "role": "featureLevels",
-          "kind": "class",
-          "path": "features"
+          "libraryField": "features",
+          "binding": "featureLevels",
+          "libraryKind": "class"
         },
         {
           "name": "Subclass Features by Level",
-          "role": "featureLevels",
-          "kind": "variant",
-          "path": "features"
+          "libraryField": "features",
+          "binding": "featureLevels",
+          "libraryKind": "variant"
         },
         {
           "name": "Class Hit Die Growth",
-          "role": "resourceGrowth",
-          "kind": "class",
-          "path": "hit_die",
           "resourceRole": "resource",
-          "abilityBinding": "@stats.abilities.constitution"
+          "abilityBinding": "stats.abilities.constitution",
+          "libraryField": "hit_die",
+          "binding": "resourceGrowth",
+          "libraryKind": "class"
         },
         {
           "name": "Background Proficiency Grants",
-          "role": "proficiencyGrants",
-          "kind": "background",
-          "path": "proficiencies"
+          "libraryField": "proficiencies",
+          "binding": "proficiencyGrants",
+          "libraryKind": "background"
         },
         {
           "name": "Class Saving Throw Proficiencies",
-          "role": "savingThrowGrants",
-          "kind": "class",
-          "path": "saving_throws"
+          "libraryField": "saving_throws",
+          "binding": "savingThrowGrants",
+          "libraryKind": "class"
         }
       ]
     },
@@ -1190,39 +1202,39 @@
       "label": "Derived Formulas",
       "values": [
         {
-          "role": "diceAverage",
           "formula": "floor(@count*(@sides+1)/2)+@modifier",
-          "name": "diceAverage"
+          "name": "diceAverage",
+          "binding": "diceAverage"
         },
         {
-          "role": "abilityModifier",
           "formula": "floor((@score-10)/2)",
-          "name": "abilityModifier"
+          "name": "abilityModifier",
+          "binding": "abilityModifier"
         },
         {
-          "role": "hitPointsPerLevelAverage",
           "formula": "floor(@sides/2)+1",
-          "name": "hitPointsPerLevelAverage"
+          "name": "hitPointsPerLevelAverage",
+          "binding": "hitPointsPerLevelAverage"
         },
         {
-          "role": "proficiencyBonusForLevel",
           "formula": "2+floor((@level-1)/4)",
-          "name": "proficiencyBonusForLevel"
+          "name": "proficiencyBonusForLevel",
+          "binding": "proficiencyBonusForLevel"
         },
         {
-          "role": "attackBonus",
           "formula": "@abilityModifier+@proficiencyBonus",
-          "name": "attackBonus"
+          "name": "attackBonus",
+          "binding": "attackBonus"
         },
         {
-          "role": "saveDC",
           "formula": "8+@abilityModifier+@proficiencyBonus",
-          "name": "saveDC"
+          "name": "saveDC",
+          "binding": "saveDC"
         },
         {
-          "role": "averageDamage",
           "formula": "floor(@count*(@sides+1)/2)+@modifier+@abilityModifier",
-          "name": "averageDamage"
+          "name": "averageDamage",
+          "binding": "averageDamage"
         }
       ]
     },
@@ -1233,24 +1245,24 @@
       "values": [
         {
           "step": "species",
-          "kind": "species",
-          "name": "Species"
+          "name": "Species",
+          "libraryKind": "species"
         },
         {
           "step": "class",
-          "kind": "class",
-          "name": "Class"
+          "name": "Class",
+          "libraryKind": "class"
         },
         {
           "step": "subclass",
-          "kind": "variant",
           "parentKind": "class",
-          "name": "Subclass"
+          "name": "Subclass",
+          "libraryKind": "variant"
         },
         {
           "step": "background",
-          "kind": "background",
-          "name": "Background"
+          "name": "Background",
+          "libraryKind": "background"
         },
         {
           "step": "abilities",
@@ -1723,22 +1735,22 @@
       "label": "Caster Types",
       "values": [
         {
-          "id": "full",
+          "shortName": "full",
           "divisor": 1,
           "name": "full"
         },
         {
-          "id": "half",
+          "shortName": "half",
           "divisor": 2,
           "name": "half"
         },
         {
-          "id": "third",
+          "shortName": "third",
           "divisor": 3,
           "name": "third"
         },
         {
-          "id": "pact",
+          "shortName": "pact",
           "ownProgression": "pactMagicProgression",
           "name": "Pact Magic",
           "reset": "Short Rest"
@@ -1761,7 +1773,7 @@
           "proficiencyBonus": 2,
           "shortName": "0",
           "sourceId": 1,
-          "targetBudget": 3
+          "cost": 3
         },
         {
           "name": "CR 1/8",
@@ -1774,7 +1786,7 @@
           "proficiencyBonus": 2,
           "shortName": "1/8",
           "sourceId": 2,
-          "targetBudget": 4
+          "cost": 4
         },
         {
           "name": "CR 1/4",
@@ -1787,7 +1799,7 @@
           "proficiencyBonus": 2,
           "shortName": "1/4",
           "sourceId": 3,
-          "targetBudget": 4
+          "cost": 4
         },
         {
           "name": "CR 1/2",
@@ -1800,7 +1812,7 @@
           "proficiencyBonus": 2,
           "shortName": "1/2",
           "sourceId": 4,
-          "targetBudget": 5
+          "cost": 5
         },
         {
           "name": "CR 1",
@@ -1813,7 +1825,7 @@
           "proficiencyBonus": 2,
           "shortName": "1",
           "sourceId": 5,
-          "targetBudget": 6
+          "cost": 6
         },
         {
           "name": "CR 2",
@@ -1826,7 +1838,7 @@
           "proficiencyBonus": 2,
           "shortName": "2",
           "sourceId": 6,
-          "targetBudget": 8
+          "cost": 8
         },
         {
           "name": "CR 3",
@@ -1839,7 +1851,7 @@
           "proficiencyBonus": 2,
           "shortName": "3",
           "sourceId": 7,
-          "targetBudget": 10
+          "cost": 10
         },
         {
           "name": "CR 4",
@@ -1852,7 +1864,7 @@
           "proficiencyBonus": 2,
           "shortName": "4",
           "sourceId": 8,
-          "targetBudget": 12
+          "cost": 12
         },
         {
           "name": "CR 5",
@@ -1865,7 +1877,7 @@
           "proficiencyBonus": 3,
           "shortName": "5",
           "sourceId": 9,
-          "targetBudget": 14
+          "cost": 14
         },
         {
           "name": "CR 6",
@@ -1878,7 +1890,7 @@
           "proficiencyBonus": 3,
           "shortName": "6",
           "sourceId": 10,
-          "targetBudget": 16
+          "cost": 16
         },
         {
           "name": "CR 7",
@@ -1891,7 +1903,7 @@
           "proficiencyBonus": 3,
           "shortName": "7",
           "sourceId": 11,
-          "targetBudget": 18
+          "cost": 18
         },
         {
           "name": "CR 8",
@@ -1904,7 +1916,7 @@
           "proficiencyBonus": 3,
           "shortName": "8",
           "sourceId": 12,
-          "targetBudget": 20
+          "cost": 20
         },
         {
           "name": "CR 9",
@@ -1917,7 +1929,7 @@
           "proficiencyBonus": 4,
           "shortName": "9",
           "sourceId": 13,
-          "targetBudget": 22
+          "cost": 22
         },
         {
           "name": "CR 10",
@@ -1930,7 +1942,7 @@
           "proficiencyBonus": 4,
           "shortName": "10",
           "sourceId": 14,
-          "targetBudget": 24
+          "cost": 24
         },
         {
           "name": "CR 11",
@@ -1943,7 +1955,7 @@
           "proficiencyBonus": 4,
           "shortName": "11",
           "sourceId": 15,
-          "targetBudget": 26
+          "cost": 26
         },
         {
           "name": "CR 12",
@@ -1956,7 +1968,7 @@
           "proficiencyBonus": 4,
           "shortName": "12",
           "sourceId": 16,
-          "targetBudget": 28
+          "cost": 28
         },
         {
           "name": "CR 13",
@@ -1969,7 +1981,7 @@
           "proficiencyBonus": 5,
           "shortName": "13",
           "sourceId": 17,
-          "targetBudget": 30
+          "cost": 30
         },
         {
           "name": "CR 14",
@@ -1982,7 +1994,7 @@
           "proficiencyBonus": 5,
           "shortName": "14",
           "sourceId": 18,
-          "targetBudget": 32
+          "cost": 32
         },
         {
           "name": "CR 15",
@@ -1995,7 +2007,7 @@
           "proficiencyBonus": 5,
           "shortName": "15",
           "sourceId": 19,
-          "targetBudget": 34
+          "cost": 34
         },
         {
           "name": "CR 16",
@@ -2008,7 +2020,7 @@
           "proficiencyBonus": 5,
           "shortName": "16",
           "sourceId": 20,
-          "targetBudget": 36
+          "cost": 36
         },
         {
           "name": "CR 17",
@@ -2021,7 +2033,7 @@
           "proficiencyBonus": 6,
           "shortName": "17",
           "sourceId": 21,
-          "targetBudget": 38
+          "cost": 38
         },
         {
           "name": "CR 18",
@@ -2034,7 +2046,7 @@
           "proficiencyBonus": 6,
           "shortName": "18",
           "sourceId": 22,
-          "targetBudget": 40
+          "cost": 40
         },
         {
           "name": "CR 19",
@@ -2047,7 +2059,7 @@
           "proficiencyBonus": 6,
           "shortName": "19",
           "sourceId": 23,
-          "targetBudget": 42
+          "cost": 42
         },
         {
           "name": "CR 20",
@@ -2060,7 +2072,7 @@
           "proficiencyBonus": 6,
           "shortName": "20",
           "sourceId": 24,
-          "targetBudget": 44
+          "cost": 44
         },
         {
           "name": "CR 21",
@@ -2073,7 +2085,7 @@
           "proficiencyBonus": 7,
           "shortName": "21",
           "sourceId": 25,
-          "targetBudget": 46
+          "cost": 46
         },
         {
           "name": "CR 22",
@@ -2086,7 +2098,7 @@
           "proficiencyBonus": 7,
           "shortName": "22",
           "sourceId": 26,
-          "targetBudget": 48
+          "cost": 48
         },
         {
           "name": "CR 23",
@@ -2099,7 +2111,7 @@
           "proficiencyBonus": 7,
           "shortName": "23",
           "sourceId": 27,
-          "targetBudget": 50
+          "cost": 50
         },
         {
           "name": "CR 24",
@@ -2112,7 +2124,7 @@
           "proficiencyBonus": 7,
           "shortName": "24",
           "sourceId": 28,
-          "targetBudget": 52
+          "cost": 52
         },
         {
           "name": "CR 25",
@@ -2125,7 +2137,7 @@
           "proficiencyBonus": 8,
           "shortName": "25",
           "sourceId": 29,
-          "targetBudget": 54
+          "cost": 54
         },
         {
           "name": "CR 26",
@@ -2138,7 +2150,7 @@
           "proficiencyBonus": 8,
           "shortName": "26",
           "sourceId": 30,
-          "targetBudget": 56
+          "cost": 56
         },
         {
           "name": "CR 27",
@@ -2151,7 +2163,7 @@
           "proficiencyBonus": 8,
           "shortName": "27",
           "sourceId": 31,
-          "targetBudget": 58
+          "cost": 58
         },
         {
           "name": "CR 28",
@@ -2164,7 +2176,7 @@
           "proficiencyBonus": 8,
           "shortName": "28",
           "sourceId": 32,
-          "targetBudget": 60
+          "cost": 60
         },
         {
           "name": "CR 29",
@@ -2177,7 +2189,7 @@
           "proficiencyBonus": 9,
           "shortName": "29",
           "sourceId": 33,
-          "targetBudget": 62
+          "cost": 62
         },
         {
           "name": "CR 30",
@@ -2190,7 +2202,7 @@
           "proficiencyBonus": 9,
           "shortName": "30",
           "sourceId": 34,
-          "targetBudget": 64
+          "cost": 64
         }
       ]
     },
@@ -2477,7 +2489,7 @@
       "label": "Creature Types",
       "values": [
         {
-          "id": "aberration",
+          "shortName": "aberration",
           "name": "Aberration",
           "vocabulary": {
             "namePatterns": [
@@ -2501,7 +2513,7 @@
           "sourceId": 1
         },
         {
-          "id": "beast",
+          "shortName": "beast",
           "name": "Beast",
           "vocabulary": {
             "namePatterns": [
@@ -2522,7 +2534,7 @@
           "sourceId": 2
         },
         {
-          "id": "celestial",
+          "shortName": "celestial",
           "name": "Celestial",
           "vocabulary": {
             "namePatterns": [
@@ -2548,7 +2560,7 @@
           "sourceId": 3
         },
         {
-          "id": "construct",
+          "shortName": "construct",
           "name": "Construct",
           "vocabulary": {
             "namePatterns": [
@@ -2576,7 +2588,7 @@
           "sourceId": 4
         },
         {
-          "id": "dragon",
+          "shortName": "dragon",
           "name": "Dragon",
           "vocabulary": {
             "namePatterns": [
@@ -2601,7 +2613,7 @@
           "sourceId": 6
         },
         {
-          "id": "elemental",
+          "shortName": "elemental",
           "name": "Elemental",
           "vocabulary": {
             "namePatterns": [
@@ -2627,7 +2639,7 @@
           "sourceId": 7
         },
         {
-          "id": "fey",
+          "shortName": "fey",
           "name": "Fey",
           "vocabulary": {
             "namePatterns": [
@@ -2651,7 +2663,7 @@
           "sourceId": 8
         },
         {
-          "id": "fiend",
+          "shortName": "fiend",
           "name": "Fiend",
           "vocabulary": {
             "namePatterns": [
@@ -2677,7 +2689,7 @@
           "sourceId": 9
         },
         {
-          "id": "giant",
+          "shortName": "giant",
           "name": "Giant",
           "vocabulary": {
             "namePatterns": [
@@ -2698,7 +2710,7 @@
           "sourceId": 10
         },
         {
-          "id": "humanoid",
+          "shortName": "humanoid",
           "name": "Humanoid",
           "vocabulary": {
             "namePatterns": [
@@ -2719,7 +2731,7 @@
           "sourceId": 11
         },
         {
-          "id": "monstrosity",
+          "shortName": "monstrosity",
           "name": "Monstrosity",
           "vocabulary": {
             "namePatterns": [
@@ -2742,7 +2754,7 @@
           "sourceId": 13
         },
         {
-          "id": "ooze",
+          "shortName": "ooze",
           "name": "Ooze",
           "vocabulary": {
             "namePatterns": [
@@ -2768,7 +2780,7 @@
           "sourceId": 14
         },
         {
-          "id": "plant",
+          "shortName": "plant",
           "name": "Plant",
           "vocabulary": {
             "namePatterns": [
@@ -2789,7 +2801,7 @@
           "sourceId": 15
         },
         {
-          "id": "undead",
+          "shortName": "undead",
           "name": "Undead",
           "vocabulary": {
             "namePatterns": [
@@ -3093,43 +3105,43 @@
       "values": [
         {
           "name": "Cantrip",
-          "targetBudget": 1
+          "cost": 1
         },
         {
           "name": "1st Level",
-          "targetBudget": 3
+          "cost": 3
         },
         {
           "name": "2nd Level",
-          "targetBudget": 5
+          "cost": 5
         },
         {
           "name": "3rd Level",
-          "targetBudget": 7
+          "cost": 7
         },
         {
           "name": "4th Level",
-          "targetBudget": 9
+          "cost": 9
         },
         {
           "name": "5th Level",
-          "targetBudget": 11
+          "cost": 11
         },
         {
           "name": "6th Level",
-          "targetBudget": 13
+          "cost": 13
         },
         {
           "name": "7th Level",
-          "targetBudget": 15
+          "cost": 15
         },
         {
           "name": "8th Level",
-          "targetBudget": 17
+          "cost": 17
         },
         {
           "name": "9th Level",
-          "targetBudget": 19
+          "cost": 19
         }
       ]
     },
@@ -4915,70 +4927,70 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
-          "targetPath": "@stats.abilities",
+          "targetPath": "stats.abilities",
           "name": "abilities → abilityScores",
-          "sourceField": "abilities"
+          "sourceField": "abilities",
+          "binding": "abilityScores"
         },
         {
-          "role": "savingThrows",
           "name": "saves → savingThrows",
-          "sourceField": "saves"
+          "sourceField": "saves",
+          "binding": "savingThrows"
         },
         {
-          "role": "creatureType",
           "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes"
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
         },
         {
-          "role": "combatScaling",
           "name": "challengeRating → combatScaling",
-          "sourceField": "challengeRating"
+          "sourceField": "challengeRating",
+          "binding": "combatScaling"
         },
         {
-          "role": "archetypeTable",
           "name": "npcTypes → archetypeTable",
-          "sourceField": "npcTypes"
+          "sourceField": "npcTypes",
+          "binding": "archetypeTable"
         },
         {
-          "role": "npcAttitude",
           "name": "npcAttitudes → npcAttitude",
-          "sourceField": "npcAttitudes"
+          "sourceField": "npcAttitudes",
+          "binding": "npcAttitude"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "generatorProperty",
           "name": "activation → generatorProperty",
-          "sourceField": "activation"
+          "sourceField": "activation",
+          "binding": "generatorProperty"
         },
         {
-          "role": "generatorProperty",
           "name": "form → generatorProperty",
-          "sourceField": "form"
+          "sourceField": "form",
+          "binding": "generatorProperty"
         },
         {
-          "role": "generatorProperty",
           "name": "spellLevels → generatorProperty",
-          "sourceField": "spellLevels"
+          "sourceField": "spellLevels",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

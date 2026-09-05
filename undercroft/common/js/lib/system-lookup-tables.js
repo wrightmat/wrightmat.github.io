@@ -81,7 +81,7 @@ export function deriveLookupTables(systemPayload) {
     // `sourceId` ties each creatureTypes value to D&D Beyond's numeric
     // typeId (14 = Ooze); `name` here is the value's semantic id ("ooze"),
     // matching Crucible's generated monsters' shared top-level `type` field.
-    creatureTypes: valuesOf(fields, "creatureTypes").map((entry) => ({ id: entry.sourceId, name: entry.id })),
+    creatureTypes: valuesOf(fields, "creatureTypes").map((entry) => ({ id: entry.sourceId, name: entry.shortName })),
     // `sourceId` ties each environments value to DDB's numeric environment id.
     environments: valuesOf(fields, "environment").map((entry) => ({ id: entry.sourceId, name: entry.name })),
     // Fallback source only for attacksTable — DDB's own friendly damage-type

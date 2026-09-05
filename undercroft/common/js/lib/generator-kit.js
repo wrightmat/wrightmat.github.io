@@ -87,8 +87,8 @@ export function renderOptionalSelectOptions(select, entries, { blankLabel = "New
   }
 }
 
-export function findById(list, id) {
-  return list.find((entry) => entry.id === id) || null;
+export function findById(list, id, idKey = "id") {
+  return list.find((entry) => entry[idKey] === id) || null;
 }
 
 export function featureLabel(features, id) {

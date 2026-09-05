@@ -1,7 +1,7 @@
 // Shared "read a System's own Rarity price ranges" helper for the
 // Dashboard's Item Price calculator — mirrors combat-scaling.js's own
 // pattern. priceMin/priceMax are ordinary extra properties on the same
-// Rarity values Vault reads for budgetCost/targetBudget, round-tripped
+// Rarity values Vault reads for cost, round-tripped
 // through property-schema-editor.js's Extra JSON catch-all, so authoring
 // needs no UI change. Which field supplies this data is the same tool
 // preference Vault's Budget ceiling field setting resolves; a System with no

@@ -43,7 +43,7 @@ export function isReservedKeyName(key) {
 }
 
 function describeValue(value, index) {
-  return value?.name || value?.step || value?.role || value?.id || value?.sourceField || `#${index + 1}`;
+  return value?.name || value?.step || value?.binding || value?.id || value?.sourceField || `#${index + 1}`;
 }
 
 // One entry's own required-key check — `valueRequires` are all mandatory;
@@ -74,11 +74,11 @@ function validateFieldRoles(fields, fieldRolesField, bindingList, findings) {
   const knownRoles = new Set(bindingList.map((entry) => entry.name));
   const otherFieldKeys = new Set(fields.filter((entry) => entry !== fieldRolesField).map((entry) => entry?.key));
   (fieldRolesField.values || []).forEach((value, index) => {
-    if (!knownRoles.has(value?.role)) {
+    if (!knownRoles.has(value?.binding)) {
       findings.push({
         level: "error",
         key: "fieldRoles",
-        message: `fieldRoles[${describeValue(value, index)}] has an unrecognized role "${value?.role}".`,
+        message: `fieldRoles[${describeValue(value, index)}] has an unrecognized role "${value?.binding}".`,
       });
     }
     if (value?.sourceField && !otherFieldKeys.has(value.sourceField)) {
@@ -101,11 +101,11 @@ function validateBindingRoles(key, field, bindingList, findings) {
   if (!bindingList?.length) return;
   const knownRoles = new Set(bindingList.map((entry) => entry.name));
   (field.values || []).forEach((value, index) => {
-    if (value?.role && !knownRoles.has(value.role)) {
+    if (value?.binding && !knownRoles.has(value.binding)) {
       findings.push({
         level: "error",
         key,
-        message: `${key}[${describeValue(value, index)}] has an unrecognized role "${value.role}".`,
+        message: `${key}[${describeValue(value, index)}] has an unrecognized role "${value.binding}".`,
       });
     }
   });

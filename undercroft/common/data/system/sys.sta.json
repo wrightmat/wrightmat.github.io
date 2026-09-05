@@ -360,23 +360,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 3,
-          "description": "Standard Starfleet-issue equipment."
+          "description": "Standard Starfleet-issue equipment.",
+          "cost": 3
         },
         {
           "name": "Uncommon",
-          "targetBudget": 6,
-          "description": "Specialist or mission-specific gear."
+          "description": "Specialist or mission-specific gear.",
+          "cost": 6
         },
         {
           "name": "Rare",
-          "targetBudget": 10,
-          "description": "Restricted, alien, or otherwise hard to obtain technology."
+          "description": "Restricted, alien, or otherwise hard to obtain technology.",
+          "cost": 10
         },
         {
           "name": "Prototype",
-          "targetBudget": 16,
-          "description": "Experimental or one-of-a-kind technology."
+          "description": "Experimental or one-of-a-kind technology.",
+          "cost": 16
         }
       ]
     },
@@ -417,19 +417,19 @@
           "name": "Minor NPC",
           "shortName": "Minor",
           "sourceId": 1,
-          "targetBudget": 2
+          "cost": 2
         },
         {
           "name": "Notable NPC",
           "shortName": "Notable",
           "sourceId": 2,
-          "targetBudget": 5
+          "cost": 5
         },
         {
           "name": "Major NPC",
           "shortName": "Major",
           "sourceId": 3,
-          "targetBudget": 9
+          "cost": 9
         }
       ]
     },
@@ -440,20 +440,20 @@
       "values": [
         {
           "name": "Stress",
-          "maxPath": "@stress.max",
-          "binding": "@stress.current",
-          "role": "resource"
+          "maxPath": "stress.max",
+          "recordField": "stress.current",
+          "binding": "resource"
         },
         {
           "name": "Determination",
-          "binding": "@determination",
           "max": 3,
-          "role": "resource"
+          "recordField": "determination",
+          "binding": "resource"
         },
         {
           "name": "Resistance",
-          "binding": "@resistance",
-          "role": "value"
+          "recordField": "resistance",
+          "binding": "value"
         }
       ]
     },
@@ -512,34 +512,34 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "attributes → abilityScores",
-          "sourceField": "attributes"
+          "sourceField": "attributes",
+          "binding": "abilityScores"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

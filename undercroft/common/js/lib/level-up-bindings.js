@@ -7,18 +7,18 @@
 //
 // Roles in use today (see sys.dnd5e.json): "proficiencyChoices",
 // "equipmentChoices", "featureLevels", "resourceGrowth". Each entry carries
-// `kind` (which Library kind this binding applies to — a role can have more
-// than one) and `path` (the field on that kind holding the raw data).
-// `targetPath`, when present, is where a resolved choice lands on the
-// Character.
+// `libraryKind` (which Library kind this binding applies to — a role can
+// have more than one) and `libraryField` (the field on that kind holding
+// the raw data). `targetPath`, when present, is where a resolved choice
+// lands on the Character.
 import { fieldByKey } from "./bindings.js";
 
 export function findLevelUpBinding(bindings, role, kind) {
-  return (bindings || []).find((entry) => entry && entry.role === role && (!kind || entry.kind === kind)) || null;
+  return (bindings || []).find((entry) => entry && entry.binding === role && (!kind || entry.libraryKind === kind)) || null;
 }
 
 export function findLevelUpBindings(bindings, role) {
-  return (bindings || []).filter((entry) => entry && entry.role === role);
+  return (bindings || []).filter((entry) => entry && entry.binding === role);
 }
 
 // Normalizes a Class/Background record's own `proficiency_choices` (or any
@@ -200,7 +200,7 @@ export function grantSubclassFeaturesAtTier(variantRecord, targetTier, featureNa
 
 // Looks up one row of a Class record's own level-keyed progression table —
 // a reserved array field (named by the "classProgressionTable"
-// levelUpBindings role's own `path`), each row `{level, ...namedColumns}`.
+// levelUpBindings role's own `libraryField`), each row `{level, ...namedColumns}`.
 // Same level-keyed-row convention `spellSlotProgression`/computeSpellSlots
 // (above) already use, generalized from that one hardcoded `slots` column
 // to an arbitrary class-scoped table with arbitrary named columns — d20
@@ -209,8 +209,8 @@ export function grantSubclassFeaturesAtTier(variantRecord, targetTier, featureNa
 // System-wide table (spellSlotProgression) or flat per-class value
 // (resourceGrowth) can express. A System whose classes declare no such
 // field simply never resolves a row here.
-export function resolveClassProgressionRow(classRecord, path, targetLevel) {
-  const table = Array.isArray(classRecord?.[path]) ? classRecord[path] : [];
+export function resolveClassProgressionRow(classRecord, libraryField, targetLevel) {
+  const table = Array.isArray(classRecord?.[libraryField]) ? classRecord[libraryField] : [];
   return table.find((row) => Number(row?.level) === Number(targetLevel)) || null;
 }
 
@@ -244,7 +244,7 @@ export function characterMeetsMulticlassPrerequisites(prerequisites, abilities) 
 
 // Caster-level math, multiclass-aware from the ground up, generic over
 // whatever caster types the active System declares in its own `casterTypes`
-// reserved field (each value `{id, divisor?, ownProgression?, name?, reset?}`
+// reserved field (each value `{shortName, divisor?, ownProgression?, name?, reset?}`
 // — D&D 5e's own "full"/"half"/"third"/"pact" become this System's data,
 // not JS string literals). Each class's EFFECTIVE caster type is its active
 // subclass's own `caster_type` when set, else the base class's value — so a
@@ -270,7 +270,7 @@ export function computeSpellSlots(classes, classRecordsById, variantRecordsById,
   const fields = Array.isArray(systemFields) ? systemFields : [];
   const slotTable = fieldByKey(fields, "spellSlotProgression")?.values || [];
   const casterTypes = fieldByKey(fields, "casterTypes")?.values || [];
-  const casterTypeById = new Map(casterTypes.filter((entry) => entry?.id).map((entry) => [entry.id, entry]));
+  const casterTypeById = new Map(casterTypes.filter((entry) => entry?.shortName).map((entry) => [entry.shortName, entry]));
   let casterLevel = 0;
   const ownProgressionLevels = new Map();
   list.forEach((cls) => {

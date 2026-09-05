@@ -506,23 +506,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 3,
-          "description": "Standard-issue, available at any company store."
+          "description": "Standard-issue, available at any company store.",
+          "cost": 3
         },
         {
           "name": "Uncommon",
-          "targetBudget": 6,
-          "description": "Specialist gear, not always in stock."
+          "description": "Specialist gear, not always in stock.",
+          "cost": 6
         },
         {
           "name": "Military-Grade",
-          "targetBudget": 10,
-          "description": "Restricted to armed forces or black-market buyers."
+          "description": "Restricted to armed forces or black-market buyers.",
+          "cost": 10
         },
         {
           "name": "Prototype",
-          "targetBudget": 16,
-          "description": "Experimental, one-of-a-kind, or stolen tech."
+          "description": "Experimental, one-of-a-kind, or stolen tech.",
+          "cost": 16
         }
       ]
     },
@@ -625,7 +625,7 @@
           "name": "Standard",
           "shortName": "Standard",
           "sourceId": 1,
-          "targetBudget": 5
+          "cost": 5
         }
       ]
     },
@@ -636,25 +636,25 @@
       "values": [
         {
           "name": "Health",
-          "maxPath": "@health.max",
-          "binding": "@health.current",
-          "role": "resource"
+          "maxPath": "health.max",
+          "recordField": "health.current",
+          "binding": "resource"
         },
         {
           "name": "Stress",
-          "binding": "@stress.current",
-          "role": "resource"
+          "recordField": "stress.current",
+          "binding": "resource"
         },
         {
           "name": "Armor Point",
-          "binding": "@armorPoint",
-          "role": "value"
+          "recordField": "armorPoint",
+          "binding": "value"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         }
       ]
     },
@@ -763,39 +763,39 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "stats → abilityScores",
-          "sourceField": "stats"
+          "sourceField": "stats",
+          "binding": "abilityScores"
         },
         {
-          "role": "savingThrows",
           "name": "saves → savingThrows",
-          "sourceField": "saves"
+          "sourceField": "saves",
+          "binding": "savingThrows"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

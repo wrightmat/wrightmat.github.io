@@ -30,9 +30,10 @@ async function listKindForSystem(dataManager, kind, systemId) {
 // vocabulary — a per-system rules concept like Languages or Classes, not a
 // shared Library-kind list Crucible owns. Reads straight off the active
 // System's own array field, same mechanism as loadCombatScalingLevels below
-// (values returned close to as-authored, plus a slugified `id` fallback so
-// content tagged by creature-type id, e.g. "beast", keeps resolving).
-// Absent on a System means "nothing eligible", not an error.
+// (values returned close to as-authored, plus a slugified `shortName`
+// fallback so content tagged by creature-type shortName, e.g. "beast",
+// keeps resolving). Absent on a System means "nothing eligible", not an
+// error.
 //
 // Which field supplies this data is the System's own explicit `fieldRoles`
 // declaration (role "creatureType") — see field-roles.js. Loom's own
@@ -45,8 +46,8 @@ export async function listCreatureTypesForSystem(dataManager, systemId) {
     const field = resolveFieldRole(result?.payload, "creatureType")?.fieldDef;
     if (!field) return [];
     return (field.values || []).map((value, index) => ({
-      id: value.id || slugify(value.name) || `creature-type-${index}`,
-      name: value.name || value.label || String(value.id || index),
+      shortName: value.shortName || slugify(value.name) || `creature-type-${index}`,
+      name: value.name || value.label || String(value.shortName || index),
       ...value,
     }));
   } catch (error) {
@@ -73,7 +74,7 @@ export async function listMonstersForSystem(dataManager, systemId) {
 }
 
 // damageTypes reads like Combat Tracker's `conditions` field — a plain
-// tag-suggestion list, not a generator property (no cost/targetBudget).
+// tag-suggestion list, not a generator property (no cost).
 export async function loadDamageTypesPropertyType(dataManager, systemId) {
   if (!dataManager || !systemId) return [];
   try {

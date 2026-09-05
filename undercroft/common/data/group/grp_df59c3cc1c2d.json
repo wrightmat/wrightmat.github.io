@@ -124,15 +124,6 @@
         "id": "63fb5895-b3d5-4c5b-ac5f-09752e5d0f84",
         "deckName": "Standard Playing Cards",
         "remainingCardIds": [
-          "6S",
-          "QH",
-          "3H",
-          "KS",
-          "2H",
-          "6C",
-          "JC",
-          "6D",
-          "9H",
           "JS",
           "AC",
           "7H",
@@ -177,7 +168,16 @@
           "4S",
           "8C",
           "AH",
-          "4H"
+          "4H",
+          "6S",
+          "QH",
+          "3H",
+          "KS",
+          "2H",
+          "6C",
+          "JC",
+          "6D",
+          "9H"
         ]
       },
       {

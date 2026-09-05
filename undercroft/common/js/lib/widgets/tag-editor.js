@@ -6,6 +6,7 @@
 // caller passes in (an `onAdd`/`onRemove` callback instead of a hardcoded
 // combatant/character shape), so neither caller's state model leaks in here.
 import { findBindingByRole } from "../bindings.js";
+import { deriveCombatBindings } from "./combat-bindings.js";
 import { el } from "../dom.js";
 import { updateTooltipContent } from "../tooltips.js";
 
@@ -27,6 +28,31 @@ export function deriveConditionsVocabulary(fields, bindings) {
 
 export function conditionLabel(vocabulary, id) {
   return vocabulary?.find((entry) => entry.id === id)?.label || id;
+}
+
+// Map markers' own condition-icon lookup — a System's tags vocabulary, each
+// entry's optional icon/color, plus the recordField path to read a
+// character/combatant's own live conditions off of. Consolidated here from
+// three independently-duplicated copies (Orrery's app.js, the Dashboard's
+// map.js widget, and this file's own deriveConditionsVocabulary) — one
+// resolution, shared by every marker-rendering surface, so a fix or a
+// taxonomy rename (recordField, formerly binding) only has to happen once.
+export function buildSystemConditions(fields) {
+  const bindings = deriveCombatBindings(fields);
+  const tagsEntry = findBindingByRole(bindings, "tags");
+  const vocabulary = deriveConditionsVocabulary(fields, bindings);
+  const iconMap = new Map();
+  if (vocabulary && tagsEntry) {
+    const vocabularyKey = tagsEntry.sourceField || "conditions";
+    const field = (fields || []).find((entry) => entry.type === "array" && entry.key === vocabularyKey);
+    (field?.values || []).forEach((raw, index) => {
+      const entry = vocabulary[index];
+      if (entry && raw && (raw.icon || raw.color)) {
+        iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "" });
+      }
+    });
+  }
+  return { iconMap, tagsBinding: tagsEntry?.recordField || "" };
 }
 
 // `removable` shows a per-badge remove button, calling `onRemove(value)` —

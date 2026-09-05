@@ -10,7 +10,7 @@ import { evaluateFormula } from "./formula-engine.js";
 // A System with no `derivedFormulas` declared (or missing one role) gets
 // `undefined` back — graceful degradation, never a crash.
 export function findDerivedFormula(formulas, role) {
-  return (formulas || []).find((entry) => entry && entry.role === role) || null;
+  return (formulas || []).find((entry) => entry && entry.binding === role) || null;
 }
 
 export function evaluateDerivedFormula(formulas, role, context) {

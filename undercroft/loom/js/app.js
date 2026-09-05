@@ -63,6 +63,7 @@ import {
 } from "../../common/js/lib/property-schema-editor.js";
 import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
 import { validateSystemFields, loadReservedKeysSchema, isReservedKeyName } from "../../common/js/lib/system-validation.js";
+import { fieldByKey } from "../../common/js/lib/bindings.js";
 
 // SOURCES now imported from content-fetch.js (shared with Workbench's own
 // player-facing Import Character picker) — see that module's own comment.
@@ -642,15 +643,132 @@ async function runSystemDiagnostics({ silent = false } = {}) {
       });
     }
   }
+  // A refresh (manual "Check now", or the fire-and-forget post-save check)
+  // is worth surfacing on its own — expand rather than leave a fresh result
+  // sitting behind a collapsed toggle the user has to know to open.
+  setSystemDiagnosticsCollapsed(false);
   return findings;
 }
-const systemDiagnosticsSection = createCollapsibleSection({
+const { section: systemDiagnosticsSection, setCollapsed: setSystemDiagnosticsCollapsed } = createCollapsibleSection({
   label: "Reserved Key Diagnostics",
   collapsed: true,
   actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runSystemDiagnostics() }],
   content: systemDiagnosticsList,
-}).section;
+});
 document.querySelector("[data-system-diagnostics-mount]")?.appendChild(systemDiagnosticsSection);
+
+// Reserved Bindings Checklist — walks the currently-loaded System's actual
+// bindings (fieldRoles/combatBindings/derivedFormulas/levelUpBindings)
+// against reserved-keys.json's own `bindings` registry, so a missing
+// "once"-scoped binding (or an "unlimited"/"perKind" one nothing declares
+// yet) is visible in Loom's own System editor for the first time, instead of
+// only surfacing later as a thin/degraded generator result. Purely
+// informational — a System is never required to use every binding a
+// consumer knows about (Daggerheart has no "modifier"-role combatBinding at
+// all, by design). Collapsed by default, same as Diagnostics.
+function resolveBindingsField(fields, key) {
+  if (key !== "combatBindings") return fieldByKey(fields, key);
+  // combatBindings has no fixed key of its own — it's whichever field a
+  // fieldRoles entry points at (binding "combatBindings"), same lookup
+  // findRoleBoundField (bindings.js) does at runtime.
+  const fieldRolesField = fieldByKey(fields, "fieldRoles");
+  const entry = (Array.isArray(fieldRolesField?.values) ? fieldRolesField.values : []).find(
+    (candidate) => candidate?.binding === "combatBindings"
+  );
+  return entry?.sourceField ? fieldByKey(fields, entry.sourceField) : null;
+}
+async function renderSystemBindingsChecklist() {
+  systemBindingsChecklistList.innerHTML = "";
+  const fields = buildSystemPayload().fields;
+  const schema = await loadReservedKeysSchema();
+  const sections = Object.entries(schema.bindings || {});
+  let anyContent = false;
+  sections.forEach(([key, bindingList]) => {
+    if (!bindingList?.length) return;
+    const field = resolveBindingsField(fields, key);
+    const values = Array.isArray(field?.values) ? field.values : [];
+    const rows = bindingList.map((entry) => {
+      const matches = values.filter((value) => value?.binding === entry.name);
+      let statusText;
+      let ok;
+      if (entry.scope === "perKind") {
+        const kinds = [...new Set(matches.map((value) => value.libraryKind).filter(Boolean))];
+        ok = kinds.length > 0;
+        statusText = ok ? `Declared for: ${kinds.join(", ")}` : "Not declared";
+      } else if (entry.scope === "once") {
+        ok = matches.length > 0;
+        statusText = matches.length > 1 ? `Declared ${matches.length}x (should be once)` : ok ? "Declared" : "Missing";
+      } else {
+        ok = matches.length > 0;
+        statusText = ok ? `Declared (${matches.length}x)` : "Not declared";
+      }
+      return { name: entry.name, description: entry.description || "", ok, statusText, tooManyOnce: entry.scope === "once" && matches.length > 1 };
+    });
+    if (!field) {
+      const row = document.createElement("div");
+      row.className = "small text-body-secondary";
+      row.textContent = `${key} — no field declared for this yet.`;
+      systemBindingsChecklistList.appendChild(row);
+      anyContent = true;
+      return;
+    }
+    anyContent = true;
+    const group = document.createElement("div");
+    group.className = "d-flex flex-column gap-1";
+    const heading = document.createElement("div");
+    heading.className = "small fw-semibold text-body-secondary";
+    heading.textContent = key;
+    group.appendChild(heading);
+    rows.forEach((row) => {
+      const line = document.createElement("div");
+      line.className = `small d-flex align-items-center gap-2 ${row.tooManyOnce ? "text-warning" : row.ok ? "" : "text-body-secondary"}`;
+      const icon = document.createElement("span");
+      icon.className = "iconify flex-shrink-0";
+      icon.dataset.icon = row.tooManyOnce ? "tabler:alert-triangle" : row.ok ? "tabler:circle-check" : "tabler:circle-dashed";
+      icon.setAttribute("aria-hidden", "true");
+      line.appendChild(icon);
+      const label = document.createElement("span");
+      label.textContent = `${row.name} — ${row.statusText}`;
+      if (row.description) label.title = row.description;
+      line.appendChild(label);
+      group.appendChild(line);
+    });
+    systemBindingsChecklistList.appendChild(group);
+  });
+  if (!anyContent) {
+    const empty = document.createElement("p");
+    empty.className = "text-body-secondary mb-0 small";
+    empty.textContent = "This System declares no reserved keys with a bindings vocabulary yet.";
+    systemBindingsChecklistList.appendChild(empty);
+  }
+  // Same reasoning as runSystemDiagnostics above — a refresh should surface
+  // itself, not sit behind a collapsed toggle.
+  setSystemBindingsChecklistCollapsed(false);
+}
+const systemBindingsChecklistList = document.createElement("div");
+systemBindingsChecklistList.className = "d-flex flex-column gap-3 small";
+systemBindingsChecklistList.textContent = "Not checked yet.";
+const { section: systemBindingsChecklistSection, setCollapsed: setSystemBindingsChecklistCollapsed } = createCollapsibleSection({
+  label: "Reserved Bindings Checklist",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => renderSystemBindingsChecklist() }],
+  content: systemBindingsChecklistList,
+});
+document.querySelector("[data-system-bindings-checklist-mount]")?.appendChild(systemBindingsChecklistSection);
+
+// Selecting a different System (or starting a new one) invalidates whatever
+// the checklists above last showed — it described the PREVIOUS System's
+// fields, not this one's. Cleared back to each panel's own pristine
+// "Not checked yet." state (see newSystemEditor/loadSystemIntoEditor below)
+// rather than left showing stale, now-mismatched results.
+function resetSystemReservedChecks() {
+  systemDiagnosticsList.innerHTML = "";
+  systemDiagnosticsList.textContent = "Not checked yet.";
+  setSystemDiagnosticsCollapsed(true);
+  systemBindingsChecklistList.innerHTML = "";
+  systemBindingsChecklistList.textContent = "Not checked yet.";
+  setSystemBindingsChecklistCollapsed(true);
+}
 
 // Macros tab — its own dedicated authoring UI (mirrors Systems: select +
 // New/Save/Delete), not bolted onto the generic Library JSON editor. The
@@ -4833,7 +4951,7 @@ async function collectFeatureCreatureTypeVocabulary(systemIds) {
       const result = await dataManager.get("systems", systemId, { preferLocal: false });
       const field = resolveFieldRole(result?.payload, "creatureType")?.fieldDef;
       (field?.values || []).forEach((value) => {
-        if (value?.id) values.set(value.id, value.name || value.id);
+        if (value?.shortName) values.set(value.shortName, value.name || value.shortName);
       });
     } catch (error) {
       // Best-effort per System — one missing/unreadable System shouldn't
@@ -6255,7 +6373,7 @@ async function loadLibraryEntry(kind, id) {
     // stale local cache entry silently winning would mean a resave reverts
     // whatever's actually on the server, with no visible sign anything was
     // wrong. Read-only display lookups elsewhere (e.g.
-    // populateValueEntitySelect) don't carry this risk since nothing writes
+    // populateLibraryFieldDatalist) don't carry this risk since nothing writes
     // back from them.
     const entity = (await dataManager?.get(kind, id, { preferLocal: false }))?.payload;
     if (!entity) throw new Error("Not found");
@@ -6423,18 +6541,22 @@ wireUndoTracking(libraryIdInput, "library");
 wireUndoTracking(libraryJsonTextarea, "library");
 
 // After saving an entity, opportunistically link it into any of its
-// Assigned Systems' matching Properties (an array field whose entityKind
-// matches this entity's kind, with a values entry whose name matches and no
-// entityId yet). Keeps a System's roster pointing at real data without
-// requiring every link by hand — only when the match is unambiguous
-// (exactly one candidate); anything else is left for manual linking.
-function findEntityKindFields(fields, kind, matches = []) {
+// Assigned Systems' matching Properties (any array field whose values use
+// `libraryKind` matching this entity's kind, with a values entry whose name
+// matches and no `libraryField` yet). Keeps a System's roster pointing at
+// real data without requiring every link by hand — only when the match is
+// unambiguous (exactly one candidate); anything else is left for manual
+// linking. Walks every array field uniformly (no more field-level
+// `entityKind` gate) since `libraryKind` is a per-VALUE property now.
+function findLibraryKindValues(fields, kind, matches = []) {
   (Array.isArray(fields) ? fields : []).forEach((field) => {
-    if (field?.type === "array" && field.entityKind === kind && Array.isArray(field.values)) {
-      matches.push(field);
+    if (field?.type === "array" && Array.isArray(field.values)) {
+      field.values.forEach((value) => {
+        if (value && typeof value === "object" && value.libraryKind === kind) matches.push(value);
+      });
     }
-    if (Array.isArray(field?.children)) findEntityKindFields(field.children, kind, matches);
-    if (Array.isArray(field?.item?.children)) findEntityKindFields(field.item.children, kind, matches);
+    if (Array.isArray(field?.children)) findLibraryKindValues(field.children, kind, matches);
+    if (Array.isArray(field?.item?.children)) findLibraryKindValues(field.item.children, kind, matches);
   });
   return matches;
 }
@@ -6454,21 +6576,14 @@ async function autoLinkEntityToSystems(kind, id, entity) {
     if (!payload || !Array.isArray(payload.fields)) continue;
     let matchCount = 0;
     let matchedEntry = null;
-    findEntityKindFields(payload.fields, kind).forEach((field) => {
-      field.values.forEach((entry) => {
-        if (
-          entry &&
-          typeof entry === "object" &&
-          !entry.entityId &&
-          (entry.name || "").trim().toLowerCase() === entityName
-        ) {
-          matchCount += 1;
-          matchedEntry = entry;
-        }
-      });
+    findLibraryKindValues(payload.fields, kind).forEach((entry) => {
+      if (!entry.libraryField && (entry.name || "").trim().toLowerCase() === entityName) {
+        matchCount += 1;
+        matchedEntry = entry;
+      }
     });
     if (matchCount === 1 && matchedEntry) {
-      matchedEntry.entityId = id;
+      matchedEntry.libraryField = id;
       try {
         await dataManager.save("systems", systemId, payload);
         status?.show(`Linked ${entity.name || id} to ${payload.title || systemId}.`, {
@@ -6575,26 +6690,27 @@ if (libraryDeleteButton) {
 // though nothing today needs more than one level.
 //
 // Combat Bindings isn't a field type of its own — it's just whichever
-// ordinary Enum-mode array field's values use the Role column (see
+// ordinary Enum-mode array field's values use the Binding column (see
 // bindings.js's findRoleBoundField), so combat-tracker.js and Workbench's
-// character view can find it without a fixed key name. Role/Binding/
+// character view can find it without a fixed key name. Binding/RecordField/
 // SourceField describe generic behavior — a resource with a ceiling, a
 // standalone value, a tag list, a roll modifier — useful on any array's
-// values, not only combat state. `binding` is a generic @-path pointer
-// (bindings.js's resolveBinding/setAtBinding) into a character record.
-// `sourceField` is a pointer at another array field's key on this same
-// System whose values are the valid options (e.g. a Tags-role value
-// pointing at a Conditions field). A role needing more than one path
-// (Resource's max/temp) or other field-specific metadata (Modifier's die)
-// doesn't get a dedicated column — it's authored in that value's "Extra
-// properties" JSON catch-all instead, same as any property specific to just
-// one field (combatScaling's hitPoints/armorClass/...).
+// values, not only combat state. `recordField` is a plain dotted path
+// (dotted-path.js's resolveDottedPath/setAtDottedPath) into a character
+// record — no `@` prefix, the column itself already fixes what kind of
+// thing the value holds. `sourceField` is a pointer at another field's key
+// on this same System whose values are the valid options (e.g. a
+// Tags-binding value pointing at a Conditions field). A binding needing
+// more than one path (Resource's max/temp) or other field-specific metadata
+// (Modifier's die) doesn't get a dedicated column — it's authored in that
+// value's "Extra properties" JSON catch-all instead, same as any property
+// specific to just one field (combatScaling's hitPoints/armorClass/...).
 //
 // Per-value columns are worth a dedicated input only when the same property
-// name recurs across several System fields (cost/targetBudget:
+// name recurs across several System fields (cost:
 // rarity+activation+form+combatScaling; sourceId: conditions+alignments+
 // sizes+senses+speeds+components+skills+activation; shortName: alignments;
-// entityId: classes) — a bespoke checkbox for one field's own stat block
+// libraryField: classes) — a bespoke checkbox for one field's own stat block
 // doesn't generalize and would clutter every other array field's options row.
 //
 // The shared row editor (property-schema-editor.js) is undo/dirty-tracking-
@@ -6616,14 +6732,30 @@ const systemPropertyCtx = {
   get filterSystemId() {
     return (systemIdInput?.value || "").trim();
   },
-  // fieldRoles' own dedicated Field select (property-schema-editor.js)
-  // needs this System's own OTHER top-level field keys — queried live off
-  // the DOM rather than cached, so a field added/renamed elsewhere in the
-  // same editing session shows up without a reload.
-  listSiblingFieldKeys: () =>
-    [...Array.from(systemReservedPropertyRows?.children || []), ...Array.from(systemPropertyRows.children)]
-      .map((row) => row.querySelector("[data-property-key]")?.value.trim())
-      .filter(Boolean),
+  // The `binding` column's <select> options depend on which reserved key a
+  // field actually is — fieldRoles/derivedFormulas/levelUpBindings are their
+  // own literal key, but combatBindings has no fixed key of its own: it's
+  // whichever field a fieldRoles entry points at (binding "combatBindings").
+  // Resolving that needs this System's OTHER rows' live, not-yet-saved state
+  // — queried off the DOM rather than cached, so a fieldRoles edit made
+  // elsewhere in the same editing session takes effect without a reload.
+  resolveFieldBindingKey: (field) => {
+    if (["fieldRoles", "derivedFormulas", "levelUpBindings"].includes(field?.key)) return field.key;
+    const rows = [...Array.from(systemReservedPropertyRows?.children || []), ...Array.from(systemPropertyRows.children)];
+    const fieldRolesRow = rows.find((row) => row.querySelector("[data-property-key]")?.value.trim() === "fieldRoles");
+    // Reads the row's own STORED field (renderPropertyRow's row._originalField),
+    // not a live DOM collect — a live collect would race combatBindings'
+    // value rows resolving their own Binding <select> against fieldRoles'
+    // OWN Binding <select> options, which populate asynchronously and may
+    // not have landed yet at this point in the same render pass. This only
+    // needs to be right at render/reload time, not reactive to an unsaved
+    // in-session fieldRoles edit.
+    const originalValues = fieldRolesRow?._originalField?.values;
+    const match = Array.isArray(originalValues)
+      ? originalValues.find((entry) => entry?.binding === "combatBindings" && entry?.sourceField === field?.key)
+      : null;
+    return match ? "combatBindings" : null;
+  },
   captureDragSnapshot: () =>
     !isApplyingHistory && undoStack && SNAPSHOT_HANDLERS.system ? SNAPSHOT_HANDLERS.system.create() : null,
   commitDragSnapshot: (before) => {
@@ -6671,6 +6803,20 @@ function applySystemPropertyType(row, typeButton, value) {
 function renderSystemFieldIntoGroups(field) {
   const container = isReservedKeyName(field?.key) ? systemReservedPropertyRows : systemPropertyRows;
   return renderSystemPropertyRow(field, container);
+}
+
+// Reserved keys first, regardless of their order in the stored `fields`
+// array — combatBindings' own row (an ordinary field, discovered only
+// indirectly via a fieldRoles entry) needs fieldRoles' row already rendered
+// (row._originalField set — see systemPropertyCtx.resolveFieldBindingKey)
+// by the time it resolves its own Binding <select> options. Fields aren't
+// reordered on screen (reserved ones already render into their own
+// container, see renderSystemFieldIntoGroups above) — this only changes
+// which one renders first internally.
+function renderSystemFieldsIntoGroups(fields) {
+  const list = Array.isArray(fields) ? fields : [];
+  list.filter((field) => isReservedKeyName(field?.key)).forEach(renderSystemFieldIntoGroups);
+  list.filter((field) => !isReservedKeyName(field?.key)).forEach(renderSystemFieldIntoGroups);
 }
 
 // Reserved section is shown only "when they exist" (never an empty box) —
@@ -6785,7 +6931,7 @@ function applySystemSnapshot(snapshot) {
   if (systemPropertyRows) {
     systemPropertyRows.innerHTML = "";
     if (systemReservedPropertyRows) systemReservedPropertyRows.innerHTML = "";
-    (snapshot.properties || []).forEach((field) => renderSystemFieldIntoGroups(field));
+    renderSystemFieldsIntoGroups(snapshot.properties);
     updateReservedPropertiesVisibility();
   }
   // Undo/redo rebuilds every row from scratch — whatever was selected
@@ -6850,6 +6996,7 @@ groupPropertyCtx.collectField = collectGroupFieldFromRow;
 // editor's state without showing anything yet, matching Groups/Users'
 // default "nothing selected" state.
 function newSystemEditor({ reveal = true } = {}) {
+  resetSystemReservedChecks();
   // Only a not-yet-saved System gets a typeable Id — once it exists, the id
   // is how Library entities' Assigned Systems and Templates refer to it.
   if (systemIdInput) {
@@ -6868,6 +7015,7 @@ function newSystemEditor({ reveal = true } = {}) {
 
 async function loadSystemIntoEditor(id) {
   if (!dataManager) return;
+  resetSystemReservedChecks();
   try {
     // preferLocal: false — the editor a creator uses to fix a System's
     // data must never show a stale locally-cached copy instead of what's
@@ -6885,7 +7033,7 @@ async function loadSystemIntoEditor(id) {
       systemPropertyRows.innerHTML = "";
       if (systemReservedPropertyRows) systemReservedPropertyRows.innerHTML = "";
       await loadReservedKeysSchema();
-      (payload.fields || []).forEach((field) => renderSystemFieldIntoGroups(field));
+      renderSystemFieldsIntoGroups(payload.fields);
       updateReservedPropertiesVisibility();
     }
     systemPropertyInspector.selectRow(null);
@@ -7006,6 +7154,7 @@ if (systemSaveButton) {
       // Fire-and-forget — a wrong reserved-key shape is worth surfacing, but
       // never something that should hold up or block the save itself.
       void runSystemDiagnostics();
+      void renderSystemBindingsChecklist();
     } catch (error) {
       status?.show(`Unable to save system: ${error.message}`, { type: "error", timeout: 4000 });
     }
