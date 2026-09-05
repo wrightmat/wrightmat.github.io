@@ -784,23 +784,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 4,
-          "description": "Available to any character without restriction."
+          "description": "Available to any character without restriction.",
+          "cost": 4
         },
         {
           "name": "Uncommon",
-          "targetBudget": 8,
-          "description": "Requires a special source (feat, ancestry, faction) to access freely."
+          "description": "Requires a special source (feat, ancestry, faction) to access freely.",
+          "cost": 8
         },
         {
           "name": "Rare",
-          "targetBudget": 14,
-          "description": "Known to very few; usually found only through play, not purchase."
+          "description": "Known to very few; usually found only through play, not purchase.",
+          "cost": 14
         },
         {
           "name": "Unique",
-          "targetBudget": 24,
-          "description": "A singular, one-of-a-kind piece of tech or artifact."
+          "description": "A singular, one-of-a-kind piece of tech or artifact.",
+          "cost": 24
         }
       ]
     },
@@ -1279,72 +1279,72 @@
       "label": "Creature Types",
       "values": [
         {
-          "id": "aberration",
+          "shortName": "aberration",
           "name": "Aberration",
           "description": "A creature with an alien mind or form."
         },
         {
-          "id": "animal",
+          "shortName": "animal",
           "name": "Animal",
           "description": "A creature with no innate magic, driven by instinct."
         },
         {
-          "id": "beast",
+          "shortName": "beast",
           "name": "Beast",
           "description": "A non-magical creature more intelligent than a typical animal."
         },
         {
-          "id": "celestial",
+          "shortName": "celestial",
           "name": "Celestial",
           "description": "A good-aligned creature native to the upper planes."
         },
         {
-          "id": "construct",
+          "shortName": "construct",
           "name": "Construct",
           "description": "An artificial creature, often mindless, built or animated."
         },
         {
-          "id": "dragon",
+          "shortName": "dragon",
           "name": "Dragon",
           "description": "A reptilian creature, often winged, with an innate elemental power."
         },
         {
-          "id": "elemental",
+          "shortName": "elemental",
           "name": "Elemental",
           "description": "A creature native to one of the elemental planes."
         },
         {
-          "id": "fey",
+          "shortName": "fey",
           "name": "Fey",
           "description": "A creature tied to primal or otherworldly nature magic."
         },
         {
-          "id": "fiend",
+          "shortName": "fiend",
           "name": "Fiend",
           "description": "An evil-aligned creature native to the lower planes."
         },
         {
-          "id": "fungus",
+          "shortName": "fungus",
           "name": "Fungus",
           "description": "A creature more closely related to fungi than plants or animals."
         },
         {
-          "id": "humanoid",
+          "shortName": "humanoid",
           "name": "Humanoid",
           "description": "A bipedal creature with a society and culture."
         },
         {
-          "id": "ooze",
+          "shortName": "ooze",
           "name": "Ooze",
           "description": "A mindless, amorphous creature."
         },
         {
-          "id": "plant",
+          "shortName": "plant",
           "name": "Plant",
           "description": "A vegetable creature, usually rooted or slow-moving."
         },
         {
-          "id": "undead",
+          "shortName": "undead",
           "name": "Undead",
           "description": "A once-living creature animated by negative energy."
         }
@@ -1357,38 +1357,38 @@
       "values": [
         {
           "name": "Stamina Points",
-          "maxPath": "@stamina.max",
-          "binding": "@stamina.current",
-          "role": "resource"
+          "maxPath": "stamina.max",
+          "recordField": "stamina.current",
+          "binding": "resource"
         },
         {
           "name": "Hit Points",
-          "maxPath": "@hitPoints.max",
-          "binding": "@hitPoints.current",
-          "role": "resource"
+          "maxPath": "hitPoints.max",
+          "recordField": "hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Armor Class",
-          "binding": "@armorClass",
-          "role": "value"
+          "recordField": "armorClass",
+          "binding": "value"
         },
         {
           "name": "Hero Points",
-          "binding": "@heroPoints",
           "max": 3,
-          "role": "resource"
+          "recordField": "heroPoints",
+          "binding": "resource"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         },
         {
           "name": "Perception",
           "die": "d20",
-          "binding": "@perception",
-          "role": "modifier"
+          "recordField": "perception",
+          "binding": "modifier"
         }
       ]
     },
@@ -1481,54 +1481,54 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "abilities → abilityScores",
-          "sourceField": "abilities"
+          "sourceField": "abilities",
+          "binding": "abilityScores"
         },
         {
-          "role": "savingThrows",
           "name": "saves → savingThrows",
-          "sourceField": "saves"
+          "sourceField": "saves",
+          "binding": "savingThrows"
         },
         {
-          "role": "creatureType",
           "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes"
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "archetypeTable",
           "name": "backgrounds → archetypeTable",
-          "sourceField": "backgrounds"
+          "sourceField": "backgrounds",
+          "binding": "archetypeTable"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "generatorProperty",
           "name": "activation → generatorProperty",
-          "sourceField": "activation"
+          "sourceField": "activation",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

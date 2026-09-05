@@ -25,10 +25,10 @@ import { applyComponentStyles, applyTextFormatting } from "../lib/component-styl
 import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField, findBindingByRole, fieldByKey, setAtBinding } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField, findBindingByRole, fieldByKey } from "../../../common/js/lib/bindings.js";
 // Same name-or-id macro resolver Board and Journal's inline `macro:Name` chips use.
 import { runMacroReference } from "../../../repository/js/lib/journal-macro.js";
-import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
+import { resolveDottedPath, setAtDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { evaluateDerivedFormula } from "../../../common/js/lib/derived-formulas.js";
 import { loadAbilityFieldDefs, loadArrayFieldValues } from "../../../common/js/lib/generator-kit.js";
 import { resolveFieldRole } from "../../../common/js/lib/field-roles.js";
@@ -1778,11 +1778,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
     let growth = 0;
     let resourceBinding = null;
-    if (growthBinding?.path) {
-      const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
+    if (growthBinding?.libraryField) {
+      const hitDieSides = Number(classRecord[growthBinding.libraryField]) || 0;
       growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
       if (growth && growthBinding.abilityBinding) {
-        const score = resolveBinding(growthBinding.abilityBinding, state.draft);
+        const score = resolveDottedPath(state.draft, growthBinding.abilityBinding);
         growth += evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
       }
       resourceBinding = findBindingByRole(getCombatBindings(), growthBinding.resourceRole);
@@ -1806,14 +1806,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Reputation Bonus, neither of which is ability-modified).
     const classProgressionBinding = findLevelUpBinding(getLevelUpBindings(), "classProgressionTable", "class");
     const classProgressionWrites = [];
-    if (classProgressionBinding?.path && Array.isArray(classProgressionBinding.columns)) {
-      const row = resolveClassProgressionRow(classRecord, classProgressionBinding.path, nextLevel);
+    if (classProgressionBinding?.libraryField && Array.isArray(classProgressionBinding.columns)) {
+      const row = resolveClassProgressionRow(classRecord, classProgressionBinding.libraryField, nextLevel);
       if (row) {
         classProgressionBinding.columns.forEach((column) => {
           const raw = row[column.source];
           if (raw == null) return;
           const abilityMod = column.abilityBinding
-            ? evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: resolveBinding(column.abilityBinding, state.draft) }) || 0
+            ? evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: resolveDottedPath(state.draft, column.abilityBinding) }) || 0
             : 0;
           classProgressionWrites.push({ targetPath: column.targetPath, value: Number(raw) + (Number(column.base) || 0) + abilityMod });
         });
@@ -1851,8 +1851,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       lines.push(`New feature${names.length > 1 ? "s" : ""}: ${names.join(", ")}`);
     }
     if (preview.growth && preview.resourceBinding) {
-      const maxPathSegs = resolveBindingPath(preview.resourceBinding.maxPath);
-      const currentMax = maxPathSegs ? Number(getValueAtPath(maxPathSegs)) || 0 : 0;
+      const currentMax = Number(resolveDottedPath(state.draft, preview.resourceBinding.maxPath)) || 0;
       lines.push(`+${preview.growth} max HP (${currentMax} → ${currentMax + preview.growth})`);
     }
     if (preview.newProficiencyBonus) {
@@ -2229,24 +2228,25 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         case "hpSlot": {
           const hpBinding = (getCombatBindings() || []).find((entry) => String(entry.name || "").toLowerCase().includes("hit point"));
           if (hpBinding?.maxPath) {
-            const maxSegs = resolveBindingPath(hpBinding.maxPath);
-            if (maxSegs) setValueAtPath(maxSegs, (Number(getValueAtPath(maxSegs)) || 0) + 1);
+            setAtDottedPath(state.draft, hpBinding.maxPath, (Number(resolveDottedPath(state.draft, hpBinding.maxPath)) || 0) + 1);
           }
           break;
         }
         case "stressSlot": {
           const stressBinding = (getCombatBindings() || []).find((entry) => String(entry.name || "").toLowerCase().includes("stress"));
           if (stressBinding?.maxPath) {
-            const maxSegs = resolveBindingPath(stressBinding.maxPath);
-            if (maxSegs) setValueAtPath(maxSegs, (Number(getValueAtPath(maxSegs)) || 0) + 1);
+            setAtDottedPath(state.draft, stressBinding.maxPath, (Number(resolveDottedPath(state.draft, stressBinding.maxPath)) || 0) + 1);
           }
           break;
         }
         case "evasionIncrease": {
           const evasionBinding = findBindingByRole(getCombatBindings(), "value");
-          if (evasionBinding?.binding) {
-            const segs = resolveBindingPath(evasionBinding.binding);
-            if (segs) setValueAtPath(segs, (Number(getValueAtPath(segs)) || 0) + 1);
+          if (evasionBinding?.recordField) {
+            setAtDottedPath(
+              state.draft,
+              evasionBinding.recordField,
+              (Number(resolveDottedPath(state.draft, evasionBinding.recordField)) || 0) + 1
+            );
           }
           break;
         }
@@ -2471,23 +2471,21 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // HP growth uses the ordinary average-growth formula, never creation's
     // max-at-level-1 rule (specific to the character's very first level).
     const growthBinding = findLevelUpBinding(getLevelUpBindings(), "resourceGrowth", "class");
-    if (growthBinding?.path) {
-      const hitDieSides = Number(classRecord[growthBinding.path]) || 0;
+    if (growthBinding?.libraryField) {
+      const hitDieSides = Number(classRecord[growthBinding.libraryField]) || 0;
       const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
       let growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
       if (growth && growthBinding.abilityBinding) {
-        const score = resolveBinding(growthBinding.abilityBinding, state.draft);
+        const score = resolveDottedPath(state.draft, growthBinding.abilityBinding);
         growth += evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
       }
       const resourceBinding = findBindingByRole(getCombatBindings(), growthBinding.resourceRole);
       if (growth && resourceBinding) {
-        const maxPathSegs = resolveBindingPath(resourceBinding.maxPath);
-        const currentPathSegs = resolveBindingPath(resourceBinding.binding);
-        if (maxPathSegs) {
-          setValueAtPath(maxPathSegs, (Number(getValueAtPath(maxPathSegs)) || 0) + growth);
+        if (resourceBinding.maxPath) {
+          setAtDottedPath(state.draft, resourceBinding.maxPath, (Number(resolveDottedPath(state.draft, resourceBinding.maxPath)) || 0) + growth);
         }
-        if (currentPathSegs) {
-          setValueAtPath(currentPathSegs, (Number(getValueAtPath(currentPathSegs)) || 0) + growth);
+        if (resourceBinding.recordField) {
+          setAtDottedPath(state.draft, resourceBinding.recordField, (Number(resolveDottedPath(state.draft, resourceBinding.recordField)) || 0) + growth);
         }
       }
     }
@@ -2507,7 +2505,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const abilities = state.draft.stats.abilities && typeof state.draft.stats.abilities === "object" ? state.draft.stats.abilities : {};
       // Field name from the System's "savingThrowGrants" levelUpBindings
       // role, never a literal.
-      const savingThrowGrantsPath = findLevelUpBinding(getLevelUpBindings(), "savingThrowGrants", "class")?.path;
+      const savingThrowGrantsPath = findLevelUpBinding(getLevelUpBindings(), "savingThrowGrants", "class")?.libraryField;
       const classSaveIndexes = new Set(
         (savingThrowGrantsPath && Array.isArray(classRecord?.[savingThrowGrantsPath]) ? classRecord[savingThrowGrantsPath] : []).map((entry) =>
           String(entry?.index || "").toLowerCase()
@@ -2555,8 +2553,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // literal — Daggerheart declares neither role, so both lookups come
     // back null and this block no-ops for it, same graceful degradation
     // every optional System field follows.
-    const proficiencyChoicesPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "class")?.path;
-    const equipmentChoicesPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "class")?.path;
+    const proficiencyChoicesPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "class")?.libraryField;
+    const equipmentChoicesPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "class")?.libraryField;
     if (proficiencyChoicesPath) {
       pushChoice(resolveChoiceList(classRecord[proficiencyChoicesPath]).filter((entry) => entry.options.length), classRecord.name || "Class");
     }
@@ -2652,13 +2650,19 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     });
 
     if (preview.growth && preview.resourceBinding) {
-      const maxPathSegs = resolveBindingPath(preview.resourceBinding.maxPath);
-      const currentPathSegs = resolveBindingPath(preview.resourceBinding.binding);
-      if (maxPathSegs) {
-        setValueAtPath(maxPathSegs, (Number(getValueAtPath(maxPathSegs)) || 0) + preview.growth);
+      if (preview.resourceBinding.maxPath) {
+        setAtDottedPath(
+          state.draft,
+          preview.resourceBinding.maxPath,
+          (Number(resolveDottedPath(state.draft, preview.resourceBinding.maxPath)) || 0) + preview.growth
+        );
       }
-      if (currentPathSegs) {
-        setValueAtPath(currentPathSegs, (Number(getValueAtPath(currentPathSegs)) || 0) + preview.growth);
+      if (preview.resourceBinding.recordField) {
+        setAtDottedPath(
+          state.draft,
+          preview.resourceBinding.recordField,
+          (Number(resolveDottedPath(state.draft, preview.resourceBinding.recordField)) || 0) + preview.growth
+        );
       }
     }
 
@@ -2670,8 +2674,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Class+level progression table writes (see computeLevelUpPreview) —
     // empty for every System except one declaring "classProgressionTable".
     (preview.classProgressionWrites || []).forEach(({ targetPath, value }) => {
-      const segs = resolveBindingPath(targetPath);
-      if (segs) setValueAtPath(segs, value);
+      if (targetPath) setAtDottedPath(state.draft, targetPath, value);
     });
 
     cls.level = preview.nextLevel;
@@ -2838,12 +2841,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // Generic "write the pick's name to a plain character field path" —
       // Daggerheart's creation-time weapon/armor picks (see
       // buildCharacterFromWizard's creationEquipmentChoices), reusable by
-      // any future System. `choice.targetPath` is the "@..." binding the
+      // any future System. `choice.targetPath` is the path the
       // pick's name is written to (only the first pick, `choose:1` only).
-      const targetPathSegs = resolveBindingPath(choice.targetPath);
       const pick = picks[0];
-      if (targetPathSegs && pick) {
-        setValueAtContext(state.draft, targetPathSegs, pick.raw?.name || pick.label || "");
+      if (choice.targetPath && pick) {
+        setAtDottedPath(state.draft, choice.targetPath, pick.raw?.name || pick.label || "");
       }
       // Optional per-choice `statBindings` copies other fields off the same
       // picked option's `raw` (e.g. Armor's baseMajor/baseSevere) onto other
@@ -2853,12 +2855,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (pick && Array.isArray(choice.statBindings)) {
         const level = Number(state.draft?.identity?.level) || 1;
         choice.statBindings.forEach((binding) => {
-          const base = pick.raw?.[binding?.sourcePath];
+          const base = pick.raw?.[binding?.libraryField];
           if (base === undefined) return;
           const value = binding.formula ? evaluateFormula(binding.formula, { base, level }, {}) : base;
-          const path = resolveBindingPath(binding?.targetBinding);
-          if (path && value !== null && value !== undefined) {
-            setValueAtContext(state.draft, path, value);
+          if (binding?.targetPath && value !== null && value !== undefined) {
+            setAtDottedPath(state.draft, binding.targetPath, value);
           }
         });
       }
@@ -3525,7 +3526,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
     const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue, rollKey });
     const initiativeBinding = findInitiativeCombatBinding();
-    if (result && initiativeBinding && component?.binding === initiativeBinding.binding) {
+    const componentBindingPath = typeof component?.binding === "string" ? component.binding.replace(/^@/, "").trim() : "";
+    if (result && initiativeBinding && componentBindingPath && componentBindingPath === initiativeBinding.recordField) {
       void pushInitiativeToActiveEncounter(result.total);
     }
   }
@@ -9230,12 +9232,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // A Heritage-step System renders its 2 kind picks into the heritage panel's
     // mounts instead of the standalone species/background steps (not in the
     // active sequence then). Every kind fetched below comes from the step's
-    // declared `kind`/`picks[].kind`, never assumed from the id.
+    // declared `libraryKind`/`picks[].libraryKind`, never assumed from the id.
     const heritageEntry = getBuildStepEntry("heritage");
-    const speciesKind = heritageEntry ? heritageEntry.picks?.[0]?.kind : getBuildStepEntry("species")?.kind;
-    const backgroundKind = heritageEntry ? heritageEntry.picks?.[1]?.kind : getBuildStepEntry("background")?.kind;
+    const speciesKind = heritageEntry ? heritageEntry.picks?.[0]?.libraryKind : getBuildStepEntry("species")?.libraryKind;
+    const backgroundKind = heritageEntry ? heritageEntry.picks?.[1]?.libraryKind : getBuildStepEntry("background")?.libraryKind;
     const classStepEntry = getBuildStepEntry("class");
-    const classKind = classStepEntry?.kind;
+    const classKind = classStepEntry?.libraryKind;
     const speciesMount = heritageEntry ? elements.buildHeritageSpeciesMount : elements.buildSpeciesMount;
     const backgroundMount = heritageEntry ? elements.buildHeritageBackgroundMount : elements.buildBackgroundMount;
     setElementVisible(elements.buildMixedAncestryStep, Boolean(heritageEntry?.allowMixedAncestry));
@@ -9290,7 +9292,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const subclassStepEntry = getBuildStepEntry("subclass");
     let entries = [];
     try {
-      entries = await fetchKindEntriesWithIds(dataManager, subclassStepEntry?.kind);
+      entries = await fetchKindEntriesWithIds(dataManager, subclassStepEntry?.libraryKind);
     } catch (error) {
       mount.textContent = "Unable to load subclass options.";
       return;
@@ -9845,30 +9847,31 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     mount.appendChild(wrap);
   }
 
-  // A pointAllocation step's own `scopeSource` (same {from, field} convention
-  // listPick's `source` uses) names WHICH leaves of the target field the budget
-  // may be spent on, by short key — absent means "every leaf." Returns a Set of
-  // short keys, or null when nothing is declared.
+  // A pointAllocation step's own `scopeSource` (same {from, sourceField/
+  // libraryField} convention listPick's `source` uses) names WHICH leaves of
+  // the target field the budget may be spent on, by short key — absent means
+  // "every leaf." Returns a Set of short keys, or null when nothing is declared.
   function resolvePointAllocationScope(stepEntry) {
     const scope = stepEntry?.scopeSource;
-    if (!scope?.field) return null;
+    const scopeField = scope?.from === "system" ? scope?.sourceField : scope?.libraryField;
+    if (!scopeField) return null;
     const raw =
       scope.from === "class"
-        ? buildWizardState.classRecord?.[scope.field]
+        ? buildWizardState.classRecord?.[scopeField]
         : scope.from === "system"
-          ? systemFieldValues(buildWizardState.systemDefinition, scope.field)
+          ? systemFieldValues(buildWizardState.systemDefinition, scopeField)
           : null;
     if (!Array.isArray(raw)) return null;
     return new Set(raw.map((value) => (typeof value === "string" ? value : value?.key || value?.name)).filter(Boolean));
   }
 
-  // The step's `targetPath` names a reserved System field to allocate across —
-  // either a two-level object (BitD's grouped "actions") or a flat single-level
-  // object (CoC's flat "skills"); either shape resolves to the same
-  // {key,label,items} groups shape, a flat field wrapped in one implicit
+  // The step's own `sourceField` names a reserved System field to allocate
+  // across — either a two-level object (BitD's grouped "actions") or a flat
+  // single-level object (CoC's flat "skills"); either shape resolves to the
+  // same {key,label,items} groups shape, a flat field wrapped in one implicit
   // unlabeled group. Further narrowed by `scopeSource` or `exclude`, never both.
   function getPointAllocationGroups(stepEntry, systemDefinition = buildWizardState.systemDefinition) {
-    const targetField = fieldByKey(systemDefinition?.fields, stepEntry?.targetPath);
+    const targetField = fieldByKey(systemDefinition?.fields, stepEntry?.sourceField);
     const children = Array.isArray(targetField?.children) ? targetField.children : [];
     const isGrouped = children.some((child) => Array.isArray(child?.children) && child.children.length);
     const rawGroups = isGrouped
@@ -9918,7 +9921,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // few use EDU×2 + an alternate characteristic), so the formula travels WITH
     // the picked Occupation.
     const sourcedFormula =
-      stepEntry?.budgetSource?.from === "class" ? buildWizardState.classRecord?.[stepEntry.budgetSource.field] : null;
+      stepEntry?.budgetSource?.from === "class" ? buildWizardState.classRecord?.[stepEntry.budgetSource.libraryField] : null;
     const formula = typeof sourcedFormula === "string" && sourcedFormula.trim() ? sourcedFormula : stepEntry?.budgetFormula;
     if (typeof formula === "string" && formula.trim()) {
       try {
@@ -10103,7 +10106,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // `idField` (class/background-sourced only) — when the display list and
   // the real value to write differ (a Playbook's `features[]` display
   // objects vs. its parallel `featureIds[]`), each option's value comes
-  // from `idField`'s array at the same index, not from `source.field` itself.
+  // from `idField`'s array at the same index, not from `source.libraryField` itself.
   async function resolveListPickSource(source, idField) {
     const sources = Array.isArray(source) ? source : [source].filter(Boolean);
     const seen = new Set();
@@ -10112,13 +10115,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       let raw;
       let idList;
       if (entry?.from === "class") {
-        raw = buildWizardState.classRecord?.[entry.field];
+        raw = buildWizardState.classRecord?.[entry.libraryField];
         idList = idField ? buildWizardState.classRecord?.[idField] : null;
       } else if (entry?.from === "background") {
-        raw = buildWizardState.backgroundRecord?.[entry.field];
+        raw = buildWizardState.backgroundRecord?.[entry.libraryField];
         idList = idField ? buildWizardState.backgroundRecord?.[idField] : null;
       } else if (entry?.from === "system") {
-        raw = systemFieldValues(buildWizardState.systemDefinition, entry.field);
+        raw = systemFieldValues(buildWizardState.systemDefinition, entry.sourceField);
       } else if (entry?.from === "library") {
         // Same systemIds-filtered, tags.categories-matched shape
         // computeLevelUpPreview's own featChoice option list already uses
@@ -10127,9 +10130,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         // one-off filter.
         let entries = [];
         try {
-          entries = await fetchKindEntriesWithIds(dataManager, entry.kind);
+          entries = await fetchKindEntriesWithIds(dataManager, entry.libraryKind);
         } catch (error) {
-          console.warn("Character editor: unable to fetch library options for listPick", entry.kind, error);
+          console.warn("Character editor: unable to fetch library options for listPick", entry.libraryKind, error);
         }
         // Same templateId -> schema lookup renderBuildLibraryPicker already
         // uses for its own systemIds filter — buildWizardState.systemDefinition
@@ -10179,9 +10182,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       return stepEntry.picks;
     }
     if (stepEntry?.picksFrom) {
-      const { from, field } = stepEntry.picksFrom;
+      const { from, libraryField } = stepEntry.picksFrom;
       const record = from === "class" ? buildWizardState.classRecord : from === "background" ? buildWizardState.backgroundRecord : null;
-      const count = Number(record?.[field]) || 0;
+      const count = Number(record?.[libraryField]) || 0;
       return Array.from({ length: count }, () => ({}));
     }
     return [{}];
@@ -10538,15 +10541,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let secondSpeciesRecord = null;
     const pickedSubclassId = buildWizardState.needsSubclassStep ? buildWizardState.subclassId : "";
     const wantsSecondSpecies = buildWizardState.mixedAncestry && Boolean(buildWizardState.secondSpeciesId);
-    // Kinds come from the relevant buildStep's own declared `kind` (or
-    // heritage's `picks[].kind`) — reading buildWizardState.systemDefinition
+    // Kinds come from the relevant buildStep's own declared `libraryKind` (or
+    // heritage's `picks[].libraryKind`) — reading buildWizardState.systemDefinition
     // directly is safe here since this function only ever runs for the
     // Template the wizard is actively building against.
     const heritageStepEntry = getBuildStepEntry("heritage");
-    const speciesKind = heritageStepEntry ? heritageStepEntry.picks?.[0]?.kind : getBuildStepEntry("species")?.kind;
-    const classKind = getBuildStepEntry("class")?.kind;
-    const backgroundKind = heritageStepEntry ? heritageStepEntry.picks?.[1]?.kind : getBuildStepEntry("background")?.kind;
-    const subclassKind = getBuildStepEntry("subclass")?.kind;
+    const speciesKind = heritageStepEntry ? heritageStepEntry.picks?.[0]?.libraryKind : getBuildStepEntry("species")?.libraryKind;
+    const classKind = getBuildStepEntry("class")?.libraryKind;
+    const backgroundKind = heritageStepEntry ? heritageStepEntry.picks?.[1]?.libraryKind : getBuildStepEntry("background")?.libraryKind;
+    const subclassKind = getBuildStepEntry("subclass")?.libraryKind;
     try {
       const [speciesResult, classResult, backgroundResult, subclassResult, secondSpeciesResult] = await Promise.all([
         buildWizardState.speciesId ? dataManager.get(speciesKind, buildWizardState.speciesId, { preferLocal: false }) : null,
@@ -10580,11 +10583,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Which field is the System's ability/stat block, and where its data
     // actually gets written, is the System's own explicit `fieldRoles`
     // declaration (role "abilityScores") — see field-roles.js. `targetPath`
-    // (an ordinary @-prefixed dotted binding path) says where; absent means
-    // top-level, matching every other buildStep target path in this file.
+    // (an ordinary dotted path) says where; absent means top-level,
+    // matching every other buildStep target path in this file.
     const abilityRole = resolveFieldRole(buildWizardState.systemDefinition, "abilityScores");
     const abilityFieldKey = abilityRole?.sourceField || "abilities";
-    const abilityTargetPath = abilityRole?.targetPath || `@${abilityFieldKey}`;
+    const abilityTargetPath = abilityRole?.targetPath || abilityFieldKey;
     const imageUrl = (elements.buildCharacterImage?.value || "").trim();
     const pronouns = (elements.buildCharacterPronouns?.value || "").trim();
     const draft = {
@@ -10642,7 +10645,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // See abilityRole/abilityTargetPath above — placement is read entirely
     // off the System's own fieldRoles declaration, never guessed from the
     // field's key.
-    setAtBinding(abilityTargetPath, draft, abilities);
+    setAtDottedPath(draft, abilityTargetPath, abilities);
 
     // Building a character for `initialSchema`, which isn't necessarily the
     // System currently loaded as state.systemDefinition (that's whatever
@@ -10655,7 +10658,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // of Cthulhu, Blades in the Dark) has no matching template binding
     // for it, so writing a bare "0" here would just be D&D-sheet-shape
     // cruft with nothing to read it.
-    const hasProficiencyBonusRole = systemFieldValues(buildSystemDefinition, "derivedFormulas").some((entry) => entry?.role === "proficiencyBonusForLevel");
+    const hasProficiencyBonusRole = systemFieldValues(buildSystemDefinition, "derivedFormulas").some((entry) => entry?.binding === "proficiencyBonusForLevel");
     if (hasProficiencyBonusRole) {
       draft.stats.proficiencyBonus = evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: 1 }) || 0;
     }
@@ -10667,8 +10670,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // for the same reason proficiencyBonus above reads buildSystemDefinition
     // directly). No-op for every System that doesn't declare this role.
     const classProgressionBinding = findLevelUpBinding(systemFieldValues(buildSystemDefinition, "levelUpBindings"), "classProgressionTable", "class");
-    if (classProgressionBinding?.path && Array.isArray(classProgressionBinding.columns)) {
-      const progressionRow = resolveClassProgressionRow(classRecord, classProgressionBinding.path, 1);
+    if (classProgressionBinding?.libraryField && Array.isArray(classProgressionBinding.columns)) {
+      const progressionRow = resolveClassProgressionRow(classRecord, classProgressionBinding.libraryField, 1);
       if (progressionRow) {
         // Each column's own optional `base`/`abilityBinding` (same shape as
         // computeLevelUpPreview's identical lookup) covers a save/Defense
@@ -10678,10 +10681,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           const raw = progressionRow[column.source];
           if (raw == null) return;
           const abilityMod = column.abilityBinding
-            ? evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: resolveBinding(column.abilityBinding, draft) }) || 0
+            ? evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: resolveDottedPath(draft, column.abilityBinding) }) || 0
             : 0;
-          const segs = resolveBindingPath(column.targetPath);
-          if (segs) setValueAtContext(draft, segs, Number(raw) + (Number(column.base) || 0) + abilityMod);
+          if (column.targetPath) setAtDottedPath(draft, column.targetPath, Number(raw) + (Number(column.base) || 0) + abilityMod);
         });
       }
     }
@@ -10792,24 +10794,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // built, per this function's own buildSystemDefinition fetch above).
     const buildFields = Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : [];
     const growthBindings = (buildFields.find((entry) => entry?.key === "levelUpBindings")?.values || []).filter(
-      (entry) => entry?.role === "resourceGrowth" && entry?.kind === "class"
+      (entry) => entry?.binding === "resourceGrowth" && entry?.libraryKind === "class"
     );
     const buildCombatBindings = findRoleBoundField(buildFields)?.values;
     growthBindings.forEach((growthBinding) => {
       const resourceBinding = findBindingByRole(buildCombatBindings, growthBinding.resourceRole);
-      if (!growthBinding.path || !resourceBinding) return;
-      const baseValue = Number(classRecord[growthBinding.path]) || 0;
+      if (!growthBinding.libraryField || !resourceBinding) return;
+      const baseValue = Number(classRecord[growthBinding.libraryField]) || 0;
       if (!baseValue) {
-        console.warn(`Character editor: class "${classRecord.name}" has no ${growthBinding.path} — starting ${resourceBinding.name} will be understated.`);
+        console.warn(`Character editor: class "${classRecord.name}" has no ${growthBinding.libraryField} — starting ${resourceBinding.name} will be understated.`);
       }
       let total = baseValue;
       if (growthBinding.abilityBinding) {
-        const score = resolveBinding(growthBinding.abilityBinding, draft);
+        const score = resolveDottedPath(draft, growthBinding.abilityBinding);
         total += evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score }) || 0;
       }
-      const maxPathSegs = resolveBindingPath(resourceBinding.maxPath);
-      const currentPathSegs = resolveBindingPath(resourceBinding.binding);
-      if (maxPathSegs) setValueAtContext(draft, maxPathSegs, total);
+      if (resourceBinding.maxPath) setAtDottedPath(draft, resourceBinding.maxPath, total);
       // `startFull` (declared on the resourceGrowth entry itself, default
       // true) — a "count down from max" resource (D&D's HP: you start at
       // full and take damage down toward 0) seeds current = max same as
@@ -10818,10 +10818,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // — writing current here would make a fresh character start already
       // half the way to death. Only meaningful when there's a real
       // current/max split (a flat "value"-role binding like Evasion has no
-      // maxPathSegs at all, so it always falls through and seeds current
+      // maxPath at all, so it always falls through and seeds current
       // regardless, which is correct for it either way).
-      if (currentPathSegs && (growthBinding.startFull !== false || !maxPathSegs)) {
-        setValueAtContext(draft, currentPathSegs, total);
+      if (resourceBinding.recordField && (growthBinding.startFull !== false || !resourceBinding.maxPath)) {
+        setAtDottedPath(draft, resourceBinding.recordField, total);
       }
     });
 
@@ -10840,7 +10840,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const buildLevelUpBindings = (Array.isArray(buildSystemDefinition?.fields) ? buildSystemDefinition.fields : []).find(
         (entry) => entry?.key === "levelUpBindings"
       )?.values;
-      const savingThrowGrantsPath = findLevelUpBinding(buildLevelUpBindings, "savingThrowGrants", "class")?.path;
+      const savingThrowGrantsPath = findLevelUpBinding(buildLevelUpBindings, "savingThrowGrants", "class")?.libraryField;
       const classSaveIndexes = new Set(
         (savingThrowGrantsPath && Array.isArray(classRecord?.[savingThrowGrantsPath]) ? classRecord[savingThrowGrantsPath] : []).map((entry) =>
           String(entry?.index || "").toLowerCase()
@@ -10870,12 +10870,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // also adds its own `base` (10 for a System using the standard 5e
     // "unarmored" default) before equipment ever raises it.
     const initiativeBinding = findBindingByRole(buildCombatBindings, "modifier");
-    if (initiativeBinding?.abilityBinding) {
-      const initiativePathSegs = resolveBindingPath(initiativeBinding.binding);
-      if (initiativePathSegs) {
-        const score = resolveBinding(initiativeBinding.abilityBinding, draft);
-        setValueAtContext(draft, initiativePathSegs, evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score }) || 0);
-      }
+    if (initiativeBinding?.abilityBinding && initiativeBinding.recordField) {
+      const score = resolveDottedPath(draft, initiativeBinding.abilityBinding);
+      setAtDottedPath(draft, initiativeBinding.recordField, evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score }) || 0);
     }
     // role:"value" is ambiguous when a System declares more than one such
     // binding (Daggerheart: Evasion AND Armor Score) — findBindingByRole
@@ -10884,14 +10881,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // ability-modified "X + base" stat (D&D's AC); Daggerheart's Armor
     // Score is instead seeded by its Armor equipment choice's statBindings.
     const armorClassBinding = findBindingByRole(buildCombatBindings, "value");
-    if (armorClassBinding && typeof armorClassBinding.base === "number") {
-      const acPathSegs = resolveBindingPath(armorClassBinding.binding);
-      if (acPathSegs) {
-        const acAbilityMod = armorClassBinding.abilityBinding
-          ? evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: resolveBinding(armorClassBinding.abilityBinding, draft) }) || 0
-          : 0;
-        setValueAtContext(draft, acPathSegs, armorClassBinding.base + acAbilityMod);
-      }
+    if (armorClassBinding && typeof armorClassBinding.base === "number" && armorClassBinding.recordField) {
+      const acAbilityMod = armorClassBinding.abilityBinding
+        ? evaluateDerivedFormula(systemFieldValues(buildSystemDefinition, "derivedFormulas"), "abilityModifier", { score: resolveDottedPath(draft, armorClassBinding.abilityBinding) }) || 0
+        : 0;
+      setAtDottedPath(draft, armorClassBinding.recordField, armorClassBinding.base + acAbilityMod);
     }
 
     // Every Species carries at least a walk speed; other movement types
@@ -10951,8 +10945,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const classFeaturesHandledByListPick = getDeclaredBuildSteps(buildSystemDefinition).some((entry) => {
       if (entry?.type !== "listPick") return false;
       const sources = Array.isArray(entry.source) ? entry.source : [entry.source];
-      const sourcesClassFeatures = sources.some((src) => src?.from === "class" && (src?.field === "features" || src?.field === "featureIds"));
-      return sourcesClassFeatures && (entry.targetPath === "@featureIds" || entry.targetArrayPath === "@featureIds");
+      const sourcesClassFeatures = sources.some((src) => src?.from === "class" && (src?.libraryField === "features" || src?.libraryField === "featureIds"));
+      return sourcesClassFeatures && (entry.targetPath === "featureIds" || entry.targetArrayPath === "featureIds");
     });
     const grantedFromClass = classFeaturesHandledByListPick
       ? []
@@ -10985,7 +10979,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
     // Background's flat, hard-granted proficiencies — field name from the
     // System's "proficiencyGrants" levelUpBindings role, never a literal.
-    const proficiencyGrantsPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyGrants", "background")?.path;
+    const proficiencyGrantsPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyGrants", "background")?.libraryField;
     const grantedProficiencies = proficiencyGrantsPath && Array.isArray(backgroundRecord?.[proficiencyGrantsPath]) ? backgroundRecord[proficiencyGrantsPath] : [];
     grantedProficiencies.forEach((entry) => {
       applyProficiencyGrant(entry?.name, draft);
@@ -11022,10 +11016,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // literal. Daggerheart declares none of these roles, so every lookup
     // below returns null and this block no-ops for it — the same
     // graceful degradation as any other optional System field.
-    const classProficiencyPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "class")?.path;
-    const backgroundProficiencyPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "background")?.path;
-    const classEquipmentPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "class")?.path;
-    const backgroundEquipmentPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "background")?.path;
+    const classProficiencyPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "class")?.libraryField;
+    const backgroundProficiencyPath = findLevelUpBinding(getLevelUpBindings(), "proficiencyChoices", "background")?.libraryField;
+    const classEquipmentPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "class")?.libraryField;
+    const backgroundEquipmentPath = findLevelUpBinding(getLevelUpBindings(), "equipmentChoices", "background")?.libraryField;
     if (classProficiencyPath) {
       pushChoice(
         { kind: "class", id: buildWizardState.classId, name: classRecord.name || "Class" },
@@ -11161,24 +11155,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           const typedValue = (buildWizardState.inputValues[index] || "").trim();
           const path = inputStepEntry.targetPaths[index];
           if (!typedValue || !path) return;
-          const segs = resolveBindingPath(path);
-          if (segs) {
-            setValueAtContext(draft, segs, typedValue);
-          }
+          setAtDottedPath(draft, path, typedValue);
         });
       } else if (inputStepEntry.targetArrayPath) {
-        const targetSegs = resolveBindingPath(inputStepEntry.targetArrayPath);
-        if (targetSegs) {
-          const existing = getValueAtContext(draft, targetSegs);
-          const targetArray = Array.isArray(existing) ? existing : [];
-          const itemDefaults = inputStepEntry.itemDefaults && typeof inputStepEntry.itemDefaults === "object" ? inputStepEntry.itemDefaults : {};
-          inputStepEntry.inputs.forEach((def, index) => {
-            const typedValue = (buildWizardState.inputValues[index] || "").trim();
-            if (!typedValue) return;
-            targetArray.push({ ...itemDefaults, [inputStepEntry.itemKey || "value"]: typedValue });
-          });
-          setValueAtContext(draft, targetSegs, targetArray);
-        }
+        const existing = resolveDottedPath(draft, inputStepEntry.targetArrayPath);
+        const targetArray = Array.isArray(existing) ? existing : [];
+        const itemDefaults = inputStepEntry.itemDefaults && typeof inputStepEntry.itemDefaults === "object" ? inputStepEntry.itemDefaults : {};
+        inputStepEntry.inputs.forEach((def, index) => {
+          const typedValue = (buildWizardState.inputValues[index] || "").trim();
+          if (!typedValue) return;
+          targetArray.push({ ...itemDefaults, [inputStepEntry.itemKey || "value"]: typedValue });
+        });
+        setAtDottedPath(draft, inputStepEntry.targetArrayPath, targetArray);
       }
     }
 
@@ -11194,9 +11182,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const pointAllocationSteps = getDeclaredBuildSteps(buildSystemDefinition).filter((entry) => entry?.type === "pointAllocation");
     const seededTargetPaths = new Set();
     pointAllocationSteps.forEach((entry) => {
-      if (!entry?.targetPath || seededTargetPaths.has(entry.targetPath)) return;
-      seededTargetPaths.add(entry.targetPath);
-      getPointAllocationGroups({ targetPath: entry.targetPath }, buildSystemDefinition).forEach((group) => {
+      if (!entry?.sourceField || seededTargetPaths.has(entry.sourceField)) return;
+      seededTargetPaths.add(entry.sourceField);
+      getPointAllocationGroups({ sourceField: entry.sourceField }, buildSystemDefinition).forEach((group) => {
         group.items.forEach((item) => {
           if (!item.basePercentage) return;
           const segs = resolveBindingPath(`@${item.key}`);
@@ -11235,9 +11223,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           .filter(({ selection }) => selection);
         if (!pickedValues.length) return;
         if (entry.targetArrayPath) {
-          const targetSegs = resolveBindingPath(entry.targetArrayPath);
-          if (!targetSegs) return;
-          const existing = getValueAtContext(draft, targetSegs);
+          const existing = resolveDottedPath(draft, entry.targetArrayPath);
           const targetArray = Array.isArray(existing) ? existing : [];
           pickedValues.forEach(({ pickDef, selection }) => {
             // `label`, not `raw?.name`, is the fallback once `id` is
@@ -11251,13 +11237,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
               targetArray.push(rawValue);
             }
           });
-          setValueAtContext(draft, targetSegs, targetArray);
+          setAtDottedPath(draft, entry.targetArrayPath, targetArray);
         } else if (entry.targetPath) {
-          const targetSegs = resolveBindingPath(entry.targetPath);
           const rawValue = pickedValues[0].selection.id ?? pickedValues[0].selection.label ?? pickedValues[0].selection.raw?.name;
-          if (targetSegs) {
-            setValueAtContext(draft, targetSegs, rawValue);
-          }
+          setAtDottedPath(draft, entry.targetPath, rawValue);
         }
       });
 
@@ -11269,20 +11252,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const upgradesStepEntry = getDeclaredBuildSteps(buildSystemDefinition).find((entry) => {
         if (entry?.type !== "listPick" || !entry.targetArrayPath) return false;
         const sources = Array.isArray(entry.source) ? entry.source : [entry.source];
-        return sources.some((src) => src?.from === "class" && src?.field === "typeUpgrades");
+        return sources.some((src) => src?.from === "class" && src?.libraryField === "typeUpgrades");
       });
-      if (upgradesStepEntry) {
-        const targetSegs = resolveBindingPath(upgradesStepEntry.targetArrayPath);
-        if (targetSegs) {
-          const existing = getValueAtContext(draft, targetSegs);
-          const targetArray = Array.isArray(existing) ? existing : [];
-          classRecord.startingUpgrades.forEach((name) => {
-            targetArray.push(
-              upgradesStepEntry.itemKey ? { ...(upgradesStepEntry.itemDefaults || {}), [upgradesStepEntry.itemKey]: name } : name
-            );
-          });
-          setValueAtContext(draft, targetSegs, targetArray);
-        }
+      if (upgradesStepEntry?.targetArrayPath) {
+        const existing = resolveDottedPath(draft, upgradesStepEntry.targetArrayPath);
+        const targetArray = Array.isArray(existing) ? existing : [];
+        classRecord.startingUpgrades.forEach((name) => {
+          targetArray.push(
+            upgradesStepEntry.itemKey ? { ...(upgradesStepEntry.itemDefaults || {}), [upgradesStepEntry.itemKey]: name } : name
+          );
+        });
+        setAtDottedPath(draft, upgradesStepEntry.targetArrayPath, targetArray);
       }
     }
 

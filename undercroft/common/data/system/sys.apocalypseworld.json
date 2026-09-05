@@ -233,23 +233,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 2,
-          "description": "Ordinary scavenge, easy to barter for."
+          "description": "Ordinary scavenge, easy to barter for.",
+          "cost": 2
         },
         {
           "name": "Uncommon",
-          "targetBudget": 4,
-          "description": "Worth a real trade, not just found lying around."
+          "description": "Worth a real trade, not just found lying around.",
+          "cost": 4
         },
         {
           "name": "Rare",
-          "targetBudget": 7,
-          "description": "The kind of find worth risking a run for."
+          "description": "The kind of find worth risking a run for.",
+          "cost": 7
         },
         {
           "name": "Legendary",
-          "targetBudget": 12,
-          "description": "Pre-apocalypse tech nobody left alive can even fully explain."
+          "description": "Pre-apocalypse tech nobody left alive can even fully explain.",
+          "cost": 12
         }
       ]
     },
@@ -290,7 +290,7 @@
           "name": "Standard",
           "shortName": "Standard",
           "sourceId": 1,
-          "targetBudget": 5
+          "cost": 5
         }
       ]
     },
@@ -301,14 +301,14 @@
       "values": [
         {
           "name": "Harm",
-          "binding": "@harm.current",
           "max": 6,
-          "role": "resource"
+          "recordField": "harm.current",
+          "binding": "resource"
         },
         {
           "name": "Barter",
-          "binding": "@barter",
-          "role": "value"
+          "recordField": "barter",
+          "binding": "value"
         }
       ]
     },
@@ -490,34 +490,34 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "stats → abilityScores",
-          "sourceField": "stats"
+          "sourceField": "stats",
+          "binding": "abilityScores"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

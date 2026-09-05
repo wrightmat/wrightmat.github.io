@@ -885,28 +885,28 @@
       "values": [
         {
           "name": "Unrestricted",
-          "targetBudget": 3,
-          "description": "Available for purchase without any special license or qualification."
+          "description": "Available for purchase without any special license or qualification.",
+          "cost": 3
         },
         {
           "name": "Licensed",
-          "targetBudget": 6,
-          "description": "The owner must obtain a license before the purchase is legal."
+          "description": "The owner must obtain a license before the purchase is legal.",
+          "cost": 6
         },
         {
           "name": "Restricted",
-          "targetBudget": 10,
-          "description": "Only specially qualified individuals or organizations are technically allowed to own it."
+          "description": "Only specially qualified individuals or organizations are technically allowed to own it.",
+          "cost": 10
         },
         {
           "name": "Military",
-          "targetBudget": 14,
-          "description": "Sold primarily to legitimate police and military organizations."
+          "description": "Sold primarily to legitimate police and military organizations.",
+          "cost": 14
         },
         {
           "name": "Illegal",
-          "targetBudget": 20,
-          "description": "Illegal to own in all but specific, highly regulated circumstances."
+          "description": "Illegal to own in all but specific, highly regulated circumstances.",
+          "cost": 20
         }
       ]
     },
@@ -1142,32 +1142,32 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@hitPoints.max",
-          "binding": "@hitPoints.current",
-          "role": "resource"
+          "maxPath": "hitPoints.max",
+          "recordField": "hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Action Points",
-          "maxPath": "@actionPoints.max",
-          "binding": "@actionPoints.current",
-          "role": "resource"
+          "maxPath": "actionPoints.max",
+          "recordField": "actionPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Defense",
-          "binding": "@defense.normal",
-          "role": "value"
+          "recordField": "defense.normal",
+          "binding": "value"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         },
         {
           "name": "Initiative",
           "die": "d20",
-          "binding": "@initiative",
-          "role": "modifier"
+          "recordField": "initiative",
+          "binding": "modifier"
         }
       ]
     },
@@ -1212,14 +1212,14 @@
       "label": "Derived Formulas",
       "values": [
         {
-          "role": "abilityModifier",
           "formula": "floor((@score-10)/2)",
-          "name": "abilityModifier"
+          "name": "abilityModifier",
+          "binding": "abilityModifier"
         },
         {
-          "role": "hitPointsPerLevelAverage",
           "formula": "floor(@sides/2)+1",
-          "name": "hitPointsPerLevelAverage"
+          "name": "hitPointsPerLevelAverage",
+          "binding": "hitPointsPerLevelAverage"
         }
       ]
     },
@@ -1230,47 +1230,47 @@
       "values": [
         {
           "name": "Class Hit Die Growth",
-          "role": "resourceGrowth",
-          "kind": "class",
-          "path": "hitDie",
           "resourceRole": "resource",
-          "abilityBinding": "@abilities.constitution"
+          "abilityBinding": "abilities.constitution",
+          "libraryField": "hitDie",
+          "binding": "resourceGrowth",
+          "libraryKind": "class"
         },
         {
-          "role": "classProgressionTable",
-          "kind": "class",
-          "path": "progressionTable",
           "columns": [
             {
               "source": "bab",
-              "targetPath": "@baseAttackBonus"
+              "targetPath": "baseAttackBonus"
             },
             {
               "source": "fort",
-              "targetPath": "@saves.fortitude",
-              "abilityBinding": "@abilities.constitution"
+              "targetPath": "saves.fortitude",
+              "abilityBinding": "abilities.constitution"
             },
             {
               "source": "ref",
-              "targetPath": "@saves.reflex",
-              "abilityBinding": "@abilities.dexterity"
+              "targetPath": "saves.reflex",
+              "abilityBinding": "abilities.dexterity"
             },
             {
               "source": "will",
-              "targetPath": "@saves.will",
-              "abilityBinding": "@abilities.wisdom"
+              "targetPath": "saves.will",
+              "abilityBinding": "abilities.wisdom"
             },
             {
               "source": "defenseBonus",
-              "targetPath": "@defense.normal",
+              "targetPath": "defense.normal",
               "base": 10,
-              "abilityBinding": "@abilities.dexterity"
+              "abilityBinding": "abilities.dexterity"
             },
             {
               "source": "reputationBonus",
-              "targetPath": "@reputation"
+              "targetPath": "reputation"
             }
-          ]
+          ],
+          "libraryField": "progressionTable",
+          "binding": "classProgressionTable",
+          "libraryKind": "class"
         }
       ]
     },
@@ -1281,15 +1281,15 @@
       "values": [
         {
           "step": "class",
-          "kind": "class",
           "matchField": "form",
           "matchValue": "basic",
-          "name": "Basic Class"
+          "name": "Basic Class",
+          "libraryKind": "class"
         },
         {
           "step": "background",
-          "kind": "background",
-          "name": "Starting Occupation"
+          "name": "Starting Occupation",
+          "libraryKind": "background"
         },
         {
           "step": "abilities",
@@ -1309,13 +1309,13 @@
           "desc": "Your starting Occupation grants a number of permanent class skills, chosen from its own list.",
           "source": {
             "from": "background",
-            "field": "skillChoices"
+            "libraryField": "skillChoices"
           },
           "picksFrom": {
             "from": "background",
-            "field": "skillChoiceCount"
+            "libraryField": "skillChoiceCount"
           },
-          "targetArrayPath": "@occupationSkills",
+          "targetArrayPath": "occupationSkills",
           "name": "Occupation Skills"
         },
         {
@@ -1324,14 +1324,14 @@
           "desc": "Some Occupations grant a bonus feat, chosen from a short list of options — this step is empty for an Occupation that doesn't.",
           "source": {
             "from": "background",
-            "field": "bonusFeatChoices"
+            "libraryField": "bonusFeatChoices"
           },
           "idField": "bonusFeatChoiceIds",
           "picksFrom": {
             "from": "background",
-            "field": "bonusFeatCount"
+            "libraryField": "bonusFeatCount"
           },
-          "targetArrayPath": "@featureIds",
+          "targetArrayPath": "featureIds",
           "searchable": true,
           "name": "Occupation Bonus Feat"
         },
@@ -1341,14 +1341,14 @@
           "desc": "Every character picks 2 feats at 1st level from the full Feat list, in addition to any Occupation or Basic Class feats.",
           "source": {
             "from": "library",
-            "kind": "feature",
-            "matchCategory": "feat"
+            "matchCategory": "feat",
+            "libraryKind": "feature"
           },
           "picks": [
             {},
             {}
           ],
-          "targetArrayPath": "@featureIds",
+          "targetArrayPath": "featureIds",
           "searchable": true,
           "name": "General Feats"
         },
@@ -1358,13 +1358,13 @@
           "desc": "Choose one talent from your Basic Class's own talent trees.",
           "source": {
             "from": "class",
-            "field": "talents"
+            "libraryField": "talents"
           },
           "idField": "talentIds",
           "picks": [
             {}
           ],
-          "targetArrayPath": "@featureIds",
+          "targetArrayPath": "featureIds",
           "searchable": true,
           "name": "Talent"
         },
@@ -1388,44 +1388,44 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "abilities → abilityScores",
-          "sourceField": "abilities"
+          "sourceField": "abilities",
+          "binding": "abilityScores"
         },
         {
-          "role": "savingThrows",
           "name": "saves → savingThrows",
-          "sourceField": "saves"
+          "sourceField": "saves",
+          "binding": "savingThrows"
         },
         {
-          "role": "combatScaling",
           "name": "challengeRating → combatScaling",
-          "sourceField": "challengeRating"
+          "sourceField": "challengeRating",
+          "binding": "combatScaling"
         },
         {
-          "role": "archetypeTable",
           "name": "occupations → archetypeTable",
-          "sourceField": "occupations"
+          "sourceField": "occupations",
+          "binding": "archetypeTable"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "restriction → generatorProperty",
-          "sourceField": "restriction"
+          "sourceField": "restriction",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "restriction → budgetCeiling",
-          "sourceField": "restriction"
+          "sourceField": "restriction",
+          "binding": "budgetCeiling"
         }
       ]
     }

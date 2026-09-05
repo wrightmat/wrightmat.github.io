@@ -621,16 +621,17 @@
       "title": "Array value options",
       "summary": "Which extra columns show on each of this property's values, and what each one actually does.",
       "details": [
-        "Binding — a generic @-path pointing this value at another field (e.g. @stats.hitPoints.current) — where this value's live data is read/written. Not specific to Role or Combat Bindings — any value on any array can carry one.",
         "Description — flavor or rules text for this value, shown under its label wherever this Property's options are presented (a Select's dropdown, a Checkbox/Radio group's own option list). Without this on, a value's description still round-trips through Extra properties JSON instead — this just gives it a dedicated field.",
-        "Library-linked — each value can point at a real Library entity of a chosen kind (the Library kind field shown in the main Array contents row) instead of just being a display string. Turning this on reveals a Library-kind field and, per value, a select of that kind's saved entities — saving a matching Library entity later auto-links it by name, so linking by hand is only needed when a match is ambiguous.",
         "Short name — a short label or abbreviation for this value (e.g. \"STR\" for Strength, \"LG\" for Lawful Good, \"V\"/\"S\"/\"M\" for spell components, \"A\"/\"BA\"/\"R\" for Activation's action-economy codes) shown anywhere full names don't fit. It's one shared property name used the same way across every Property that needs a short form — Alignments, Abilities, Activation, Spell Components, Sizes, and Speeds all use it — rather than each Property inventing its own name for the same idea.",
         "Source ID — a stable numeric ID (typically a D&D Beyond identifier) this value can be looked up by. This is what lets a D&D Beyond character or monster import match a raw numeric code from D&D Beyond's own export (e.g. an alignment or condition ID) back to this value.",
-        "Source field — a different kind of pointer: the key of another array field on this same System whose values are this value's list of valid options (e.g. a Tags-role value naming a Conditions field), not where data lives but where the choices are defined.",
-        "Cost — a number each value spends from (or, if negative, refunds into) the active budget ceiling. Only meaningful on a Property that is NOT the one picked as Vault's Budget ceiling field (see that Vault topic): if this Property IS the ceiling field, Vault's own budget math ignores its Cost entirely and uses its Target budget instead. Turn this on for Properties like Activation or Item Form, where every value has a point cost.",
-        "Role — a small fixed vocabulary describing this value's structural behavior, useful anywhere it fits: Resource (a number with a max, optionally a temp buffer that absorbs damage first), Value (one standalone number), Tags (a multi-select status list), or Modifier (a number that feeds a die roll). Whichever array's values use Role is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings') — but nothing requires that to be its only use.",
-        "Target budget — a number each value sets as a target budget. It's only read as \"the ceiling\" from whichever one Property Vault's Budget ceiling field setting names; on every other Property, a Target budget value is just stored data some other consumer can use however it wants (e.g. Combat Scaling's per-CR entries carry Target budget for Crucible's own stat scaling, completely unrelated to Vault's economy). Cost and Target budget are not \"pick whichever fits\" — which one a given Property's values actually use is decided entirely by whether that Property is the current ceiling field.",
-        "A role's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) has no dedicated column — it's authored directly in that value's Extra properties JSON instead, the same as any other one-off property (see 'System Properties')."
+        "Library kind — which category of Library record (Class, Background, Species, ...) this value points at. Paired with Library field: for a \"pick one specific record\" Property (e.g. Classes), picking a kind reveals a convenience select of that kind's real saved entities, and choosing one writes the entity's id into Library field for you — saving a matching Library entity later auto-links any still-unlinked value by name, same as before, just through this one pair of columns.",
+        "Library field — the pointer *within* the chosen Library kind. For a \"pick one specific record\" Property this is that record's own id (filled in by the picker above, or typed by hand); for a levelUpBindings-style value it's instead a field NAME to read off whichever record gets picked later (e.g. hit_die, proficiency_choices) — read-only in that case, since nothing in the suite writes back to a Library record.",
+        "Source field — the key of another field on THIS System's own field list whose values are this value's list of valid options (e.g. a Tags-binding value naming a Conditions field) — a plain dotted path, not where data lives but where the choices are defined.",
+        "Record field — a plain path into the record being built or played (a Character), read and written live — e.g. stats.hitPoints.current or stats.armorClass. Not specific to Binding or Combat Bindings — any value on any array can carry one.",
+        "Target path — a plain path into the record being built or played (a Character), written only — the write-side counterpart to Record field/Library field.",
+        "Cost — a number each value spends from (or, if negative, refunds into) the active budget ceiling. Only meaningful on a Property that is NOT the one picked as Vault's Budget ceiling field (see that Vault topic): if this Property IS the ceiling field, Vault's own budget math reads this same Cost as its target budget instead of spending against it. Turn this on for Properties like Activation or Item Form, where every value has a point cost.",
+        "Binding — a small, closed vocabulary of names hardcoded engine code looks for on this Property (Resource/Value/Tags/Modifier for Combat Bindings; a per-key list for fieldRoles/derivedFormulas/levelUpBindings) — the options offered depend on which reserved key this Property actually is. Whichever array's values use Binding for Resource/Value/Tags/Modifier is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings') — but nothing requires that to be its only use.",
+        "A binding's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) has no dedicated column — it's authored directly in that value's Extra properties JSON instead, the same as any other one-off property (see 'System Properties')."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
@@ -659,18 +660,6 @@
       "href": "../loom/index.html#loom-systems"
     },
     {
-      "id": "loom.systemValueTargetBudget",
-      "title": "Target budget",
-      "summary": "The target budget this value sets — only counts as \"the\" generation ceiling when Vault's own setting points at this Property.",
-      "details": [
-        "Read as the actual generation ceiling only from whichever one Property Vault's Budget ceiling field preference names (a Vault setting, not part of this System — see that Vault topic).",
-        "On every other Property, this is just stored data some other consumer can use however it wants — e.g. Combat Scaling's per-CR entries carry Target budget for Crucible's own stat scaling, completely unrelated to Vault's economy.",
-        "Cost and Target budget aren't \"pick whichever fits\" per value — which one actually gets used is decided entirely by whether this Property is the current ceiling field."
-      ],
-      "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
-    },
-    {
       "id": "loom.systemValueSourceId",
       "title": "Source ID",
       "summary": "A stable numeric ID this value can be looked up by.",
@@ -692,41 +681,60 @@
       "href": "../loom/index.html#loom-systems"
     },
     {
-      "id": "loom.systemValueLibraryLinked",
-      "title": "Library-linked",
-      "summary": "Lets each value point at a real Library entity instead of just being a display string.",
-      "details": [
-        "Turning this on reveals a Library kind field (e.g. \"class\") in the Array contents row above, plus a per-value select of that kind's saved entities.",
-        "Saving a matching Library entity later auto-links it into a still-unlinked value by name — linking by hand is only needed when a match is ambiguous.",
-        "This is what lets a System stay the roster (names, order, what's expected to exist) while showing exactly which entries already have real Library data behind them and which don't yet."
-      ],
-      "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
-    },
-    {
-      "id": "loom.systemValueRole",
-      "title": "Role",
-      "summary": "A small fixed vocabulary describing this value's structural behavior — useful for more than just combat.",
-      "details": [
-        "Resource — a number with a max, optionally a temp buffer that absorbs damage first without raising the max — e.g. Hit Points.",
-        "Value — one standalone number with no max — e.g. Armor Class.",
-        "Tags — a multi-select status list, drawing its options from another array field named by Source field — e.g. Conditions.",
-        "Modifier — a number that feeds a die roll — e.g. an initiative bonus.",
-        "These are generic structural categories, not D&D concepts, and not tied to any one consumer — any array's values can use Role for whatever purpose calls for that shape.",
-        "Whichever array field's values happen to use Role is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings'), simply because that's the shape they're built to read — nothing about Role itself is combat-specific.",
-        "A role's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) isn't a dedicated column — author it directly in that value's Extra properties JSON instead (e.g. {\"maxPath\": \"@stats.hitPoints.max\", \"tempPath\": \"@stats.hitPoints.temp\"})."
-      ],
-      "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
-    },
-    {
       "id": "loom.systemValueBinding",
       "title": "Binding",
-      "summary": "An @-path pointing this value at another field — where its live data is read and written.",
+      "summary": "A small, closed vocabulary of names hardcoded engine code looks for on this Property's values.",
       "details": [
-        "Works the same way anywhere in the suite that uses @-path bindings — any value on any array can carry one, not just ones related to Role or Combat Bindings.",
-        "For whichever array the Combat Tracker and character sheet treat as a System's live play-state, this is the path they read and write for this value — e.g. @stats.hitPoints.current or @stats.armorClass.",
-        "Not to be confused with Source field, which points at where a value's list of valid *options* comes from, not where its own data lives — see that topic."
+        "Which names are offered depends on which reserved key this Property actually is: Combat Bindings gets Resource/Value/Tags/Modifier; fieldRoles/derivedFormulas/levelUpBindings each get their own closed list (see common/data/reserved-keys.json's own bindings registry).",
+        "Combat Bindings' four: Resource — a number with a max, optionally a temp buffer that absorbs damage first without raising the max — e.g. Hit Points. Value — one standalone number with no max — e.g. Armor Class. Tags — a multi-select status list, drawing its options from another field named by Source field — e.g. Conditions. Modifier — a number that feeds a die roll — e.g. an initiative bonus.",
+        "Whichever array field's values happen to use one of Combat Bindings' four is what the Combat Tracker widget and Workbench's character view treat as a System's live play-state (see 'Combat Bindings') — nothing about Binding itself is combat-specific.",
+        "A binding's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's ability) isn't a dedicated column — author it directly in that value's Extra properties JSON instead (e.g. {\"maxPath\": \"stats.hitPoints.max\", \"tempPath\": \"stats.hitPoints.temp\"})."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueRecordField",
+      "title": "Record field",
+      "summary": "A plain path pointing this value at the record being built or played (a Character) — where its live data is read and written.",
+      "details": [
+        "Any value on any array can carry one, not just ones related to Binding or Combat Bindings.",
+        "For whichever array the Combat Tracker and character sheet treat as a System's live play-state, this is the path they read and write for this value — e.g. stats.hitPoints.current or stats.armorClass.",
+        "Not to be confused with Source field (where a value's list of valid *options* comes from) or Library field (a path into a Library record, not the Character)."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueLibraryField",
+      "title": "Library field",
+      "summary": "The pointer within a value's chosen Library kind — a specific record's own id, or a field name to read off one.",
+      "details": [
+        "For a \"pick one specific record\" Property (e.g. a System's own Classes list), this is that record's own id — pick it from the convenience select next to the text box (populated from the row's own Library kind), or type it by hand. Saving a matching Library entity later auto-links any still-unlinked value by name, the same way it always has.",
+        "For a levelUpBindings entry, this instead names which field on the matched Class/Background/... record holds the raw data (e.g. hit_die, proficiency_choices) — read-only in that case, since nothing in the suite writes back to a Library record from a Character's own build/level-up flow.",
+        "Paired with Library kind (which category of record) and, where a resolved value needs to land on the Character too, Target path."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueLibraryKind",
+      "title": "Library kind",
+      "summary": "Which category of Library record (Class, Background, Species, ...) a lookup should fetch from.",
+      "details": [
+        "A selector, not a reference — it names a KIND of record, not one specific record; the paired Library field names the specific record or field within it.",
+        "Comes from the suite's own registered Library kinds (common/data/kind/*.json)."
+      ],
+      "category": "Loom",
+      "href": "../loom/index.html#loom-systems"
+    },
+    {
+      "id": "loom.systemValueTargetPath",
+      "title": "Target path",
+      "summary": "A plain path, written only, into the record being built or played (a Character).",
+      "details": [
+        "The write-side counterpart to Record field/Library field — a Record field or Library field says where to read from; Target path says where the resolved result lands on the Character.",
+        "The one place both a read and a write are needed on the same entry (levelUpBindings' classProgressionTable columns) uses Library field/Record field alongside Target path together."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
@@ -746,11 +754,11 @@
     {
       "id": "loom.systemValueSourceField",
       "title": "Source field",
-      "summary": "The key of another array field on this System whose values are this value's list of valid options.",
+      "summary": "The key of another field on this System's own field list whose values are this value's list of valid options.",
       "details": [
-        "E.g. a Conditions binding (Tags role) naming \"conditions\" so the Combat Tracker's tag picker offers exactly this System's own condition vocabulary, instead of a hardcoded list.",
-        "Generic, not specific to Role or Combat Bindings — it's a pointer to where the *choices* are defined, distinct from Binding (which points to where a value's own live data is read/written) and from Source ID (a numeric lookup id, not a field reference).",
-        "Most commonly meaningful on a Tags-role value, but nothing about it is tags-specific — any value that needs its options sourced from another field can use it."
+        "E.g. a Conditions binding (Tags) naming \"conditions\" so the Combat Tracker's tag picker offers exactly this System's own condition vocabulary, instead of a hardcoded list.",
+        "Generic, not specific to Binding or Combat Bindings — it's a pointer to where the *choices* are defined, distinct from Record field/Library field (which point to where a value's own live data is read/written) and from Source ID (a numeric lookup id, not a field reference).",
+        "Most commonly meaningful on a Tags-binding value, but nothing about it is tags-specific — any value that needs its options sourced from another field can use it."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"
@@ -760,10 +768,10 @@
       "title": "Combat Bindings",
       "summary": "Which ordinary Array property holds this System's live combat state, and how each of its values behaves.",
       "details": [
-        "Combat Bindings isn't its own property type — it's simply whichever Array property has values that use Role (Resource, Value, Tags, or Modifier). The Combat Tracker and character sheet both look for that shape and read/write it during play.",
-        "Each value names a Role plus a Binding (the path into a character it reads and writes), so the shape is entirely up to you: add as many or as few bound values as your game actually needs, with whatever names make sense — Hit Points, Sanity, Armor Class, Conditions, Initiative, and so on. A Tags-role value also names a Source field, the other array field supplying its valid options.",
-        "A role that needs more than one path or other extra detail (like a Resource's separate max value) doesn't get its own column — add it to that value's Extra properties instead.",
-        "If a System has no array using Role at all, the Combat Tracker and character sheet simply won't show live combat state for it — nothing breaks."
+        "Combat Bindings isn't its own property type — it's simply whichever Array property has values that use Binding (Resource, Value, Tags, or Modifier). The Combat Tracker and character sheet both look for that shape and read/write it during play.",
+        "Each value names a Binding plus a Record field (the path into a character it reads and writes), so the shape is entirely up to you: add as many or as few bound values as your game actually needs, with whatever names make sense — Hit Points, Sanity, Armor Class, Conditions, Initiative, and so on. A Tags-binding value also names a Source field, the other field supplying its valid options.",
+        "A binding that needs more than one path or other extra detail (like a Resource's separate max value) doesn't get its own column — add it to that value's Extra properties instead.",
+        "If a System has no array using Binding at all, the Combat Tracker and character sheet simply won't show live combat state for it — nothing breaks."
       ],
       "category": "Loom",
       "href": "../loom/index.html#loom-systems"

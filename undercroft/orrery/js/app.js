@@ -41,10 +41,10 @@ import { getIconTokens } from "../../common/js/lib/icon-picker.js";
 import { refreshOwnershipCatalog, createCharacterOwnershipPrimer, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
 import { collectSystemFields } from "../../common/js/lib/system-schema.js";
 import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
-import { findBindingByRole, findBindingsByRole } from "../../common/js/lib/bindings.js";
+import { findBindingsByRole } from "../../common/js/lib/bindings.js";
 import { deriveCombatBindings, guessBarResourceName } from "../../common/js/lib/widgets/combat-bindings.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
-import { deriveConditionsVocabulary } from "../../common/js/lib/widgets/tag-editor.js";
+import { buildSystemConditions } from "../../common/js/lib/widgets/tag-editor.js";
 import { resolveActiveSpotlightId } from "../../common/js/lib/spotlight.js";
 import { connectLiveStream } from "../../common/js/lib/live.js";
 import { getPresetById, getPresetsByCategory, getPresetDefaultValues, SHAPE_EFFECT_CATEGORIES } from "../../common/js/lib/shape-effect-library.js";
@@ -4897,24 +4897,6 @@ const systemConditionsCache = new Map();
 function getCachedSystemConditions(systemId) {
   return systemConditionsCache.get(systemId) || null;
 }
-function buildSystemConditions(fields) {
-  const bindings = deriveCombatBindings(fields);
-  const tagsEntry = findBindingByRole(bindings, "tags");
-  const vocabulary = deriveConditionsVocabulary(fields, bindings);
-  const iconMap = new Map();
-  if (vocabulary && tagsEntry) {
-    const vocabularyKey = tagsEntry.sourceField || "conditions";
-    const field = fields.find((entry) => entry.type === "array" && entry.key === vocabularyKey);
-    (field?.values || []).forEach((raw, index) => {
-      const entry = vocabulary[index];
-      if (entry && raw && (raw.icon || raw.color)) {
-        iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "" });
-      }
-    });
-  }
-  return { iconMap, tagsBinding: tagsEntry?.binding || "" };
-}
-
 // Fetches a System's `fields` directly by systemId and populates
 // systemConditionsCache — for a caller that only knows the systemId
 // (Monster/NPC condition resolution via the active Encounter). A caller

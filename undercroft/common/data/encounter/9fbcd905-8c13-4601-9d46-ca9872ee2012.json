@@ -21,20 +21,6 @@
       "hiddenTags": []
     },
     {
-      "id": "ae52579e-0551-4761-94c0-461e277ff75b",
-      "name": "Glimmerwraith",
-      "refKind": "monster",
-      "refId": "mon_3e8000d1-8757-42f9-bb89-d692f75d1beb",
-      "initiative": 12,
-      "hp": 162,
-      "maxHp": 162,
-      "tempHp": 0,
-      "ac": 14,
-      "conditions": [],
-      "isPc": false,
-      "hidden": false
-    },
-    {
       "id": "042dd99f-2850-468b-a025-138c172f09c1",
       "name": "Belimmar",
       "refKind": "npc",

@@ -1263,26 +1263,26 @@
       "values": [
         {
           "step": "class",
-          "kind": "class",
-          "name": "Class"
+          "name": "Class",
+          "libraryKind": "class"
         },
         {
           "step": "subclass",
           "atCreation": true,
-          "kind": "variant",
           "parentKind": "class",
-          "name": "Subclass"
+          "name": "Subclass",
+          "libraryKind": "variant"
         },
         {
           "step": "heritage",
           "picks": [
             {
-              "kind": "species",
-              "label": "Ancestry"
+              "label": "Ancestry",
+              "libraryKind": "species"
             },
             {
-              "kind": "background",
-              "label": "Community"
+              "label": "Community",
+              "libraryKind": "background"
             }
           ],
           "allowMixedAncestry": true,
@@ -1325,7 +1325,7 @@
         },
         {
           "step": "input",
-          "targetArrayPath": "@stats.experiences",
+          "targetArrayPath": "stats.experiences",
           "itemKey": "name",
           "itemDefaults": {
             "modifier": 2
@@ -1356,13 +1356,13 @@
             {
               "name": "Primary Weapon",
               "sourceField": "primaryWeapons",
-              "targetPath": "@primaryWeapon",
+              "targetPath": "primaryWeapon",
               "choose": 1
             },
             {
               "name": "Secondary Weapon",
               "sourceField": "secondaryWeapons",
-              "targetPath": "@secondaryWeapon",
+              "targetPath": "secondaryWeapon",
               "choose": 1,
               "desc": "Skip if your Primary Weapon is Two-Handed.",
               "optional": true
@@ -1370,22 +1370,22 @@
             {
               "name": "Armor",
               "sourceField": "armorTypes",
-              "targetPath": "@armor",
+              "targetPath": "armor",
               "choose": 1,
               "statBindings": [
                 {
-                  "sourcePath": "baseScore",
-                  "targetBinding": "@stats.armorScore"
+                  "libraryField": "baseScore",
+                  "targetPath": "stats.armorScore"
                 },
                 {
-                  "sourcePath": "baseMajor",
-                  "targetBinding": "@stats.thresholds.major",
-                  "formula": "@base+@level"
+                  "formula": "@base+@level",
+                  "libraryField": "baseMajor",
+                  "targetPath": "stats.thresholds.major"
                 },
                 {
-                  "sourcePath": "baseSevere",
-                  "targetBinding": "@stats.thresholds.severe",
-                  "formula": "@base+@level"
+                  "formula": "@base+@level",
+                  "libraryField": "baseSevere",
+                  "targetPath": "stats.thresholds.severe"
                 }
               ]
             }
@@ -1502,31 +1502,31 @@
       "values": [
         {
           "name": "Hit Points",
-          "role": "resource",
-          "binding": "@stats.hp.current",
-          "maxPath": "@stats.hp.max"
+          "maxPath": "stats.hp.max",
+          "recordField": "stats.hp.current",
+          "binding": "resource"
         },
         {
           "name": "Stress",
-          "role": "resource",
-          "binding": "@stats.stress.current",
-          "maxPath": "@stats.stress.max"
+          "maxPath": "stats.stress.max",
+          "recordField": "stats.stress.current",
+          "binding": "resource"
         },
         {
           "name": "Hope",
-          "role": "resource",
-          "binding": "@stats.hope",
-          "max": 6
+          "max": 6,
+          "recordField": "stats.hope",
+          "binding": "resource"
         },
         {
           "name": "Evasion",
-          "role": "value",
-          "binding": "@stats.evasion"
+          "recordField": "stats.evasion",
+          "binding": "value"
         },
         {
           "name": "Armor Score",
-          "role": "value",
-          "binding": "@stats.armorScore"
+          "recordField": "stats.armorScore",
+          "binding": "value"
         }
       ]
     },
@@ -1879,30 +1879,30 @@
       "values": [
         {
           "name": "Class Features by Level",
-          "role": "featureLevels",
-          "kind": "class",
-          "path": "features"
+          "libraryField": "features",
+          "binding": "featureLevels",
+          "libraryKind": "class"
         },
         {
           "name": "Subclass Features by Level",
-          "role": "featureLevels",
-          "kind": "variant",
-          "path": "features"
+          "libraryField": "features",
+          "binding": "featureLevels",
+          "libraryKind": "variant"
         },
         {
           "name": "Class Starting Hit Points",
-          "role": "resourceGrowth",
-          "kind": "class",
-          "path": "hp",
           "resourceRole": "resource",
-          "startFull": false
+          "startFull": false,
+          "libraryField": "hp",
+          "binding": "resourceGrowth",
+          "libraryKind": "class"
         },
         {
           "name": "Class Starting Evasion",
-          "role": "resourceGrowth",
-          "kind": "class",
-          "path": "evasion",
-          "resourceRole": "value"
+          "resourceRole": "value",
+          "libraryField": "evasion",
+          "binding": "resourceGrowth",
+          "libraryKind": "class"
         }
       ]
     },
@@ -2016,24 +2016,9 @@
       "label": "Derived Formulas",
       "values": [
         {
-          "role": "proficiencyBonusForLevel",
           "formula": "1",
-          "name": "proficiencyBonusForLevel"
-        },
-        {
-          "role": "damageDiceCount",
-          "formula": "@stats.proficiencyBonus",
-          "name": "damageDiceCount"
-        },
-        {
-          "role": "unarmoredMajorThreshold",
-          "formula": "@level",
-          "name": "unarmoredMajorThreshold"
-        },
-        {
-          "role": "unarmoredSevereThreshold",
-          "formula": "@level*2",
-          "name": "unarmoredSevereThreshold"
+          "name": "proficiencyBonusForLevel",
+          "binding": "proficiencyBonusForLevel"
         }
       ]
     },
@@ -2043,25 +2028,25 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
-          "targetPath": "@stats.abilities",
+          "targetPath": "stats.abilities",
           "name": "traits → abilityScores",
-          "sourceField": "traits"
+          "sourceField": "traits",
+          "binding": "abilityScores"
         },
         {
-          "role": "combatScaling",
           "name": "tier → combatScaling",
-          "sourceField": "tier"
+          "sourceField": "tier",
+          "binding": "combatScaling"
         },
         {
-          "role": "archetypeTable",
           "name": "npcTypes → archetypeTable",
-          "sourceField": "npcTypes"
+          "sourceField": "npcTypes",
+          "binding": "archetypeTable"
         }
       ]
     }

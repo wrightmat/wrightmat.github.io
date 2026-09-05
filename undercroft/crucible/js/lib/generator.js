@@ -112,7 +112,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
   const eligibleArchetypes = allArchetypes.filter((entry) => matchesSystem(entry, systemId));
   const eligibleRoles = allRoles.filter((entry) => matchesSystem(entry, systemId));
 
-  const creatureType = (creatureTypeId && eligibleCreatureTypes.find((entry) => entry.id === creatureTypeId))
+  const creatureType = (creatureTypeId && eligibleCreatureTypes.find((entry) => entry.shortName === creatureTypeId))
     || pickRandom(eligibleCreatureTypes, random);
   const archetype = (archetypeId && eligibleArchetypes.find((entry) => entry.id === archetypeId))
     || pickRandom(eligibleArchetypes, random);
@@ -138,7 +138,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     : null;
   if (!signatureFeature && recipe.signatureSlot) {
     const excludeIds = new Set(lockedFeatures.map((entry) => entry.id));
-    const candidates = candidatesForSlot(features, recipe.signatureSlot, role.id, creatureType?.id, avoidTags, excludeIds);
+    const candidates = candidatesForSlot(features, recipe.signatureSlot, role.id, creatureType?.shortName, avoidTags, excludeIds);
     signatureFeature = pickRandom(candidates, random);
   }
 
@@ -159,7 +159,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
       recipeFulfillment.requiredSlots[slot] = already.id;
       return;
     }
-    const picked = resolveSlot(features, slot, role.id, creatureType?.id, avoidTags, selected, random);
+    const picked = resolveSlot(features, slot, role.id, creatureType?.shortName, avoidTags, selected, random);
     if (picked) {
       selected.push(picked);
       recipeFulfillment.requiredSlots[slot] = picked.id;
@@ -174,7 +174,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
       recipeFulfillment.optionalSlots[slot] = already.id;
       return;
     }
-    const picked = resolveSlot(features, slot, role.id, creatureType?.id, avoidTags, selected, random);
+    const picked = resolveSlot(features, slot, role.id, creatureType?.shortName, avoidTags, selected, random);
     recipeFulfillment.optionalSlots[slot] = picked ? picked.id : null;
     if (picked) selected.push(picked);
   });
@@ -185,7 +185,7 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
     // for this concept. Stays top-level (not nested in `stats`) since it's
     // still one of Crucible's own generation-axis fields, alongside
     // archetypeId/roleId below.
-    type: creatureType?.id ?? null,
+    type: creatureType?.shortName ?? null,
     archetypeId: archetype.id,
     roleId: role.id,
     signatureFeatureId: signatureFeature ? signatureFeature.id : null,
@@ -201,15 +201,15 @@ export function generateMonster(allCreatureTypes, allArchetypes, allRoles, allFe
 // Feature is the exception: it's a member of featureIds, not a separate
 // value, so rerolling it swaps the old entry for the new one in place.
 export function rerollAttribute(record, { creatureTypes, archetypes, roles, features }, systemId, key, { random = Math.random } = {}) {
-  function rerollFrom(list, currentId) {
+  function rerollFrom(list, currentId, idKey = "id") {
     const eligible = list.filter((entry) => matchesSystem(entry, systemId));
-    const excludingCurrent = eligible.filter((entry) => entry.id !== currentId);
+    const excludingCurrent = eligible.filter((entry) => entry[idKey] !== currentId);
     return pickRandom(excludingCurrent.length ? excludingCurrent : eligible, random);
   }
 
   if (key === "type") {
-    const pick = rerollFrom(creatureTypes, record.type);
-    return pick ? { ...record, type: pick.id } : record;
+    const pick = rerollFrom(creatureTypes, record.type, "shortName");
+    return pick ? { ...record, type: pick.shortName } : record;
   }
   if (key === "archetypeId") {
     const pick = rerollFrom(archetypes, record.archetypeId);

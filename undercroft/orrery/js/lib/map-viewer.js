@@ -13,6 +13,7 @@
 
 import { getIconTokens } from "../../../common/js/lib/icon-picker.js";
 import { resolveBinding } from "../../../common/js/lib/bindings.js";
+import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { allowsDelete } from "../../../common/js/lib/ownership.js";
 import { buildKindToolUrl, kindToolLabel } from "../../../common/js/lib/kind-tool-route.js";
@@ -1492,7 +1493,7 @@ export function resolveMarkerConditionIcons(
     if (!payload || !systemId) return [];
     const systemConditions = getSystemConditions?.(systemId);
     if (!systemConditions?.tagsBinding) return [];
-    const conditions = resolveBinding(systemConditions.tagsBinding, payload);
+    const conditions = resolveDottedPath(payload, systemConditions.tagsBinding);
     return Array.isArray(conditions) ? toIcons(visibleTags(conditions, payload.hiddenTags), systemConditions) : [];
   }
   if ((marker.refKind === "monster" || marker.refKind === "npc") && marker.refId) {

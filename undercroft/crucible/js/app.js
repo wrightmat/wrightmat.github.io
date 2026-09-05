@@ -488,7 +488,7 @@ function updateGenerationFieldsVisibility() {
 
 // Creature Type/Archetype/Role/signature Feature are all optional overrides
 // — blank = "Random" — not a required cascade.
-function populateOverrideSelect(select, entries, blankLabel) {
+function populateOverrideSelect(select, entries, blankLabel, idKey = "id") {
   if (!select) return;
   const previous = select.value;
   select.innerHTML = "";
@@ -498,11 +498,11 @@ function populateOverrideSelect(select, entries, blankLabel) {
   select.appendChild(blank);
   entries.forEach((entry) => {
     const option = document.createElement("option");
-    option.value = entry.id;
-    option.textContent = entry.name || entry.id;
+    option.value = entry[idKey];
+    option.textContent = entry.name || entry[idKey];
     select.appendChild(option);
   });
-  if (entries.some((entry) => entry.id === previous)) select.value = previous;
+  if (entries.some((entry) => entry[idKey] === previous)) select.value = previous;
 }
 
 function populateLockedFeaturesSelect() {
@@ -529,7 +529,7 @@ async function reloadReferenceData() {
   // Vault's spell/item features — filtered here, once, so every consumer of
   // the module-level `features` array only ever sees Crucible's own.
   features = fetchedFeatures.filter(matchesCategory);
-  populateOverrideSelect(elements.creatureTypeOverride, creatureTypes, "Random");
+  populateOverrideSelect(elements.creatureTypeOverride, creatureTypes, "Random", "shortName");
   populateOverrideSelect(elements.archetypeOverride, archetypes, "Random");
   populateOverrideSelect(elements.roleOverride, roles, "Random");
   populateOverrideSelect(elements.combatScalingOverride, combatScalingLevels, "Random");
@@ -571,7 +571,7 @@ function renderIdentity(record) {
   // different label.
   const imported = isImportedStatBlock(record);
   const fields = [
-    { key: "type", label: "Creature Type", value: record.type, source: creatureTypes, blankLabel: imported ? "— Unset —" : "Random" },
+    { key: "type", label: "Creature Type", value: record.type, source: creatureTypes, idKey: "shortName", blankLabel: imported ? "— Unset —" : "Random" },
   ];
   if (!imported) {
     fields.push(
@@ -579,8 +579,8 @@ function renderIdentity(record) {
       { key: "roleId", label: "Role", value: record.roleId, source: roles, blankLabel: "Random" }
     );
   }
-  fields.forEach(({ key, label, value, source, blankLabel }) => {
-    const options = source.map((entry) => ({ value: entry.id, label: entry.name || entry.id }));
+  fields.forEach(({ key, label, value, source, blankLabel, idKey = "id" }) => {
+    const options = source.map((entry) => ({ value: entry[idKey], label: entry.name || entry[idKey] }));
     if (blankLabel) options.unshift({ value: "", label: blankLabel });
     elements.identityFields.appendChild(
       createFieldBox({
@@ -2060,7 +2060,7 @@ async function handleGenerate() {
       systemId,
       combatScalingId: elements.combatScalingOverride?.value || "",
       role: findById(roles, generated.roleId),
-      creatureType: findById(creatureTypes, generated.type),
+      creatureType: findById(creatureTypes, generated.type, "shortName"),
       features: generated.featureIds.map((id) => findById(features, id)).filter(Boolean),
       dataManager,
       abilityFieldDefs,
@@ -2303,7 +2303,7 @@ async function handleGenerateNote() {
       const stats = record.stats || {};
       return {
         name: record.name || "",
-        creatureType: findById(creatureTypes, record.type)?.name || record.type || "",
+        creatureType: findById(creatureTypes, record.type, "shortName")?.name || record.type || "",
         archetype: imported ? "" : findById(archetypes, record.archetypeId)?.name || record.archetypeId,
         role: imported ? "" : findById(roles, record.roleId)?.name || record.roleId,
         signatureFeature: !imported && record.signatureFeatureId ? featureLabel(record.signatureFeatureId) : "",

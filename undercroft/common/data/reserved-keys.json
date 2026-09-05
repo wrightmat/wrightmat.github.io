@@ -45,8 +45,8 @@
     {
       "key": "fieldRoles",
       "type": "array",
-      "description": "The single explicit, Loom-authored mapping of \"which field plays this role\" — see bindings.fieldRoles above for the closed set. Each value is {sourceField, role, ...role-specific extras} — sourceField names a sibling field on this System (dot-nestable), the same concept combatBindings' own tags binding sourceField already uses.",
-      "valueRequires": ["sourceField", "role"]
+      "description": "The single explicit, Loom-authored mapping of \"which field plays this role\" — see bindings.fieldRoles above for the closed set. Each value is {sourceField, binding, ...role-specific extras} — sourceField names a sibling field on this System (dot-nestable), the same concept combatBindings' own tags binding sourceField already uses.",
+      "valueRequires": ["sourceField", "binding"]
     },
     {
       "key": "buildSteps",
@@ -58,20 +58,20 @@
     {
       "key": "levelUpBindings",
       "type": "array",
-      "description": "Role-dispatch bindings the level-up engine reads generically — see bindings.levelUpBindings above for the closed set, each scoped per `kind` (a role may exist once for \"class\" and once for \"background\"). Each value is {role, kind, libraryField, ...}.",
-      "valueRequires": ["role", "kind"]
+      "description": "Role-dispatch bindings the level-up engine reads generically — see bindings.levelUpBindings above for the closed set, each scoped per `libraryKind` (a binding may exist once for \"class\" and once for \"background\"). Each value is {binding, libraryKind, libraryField, ...}.",
+      "valueRequires": ["binding", "libraryKind"]
     },
     {
       "key": "derivedFormulas",
       "type": "array",
-      "description": "Named `=formula` expressions (ability modifiers, proficiency bonus, damage averages, ...) evaluated generically via derived-formulas.js — see bindings.derivedFormulas above for the closed set. Each value is {role, formula}.",
-      "valueRequires": ["role", "formula"]
+      "description": "Named `=formula` expressions (ability modifiers, proficiency bonus, damage averages, ...) evaluated generically via derived-formulas.js — see bindings.derivedFormulas above for the closed set. Each value is {binding, formula}.",
+      "valueRequires": ["binding", "formula"]
     },
     {
       "key": "casterTypes",
       "type": "array",
-      "description": "Which caster-type strings (a class/subclass's own `caster_type`) mean what — a `divisor` entry accumulates into spellSlotProgression's caster-level total; an `ownProgression` entry accumulates into its own named progression table instead. Each value is {id, divisor?, ownProgression?, name?, reset?}.",
-      "valueRequires": ["id"],
+      "description": "Which caster-type strings (a class/subclass's own `caster_type`) mean what — a `divisor` entry accumulates into spellSlotProgression's caster-level total; an `ownProgression` entry accumulates into its own named progression table instead. Each value is {shortName, divisor?, ownProgression?, name?, reset?}.",
+      "valueRequires": ["shortName"],
       "valueRequiresOneOf": ["divisor", "ownProgression"]
     },
     {

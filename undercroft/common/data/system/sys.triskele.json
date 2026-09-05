@@ -968,14 +968,14 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "abilityScores",
           "name": "stats → abilityScores",
-          "sourceField": "stats"
+          "sourceField": "stats",
+          "binding": "abilityScores"
         },
         {
-          "role": "archetypeTable",
           "name": "backgrounds → archetypeTable",
-          "sourceField": "backgrounds"
+          "sourceField": "backgrounds",
+          "binding": "archetypeTable"
         }
       ]
     }

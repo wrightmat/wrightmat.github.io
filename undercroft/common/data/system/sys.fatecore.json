@@ -424,23 +424,23 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 2,
-          "description": "Any competent character could plausibly own this."
+          "description": "Any competent character could plausibly own this.",
+          "cost": 2
         },
         {
           "name": "Uncommon",
-          "targetBudget": 4,
-          "description": "Notable enough to be worth mentioning or Aspect-worthy."
+          "description": "Notable enough to be worth mentioning or Aspect-worthy.",
+          "cost": 4
         },
         {
           "name": "Rare",
-          "targetBudget": 6,
-          "description": "A significant, story-relevant possession."
+          "description": "A significant, story-relevant possession.",
+          "cost": 6
         },
         {
           "name": "Unique",
-          "targetBudget": 8,
-          "description": "One of a kind, likely an Aspect of its own."
+          "description": "One of a kind, likely an Aspect of its own.",
+          "cost": 8
         }
       ]
     },
@@ -479,21 +479,21 @@
       "values": [
         {
           "name": "Physical Stress",
-          "maxPath": "@stress.physicalBoxes",
-          "binding": "@stress.physicalMarked",
-          "role": "resource"
+          "maxPath": "stress.physicalBoxes",
+          "recordField": "stress.physicalMarked",
+          "binding": "resource"
         },
         {
           "name": "Mental Stress",
-          "maxPath": "@stress.mentalBoxes",
-          "binding": "@stress.mentalMarked",
-          "role": "resource"
+          "maxPath": "stress.mentalBoxes",
+          "recordField": "stress.mentalMarked",
+          "binding": "resource"
         },
         {
           "name": "Fate Points",
-          "maxPath": "@refresh",
-          "binding": "@fatePoints",
-          "role": "resource"
+          "maxPath": "refresh",
+          "recordField": "fatePoints",
+          "binding": "resource"
         }
       ]
     },
@@ -530,29 +530,29 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "skills → abilityScores",
-          "sourceField": "skills"
+          "sourceField": "skills",
+          "binding": "abilityScores"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

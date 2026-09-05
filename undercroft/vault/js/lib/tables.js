@@ -29,7 +29,7 @@ export async function listWondersForSystem(dataManager, systemId) {
 }
 
 function hasCostShape(value) {
-  return typeof value?.cost === "number" || typeof value?.targetBudget === "number";
+  return typeof value?.cost === "number";
 }
 
 function slugify(name) {
@@ -52,7 +52,6 @@ function toLegacyPropertyType(field, budgetCeilingKey) {
       id: slugify(value.name),
       label: value.name,
       cost: value.cost,
-      targetBudget: value.targetBudget,
     })),
   };
 }
@@ -81,7 +80,7 @@ export async function getSystemPropertyTypes(dataManager, systemId) {
 
 // A System's own casting classes — an ordinary array field keyed "classes"
 // (also used by DDB-import lookups), NOT a generator-property field (no
-// cost/targetBudget). A class's own `allowedFeatureTags` (matched against a
+// cost). A class's own `allowedFeatureTags` (matched against a
 // Feature's `tags.propertyHints` by matchesClass, generator.js) lives in its
 // Extra-properties JSON catch-all; absent on most classes and on any System
 // with no "classes" field, in which case the Casting Class selector never shows.

@@ -220,8 +220,9 @@ export function buildSystemPreviewData(definition) {
     const key = typeof node.key === "string" ? node.key.trim() : "";
     const nextPrefix = key ? [...prefix, key] : prefix;
     if (nextPrefix.length) {
-      // A values entry can be a bare display string or a {name, entityId}
-      // Library-linked object — normalize to display name either way.
+      // A values entry can be a bare display string or a structured object
+      // ({name, libraryKind, libraryField, ...}) — normalize to display
+      // name either way.
       const normalizedValues = Array.isArray(node.values)
         ? node.values.map((entry) => (entry && typeof entry === "object" ? entry.name : entry))
         : node.values;

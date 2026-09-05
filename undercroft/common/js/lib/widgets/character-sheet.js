@@ -6,7 +6,7 @@
 // Shows whatever fields the character's System marks as combat-bound
 // (resource/value/tags/modifier — the same Role vocabulary combat-tracker.js
 // and Workbench's character view key off, bindings.js's findRoleBoundField),
-// writing back through the same setAtBinding path combat-tracker.js's
+// writing back through the same setAtDottedPath path combat-tracker.js's
 // writeThroughToCharacter uses, so this widget, Workbench, and the Combat
 // Tracker read/write one real value instead of three drifting copies. The
 // Conditions field reuses combat-tracker.js's own tag-badge/input UI
@@ -20,7 +20,8 @@
 // in Workbench (workbench-character-view.js) as a whole-page controller
 // with nothing factored out for reuse; duplicating it here would be a
 // second, weaker implementation of the same thing.
-import { resolveBinding, setAtBinding, findRoleBoundField, findBindingByRole } from "../bindings.js";
+import { findRoleBoundField, findBindingByRole } from "../bindings.js";
+import { resolveDottedPath, setAtDottedPath } from "../dotted-path.js";
 import { deriveConditionsVocabulary, renderTagBadges, renderTagDatalist, buildTagInputRow } from "./tag-editor.js";
 import { connectLiveStream } from "../live.js";
 import { rollExpression, resolveActiveDice, extractSystemDice } from "./dice-roll.js";
@@ -131,17 +132,17 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   // Read-modify-write against a *fresh* fetch (preferLocal: false), not the
   // in-memory `character` — the sheet could have just changed elsewhere
   // (Workbench, the Combat Tracker). Queued through `pendingSave`.
-  function persistBinding(binding, value) {
-    if (!binding) return Promise.resolve();
-    pendingSave = pendingSave.then(() => doPersistBinding(binding, value));
+  function persistBinding(recordField, value) {
+    if (!recordField) return Promise.resolve();
+    pendingSave = pendingSave.then(() => doPersistBinding(recordField, value));
     return pendingSave;
   }
 
-  async function doPersistBinding(binding, value) {
+  async function doPersistBinding(recordField, value) {
     try {
       const result = await dataManager.get("character", characterId, { preferLocal: false });
       const fresh = result.payload || {};
-      setAtBinding(binding, fresh, value);
+      setAtDottedPath(fresh, recordField, value);
       await dataManager.save("character", characterId, fresh);
       character = fresh;
     } catch (error) {
@@ -156,16 +157,16 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   // field (not a System binding) tracking which tags are hidden from map
   // marker badges (filtered in map-viewer.js's resolveMarkerConditionIcons).
   // Combined into one save so a hide-on-add can't race a separate write and land only half-applied.
-  function persistTagsAndHiddenTags(binding, list, hiddenList) {
-    pendingSave = pendingSave.then(() => doPersistTagsAndHiddenTags(binding, list, hiddenList));
+  function persistTagsAndHiddenTags(recordField, list, hiddenList) {
+    pendingSave = pendingSave.then(() => doPersistTagsAndHiddenTags(recordField, list, hiddenList));
     return pendingSave;
   }
 
-  async function doPersistTagsAndHiddenTags(binding, list, hiddenList) {
+  async function doPersistTagsAndHiddenTags(recordField, list, hiddenList) {
     try {
       const result = await dataManager.get("character", characterId, { preferLocal: false });
       const fresh = result.payload || {};
-      setAtBinding(binding, fresh, list);
+      setAtDottedPath(fresh, recordField, list);
       fresh.hiddenTags = hiddenList;
       await dataManager.save("character", characterId, fresh);
       character = fresh;
@@ -178,24 +179,24 @@ export function initCharacterVitals(container, { dataManager, status, characterI
 
   function addCondition(value) {
     const tagsEntry = findBindingByRole(combatBindings, "tags");
-    if (!tagsEntry?.binding) return;
-    const current = resolveBinding(tagsEntry.binding, character);
+    if (!tagsEntry?.recordField) return;
+    const current = resolveDottedPath(character, tagsEntry.recordField);
     const list = Array.isArray(current) ? current.slice() : [];
     if (list.includes(value)) return;
     list.push(value);
     const hiddenList = Array.isArray(character.hiddenTags) ? character.hiddenTags.slice() : [];
     if (pendingConditionHidden) hiddenList.push(value);
     pendingConditionHidden = false;
-    void persistTagsAndHiddenTags(tagsEntry.binding, list, hiddenList);
+    void persistTagsAndHiddenTags(tagsEntry.recordField, list, hiddenList);
   }
 
   function removeCondition(value) {
     const tagsEntry = findBindingByRole(combatBindings, "tags");
-    if (!tagsEntry?.binding) return;
-    const current = resolveBinding(tagsEntry.binding, character);
+    if (!tagsEntry?.recordField) return;
+    const current = resolveDottedPath(character, tagsEntry.recordField);
     const list = (Array.isArray(current) ? current : []).filter((entry) => entry !== value);
     const hiddenList = (Array.isArray(character.hiddenTags) ? character.hiddenTags : []).filter((entry) => entry !== value);
-    void persistTagsAndHiddenTags(tagsEntry.binding, list, hiddenList);
+    void persistTagsAndHiddenTags(tagsEntry.recordField, list, hiddenList);
   }
 
   // One-way roll-and-push, not a synced field — mirrors Workbench's own
@@ -233,7 +234,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   }
 
   async function rollInitiative(modifierEntry) {
-    const modifierValue = modifierEntry?.binding ? Number(resolveBinding(modifierEntry.binding, character)) || 0 : 0;
+    const modifierValue = modifierEntry?.recordField ? Number(resolveDottedPath(character, modifierEntry.recordField)) || 0 : 0;
     const sides = Number(String(modifierEntry?.die || "d20").replace(/^d/i, "")) || 20;
     const expression = modifierValue ? `1d${sides} + ${modifierValue}` : `1d${sides}`;
     const rolled = await rollExpression(expression, {
@@ -273,13 +274,13 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       const row = el("div", "d-flex align-items-center gap-2 flex-wrap");
       row.appendChild(icon("tabler:heart"));
       row.appendChild(el("span", "small text-body-secondary", resource.name || "HP"));
-      const current = resource.binding ? resolveBinding(resource.binding, character) : undefined;
+      const current = resource.recordField ? resolveDottedPath(character, resource.recordField) : undefined;
       row.appendChild(
-        numberInput(typeof current === "number" ? current : undefined, (next) => persistBinding(resource.binding, next))
+        numberInput(typeof current === "number" ? current : undefined, (next) => persistBinding(resource.recordField, next))
       );
       if (resource.maxPath) {
         row.appendChild(el("span", "text-body-secondary", "/"));
-        const max = resolveBinding(resource.maxPath, character);
+        const max = resolveDottedPath(character, resource.maxPath);
         row.appendChild(
           numberInput(typeof max === "number" ? max : undefined, (next) => persistBinding(resource.maxPath, next))
         );
@@ -289,7 +290,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
         row.appendChild(el("span", "small", String(resource.max)));
       }
       row.appendChild(el("span", "small text-body-secondary ms-2", "Temp"));
-      const tempCurrent = resource.tempPath ? resolveBinding(resource.tempPath, character) : tempHpFallback;
+      const tempCurrent = resource.tempPath ? resolveDottedPath(character, resource.tempPath) : tempHpFallback;
       row.appendChild(
         numberInput(typeof tempCurrent === "number" ? tempCurrent : undefined, (next) => {
           if (resource.tempPath) {
@@ -303,19 +304,19 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       wrap.appendChild(row);
     }
 
-    if (value?.binding) {
+    if (value?.recordField) {
       const row = el("div", "d-flex align-items-center gap-2");
       row.appendChild(icon("tabler:shield"));
       row.appendChild(el("span", "small text-body-secondary", value.name || "AC"));
-      const current = resolveBinding(value.binding, character);
+      const current = resolveDottedPath(character, value.recordField);
       row.appendChild(
-        numberInput(typeof current === "number" ? current : undefined, (next) => persistBinding(value.binding, next))
+        numberInput(typeof current === "number" ? current : undefined, (next) => persistBinding(value.recordField, next))
       );
       wrap.appendChild(row);
     }
 
     if (modifier) {
-      const modifierValue = modifier.binding ? Number(resolveBinding(modifier.binding, character)) || 0 : 0;
+      const modifierValue = modifier.recordField ? Number(resolveDottedPath(character, modifier.recordField)) || 0 : 0;
       const row = el("div", "d-flex align-items-center gap-2 flex-wrap");
       row.appendChild(icon("tabler:dice-5"));
       row.appendChild(el("span", "small text-body-secondary", modifier.name || "Initiative"));
@@ -336,8 +337,8 @@ export function initCharacterVitals(container, { dataManager, status, characterI
       wrap.appendChild(row);
     }
 
-    if (tags?.binding) {
-      const current = resolveBinding(tags.binding, character);
+    if (tags?.recordField) {
+      const current = resolveDottedPath(character, tags.recordField);
       const list = Array.isArray(current) ? current : [];
       const section = el("div", "d-flex flex-column gap-1");
       const labelRow = el("div", "d-flex align-items-center gap-1");
@@ -472,33 +473,33 @@ export async function runCharacterMacroAction(action, { dataManager } = {}) {
     const resource = findBindingByRole(combatBindings, "resource");
     const value = findBindingByRole(combatBindings, "value");
     const fieldBindings = {
-      hp: resource?.binding,
+      hp: resource?.recordField,
       maxHp: resource?.maxPath,
       tempHp: resource?.tempPath,
-      ac: value?.binding,
+      ac: value?.recordField,
     };
-    const binding = fieldBindings[params.field];
-    if (!binding) {
+    const recordField = fieldBindings[params.field];
+    if (!recordField) {
       throw new Error(`This character's System has no "${params.field}" combat binding.`);
     }
     let next;
     if (params.delta !== undefined) {
-      const current = Number(resolveBinding(binding, character)) || 0;
+      const current = Number(resolveDottedPath(character, recordField)) || 0;
       next = current + Number(params.delta);
     } else {
       next = Number(params.value);
     }
-    setAtBinding(binding, character, next);
+    setAtDottedPath(character, recordField, next);
   } else if (actionName === "addCondition" || actionName === "removeCondition") {
     const tags = findBindingByRole(combatBindings, "tags");
-    if (!tags?.binding) {
+    if (!tags?.recordField) {
       throw new Error("This character's System has no conditions combat binding.");
     }
     const conditionValue = String(params.condition || "").trim();
     if (!conditionValue) {
       throw new Error("No condition given.");
     }
-    const current = resolveBinding(tags.binding, character);
+    const current = resolveDottedPath(character, tags.recordField);
     const list = Array.isArray(current) ? current.slice() : [];
     const index = list.indexOf(conditionValue);
     if (actionName === "addCondition") {
@@ -506,7 +507,7 @@ export async function runCharacterMacroAction(action, { dataManager } = {}) {
     } else if (index !== -1) {
       list.splice(index, 1);
     }
-    setAtBinding(tags.binding, character, list);
+    setAtDottedPath(character, tags.recordField, list);
   } else {
     throw new Error(`Unknown Character macro action "${actionName}".`);
   }

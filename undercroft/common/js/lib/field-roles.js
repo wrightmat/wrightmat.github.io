@@ -4,10 +4,10 @@
 // per-tool name-guessing/shape-sniffing and per-browser Settings-modal
 // overrides those tools used to rely on. A System's `fieldRoles` is itself
 // an ordinary reserved-key array field: values shaped
-// `{sourceField, role, ...role-specific extras}` (e.g. `targetPath`), same
+// `{sourceField, binding, ...role-specific extras}` (e.g. `targetPath`), same
 // convention as `buildSteps`/`combatBindings`. `sourceField` is the same
 // "names a sibling top-level field on this System" concept combatBindings'
-// own tags-role `sourceField` already used — one name for one concept,
+// own tags-binding `sourceField` already used — one name for one concept,
 // not a second one (`field`) for the identical idea. See README.md's
 // "Reserved-key System fields" for the full role enum.
 import { fieldByKey } from "./bindings.js";
@@ -18,7 +18,7 @@ function fieldRolesList(systemDefinition) {
   return Array.isArray(fieldRolesField?.values) ? fieldRolesField.values : [];
 }
 
-// Returns the fieldRoles entry itself — `sourceField`/`role`/any
+// Returns the fieldRoles entry itself — `sourceField`/`binding`/any
 // role-specific extras (e.g. `targetPath`) — merged with `fieldDef`, the
 // resolved System field record (`fieldByKey`'s own return shape), so a
 // caller never needs a second lookup for the common case of just wanting
@@ -26,7 +26,7 @@ function fieldRolesList(systemDefinition) {
 // field that doesn't exist — either way, "not configured," never a thrown
 // error.
 export function resolveFieldRole(systemDefinition, role) {
-  const entry = fieldRolesList(systemDefinition).find((candidate) => candidate?.role === role);
+  const entry = fieldRolesList(systemDefinition).find((candidate) => candidate?.binding === role);
   if (!entry?.sourceField) return null;
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   const fieldDef = fieldByKey(fields, entry.sourceField);
@@ -39,7 +39,7 @@ export function resolveFieldRole(systemDefinition, role) {
 export function resolveFieldRoles(systemDefinition, role) {
   const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
   return fieldRolesList(systemDefinition)
-    .filter((entry) => entry?.role === role && entry?.sourceField)
+    .filter((entry) => entry?.binding === role && entry?.sourceField)
     .map((entry) => {
       const fieldDef = fieldByKey(fields, entry.sourceField);
       return fieldDef ? { ...entry, fieldDef } : null;

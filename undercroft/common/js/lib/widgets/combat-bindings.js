@@ -2,7 +2,8 @@
 // bindings" logic, factored out of combat-tracker.js's own addCombatant()
 // so Repository's `encounter:` block builder can resolve a matched
 // Monster/NPC's HP/AC through the same paths instead of a second copy.
-import { resolveBinding, findBindingByRole, findBindingsByRole, findRoleBoundField } from "../bindings.js";
+import { findBindingByRole, findBindingsByRole, findRoleBoundField } from "../bindings.js";
+import { resolveDottedPath } from "../dotted-path.js";
 
 // The tag vocabulary field and the combat-bindings field both live on the
 // same System record's `fields` — one fetch serves both (see tag-editor.js's
@@ -34,18 +35,18 @@ export function deriveCombatBindings(fields) {
 // shouldn't clutter `resources`, unlike the primary resource which always
 // needs SOME hp/maxHp (Combat Tracker's manual-entry UI assumes it's present).
 function resolveResourceValue(binding, payload) {
-  if (!binding?.binding) return null;
-  const current = resolveBinding(binding.binding, payload);
+  if (!binding?.recordField) return null;
+  const current = resolveDottedPath(payload, binding.recordField);
   // maxPath (bound to another field) and a literal `max` (a fixed ceiling,
   // e.g. Daggerheart's Hope: max 6) are both valid — maxPath wins when both are present.
   const max = binding.maxPath
-    ? resolveBinding(binding.maxPath, payload)
+    ? resolveDottedPath(payload, binding.maxPath)
     : typeof binding.max === "number"
       ? binding.max
       : undefined;
   let temp = 0;
   if (binding.tempPath) {
-    const resolvedTemp = resolveBinding(binding.tempPath, payload);
+    const resolvedTemp = resolveDottedPath(payload, binding.tempPath);
     if (typeof resolvedTemp === "number") temp = resolvedTemp;
   }
   if (typeof max === "number") {
@@ -58,7 +59,7 @@ function resolveResourceValue(binding, payload) {
 }
 
 // Resolves a matched Library record's starting HP/AC/tempHp through the
-// encounter's combat bindings — the same resolveBinding paths
+// encounter's combat bindings — the same recordField paths
 // writeThroughToCharacter uses to write back. Falls back to 0/0/0/0 for a
 // System with no matching binding.
 //
@@ -86,8 +87,8 @@ export function resolveCombatantStats(combatBindings, payload) {
       tempHp = resolved.temp;
     }
   }
-  if (value?.binding) {
-    const resolvedValue = resolveBinding(value.binding, payload);
+  if (value?.recordField) {
+    const resolvedValue = resolveDottedPath(payload, value.recordField);
     if (typeof resolvedValue === "number") ac = resolvedValue;
   }
   const resources = secondaryResources

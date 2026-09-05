@@ -4,6 +4,7 @@
 import { loadCombatScalingLevels, loadDamageTypesPropertyType } from "./tables.js";
 import { abilityModifier } from "../../../common/js/lib/derived-formulas.js";
 import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
+import { setAtDottedPath } from "../../../common/js/lib/dotted-path.js";
 
 function pickRandom(list, random) {
   if (!list.length) return null;
@@ -155,7 +156,7 @@ export async function deriveStats({
   const armorClass = Math.round(baseArmorClass * (AC_BAND_MULTIPLIER[tendencies.acBand] ?? 1));
   const damagePerRound = Math.max(0, Math.round(baseDamagePerRound * (DAMAGE_PROFILE_MULTIPLIER[tendencies.damageProfile] ?? 1)));
 
-  const budgetTarget = Number(level?.targetBudget ?? 0);
+  const budgetTarget = Number(level?.cost ?? 0);
   const spent = features.reduce((sum, feature) => sum + Number(feature.budgetCost ?? 0), 0);
   const budget = { target: budgetTarget, spent, remaining: budgetTarget - spent };
 
@@ -168,7 +169,7 @@ export async function deriveStats({
   const abilities = deriveAbilities(role, abilityFieldDefs);
   const initiativeBonus = abilityModifier(abilities.dexterity ?? 10, derivedFormulas);
 
-  // Every value below is written via setAtBinding against a scratch object,
+  // Every value below is written via setAtDottedPath against a scratch object,
   // then unwrapped to `.stats` at the end — routes each value through
   // wherever the active System's combatBindings/abilityField declare,
   // never a hardcoded field name (same technique as forge/js/lib/tables.js's
@@ -182,13 +183,13 @@ export async function deriveStats({
   // HP-like resource.
   const primaryResource = findBindingsByRole(combatBindings, "resource")[0];
   if (primaryResource) {
-    setAtBinding(primaryResource.binding, scratch, hitPoints);
-    if (primaryResource.maxPath) setAtBinding(primaryResource.maxPath, scratch, hitPoints);
+    setAtDottedPath(scratch, primaryResource.recordField, hitPoints);
+    if (primaryResource.maxPath) setAtDottedPath(scratch, primaryResource.maxPath, hitPoints);
   }
 
   // AC-like single value.
   const valueBinding = findBindingByRole(combatBindings, "value");
-  if (valueBinding) setAtBinding(valueBinding.binding, scratch, armorClass);
+  if (valueBinding) setAtDottedPath(scratch, valueBinding.recordField, armorClass);
 
   // Initiative is derived from `abilities.dexterity` via the standard
   // ability-modifier formula — same documented D&D-specific exception as the
@@ -197,7 +198,7 @@ export async function deriveStats({
   // this is skipped. `{bonus}` matches every import mapping's own initiative
   // shape and Character's own initiativeTable.
   const modifierBinding = findBindingByRole(combatBindings, "modifier");
-  if (modifierBinding) setAtBinding(modifierBinding.binding, scratch, { bonus: initiativeBonus });
+  if (modifierBinding) setAtDottedPath(scratch, modifierBinding.recordField, { bonus: initiativeBonus });
 
   // Everything else here has no combatBindings role to route through (no
   // System defines a "role" for CR, Save DC, Proficiency Bonus, Defenses,

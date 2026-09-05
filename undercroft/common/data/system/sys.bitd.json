@@ -870,7 +870,7 @@
           "name": "Standard",
           "shortName": "Standard",
           "sourceId": 1,
-          "targetBudget": 5
+          "cost": 5
         }
       ]
     },
@@ -1295,23 +1295,7 @@
       "type": "array",
       "key": "derivedFormulas",
       "label": "Derived Formulas",
-      "values": [
-        {
-          "role": "attributeRatingInsight",
-          "formula": "if(@hunt>=1,1,0)+if(@study>=1,1,0)+if(@survey>=1,1,0)+if(@tinker>=1,1,0)",
-          "name": "attributeRatingInsight"
-        },
-        {
-          "role": "attributeRatingProwess",
-          "formula": "if(@finesse>=1,1,0)+if(@prowl>=1,1,0)+if(@skirmish>=1,1,0)+if(@wreck>=1,1,0)",
-          "name": "attributeRatingProwess"
-        },
-        {
-          "role": "attributeRatingResolve",
-          "formula": "if(@attune>=1,1,0)+if(@command>=1,1,0)+if(@consort>=1,1,0)+if(@sway>=1,1,0)",
-          "name": "attributeRatingResolve"
-        }
-      ]
+      "values": []
     },
     {
       "type": "object",
@@ -1321,26 +1305,25 @@
         "tpl.bitd.character": [
           {
             "step": "class",
-            "kind": "class",
             "matchField": "form",
             "matchValue": "character",
-            "name": "Playbook"
+            "name": "Playbook",
+            "libraryKind": "class"
           },
           {
             "step": "species",
-            "kind": "species",
-            "name": "Heritage"
+            "name": "Heritage",
+            "libraryKind": "species"
           },
           {
             "step": "background",
-            "kind": "background",
-            "name": "Background"
+            "name": "Background",
+            "libraryKind": "background"
           },
           {
             "step": "actionDots",
             "type": "pointAllocation",
             "budget": 4,
-            "targetPath": "actions",
             "maxRating": 2,
             "unitLabel": "dots",
             "prefill": {
@@ -1351,7 +1334,8 @@
               "secondaryValue": 1
             },
             "desc": "Your playbook has already placed three dots. Put one more dot in an action that reflects your heritage, one in an action that reflects your background, and two more anywhere you please — no action may start higher than 2.",
-            "name": "Actions"
+            "name": "Actions",
+            "sourceField": "actions"
           },
           {
             "step": "specialAbility",
@@ -1359,10 +1343,10 @@
             "desc": "Choose one special ability for your playbook. If you can't decide, the first one listed is a good default.",
             "source": {
               "from": "class",
-              "field": "features"
+              "libraryField": "features"
             },
             "idField": "featureIds",
-            "targetArrayPath": "@featureIds",
+            "targetArrayPath": "featureIds",
             "searchable": true,
             "picks": [
               {}
@@ -1375,9 +1359,9 @@
             "desc": "Choose one close friend and one rival from your playbook's own list of NPCs.",
             "source": {
               "from": "class",
-              "field": "npcs"
+              "libraryField": "npcs"
             },
-            "targetArrayPath": "@contacts",
+            "targetArrayPath": "contacts",
             "itemKey": "name",
             "picks": [
               {
@@ -1400,9 +1384,9 @@
             "type": "listPick",
             "source": {
               "from": "system",
-              "field": "vices"
+              "sourceField": "vices"
             },
-            "targetPath": "@vice",
+            "targetPath": "vice",
             "picks": [
               {}
             ],
@@ -1426,9 +1410,9 @@
               }
             ],
             "targetPaths": [
-              "@alias",
-              "@look",
-              "@vicePurveyor"
+              "alias",
+              "look",
+              "vicePurveyor"
             ],
             "name": "Alias & Look"
           },
@@ -1444,19 +1428,19 @@
         "tpl.bitd.crew": [
           {
             "step": "class",
-            "kind": "class",
             "matchField": "form",
             "matchValue": "crew",
-            "name": "Crew Type"
+            "name": "Crew Type",
+            "libraryKind": "class"
           },
           {
             "step": "reputation",
             "type": "listPick",
             "source": {
               "from": "system",
-              "field": "crewReputationTags"
+              "sourceField": "crewReputationTags"
             },
-            "targetArrayPath": "@reputation",
+            "targetArrayPath": "reputation",
             "picks": [
               {}
             ],
@@ -1468,9 +1452,9 @@
             "desc": "Choose the type of operation your hunting grounds are best suited for.",
             "source": {
               "from": "class",
-              "field": "favoredOperations"
+              "libraryField": "favoredOperations"
             },
-            "targetPath": "@preferredOperation",
+            "targetPath": "preferredOperation",
             "picks": [
               {}
             ],
@@ -1482,10 +1466,10 @@
             "desc": "Choose one special ability for your crew. If you can't decide, the first one listed is a good default.",
             "source": {
               "from": "class",
-              "field": "features"
+              "libraryField": "features"
             },
             "idField": "featureIds",
-            "targetArrayPath": "@featureIds",
+            "targetArrayPath": "featureIds",
             "searchable": true,
             "picks": [
               {}
@@ -1499,14 +1483,14 @@
             "source": [
               {
                 "from": "system",
-                "field": "generalCrewUpgrades"
+                "sourceField": "generalCrewUpgrades"
               },
               {
                 "from": "class",
-                "field": "typeUpgrades"
+                "libraryField": "typeUpgrades"
               }
             ],
-            "targetArrayPath": "@upgrades",
+            "targetArrayPath": "upgrades",
             "itemKey": "name",
             "itemDefaults": {
               "purchased": true
@@ -1522,9 +1506,9 @@
             "type": "listPick",
             "source": {
               "from": "class",
-              "field": "contacts"
+              "libraryField": "contacts"
             },
-            "targetArrayPath": "@contacts",
+            "targetArrayPath": "contacts",
             "itemKey": "name",
             "picks": [
               {}
@@ -1544,19 +1528,19 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "abilityScores",
           "name": "xp → abilityScores",
-          "sourceField": "xp"
+          "sourceField": "xp",
+          "binding": "abilityScores"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "archetypeTable",
           "name": "npcTypes → archetypeTable",
-          "sourceField": "npcTypes"
+          "sourceField": "npcTypes",
+          "binding": "archetypeTable"
         }
       ]
     }

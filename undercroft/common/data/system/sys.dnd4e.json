@@ -709,18 +709,18 @@
       "values": [
         {
           "name": "Common",
-          "targetBudget": 4,
-          "description": "Available for purchase in most settlements."
+          "description": "Available for purchase in most settlements.",
+          "cost": 4
         },
         {
           "name": "Uncommon",
-          "targetBudget": 9,
-          "description": "Requires a quest, favor, or rare find to acquire."
+          "description": "Requires a quest, favor, or rare find to acquire.",
+          "cost": 9
         },
         {
           "name": "Rare",
-          "targetBudget": 16,
-          "description": "Unique or nearly unique, always campaign-significant."
+          "description": "Unique or nearly unique, always campaign-significant.",
+          "cost": 16
         }
       ]
     },
@@ -1102,37 +1102,37 @@
       "label": "Creature Origin",
       "values": [
         {
-          "id": "natural",
+          "shortName": "natural",
           "name": "Natural",
           "description": "An ordinary creature of the world, mundane in origin."
         },
         {
-          "id": "magical",
+          "shortName": "magical",
           "name": "Magical",
           "description": "A creature shaped or animated by magic rather than nature."
         },
         {
-          "id": "fey",
+          "shortName": "fey",
           "name": "Fey",
           "description": "A creature of the Feywild, bound by old, strange rules."
         },
         {
-          "id": "shadow",
+          "shortName": "shadow",
           "name": "Shadow",
           "description": "A creature of the Shadowfell, touched by death and decay."
         },
         {
-          "id": "elemental",
+          "shortName": "elemental",
           "name": "Elemental",
           "description": "A creature native to the Elemental Chaos."
         },
         {
-          "id": "immortal",
+          "shortName": "immortal",
           "name": "Immortal",
           "description": "A creature of the Astral Sea, an agent of the gods or primordials."
         },
         {
-          "id": "aberrant",
+          "shortName": "aberrant",
           "name": "Aberrant",
           "description": "A creature from the Far Realm, alien beyond understanding."
         }
@@ -1145,32 +1145,32 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@hitPoints.max",
-          "binding": "@hitPoints.current",
-          "role": "resource"
+          "maxPath": "hitPoints.max",
+          "recordField": "hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Healing Surges",
-          "maxPath": "@healingSurges.max",
-          "binding": "@healingSurges.current",
-          "role": "resource"
+          "maxPath": "healingSurges.max",
+          "recordField": "healingSurges.current",
+          "binding": "resource"
         },
         {
           "name": "Armor Class",
-          "binding": "@defenses.ac",
-          "role": "value"
+          "recordField": "defenses.ac",
+          "binding": "value"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         },
         {
           "name": "Initiative",
           "die": "d20",
-          "binding": "@initiative",
-          "role": "modifier"
+          "recordField": "initiative",
+          "binding": "modifier"
         }
       ]
     },
@@ -1245,39 +1245,39 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "abilities → abilityScores",
-          "sourceField": "abilities"
+          "sourceField": "abilities",
+          "binding": "abilityScores"
         },
         {
-          "role": "creatureType",
           "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes"
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
         },
         {
-          "role": "combatScaling",
           "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling"
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }

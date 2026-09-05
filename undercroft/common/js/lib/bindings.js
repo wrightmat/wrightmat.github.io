@@ -224,10 +224,10 @@ export function fieldByKey(fields, key) {
 }
 
 // A System's live play-state (HP, AC, conditions, initiative) lives on an
-// ordinary array field, whose VALUES carry a `role` — a generic vocabulary
-// (Loom's "Role" help topic: resource/value/tags/modifier), not
+// ordinary array field, whose VALUES carry a `binding` — a generic vocabulary
+// (Loom's "Binding" help topic: resource/value/tags/modifier), not
 // combat-specific. Which field that is is the System's own explicit
-// `fieldRoles` declaration (role "combatBindings") — see field-roles.js's
+// `fieldRoles` declaration (binding "combatBindings") — see field-roles.js's
 // resolveFieldRole, which this mirrors locally rather than importing (to
 // avoid a circular dependency, since field-roles.js is itself built on
 // fieldByKey below) — so a System only authors that mapping once, in Loom,
@@ -236,16 +236,16 @@ export function findRoleBoundField(fields) {
   const list = Array.isArray(fields) ? fields : [];
   const fieldRolesField = fieldByKey(list, "fieldRoles");
   const entry = (Array.isArray(fieldRolesField?.values) ? fieldRolesField.values : []).find(
-    (candidate) => candidate?.role === "combatBindings"
+    (candidate) => candidate?.binding === "combatBindings"
   );
-  return (entry?.field && fieldByKey(list, entry.field)) || null;
+  return (entry?.sourceField && fieldByKey(list, entry.sourceField)) || null;
 }
 
 // Finds one entry of a given role within a role-bound field's `.values`
 // (findRoleBoundField above) — shared by combat-tracker.js and
 // character-sheet.js rather than duplicated in each.
 export function findBindingByRole(bindings, role) {
-  return (bindings || []).find((entry) => entry && entry.role === role) || null;
+  return (bindings || []).find((entry) => entry && entry.binding === role) || null;
 }
 
 // Plural sibling — several Systems share a role across multiple bindings
@@ -253,5 +253,5 @@ export function findBindingByRole(bindings, role) {
 // silently reduces to just the first. For a caller that already handles
 // more than one; existing single-resource UIs stay on the singular version.
 export function findBindingsByRole(bindings, role) {
-  return (bindings || []).filter((entry) => entry && entry.role === role);
+  return (bindings || []).filter((entry) => entry && entry.binding === role);
 }

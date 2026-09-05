@@ -916,18 +916,18 @@
       "values": [
         {
           "name": "Minor",
-          "targetBudget": 3,
-          "description": "A low-cost, commonly available magic item."
+          "description": "A low-cost, commonly available magic item.",
+          "cost": 3
         },
         {
           "name": "Medium",
-          "targetBudget": 8,
-          "description": "A moderately powerful, mid-cost item."
+          "description": "A moderately powerful, mid-cost item.",
+          "cost": 8
         },
         {
           "name": "Major",
-          "targetBudget": 16,
-          "description": "A powerful, expensive, campaign-significant item."
+          "description": "A powerful, expensive, campaign-significant item.",
+          "cost": 16
         }
       ]
     },
@@ -1319,77 +1319,77 @@
       "label": "Creature Types",
       "values": [
         {
-          "id": "aberration",
+          "shortName": "aberration",
           "name": "Aberration",
           "description": "A creature with an alien mindset or bizarre anatomy."
         },
         {
-          "id": "animal",
+          "shortName": "animal",
           "name": "Animal",
           "description": "A living, non-humanoid creature, usually a natural beast."
         },
         {
-          "id": "construct",
+          "shortName": "construct",
           "name": "Construct",
           "description": "An animated, typically mindless, object or artificial creature."
         },
         {
-          "id": "dragon",
+          "shortName": "dragon",
           "name": "Dragon",
           "description": "A reptilian creature, often winged, with magical abilities."
         },
         {
-          "id": "elemental",
+          "shortName": "elemental",
           "name": "Elemental",
           "description": "A creature native to one of the elemental planes."
         },
         {
-          "id": "fey",
+          "shortName": "fey",
           "name": "Fey",
           "description": "A creature with supernatural abilities tied to nature or magic."
         },
         {
-          "id": "giant",
+          "shortName": "giant",
           "name": "Giant",
           "description": "A humanoid-shaped creature of great size and strength."
         },
         {
-          "id": "humanoid",
+          "shortName": "humanoid",
           "name": "Humanoid",
           "description": "A bipedal creature with two arms and two legs, usually mortal."
         },
         {
-          "id": "magical-beast",
+          "shortName": "magical-beast",
           "name": "Magical Beast",
           "description": "A creature similar to an animal but with supernatural powers."
         },
         {
-          "id": "monstrous-humanoid",
+          "shortName": "monstrous-humanoid",
           "name": "Monstrous Humanoid",
           "description": "A humanoid-shaped creature with monstrous traits."
         },
         {
-          "id": "ooze",
+          "shortName": "ooze",
           "name": "Ooze",
           "description": "A mindless, amorphous creature."
         },
         {
-          "id": "outsider",
+          "shortName": "outsider",
           "name": "Outsider",
           "description": "A creature native to another plane of existence."
         },
         {
-          "id": "plant",
+          "shortName": "plant",
           "name": "Plant",
           "description": "A vegetable creature, usually mindless."
         },
         {
-          "id": "undead",
+          "shortName": "undead",
           "name": "Undead",
           "description": "Once-living creatures animated by negative energy."
         },
         {
-          "id": "vermin",
+          "shortName": "vermin",
           "name": "Vermin",
           "description": "A mindless invertebrate creature."
         }
@@ -1402,26 +1402,26 @@
       "values": [
         {
           "name": "Hit Points",
-          "maxPath": "@hitPoints.max",
-          "binding": "@hitPoints.current",
-          "role": "resource"
+          "maxPath": "hitPoints.max",
+          "recordField": "hitPoints.current",
+          "binding": "resource"
         },
         {
           "name": "Armor Class",
-          "binding": "@armorClass.normal",
-          "role": "value"
+          "recordField": "armorClass.normal",
+          "binding": "value"
         },
         {
           "name": "Conditions",
-          "binding": "@conditions",
           "sourceField": "conditions",
-          "role": "tags"
+          "recordField": "conditions",
+          "binding": "tags"
         },
         {
           "name": "Initiative",
           "die": "d20",
-          "binding": "@initiative",
-          "role": "modifier"
+          "recordField": "initiative",
+          "binding": "modifier"
         }
       ]
     },
@@ -1466,44 +1466,44 @@
       "label": "Field Roles",
       "values": [
         {
-          "role": "combatBindings",
           "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings"
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
         },
         {
-          "role": "abilityScores",
           "name": "abilities → abilityScores",
-          "sourceField": "abilities"
+          "sourceField": "abilities",
+          "binding": "abilityScores"
         },
         {
-          "role": "savingThrows",
           "name": "saves → savingThrows",
-          "sourceField": "saves"
+          "sourceField": "saves",
+          "binding": "savingThrows"
         },
         {
-          "role": "creatureType",
           "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes"
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
         },
         {
-          "role": "combatScaling",
           "name": "challengeRating → combatScaling",
-          "sourceField": "challengeRating"
+          "sourceField": "challengeRating",
+          "binding": "combatScaling"
         },
         {
-          "role": "environment",
           "name": "environment → environment",
-          "sourceField": "environment"
+          "sourceField": "environment",
+          "binding": "environment"
         },
         {
-          "role": "generatorProperty",
           "name": "rarity → generatorProperty",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
         },
         {
-          "role": "budgetCeiling",
           "name": "rarity → budgetCeiling",
-          "sourceField": "rarity"
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
         }
       ]
     }
