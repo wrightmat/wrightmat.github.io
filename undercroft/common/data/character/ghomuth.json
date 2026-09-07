@@ -559,7 +559,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "rations-1-day"
+      "refId": "eff.rations-1-day"
     },
     {
       "name": "Rope, Hempen (50 feet)",
@@ -571,7 +571,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "rope-hempen-50-feet"
+      "refId": "eff.rope-hempen-50-feet"
     },
     {
       "name": "Tinderbox",
@@ -616,18 +616,6 @@
     "feature": "Savage Attacker"
   },
   "feats": [
-    {
-      "name": "Weapon Mastery",
-      "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
-      "level": null,
-      "limitedUse": null
-    },
-    {
-      "name": "4: Weapon Mastery",
-      "description": "Your training with weapons allows you to use the mastery properties of another kind of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of your chosen weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
-      "level": null,
-      "limitedUse": null
-    },
     {
       "name": "Savage Attacker",
       "description": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.",
@@ -1008,7 +996,6 @@
   },
   "spells": [],
   "featureIds": [
-    "feat.weapon-mastery",
     "feat.savage-attacker",
     "feat.sentinel",
     "feat.soldier-ability-score-improvements",
@@ -1017,6 +1004,7 @@
     "feat.barbarian-fanatical-focus",
     "feat.rage",
     "feat.barbarian-unarmored-defense",
+    "feat.weapon-mastery",
     "feat.barbarian-danger-sense",
     "feat.barbarian-reckless-attack",
     "feat.barbarian-barbarian-subclass",
@@ -1036,12 +1024,6 @@
     "feat.locathah-limited-amphibiousness"
   ],
   "featureParams": {
-    "feat.weapon-mastery": {
-      "grantedAtLevel": [
-        1,
-        4
-      ]
-    },
     "feat.barbarian-divine-fury": {
       "grantedAtLevel": [
         3
@@ -1065,6 +1047,12 @@
     "feat.barbarian-unarmored-defense": {
       "grantedAtLevel": [
         1
+      ]
+    },
+    "feat.weapon-mastery": {
+      "grantedAtLevel": [
+        1,
+        4
       ]
     },
     "feat.barbarian-danger-sense": {

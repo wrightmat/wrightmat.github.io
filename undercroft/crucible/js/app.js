@@ -2395,8 +2395,15 @@ async function init() {
   }
   elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
 
-  elements.monsterSelect?.addEventListener("change", async () => {
-    const id = elements.monsterSelect.value;
+  // The one canonical "load and show this specific monster" path — used by
+  // the picker's own change below, AND by applyDeepLinkParams' two phases
+  // (both the fast first paint and the re-render once reference data has
+  // loaded), so there's a single place this logic can ever drift, not a
+  // hand-duplicated copy per call site. Sets monsterSelect's own value too,
+  // so it's safe to call from a context (like a deep link) that never
+  // touched the picker directly.
+  async function selectMonster(id) {
+    if (elements.monsterSelect) elements.monsterSelect.value = id || "";
     currentMonsterId = id || null;
     updateGenerationFieldsVisibility();
     if (!id) {
@@ -2419,7 +2426,8 @@ async function init() {
     } catch (error) {
       status?.show(`Unable to load monster: ${error.message}`, { type: "error", timeout: 4000 });
     }
-  });
+  }
+  elements.monsterSelect?.addEventListener("change", () => selectMonster(elements.monsterSelect.value));
 
   // Name/Notes aren't written back into currentRecord until Save/Export
   // actually runs (see buildRecordForSave) — without this, editing either
@@ -2553,31 +2561,32 @@ async function init() {
     const monsterId = params.get("monster");
     if (!monsterId) return false;
     try {
+      // Only fetched here for its own systemIds, ahead of Phase 1 — the
+      // System has to be known before Phase 2 can set systemSelect, and
+      // selectMonster below does its own fetch regardless (same "one extra
+      // request in exchange for one canonical load-and-show path" trade-off
+      // Sanctum's own deep link already makes for Location).
       const result = await dataManager.get("monster", monsterId, { preferLocal: false });
-      const payload = result?.payload || {};
-      const targetSystemId = payload.systemIds?.[0] || null;
+      const targetSystemId = result?.payload?.systemIds?.[0] || null;
       // Phase 1 — the monster itself, on screen as fast as one fetch allows.
-      currentMonsterId = monsterId;
-      updateGenerationFieldsVisibility();
-      renderMonster({ ...payload, id: monsterId });
-      dirtyGate.markClean(toPressExportShape(currentRecord));
-      expandMonsterPropertiesSection();
-      updateActionButtons();
+      await selectMonster(monsterId);
       // Phase 2 — deliberately not awaited; runs after this function has
-      // already returned `true`. NOT handleSystemSelectChange, which resets
-      // currentMonsterId and calls renderMonster(null) first — that would
-      // wipe the monster Phase 1 already rendered. Setting systemSelect's
-      // value directly and calling reloadReferenceData straight keeps
-      // Phase 1's render on screen the whole time. monsterSelect's value is
-      // set without dispatching "change" since the monster is already
-      // loaded and shown; re-dispatching would just re-fetch it for nothing.
+      // already returned `true`. Goes through the real handleSystemSelectChange
+      // now (accepting its own reset-to-blank, same as a manual System change
+      // would do) rather than a hand-duplicated subset of it — one canonical
+      // "what happens when System changes" path instead of two to keep in
+      // sync. selectMonster (again) at the end restores the correct,
+      // now-fully-resolved render (Creature Type/Feature names, etc. — blank/
+      // raw-id before this, since reference data doesn't exist until
+      // reloadReferenceData, inside handleSystemSelectChange, actually runs)
+      // once reference data has actually loaded.
       void (async () => {
         try {
           if (targetSystemId && elements.systemSelect) {
             elements.systemSelect.value = targetSystemId;
+            await handleSystemSelectChange();
           }
-          await reloadReferenceData();
-          if (elements.monsterSelect) elements.monsterSelect.value = monsterId;
+          await selectMonster(monsterId);
           updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just

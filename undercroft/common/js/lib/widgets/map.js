@@ -39,6 +39,7 @@ import {
   createVectorPathElement,
   createVectorShapeElement,
   createMarkerOverlayIcon,
+  isElementHiddenInAutoManagedView,
 } from "../../../../orrery/js/lib/map-model.js";
 import { getPresetById, getPresetsByCategory, getPresetDefaultValues } from "../shape-effect-library.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
@@ -61,9 +62,15 @@ import {
   persistElementUpdate,
   persistPlayerDrawing,
   removeElement,
+  persistViewVisibility,
 } from "../map-live-sync.js";
 import { claimMarkerContentEntry, describeMarkerContentEntry, resolveGiveToOptions } from "../marker-contents.js";
 import { disposeTooltips, initTooltip, setDisabledTooltip, updateTooltipContent } from "../tooltips.js";
+// Combat Tracker visibility and Map marker visibility are independent —
+// these are only for the optional "also hide/show it in the tracker?"
+// cross-link prompt, never to derive one from the other.
+import { resolveMarkerCombatants, persistCombatantHidden } from "../combat-map-link.js";
+import { showConfirmModal } from "../confirm-modal.js";
 
 // 10s — same reasoning as combat-tracker.js's own POLL_INTERVAL_MS, kept a
 // bit more conservative since map content typically changes less often
@@ -1220,6 +1227,55 @@ export function initMapWidget(
     if (freshLayer && freshMarker) openMarkerEditor(freshLayer, freshMarker, dotEl);
   }
 
+  // GM/owner-only (a player hiding their own token from the rest of the
+  // table would be a real problem, unlike recoloring/re-iconing it) — writes
+  // through to the map's own auto-managed Player View, the exact same
+  // mechanism Orrery's own selection-toolbar eye icon uses. Independent of
+  // Combat Tracker's own per-combatant visibility; if this marker is linked
+  // to a combatant in the active encounter, offers (never forces) to also
+  // toggle that.
+  async function toggleMarkerVisibleToPlayers(layer, markerElement, dotEl) {
+    const nextHidden = !isElementHiddenInAutoManagedView(map?.views, markerElement.id);
+    let freshMap;
+    try {
+      freshMap = await persistViewVisibility({
+        dataManager,
+        mapId,
+        shareToken,
+        elementIds: [markerElement.id],
+        hidden: nextHidden,
+      });
+    } catch (error) {
+      status?.show(error.message || "Unable to save that change.", { type: "error" });
+      return;
+    }
+    if (!freshMap) return;
+    map = freshMap;
+    watcher?.noteLocalWrite();
+    renderLayers();
+    reopenMarkerEditor(layer.id, markerElement.id, dotEl);
+
+    if (!markerElement.refKind || !markerElement.refId) return;
+    const activeEncounter = getCachedActiveEncounter();
+    const linked = resolveMarkerCombatants(markerElement, activeEncounter?.combatants || []);
+    if (linked.length !== 1) return; // no linked combatant, or ambiguous — nothing to offer
+    const combatant = linked[0];
+    const confirmed = await showConfirmModal({
+      title: nextHidden ? "Also hide in the tracker?" : "Also show in the tracker?",
+      bodyHtml: `<p>This marker is linked to "${combatant.name}" in the active encounter. ${nextHidden ? "Hide" : "Show"} them there too?</p>`,
+      confirmLabel: nextHidden ? "Also hide in tracker" : "Also show in tracker",
+      cancelLabel: "Just the map",
+    });
+    if (!confirmed) return;
+    const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, kind: "encounter" });
+    if (!encounterId) return;
+    try {
+      await persistCombatantHidden({ dataManager, encounterId, combatantId: combatant.id, hidden: nextHidden });
+    } catch (error) {
+      status?.show(error.message || "Unable to update the encounter.", { type: "error" });
+    }
+  }
+
   // Color + icons only — no image field. A player can recolor/re-icon their
   // own token the same way they can already move it, but replacing its
   // portrait is map-design work, not a quick in-play touch-up. Kept
@@ -1257,6 +1313,30 @@ export function initMapWidget(
       void persistElementField(layer, markerElement.id, "outlineColor", colorInput.value);
     });
     mainRow.appendChild(colorInput);
+
+    // GM/owner-only — see toggleMarkerVisibleToPlayers's own comment for why
+    // this doesn't extend to a player editing their own token.
+    if (isMapOwnerOrAdmin()) {
+      const visibleButton = document.createElement("button");
+      visibleButton.type = "button";
+      visibleButton.className = "btn btn-sm btn-outline-secondary d-inline-flex align-items-center justify-content-center p-1";
+      visibleButton.style.width = "1.5rem";
+      visibleButton.style.height = "1.5rem";
+      visibleButton.style.flexShrink = "0";
+      const hiddenFromPlayers = isElementHiddenInAutoManagedView(map?.views, markerElement.id);
+      const visibleIcon = document.createElement("span");
+      visibleIcon.className = "iconify";
+      visibleIcon.dataset.icon = hiddenFromPlayers ? "tabler:eye-off" : "tabler:eye";
+      visibleIcon.setAttribute("aria-hidden", "true");
+      visibleButton.appendChild(visibleIcon);
+      const visibleTitle = hiddenFromPlayers ? "Hidden from players — click to show" : "Visible to players — click to hide";
+      visibleButton.setAttribute("aria-label", visibleTitle);
+      initTooltip(visibleButton, { title: visibleTitle });
+      visibleButton.addEventListener("click", () => {
+        void toggleMarkerVisibleToPlayers(layer, markerElement, dotEl);
+      });
+      mainRow.appendChild(visibleButton);
+    }
 
     // createIconPickerField's own wrapper is label-on-top; only its inner
     // `.input-group` (preview + search input) is reused here so it sits

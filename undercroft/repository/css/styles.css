@@ -80,14 +80,86 @@
   white-space: nowrap;
 }
 
-.repository-preview h1,
-.repository-preview h2,
+/* Larger headers get a bit more breathing room above them than smaller
+   ones — a flat margin-top regardless of level read as too uniform. */
+.repository-preview h1 {
+  margin-top: 2rem;
+}
+
+.repository-preview h2 {
+  margin-top: 1.75rem;
+}
+
 .repository-preview h3 {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+}
+
+.repository-preview h4 {
+  margin-top: 1.35rem;
+}
+
+.repository-preview h5 {
+  margin-top: 1.2rem;
+}
+
+.repository-preview h6 {
+  margin-top: 1.1rem;
 }
 
 .repository-preview :first-child {
   margin-top: 0;
+}
+
+/* GFM tables — bare marked+DOMPurify output has no border/padding of its
+   own, so columns visibly ran together with nothing marking where one
+   stopped and the next began. A subtle outer outline + banded rows (does
+   the row-separation work) + per-cell padding (does the column-separation
+   work), rather than a full internal grid of hairlines — reads as a table
+   at a glance without looking busy. */
+.repository-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid var(--bs-border-color);
+}
+
+.repository-preview th,
+.repository-preview td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  text-align: left;
+}
+
+.repository-preview thead th {
+  border-bottom-width: 2px;
+  font-weight: 600;
+}
+
+.repository-preview tbody tr:nth-child(even) {
+  background: var(--bs-tertiary-bg);
+}
+
+.repository-preview tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* A plain `> quoted text` blockquote (no `[!type]` marker — that's a
+   callout instead, styled separately by applyCalloutStyling/`.callout`,
+   never a bare `<blockquote>`) rendered with no visual treatment at all
+   today — just the browser's own unstyled default. An outlined box with a
+   heavier accent edge and a faint tint is the standard "this is a quote,
+   not body text" convention. */
+.repository-preview blockquote {
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-left: 3px solid var(--bs-secondary-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-tertiary-bg);
+}
+
+.repository-preview blockquote > :last-child {
+  margin-bottom: 0;
 }
 
 /* GFM task-list items ("- [ ] Todo") — Obsidian hides the bullet in front

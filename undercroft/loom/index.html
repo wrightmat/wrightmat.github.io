@@ -167,6 +167,9 @@
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="groups" aria-selected="false">Groups</button>
             </li>
             <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="admin" aria-selected="false">Admin</button>
+            </li>
+            <li class="nav-item" role="presentation">
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="auth" aria-selected="false">Auth</button>
             </li>
           </ul>
@@ -566,6 +569,24 @@
                 </section>
               </div>
             </div>
+          </div>
+
+          <!-- Suite-wide content/ops dashboard — no left-pane picker needed
+               (a report, not a record editor). Every section here is a
+               summary + links out to the tab that already shows full detail
+               (Systems' own Reserved Key Diagnostics/Bindings Checklist,
+               the Library table, Users, Groups) — see loom/js/app.js's
+               "Admin tab" comment block for why this never duplicates
+               those views instead of just linking to them. -->
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="admin" hidden>
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0">Admin Overview</h2>
+              <div data-admin-check-all-mount></div>
+            </div>
+            <div data-admin-system-health-mount></div>
+            <div data-admin-inventory-mount></div>
+            <div data-admin-users-mount></div>
+            <div data-admin-groups-mount></div>
           </div>
 
           <!-- Deployment-wide credentials — no left-pane picker needed

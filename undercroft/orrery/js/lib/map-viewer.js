@@ -780,12 +780,12 @@ export function createMarkerLayerElement(baseMapManager, map, layer, options = {
       // (View-based, options.hiddenElementIds — see renderMapLayers' own
       // markerHiddenElementIds/isPrivilegedMarkerViewer for who's exempt: a
       // full-access GM in Orrery, or a map owner/admin viewing the
-      // restricted widget for their own map). Combat Tracker's own
-      // "visible to players" toggle writes THROUGH to this exact same View
-      // data now (combat-tracker.js's own toggleCombatantHiddenFromPlayers)
-      // rather than keeping a second, independent combatant.hidden flag
-      // that needed its own parallel resolution here — one mechanism, one
-      // place it's read.
+      // restricted widget for their own map). This View data is written by
+      // Orrery's own selection-toolbar toggle and the Map widget's marker
+      // popup toggle — never derived from Combat Tracker's own per-combatant
+      // `hidden` field, which is a fully independent fact (see
+      // common/js/lib/combat-map-link.js for the optional, opt-in cross-link
+      // between the two).
       if (options.hiddenElementIds?.has(markerElement.id)) return false;
       if (!hasValidMarkerPosition(map, markerElement.position)) return false;
       return true;

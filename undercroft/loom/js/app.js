@@ -61,7 +61,7 @@ import {
   createPropertyInspector,
   findUnnamedValueEntries,
 } from "../../common/js/lib/property-schema-editor.js";
-import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
+import { resolveFieldRole, resolveFieldRoles } from "../../common/js/lib/field-roles.js";
 import { validateSystemFields, loadReservedKeysSchema, isReservedKeyName } from "../../common/js/lib/system-validation.js";
 import { fieldByKey } from "../../common/js/lib/bindings.js";
 
@@ -769,6 +769,360 @@ function resetSystemReservedChecks() {
   systemBindingsChecklistList.textContent = "Not checked yet.";
   setSystemBindingsChecklistCollapsed(true);
 }
+
+// --- Admin tab — suite-wide content/ops dashboard ---------------------------
+// A dashboard of LINKS, not a second copy of detail views: every section
+// below shows only a count and, when something's flagged, a short list of
+// names linking to the tab that already shows full detail (Systems' own
+// Reserved Key Diagnostics/Bindings Checklist above, the Library table, the
+// Users/Groups tabs) via the same `?system=`/`?library=<kind>:<id>` deep
+// links `init()` already parses on load — never re-rendering findings here.
+// Every fetch below is suite-wide (every owner, not just this admin's own
+// content) — `dataManager.listOwnedContent({scope:"all"})` (admin-only,
+// server-enforced) is the one aggregate request backing both the Content
+// Inventory and Campaign Groups sections; System Content Health additionally
+// fetches each System's own full payload (cheap — a couple dozen records)
+// to run the exact same validateSystemFields/fieldRoles checks the Systems
+// tab's own diagnostics use, just across every System at once instead of one.
+const loomAdminState = {
+  systemPayloads: null, // [{id, title, payload}]
+  libraryItems: null, // listOwnedContent({scope:"all"}).items
+  users: null, // listUsers().users
+};
+
+async function fetchAdminSystemPayloads({ force = false } = {}) {
+  if (!force && loomAdminState.systemPayloads) return loomAdminState.systemPayloads;
+  const owned = await dataManager.listOwnedContent({ scope: "all", refresh: force });
+  const systemIds = (Array.isArray(owned?.items) ? owned.items : [])
+    .filter((item) => item.bucket === "system")
+    .map((item) => item.id);
+  const payloads = [];
+  for (const id of systemIds) {
+    try {
+      const result = await dataManager.get("systems", id, { preferLocal: false });
+      payloads.push({ id, title: result?.payload?.title || id, payload: result?.payload || {} });
+    } catch (error) {
+      // Best-effort — one unreadable System shouldn't block the health check
+      // for every other one.
+    }
+  }
+  loomAdminState.systemPayloads = payloads;
+  return payloads;
+}
+
+async function fetchAdminLibraryItems({ force = false } = {}) {
+  if (!force && loomAdminState.libraryItems) return loomAdminState.libraryItems;
+  const owned = await dataManager.listOwnedContent({ scope: "all", refresh: force });
+  loomAdminState.libraryItems = Array.isArray(owned?.items) ? owned.items : [];
+  return loomAdminState.libraryItems;
+}
+
+async function fetchAdminUsers({ force = false } = {}) {
+  if (!force && loomAdminState.users) return loomAdminState.users;
+  const payload = await dataManager.listUsers();
+  loomAdminState.users = Array.isArray(payload?.users) ? payload.users : [];
+  return loomAdminState.users;
+}
+
+// Same "tooManyOnce" definition renderSystemBindingsChecklist's own row
+// styling already uses — a "once"-scoped binding declared 2+ times is a
+// real misconfiguration (duplicate warning triangle there); declared ZERO
+// times is normal and non-alarming (a neutral dashed circle, not a warning)
+// since a System is never required to use every binding a consumer knows
+// about (Daggerheart has no "modifier" combatBinding at all, by design;
+// README's "Adding a new System" gaps are all "missing = degraded, not
+// broken"). Only the duplicate case counts as a gap here — boolean summary
+// only, the Systems tab's own checklist (linked to, not duplicated) is
+// where the per-binding detail lives.
+function systemHasBindingGap(fields, schema) {
+  return Object.entries(schema.bindings || {}).some(([key, bindingList]) => {
+    if (!bindingList?.length) return false;
+    const field = resolveBindingsField(fields, key);
+    const values = Array.isArray(field?.values) ? field.values : [];
+    return bindingList.some((entry) => {
+      if (entry.scope !== "once") return false;
+      return values.filter((value) => value?.binding === entry.name).length > 1;
+    });
+  });
+}
+
+function adminSystemHref(id) {
+  return `index.html?system=${encodeURIComponent(id)}`;
+}
+
+function adminLibraryHref(kind, id) {
+  return `index.html?library=${encodeURIComponent(kind)}:${encodeURIComponent(id)}`;
+}
+
+// Shared by every summary line in the Admin tab — a status icon + "label:
+// ok/total" line, with an optional list of links to whatever's flagged.
+function buildAdminSummaryRow(label, okCount, total, flagged, buildHref) {
+  const wrap = document.createElement("div");
+  wrap.className = "d-flex flex-column gap-1";
+  const line = document.createElement("div");
+  line.className = `small d-flex align-items-center gap-2 ${flagged.length ? "text-warning" : ""}`;
+  const icon = document.createElement("span");
+  icon.className = "iconify flex-shrink-0";
+  icon.dataset.icon = flagged.length ? "tabler:alert-triangle" : "tabler:circle-check";
+  icon.setAttribute("aria-hidden", "true");
+  const text = document.createElement("span");
+  text.textContent = `${label}: ${okCount}/${total}`;
+  line.append(icon, text);
+  wrap.appendChild(line);
+  if (flagged.length) {
+    const list = document.createElement("div");
+    list.className = "d-flex flex-wrap gap-2 ps-4";
+    // Capped — a suite with hundreds of flagged records shouldn't flood this
+    // one summary line; "+N more" is enough of a signal to go look directly.
+    flagged.slice(0, 30).forEach((entry) => {
+      const link = document.createElement("a");
+      link.className = "small";
+      link.href = buildHref(entry);
+      link.textContent = entry.title || entry.label || entry.id;
+      list.appendChild(link);
+    });
+    wrap.appendChild(list);
+    if (flagged.length > 30) {
+      const more = document.createElement("span");
+      more.className = "small text-body-secondary";
+      more.textContent = `+ ${flagged.length - 30} more`;
+      list.appendChild(more);
+    }
+  }
+  return wrap;
+}
+
+async function runAdminSystemHealth({ force = false, expand = true } = {}) {
+  const payloads = await fetchAdminSystemPayloads({ force });
+  const schema = await loadReservedKeysSchema();
+  const total = payloads.length;
+  adminSystemHealthList.innerHTML = "";
+  if (!total) {
+    const empty = document.createElement("p");
+    empty.className = "text-body-secondary small mb-0";
+    empty.textContent = "No Systems found.";
+    adminSystemHealthList.appendChild(empty);
+    if (expand) setAdminSystemHealthCollapsed(false);
+    return;
+  }
+  const checks = [
+    { label: "Reserved Key Diagnostics (no issues)", test: async (system) => (await validateSystemFields(system.payload.fields || [])).length === 0 },
+    { label: "Reserved Bindings (no duplicate once-only roles)", test: async (system) => !systemHasBindingGap(system.payload.fields || [], schema) },
+    { label: "Build Wizard (buildSteps declared)", test: async (system) => Boolean(fieldByKey(system.payload.fields || [], "buildSteps")) },
+    { label: "Crucible-ready (Creature Type + Combat Scaling)", test: async (system) => Boolean(resolveFieldRole(system.payload, "creatureType")) && Boolean(resolveFieldRole(system.payload, "combatScaling")) },
+    { label: "Forge-ready (Archetype table)", test: async (system) => Boolean(resolveFieldRole(system.payload, "archetypeTable")) },
+    { label: "Vault-ready (generator property)", test: async (system) => resolveFieldRoles(system.payload, "generatorProperty").length > 0 },
+    { label: "Sanctum-ready (Environment)", test: async (system) => Boolean(resolveFieldRole(system.payload, "environment")) },
+  ];
+  for (const check of checks) {
+    const ok = [];
+    const flagged = [];
+    for (const system of payloads) {
+      // eslint-disable-next-line no-await-in-loop
+      if (await check.test(system)) ok.push(system);
+      else flagged.push(system);
+    }
+    adminSystemHealthList.appendChild(buildAdminSummaryRow(check.label, ok.length, total, flagged, (system) => adminSystemHref(system.id)));
+  }
+  if (expand) setAdminSystemHealthCollapsed(false);
+}
+
+// Only the 5 kinds that already declare `systemIds` in their own
+// common/data/kind/<kind>.json `metadataFields` (see that registry) get
+// counted here — that's what makes it free to read straight off the
+// existing listOwnedContent(scope:"all") rows. species/background don't
+// declare it yet, so checking them would mean fetching every individual
+// record; flagged in the row's own label rather than silently skipped.
+const ADMIN_SYSTEM_ID_INDEXED_KINDS = ["class", "wonder", "feature", "monster", "character"];
+
+async function runAdminContentInventory({ force = false, expand = true } = {}) {
+  const items = await fetchAdminLibraryItems({ force });
+  const kinds = await loadLibraryKinds();
+  const kindLabel = new Map((Array.isArray(kinds) ? kinds : []).map((kind) => [kind.id, kind.plural || kind.label || kind.id]));
+  adminInventoryList.innerHTML = "";
+  const counts = new Map();
+  items.forEach((item) => {
+    const entry = counts.get(item.bucket) || { total: 0, public: 0 };
+    entry.total += 1;
+    if (item.is_public) entry.public += 1;
+    counts.set(item.bucket, entry);
+  });
+  const summary = document.createElement("p");
+  summary.className = "small text-body-secondary mb-0";
+  summary.textContent = `${items.length} total records across ${counts.size} kinds.`;
+  adminInventoryList.appendChild(summary);
+  const table = document.createElement("div");
+  table.className = "d-flex flex-column gap-1 small";
+  Array.from(counts.entries())
+    .sort((a, b) => b[1].total - a[1].total)
+    .forEach(([bucket, entry]) => {
+      const row = document.createElement("div");
+      row.className = "d-flex justify-content-between gap-2";
+      const label = document.createElement("span");
+      label.textContent = kindLabel.get(bucket) || bucket;
+      const value = document.createElement("span");
+      value.className = "text-body-secondary";
+      value.textContent = `${entry.total} (${entry.public} public)`;
+      row.append(label, value);
+      table.appendChild(row);
+    });
+  adminInventoryList.appendChild(table);
+  const indexedItems = items.filter((item) => ADMIN_SYSTEM_ID_INDEXED_KINDS.includes(item.bucket));
+  const orphaned = indexedItems.filter((item) => !(Array.isArray(item.systemIds) && item.systemIds.length));
+  const orphanRow = buildAdminSummaryRow(
+    "No System assigned (class/feature/monster/wonder/character only — species/background not yet indexed for this check)",
+    indexedItems.length - orphaned.length,
+    indexedItems.length,
+    orphaned,
+    (item) => adminLibraryHref(item.bucket, item.id)
+  );
+  adminInventoryList.appendChild(orphanRow);
+  if (expand) setAdminInventoryCollapsed(false);
+}
+
+async function runAdminUsersSummary({ force = false, expand = true } = {}) {
+  const users = await fetchAdminUsers({ force });
+  adminUsersList.innerHTML = "";
+  const summary = document.createElement("p");
+  summary.className = "small text-body-secondary mb-0";
+  summary.textContent = `${users.length} total users.`;
+  adminUsersList.appendChild(summary);
+  const byTier = new Map();
+  let neverActive = 0;
+  users.forEach((user) => {
+    const tier = user.tier || "free";
+    byTier.set(tier, (byTier.get(tier) || 0) + 1);
+    if (!user.last_activity && !user.last_login) neverActive += 1;
+  });
+  const table = document.createElement("div");
+  table.className = "d-flex flex-column gap-1 small";
+  ["free", "player", "gm", "creator", "admin"].forEach((tier) => {
+    if (!byTier.has(tier)) return;
+    const row = document.createElement("div");
+    row.className = "d-flex justify-content-between gap-2";
+    const label = document.createElement("span");
+    label.textContent = loomFormatTier(tier);
+    const value = document.createElement("span");
+    value.className = "text-body-secondary";
+    value.textContent = String(byTier.get(tier));
+    row.append(label, value);
+    table.appendChild(row);
+  });
+  adminUsersList.appendChild(table);
+  const neverRow = document.createElement("p");
+  neverRow.className = "small text-body-secondary mt-2 mb-0";
+  neverRow.textContent = `${neverActive} user${neverActive === 1 ? "" : "s"} with no recorded activity.`;
+  adminUsersList.appendChild(neverRow);
+  const link = document.createElement("a");
+  link.className = "small";
+  link.href = "#";
+  link.textContent = "Open Users tab →";
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    setLoomView("users");
+  });
+  adminUsersList.appendChild(link);
+  if (expand) setAdminUsersCollapsed(false);
+}
+
+async function runAdminGroupsSummary({ force = false, expand = true } = {}) {
+  const items = await fetchAdminLibraryItems({ force });
+  const groups = items.filter((item) => item.bucket === "group");
+  adminGroupsList.innerHTML = "";
+  const byOwner = new Map();
+  groups.forEach((group) => {
+    byOwner.set(group.owner_username, (byOwner.get(group.owner_username) || 0) + 1);
+  });
+  const summary = document.createElement("p");
+  summary.className = "small text-body-secondary mb-0";
+  summary.textContent = `${groups.length} Campaign Group${groups.length === 1 ? "" : "s"} across ${byOwner.size} owner${byOwner.size === 1 ? "" : "s"}.`;
+  adminGroupsList.appendChild(summary);
+  const multiOwnerCount = Array.from(byOwner.values()).filter((count) => count > 1).length;
+  if (multiOwnerCount) {
+    const detail = document.createElement("p");
+    detail.className = "small text-body-secondary mb-0";
+    detail.textContent = `${multiOwnerCount} owner${multiOwnerCount === 1 ? "" : "s"} run more than one group.`;
+    adminGroupsList.appendChild(detail);
+  }
+  const link = document.createElement("a");
+  link.className = "small";
+  link.href = "#";
+  link.textContent = "Open Groups tab →";
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    setLoomView("groups");
+  });
+  adminGroupsList.appendChild(link);
+  if (expand) setAdminGroupsCollapsed(false);
+}
+
+// Called on every visit to the Admin tab. `force: false` (a bare tab click)
+// quietly (re)populates from cache, or fetches once if this is the first
+// visit — but never force-expands a section the admin already collapsed,
+// same as sections stay put across an ordinary re-render. `force: true`
+// (the "Check all" button, or one section's own "Check now") re-fetches
+// and expands, exactly like the Systems tab's two diagnostics above.
+async function loomLoadAdminOverview({ force = false } = {}) {
+  if (!isLoomAdminSession()) return;
+  const expand = force;
+  await Promise.all([
+    runAdminSystemHealth({ force, expand }).catch(() => {}),
+    runAdminContentInventory({ force, expand }).catch(() => {}),
+    runAdminUsersSummary({ force, expand }).catch(() => {}),
+    runAdminGroupsSummary({ force, expand }).catch(() => {}),
+  ]);
+}
+
+const adminSystemHealthList = document.createElement("div");
+adminSystemHealthList.className = "d-flex flex-column gap-3 small";
+adminSystemHealthList.textContent = "Not checked yet.";
+const { section: adminSystemHealthSection, setCollapsed: setAdminSystemHealthCollapsed } = createCollapsibleSection({
+  label: "System Content Health",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminSystemHealth({ force: true }) }],
+  content: adminSystemHealthList,
+});
+document.querySelector("[data-admin-system-health-mount]")?.appendChild(adminSystemHealthSection);
+
+const adminInventoryList = document.createElement("div");
+adminInventoryList.className = "d-flex flex-column gap-2 small";
+adminInventoryList.textContent = "Not checked yet.";
+const { section: adminInventorySection, setCollapsed: setAdminInventoryCollapsed } = createCollapsibleSection({
+  label: "Library Content Inventory",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminContentInventory({ force: true }) }],
+  content: adminInventoryList,
+});
+document.querySelector("[data-admin-inventory-mount]")?.appendChild(adminInventorySection);
+
+const adminUsersList = document.createElement("div");
+adminUsersList.className = "d-flex flex-column gap-2 small";
+adminUsersList.textContent = "Not checked yet.";
+const { section: adminUsersSection, setCollapsed: setAdminUsersCollapsed } = createCollapsibleSection({
+  label: "Users & Tiers",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminUsersSummary({ force: true }) }],
+  content: adminUsersList,
+});
+document.querySelector("[data-admin-users-mount]")?.appendChild(adminUsersSection);
+
+const adminGroupsList = document.createElement("div");
+adminGroupsList.className = "d-flex flex-column gap-2 small";
+adminGroupsList.textContent = "Not checked yet.";
+const { section: adminGroupsSection, setCollapsed: setAdminGroupsCollapsed } = createCollapsibleSection({
+  label: "Campaign Groups",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminGroupsSummary({ force: true }) }],
+  content: adminGroupsList,
+});
+document.querySelector("[data-admin-groups-mount]")?.appendChild(adminGroupsSection);
+
+const adminCheckAllButton = createIconButton({
+  icon: "tabler:refresh",
+  label: "Check all",
+  onClick: () => loomLoadAdminOverview({ force: true }),
+});
+document.querySelector("[data-admin-check-all-mount]")?.appendChild(adminCheckAllButton);
 
 // Macros tab — its own dedicated authoring UI (mirrors Systems: select +
 // New/Save/Delete), not bolted onto the generic Library JSON editor. The
@@ -2381,7 +2735,7 @@ if (recentSavesToggle && recentSavesPanel) {
 // active view's cards show, in the main pane AND the side panes (the
 // mapping toolbar/palette/sample-data and tree Inspector are Import-only;
 // Library/Systems carry their own pickers/toolbars inline).
-const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups", "auth"];
+const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups", "admin", "auth"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
 function setLoomView(view) {
@@ -2409,6 +2763,8 @@ function setLoomView(view) {
     void populateMacroSelect();
   } else if (view === "features") {
     void populateFeatureSelect();
+  } else if (view === "admin") {
+    void loomLoadAdminOverview();
   } else if (view === "auth") {
     void loomRenderAuthStatus();
   }
@@ -3800,7 +4156,8 @@ if (loomAuthAnthropicSaveButton) {
 // and Macros (running a campaign — Macros is writeTier "gm", a GM's own
 // table cues, not Creator-authored shareable content); Creator adds
 // Import/Library/Systems (author reusable content); Admin adds Users
-// (suite-wide tier management) on top of everything Creator sees.
+// (suite-wide tier management) and Admin (the suite-wide content/ops
+// dashboard) on top of everything Creator sees.
 const LOOM_CREATOR_TABS = ["import", "library", "systems"];
 
 function loomAvailableViews() {
@@ -3808,7 +4165,7 @@ function loomAvailableViews() {
   const isAdmin = isLoomAdminSession();
   return LOOM_VIEWS.filter((view) => {
     if (LOOM_CREATOR_TABS.includes(view)) return meetsCreator;
-    if (view === "users" || view === "auth") return isAdmin;
+    if (view === "users" || view === "auth" || view === "admin") return isAdmin;
     return true; // groups/macros: available to every tier the whole tool already requires (gm+)
   });
 }

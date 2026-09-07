@@ -51,7 +51,7 @@
   "stats": {
     "hitPoints": {
       "max": 56,
-      "current": 49,
+      "current": 56,
       "temp": 0
     },
     "armorClass": 13,
@@ -568,7 +568,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "rations-1-day"
+      "refId": "eff.rations-1-day"
     },
     {
       "name": "Rope, Hempen (50 feet)",
@@ -580,7 +580,7 @@
       "canEquip": false,
       "isEquipped": false,
       "refKind": "wonder",
-      "refId": "rope-hempen-50-feet"
+      "refId": "eff.rope-hempen-50-feet"
     },
     {
       "name": "Tinderbox",

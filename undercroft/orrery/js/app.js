@@ -28,7 +28,13 @@ import {
   persistElementUpdate,
   persistNewElement,
   removeElement,
+  persistViewVisibility,
 } from "../../common/js/lib/map-live-sync.js";
+import { showConfirmModal } from "../../common/js/lib/confirm-modal.js";
+// Combat Tracker visibility and Map marker visibility are independent —
+// these are only for the optional "also hide/show it in the tracker?"
+// cross-link prompt, never to derive one from the other.
+import { resolveMarkerCombatants, persistCombatantHidden } from "../../common/js/lib/combat-map-link.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { refreshTooltips, disposeTooltips, initTooltip, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
@@ -67,6 +73,8 @@ import {
   updateMapTimestamp,
   resolveInitialView,
   randomId,
+  isElementHiddenInAutoManagedView,
+  withElementsHiddenInAutoManagedView,
 } from "./lib/map-model.js";
 import { BaseMapManager } from "./lib/base-maps.js";
 // Shared map-rendering core (also used by the Dashboard's Map widget) —
@@ -1156,13 +1164,12 @@ function applyRemoteMapLayers(nextMap) {
   state.map.layers = nextMap.layers || [];
   state.map.groups = nextMap.groups || [];
   // Confirmed real bug this fixes: this function never touched views at
-  // all, so a remote View change (Combat Tracker's own toggleCombatantHiddenFromPlayers
-  // write-through, or a GM editing the same map from another tab) never
-  // reached Orrery's own in-memory state.map no matter how long the poll
-  // ran — every hidden-from-players computation here reads state.map.views
-  // directly (computeHiddenIds), with no independent resolver of its own to
-  // fall back on now that one used to exist and was removed in favor of
-  // this exact mechanism.
+  // all, so a remote View change (the Map widget's own marker popup toggle,
+  // Combat Tracker's opt-in "also hide it on the map" cross-link write, or a
+  // GM editing the same map from another tab) never reached Orrery's own
+  // in-memory state.map no matter how long the poll ran — every
+  // hidden-from-players computation here reads state.map.views directly
+  // (computeHiddenIds), with no independent resolver of its own to fall back on.
   state.map.views = nextMap.views || [];
   state.map.baseMap = nextMap.baseMap || state.map.baseMap;
   state.map.updatedAt = nextMap.updatedAt;
@@ -1651,26 +1658,14 @@ function deleteCurrentSelection() {
   return false;
 }
 
-// The one View toggleElementHiddenFromPlayers manages — auto-created the
-// first time a GM uses the marker's "Hidden from players" convenience
-// switch. Only ever returns/creates THIS one View; a hand-authored View a
-// GM separately scopes via the View editor's Visible Components checklist
-// is a deliberately separate thing this never touches.
-function ensureAutoManagedPlayerView() {
-  let view = state.map.views.find((entry) => entry.autoManaged);
-  if (!view) {
-    view = createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
-    state.map.views.push(view);
-  }
-  return view;
-}
-
 // Read-only — whether `elementId` is hidden by the auto-managed Player
 // View specifically, not the union of every View that might hide it.
 // False, not an error, when the auto-managed View doesn't exist yet.
+// isElementHiddenInAutoManagedView (map-model.js) is the shared, pure
+// version of this same check — also used by the Map widget's own marker
+// popup toggle, so both surfaces agree on it.
 function isElementHiddenFromPlayers(elementId) {
-  const view = state.map.views.find((entry) => entry.autoManaged);
-  return Boolean(view?.hiddenElementIds?.includes(elementId));
+  return isElementHiddenInAutoManagedView(state.map.views, elementId);
 }
 
 // Explicit target `hidden`, not a per-element flip — a bulk toggle over a
@@ -1681,13 +1676,11 @@ function isElementHiddenFromPlayers(elementId) {
 function setElementsHiddenFromPlayers(elementIds, hidden) {
   if (!elementIds.length) return;
   recordHistory(hidden ? "hide from players" : "show to players", () => {
-    const view = ensureAutoManagedPlayerView();
-    const hiddenSet = new Set(view.hiddenElementIds || []);
-    elementIds.forEach((elementId) => {
-      if (hidden) hiddenSet.add(elementId);
-      else hiddenSet.delete(elementId);
-    });
-    view.hiddenElementIds = Array.from(hiddenSet);
+    // withElementsHiddenInAutoManagedView (map-model.js) — the same pure
+    // "find-or-create the auto-managed View, add/remove these ids" logic
+    // the Map widget's own marker popup toggle uses, so this in-memory edit
+    // and that widget's own fetch-fresh/save round trip can never drift.
+    state.map.views = withElementsHiddenInAutoManagedView(state.map.views, elementIds, hidden);
     updateMapTimestamp(state.map);
   });
   renderSelection();
@@ -1704,6 +1697,38 @@ function toggleElementHiddenFromPlayers(elementId) {
   setElementsHiddenFromPlayers([elementId], !isElementHiddenFromPlayers(elementId));
 }
 
+// Single-marker toggle only (the multi-selection tri-state toggle below
+// deliberately doesn't get this — one prompt per marker in a bulk toggle
+// would be a wall of dialogs) — offers the same "also toggle it in Combat
+// Tracker?" cross-link prompt the Map widget's own popup toggle offers, so
+// switching a marker's visibility from Orrery's own editor mid-session
+// behaves the same way. Combat Tracker visibility and Map marker visibility
+// stay independent facts either way — this only ever OFFERS, never forces.
+async function toggleMarkerHiddenFromPlayersWithCrossLink(markerElement) {
+  const nextHidden = !isElementHiddenFromPlayers(markerElement.id);
+  toggleElementHiddenFromPlayers(markerElement.id);
+  if (!markerElement.refKind || !markerElement.refId || !groupId) return;
+  ensureActiveEncounterCached(groupId, () => {});
+  const activeEncounter = getCachedActiveEncounter(groupId);
+  const linked = resolveMarkerCombatants(markerElement, activeEncounter?.combatants || []);
+  if (linked.length !== 1) return; // no linked combatant, or ambiguous — nothing to offer
+  const combatant = linked[0];
+  const confirmed = await showConfirmModal({
+    title: nextHidden ? "Also hide in the tracker?" : "Also show in the tracker?",
+    bodyHtml: `<p>This marker is linked to "${combatant.name}" in the active encounter. ${nextHidden ? "Hide" : "Show"} them there too?</p>`,
+    confirmLabel: nextHidden ? "Also hide in tracker" : "Also show in tracker",
+    cancelLabel: "Just the map",
+  });
+  if (!confirmed) return;
+  const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, kind: "encounter" });
+  if (!encounterId) return;
+  try {
+    await persistCombatantHidden({ dataManager, encounterId, combatantId: combatant.id, hidden: nextHidden });
+  } catch (error) {
+    status?.show(error?.message || "Unable to update the encounter.", { type: "error" });
+  }
+}
+
 // Narrow read-modify-write against the server's OWN current copy of this
 // map, not state.map — which may carry other pending unsaved edits this
 // auto-save must never eagerly persist. Applies the SAME explicit `hidden`
@@ -1713,21 +1738,16 @@ function toggleElementHiddenFromPlayers(elementId) {
 async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
   if (!mapExistsOnServer || !dataManager) return;
   try {
-    const result = await dataManager.get("map", state.map.id, { shareToken: currentShareToken, preferLocal: false });
-    const freshMap = result.payload;
-    freshMap.views = Array.isArray(freshMap.views) ? freshMap.views : [];
-    let view = freshMap.views.find((entry) => entry.autoManaged);
-    if (!view) {
-      view = createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
-      freshMap.views.push(view);
-    }
-    const hiddenSet = new Set(view.hiddenElementIds || []);
-    elementIds.forEach((elementId) => {
-      if (hidden) hiddenSet.add(elementId);
-      else hiddenSet.delete(elementId);
+    // persistViewVisibility (map-live-sync.js) — same fetch-fresh/mutate/
+    // save shape this used to do by hand, now shared with the Map widget's
+    // own marker popup toggle.
+    await persistViewVisibility({
+      dataManager,
+      mapId: state.map.id,
+      shareToken: currentShareToken,
+      elementIds,
+      hidden,
     });
-    view.hiddenElementIds = Array.from(hiddenSet);
-    await dataManager.save("map", state.map.id, freshMap);
     mapWatcher?.noteLocalWrite();
     // Without re-baselining, isMapDirty() (comparing full state.map,
     // views included, against mapCleanSnapshot) would stay permanently
@@ -6150,7 +6170,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         label: hiddenFromPlayers ? "Hidden from players — click to show" : "Visible to players — click to hide",
         icon: hiddenFromPlayers ? "tabler:eye-off" : "tabler:eye",
         attrs: { "data-action": "toggle-hidden-from-players" },
-        onClick: () => toggleElementHiddenFromPlayers(markerElement.id),
+        onClick: () => void toggleMarkerHiddenFromPlayersWithCrossLink(markerElement),
       },
     ];
     // Same explicit currentUserHasFullMapAccess() gate as
@@ -8860,13 +8880,14 @@ function setupMapEvents() {
       state.map.name = name;
       updateMapTimestamp(state.map);
       // Otherwise a blind full-body overwrite of state.map — but `views`
-      // can be changed by tools other than this one (Combat Tracker's
-      // toggleCombatantHiddenFromPlayers), while Orrery's own poll is
-      // slower and skips updates entirely while anything's selected, so
-      // state.map.views can easily be stale at the moment Save is clicked
-      // (a GM un-hiding a marker from Combat Tracker, then saving in Orrery
-      // moments later, would silently re-hide it). Only refetch-and-take-
-      // the-server's-copy when this GM hasn't
+      // can be changed by tools other than this one (the Map widget's own
+      // marker popup toggle, or Combat Tracker's opt-in "also hide it on the
+      // map" cross-link write), while Orrery's own poll is slower and skips
+      // updates entirely while anything's selected, so state.map.views can
+      // easily be stale at the moment Save is clicked (a GM un-hiding a
+      // marker from the Dashboard, then saving in Orrery moments later,
+      // would silently re-hide it). Only refetch-and-take-the-server's-copy
+      // when this GM hasn't
       // ALSO hand-edited a View locally since the last known-clean sync
       // (comparing against mapCleanSnapshot, not just "is anything
       // selected") — a genuine pending local View edit (the View editor's

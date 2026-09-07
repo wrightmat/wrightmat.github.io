@@ -37,7 +37,8 @@ import {
   createCycleToggleButton,
 } from "../../common/js/lib/ui-components.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
-import { el, attachHoverDropdown } from "../../common/js/lib/dom.js";
+import { el, attachHoverDropdown, setElementVisible } from "../../common/js/lib/dom.js";
+import { parseImageAltText, buildImageAltText } from "./lib/journal-image-adjustments.js";
 
 const KIND = "journal";
 const TAG_DATALIST_ID = "repository-tag-datalist";
@@ -1262,7 +1263,7 @@ function renderTags() {
         updateToolbarState();
         renderTags();
       },
-    })
+    }).row
   );
   setTagsCollapsed(tags.length === 0);
 }
@@ -2301,6 +2302,74 @@ function createTablePickerPopover(anchorButton, onPick) {
   return { toggle, close };
 }
 
+const IMAGE_INSERT_MODAL_ID = "repository-image-insert-modal";
+const IMAGE_SIZE_PRESET_KEYS = ["small", "medium", "large"];
+
+// A real Bootstrap modal, not a lightweight custom popover like the table
+// grid above — the form has actual fields (URL, caption, position, size),
+// which a popover-over-a-button isn't a natural fit for. Lazily created and
+// cached on document.body, same singleton convention as
+// showReferencePreview's own modal.
+function getOrCreateImageInsertModal() {
+  let modal = document.getElementById(IMAGE_INSERT_MODAL_ID);
+  if (modal) return modal;
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = `
+    <div class="modal fade" id="${IMAGE_INSERT_MODAL_ID}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" data-repository-image-modal-title>Insert Image</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <div>
+              <label class="form-label" for="repository-image-url">Image URL</label>
+              <input type="url" class="form-control" id="repository-image-url" placeholder="https://…" data-repository-image-url>
+            </div>
+            <div>
+              <label class="form-label" for="repository-image-caption">Caption</label>
+              <input type="text" class="form-control" id="repository-image-caption" placeholder="Optional" data-repository-image-caption>
+            </div>
+            <div class="row g-2">
+              <div class="col">
+                <label class="form-label" for="repository-image-position">Position</label>
+                <select class="form-select" id="repository-image-position" data-repository-image-position>
+                  <option value="">Default</option>
+                  <option value="left">Float left</option>
+                  <option value="right">Float right</option>
+                  <option value="center">Center</option>
+                </select>
+              </div>
+              <div class="col">
+                <label class="form-label" for="repository-image-size">Size</label>
+                <select class="form-select" id="repository-image-size" data-repository-image-size>
+                  <option value="">Default</option>
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
+                  <option value="custom">Custom…</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-none" data-repository-image-size-custom-wrap>
+              <label class="form-label" for="repository-image-size-custom">Custom size (px or %)</label>
+              <input type="text" class="form-control" id="repository-image-size-custom" placeholder="e.g. 300 or 50%" data-repository-image-size-custom>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" data-repository-image-submit>Insert</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  modal = wrapper.firstElementChild;
+  document.body.appendChild(modal);
+  return modal;
+}
+
 // `[label](url)` — wraps a selection as the link label, or inserts a
 // placeholder when nothing's selected; either way leaves `url` selected so
 // typing a real address is the next keystroke.
@@ -2311,6 +2380,27 @@ function insertMarkdownLink(textarea) {
   replaceTextareaSelection(textarea, selectionStart, selectionEnd, `[${label}](url)`);
   const urlStart = selectionStart + label.length + 3; // "[" + label + "]("
   textarea.setSelectionRange(urlStart, urlStart + 3); // "url"
+}
+
+// `![alt](url)` — same shape insertMarkdownLink above scans for, but images
+// never nest so a plain global regex over the whole body is enough. Returns
+// the enclosing match (start/end offsets plus its raw alt/url) when the
+// current selection sits entirely inside one occurrence — used both for the
+// Image button's active-highlight state and to let a click on an
+// already-selected image edit it in place instead of inserting a new one.
+const IMAGE_MARKDOWN_PATTERN = /!\[([^\]]*)\]\(([^)]*)\)/g;
+function findImageMatchAtSelection(textarea) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  IMAGE_MARKDOWN_PATTERN.lastIndex = 0;
+  let match;
+  while ((match = IMAGE_MARKDOWN_PATTERN.exec(value))) {
+    const start = match.index;
+    const end = start + match[0].length;
+    if (selectionStart >= start && selectionEnd <= end) {
+      return { start, end, altText: match[1], url: match[2] };
+    }
+  }
+  return null;
 }
 
 // journal-callouts.js's documented syntax (`> [!type]+ Title` then
@@ -2502,6 +2592,78 @@ if (bodyTextarea) {
     event.stopPropagation();
     tablePicker.toggle();
   });
+  // Highlighted like Bold/Quote/etc. (isActive) rather than a plain one-shot
+  // button like Table/Callout below — the cursor/selection sitting inside an
+  // already-authored image is a real, checkable state here, and reusing that
+  // state on click (openImageModal) means the same button both inserts a new
+  // image and edits the one currently selected, rather than needing two.
+  const imageModal = getOrCreateImageInsertModal();
+  const imageUrlInput = imageModal.querySelector("[data-repository-image-url]");
+  const imageCaptionInput = imageModal.querySelector("[data-repository-image-caption]");
+  const imagePositionSelect = imageModal.querySelector("[data-repository-image-position]");
+  const imageSizeSelect = imageModal.querySelector("[data-repository-image-size]");
+  const imageSizeCustomWrap = imageModal.querySelector("[data-repository-image-size-custom-wrap]");
+  const imageSizeCustomInput = imageModal.querySelector("[data-repository-image-size-custom]");
+  const imageModalTitle = imageModal.querySelector("[data-repository-image-modal-title]");
+  const imageSubmitButton = imageModal.querySelector("[data-repository-image-submit]");
+  // The image markdown currently being edited (start/end offsets in
+  // bodyTextarea.value), or null when the modal will insert a fresh image
+  // instead of replacing the one the cursor was sitting in when it opened.
+  let pendingImageEdit = null;
+
+  function updateImageSizeCustomVisibility() {
+    setElementVisible(imageSizeCustomWrap, imageSizeSelect.value === "custom", "block");
+  }
+  imageSizeSelect.addEventListener("change", updateImageSizeCustomVisibility);
+
+  function openImageModal() {
+    const existing = findImageMatchAtSelection(bodyTextarea);
+    const parsed = existing ? parseImageAltText(existing.altText) : { caption: "", position: "", size: "" };
+    pendingImageEdit = existing ? { start: existing.start, end: existing.end } : null;
+    imageModalTitle.textContent = existing ? "Edit Image" : "Insert Image";
+    imageSubmitButton.textContent = existing ? "Save" : "Insert";
+    imageUrlInput.value = existing ? existing.url : "";
+    // A fresh insert reuses the current selection as the caption, same
+    // "selected text becomes the label" convention insertMarkdownLink uses.
+    imageCaptionInput.value = existing
+      ? parsed.caption
+      : bodyTextarea.value.slice(bodyTextarea.selectionStart, bodyTextarea.selectionEnd);
+    imagePositionSelect.value = parsed.position;
+    const isPresetSize = IMAGE_SIZE_PRESET_KEYS.includes(parsed.size);
+    imageSizeSelect.value = parsed.size && !isPresetSize ? "custom" : parsed.size;
+    imageSizeCustomInput.value = parsed.size && !isPresetSize ? parsed.size : "";
+    updateImageSizeCustomVisibility();
+    window.bootstrap?.Modal?.getOrCreateInstance(imageModal)?.show();
+  }
+  imageModal.addEventListener("shown.bs.modal", () => imageUrlInput.focus());
+  imageSubmitButton.addEventListener("click", () => {
+    const url = imageUrlInput.value.trim();
+    if (!url) {
+      status?.show("Enter an image URL.", { type: "error", timeout: 3000 });
+      imageUrlInput.focus();
+      return;
+    }
+    const size = imageSizeSelect.value === "custom" ? imageSizeCustomInput.value.trim() : imageSizeSelect.value;
+    const altText = buildImageAltText({ caption: imageCaptionInput.value.trim(), position: imagePositionSelect.value, size });
+    const markdown = `![${altText}](${url})`;
+    if (pendingImageEdit) {
+      replaceTextareaSelection(bodyTextarea, pendingImageEdit.start, pendingImageEdit.end, markdown);
+      bodyTextarea.setSelectionRange(pendingImageEdit.start, pendingImageEdit.start + markdown.length);
+    } else {
+      const { selectionStart, selectionEnd } = bodyTextarea;
+      replaceTextareaSelection(bodyTextarea, selectionStart, selectionEnd, markdown);
+    }
+    updateFormatToggleStates();
+    window.bootstrap?.Modal?.getOrCreateInstance(imageModal)?.hide();
+  });
+  insertGroup?.appendChild(
+    buildFormatButton({
+      icon: "tabler:photo",
+      label: "Image",
+      onClick: () => openImageModal(),
+      isActive: (textarea) => Boolean(findImageMatchAtSelection(textarea)),
+    })
+  );
   insertGroup?.appendChild(
     buildFormatButton({ icon: "tabler:message-2", label: "Callout", onClick: () => insertCallout(bodyTextarea) })
   );

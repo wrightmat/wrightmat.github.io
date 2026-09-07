@@ -429,6 +429,43 @@ export function createView({ name, description, hiddenLayerIds = [], hiddenEleme
   };
 }
 
+// The single auto-managed View a map ever has (see createView's own
+// comment) — shared by Orrery's own selection-toolbar toggle, the Map
+// widget's marker popup, and the map-live-sync.js write-through helper, so
+// all three agree on which View this is rather than each re-deriving it.
+export function findAutoManagedView(views) {
+  return (Array.isArray(views) ? views : []).find((view) => view.autoManaged) || null;
+}
+
+export function isElementHiddenInAutoManagedView(views, elementId) {
+  const view = findAutoManagedView(views);
+  return Boolean(view?.hiddenElementIds?.includes(elementId));
+}
+
+// Pure — returns a NEW views array with the auto-managed Player View
+// created (via createView) if one doesn't exist yet, and `elementIds`
+// added to (hidden=true) or removed from (hidden=false) its own
+// hiddenElementIds. The one place this specific mutation is computed;
+// callers own their own fetch/save (Orrery's in-memory autosave, or a
+// fetch-fresh/save round trip — see map-live-sync.js's persistViewVisibility).
+export function withElementsHiddenInAutoManagedView(views, elementIds, hidden) {
+  const next = Array.isArray(views) ? views.slice() : [];
+  const existing = findAutoManagedView(next);
+  const view = existing
+    ? { ...existing, hiddenElementIds: Array.isArray(existing.hiddenElementIds) ? existing.hiddenElementIds.slice() : [] }
+    : createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
+  const hiddenSet = new Set(view.hiddenElementIds);
+  (elementIds || []).forEach((id) => {
+    if (hidden) hiddenSet.add(id);
+    else hiddenSet.delete(id);
+  });
+  view.hiddenElementIds = Array.from(hiddenSet);
+  const index = existing ? next.findIndex((entry) => entry.id === existing.id) : -1;
+  if (index === -1) next.push(view);
+  else next[index] = view;
+  return next;
+}
+
 export function createMapModel({ name = "New Orrery Map", baseMapType = "tile" } = {}) {
   const baseSettings = createBaseMapSettings();
   const type = BASE_MAP_TYPES.includes(baseMapType) ? baseMapType : "tile";

@@ -2208,8 +2208,14 @@ settingSelect.addEventListener("change", handleSettingSelectChange);
 
 locationSelect.addEventListener("change", () => selectLocation(locationSelect.value));
 
-npcSelect?.addEventListener("change", async () => {
-  const id = npcSelect.value;
+// The one canonical "load and show this specific NPC" path — used by the
+// picker's own change below, AND by applyDeepLinkParams' two phases (both
+// the fast first paint and the re-render once reference data has loaded),
+// so there's a single place this logic can ever drift, not a hand-duplicated
+// copy per call site. Sets npcSelect's own value too, so it's safe to call
+// from a context (like a deep link) that never touched the picker directly.
+async function selectNpc(id) {
+  if (npcSelect) npcSelect.value = id || "";
   currentNpcId = id || null;
   updateGenerationFieldsVisibility();
   if (!id) {
@@ -2232,7 +2238,8 @@ npcSelect?.addEventListener("change", async () => {
   } catch (error) {
     status?.show(`Unable to load NPC: ${error.message}`, { type: "error", timeout: 4000 });
   }
-});
+}
+npcSelect?.addEventListener("change", () => selectNpc(npcSelect.value));
 
 exportLocationTemplateButton.addEventListener("click", async () => {
   if (!currentLocation) {
@@ -2259,24 +2266,26 @@ speciesLastNameFormSelect.addEventListener("change", () => toggleSpeciesLastName
 // Location the way Sanctum's own deep link does.
 //
 // Two-phase, not one straight-line await chain — Phase 1 (awaited): render
-// THIS npc directly, fast. Phase 2 (fired but not awaited): the
-// System/Setting cascade populates npcSelect's option list and
-// species/archetype reference data, then re-dispatches "change" to sync.
+// THIS npc directly, fast (via selectNpc — see its own comment). Phase 2
+// (fired but not awaited): the real System/Setting cascade populates
+// npcSelect's option list and species/archetype reference data, then
+// selectNpc runs again — same canonical path Phase 1 used, not a synthetic
+// "change" dispatch — to restore the correct, now-fully-resolved render.
 async function applyDeepLinkParams() {
   const params = new URLSearchParams(window.location.search);
   const npcId = params.get("npc");
   if (!npcId) return false;
   try {
+    // Only fetched here for its own systemIds/settingIds, ahead of Phase 1 —
+    // the System/Setting have to be known before Phase 2 can set those
+    // selects, and selectNpc below does its own fetch regardless (same "one
+    // extra request in exchange for one canonical load-and-show path"
+    // trade-off Sanctum's own deep link already makes for Location).
     const result = await dataManager.get("npc", npcId);
-    const payload = result?.payload || {};
-    const targetSystemId = payload.systemIds?.[0] || null;
-    const targetSettingId = payload.settingIds?.[0] || null;
+    const targetSystemId = result?.payload?.systemIds?.[0] || null;
+    const targetSettingId = result?.payload?.settingIds?.[0] || null;
     // Phase 1 — the NPC itself, on screen as fast as one fetch allows.
-    currentNpcId = npcId;
-    updateGenerationFieldsVisibility();
-    renderNpc({ ...payload, id: npcId });
-    dirtyGate.markClean(toPressExportShape(currentRecord));
-    expandNpcPropertiesSection();
+    await selectNpc(npcId);
     // Phase 2 — deliberately not awaited here; runs after this function has
     // already returned `true`.
     void (async () => {
@@ -2289,10 +2298,7 @@ async function applyDeepLinkParams() {
           settingSelect.value = targetSettingId;
           await handleSettingSelectChange();
         }
-        if (npcSelect) {
-          npcSelect.value = npcId;
-          npcSelect.dispatchEvent(new Event("change"));
-        }
+        await selectNpc(npcId);
       } catch (error) {
         // Phase 1 already succeeded — a background failure here just
         // leaves the picker under-populated, not worth an error toast.

@@ -3,7 +3,8 @@
   "url": "https://www.dndbeyond.com/classes/7-warlock",
   "name": "The Fathomless",
   "systemIds": [
-    "sys.dnd5e2014"
+    "sys.dnd5e2014",
+    "sys.dnd5e"
   ],
   "parentKind": "class",
   "parentId": "warlock",

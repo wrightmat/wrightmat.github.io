@@ -13,7 +13,7 @@ import { connectLiveStream } from "./live.js";
 import { createReliableInterval } from "./reliable-interval.js";
 // Reused so a vector layer created here (findOrCreateVectorLayer) has the
 // exact same shape Orrery's own "New Layer" button produces.
-import { createLayer } from "../../../orrery/js/lib/map-model.js";
+import { createLayer, withElementsHiddenInAutoManagedView } from "../../../orrery/js/lib/map-model.js";
 
 // `onPing`, if supplied, also subscribes to the "ping" kind (Orrery's
 // click-to-ping tool) — a transient, never-persisted broadcast, so unlike
@@ -116,6 +116,19 @@ export async function persistElementUpdate({ dataManager, mapId, shareToken = ""
 
 export async function persistMarkerMove({ dataManager, mapId, shareToken = "", layerId, elementId, nextPosition }) {
   return persistElementUpdate({ dataManager, mapId, shareToken, layerId, elementId, patch: { position: nextPosition } });
+}
+
+// Same fetch-fresh/mutate/save shape, for the map's own View-level
+// visibility (not an element field) — shared by the Map widget's marker
+// popup and (via its own in-memory equivalent) Orrery's selection-toolbar
+// toggle, so both write through the exact same auto-managed-View mutation
+// (withElementsHiddenInAutoManagedView).
+export async function persistViewVisibility({ dataManager, mapId, shareToken = "", elementIds, hidden }) {
+  const result = await dataManager.get("map", mapId, { shareToken, preferLocal: false });
+  const freshMap = result.payload;
+  freshMap.views = withElementsHiddenInAutoManagedView(freshMap.views, elementIds, hidden);
+  await dataManager.save("map", mapId, freshMap);
+  return freshMap;
 }
 
 // Same fetch-fresh/mutate/save shape as persistElementUpdate, for adding a

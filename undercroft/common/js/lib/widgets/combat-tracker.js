@@ -21,16 +21,20 @@ import { el } from "../dom.js";
 import { confirmDelete } from "../ownership.js";
 import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "./combat-bindings.js";
 import { uniquifyCombatantName } from "./combatant-naming.js";
+import { fetchGroupMemberCharacters } from "./group-context.js";
 import { createReliableInterval } from "../reliable-interval.js";
 // The shared dice engine, not rollExpression's overlay/toast wrapper — this
 // rolls potentially many non-character combatants' initiative in one
 // Promise.all batch, which a single shared 3D overlay canvas isn't
 // designed to show all at once, so this stays a plain, silent roll.
 import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
-// Cross-tool import — reuses the real shape a Map's own data uses rather
-// than a hand-rolled copy. Needed for isCombatantHiddenFromPlayers' own
-// write-through to a Map's auto-managed View.
-import { createView } from "../../../../orrery/js/lib/map-model.js";
+// Combat Tracker visibility and Map marker visibility are independent
+// facts (see this file's own `hidden` field vs. the Map's own
+// hiddenElementIds) — these are only for the optional "also hide/show it
+// on the map?" cross-link prompt, never to derive one from the other.
+import { resolveCombatantMarkers } from "../combat-map-link.js";
+import { persistViewVisibility } from "../map-live-sync.js";
+import { showConfirmModal } from "../confirm-modal.js";
 
 const POLL_INTERVAL_MS = 5000; // a physical second-screen display wants combat to feel live
 
@@ -127,8 +131,9 @@ export function initCombatTrackerWidget(
   // Ephemeral UI-only state for the Add Tag row's visibility toggle —
   // whether the NEXT tag added should be suppressed from map marker badges.
   // Lives here, not on any combatant, since it's pre-commit state shared
-  // across whichever combatant is selected; its resolved value lives on
-  // Orrery's own Map data instead (see isCombatantHiddenFromPlayers below).
+  // across whichever combatant is selected; once committed, it's the
+  // combatant's own `hiddenTags` array (unrelated to this combatant's own
+  // `hidden` field, or to any Map View data).
   let pendingTagHidden = false;
 
   const state = {
@@ -158,16 +163,14 @@ export function initCombatTrackerWidget(
     announced: false,
   };
 
-  // "Visible to players" no longer has its own combatant.hidden field —
-  // it's derived live from whichever marker on the campaign's active/
-  // spotlighted MAP represents this combatant, the same "read live, don't
-  // keep a shadow copy" precedent resolveMarkerConditionIcons established.
-  // Here the direction is reversed — Combat Tracker reads FROM Orrery's own
-  // Map/View data — but the principle is the same: exactly one place owns
-  // this fact (Orrery's View.hiddenElementIds), so the two surfaces can
-  // never quietly drift the way a second, independently-toggled flag would.
-  // Fetch-once-then-stale, same shape as the active encounter cache below —
-  // a live-stream subscription to the "map" kind wakes this up sooner.
+  // "Visible to players" is this combatant's OWN `hidden` field (see
+  // addCombatant) — fully independent of any linked map marker's own
+  // visibility. This active-map cache exists only so toggleCombatantHidden
+  // can offer the optional "also hide/show it on the map?" cross-link
+  // prompt when a linked marker actually exists — never to derive the
+  // tracker's own visibility from it. Fetch-once-then-stale, same shape as
+  // the active encounter cache below — a live-stream subscription to the
+  // "map" kind wakes this up sooner.
   const ACTIVE_MAP_STALE_MS = 8000;
   let activeMapCache = null;
   let activeMapFetchedAt = 0;
@@ -208,84 +211,44 @@ export function initCombatTrackerWidget(
     })();
   }
 
-  // Every marker on the active map that represents `combatant` — refKind+
-  // refId matched, disambiguated by marker.linkedCombatantId when more than
-  // one pairing shares a refId (map-viewer.js's resolveMarkerLinkedCombatant,
-  // inverted). Returns [] — not an error — when there's no active map, no
-  // map data yet, or genuinely no marker placed; callers treat an empty
-  // result as "nothing to show/toggle."
-  function resolveCombatantMarkers(combatant, map) {
-    if (!map?.payload || !combatant?.refId) return [];
-    const matches = [];
-    (map.payload.layers || []).forEach((layer) => {
-      if (layer.type !== "marker") return;
-      (layer.elements || []).forEach((marker) => {
-        if (marker.kind === "marker" && marker.refKind === combatant.refKind && marker.refId === combatant.refId) {
-          matches.push({ layer, marker });
-        }
-      });
-    });
-    if (matches.length <= 1) return matches;
-    const linked = matches.filter(({ marker }) => marker.linkedCombatantId === combatant.id);
-    return linked; // genuinely ambiguous with none linked to THIS combatant — [] rather than guessing
+  // Read-only — Combat Tracker's OWN visibility fact for this combatant,
+  // nothing to do with any linked map marker (see addCombatant's own comment).
+  function isCombatantHidden(combatant) {
+    return Boolean(combatant?.hidden);
   }
 
-  // Read-only — whether ANY marker representing `combatant` on the active
-  // map is currently in that map's auto-managed "Player View" (Orrery's own
-  // isElementHiddenFromPlayers, read live instead of a fetched copy). False
-  // when there's no linked marker at all, matching a marker's own default.
-  function isCombatantHiddenFromPlayers(combatant) {
+  // Flips the tracker's own field and saves via the encounter's normal
+  // autosave — this ALWAYS happens, independent of the cross-link prompt
+  // below. Only if resolveCombatantMarkers finds a linked marker on the
+  // active map does this go on to OFFER (never force) also hiding/showing
+  // it there too — declining leaves the map untouched.
+  async function toggleCombatantHidden(combatant) {
+    if (!combatant) return;
+    const nextHidden = !combatant.hidden;
+    combatant.hidden = nextHidden;
+    markDirty();
     const map = getCachedActiveMap();
     const markers = resolveCombatantMarkers(combatant, map);
-    if (!markers.length) return false;
-    const view = (map.payload.views || []).find((entry) => entry.autoManaged);
-    const hiddenIds = new Set(view?.hiddenElementIds || []);
-    return markers.some(({ marker }) => hiddenIds.has(marker.id));
-  }
-
-  // Write-through — toggles every marker resolveCombatantMarkers finds for
-  // this combatant in/out of the active map's own auto-managed View, same
-  // read-modify-write-against-the-FRESH-server-copy shape
-  // writeThroughToCharacter uses (never state's own possibly-stale cached
-  // copy — another GM tab, or Orrery itself, could have changed this map).
-  // A no-op (status message) when there's no active map or linked marker.
-  async function toggleCombatantHiddenFromPlayers(combatant) {
-    const map = getCachedActiveMap();
-    // !map.id, not !map — getCachedActiveMap() always returns a truthy object, even for "no active map".
-    if (!map?.id) {
-      status?.show("No map is shown to the table or open on your dashboard to show/hide this combatant on.", {
-        type: "warning",
-        timeout: 2500,
-      });
-      return;
-    }
-    const markerIds = resolveCombatantMarkers(combatant, map).map(({ marker }) => marker.id);
-    if (!markerIds.length) {
-      status?.show("This combatant isn't placed on the active map yet.", { type: "warning", timeout: 2500 });
-      return;
-    }
-    const nextHidden = !isCombatantHiddenFromPlayers(combatant);
+    if (!markers.length) return; // not on the active map — nothing to offer
+    const confirmed = await showConfirmModal({
+      title: nextHidden ? "Also hide on the map?" : "Also show on the map?",
+      bodyHtml: `<p>"${combatant.name}" is also placed on the active map. ${nextHidden ? "Hide" : "Show"} it there too?</p>`,
+      confirmLabel: nextHidden ? "Also hide on map" : "Also show on map",
+      cancelLabel: "Just the tracker",
+    });
+    if (!confirmed) return;
     try {
-      const result = await dataManager.get("map", map.id, { preferLocal: false });
-      const freshMap = result.payload;
-      freshMap.views = Array.isArray(freshMap.views) ? freshMap.views : [];
-      let view = freshMap.views.find((entry) => entry.autoManaged);
-      if (!view) {
-        view = createView({ name: "Player View (auto)", tiers: ["player"], autoManaged: true });
-        freshMap.views.push(view);
-      }
-      const hidden = new Set(view.hiddenElementIds || []);
-      markerIds.forEach((id) => {
-        if (nextHidden) hidden.add(id);
-        else hidden.delete(id);
+      const freshMap = await persistViewVisibility({
+        dataManager,
+        mapId: map.id,
+        elementIds: markers.map(({ marker }) => marker.id),
+        hidden: nextHidden,
       });
-      view.hiddenElementIds = Array.from(hidden);
-      await dataManager.save("map", map.id, freshMap);
       activeMapCache = { id: map.id, payload: freshMap };
       activeMapFetchedAt = Date.now();
       render();
     } catch (error) {
-      status?.show(error?.message || "Unable to save that change.", { type: "error" });
+      status?.show(error?.message || "Unable to update the map.", { type: "error" });
     }
   }
 
@@ -532,8 +495,40 @@ export function initCombatTrackerWidget(
       conditions: [],
       hiddenTags: [],
       isPc: refKind === "character",
+      // Combat Tracker's OWN "visible to players in the tracker" flag —
+      // independent of a linked map marker's own visibility (see
+      // isCombatantHidden/toggleCombatantHidden below). Matches
+      // journal-encounter.js's own combatant builders, which already set this.
+      hidden: false,
     });
     markDirty();
+  }
+
+  // Convenience for "everyone's here, let's roll" — adds every current
+  // campaign's party member in one action instead of the GM re-adding each
+  // PC by hand through the Add Combatant row below. Skips anyone already in
+  // the encounter (matched by character refId), so a second click doesn't
+  // duplicate the whole party.
+  async function addPartyCombatants() {
+    if (!state.encounter || !groupId) return;
+    const members = await fetchGroupMemberCharacters(dataManager, groupId);
+    if (!members.length) {
+      status?.show("This campaign has no party members yet.", { type: "info", timeout: 3000 });
+      return;
+    }
+    const existingIds = new Set(state.encounter.combatants.filter((c) => c.refKind === "character").map((c) => c.refId));
+    const toAdd = members.filter((member) => !existingIds.has(member.id));
+    if (!toAdd.length) {
+      status?.show("Every party member is already in this encounter.", { type: "info", timeout: 3000 });
+      return;
+    }
+    // Sequential, not Promise.all — addCombatant's own uniquifyCombatantName
+    // call reads state.encounter.combatants at call time, so adding one at a
+    // time keeps the party's naming/order deterministic (roster order)
+    // instead of racing on resolution order.
+    for (const member of toAdd) {
+      await addCombatant({ refKind: "character", refId: member.id, name: member.name });
+    }
   }
 
   function removeCombatant(id) {
@@ -553,7 +548,7 @@ export function initCombatTrackerWidget(
   function toggleSelectedHidden() {
     const combatant = selectedCombatant();
     if (!combatant) return;
-    void toggleCombatantHiddenFromPlayers(combatant);
+    void toggleCombatantHidden(combatant);
   }
 
   function deleteSelected() {
@@ -1196,9 +1191,13 @@ export function initCombatTrackerWidget(
     sortButton.addEventListener("click", sortByInitiative);
     const rollInitiativeButton = iconButton("tabler:dice-5", "Roll initiative for NPCs/monsters");
     rollInitiativeButton.addEventListener("click", () => void rollInitiativeForNonCharacters());
+    // Bulk alternative to the Add Combatant row below — the whole party in
+    // one click instead of typing each PC in turn.
+    const addPartyButton = iconButton("tabler:users-plus", "Add the party (PCs)");
+    addPartyButton.addEventListener("click", () => void addPartyCombatants());
     const deleteButton = iconButton("tabler:trash", "Delete encounter", "btn-outline-danger");
     deleteButton.addEventListener("click", deleteEncounter);
-    toolbar.append(startStopButton, prevButton, nextButton, sortButton, rollInitiativeButton, deleteButton);
+    toolbar.append(startStopButton, prevButton, nextButton, sortButton, rollInitiativeButton, addPartyButton, deleteButton);
     return toolbar;
   }
 
@@ -1248,7 +1247,7 @@ export function initCombatTrackerWidget(
     if (state.encounter.started && index === state.encounter.activeIndex) left.appendChild(renderTurnBadge());
     left.appendChild(el("span", "fw-semibold", String(combatant.initiative)));
     left.appendChild(el("span", null, combatant.name));
-    if (isCombatantHiddenFromPlayers(combatant)) left.appendChild(icon("tabler:eye-off"));
+    if (isCombatantHidden(combatant)) left.appendChild(icon("tabler:eye-off"));
 
     const right = el("span", "d-flex align-items-center gap-2");
     right.appendChild(el("span", "text-body-secondary small", formatHpText(combatant)));
@@ -1285,7 +1284,7 @@ export function initCombatTrackerWidget(
     // Icon/title/disabled state all get synced in place every render (see
     // syncEditPanelValues) — these values just seed the first paint.
     const visibleButton = iconButton(
-      isCombatantHiddenFromPlayers(combatant) ? "tabler:eye-off" : "tabler:eye",
+      isCombatantHidden(combatant) ? "tabler:eye-off" : "tabler:eye",
       "Visible to players"
     );
     visibleButton.addEventListener("click", toggleSelectedHidden);
@@ -1455,32 +1454,22 @@ export function initCombatTrackerWidget(
     if (active !== refs.tempHpInput) refs.tempHpInput.value = combatant.tempHp ?? 0;
     if (active !== refs.acInput) refs.acInput.value = combatant.ac ?? 0;
 
-    // Resolves whether THIS combatant has a linked marker on the active map, and if so whether it's currently hidden.
+    // This button always has something to toggle now (the tracker's own
+    // `hidden` field) — never disabled. Resolving the active map here is
+    // only to word the tooltip: whether toggling will also OFFER to sync a
+    // linked map marker (see toggleCombatantHidden's own cross-link prompt).
     ensureActiveMapCached(() => render());
     const activeMap = getCachedActiveMap();
-    // "Hidden from players" is only meaningful once a map is actually shown
-    // to players — before that, everything on every map is effectively
-    // hidden already. Distinguishing WHY matters: "no map shown to the
-    // table" (ordinary prep-time state) reads very differently from "this
-    // combatant isn't placed on the map that IS shown" (an actual setup
-    // gap) — conflating the two read as "your marker is wrong" when the real reason was "you haven't clicked Show yet."
-    const hasActiveMap = Boolean(activeMap?.id);
-    const linkedMarkerCount = resolveCombatantMarkers(combatant, activeMap).length;
-    const hiddenFromPlayers = isCombatantHiddenFromPlayers(combatant);
+    const hasLinkedMarker = resolveCombatantMarkers(combatant, activeMap).length > 0;
+    const hiddenInTracker = isCombatantHidden(combatant);
     const visibleIcon = refs.visibleButton.querySelector(".iconify");
-    if (visibleIcon) visibleIcon.dataset.icon = hiddenFromPlayers ? "tabler:eye-off" : "tabler:eye";
-    // Disabled (not hidden) when this combatant has no linked marker on the
-    // active map — this button's own row always needs to exist. A real
-    // `disabled` attribute blocks hover, so the WHY lives on setDisabledTooltip's own wrapper, not this button.
-    const blockedTitle = !hasActiveMap
-      ? "No map is shown to the table or open on your dashboard — nothing to show/hide yet"
-      : !linkedMarkerCount
-        ? "Not placed on the active map — nothing to show/hide"
-        : "";
-    const readyTitle = hiddenFromPlayers ? "Hidden from players — click to reveal" : "Visible to players — click to hide";
-    refs.visibleButton.setAttribute("aria-label", blockedTitle || readyTitle);
-    setDisabledTooltip(refs.visibleButton, blockedTitle);
-    if (!blockedTitle) initTooltip(refs.visibleButton, { title: readyTitle });
+    if (visibleIcon) visibleIcon.dataset.icon = hiddenInTracker ? "tabler:eye-off" : "tabler:eye";
+    const readyTitle = hiddenInTracker
+      ? `Hidden from players in the tracker — click to reveal${hasLinkedMarker ? " (also offers to update the map)" : ""}`
+      : `Visible to players in the tracker — click to hide${hasLinkedMarker ? " (also offers to update the map)" : ""}`;
+    refs.visibleButton.setAttribute("aria-label", readyTitle);
+    setDisabledTooltip(refs.visibleButton, "");
+    initTooltip(refs.visibleButton, { title: readyTitle });
 
     // Badges have no value a GM types into, so it's safe to rebuild this
     // fresh every sync. The Add Tag input/visibility-toggle/Add button are
@@ -1672,7 +1661,7 @@ export function initCombatTrackerWidget(
     if (state.encounter.started && index === state.encounter.activeIndex) left.appendChild(renderTurnBadge());
     left.appendChild(el("span", "fw-semibold", String(combatant.initiative)));
     left.appendChild(
-      el("span", null, isCombatantHiddenFromPlayers(combatant) ? anonymizedCombatantLabel(combatant, hiddenCombatants) : combatant.name)
+      el("span", null, isCombatantHidden(combatant) ? anonymizedCombatantLabel(combatant, hiddenCombatants) : combatant.name)
     );
     const right = el("span", "d-flex align-items-center gap-2");
     if (combatant.isPc) {
@@ -1701,9 +1690,8 @@ export function initCombatTrackerWidget(
     }
     root.appendChild(header);
 
-    ensureActiveMapCached(() => render()); // needed for isCombatantHiddenFromPlayers below
     const list = el("div", "list-group");
-    const hiddenCombatants = state.encounter.combatants.filter((c) => isCombatantHiddenFromPlayers(c));
+    const hiddenCombatants = state.encounter.combatants.filter((c) => isCombatantHidden(c));
     state.encounter.combatants.forEach((combatant, index) => {
       list.appendChild(renderPlayerCombatantRow(combatant, index, hiddenCombatants));
     });

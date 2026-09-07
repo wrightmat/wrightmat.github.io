@@ -1698,8 +1698,15 @@ async function init() {
   }
   elements.systemSelect?.addEventListener("change", handleSystemSelectChange);
 
-  elements.wonderSelect?.addEventListener("change", async () => {
-    const id = elements.wonderSelect.value;
+  // The one canonical "load and show this specific wonder" path — used by
+  // the picker's own change below, AND by applyDeepLinkParams' two phases
+  // (both the fast first paint and the re-render once reference data has
+  // loaded), so there's a single place this logic can ever drift, not a
+  // hand-duplicated copy per call site. Sets wonderSelect's own value too,
+  // so it's safe to call from a context (like a deep link) that never
+  // touched the picker directly.
+  async function selectWonder(id) {
+    if (elements.wonderSelect) elements.wonderSelect.value = id || "";
     currentWonderId = id || null;
     updateGenerationFieldsVisibility();
     if (!id) {
@@ -1728,7 +1735,8 @@ async function init() {
     } catch (error) {
       status?.show(`Unable to load wonder: ${error.message}`, { type: "error", timeout: 4000 });
     }
-  });
+  }
+  elements.wonderSelect?.addEventListener("change", () => selectWonder(elements.wonderSelect.value));
 
   // Name/Notes aren't written back into currentRecord until Save/Export
   // runs (see buildRecordForSave) — without this, editing either field
@@ -1775,33 +1783,32 @@ async function init() {
     const wonderId = params.get("wonder");
     if (!wonderId) return false;
     try {
+      // Only fetched here for its own systemIds, ahead of Phase 1 — the
+      // System has to be known before Phase 2 can set systemSelect, and
+      // selectWonder below does its own fetch regardless (same "one extra
+      // request in exchange for one canonical load-and-show path" trade-off
+      // Sanctum's own deep link already makes for Location).
       const result = await dataManager.get("wonder", wonderId, { preferLocal: false });
-      const payload = result?.payload || {};
-      const targetSystemId = payload.systemIds?.[0] || null;
+      const targetSystemId = result?.payload?.systemIds?.[0] || null;
       // Phase 1 — the wonder itself, on screen as fast as one fetch allows.
-      currentWonderId = wonderId;
-      updateGenerationFieldsVisibility();
-      renderWonder({ ...payload, id: wonderId });
-      dirtyGate.markClean(toPressExportShape(currentRecord));
-      updateActionButtons();
+      await selectWonder(wonderId);
       // Phase 2 — deliberately not awaited; runs after this function has
-      // already returned `true`. NOT handleSystemSelectChange (which resets
-      // currentWonderId and calls renderWonder(null) first) — that would
-      // wipe the wonder Phase 1 already rendered, leaving the screen blank
-      // for the whole Wonder-catalog fetch instead of finishing quietly
-      // behind an already-correct view. Setting systemSelect's value
-      // directly and calling reloadReferenceData() straight (same fetch,
-      // minus the reset) keeps Phase 1's render on screen throughout.
-      // wonderSelect's value is set without dispatching "change" — the
-      // wonder is already loaded and correctly shown; re-dispatching would
-      // only re-fetch and re-render it a second time for no benefit.
+      // already returned `true`. Goes through the real handleSystemSelectChange
+      // now (accepting its own reset-to-blank, same as a manual System change
+      // would do) rather than a hand-duplicated subset of it — one canonical
+      // "what happens when System changes" path instead of two to keep in
+      // sync. selectWonder (again) at the end restores the correct,
+      // now-fully-resolved render (Rarity/Item Form/Feature names, etc. —
+      // blank/raw-id before this, since reference data doesn't exist until
+      // reloadReferenceData, inside handleSystemSelectChange, actually runs)
+      // once reference data has actually loaded.
       void (async () => {
         try {
           if (targetSystemId && elements.systemSelect) {
             elements.systemSelect.value = targetSystemId;
+            await handleSystemSelectChange();
           }
-          await reloadReferenceData();
-          if (elements.wonderSelect) elements.wonderSelect.value = wonderId;
+          await selectWonder(wonderId);
           updateGenerateButtonReadiness();
         } catch (error) {
           // Phase 1 already succeeded — a background failure here just

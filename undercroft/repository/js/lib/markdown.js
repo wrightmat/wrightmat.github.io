@@ -36,6 +36,12 @@ import { applyKindReferenceBlocks } from "./journal-kind-reference.js";
 // `` `date:<dayIndex>` `` inline code spans — same treatment, but not a kind
 // reference (there's no "date" Library entity); see journal-date.js.
 import { applyDateReferences } from "./journal-date.js";
+// `![caption|left small](url)` — position/size attributes on an embedded
+// image, read off its own already-rendered `alt` text; see
+// journal-image-adjustments.js for why this is a post-render pass too, same
+// as dice/encounter/macro/kind-reference/date above, despite images being
+// real CommonMark syntax rather than a `` `code:...` `` trick.
+import { applyImageAdjustments } from "./journal-image-adjustments.js";
 // `> [!type]` callout blockquotes — parsing/color-icon lookup lives in
 // journal-callouts.js (same split as journal-encounter.js: that module
 // parses, this one renders); see ensureCalloutRenderer/applyCalloutStyling.
@@ -500,6 +506,7 @@ export function renderMarkdown(
   container.innerHTML = html;
   applyWikiLinkStyling(container, { onNavigate });
   applyExternalLinkTargets(container);
+  applyImageAdjustments(container);
   applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });
   applyEncounterBlocks(container, { interactive: interactiveEncounters, onStartEncounter });
   applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget, onWledDevicesChange });

@@ -33,6 +33,7 @@ import { createSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js
 import { resolveActiveSpotlightId, resolveIsSpotlighted, createSpotlightTitleCache } from "./common/js/lib/spotlight.js";
 import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
 import { el } from "./common/js/lib/dom.js";
+import { listenForDashboardRequests, flashTabTitle } from "./common/js/lib/dashboard-channel.js";
 
 // Every per-browser local copy of a Dashboard setting lives under this same
 // prefix + a short key — "layout" preserves the pre-existing
@@ -1183,12 +1184,29 @@ window.addEventListener("undercroft:spotlight-changed", () => {
   spotlightPanelWatcher?.refresh();
 });
 
+// Lets the Start Encounter modal's "My open Dashboard tab" option (see
+// journal-encounter.js) hand off to THIS tab instead of opening a new one —
+// every Dashboard tab listens, regardless of auth/mode, since any of them is
+// a valid "tab I already have open" target.
+listenForDashboardRequests();
+
 const params = new URLSearchParams(window.location.search || "");
 const encounterParam = params.get("encounter") || "";
 const shareParam = params.get("share") || "";
 // See the "Second screen" header button — a link back to this exact same
 // page, just this one param added, is the whole mechanism (renderScreenView).
 const screenMode = params.get("screen") === "1";
+
+// A Start Encounter hand-off landed here (dashboard-channel.js's own
+// listenForDashboardRequests) — this tab can't force itself into the
+// foreground, so it flashes its own title instead, and strips the one-shot
+// param so a later manual refresh doesn't re-flash indefinitely.
+if (params.get("flash") === "1") {
+  flashTabTitle("🔔 New Encounter — Undercroft");
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("flash");
+  window.history.replaceState(window.history.state, "", cleanUrl.toString());
+}
 
 let layout = null;
 let groupContext = null;

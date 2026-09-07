@@ -113,3 +113,27 @@ export function pickGroupDefaultId(groupContext, key, options) {
   if (!id || !Array.isArray(options)) return "";
   return options.some((entry) => entry.id === id) ? id : "";
 }
+
+// The party roster for a "quickly add the PCs" action (Combat Tracker's own
+// Add Party button, and the Start Encounter modal's "Also add the party"
+// checkbox) — real, current membership via the same `/groups` listing
+// resolveGroupContext above uses (`_serialize_group`'s live `members`,
+// content_type/content_id/label/missing), NOT the raw `group` Library
+// record's own stored JSON (dataManager.get("group", id)) — that document
+// has no `members` field at all; membership lives in the separate
+// group_members table and is only ever attached server-side by the
+// dedicated /groups routes. `missing` filters out a roster slot whose
+// character record was deleted out from under it.
+export async function fetchGroupMemberCharacters(dataManager, groupId) {
+  if (!groupId) return [];
+  try {
+    const { groups } = await dataManager.listGroups({ includeMemberGroups: true });
+    const match = Array.isArray(groups) ? groups.find((entry) => entry.id === groupId) : null;
+    const members = Array.isArray(match?.members) ? match.members : [];
+    return members
+      .filter((member) => member?.content_type === "character" && member?.content_id && !member.missing)
+      .map((member) => ({ id: member.content_id, name: member.label || member.content_id }));
+  } catch (error) {
+    return [];
+  }
+}

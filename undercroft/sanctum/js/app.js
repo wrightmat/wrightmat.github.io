@@ -2231,7 +2231,13 @@ async function init() {
   // this directly when auto-selecting the active campaign group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
+    // A different System means any previously loaded Location (and the
+    // reference data it was built from) is no longer relevant — reset
+    // immediately, same as Crucible/Vault/Forge's own System-select handlers
+    // do for their own record, rather than leaving the stale render on
+    // screen until the cascade below happens to land on a blank picker.
     currentLocationId = null;
+    renderLocation(null);
     // Independent fetches, run concurrently — reloadReferenceData's 8-kind
     // Promise.all (including the two largest kinds in the suite, feature
     // and monster) used to run to completion BEFORE the Setting picker's
@@ -2270,7 +2276,11 @@ async function init() {
     markRequiredControl(elements.settingSelect, Boolean(settingId));
     currentSettingId = settingId || null;
     updateGenerateButtonReadiness();
+    // Same immediate reset as handleSystemSelectChange above, and for the
+    // same reason — a different Setting means the previously loaded
+    // Location's own reference data no longer applies.
     currentLocationId = null;
+    renderLocation(null);
     await loadSettingIntoForm(settingId);
     await reloadLocationsForSetting(settingId);
     // Same cascade-completion as handleSystemSelectChange above.

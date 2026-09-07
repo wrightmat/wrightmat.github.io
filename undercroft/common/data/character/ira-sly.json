@@ -1,6 +1,13 @@
 {
+  "template": "tpl.5e.flex-basic",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "data": {},
+  "url": "https://www.dndbeyond.com/characters/167751015",
+  "mapping": "ddb-character",
   "name": "Ira Sly",
-  "image": null,
+  "image": "https://www.dndbeyond.com/avatars/58786/126/1581111423-167751015.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
   "identity": {
     "id": 167751015,
     "userId": 124247976,
@@ -624,12 +631,6 @@
       "description": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n***Enhanced Dual Wielding.*** When you take the Attack action on your turn and attack with a weapon that has the Light property, you can make one extra attack as a Bonus Action later on the same turn with a different weapon, which must be a Melee weapon that lacks the Two-Handed property. You don’t add your ability modifier to the extra attack’s damage unless that modifier is negative.\n\n***Quick Draw.*** You can draw or stow two weapons that lack the Two-Handed property when you would normally be able to draw or stow only one.",
       "level": null,
       "limitedUse": null
-    },
-    {
-      "name": "Weapon Mastery",
-      "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose.",
-      "level": null,
-      "limitedUse": null
     }
   ],
   "features": [
@@ -826,7 +827,7 @@
     "dm": "wrighmat"
   },
   "decorations": {
-    "avatarUrl": null,
+    "avatarUrl": "https://www.dndbeyond.com/avatars/58786/126/1581111423-167751015.jpeg?width=150&height=150&fit=crop&quality=95&auto=webp",
     "frameAvatarUrl": null,
     "backdropAvatarUrl": null,
     "smallBackdropAvatarUrl": null,
@@ -838,7 +839,7 @@
       "largeBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/218/638609651463184274.jpeg",
       "thumbnailBackdropAvatarUrl": "https://www.dndbeyond.com/avatars/43993/219/638609651465714268.jpeg"
     },
-    "avatarId": null,
+    "avatarId": 58786126,
     "portraitDecorationKey": null,
     "frameAvatarDecorationKey": null,
     "frameAvatarId": null,
@@ -882,14 +883,8 @@
     "size": "Medium"
   },
   "spells": [],
-  "mapping": "ddb-character",
-  "url": "https://www.dndbeyond.com/characters/167751015",
-  "systemIds": [
-    "sys.dnd5e"
-  ],
   "featureIds": [
     "feat.dual-wielder",
-    "feat.weapon-mastery",
     "feat.fast-hands",
     "feat.second-story-work",
     "feat.core-rogue-traits",
@@ -978,7 +973,5 @@
         5
       ]
     }
-  },
-  "data": {},
-  "template": "tpl.5e.flex-basic"
+  }
 }

@@ -11903,7 +11903,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       clearGameLogContext();
     }
     status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+    // Same fix as reimportCurrentCharacter's own finally block: the error
+    // path above already clears this manually-added "disabled" class, but
+    // nothing on THIS success path did — syncCharacterActions' own
+    // updateToolbarButton never manages it, only the `disabled` property/
+    // aria-disabled. Left in place, it stuck the Delete button unusable
+    // (Bootstrap's `.disabled` styling) for every character loaded afterward.
     if (button) {
+      button.classList.remove("disabled");
       button.removeAttribute("aria-busy");
     }
   }
@@ -12073,8 +12080,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       await dataManager.save("character", id, merged);
       status.show(`Re-imported ${merged.name || label}.`, { type: "success", timeout: 2200 });
       // loadCharacter's own syncCharacterActions call recomputes this
-      // button's disabled/hidden state fresh — nothing here needs to
-      // restore it manually on success, only aria-busy (see finally below).
+      // button's disabled/aria-disabled state fresh via updateToolbarButton
+      // — but that only ever touches disabled/aria-disabled, never this
+      // function's own manually-added "disabled" class (see finally below,
+      // which is what actually clears it here too).
       await loadCharacter(id);
     } catch (error) {
       console.error("Character editor: unable to re-import character", error);
@@ -12084,7 +12093,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       });
       resetButton();
     } finally {
-      if (button) button.removeAttribute("aria-busy");
+      // Confirmed real bug this fixes: on a SUCCESSFUL re-import, nothing
+      // else ever removed this manually-added "disabled" class (resetButton
+      // above only runs on cancel/error) — syncCharacterActions' own
+      // updateToolbarButton only manages the `disabled` property/
+      // aria-disabled via setDisabledTooltip, never this class. Left in
+      // place, Bootstrap's own `.disabled` styling (pointer-events: none)
+      // made the button permanently unusable for every character switched
+      // to afterward, even ones with valid re-import data. Unconditional
+      // here (not folded into resetButton) so it's cleared on every exit
+      // path, not just the ones that already call that.
+      if (button) {
+        button.classList.remove("disabled");
+        button.removeAttribute("aria-busy");
+      }
     }
   }
 

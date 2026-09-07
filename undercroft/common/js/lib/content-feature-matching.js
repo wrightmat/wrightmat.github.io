@@ -60,6 +60,20 @@ const SPECIES_PROPERTY_TRAIT_NAMES = new Set(
   )
 );
 
+// Shared "does this candidate's own systemIds line up with the record's"
+// rule — a record with no systemIds, or a candidate with no systemIds, is
+// treated as universal/System-agnostic (never narrows a candidate pool
+// neither side actually scopes); otherwise at least one systemId must be
+// shared. Used both by promoteEmbeddedFeatures' own matchesCategoryAndSystem
+// below and by linkReferenceField's cross-kind reference matching — the
+// same rule either way, so a same-named class/species/spell/item from a
+// DIFFERENT System can never silently win a name match.
+function matchesRecordSystem(candidateSystemIds, recordSystemIds) {
+  const candidateIds = Array.isArray(candidateSystemIds) ? candidateSystemIds : [];
+  const recordIds = Array.isArray(recordSystemIds) ? recordSystemIds : recordSystemIds ? [recordSystemIds] : [];
+  return !recordIds.length || !candidateIds.length || candidateIds.some((id) => recordIds.includes(id));
+}
+
 function recordGrantLevel(featureParams, featureId, level) {
   if (level == null || !Number.isFinite(level)) return;
   const existing = featureParams[featureId] || {};
@@ -179,9 +193,7 @@ export async function promoteEmbeddedFeatures(
   const matchesCategoryAndSystem = (feature) => {
     const categories = feature.tags?.categories;
     const matchesCategory = !Array.isArray(categories) || !categories.length || categories.some((c) => allowedCategories.includes(c));
-    const ids = Array.isArray(feature.systemIds) ? feature.systemIds : [];
-    const matchesSystem = !recordSystemIds.length || !ids.length || ids.some((id) => recordSystemIds.includes(id));
-    return matchesCategory && matchesSystem;
+    return matchesCategory && matchesRecordSystem(feature.systemIds, recordSystemIds);
   };
   // Non-"unique" (Generic) features are normally reusable by ANY record in
   // this shared category pool with no ownership check — correct for the
@@ -368,9 +380,27 @@ export function describeFeaturePromotionOutcome({ matchedCount = 0, createdCount
 //
 // All four are async now (a real fetch, not a synchronous guess) — every
 // call site gates them behind an explicit save action, never autosave.
-async function linkReferenceField(dataManager, kind, value, { searchName, filter } = {}) {
+//
+// Confirmed real bug this fixes: findKindReferenceRecord matches by name
+// ALONE across every record of that kind, with no regard for which
+// System(s) the character itself belongs to. A kind hosting more than one
+// System's content under the same kind (Class/Species/Variant especially —
+// several System's class names collide outright, e.g. D&D and Daggerheart
+// both have a "Wizard"/"Ranger"/"Druid"/"Sorcerer"/"Bard") could silently
+// link to a completely wrong-System record, whichever happened to come
+// back first. matchesRecordSystem (same rule promoteEmbeddedFeatures'
+// own matchesCategoryAndSystem already uses) is now ALWAYS applied here,
+// ANDed with any caller-supplied `filter` — a record whose own systemIds
+// don't overlap the character's is never a candidate, full stop; a
+// System-agnostic record (no systemIds of its own) still matches anything,
+// same "universal" convention as everywhere else in this suite.
+async function linkReferenceField(dataManager, kind, value, { searchName, filter, systemIds } = {}) {
   if (!dataManager || !value?.name || value.refId) return;
-  const match = await findKindReferenceRecord(dataManager, kind, searchName || value.name, { filter }).catch(() => null);
+  const combinedFilter = (payload) => {
+    if (!matchesRecordSystem(payload?.systemIds, systemIds)) return false;
+    return typeof filter === "function" ? filter(payload) : true;
+  };
+  const match = await findKindReferenceRecord(dataManager, kind, searchName || value.name, { filter: combinedFilter }).catch(() => null);
   if (match) {
     value.refKind = kind;
     value.refId = match.id;
@@ -396,7 +426,7 @@ export async function linkCharacterSpellReferences(dataManager, record) {
   for (const group of record.spells) {
     if (!Array.isArray(group?.spells)) continue;
     for (const spell of group.spells) {
-      await linkReferenceField(dataManager, "wonder", spell, { filter: isSpellForm });
+      await linkReferenceField(dataManager, "wonder", spell, { filter: isSpellForm, systemIds: record.systemIds });
     }
   }
 }
@@ -404,7 +434,7 @@ export async function linkCharacterSpellReferences(dataManager, record) {
 export async function linkCharacterInventoryReferences(dataManager, record) {
   if (!dataManager || !Array.isArray(record?.inventory)) return;
   for (const item of record.inventory) {
-    await linkReferenceField(dataManager, "wonder", item, { filter: (entry) => !isSpellForm(entry) });
+    await linkReferenceField(dataManager, "wonder", item, { filter: (entry) => !isSpellForm(entry), systemIds: record.systemIds });
   }
 }
 
@@ -420,12 +450,15 @@ function stripSourcebookSuffix(name) {
 
 export async function linkCharacterSpeciesClassReferences(dataManager, record) {
   if (!dataManager || !record?.identity) return;
-  await linkReferenceField(dataManager, "species", record.identity.race);
+  await linkReferenceField(dataManager, "species", record.identity.race, { systemIds: record.systemIds });
   const classes = Array.isArray(record.identity.classes) ? record.identity.classes : [];
   for (const cls of classes) {
-    await linkReferenceField(dataManager, "class", cls);
+    await linkReferenceField(dataManager, "class", cls, { systemIds: record.systemIds });
     if (cls?.subclass?.name) {
-      await linkReferenceField(dataManager, "variant", cls.subclass, { searchName: stripSourcebookSuffix(cls.subclass.name) });
+      await linkReferenceField(dataManager, "variant", cls.subclass, {
+        searchName: stripSourcebookSuffix(cls.subclass.name),
+        systemIds: record.systemIds,
+      });
     }
   }
 }
