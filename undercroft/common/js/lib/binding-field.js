@@ -15,7 +15,11 @@ import { attachFormulaAutocomplete } from "./formula-autocomplete.js";
 import { categorizeFieldType } from "./system-schema.js";
 import { listFormulaFunctionMetadata } from "./formula-metadata.js";
 
-const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
+// libraryEntries is included unconditionally — every caller of this shared
+// input (Workbench's template editor, Orrery's marker Vision Range field)
+// has a dataManager in scope by the time a formula actually runs, so it's a
+// suite-wide capability here, not tool-specific.
+const FORMULA_FUNCTIONS = listFormulaFunctionMetadata(["libraryEntries"]);
 
 function normalizeBindingValue(value) {
   return typeof value === "string" ? value.trim() : "";

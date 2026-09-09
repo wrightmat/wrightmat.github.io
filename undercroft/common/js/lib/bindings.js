@@ -143,15 +143,20 @@ function findInLookupTable(table, key) {
 }
 
 // The generic `lookup(table, key)` formula function, shared by every tool.
-// `table` resolves two ways: (1) against `fieldDefinitions` (a System's
-// `fields` array, when the caller has one) — a field whose `key` matches
-// `table` has its `children`/`values` reshaped into a searchable list; (2)
-// failing that, as a plain dotted path against `context`, the same data any
-// @binding reads. This is what makes `lookup` work identically in Press (no
-// System) and Workbench with no tool-specific lookup logic.
+// `table` resolves three ways, in order: (1) against `fieldDefinitions` (a
+// System's `fields` array, when the caller has one) — a field whose `key`
+// matches `table` has its `children`/`values` reshaped into a searchable
+// list; (2) against `extraTables` (a plain `{name: table}` dict the caller
+// supplies directly — mapping-engine.js's own import-time lookup tables,
+// which live outside any bound record entirely, so neither of the other two
+// sources could ever reach them); (3) failing both, as a plain dotted path
+// against `context`, the same data any @binding reads. This is what makes
+// `lookup` work identically in Press (no System), Workbench (a System), and
+// Loom's mapping engine (neither — a flat table dict) with no tool-specific
+// lookup logic anywhere.
 // Returns the whole matched entry (never an invented placeholder), so a
 // formula can read any of its properties, e.g. `lookup("abilities","str").color`.
-export function createLookupFn(context, fieldDefinitions) {
+export function createLookupFn(context, fieldDefinitions, extraTables) {
   return (table, key) => {
     if (typeof table !== "string" || !table.trim()) return undefined;
     const name = table.trim();
@@ -166,6 +171,10 @@ export function createLookupFn(context, fieldDefinitions) {
         const match = entries.find((entry) => lookupEntryMatches(entry, key));
         if (match !== undefined) return match;
       }
+    }
+    if (extraTables && Object.prototype.hasOwnProperty.call(extraTables, name)) {
+      const match = findInLookupTable(extraTables[name], key);
+      if (match !== undefined) return match;
     }
     return findInLookupTable(resolveDottedPath(context, name), key);
   };

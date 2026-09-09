@@ -1006,92 +1006,125 @@
         {
           "name": "Blinded",
           "icon": "ddb-blinded",
-          "color": "#ffffff",
+          "color": "#000000",
+          "iconColor": "#ffffff",
           "sourceId": 1
         },
         {
           "name": "Charmed",
           "icon": "ddb-charmed",
-          "color": "#ffffff",
+          "color": "#ff69b4",
+          "iconColor": "#000000",
           "sourceId": 2
+        },
+        {
+          "name": "Concentration",
+          "icon": "ddb-concentration",
+          "color": "#6f42c1",
+          "iconColor": "#ffffff"
         },
         {
           "name": "Deafened",
           "icon": "ddb-deafened",
-          "color": "#ffffff",
+          "color": "#ffa500",
+          "iconColor": "#000000",
           "sourceId": 3
         },
         {
           "name": "Exhaustion",
           "icon": "ddb-exhaustion",
-          "color": "#ffffff",
+          "color": "#495057",
+          "iconColor": "#ffffff",
           "sourceId": 4
         },
         {
           "name": "Frightened",
           "icon": "ddb-frightened",
-          "color": "#ffffff",
+          "color": "#ffc107",
+          "iconColor": "#000000",
           "sourceId": 5
         },
         {
           "name": "Grappled",
           "icon": "ddb-grappled",
-          "color": "#ffffff",
+          "color": "#795548",
+          "iconColor": "#000000",
           "sourceId": 6
         },
         {
           "name": "Incapacitated",
           "icon": "ddb-incapacitated",
-          "color": "#ffffff",
+          "color": "#4169e1",
+          "iconColor": "#000000",
           "sourceId": 7
         },
         {
           "name": "Invisible",
           "icon": "ddb-invisible",
-          "color": "#ffffff",
+          "color": "#f8f9fa",
+          "iconColor": "#000000",
           "sourceId": 8
         },
         {
           "name": "Paralyzed",
           "icon": "ddb-paralyzed",
-          "color": "#ffffff",
+          "color": "#ced4da",
+          "iconColor": "#000000",
           "sourceId": 9
         },
         {
           "name": "Petrified",
           "icon": "ddb-petrified",
-          "color": "#ffffff",
+          "color": "#6c757d",
+          "iconColor": "#000000",
           "sourceId": 10
         },
         {
           "name": "Poisoned",
           "icon": "ddb-poisoned",
-          "color": "#ffffff",
+          "color": "#90ee90",
+          "iconColor": "#000000",
           "sourceId": 11
         },
         {
           "name": "Prone",
           "icon": "ddb-prone",
-          "color": "#ffffff",
+          "color": "#d2b48c",
+          "iconColor": "#000000",
           "sourceId": 12
         },
         {
           "name": "Restrained",
           "icon": "ddb-restrained",
-          "color": "#ffffff",
+          "color": "#228b22",
+          "iconColor": "#000000",
           "sourceId": 13
         },
         {
           "name": "Stunned",
           "icon": "ddb-stunned",
-          "color": "#ffffff",
+          "color": "#add8e6",
+          "iconColor": "#000000",
           "sourceId": 14
         },
         {
           "name": "Unconscious",
           "icon": "ddb-unconscious",
-          "color": "#ffffff",
+          "color": "#8b0000",
+          "iconColor": "#ffffff",
           "sourceId": 15
+        },
+        {
+          "name": "Bloodied",
+          "icon": "bi-droplet-fill",
+          "color": "#dc3545",
+          "iconColor": "#ffffff"
+        },
+        {
+          "name": "Hurt",
+          "icon": "bi-bandaid-fill",
+          "color": "#fd7e14",
+          "iconColor": "#ffffff"
         }
       ]
     },
@@ -1126,6 +1159,21 @@
           "abilityBinding": "stats.abilities.dexterity",
           "recordField": "stats.initiative.bonus",
           "binding": "modifier"
+        },
+        {
+          "name": "Defeated",
+          "conditionId": "Unconscious",
+          "binding": "defeated"
+        },
+        {
+          "name": "Bloodied",
+          "conditionId": "Bloodied",
+          "binding": "bloodied"
+        },
+        {
+          "name": "Hurt",
+          "conditionId": "Hurt",
+          "binding": "hurt"
         }
       ]
     },

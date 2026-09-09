@@ -1,0 +1,130 @@
+{
+  "title": "Location Card",
+  "category": "print",
+  "description": "Default Handout card for a Sanctum-generated Location — its Type/Purpose resolved from the Library, plus its real Feature text.",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": ["portrait", "landscape"],
+      "defaultOrientation": "portrait"
+    },
+    {
+      "id": "a4",
+      "label": "A4",
+      "sizeId": "a4",
+      "orientations": ["portrait", "landscape"],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "card": {
+    "width": 5,
+    "height": 7,
+    "gutter": 0,
+    "safeInset": 0.15,
+    "bleed": 0.125,
+    "columns": 1,
+    "rows": 1
+  },
+  "pages": {
+    "front": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": { "bold": true }
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "=libraryEntries('location-type', 'id', @typeId)[0].entity.name",
+                  "label": "Type"
+                }
+              },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "=libraryEntries('location-purpose', 'id', @purposeId)[0].entity.name",
+                  "label": "Purpose"
+                }
+              },
+              { "node": { "type": "field", "component": "stat", "text": "@environment", "label": "Environment" } }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@notes",
+            "className": "card-body-text"
+          }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": { "bold": true }
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "Features",
+            "className": "card-footer"
+          },
+          {
+            "type": "field",
+            "component": "repeater",
+            "itemsBind": "@featureIds",
+            "columns": 1,
+            "showHeader": false,
+            "gap": 2,
+            "className": "d-flex flex-column",
+            "cells": [
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "=libraryEntries('feature', 'id', @item)[0].entity.name",
+                    "className": "card-meta",
+                    "textStyles": { "bold": true }
+                  },
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "=libraryEntries('feature', 'id', @item)[0].entity.description",
+                    "className": "card-body-text"
+                  }
+                ]
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

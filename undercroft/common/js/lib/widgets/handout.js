@@ -13,8 +13,10 @@ import {
   applyAutoWidthCaps,
   applyAutoFontSizing,
   applyOverflowIndicators,
+  configureTemplateDataSource,
 } from "../../../../press/js/template-renderer.js";
 import { loadLibraryData, fetchKindEntriesWithIds, loadLibraryKinds } from "../content-fetch.js";
+import { isLibraryKindCached, getCachedLibraryEntries, ensureLibraryKindCached } from "../formula-functions.js";
 import { resolveIsSpotlighted, listPrintTemplates } from "../spotlight.js";
 import { resolveToolContextPath } from "../app-shell.js";
 import { el } from "../dom.js";
@@ -304,13 +306,141 @@ export function initHandoutWidget(
     renderTarget.appendChild(el("p", "text-danger small mb-0", message));
   }
 
+  // "No template" fallback — every kind's raw record, not just name+
+  // description (which plenty of kinds don't even have — Monster/Wonder/
+  // Location's real text lives elsewhere entirely). Traverses the JSON
+  // generically: every non-empty key becomes a "Label: value" row, a nested
+  // object/array gets its key as a header over its own nested rows, and any
+  // `featureIds` array or `{refKind, refId}` reference resolves through the
+  // SAME shared `formula-functions.js` Library-entry cache a real template's
+  // `libraryEntries(...)` binding uses, instead of showing a bare id.
+  function labelizeKey(key) {
+    const spaced = String(key)
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .replace(/[_-]+/g, " ")
+      .trim();
+    return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : String(key);
+  }
+
+  function isPlainObject(value) {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function isEmptyValue(value) {
+    if (value === null || value === undefined || value === "") return true;
+    if (Array.isArray(value)) return value.length === 0;
+    if (isPlainObject(value)) return Object.keys(value).length === 0;
+    return false;
+  }
+
+  // The suite's one generic "this points at a real Library record" shape
+  // (bindings.js/workbench-character-view.js's collectRefIdsForKind) —
+  // recognized here so a raw reference resolves to its real name instead of
+  // dumping two meaningless id strings.
+  function isLibraryRef(value) {
+    return isPlainObject(value) && typeof value.refKind === "string" && typeof value.refId === "string";
+  }
+
+  // undefined = kind not fetched yet (fetch kicked off, `onLoaded` re-renders
+  // once it resolves); null = fetched but no matching entry; otherwise the
+  // real entity body.
+  function resolveRefEntity(kind, id, onLoaded) {
+    if (!kind || !id) return null;
+    if (!isLibraryKindCached(kind)) {
+      ensureLibraryKindCached(dataManager, kind, onLoaded);
+      return undefined;
+    }
+    const match = getCachedLibraryEntries(kind).find((entry) => entry.id === id);
+    return match ? match.entity : null;
+  }
+
+  function appendLibraryRefRows(container, kind, id, onLoaded) {
+    const resolved = resolveRefEntity(kind, id, onLoaded);
+    const nameText = resolved === undefined ? "Loading…" : resolved?.name || id;
+    container.appendChild(el("div", "small fw-semibold", nameText));
+    if (resolved?.description) {
+      container.appendChild(el("p", "small text-body-secondary mb-1", resolved.description));
+    }
+  }
+
+  // Renders one key/value pair generically, appending whatever it produces
+  // (zero, one, or several rows) to `container`. `onLoaded` re-runs the
+  // whole render once an in-flight Library fetch a nested reference
+  // triggered resolves.
+  function renderJsonField(container, key, value, onLoaded) {
+    if (isEmptyValue(value)) return;
+    const label = key === "featureIds" ? "Features" : labelizeKey(key);
+
+    if (key === "featureIds" && Array.isArray(value)) {
+      container.appendChild(el("div", "fw-semibold small mt-2", label));
+      const list = el("div", "d-flex flex-column gap-1 ps-3");
+      value.forEach((featureId) => appendLibraryRefRows(list, "feature", featureId, onLoaded));
+      container.appendChild(list);
+      return;
+    }
+
+    if (isLibraryRef(value)) {
+      container.appendChild(el("div", "fw-semibold small mt-2", label));
+      const wrap = el("div", "ps-3");
+      appendLibraryRefRows(wrap, value.refKind, value.refId, onLoaded);
+      container.appendChild(wrap);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      const allPrimitive = value.every((item) => item === null || typeof item !== "object");
+      if (allPrimitive) {
+        const row = el("div", "small");
+        row.appendChild(el("span", "fw-semibold", `${label}: `));
+        row.appendChild(document.createTextNode(value.join(", ")));
+        container.appendChild(row);
+        return;
+      }
+      container.appendChild(el("div", "fw-semibold small mt-2", label));
+      const list = el("div", "d-flex flex-column gap-2 ps-3");
+      value.forEach((item) => {
+        if (isLibraryRef(item)) {
+          appendLibraryRefRows(list, item.refKind, item.refId, onLoaded);
+        } else if (isPlainObject(item)) {
+          const block = el("div", "border-start ps-2");
+          Object.entries(item).forEach(([itemKey, itemValue]) => renderJsonField(block, itemKey, itemValue, onLoaded));
+          list.appendChild(block);
+        } else {
+          list.appendChild(el("div", "small", String(item)));
+        }
+      });
+      container.appendChild(list);
+      return;
+    }
+
+    if (isPlainObject(value)) {
+      container.appendChild(el("div", "fw-semibold small mt-2", label));
+      const block = el("div", "d-flex flex-column gap-1 ps-3");
+      Object.entries(value).forEach(([childKey, childValue]) => renderJsonField(block, childKey, childValue, onLoaded));
+      container.appendChild(block);
+      return;
+    }
+
+    const row = el("div", key === "name" || key === "title" ? "fs-5 fw-semibold" : "small");
+    if (key !== "name" && key !== "title") {
+      row.appendChild(el("span", "fw-semibold", `${label}: `));
+      row.appendChild(document.createTextNode(String(value)));
+    } else {
+      row.textContent = String(value);
+    }
+    container.appendChild(row);
+  }
+
   function renderPlain(entity) {
     applyScale = null;
     renderTarget.innerHTML = "";
-    const card = el("div", "border rounded-3 bg-body p-3 d-flex flex-column gap-2");
-    card.appendChild(el("div", "fw-semibold", entity?.name || "Untitled"));
-    if (entity?.description) {
-      card.appendChild(el("p", "small text-body-secondary mb-0", entity.description));
+    const card = el("div", "border rounded-3 bg-body p-3 d-flex flex-column gap-1 overflow-auto");
+    const onLoaded = () => {
+      if (!destroyed) renderPlain(entity);
+    };
+    Object.entries(entity || {}).forEach(([key, value]) => renderJsonField(card, key, value, onLoaded));
+    if (!card.children.length) {
+      card.appendChild(el("p", "text-body-secondary small mb-0", "Untitled"));
     }
     renderTarget.appendChild(card);
   }
@@ -443,6 +573,15 @@ export function initHandoutWidget(
   // Grid View tab shows a card. No trim/bleed/safe guide overlay — those are
   // print-specific guides a table-facing handout should never show.
   function renderTemplatedCard(templateRecord, entity) {
+    // Re-configured immediately before use, not just once at widget init —
+    // template-renderer.js's data source is a single module-level setter
+    // (Press has never needed more than one live preview surface at a time),
+    // but a Dashboard can hold several Handout widgets simultaneously.
+    // `libraryEntries`'s formula-function closure captures this widget's own
+    // `refresh` at the moment createPage below walks the template tree, so a
+    // later widget's own render reconfiguring the module state afterward
+    // doesn't steal this widget's re-render-on-data-ready callback.
+    configureTemplateDataSource(dataManager, refresh);
     const template = createTemplate(templateRecord);
     const format = getFormatById(template);
     const orientation = format?.defaultOrientation || "portrait";

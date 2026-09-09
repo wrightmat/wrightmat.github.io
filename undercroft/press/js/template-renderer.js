@@ -1,4 +1,5 @@
-import { resolveBinding, createLookupFn, createLookupFieldFn } from "../../common/js/lib/bindings.js";
+import { resolveBinding } from "../../common/js/lib/bindings.js";
+import { createFormulaFunctions } from "../../common/js/lib/formula-functions.js";
 import { TEXT_SIZE_PX as TEXT_SIZE_MAP } from "../../common/js/lib/text-size.js";
 
 const GAP_UNIT_REM = 0.25;
@@ -7,13 +8,29 @@ const GAP_UNIT_REM = 0.25;
 // font-size, same convention CSS itself uses for line-height.
 const DEFAULT_LINE_HEIGHT = 1.3;
 
+// This module renders from already-loaded data only — no dataManager of its
+// own. libraryEntries needs one (to resolve e.g. a Monster's featureIds into
+// real Feature text), so a caller that has one (Press's own editor,
+// Handout) calls this once before rendering; a caller that doesn't (nothing
+// currently) just leaves libraryEntries unavailable, same as before this
+// existed. A module-level setter rather than threading a new parameter
+// through every one of this file's ~12 resolveBindingWithLookup call sites.
+let templateDataManager = null;
+let templateDataReady = null;
+export function configureTemplateDataSource(dataManager, onDataReady) {
+  templateDataManager = dataManager || null;
+  templateDataReady = onDataReady || null;
+}
+
 // Every binding/formula resolution in this file goes through here instead
-// of resolveBinding directly, so `lookup(table, key)` is available in every
-// one for free. Press has no System concept of its own, so createLookupFn's
-// System-field-list argument is omitted — `lookup` searches only `context`.
+// of resolveBinding directly, so lookup/lookupField/libraryEntries are all
+// available in every one for free, from the one shared registry
+// (formula-functions.js) every tool now pulls from. Press has no System
+// concept of its own, so createFormulaFunctions' fieldDefinitions argument
+// is omitted — lookup searches only `context`.
 function resolveBindingWithLookup(raw, context) {
   return resolveBinding(raw, context, {
-    functions: { lookup: createLookupFn(context), lookupField: createLookupFieldFn(context) },
+    functions: createFormulaFunctions({ context, dataManager: templateDataManager, onDataReady: templateDataReady }),
   });
 }
 

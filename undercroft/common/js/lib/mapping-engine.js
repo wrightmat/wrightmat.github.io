@@ -41,24 +41,14 @@
 // field) and under the reserved key `value` (reaches a primitive element,
 // or an object element as a whole).
 
-import { resolveBinding } from "./bindings.js";
-
-function makeLookupFn(lookupTables) {
-  return (tableName, key) => {
-    const table = lookupTables?.[tableName];
-    if (table == null) return undefined;
-    if (Array.isArray(table)) {
-      if (table.length && typeof table[0] === "object" && table[0] !== null) {
-        return table.find((entry) => entry.id === key || entry.name === key);
-      }
-      return table[Number(key)];
-    }
-    if (typeof table === "object") {
-      return table[key];
-    }
-    return undefined;
-  };
-}
+// createLookupFn/createLookupFieldFn directly from bindings.js, not the shared
+// createFormulaFunctions in formula-functions.js — that module imports
+// content-fetch.js (for libraryEntries), which itself imports THIS module
+// (applyMapping), so routing through it here would be a real circular import.
+// applyMapping never receives a dataManager anyway (import-time mapping runs
+// before any record is saved), so libraryEntries wouldn't be reachable here
+// even without the cycle — lookup/lookupField are the whole story for mapping.
+import { resolveBinding, createLookupFn, createLookupFieldFn } from "./bindings.js";
 
 function bind(bindExpr, context, env) {
   return resolveBinding(bindExpr, context, env.formulaOptions);
@@ -200,11 +190,16 @@ function evalNode(node, context, env) {
 }
 
 export function applyMapping(definition, rawInput, { lookupTables = {}, customFunctions = {} } = {}) {
+  const rootContext = rawInput && typeof rawInput === "object" ? { ...rawInput, root: rawInput } : { root: rawInput };
   const env = {
     lookupTables,
     customFunctions,
-    formulaOptions: { functions: { lookup: makeLookupFn(lookupTables) } },
+    formulaOptions: {
+      functions: {
+        lookup: createLookupFn(rootContext, undefined, lookupTables),
+        lookupField: createLookupFieldFn(rootContext),
+      },
+    },
   };
-  const rootContext = rawInput && typeof rawInput === "object" ? { ...rawInput, root: rawInput } : { root: rawInput };
   return evalNode(definition, rootContext, env);
 }

@@ -3,7 +3,10 @@
 // campaign group, via the group log's `spotlight`/`spotlight-update`/
 // `spotlight-clear` entries (server/groups.py). Each widget posts/clears its
 // own spotlight directly through dataManager.spotlightToGroup/clearSpotlight
-// — this module only reads that state back.
+// — this module mostly only reads that state back; retirePreviousEncounterSpotlight
+// below is the one deliberate exception, enforcing the single-slot
+// invariant this file already documents for "encounter" (see
+// resolveActiveSpotlightId's own comment) rather than just describing it.
 import { loadLibraryData } from "./content-fetch.js";
 
 // Same "category === print" filter as Press's listPrintTemplateEntries
@@ -68,6 +71,28 @@ async function resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, k
 export async function resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind, limit = 100 } = {}) {
   const entry = await resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind, limit });
   return entry?.payload?.id || "";
+}
+
+// Confirmed real bug this fixes: dataManager.spotlightToGroup only ever
+// APPENDS a new `spotlight` log entry — nothing ever cleared whichever
+// encounter was previously spotlighted before a GM started/switched to a
+// new one (via Repository's `encounter:` chip, or Combat Tracker's own
+// "Show to table"). resolveActiveSpotlightId above already treats
+// "encounter" as single-slot per campaign (its own comment says so), but
+// resolveActiveSpotlights (the Dashboard's own spotlight-tray data source)
+// deliberately allows several simultaneous entries PER KIND — correct for
+// Handout/Map/Clock, which really can have more than one instance shown at
+// once, but wrong for "encounter": every encounter ever spotlighted in a
+// session kept showing in the tray forever, since nothing ever superseded
+// it. Called by both of the only two places an encounter ever becomes newly
+// spotlighted, right before their own spotlightToGroup call — a no-op when
+// there's nothing previously spotlighted, or it's this same encounter.
+export async function retirePreviousEncounterSpotlight(dataManager, { groupId, nextEncounterId }) {
+  if (!groupId) return;
+  const activeId = await resolveActiveSpotlightId(dataManager, { groupId, kind: "encounter" }).catch(() => "");
+  if (activeId && activeId !== nextEncounterId) {
+    await dataManager.clearSpotlight({ groupId, kind: "encounter", id: activeId }).catch(() => {});
+  }
 }
 
 // "Everything currently spotlighted, across every kind" — the full active

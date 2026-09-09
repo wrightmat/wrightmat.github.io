@@ -1,0 +1,162 @@
+{
+  "title": "Monster Card",
+  "category": "print",
+  "description": "Default Handout card for a Crucible-generated Monster — stat block plus its real Feature text, resolved from the Library.",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": ["portrait", "landscape"],
+      "defaultOrientation": "portrait"
+    },
+    {
+      "id": "a4",
+      "label": "A4",
+      "sizeId": "a4",
+      "orientations": ["portrait", "landscape"],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "card": {
+    "width": 5,
+    "height": 7,
+    "gutter": 0,
+    "safeInset": 0.15,
+    "bleed": 0.125,
+    "columns": 1,
+    "rows": 1
+  },
+  "pages": {
+    "front": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": { "bold": true }
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "stat", "text": "@type", "label": "Type" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.size", "label": "Size" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.alignment", "label": "Alignment" } }
+            ]
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "stat", "text": "@stats.armorClass", "label": "AC" } },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "=@stats.hitPoints.current + '/' + @stats.hitPoints.max",
+                  "label": "HP"
+                }
+              },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.challengeRating", "label": "CR" } }
+            ]
+          },
+          {
+            "type": "row",
+            "gap": 1,
+            "columns": [
+              { "node": { "type": "field", "component": "stat", "text": "@stats.abilities.strength", "label": "STR" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.abilities.dexterity", "label": "DEX" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.abilities.constitution", "label": "CON" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.abilities.intelligence", "label": "INT" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.abilities.wisdom", "label": "WIS" } },
+              { "node": { "type": "field", "component": "stat", "text": "@stats.abilities.charisma", "label": "CHA" } }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "stat",
+            "text": "@stats.savingThrows",
+            "label": "Saving Throws"
+          },
+          {
+            "type": "field",
+            "component": "stat",
+            "text": "@stats.skills",
+            "label": "Skills"
+          },
+          {
+            "type": "field",
+            "component": "stat",
+            "text": "@stats.senses.passives.perception",
+            "label": "Passive Perception"
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@notes",
+            "className": "card-body-text"
+          }
+        ]
+      }
+    },
+    "back": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": { "bold": true }
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "Features",
+            "className": "card-footer"
+          },
+          {
+            "type": "field",
+            "component": "repeater",
+            "itemsBind": "@featureIds",
+            "columns": 1,
+            "showHeader": false,
+            "gap": 2,
+            "className": "d-flex flex-column",
+            "cells": [
+              [
+                [
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "=libraryEntries('feature', 'id', @item)[0].entity.name",
+                    "className": "card-meta",
+                    "textStyles": { "bold": true }
+                  },
+                  {
+                    "type": "field",
+                    "component": "text",
+                    "text": "=libraryEntries('feature', 'id', @item)[0].entity.description",
+                    "className": "card-body-text"
+                  }
+                ]
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

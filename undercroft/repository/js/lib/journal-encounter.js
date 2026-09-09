@@ -8,7 +8,7 @@ import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js
 import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "../../../common/js/lib/widgets/combat-bindings.js";
 import { uniquifyCombatantName } from "../../../common/js/lib/widgets/combatant-naming.js";
 import { fetchGroupMemberCharacters } from "../../../common/js/lib/widgets/group-context.js";
-import { resolveActiveSpotlightId } from "../../../common/js/lib/spotlight.js";
+import { resolveActiveSpotlightId, retirePreviousEncounterSpotlight } from "../../../common/js/lib/spotlight.js";
 import { resolveToolHref } from "../../../common/js/lib/app-shell.js";
 import { pingForDashboardTab, requestDashboardFocus } from "../../../common/js/lib/dashboard-channel.js";
 import { setElementVisible } from "../../../common/js/lib/dom.js";
@@ -514,6 +514,7 @@ export async function startEncounter({ dataManager, status, title, creatures, gr
       await dataManager.save("encounter", payload.id, body);
       encounterId = payload.id;
     }
+    await retirePreviousEncounterSpotlight(dataManager, { groupId, nextEncounterId: encounterId });
     await dataManager.spotlightToGroup({ groupId, contentType: "encounter", contentId: encounterId });
     await navigateToEncounter({ encounterId, destination: choice.destination, currentSection, status });
   } catch (error) {

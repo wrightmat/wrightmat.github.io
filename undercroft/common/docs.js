@@ -16,7 +16,10 @@ const { status } = initAppShell({
   rightPaneLabel: null,
   rightPane: null,
 });
-const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
+// No storagePrefix override — see dashboard.js's own comment on the same
+// line: unifies this page's local record cache with the rest of the suite's
+// default DataManager namespace, so a delete/save anywhere is visible everywhere.
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 initAuthControls({ root: document, status, dataManager });
 
 function slugify(value) {

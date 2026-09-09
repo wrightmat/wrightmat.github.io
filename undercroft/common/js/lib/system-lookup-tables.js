@@ -13,8 +13,9 @@ import { fieldByKey } from "./bindings.js";
 // vocabulary values live in the System record, addressed here only by key.
 //
 // Every object produced below carries an `id` (from the System's own
-// `sourceId` convention) so mapping-engine.js's makeLookupFn `entry.id ===
-// key` match keeps working unmodified.
+// `sourceId` convention) so bindings.js's shared `createLookupFn` — which
+// mapping-engine.js registers these tables into as `extraTables` — keeps
+// matching entries by id unmodified.
 
 function valuesOf(fields, key) {
   const field = fieldByKey(fields, key);

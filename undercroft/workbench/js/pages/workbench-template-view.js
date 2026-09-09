@@ -47,7 +47,7 @@ import { createColorPickerField } from "../../../common/js/lib/color-picker.js";
 import { renderTextContent, resolveImageUrl, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
 import { collectSystemFields, categorizeFieldType } from "../../../common/js/lib/system-schema.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { createLookupFn, createLookupFieldFn } from "../../../common/js/lib/bindings.js";
+import { createFormulaFunctions } from "../../../common/js/lib/formula-functions.js";
 import {
   createBindingFormulaInput as createSharedBindingFormulaInput,
   notifyBindingFieldsReady,
@@ -5674,13 +5674,12 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // data, just the item template as an editable dropzone).
   function previewFormulaOptions() {
     return {
-      functions: {
-        lookup: createLookupFn(state.systemPreviewData || {}, state.systemDefinition?.fields),
-        // Registered so a formula using lookupField doesn't throw "not
-        // defined" while authoring, even though the canvas never actually
-        // previews per-item data where it would matter.
-        lookupField: createLookupFieldFn(state.systemPreviewData || {}),
-      },
+      functions: createFormulaFunctions({
+        context: state.systemPreviewData || {},
+        fieldDefinitions: state.systemDefinition?.fields,
+        dataManager,
+        onDataReady: renderCanvas,
+      }),
     };
   }
 

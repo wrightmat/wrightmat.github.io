@@ -25,7 +25,8 @@ import { applyComponentStyles, applyTextFormatting } from "../lib/component-styl
 import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
-import { resolveBinding, createLookupFn, createLookupFieldFn, findRoleBoundField, findBindingByRole, fieldByKey } from "../../../common/js/lib/bindings.js";
+import { resolveBinding, findRoleBoundField, findBindingByRole, fieldByKey } from "../../../common/js/lib/bindings.js";
+import { createFormulaFunctions, isLibraryKindCached, getCachedLibraryEntries, ensureLibraryKindCached } from "../../../common/js/lib/formula-functions.js";
 // Same name-or-id macro resolver Board and Journal's inline `macro:Name` chips use.
 import { runMacroReference } from "../../../repository/js/lib/journal-macro.js";
 import { resolveDottedPath, setAtDottedPath } from "../../../common/js/lib/dotted-path.js";
@@ -5156,7 +5157,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // Pre-warm every id-storage Repeater's reference cache (e.g. Features' @featureIds)
       // on load rather than lazily on that tab's first render, which used to show every
       // chip as a raw id until the fetch resolved. Fire-and-forget.
-      collectIdStorageKinds(state.components).forEach((kind) => ensureSourceKindCached(kind));
+      collectIdStorageKinds(state.components).forEach((kind) => ensureLibraryKindCached(dataManager, kind, renderCanvas));
       void refreshRelationshipsSection();
       syncCharacterOptions();
       syncCharacterActions();
@@ -6468,7 +6469,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // an ordinary authored field, so a Template author sees/changes it in the
   // Inspector. Which KIND to resolve against comes from the item template's own
   // pickable cell, never a hardcoded kind name, and reuses the same per-kind cache
-  // the Add picker populates (sourceKindCache below).
+  // (formula-functions.js) the Add picker populates.
   function isIdStorageRepeater(component) {
     return component?.itemStorage === "id";
   }
@@ -6486,11 +6487,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   function expandIdStorageItems(component, ids) {
     const kind = sourceFormulaKind(findRepeaterSourceFormula(component));
     if (!kind) return [];
-    if (!sourceKindCache.has(kind)) {
-      ensureSourceKindCached(kind);
+    if (!isLibraryKindCached(kind)) {
+      ensureLibraryKindCached(dataManager, kind, renderCanvas);
       return [];
     }
-    const entries = sourceKindCache.get(kind) || [];
+    const entries = getCachedLibraryEntries(kind);
     const byId = new Map(entries.map((entry) => [entry.id, entry.entity]));
     return (Array.isArray(ids) ? ids : [])
       .filter((id) => typeof id === "string" && id)
@@ -6529,51 +6530,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // that already has a real authored home. `sourceBinding`/`sourceFormula` are
   // ordinary authored fields; `libraryEntries`'s filter arguments are plain data.
 
-  // Per-kind Library entry cache — shared by the Add picker AND expandIdStorageItems
-  // above, so displaying and adding an id-storage Repeater row never fetch a kind
-  // twice. fetchKindEntriesWithIds is already cross-visit-cached (content-fetch.js).
-  const sourceKindCache = new Map();
-  const sourceKindFetchInFlight = new Set();
-  function ensureSourceKindCached(kind) {
-    if (!kind || sourceKindCache.has(kind) || sourceKindFetchInFlight.has(kind) || !dataManager) return;
-    sourceKindFetchInFlight.add(kind);
-    fetchKindEntriesWithIds(dataManager, kind)
-      .then((entries) => {
-        sourceKindCache.set(kind, entries);
-        renderCanvas();
-      })
-      .catch(() => {
-        sourceKindCache.set(kind, []);
-      })
-      .finally(() => {
-        sourceKindFetchInFlight.delete(kind);
-      });
-  }
-
-  // Registered as a real formula function alongside `lookup`, so a Source/Options
-  // field holding "=libraryEntries('wonder', 'properties.form', 'spell')" resolves
-  // through the ordinary formula engine. `path`/`value` are always plain literal
-  // arguments, never a nested "@..." formula — evaluateFormula's "@path"
-  // substitution runs blindly across the whole formula before any call is parsed,
-  // so a per-candidate formula-as-string would get mangled. Covers: a scalar
-  // match, a negated scalar match (leading "!"), and an array-contains match.
-  // Omitting path/value returns every entry of the kind unfiltered.
-  function libraryEntries(kind, path, value) {
-    if (!kind || typeof kind !== "string") return [];
-    if (!sourceKindCache.has(kind)) {
-      ensureSourceKindCached(kind);
-      return [];
-    }
-    const entries = sourceKindCache.get(kind) || [];
-    if (!path) return entries;
-    const negate = typeof value === "string" && value.startsWith("!");
-    const target = negate ? value.slice(1) : value;
-    return entries.filter((entry) => {
-      const raw = resolveDottedPath(entry.entity, path);
-      const matches = Array.isArray(raw) ? raw.includes(target) : raw === target;
-      return negate ? !matches : matches;
-    });
-  }
+  // The Library-entry cache/fetch primitives (isLibraryKindCached/getCachedLibraryEntries/
+  // ensureLibraryKindCached) and the `libraryEntries` formula function itself now live in
+  // formula-functions.js, shared with every other tool — expandIdStorageItems above and
+  // resolveRepeaterAddCandidates below read the same cache a Source/Options formula does,
+  // so displaying and adding an id-storage Repeater row never fetch a kind twice.
 
   // Recursively collects every `refId` off an object anywhere in `root` whose
   // `refKind === kind` — the suite's ordinary ref shape, read generically rather
@@ -6657,8 +6618,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const formula = typeof component?.sourceFormula === "string" ? component.sourceFormula.trim() : "";
     if (!formula) return { ready: true, options: [] };
     const kind = sourceFormulaKind(formula);
-    if (kind && !sourceKindCache.has(kind)) {
-      ensureSourceKindCached(kind);
+    if (kind && !isLibraryKindCached(kind)) {
+      ensureLibraryKindCached(dataManager, kind, renderCanvas);
       return { ready: false, options: [] };
     }
     let result;
@@ -7758,14 +7719,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       ...options,
       functions: {
         ...(options.functions || {}),
-        lookup: createLookupFn(context, state.systemDefinition?.fields),
-        // Always the top-level record, never `context` (the current Repeater item
-        // for an item-template formula) — a lookup table lives outside any one row.
-        lookupField: createLookupFieldFn(getBindingContext()),
-        // Registered here (not just for Repeater Add sources) so ANY formula field
-        // — Visible, Editable in Play, a Select's Source — can search a Library
-        // kind the same way `lookup` searches a System field.
-        libraryEntries,
+        ...createFormulaFunctions({
+          context,
+          fieldDefinitions: state.systemDefinition?.fields,
+          // Always the top-level record, never `context` (the current Repeater item
+          // for an item-template formula) — a lookup table lives outside any one row.
+          rootContext: getBindingContext(),
+          dataManager,
+          onDataReady: renderCanvas,
+        }),
+        // Not part of the shared registry — genuinely Character-specific (reads the
+        // live `state.draft`), so it's layered on top here rather than in every tool.
         restrictByCharacterKind,
       },
     });

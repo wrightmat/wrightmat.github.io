@@ -1,0 +1,107 @@
+{
+  "title": "NPC Card",
+  "category": "print",
+  "description": "Default Handout card for a Forge-generated NPC — identity, 4D personality, and combat basics.",
+  "type": "card",
+  "formats": [
+    {
+      "id": "letter",
+      "label": "US Letter",
+      "sizeId": "letter",
+      "orientations": ["portrait", "landscape"],
+      "defaultOrientation": "portrait"
+    },
+    {
+      "id": "a4",
+      "label": "A4",
+      "sizeId": "a4",
+      "orientations": ["portrait", "landscape"],
+      "defaultOrientation": "portrait"
+    }
+  ],
+  "card": {
+    "width": 5,
+    "height": 7,
+    "gutter": 0,
+    "safeInset": 0.15,
+    "bleed": 0.125,
+    "columns": 1,
+    "rows": 1
+  },
+  "pages": {
+    "front": {
+      "repeat": "@",
+      "layout": {
+        "type": "stack",
+        "gap": 4,
+        "children": [
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@name",
+            "className": "card-title",
+            "textSize": "lg",
+            "textStyles": { "bold": true }
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "=@identity.archetype + ' / ' + @identity.species",
+            "className": "card-meta"
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "stat", "text": "@identity.alignment", "label": "Alignment" } },
+              { "node": { "type": "field", "component": "stat", "text": "@identity.gender", "label": "Gender" } },
+              { "node": { "type": "field", "component": "stat", "text": "@identity.age", "label": "Age" } }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "Appearance",
+            "className": "card-footer"
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@fourD.description",
+            "className": "card-body-text"
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "stat", "text": "@fourD.demeanor", "label": "Demeanor" } },
+              { "node": { "type": "field", "component": "stat", "text": "@fourD.drive", "label": "Drive" } },
+              { "node": { "type": "field", "component": "stat", "text": "@fourD.direction", "label": "Trajectory" } }
+            ]
+          },
+          {
+            "type": "row",
+            "gap": 2,
+            "columns": [
+              { "node": { "type": "field", "component": "stat", "text": "@stats.armorClass", "label": "AC" } },
+              {
+                "node": {
+                  "type": "field",
+                  "component": "stat",
+                  "text": "=@stats.hitPoints.current + '/' + @stats.hitPoints.max",
+                  "label": "HP"
+                }
+              }
+            ]
+          },
+          {
+            "type": "field",
+            "component": "text",
+            "text": "@note",
+            "className": "card-body-text"
+          }
+        ]
+      }
+    }
+  }
+}

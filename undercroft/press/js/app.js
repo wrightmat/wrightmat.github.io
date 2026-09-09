@@ -61,7 +61,8 @@ import {
 import { getSourceById, getSources } from "./sources.js";
 import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
-import { resolveBinding, createLookupFn, createLookupFieldFn } from "../../common/js/lib/bindings.js";
+import { resolveBinding } from "../../common/js/lib/bindings.js";
+import { createFormulaFunctions } from "../../common/js/lib/formula-functions.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
@@ -1097,7 +1098,7 @@ const deleteButtonLabel = document.querySelector("[data-component-delete-label]"
 const duplicateButton = document.querySelector("[data-component-duplicate]");
 const makeUniqueButton = document.querySelector("[data-component-make-unique]");
 
-const FORMULA_FUNCTIONS = listFormulaFunctionMetadata();
+const FORMULA_FUNCTIONS = listFormulaFunctionMetadata(["libraryEntries"]);
 const MAX_AUTOCOMPLETE_ITEMS = 12;
 const bindingAutocompleteInstances = new Set();
 const bindingFieldCache = {
@@ -1184,12 +1185,17 @@ const COLOR_FIELD_MAP = {
 
 // Every inspector-side binding/formula preview goes through here instead of
 // resolveBinding directly, same as template-renderer.js's identically-named
-// wrapper, so `lookup(table, key)` is available everywhere a template
-// author can type a binding/formula. No System field list is passed —
-// matches the real render, which only ever searches `context`.
+// wrapper, so lookup/lookupField/libraryEntries are all available everywhere
+// a template author can type a binding/formula — the shared registry
+// (formula-functions.js) both wrappers now pull from, instead of each
+// hand-rolling its own (formerly identical, now formerly-stale) copy. No
+// System field list is passed — matches the real render, which only ever
+// searches `context`. `dataManager` is already module-wide here by the time
+// any real formula gets evaluated (set during init, before a user can
+// interact with the editor).
 function resolveBindingWithLookup(raw, context) {
   return resolveBinding(raw, context, {
-    functions: { lookup: createLookupFn(context), lookupField: createLookupFieldFn(context) },
+    functions: createFormulaFunctions({ context, dataManager }),
   });
 }
 

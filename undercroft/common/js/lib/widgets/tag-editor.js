@@ -9,6 +9,28 @@ import { findBindingByRole } from "../bindings.js";
 import { deriveCombatBindings } from "./combat-bindings.js";
 import { el } from "../dom.js";
 import { updateTooltipContent } from "../tooltips.js";
+import { buildIconPreviewElement } from "../icon-picker.js";
+
+// Bootstrap's `.text-bg-secondary` sets both background-color AND color with
+// !important — a plain inline `badge.style.backgroundColor = entry.color`
+// was silently overridden by it (confirmed: every condition's authored
+// color was a no-op, not just a new one). `!important` on the inline
+// declaration itself is what actually wins. Once the background genuinely
+// changes, the icon (which renders via `currentColor` for both the ddb-*
+// mask technique and a bi-* font glyph) needs a text color that contrasts
+// with whatever was authored, not the class's hardcoded white — computed
+// from relative luminance rather than hardcoded per known color, so any
+// color a GM authors in Loom gets a readable icon automatically.
+function contrastTextColor(hex) {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+  if (!match) return "#fff";
+  const num = parseInt(match[1], 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#212529" : "#fff";
+}
 
 // The tags-role binding's own `sourceField` names which other array field on
 // a System supplies the tag vocabulary (default "conditions") — a generic
@@ -47,8 +69,12 @@ export function buildSystemConditions(fields) {
     const field = (fields || []).find((entry) => entry.type === "array" && entry.key === vocabularyKey);
     (field?.values || []).forEach((raw, index) => {
       const entry = vocabulary[index];
+      // iconColor is optional — a GM can author just `color` (the badge/ring
+      // background) and let the icon color be computed for contrast, or
+      // author both explicitly (e.g. matching a physical condition-ring set
+      // with its own independent ring-color/engraving-color pairing).
       if (entry && raw && (raw.icon || raw.color)) {
-        iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "" });
+        iconMap.set(entry.id, { icon: raw.icon || "", color: raw.color || "", iconColor: raw.iconColor || "" });
       }
     });
   }
@@ -65,7 +91,17 @@ export function buildSystemConditions(fields) {
 // (see buildTagInputRow's visibility toggle and map-viewer.js's
 // resolveMarkerConditionIcons), so a GM can tell at a glance which tags
 // don't show up on the map.
-export function renderTagBadges(list, vocabulary, { removable = false, onRemove, isLocked, isHidden } = {}) {
+//
+// `vocabulary` entries may carry their own `icon`/`color` (see
+// buildSystemConditions above) — when present, shown on the badge the same
+// way Orrery/the Map widget already render a condition on a marker.
+// `compact: true` (Combat Tracker's own row, vs. its detail panel) renders
+// icon-only — full name moves to the tooltip, no remove button — falling
+// back to the plain text badge below when a tag has no authored icon (a
+// free-text tag, or a System that hasn't set one), same "always show
+// something, never a blank chip" rule map-viewer.js's own icon-less
+// fallback already follows for the identical case on a marker.
+export function renderTagBadges(list, vocabulary, { removable = false, onRemove, isLocked, isHidden, compact = false } = {}) {
   const wrap = el("div", "d-flex flex-wrap gap-1");
   const values = list || [];
   if (!values.length) {
@@ -73,27 +109,53 @@ export function renderTagBadges(list, vocabulary, { removable = false, onRemove,
     return wrap;
   }
   values.forEach((value) => {
-    const label = conditionLabel(vocabulary, value);
+    const entry = (vocabulary || []).find((candidate) => candidate.id === value);
+    const label = entry?.label || value;
+    const hiddenFromMap = typeof isHidden === "function" && isHidden(value);
     const badge = el("span", "badge text-bg-secondary d-inline-flex align-items-center gap-1");
-    if (typeof isHidden === "function" && isHidden(value)) {
+    if (entry?.color) {
+      badge.style.setProperty("background-color", entry.color, "important");
+      // An explicit iconColor (e.g. matching a physical condition-ring set's
+      // own independent ring/engraving colors) wins; otherwise computed for contrast.
+      badge.style.setProperty("color", entry.iconColor || contrastTextColor(entry.color), "important");
+    }
+    // buildIconPreviewElement (icon-picker.js) handles all three authored
+    // icon shapes (ddb-*/bi-*/tabler: iconify) — a plain iconify-only span
+    // here would silently render nothing for the ddb-* icons a System's
+    // conditions actually use (see ddb-icons.css).
+    const iconEl = entry?.icon ? buildIconPreviewElement(entry.icon) : null;
+    if (iconEl) {
+      iconEl.setAttribute("aria-hidden", "true");
+      badge.appendChild(iconEl);
+    }
+    if (hiddenFromMap) {
       const hiddenIcon = el("span", "iconify");
       hiddenIcon.dataset.icon = "tabler:eye-off";
       hiddenIcon.style.fontSize = "0.7rem";
       hiddenIcon.setAttribute("aria-hidden", "true");
       badge.appendChild(hiddenIcon);
-      badge.setAttribute("data-bs-toggle", "tooltip");
-      badge.setAttribute("data-bs-title", `${label} — hidden from the map`);
     }
-    badge.appendChild(document.createTextNode(label));
-    if (removable && !(typeof isLocked === "function" && isLocked(value))) {
-      const removeBtn = el("button", "btn-close btn-close-white");
-      removeBtn.type = "button";
-      removeBtn.style.fontSize = "0.55rem";
-      removeBtn.setAttribute("aria-label", `Remove ${label}`);
-      removeBtn.setAttribute("data-bs-toggle", "tooltip");
-      removeBtn.setAttribute("data-bs-title", `Remove ${label}`);
-      removeBtn.addEventListener("click", () => onRemove?.(value));
-      badge.appendChild(removeBtn);
+    const tooltipText = hiddenFromMap ? `${label} — hidden from the map` : label;
+    if (compact && iconEl) {
+      // Icon already carries the meaning — full name only in the tooltip.
+      badge.setAttribute("data-bs-toggle", "tooltip");
+      badge.setAttribute("data-bs-title", tooltipText);
+    } else {
+      badge.appendChild(document.createTextNode(label));
+      if (hiddenFromMap) {
+        badge.setAttribute("data-bs-toggle", "tooltip");
+        badge.setAttribute("data-bs-title", tooltipText);
+      }
+      if (removable && !(typeof isLocked === "function" && isLocked(value))) {
+        const removeBtn = el("button", "btn-close btn-close-white");
+        removeBtn.type = "button";
+        removeBtn.style.fontSize = "0.55rem";
+        removeBtn.setAttribute("aria-label", `Remove ${label}`);
+        removeBtn.setAttribute("data-bs-toggle", "tooltip");
+        removeBtn.setAttribute("data-bs-title", `Remove ${label}`);
+        removeBtn.addEventListener("click", () => onRemove?.(value));
+        badge.appendChild(removeBtn);
+      }
     }
     wrap.appendChild(badge);
   });

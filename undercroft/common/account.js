@@ -21,7 +21,10 @@ const { status } = initAppShell({
   leftPane: { size: "lg", initial: "expanded" },
 });
 const loomHref = resolveToolHref("loom", resolveToolContextPath());
-const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
+// No storagePrefix override — see dashboard.js's own comment on the same
+// line: unifies this page's local record cache with the rest of the suite's
+// default DataManager namespace, so a delete/save anywhere is visible everywhere.
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 const auth = initAuthControls({ root: document, status, dataManager });
 const shareModal = initShareModal({ dataManager, status });
 initHelpSystem({ root: document });

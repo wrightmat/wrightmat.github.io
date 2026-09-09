@@ -13,6 +13,7 @@
 
 import { getIconTokens } from "../../../common/js/lib/icon-picker.js";
 import { resolveBinding } from "../../../common/js/lib/bindings.js";
+import { createFormulaFunctions } from "../../../common/js/lib/formula-functions.js";
 import { resolveDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { allowsDelete } from "../../../common/js/lib/ownership.js";
@@ -1429,7 +1430,10 @@ export function resolveMarkerVisionRangeCells(marker, getCharacterPayload) {
     const formula = (marker.visionRangeFormula || "").trim();
     if (formula) {
       try {
-        const numeric = Number(evaluateFormula(formula, payload));
+        // No dataManager threaded through here — this module never fetches
+        // anything itself (see the comment above), so libraryEntries isn't
+        // reachable from a Vision Range formula; lookup/lookupField are.
+        const numeric = Number(evaluateFormula(formula, payload, { functions: createFormulaFunctions({ context: payload }) }));
         if (Number.isFinite(numeric)) return Math.max(0, numeric);
       } catch (error) {
         // Falls through to binding/text, same as Workbench's own

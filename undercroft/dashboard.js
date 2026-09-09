@@ -96,7 +96,18 @@ const { status } = initAppShell({
   // their own Settings button — upper-left, before the pane toggle/title.
   settingsSlotAttr: "data-dashboard-settings-slot",
 });
-const dataManager = new DataManager({ baseUrl: resolveApiBase(), storagePrefix: "undercroft.workbench" });
+// No storagePrefix override — Loom/Workbench/Repository/Press all use
+// DataManager's own default ("undercroft"), and its local bucket cache is a
+// shared read-acceleration layer for every Library kind (encounter, map,
+// character, ...), not a per-page namespace. Dashboard previously used
+// "undercroft.workbench" here, which meant a record deleted through Loom
+// never purged the copy this page's own local cache had of it (different
+// localStorage key entirely) — Combat Tracker's own encounter picker kept
+// listing deleted encounters (as bare ids, since a local-cache entry has no
+// title) until that stale copy was cleared some other way. Unifying the
+// prefix means every page's DataManager.delete()/save() sees and purges the
+// SAME local cache.
+const dataManager = new DataManager({ baseUrl: resolveApiBase() });
 initAuthControls({ root: document, status, dataManager });
 // This page lives at the suite root, one level shallower than every other
 // tool page initHelpSystem's default topicsUrl assumes.

@@ -5,17 +5,19 @@
 // combat tracking is party/session-scoped, not character-scoped like
 // Workbench's view-switcher, and doesn't belong to any one existing tool —
 // see the Dashboard plan this widget was built for.
-import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
+import { resolveActiveSpotlightId, resolveSpotlightData, retirePreviousEncounterSpotlight } from "../spotlight.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../tooltips.js";
 import { findBindingByRole, findBindingsByRole } from "../bindings.js";
 import { resolveDottedPath, setAtDottedPath } from "../dotted-path.js";
 import {
   deriveConditionsVocabulary,
+  buildSystemConditions,
   renderTagBadges,
   renderTagDatalist,
   buildTagInputRow,
   applyTagVisibilityState,
 } from "./tag-editor.js";
+import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { connectLiveStream } from "../live.js";
 import { el } from "../dom.js";
 import { confirmDelete } from "../ownership.js";
@@ -51,6 +53,19 @@ function debounce(fn, wait) {
     window.clearTimeout(timer);
     timer = window.setTimeout(() => fn(...args), wait);
   };
+}
+
+// state.conditions, icon/color-enhanced — buildSystemConditions derives its
+// own combatBindings internally (cheap, pure, `fields` is already in hand at
+// every call site) rather than reusing the caller's; that's the same source
+// Orrery/the Map widget already use for a marker's own condition icons, so
+// Combat Tracker's row/panel now agree with what a linked marker shows.
+// Preserves deriveConditionsVocabulary's own `null` (no tags vocabulary at all).
+function deriveConditionsWithIcons(fields, combatBindings) {
+  const vocabulary = deriveConditionsVocabulary(fields, combatBindings);
+  if (!vocabulary) return vocabulary;
+  const { iconMap } = buildSystemConditions(fields);
+  return vocabulary.map((entry) => ({ ...entry, ...iconMap.get(entry.id) }));
 }
 
 function blankEncounter(name) {
@@ -342,10 +357,24 @@ export function initCombatTrackerWidget(
     const listing = await dataManager.list("encounter", { refresh: true });
     const remote = dataManager.collectListEntries(listing.remote, ["owned"]);
     const local = dataManager.listLocalEntries("encounter") || [];
+    // Signed in: a local-cache entry only ever exists as a read-acceleration
+    // mirror of something that WAS on the server — DataManager.save() only
+    // writes to local storage as the primary copy for an anonymous session
+    // (see its own comment). So once we have a FRESH remote listing, a local
+    // id absent from it isn't a legitimate local-only record, it's stale —
+    // almost always because it was deleted (e.g. via Loom) since it was last
+    // cached. Relying on every delete call site to perfectly purge every
+    // page's own local cache is fragile (confirmed: it wasn't, prior to this
+    // fix) — trusting the fresh remote listing as authoritative here instead
+    // means a stale survivor can no longer show up regardless of why the
+    // cache didn't get invalidated. Anonymous sessions have no such
+    // guarantee — local IS the only copy there, so every local entry still counts.
+    const remoteIds = new Set(remote.map((entry) => entry?.id).filter(Boolean));
+    const localEntries = dataManager.isAuthenticated() ? local.filter((entry) => remoteIds.has(entry?.id)) : local;
     // Dedupe by id (prefer the remote entry, which carries a real title) —
     // an encounter created while offline/anonymous and later synced could otherwise appear twice.
     const byId = new Map();
-    [...local, ...remote].forEach((entry) => {
+    [...localEntries, ...remote].forEach((entry) => {
       if (entry?.id) byId.set(entry.id, entry);
     });
     state.ownedEncounters = Array.from(byId.values());
@@ -371,7 +400,7 @@ export function initCombatTrackerWidget(
 
       const fields = await loadSystemFields(dataManager, state.encounter.systemId);
       state.combatBindings = deriveCombatBindings(fields);
-      state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
+      state.conditions = deriveConditionsWithIcons(fields, state.combatBindings);
       render();
     } catch (error) {
       status?.show("Unable to load that encounter.", { type: "error" });
@@ -437,7 +466,7 @@ export function initCombatTrackerWidget(
     state.encounter.systemId = systemId;
     const fields = await loadSystemFields(dataManager, systemId);
     state.combatBindings = deriveCombatBindings(fields);
-    state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
+    state.conditions = deriveConditionsWithIcons(fields, state.combatBindings);
     markDirty();
   }
 
@@ -453,7 +482,40 @@ export function initCombatTrackerWidget(
   // clicks anywhere else on the page, including the adjacent help pane,
   // and read as the selection randomly vanishing).
   function selectCombatant(id) {
-    state.selectedCombatantId = state.selectedCombatantId === id ? "" : id;
+    const opening = state.selectedCombatantId !== id;
+    state.selectedCombatantId = opening ? id : "";
+    render();
+    // A row-zone click (focusCombatantField, below) gets this for free —
+    // focusing an off-screen input is itself what scrolls it into view.
+    // Plain name/row clicks call this instead and focus nothing, so without
+    // an explicit scroll a row near the bottom of the widget's own scroll
+    // area opened its panel out of sight, below the fold. Not on close —
+    // nothing to reveal, and the row that was just clicked is already in view.
+    if (opening) editPanelMount.scrollIntoView({ block: "nearest" });
+  }
+
+  // A row-zone click (the initiative number, the HP text) — unlike
+  // selectCombatant above, never TOGGLES an already-open row closed; it
+  // only ever ensures this combatant is open and sends focus straight to
+  // one specific field, so clicking a different zone on an already-expanded
+  // row just moves focus instead of collapsing it.
+  function focusCombatantField(id, fieldKey) {
+    if (state.selectedCombatantId !== id) {
+      state.selectedCombatantId = id;
+      render();
+    }
+    const input = editPanelRefs?.combatantId === id ? editPanelRefs[fieldKey] : null;
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }
+
+  // Enter, in one of the quick-edit inputs below, commits AND closes the
+  // panel — a plain blur/tab-away still just commits (see each field's own
+  // commit function), matching prior behavior; only Enter is a deliberate "I'm done."
+  function collapseDetails() {
+    state.selectedCombatantId = "";
     render();
   }
 
@@ -689,6 +751,14 @@ export function initCombatTrackerWidget(
     void writeThroughToCharacter(combatant, { conditions: combatant.conditions, hiddenTags: combatant.hiddenTags || [] });
   }
 
+  function removeAllTags(combatant) {
+    if (!combatant.conditions.length) return;
+    combatant.conditions = [];
+    combatant.hiddenTags = [];
+    markDirty();
+    void writeThroughToCharacter(combatant, { conditions: combatant.conditions, hiddenTags: combatant.hiddenTags });
+  }
+
   // Visibility ("Show to table") and combat state ("Start/Stop") are fully
   // independent controls with zero automatic coupling — starting combat
   // doesn't show it, stopping doesn't hide it, hiding doesn't stop combat.
@@ -703,6 +773,7 @@ export function initCombatTrackerWidget(
       return;
     }
     try {
+      await retirePreviousEncounterSpotlight(dataManager, { groupId: active.groupId, nextEncounterId: state.encounter.id });
       await dataManager.spotlightToGroup({
         groupId: active.groupId,
         contentType: "encounter",
@@ -805,7 +876,7 @@ export function initCombatTrackerWidget(
       if (!state.conditions || state.conditions.__systemId !== state.encounter.systemId) {
         const fields = await loadSystemFields(dataManager, state.encounter.systemId);
         state.combatBindings = deriveCombatBindings(fields);
-        state.conditions = deriveConditionsVocabulary(fields, state.combatBindings);
+        state.conditions = deriveConditionsWithIcons(fields, state.combatBindings);
         if (state.conditions) state.conditions.__systemId = state.encounter.systemId;
       }
       render();
@@ -880,6 +951,15 @@ export function initCombatTrackerWidget(
       const resource = findBindingByRole(state.combatBindings, "resource");
       const value = findBindingByRole(state.combatBindings, "value");
       const tags = findBindingByRole(state.combatBindings, "tags");
+      // Tracked instead of unconditionally calling markDirty() below (this
+      // runs on every periodic GM-sync tick, every combatant, whether or not
+      // anything actually moved) — an unconditional save here meant the
+      // encounter got re-saved on a fixed cadence regardless of real
+      // changes, needlessly multiplying write traffic and widening the
+      // window for a genuine edit elsewhere (a GM's own HP/condition change,
+      // still debounced in the SAME shared persist()) to lose a race against
+      // a save that had nothing new to say.
+      let changed = false;
       if (resource?.recordField) {
         // Each of current/max/temp updates independently based on whether
         // ITS OWN path resolves to a number — current HP used to only
@@ -890,25 +970,45 @@ export function initCombatTrackerWidget(
         // for seeding a BRAND NEW combatant) — an existing combatant's known
         // value should never reset to 0 just because one field briefly didn't resolve.
         const current = resolveDottedPath(payload, resource.recordField);
-        if (typeof current === "number") combatant.hp = current;
+        if (typeof current === "number" && current !== combatant.hp) {
+          combatant.hp = current;
+          changed = true;
+        }
         if (resource.maxPath) {
           const max = resolveDottedPath(payload, resource.maxPath);
-          if (typeof max === "number") combatant.maxHp = max;
-        } else if (typeof resource.max === "number") {
+          if (typeof max === "number" && max !== combatant.maxHp) {
+            combatant.maxHp = max;
+            changed = true;
+          }
+        } else if (typeof resource.max === "number" && resource.max !== combatant.maxHp) {
           combatant.maxHp = resource.max; // a literal ceiling (e.g. Hope: max 6) isn't stored on the character record
+          changed = true;
         }
         if (resource.tempPath) {
           const temp = resolveDottedPath(payload, resource.tempPath);
-          if (typeof temp === "number") combatant.tempHp = temp;
+          if (typeof temp === "number" && temp !== combatant.tempHp) {
+            combatant.tempHp = temp;
+            changed = true;
+          }
         }
       }
       if (value?.recordField) {
         const resolvedValue = resolveDottedPath(payload, value.recordField);
-        if (typeof resolvedValue === "number") combatant.ac = resolvedValue;
+        if (typeof resolvedValue === "number" && resolvedValue !== combatant.ac) {
+          combatant.ac = resolvedValue;
+          changed = true;
+        }
       }
       if (tags?.recordField) {
         const resolvedTags = resolveDottedPath(payload, tags.recordField);
-        if (Array.isArray(resolvedTags)) combatant.conditions = resolvedTags.slice();
+        if (Array.isArray(resolvedTags)) {
+          const current = combatant.conditions || [];
+          const same = current.length === resolvedTags.length && current.every((entry, index) => entry === resolvedTags[index]);
+          if (!same) {
+            combatant.conditions = resolvedTags.slice();
+            changed = true;
+          }
+        }
       }
       // Every OTHER resource-role binding beyond the primary one — same
       // "leave alone if unresolvable" fallback, matched by name against
@@ -920,20 +1020,30 @@ export function initCombatTrackerWidget(
           const existing = combatant.resources.find((entry) => entry.name === binding.name);
           if (!existing || !binding.recordField) return;
           const current = resolveDottedPath(payload, binding.recordField);
-          if (typeof current === "number") existing.current = current;
+          if (typeof current === "number" && current !== existing.current) {
+            existing.current = current;
+            changed = true;
+          }
           if (binding.maxPath) {
             const max = resolveDottedPath(payload, binding.maxPath);
-            if (typeof max === "number") existing.max = max;
-          } else if (typeof binding.max === "number") {
+            if (typeof max === "number" && max !== existing.max) {
+              existing.max = max;
+              changed = true;
+            }
+          } else if (typeof binding.max === "number" && binding.max !== existing.max) {
             existing.max = binding.max;
+            changed = true;
           }
           if (binding.tempPath) {
             const temp = resolveDottedPath(payload, binding.tempPath);
-            if (typeof temp === "number") existing.temp = temp;
+            if (typeof temp === "number" && temp !== existing.temp) {
+              existing.temp = temp;
+              changed = true;
+            }
           }
         });
       }
-      markDirty();
+      if (changed) markDirty();
     } catch (error) {
       // Character deleted/inaccessible — leave the combatant's existing
       // mirror alone rather than erroring the whole tracker.
@@ -1024,9 +1134,10 @@ export function initCombatTrackerWidget(
   // conditions list + this System's vocabulary (state.conditions) plus an
   // onRemove that knows how to write a change back to THIS combatant, since
   // the shared function has no idea what a "combatant" is.
-  function renderCombatantTagBadges(combatant, { removable }) {
+  function renderCombatantTagBadges(combatant, { removable, compact = false }) {
     return renderTagBadges(combatant.conditions, state.conditions, {
       removable,
+      compact,
       // Re-resolves the CURRENT live combatant by id rather than closing
       // over `combatant` directly — see syncEditPanelValues' own tagInput
       // guard comment for why: that guard can keep this exact badge (and
@@ -1190,7 +1301,11 @@ export function initCombatTrackerWidget(
     const sortButton = iconButton("tabler:arrows-sort", "Sort by initiative");
     sortButton.addEventListener("click", sortByInitiative);
     const rollInitiativeButton = iconButton("tabler:dice-5", "Roll initiative for NPCs/monsters");
-    rollInitiativeButton.addEventListener("click", () => void rollInitiativeForNonCharacters());
+    // Sorted right after — a GM rolling initiative always wants the list in
+    // that order immediately, not as a separate manual step.
+    rollInitiativeButton.addEventListener("click", () => {
+      void rollInitiativeForNonCharacters().then(sortByInitiative);
+    });
     // Bulk alternative to the Add Combatant row below — the whole party in
     // one click instead of typing each PC in turn.
     const addPartyButton = iconButton("tabler:users-plus", "Add the party (PCs)");
@@ -1245,17 +1360,115 @@ export function initCombatTrackerWidget(
 
     const left = el("span", "d-flex align-items-center gap-2");
     if (state.encounter.started && index === state.encounter.activeIndex) left.appendChild(renderTurnBadge());
-    left.appendChild(el("span", "fw-semibold", String(combatant.initiative)));
+    // Its own click zone — jumps straight to Initiative instead of just
+    // toggling the row, so a quick "type a number, hit Enter" turn update
+    // never needs a separate click to find the field first.
+    const initiativeSpan = el("span", "fw-semibold", String(combatant.initiative));
+    initiativeSpan.style.cursor = "pointer";
+    initiativeSpan.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusCombatantField(combatant.id, "initInput");
+    });
+    left.appendChild(initiativeSpan);
     left.appendChild(el("span", null, combatant.name));
     if (isCombatantHidden(combatant)) left.appendChild(icon("tabler:eye-off"));
 
     const right = el("span", "d-flex align-items-center gap-2");
-    right.appendChild(el("span", "text-body-secondary small", formatHpText(combatant)));
-    right.appendChild(renderAcBadge(combatant));
-    right.appendChild(renderCombatantTagBadges(combatant, { removable: false }));
+    // Same zone-click idea as Initiative above — focuses the ±HP delta box
+    // (the "how much damage/healing just happened" field), not the raw
+    // total, matching how HP actually gets updated turn to turn.
+    const hpSpan = el("span", "text-body-secondary small", formatHpText(combatant));
+    hpSpan.style.cursor = "pointer";
+    hpSpan.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusCombatantField(combatant.id, "hpDeltaInput");
+    });
+    right.appendChild(hpSpan);
+    // Same zone-click idea again — focuses the AC input.
+    const acBadge = renderAcBadge(combatant);
+    acBadge.style.cursor = "pointer";
+    acBadge.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusCombatantField(combatant.id, "acInput");
+    });
+    right.appendChild(acBadge);
+    // And once more for the tag/condition icons — focuses the "Add a tag"
+    // input, since that's what a click here is almost always reaching for.
+    const tagBadges = renderCombatantTagBadges(combatant, { removable: false, compact: true });
+    tagBadges.style.cursor = "pointer";
+    tagBadges.addEventListener("click", (event) => {
+      event.stopPropagation();
+      focusCombatantField(combatant.id, "tagInput");
+    });
+    right.appendChild(tagBadges);
 
     row.append(left, right);
     return row;
+  }
+
+  // Applies/removes ONE HP-threshold-derived condition for a single
+  // reserved-key combatBinding role — same reserved-key convention as the
+  // existing resource/value/tags/modifier roles (see combat-bindings.js's
+  // own header comment), no hardcoded condition names or thresholds here.
+  // `isActive` is the caller's own threshold check (syncHpConditions,
+  // below); `replaceAll` (only `defeated` uses it) replaces every OTHER
+  // condition instead of adding alongside them, since an active condition
+  // like Poisoned or Charmed is narratively moot once unconscious. Only
+  // touches the condition list on an actual crossing (`has` guards both
+  // directions) so re-editing HP while already past/short of a threshold
+  // never wipes a condition a GM added by hand afterward. A System with no
+  // binding configured for this role, or whose declared conditionId doesn't
+  // actually exist in state.conditions, is a no-op — graceful, same "never
+  // guess" rule the rest of this file's System-driven lookups already follow.
+  function syncThresholdCondition(combatant, role, isActive, { replaceAll = false } = {}) {
+    const binding = findBindingByRole(state.combatBindings, role);
+    const conditionId = binding?.conditionId;
+    const valid = conditionId && (state.conditions || []).some((entry) => entry.id === conditionId);
+    if (!valid) return;
+    const has = (combatant.conditions || []).includes(conditionId);
+    if (isActive && !has) {
+      combatant.conditions = replaceAll ? [conditionId] : [...(combatant.conditions || []), conditionId];
+      if (replaceAll) combatant.hiddenTags = [];
+    } else if (!isActive && has) {
+      combatant.conditions = combatant.conditions.filter((entry) => entry !== conditionId);
+    }
+  }
+
+  // HP never goes negative — clamps to 0. Also keeps this System's own
+  // HP-threshold conditions (defeated/bloodied/hurt) in sync with HP
+  // crossing their threshold, in EITHER direction. The three bands are
+  // mutually exclusive by construction — hp<=0, 0<hp<=half, half<hp<maxHp —
+  // so a combatant is ever only ONE of the three, never two at once, same
+  // as the player-view text descriptor these tags replaced used to cascade
+  // through the identical three bands (see describeMonsterCondition).
+  // `defeated` runs first since it's the one that replaces everything else;
+  // bloodied/hurt's own hp>0 checks already exclude hp<=0, so neither ever
+  // re-adds itself against a list `defeated` just wiped.
+
+  function syncHpConditions(combatant) {
+    if (combatant.hp < 0) combatant.hp = 0;
+    const half = combatant.maxHp > 0 ? combatant.maxHp / 2 : 0;
+    syncThresholdCondition(combatant, "defeated", combatant.hp <= 0, { replaceAll: true });
+    syncThresholdCondition(combatant, "bloodied", combatant.hp > 0 && combatant.maxHp > 0 && combatant.hp <= half);
+    syncThresholdCondition(
+      combatant,
+      "hurt",
+      combatant.hp > 0 && combatant.maxHp > 0 && combatant.hp > half && combatant.hp < combatant.maxHp
+    );
+  }
+
+  // Enter, in one of buildEditPanel's own quick-edit inputs, commits AND
+  // collapses the panel; any other way of leaving the field (blur, tab-away)
+  // still just commits, same as before this existed — see collapseDetails'
+  // own comment for why only Enter gets the extra step.
+  function wireCommitOnEnter(input, commit) {
+    input.addEventListener("change", commit);
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      commit();
+      collapseDetails();
+    });
   }
 
   // Shown below the list whenever a combatant is selected — no separate
@@ -1288,9 +1501,22 @@ export function initCombatTrackerWidget(
       "Visible to players"
     );
     visibleButton.addEventListener("click", toggleSelectedHidden);
+    nameRow.appendChild(visibleButton);
+    // Monster-only — Crucible already fully supports a `?monster=<id>` deep
+    // link (its own applyDeepLinkParams), so this needs no new plumbing:
+    // just open it. NPCs/Characters have no equivalent "full stat block"
+    // tool to send them to.
+    if (combatant.refKind === "monster" && combatant.refId) {
+      const statsButton = iconButton("tabler:file-text", "View full stats in Crucible");
+      statsButton.addEventListener("click", () => {
+        const url = `${resolveToolHref("crucible", resolveToolContextPath())}?monster=${encodeURIComponent(combatant.refId)}`;
+        window.open(url, "_blank", "noopener");
+      });
+      nameRow.appendChild(statsButton);
+    }
     const deleteButton = iconButton("tabler:trash", "Delete combatant", "btn-outline-danger");
     deleteButton.addEventListener("click", deleteSelected);
-    nameRow.append(visibleButton, deleteButton);
+    nameRow.appendChild(deleteButton);
 
     // Labels come from the active System's own combatBindings entries (a
     // non-D&D System might call these "Reflexes"/"Stress"/"Defense"),
@@ -1308,7 +1534,7 @@ export function initCombatTrackerWidget(
     initInput.type = "number";
     initInput.style.width = "4.5rem";
     initInput.value = combatant.initiative;
-    initInput.addEventListener("change", () => {
+    wireCommitOnEnter(initInput, () => {
       const current = selectedCombatant();
       if (!current) return;
       current.initiative = Number(initInput.value) || 0;
@@ -1322,7 +1548,7 @@ export function initCombatTrackerWidget(
     acInput.type = "number";
     acInput.style.width = "4.5rem";
     acInput.value = combatant.ac ?? 0;
-    acInput.addEventListener("change", () => {
+    wireCommitOnEnter(acInput, () => {
       const current = selectedCombatant();
       if (!current) return;
       current.ac = Number(acInput.value) || 0;
@@ -1343,18 +1569,19 @@ export function initCombatTrackerWidget(
     hpInput.type = "number";
     hpInput.style.width = "3.5rem";
     hpInput.value = combatant.hp;
-    hpInput.addEventListener("change", () => {
+    wireCommitOnEnter(hpInput, () => {
       const current = selectedCombatant();
       if (!current) return;
       current.hp = Number(hpInput.value) || 0;
+      syncHpConditions(current);
       markDirty();
-      void writeThroughToCharacter(current, { hp: current.hp });
+      void writeThroughToCharacter(current, { hp: current.hp, conditions: current.conditions, hiddenTags: current.hiddenTags });
     });
     const maxHpInput = el("input", "form-control form-control-sm");
     maxHpInput.type = "number";
     maxHpInput.style.width = "3.5rem";
     maxHpInput.value = combatant.maxHp;
-    maxHpInput.addEventListener("change", () => {
+    wireCommitOnEnter(maxHpInput, () => {
       const current = selectedCombatant();
       if (!current) return;
       current.maxHp = Number(maxHpInput.value) || 0;
@@ -1365,7 +1592,7 @@ export function initCombatTrackerWidget(
     tempHpInput.type = "number";
     tempHpInput.style.width = "3.5rem";
     tempHpInput.value = combatant.tempHp ?? 0;
-    tempHpInput.addEventListener("change", () => {
+    wireCommitOnEnter(tempHpInput, () => {
       const current = selectedCombatant();
       if (!current) return;
       current.tempHp = Number(tempHpInput.value) || 0;
@@ -1383,15 +1610,16 @@ export function initCombatTrackerWidget(
     hpDeltaInput.setAttribute("aria-label", "Remove HP");
     hpDeltaInput.setAttribute("data-bs-toggle", "tooltip");
     hpDeltaInput.setAttribute("data-bs-title", "Remove this much HP — type a negative number to heal instead");
-    hpDeltaInput.addEventListener("change", () => {
+    wireCommitOnEnter(hpDeltaInput, () => {
       const amount = Number(hpDeltaInput.value);
       hpDeltaInput.value = "";
       if (!amount) return;
       const current = selectedCombatant();
       if (!current) return;
       current.hp -= amount;
+      syncHpConditions(current);
       markDirty();
-      void writeThroughToCharacter(current, { hp: current.hp });
+      void writeThroughToCharacter(current, { hp: current.hp, conditions: current.conditions, hiddenTags: current.hiddenTags });
     });
     hpRow.append(
       hpInput,
@@ -1409,8 +1637,13 @@ export function initCombatTrackerWidget(
     // sync, which wiped typing mid-keystroke by an unrelated render. Making
     // this row stable removes the whole bug class rather than chasing it.
     const tagsRow = el("div", "d-flex align-items-center justify-content-between gap-2 flex-wrap");
-    const badgesMount = el("div", "flex-grow-1");
-    const { row: addTagRow, visibilityButton: tagVisibilityButton } = buildTagInputRow(TAG_DATALIST_ID, {
+    // d-flex/align-items-center/gap-1 — a conditional "remove all" button
+    // (syncEditPanelValues, only when there's more than one condition) sits
+    // as this mount's own first child, inline with the badge-wrapper div
+    // renderCombatantTagBadges returns right after it; that wrapper's own
+    // internal flex-wrap still handles individual pills wrapping onto a new line.
+    const badgesMount = el("div", "flex-grow-1 d-flex align-items-center flex-wrap gap-1");
+    const { row: addTagRow, input: tagInput, visibilityButton: tagVisibilityButton } = buildTagInputRow(TAG_DATALIST_ID, {
       onAdd: (value) => {
         const current = selectedCombatant();
         const hidden = pendingTagHidden;
@@ -1434,9 +1667,11 @@ export function initCombatTrackerWidget(
       hpInput,
       maxHpInput,
       tempHpInput,
+      hpDeltaInput,
       acInput,
       visibleButton,
       badgesMount,
+      tagInput,
       tagVisibilityButton,
     };
   }
@@ -1477,6 +1712,13 @@ export function initCombatTrackerWidget(
     // applyTagVisibilityState — same pattern visibleButton uses.
     disposeTooltips(refs.badgesMount);
     refs.badgesMount.innerHTML = "";
+    // Only worth offering once there's more than one — removing a single
+    // condition already has its own per-badge remove button right there.
+    if ((combatant.conditions || []).length > 1) {
+      const removeAllButton = iconButton("tabler:x", "Remove all conditions", "btn-outline-danger");
+      removeAllButton.addEventListener("click", () => removeAllTags(combatant));
+      refs.badgesMount.appendChild(removeAllButton);
+    }
     refs.badgesMount.appendChild(renderCombatantTagBadges(combatant, { removable: true }));
     applyTagVisibilityState(refs.tagVisibilityButton, pendingTagHidden);
 
@@ -1493,7 +1735,13 @@ export function initCombatTrackerWidget(
     // All direct children of `root`'s gap-2 flex column — gap-2 only
     // applies between children actually in layout, so a hidden (d-none) mount contributes no extra blank space.
     topBarMount = el("div");
-    toolbarMount = el("div", "d-flex flex-wrap gap-3 align-items-center justify-content-end d-none");
+    // sticky-top + bg-body — stays reachable at the top of the widget's own
+    // scroll area (turn control shouldn't need scrolling back up to use)
+    // while topBarMount (the encounter/system picker) scrolls away with the
+    // rest, same as any other content. bg-body is required, not cosmetic —
+    // without an opaque background the list's own rows show through/behind
+    // it while scrolling underneath.
+    toolbarMount = el("div", "d-flex flex-wrap gap-3 align-items-center justify-content-end d-none sticky-top bg-body py-1");
     emptyStateMount = el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat.");
     listMount = el("div", "list-group d-none");
     // Not appended to `root` here — relocated dynamically into listMount
@@ -1541,35 +1789,59 @@ export function initCombatTrackerWidget(
     refreshTooltips(toolbarMount);
   }
 
-  // Rebuilt in full on most renders — combatant ROWS have no free-text
-  // inputs, so that's fine reflecting a poll/sync tick live. That stopped
-  // being unconditionally true once editPanelMount started living INLINE
-  // here instead of as a separate section — it DOES have free-text inputs,
-  // and rebuilding via innerHTML="" detaches whatever's currently focused,
-  // then re-inserts it moments later, during which the browser reliably
-  // fires blur — the same "typing interrupted by an unrelated render" class
-  // of bug fixed elsewhere in this file. Skipping the rebuild while focus
-  // is inside editPanelMount closes it: refreshEditPanel (called before
-  // this in renderGm) already handles syncing/tearing down its CONTENT
-  // independent of whether this function touches its POSITION — a
-  // deselect/delete moves focus itself before this check runs, so that
-  // case still updates immediately; only "still editing the SAME combatant" is deferred.
+  // Rebuilt in full on every render — combatant ROWS have no free-text
+  // inputs, so that's always fine reflecting a poll/sync tick or an edit
+  // live. editPanelMount DOES have free-text inputs, so it's never itself
+  // the node passed to appendChild/insertBefore while it might hold focus —
+  // confirmed (not just suspected) that Chrome blurs a focused descendant
+  // any time its own node is moved via appendChild/insertBefore, even
+  // reordering within the SAME parent, not only when crossing into a
+  // different one — an earlier fix here that relocated editPanelMount out to
+  // `container` and back on every refresh was still tripping this, since
+  // that relocation IS such a move; a periodic background refresh (GM
+  // character sync / a live-stream echo of the GM's own save, both on the
+  // order of a few seconds) reliably clipped focus a moment after a click
+  // zone set it. Instead, only ROW nodes (freshly created, never yet
+  // attached — inserting a parentless node is not a move and never blurs
+  // anything) are torn down and rebuilt; editPanelMount is used purely as an
+  // insertBefore REFERENCE point to thread rows in on either side of it
+  // without ever being the moved node itself. It only genuinely moves when
+  // newly selected or deselected this render, when nothing inside it is
+  // focused yet (focusCombatantField focuses its field only after render()
+  // returns) or nothing inside it is focused anymore (refreshEditPanel
+  // already emptied it on deselect, right before this runs).
   function refreshCombatantList() {
-    if (editPanelMount.contains(document.activeElement)) return;
     disposeTooltips(listMount);
-    listMount.innerHTML = "";
-    state.encounter.combatants.forEach((combatant, index) => {
-      listMount.appendChild(renderCombatantRow(combatant, index));
-      // Inline expansion, right after the row it belongs to. editPanelRefs
-      // (not just state.selectedCombatantId) is the source of truth for "is
-      // this panel actually built and ready" — refreshEditPanel maintains it.
-      if (editPanelRefs?.combatantId === combatant.id) {
-        listMount.appendChild(editPanelMount);
-      }
+    const selectedId = editPanelRefs?.combatantId || "";
+    const editPanelHere = editPanelMount.parentElement === listMount;
+
+    Array.from(listMount.children).forEach((child) => {
+      if (child !== editPanelMount) child.remove();
     });
+
+    let reachedSelected = false;
+    state.encounter.combatants.forEach((combatant, index) => {
+      const row = renderCombatantRow(combatant, index);
+      if (editPanelHere && !reachedSelected) {
+        listMount.insertBefore(row, editPanelMount);
+      } else {
+        listMount.appendChild(row);
+      }
+      if (combatant.id === selectedId) reachedSelected = true;
+    });
+
     if (!state.encounter.combatants.length) {
       listMount.appendChild(el("p", "text-body-secondary small mb-0", "No combatants yet."));
     }
+
+    if (selectedId && !editPanelHere) {
+      const rows = Array.from(listMount.children);
+      const targetIndex = state.encounter.combatants.findIndex((entry) => entry.id === selectedId);
+      listMount.insertBefore(editPanelMount, rows[targetIndex + 1] || null);
+    } else if (!selectedId && editPanelHere) {
+      listMount.removeChild(editPanelMount);
+    }
+
     refreshTooltips(listMount);
   }
 
@@ -1628,20 +1900,24 @@ export function initCombatTrackerWidget(
     // Was unconditional every renderGm() call, rebuilding the shared
     // <datalist>'s <option> elements out from under the browser while its
     // native suggestion popup was open — that's what made the "Add a tag"
-    // autocomplete list keep disappearing mid-use.
-    if (state.conditions !== lastConditionsRendered) {
-      renderTagDatalist(TAG_DATALIST_ID, state.conditions);
-      lastConditionsRendered = state.conditions;
+    // autocomplete list keep disappearing mid-use. A combatant essentially
+    // never carries the same condition twice, so whichever ones it already
+    // has are excluded from its own suggestions — signature covers both the
+    // vocabulary itself AND the selected combatant's current conditions, so
+    // adding/removing a tag refreshes the exclusion without rebuilding on
+    // every unrelated render tick.
+    const selectedForDatalist = selectedCombatant();
+    const datalistSignature = JSON.stringify({
+      vocabulary: (state.conditions || []).map((entry) => entry.id),
+      excluded: selectedForDatalist?.conditions || [],
+    });
+    if (datalistSignature !== lastConditionsRendered) {
+      const excludedIds = new Set(selectedForDatalist?.conditions || []);
+      const suggestable = (state.conditions || []).filter((entry) => !excludedIds.has(entry.id));
+      renderTagDatalist(TAG_DATALIST_ID, suggestable);
+      lastConditionsRendered = datalistSignature;
     }
     updateVisibilityAction();
-  }
-
-  // A rough, numeric-free read on how hurt a non-PC combatant is — players never see actual HP numbers, just this.
-  function describeMonsterCondition(hp, maxHp) {
-    if (hp <= 0) return "Unconscious";
-    if (maxHp > 0 && hp / maxHp <= 0.5) return "Bleeding";
-    if (hp < maxHp) return "Hurt";
-    return "";
   }
 
   // "Character 1"/"NPC 1"/"Monster 1" — reuses REF_KIND_LABELS.
@@ -1664,13 +1940,13 @@ export function initCombatTrackerWidget(
       el("span", null, isCombatantHidden(combatant) ? anonymizedCombatantLabel(combatant, hiddenCombatants) : combatant.name)
     );
     const right = el("span", "d-flex align-items-center gap-2");
+    // Non-PC combatants never show real HP numbers to players — the
+    // defeated/bloodied/hurt condition tags below (once a System configures
+    // those bindings) are the numeric-free substitute; see syncHpConditions.
     if (combatant.isPc) {
       right.appendChild(el("span", "text-body-secondary small", formatHpText(combatant)));
-    } else {
-      const condition = describeMonsterCondition(combatant.hp, combatant.maxHp);
-      if (condition) right.appendChild(el("span", "text-body-secondary small", condition));
     }
-    right.appendChild(renderCombatantTagBadges(combatant, { removable: false }));
+    right.appendChild(renderCombatantTagBadges(combatant, { removable: false, compact: true }));
     row.append(left, right);
     return row;
   }
@@ -1840,6 +2116,7 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
     const groupId = groupContext?.groupId;
     if (!groupId) throw new Error("No active campaign to show/hide this to.");
     if (actionName === "show") {
+      await retirePreviousEncounterSpotlight(dataManager, { groupId, nextEncounterId: encounterId });
       await dataManager.spotlightToGroup({ groupId, contentType: "encounter", contentId: encounterId });
     } else {
       await dataManager.clearSpotlight({ groupId, kind: "encounter", id: encounterId });
