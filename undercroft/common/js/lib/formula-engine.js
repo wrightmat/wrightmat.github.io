@@ -30,6 +30,13 @@ const BASE_FUNCTIONS = {
   and: (...values) => values.every(Boolean),
   or: (...values) => values.some(Boolean),
   not: (value) => !value,
+  // "+3" / "-1" / "+0" — a modifier shown with its sign. A non-numeric value
+  // passes through untouched rather than becoming "NaN".
+  signed: (value) => {
+    const number = Number(value);
+    if (value === "" || value == null || !Number.isFinite(number)) return value ?? "";
+    return number >= 0 ? `+${number}` : String(number);
+  },
   // String helpers — deliberately plain, no regex (SAFE_PATTERN can't
   // express a regex literal, and a template author shouldn't need to know
   // regex). `value` is always the first arg, unlike String.prototype's order.

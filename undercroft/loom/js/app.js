@@ -2,7 +2,7 @@ import { initAppShell } from "../../common/js/lib/app-shell.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initTierGate } from "../../common/js/lib/access.js";
 import { updateJsonPreview } from "../../common/js/lib/json-preview.js";
-import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { bindCollapsibleToggle, createCollapseToggleButton, setElementCollapsed } from "../../common/js/lib/collapsible.js";
 import { showConfirmModal } from "../../common/js/lib/confirm-modal.js";
 import {
   createJsonDataPanel,
@@ -10,6 +10,7 @@ import {
   createToolbarButtonGroup,
   createCollapsibleSection,
   createCompactField,
+  createIconPickerField,
   createSearchableCheckList,
 } from "../../common/js/lib/ui-components.js";
 import { readLockedFeatureIds, populateStringChecklist } from "../../common/js/lib/generator-kit.js";
@@ -49,6 +50,14 @@ import { createSortable } from "../../common/js/lib/dnd.js";
 import { loadClipLibrary, getAllClips } from "../../common/js/lib/audio-clip-library.js";
 import { MACRO_ACTION_CATALOG } from "../../common/js/lib/widgets/macro-action-catalog.js";
 import { listHaEntities } from "../../common/js/lib/widgets/home-assistant.js";
+import {
+  fetchWledDevices,
+  loadWledChoices,
+  ensureWledDeviceAlias,
+  resolveWledDeviceByAlias,
+} from "../../common/js/lib/widgets/wled.js";
+import { fillChoiceSelect } from "../../common/js/lib/widgets/wled-look-fields.js";
+import { createWledControl } from "../../common/js/lib/widgets/wled-control.js";
 import { HANDOUT_KINDS, KIND_LABELS as HANDOUT_KIND_LABELS } from "../../common/js/lib/widgets/handout.js";
 import {
   PROPERTY_TYPES,
@@ -1131,12 +1140,25 @@ document.querySelector("[data-admin-check-all-mount]")?.appendChild(adminCheckAl
 mountField("macro-select", createCompactField({ type: "select", id: "loomMacroSelect", label: "Macro", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-macro-select" }));
 mountField("macro-id", createCompactField({ type: "text", id: "loomMacroId", label: "Id", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-id", disabled: true }));
 mountField("macro-name", createCompactField({ type: "text", id: "loomMacroName", label: "Name", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-name" }));
-mountField("macro-icon", createCompactField({ type: "text", id: "loomMacroIcon", label: "Icon", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-macro-icon", placeholder: "tabler:bolt" }));
+// Tabler-only: a Macro's icon renders as an Iconify id on its Board card.
+// A dropdown pick sets the input's value programmatically, which fires no DOM
+// event — the dispatched change is what undo/Save tracking listens for.
+const macroIconField = createIconPickerField({
+  id: "loomMacroIcon",
+  label: "Icon",
+  labelClass: "form-label fw-semibold mb-0",
+  placeholder: "Search icons (default: bolt)",
+  sources: ["tabler"],
+  onSelect: () => macroIconInput.dispatchEvent(new Event("change", { bubbles: true })),
+});
+// Matches the small controls beside it (Id, Name).
+macroIconField.querySelector(".input-group").classList.add("input-group-sm");
+mountField("macro-icon", macroIconField);
 
 const macroRecordSelect = document.querySelector("[data-macro-select]");
 const macroIdInput = document.querySelector("[data-macro-id]");
 const macroNameInput = document.querySelector("[data-macro-name]");
-const macroIconInput = document.querySelector("[data-macro-icon]");
+const macroIconInput = macroIconField.querySelector("input");
 const macroActionsList = document.querySelector("[data-macro-actions]");
 const macroAddActionButton = document.querySelector("[data-macro-add-action]");
 const macroNewButton = document.querySelector("[data-macro-new]");
@@ -1471,6 +1493,9 @@ function makeRemoveButton(onRemove) {
   button.type = "button";
   button.className = "btn btn-outline-danger btn-sm loom-node-remove";
   button.textContent = "×";
+  button.setAttribute("aria-label", "Remove");
+  button.setAttribute("data-bs-toggle", "tooltip");
+  button.setAttribute("data-bs-title", "Remove");
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     recordUndoableChange("mapping", onRemove);
@@ -6122,21 +6147,139 @@ function macroKindEntitySelect(kind, currentValue, onChange, { leadingOption } =
   return select;
 }
 
+// --- WLED action fields: device + live preset/effect/segment selects ---------
+// The action list re-renders on every edit, so the device list is cached for
+// the page (the per-device choices are cached briefly in wled.js's
+// loadWledChoices) — otherwise each keystroke elsewhere would re-hit them.
+let macroWledDevicesPromise = null;
+
+function loadMacroWledDevices({ refresh = false } = {}) {
+  if (!macroWledDevicesPromise || refresh) {
+    macroWledDevicesPromise = fetchWledDevices(dataManager).then((devices) =>
+      devices.filter((device) => device.type !== "haLight")
+    );
+  }
+  return macroWledDevicesPromise;
+}
+
+// A device's live choices for the action's own device (its alias), for the
+// shared WLED control. Rejects with a readable reason when there's no usable
+// device, which the control shows in place of the lists.
+function loadMacroChoices(action) {
+  return loadMacroWledDevices().then((devices) => {
+    const device = resolveWledDeviceByAlias(devices, action.target);
+    if (!device) throw new Error("Pick a device first.");
+    return loadWledChoices(device);
+  });
+}
+
+// The look keys a macro's effect action stores, flat in `params`.
+const MACRO_LOOK_KEYS = ["fx", "pal", "col", "bri", "sx", "ix", "c1", "c2", "c3", "o1", "o2", "o3"];
+
+// Same options the Lighting widget's own device select shows (label, else
+// host), but the stored value is the device's alias — what keeps a shared
+// Macro working on anyone's own rig. A device with no alias yet gets one on
+// selection (see ensureWledDeviceAlias).
+function renderMacroWledDeviceField(action, onChange) {
+  const saved = action.target || "";
+  const select = macroSelect([{ value: saved, label: saved || "Loading…" }], saved, () => {});
+  const NEEDS_ALIAS = "ip::";
+  void loadMacroWledDevices()
+    .then((devices) => {
+      fillChoiceSelect(select, {
+        blank: devices.length ? "Select a device…" : "No devices saved yet — add one in the Lighting widget",
+        options: devices.map((device) => ({
+          value: device.alias || `${NEEDS_ALIAS}${device.ip}`,
+          label: device.label || device.ip,
+        })),
+        current: saved,
+      });
+    })
+    .catch(() => fillChoiceSelect(select, { blank: "Unable to load devices", options: [], current: saved }));
+  select.addEventListener("change", async () => {
+    if (!select.value.startsWith(NEEDS_ALIAS)) {
+      onChange(select.value);
+      return;
+    }
+    try {
+      // The full saved list (HA lights included) — saving writes the whole
+      // list back, so a WLED-only subset would delete the rest.
+      const devices = await fetchWledDevices(dataManager);
+      const result = await ensureWledDeviceAlias(dataManager, devices, select.value.slice(NEEDS_ALIAS.length));
+      if (!result) throw new Error("That device is no longer saved.");
+      void loadMacroWledDevices({ refresh: true });
+      onChange(result.alias);
+    } catch (error) {
+      status?.show(error?.message || "Unable to give that device an alias.", { type: "error", timeout: 3000 });
+    }
+  });
+  return select;
+}
+
 function renderMacroParamField(fieldName, action, onUpdate) {
   const params = action.params && typeof action.params === "object" ? action.params : {};
   const setParam = (patch) => onUpdate({ ...params, ...patch });
 
   switch (fieldName) {
     case "presetId":
-      return macroFieldRow("Preset id", macroNumberInput(params.presetId, (v) => setParam({ presetId: v })));
+      return createWledControl({
+        value: { preset: params.presetId },
+        loadChoices: () => loadMacroChoices(action),
+        sections: { preset: true },
+        onChange: (next) => setParam({ presetId: next.preset }),
+      });
     case "value":
+      // The WLED brightness action's value is a brightness (always set, so
+      // "live"); every other action's `value` is a plain number.
+      if (action.type === "wled" && action.action === "brightness") {
+        return createWledControl({
+          value: { bri: params.value },
+          mode: "live",
+          sections: { look: { effect: false, palette: false, colors: 0, effectOptions: false } },
+          onChange: (next) => setParam({ value: next.bri }),
+        });
+      }
       return macroFieldRow("Value", macroNumberInput(params.value, (v) => setParam({ value: v })));
     case "delta":
       return macroFieldRow("Delta (+/-)", macroNumberInput(params.delta, (v) => setParam({ delta: v })));
-    case "fx":
-      return macroFieldRow("Effect index", macroNumberInput(params.fx, (v) => setParam({ fx: v })));
-    case "segmentId":
-      return macroFieldRow("Segment id (optional)", macroNumberInput(params.segmentId, (v) => setParam({ segmentId: v })));
+    case "seconds": {
+      const input = macroNumberInput(params.seconds, (v) => setParam({ seconds: v }));
+      input.min = "0";
+      input.step = "0.5";
+      return macroFieldRow("Seconds to wait", input);
+    }
+    case "look":
+      // Everything the effect action sets — segment, power, and the look —
+      // from the shared WLED control. It maps onto the same flat params the
+      // action has always stored; "exclusive" and "turnOn" are saved only
+      // when turned OFF, so macros that predate them keep the default (on).
+      return createWledControl({
+        value: {
+          segments: params.segmentName ? [params.segmentName] : [],
+          segmentId: params.segmentId,
+          exclusive: params.exclusive !== false,
+          power: params.turnOn !== false,
+          ...Object.fromEntries(MACRO_LOOK_KEYS.map((key) => [key, params[key]])),
+        },
+        loadChoices: () => loadMacroChoices(action),
+        sections: {
+          target: { label: "Segment", noneLabel: "First segment (default)", exclusive: true },
+          power: { style: "checkbox", label: "Turn the light on if it's off" },
+          look: true,
+        },
+        stateKey: `macro:${action.type}:${action.action}`,
+        onChange: (next, patch) => {
+          const update = {};
+          if ("segments" in patch) update.segmentName = next.segments?.[0];
+          if ("segmentId" in patch) update.segmentId = next.segmentId;
+          if ("exclusive" in patch) update.exclusive = next.exclusive ? undefined : false;
+          if ("power" in patch) update.turnOn = next.power ? undefined : false;
+          MACRO_LOOK_KEYS.forEach((key) => {
+            if (key in patch) update[key] = next[key];
+          });
+          setParam(update);
+        },
+      });
     case "entityId": {
       // Populated from Home Assistant's live entity list rather than a
       // free-text field — same "pick from what exists" shape
@@ -6288,7 +6431,7 @@ function renderMacroParamField(fieldName, action, onUpdate) {
 
 function renderMacroTargetField(targetKind, action, onChange) {
   if (targetKind === "alias") {
-    return macroFieldRow("Device alias", macroTextInput(action.target, "e.g. table-lights", onChange));
+    return macroFieldRow("Device", renderMacroWledDeviceField(action, onChange));
   }
   if (targetKind === "characterId") {
     const select = macroKindEntitySelect("character", action.target, onChange, {
@@ -6311,6 +6454,12 @@ function renderMacroTargetField(targetKind, action, onChange) {
 // need). newMacroEditor/loadMacroIntoEditor/applyMacroSnapshot all reset
 // this before re-rendering.
 let macroEditorActions = [];
+// Whether each action's fields are expanded, index-aligned with
+// macroEditorActions — kept here (not read back from the DOM) because every
+// edit re-renders the whole list. View state only, never saved with the macro.
+// Anything not explicitly opened stays collapsed, so a loaded macro opens fully
+// collapsed and only a just-added action starts expanded.
+let macroActionOpen = [];
 
 function updateMacroAction(index, patch) {
   recordUndoableChange("macro", () => {
@@ -6323,6 +6472,7 @@ function updateMacroAction(index, patch) {
 function removeMacroAction(index) {
   recordUndoableChange("macro", () => {
     macroEditorActions.splice(index, 1);
+    macroActionOpen.splice(index, 1);
     renderMacroActionsEditor();
   });
 }
@@ -6332,6 +6482,8 @@ function reorderMacroActions(oldIndex, newIndex) {
   recordUndoableChange("macro", () => {
     const [moved] = macroEditorActions.splice(oldIndex, 1);
     macroEditorActions.splice(newIndex, 0, moved);
+    const [movedOpen] = macroActionOpen.splice(oldIndex, 1);
+    macroActionOpen.splice(newIndex, 0, Boolean(movedOpen));
     renderMacroActionsEditor();
   });
 }
@@ -6343,20 +6495,38 @@ function renderMacroActionRow(action, index) {
   const headerRow = document.createElement("div");
   headerRow.className = "d-flex align-items-center gap-2";
 
+  // Everything under the header (target + fields) — the header itself stays
+  // visible when collapsed, so the type/action selects still read as a summary.
+  const body = document.createElement("div");
+  body.className = "d-flex flex-column gap-2";
+  const collapsed = !macroActionOpen[index];
+  const { button: collapseButton } = createCollapseToggleButton({
+    label: `action ${index + 1}`,
+    collapsed,
+    onToggle: (nextCollapsed) => {
+      macroActionOpen[index] = !nextCollapsed;
+      setElementCollapsed(body, nextCollapsed);
+    },
+  });
+  setElementCollapsed(body, collapsed);
+
   const handle = document.createElement("span");
   handle.className = "iconify text-body-secondary";
   handle.dataset.icon = "tabler:grip-vertical";
   handle.setAttribute("data-sortable-handle", "");
   handle.setAttribute("aria-hidden", "true");
   handle.style.cursor = "grab";
-  headerRow.appendChild(handle);
+  headerRow.append(collapseButton, handle);
 
   const typeOptions = [
-    { value: "", label: "Select a widget…" },
+    { value: "", label: "Select an action type…" },
     ...Object.entries(MACRO_ACTION_TYPES).map(([value, def]) => ({ value, label: def.label })),
   ];
+  // Changing type/action swaps in fields the author needs to fill, so it
+  // opens a collapsed action rather than leaving them hidden.
   const typeSelect = macroSelect(typeOptions, action.type || "", (value) => {
     const firstAction = Object.keys(macroActionsFor(value))[0] || "";
+    macroActionOpen[index] = true;
     updateMacroAction(index, { type: value, action: firstAction, target: "", params: {} });
   });
   typeSelect.classList.add("flex-grow-1");
@@ -6368,11 +6538,31 @@ function renderMacroActionRow(action, index) {
       label: def.label || value,
     }));
     const actionSelect = macroSelect(actionOptions, action.action || "", (value) => {
+      macroActionOpen[index] = true;
       updateMacroAction(index, { action: value, params: {} });
     });
     actionSelect.classList.add("flex-grow-1");
     headerRow.appendChild(actionSelect);
   }
+
+  // Beside Remove so an action can be moved without dragging (the grip
+  // handle only helps once a macro already has two actions to drag between).
+  headerRow.append(
+    createIconButton({
+      icon: "tabler:arrow-up",
+      label: "Move up",
+      className: "p-1",
+      attrs: { disabled: index === 0 },
+      onClick: () => reorderMacroActions(index, index - 1),
+    }),
+    createIconButton({
+      icon: "tabler:arrow-down",
+      label: "Move down",
+      className: "p-1",
+      attrs: { disabled: index === macroEditorActions.length - 1 },
+      onClick: () => reorderMacroActions(index, index + 1),
+    })
+  );
 
   const removeButton = document.createElement("button");
   removeButton.type = "button";
@@ -6389,7 +6579,7 @@ function renderMacroActionRow(action, index) {
   const typeDef = MACRO_ACTION_TYPES[action.type];
   if (typeDef?.target) {
     const targetField = renderMacroTargetField(typeDef.target, action, (value) => updateMacroAction(index, { target: value }));
-    if (targetField) row.appendChild(targetField);
+    if (targetField) body.appendChild(targetField);
   }
 
   if (action.type && action.action) {
@@ -6403,9 +6593,10 @@ function renderMacroActionRow(action, index) {
         );
         if (fieldEl) fieldsWrap.appendChild(fieldEl);
       });
-      row.appendChild(fieldsWrap);
+      body.appendChild(fieldsWrap);
     }
   }
+  row.appendChild(body);
 
   return row;
 }
@@ -6419,6 +6610,9 @@ function renderMacroActionsEditor() {
   // BUG CLASS 2).
   disposeTooltips(macroActionsList);
   macroActionsList.innerHTML = "";
+  // Re-aligned here for every path that swaps the whole list (load, new,
+  // undo/redo) rather than each one resetting it: extras closed, surplus dropped.
+  macroActionOpen = macroEditorActions.map((_, index) => Boolean(macroActionOpen[index]));
   if (!macroEditorActions.length) {
     const empty = document.createElement("p");
     empty.className = "small text-body-secondary mb-0";
@@ -6461,7 +6655,7 @@ function applyMacroSnapshot(snapshot) {
   if (!snapshot) return;
   if (macroIdInput) macroIdInput.value = snapshot.id || "";
   if (macroNameInput) macroNameInput.value = snapshot.name || "";
-  if (macroIconInput) macroIconInput.value = snapshot.icon || "";
+  macroIconField.setValue(snapshot.icon || "");
   macroEditorActions = Array.isArray(snapshot.actions) ? snapshot.actions : [];
   renderMacroActionsEditor();
 }
@@ -6475,8 +6669,9 @@ function newMacroEditor({ reveal = true } = {}) {
     macroIdInput.disabled = false;
   }
   if (macroNameInput) macroNameInput.value = "";
-  if (macroIconInput) macroIconInput.value = "";
+  macroIconField.setValue("");
   macroEditorActions = [];
+  macroActionOpen = [];
   renderMacroActionsEditor();
   if (reveal) setMacroFormVisible(true);
   markClean("macro");
@@ -6496,8 +6691,9 @@ async function loadMacroIntoEditor(id) {
       macroIdInput.disabled = true;
     }
     if (macroNameInput) macroNameInput.value = payload.name || "";
-    if (macroIconInput) macroIconInput.value = payload.icon || "";
+    macroIconField.setValue(payload.icon || "");
     macroEditorActions = Array.isArray(payload.actions) ? payload.actions : [];
+    macroActionOpen = [];
     renderMacroActionsEditor();
     await refreshLibraryEntryCatalog("macro");
     markClean("macro");
@@ -6596,6 +6792,8 @@ if (macroAddActionButton) {
   macroAddActionButton.addEventListener("click", () => {
     recordUndoableChange("macro", () => {
       macroEditorActions.push({ type: "", action: "", target: "", params: {} });
+      // The one case that starts expanded — a new action is empty until filled in.
+      macroActionOpen[macroEditorActions.length - 1] = true;
       renderMacroActionsEditor();
     });
   });
@@ -7814,6 +8012,12 @@ async function init() {
   newSystemEditor({ reveal: false });
 
   newMacroEditor({ reveal: false });
+
+  // Plain tab deep link (a help topic's "Open in Loom") — the entity deep
+  // links below override it when present. A tab this account's tier can't
+  // see is ignored, leaving the default tab.
+  const deepLinkView = new URLSearchParams(window.location.search).get("view");
+  if (deepLinkView && loomAvailableViews().includes(deepLinkView)) setLoomView(deepLinkView);
 
   // Deep link from the Dashboard's Board widget (board.js's
   // renderMacroButtonCard) — clicking a macro-button card while rearranging

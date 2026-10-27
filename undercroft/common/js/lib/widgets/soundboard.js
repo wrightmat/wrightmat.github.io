@@ -791,17 +791,20 @@ export function initSoundboardWidget(
     renderSection(sfxHost, "sfx");
   }
 
-  // Each type gets its own independently bounded, scrollable section —
-  // otherwise a growing shared library would make the widget grow without
-  // bound. Returns `{section, host}`: `section` (the labeled wrapper) gets
-  // appended to the widget; `host` (scrollable inner div) is what
-  // renderSection fills.
+  // Each type gets its own scrollable section, sharing whatever height the
+  // widget itself has been resized to (flex-grow-1 on both `section` and
+  // `host`, split evenly between Music and SFX) rather than a fixed cap —
+  // a growing shared library scrolls within that share instead of growing
+  // the widget without bound. minHeight is a floor only, not a ceiling, so
+  // a small/default widget still shows a couple of rows. Returns
+  // `{section, host}`: `section` (the labeled wrapper) gets appended to the
+  // widget; `host` (scrollable inner div) is what renderSection fills.
   function buildScrollableSection(type) {
-    const section = el("div", "d-flex flex-column gap-1");
+    const section = el("div", "d-flex flex-column gap-1 flex-grow-1");
+    section.style.minHeight = "0";
     section.appendChild(el("div", "small fw-semibold text-body-secondary", `${TYPE_LABEL[type]}${type === "music" ? "" : "s"}`));
-    const host = el("div", "d-flex flex-column gap-1");
-    host.style.maxHeight = "8rem";
-    host.style.overflowY = "auto";
+    const host = el("div", "d-flex flex-column gap-1 flex-grow-1 overflow-auto");
+    host.style.minHeight = "4rem";
     section.appendChild(host);
     return { section, host };
   }

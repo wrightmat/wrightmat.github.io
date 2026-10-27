@@ -1,0 +1,24 @@
+{
+  "id": "feat.elemental-fury",
+  "name": "Elemental Fury",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "The might of the elements flows through you. You gain one of the following options of your choice.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The might of the elements flows through you. You gain one of the following options of your choice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

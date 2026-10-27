@@ -34,7 +34,7 @@ export function showConfirmModal({
     overlay.tabIndex = -1;
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title fs-5"></h2>

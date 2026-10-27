@@ -49,8 +49,10 @@ function createDefaultConfig() {
 
 // A card whose entire trimmed text is one `` `macro:Name` `` span and
 // nothing else — rendered as a big button (renderMacroButtonCard) instead
-// of the normal small reference-card body.
-const PURE_MACRO_CARD_PATTERN = /^`\s*macro:\s*(.+?)\s*`$/i;
+// of the normal small reference-card body. The backticks are optional: a card
+// is one reference, so a bare `macro:Name` is unambiguous, and requiring the
+// markdown syntax just turned a plain `macro:Name` into silent plain text.
+const PURE_MACRO_CARD_PATTERN = /^`?\s*macro:\s*(.+?)\s*`?$/i;
 function isPureMacroCard(text) {
   const match = PURE_MACRO_CARD_PATTERN.exec((text || "").trim());
   return match ? match[1].trim() : null;
@@ -90,6 +92,8 @@ export function initBoardWidget(
   let titleIndex = null;
   let validKindIds = new Set();
   let kindLabelsMap = {};
+  // Each kind's own registry icon — the "no icon of its own" fallback for a card.
+  let kindIconsMap = {};
   // {id, payload} shape attachWikiLinkAutocomplete's getEntries expects — kept separately since
   // buildTitleIndex only returns a resolver, not the raw list.
   let journalEntriesForAutocomplete = [];
@@ -105,6 +109,7 @@ export function initBoardWidget(
       journalEntriesForAutocomplete = normalizedJournalEntries;
       validKindIds = new Set((kinds || []).map((kind) => kind.id).filter((id) => !EXCLUDED_KINDS.has(id)));
       kindLabelsMap = Object.fromEntries((kinds || []).map((kind) => [kind.id, kind.label || kind.id]));
+      kindIconsMap = Object.fromEntries((kinds || []).filter((kind) => kind.icon).map((kind) => [kind.id, kind.icon]));
     } catch (error) {
       titleIndex = null;
     }
@@ -164,9 +169,10 @@ export function initBoardWidget(
     });
   }
 
-  // The old Macro board widget's button rendering, generalized: icon/color
-  // now come from the card's own authored properties instead of the
-  // macro's own `.icon`. Clicking in Edit-layout mode opens Loom's macro
+  // The old Macro board widget's button rendering, generalized: color comes
+  // from the card's own authored properties; the icon is the card's own if
+  // one was picked, else the macro's own `.icon`, else the macro kind's
+  // registry icon. Clicking in Edit-layout mode opens Loom's macro
   // editor instead of running it, matching that widget's old click handler
   // (real lights/sound firing while just rearranging cards would surprise).
   function renderMacroButtonCard(card, macroRef) {
@@ -180,10 +186,28 @@ export function initBoardWidget(
     button.dataset.macroRunButton = "";
     button.setAttribute("data-bs-toggle", "tooltip");
     button.setAttribute("data-bs-title", isEditing?.() ? "Edit in Loom" : "Run macro");
-    const iconEl = el("span", "iconify fs-4");
-    iconEl.dataset.icon = card.icon || "tabler:bolt";
-    iconEl.setAttribute("aria-hidden", "true");
-    button.appendChild(iconEl);
+    // The macro's own icon needs a lookup, so the glyph is added once the
+    // icon is known (a placeholder swapped later would stay unrendered — the
+    // icon library only renders new elements). The slot reserves the glyph's
+    // height so the button doesn't jump.
+    const iconSlot = el("span", "d-inline-flex fs-4");
+    iconSlot.style.minHeight = "1em";
+    const showIcon = (iconName) => {
+      const iconEl = el("span", "iconify");
+      iconEl.dataset.icon = iconName;
+      iconEl.setAttribute("aria-hidden", "true");
+      iconSlot.replaceChildren(iconEl);
+    };
+    if (card.icon) {
+      showIcon(card.icon);
+    } else {
+      void findMacro(dataManager, macroRef)
+        .catch(() => null)
+        .then((macro) => {
+          if (!destroyed) showIcon(macro?.icon || kindIconsMap.macro || "tabler:bolt");
+        });
+    }
+    button.appendChild(iconSlot);
     button.appendChild(el("span", "small text-center", macroRef));
     button.addEventListener("click", () => {
       if (isEditing?.()) {
@@ -293,13 +317,13 @@ export function initBoardWidget(
     textInput.className = "form-control";
     textInput.rows = 3;
     textInput.value = currentCard().text || "";
-    textInput.placeholder = "[[Journal Page]], a URL, `macro:Name`, `dice:1d6`, `npc:Name`…";
+    textInput.placeholder = "Start typing a page, macro, NPC…, or paste a URL or notes";
     const commitText = () => updateCardField(bucket.id, card.id, { text: textInput.value.trim() });
     textInput.addEventListener("blur", commitText);
     // Attached before this input's own keydown listener, same ordering as
     // the "Add a card" input below — each autocomplete's handler must run
     // first so event.defaultPrevented is set by the time Enter-to-commit checks it.
-    const codeAutocomplete = attachCodeBlockAutocomplete(textInput, { dataManager });
+    const codeAutocomplete = attachCodeBlockAutocomplete(textInput, { dataManager, freeSearch: true });
     const wikiAutocomplete = attachWikiLinkAutocomplete(textInput, { getEntries: () => journalEntriesForAutocomplete });
     modalElement.addEventListener(
       "hidden.bs.modal",
@@ -458,7 +482,7 @@ export function initBoardWidget(
     const addInput = document.createElement("input");
     addInput.type = "text";
     addInput.className = "form-control form-control-sm";
-    addInput.placeholder = "Add a card… [[Page]] or `macro:";
+    addInput.placeholder = "Add a card… start typing a page, macro, NPC…";
     addInput.dataset.addInput = bucket.id;
     const commitAdd = () => {
       const text = addInput.value.trim();
@@ -469,7 +493,7 @@ export function initBoardWidget(
     // Both attached before this input's own keydown listener, same ordering
     // reason as the edit modal's text field — only one dropdown is ever
     // open at once (mutually exclusive trigger patterns).
-    activeAutocompletes.push(attachCodeBlockAutocomplete(addInput, { dataManager }));
+    activeAutocompletes.push(attachCodeBlockAutocomplete(addInput, { dataManager, freeSearch: true }));
     activeAutocompletes.push(attachWikiLinkAutocomplete(addInput, { getEntries: () => journalEntriesForAutocomplete }));
     addInput.addEventListener("keydown", (event) => {
       if (event.defaultPrevented) return;

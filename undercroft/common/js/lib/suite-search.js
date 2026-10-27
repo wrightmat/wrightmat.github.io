@@ -5,6 +5,8 @@
 // Click/Enter navigates via kind-tool-route.js's routing table — the same
 // one relationship-editor.js's "Open in X" and Orrery's marker link-out
 // use, so a kind that isn't deep-linkable there isn't searchable here.
+// Help topics (help-topics.json) are searched too, as their own small "Help"
+// group above the content results.
 //
 // Fully self-contained: builds its own DataManager instance rather than
 // taking one as a parameter, so app-shell.js wires this in once for every
@@ -15,6 +17,16 @@ import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { buildKindToolUrl, kindToolLabel } from "./kind-tool-route.js";
 import { initTooltip } from "./tooltips.js";
+import { loadHelpTopics } from "./help.js";
+
+// Module-relative, so they resolve the same from every tool's page.
+const HELP_TOPICS_URL = new URL("../../data/help-topics.json", import.meta.url).href;
+const DOCS_PAGE_URL = new URL("../../docs.html", import.meta.url).href;
+// Same icon the "?" help badges use throughout the suite.
+const HELP_ICON = "tabler:help";
+// Few enough that a broad word ("monster") can't push the actual content
+// results off the list.
+const MAX_HELP_RESULTS = 3;
 
 // Icon/label per kind — deliberately NOT loaded from common/data/kind/*.json
 // (content-fetch.js pulls in the whole D&D Beyond/mapping-engine import
@@ -178,6 +190,28 @@ async function searchServer(query, dataManager) {
   }
 }
 
+// Help topics are matched on title first (prefix ahead of mid-string), then
+// on their summary/detail text — a separate, small group rather than part of
+// mergeResults' ranking, so a topic never competes with Library records for
+// the same slots.
+function searchHelp(query, topics) {
+  const needle = query.toLowerCase();
+  const matches = [];
+  topics.forEach((topic) => {
+    const title = topic.title.toLowerCase();
+    if (title.includes(needle)) {
+      matches.push({ rank: title.startsWith(needle) ? 0 : 1, topic, matchType: "title", snippet: topic.summary });
+      return;
+    }
+    const text = [topic.summary, ...topic.details].find((line) => line.toLowerCase().includes(needle));
+    if (text) matches.push({ rank: 2, topic, matchType: "body", snippet: buildSnippet(text, query) });
+  });
+  return matches
+    .sort((a, b) => a.rank - b.rank || a.topic.title.localeCompare(b.topic.title))
+    .slice(0, MAX_HELP_RESULTS)
+    .map(({ topic, matchType, snippet }) => ({ topic, title: topic.title, category: topic.category, matchType, snippet }));
+}
+
 const MATCH_TYPE_RANK = { title: 0, body: 1, reference: 2 };
 
 // Server results win over a local mirror of the same record (richer — owner
@@ -243,51 +277,23 @@ function buildResultRow(entry, currentUsername, query) {
   row.className = "suite-search-result";
   row.setAttribute("role", "option");
 
-  const main = document.createElement(href ? "a" : "div");
-  main.className = "suite-search-result-main";
-  if (href) main.href = href;
-
-  const iconEl = document.createElement("span");
-  iconEl.className = "iconify suite-search-result-icon";
-  iconEl.dataset.icon = meta.icon;
-  iconEl.setAttribute("aria-hidden", "true");
-  main.appendChild(iconEl);
-
-  const textWrap = document.createElement("span");
-  textWrap.className = "suite-search-result-text";
-
-  const titleEl = document.createElement("span");
-  titleEl.className = "suite-search-result-title";
-  titleEl.textContent = entry.title;
-  textWrap.appendChild(titleEl);
-
   const subtitleParts = [meta.label, kindToolLabel(entry.kind)].filter(Boolean);
   if (entry.ownerUsername && entry.ownerUsername !== currentUsername) {
     subtitleParts.push(`shared by ${entry.ownerUsername}`);
   } else if (entry.source === "local") {
     subtitleParts.push("saved locally");
   }
-  const subtitleEl = document.createElement("span");
-  subtitleEl.className = "suite-search-result-subtitle";
-  subtitleEl.textContent = subtitleParts.join(" · ");
-  textWrap.appendChild(subtitleEl);
-
-  // Context line only for a body/reference match. A reference match's
-  // snippet ("References Feature: Void Body") has no literal query
-  // substring to highlight, so it renders as plain text.
-  if (entry.snippet) {
-    const snippetEl = document.createElement("span");
-    snippetEl.className = "suite-search-result-snippet";
-    if (entry.matchType === "body") {
-      appendHighlighted(snippetEl, entry.snippet, query);
-    } else {
-      snippetEl.textContent = entry.snippet;
-    }
-    textWrap.appendChild(snippetEl);
-  }
-
-  main.appendChild(textWrap);
-  row.appendChild(main);
+  row.appendChild(
+    buildResultMain({
+      href,
+      iconName: meta.icon,
+      title: entry.title,
+      subtitle: subtitleParts.join(" · "),
+      snippet: entry.snippet,
+      highlight: entry.matchType === "body",
+      query,
+    })
+  );
 
   // Same window.open(url, "_blank", "noopener,noreferrer") convention as
   // relationship-editor.js's "Open in X" — doesn't call closeResults()/
@@ -313,10 +319,93 @@ function buildResultRow(entry, currentUsername, query) {
   return row;
 }
 
+// The icon + title + subtitle + snippet block shared by Library and help
+// rows. A snippet is highlighted only for a body match — a reference match's
+// ("References Feature: Void Body") has no literal query substring to mark,
+// and a title match's is a topic summary, not matched text.
+function buildResultMain({ href, iconName, title, subtitle, snippet, highlight, query }) {
+  const main = document.createElement(href ? "a" : "div");
+  main.className = "suite-search-result-main";
+  if (href) main.href = href;
+
+  const iconEl = document.createElement("span");
+  iconEl.className = "iconify suite-search-result-icon";
+  iconEl.dataset.icon = iconName;
+  iconEl.setAttribute("aria-hidden", "true");
+  main.appendChild(iconEl);
+
+  const textWrap = document.createElement("span");
+  textWrap.className = "suite-search-result-text";
+
+  const titleEl = document.createElement("span");
+  titleEl.className = "suite-search-result-title";
+  titleEl.textContent = title;
+  textWrap.appendChild(titleEl);
+
+  const subtitleEl = document.createElement("span");
+  subtitleEl.className = "suite-search-result-subtitle";
+  subtitleEl.textContent = subtitle;
+  textWrap.appendChild(subtitleEl);
+
+  if (snippet) {
+    const snippetEl = document.createElement("span");
+    snippetEl.className = "suite-search-result-snippet";
+    if (highlight) {
+      appendHighlighted(snippetEl, snippet, query);
+    } else {
+      snippetEl.textContent = snippet;
+    }
+    textWrap.appendChild(snippetEl);
+  }
+
+  main.appendChild(textWrap);
+  return main;
+}
+
+// Links to the topic's anchor on the full documentation page. A new tab
+// (unlike Library rows, no separate pop-out button is needed) since
+// navigating this one away would discard whatever the tool has open — except
+// on docs.html itself, where a plain in-page anchor just scrolls.
+function buildHelpRow(entry, query) {
+  const row = document.createElement("div");
+  row.className = "suite-search-result";
+  row.setAttribute("role", "option");
+  const onDocsPage = document.body.dataset.undercroftTool === "docs";
+  const main = buildResultMain({
+    href: onDocsPage ? `#${entry.topic.id}` : `${DOCS_PAGE_URL}#${entry.topic.id}`,
+    iconName: HELP_ICON,
+    title: entry.title,
+    subtitle: `Help · ${entry.category}`,
+    snippet: entry.snippet,
+    highlight: entry.matchType === "body",
+    query,
+  });
+  if (!onDocsPage) {
+    main.target = "_blank";
+    main.rel = "noopener noreferrer";
+  }
+  row.appendChild(main);
+  return row;
+}
+
+function buildSectionLabel(text) {
+  const label = document.createElement("div");
+  label.className = "suite-search-section-label";
+  label.textContent = text;
+  return label;
+}
+
 export function initSuiteSearch({ container } = {}) {
   if (!container) return;
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+
+  // Read synchronously by runSearch — empty until the (usually already
+  // cached) fetch resolves, so a keystroke never waits on it.
+  let helpTopics = [];
+  void loadHelpTopics(HELP_TOPICS_URL).then(({ topics }) => {
+    helpTopics = topics;
+  });
 
   const wrap = document.createElement("div");
   wrap.className = "suite-search";
@@ -403,7 +492,7 @@ export function initSuiteSearch({ container } = {}) {
   }
 
   function setActive(index) {
-    const rows = Array.from(results.children);
+    const rows = Array.from(results.children).filter((row) => row.matches(".suite-search-result"));
     rows.forEach((row) => row.classList.remove("suite-search-result-active"));
     if (index >= 0 && index < rows.length) {
       rows[index].classList.add("suite-search-result-active");
@@ -412,16 +501,25 @@ export function initSuiteSearch({ container } = {}) {
     activeIndex = index;
   }
 
-  function renderRows(entries, query) {
+  function renderRows(entries, query, helpEntries) {
     results.innerHTML = "";
-    if (!entries.length) {
+    if (!entries.length && !helpEntries.length) {
       const empty = document.createElement("div");
       empty.className = "suite-search-empty";
       empty.textContent = "No matches.";
       results.appendChild(empty);
     } else {
-      const currentUsername = dataManager.session?.user?.username || "";
-      entries.forEach((entry) => results.appendChild(buildResultRow(entry, currentUsername, query)));
+      // Labels only when both groups exist — a lone group needs no heading.
+      const labelled = entries.length > 0 && helpEntries.length > 0;
+      if (helpEntries.length) {
+        if (labelled) results.appendChild(buildSectionLabel("Help"));
+        helpEntries.forEach((entry) => results.appendChild(buildHelpRow(entry, query)));
+      }
+      if (entries.length) {
+        if (labelled) results.appendChild(buildSectionLabel("Content"));
+        const currentUsername = dataManager.session?.user?.username || "";
+        entries.forEach((entry) => results.appendChild(buildResultRow(entry, currentUsername, query)));
+      }
     }
     results.classList.remove("d-none");
     input.setAttribute("aria-expanded", "true");
@@ -436,13 +534,14 @@ export function initSuiteSearch({ container } = {}) {
     }
     const thisRequest = ++requestId;
     const localEntries = searchLocal(trimmed, dataManager);
-    renderRows(mergeResults(localEntries, [], trimmed), trimmed);
+    const helpEntries = searchHelp(trimmed, helpTopics);
+    renderRows(mergeResults(localEntries, [], trimmed), trimmed, helpEntries);
 
     window.clearTimeout(serverDebounceTimer);
     serverDebounceTimer = window.setTimeout(async () => {
       const serverEntries = await searchServer(trimmed, dataManager);
       if (thisRequest !== requestId) return; // a newer keystroke already superseded this
-      renderRows(mergeResults(localEntries, serverEntries, trimmed), trimmed);
+      renderRows(mergeResults(localEntries, serverEntries, trimmed), trimmed, helpEntries);
     }, SERVER_DEBOUNCE_MS);
   }
 

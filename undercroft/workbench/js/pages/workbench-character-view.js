@@ -3804,6 +3804,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       minus.className = "btn btn-outline-secondary btn-sm";
       minus.textContent = "−";
       minus.setAttribute("aria-label", `Remove one ${die.label}`);
+      initTooltip(minus, { title: `Remove one ${die.label}` });
       row.appendChild(minus);
 
       const countSpan = document.createElement("span");
@@ -3817,6 +3818,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       plus.className = "btn btn-outline-secondary btn-sm";
       plus.textContent = "+";
       plus.setAttribute("aria-label", `Add one ${die.label}`);
+      initTooltip(plus, { title: `Add one ${die.label}` });
       row.appendChild(plus);
 
       minus.addEventListener("click", () => {
@@ -9657,6 +9659,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       plusButton.type = "button";
       plusButton.className = "btn btn-sm btn-outline-secondary";
       plusButton.textContent = "+";
+      minusButton.setAttribute("aria-label", `Decrease ${def.label}`);
+      plusButton.setAttribute("aria-label", `Increase ${def.label}`);
+      initTooltip(minusButton, { title: `Decrease ${def.label}` });
+      initTooltip(plusButton, { title: `Increase ${def.label}` });
       row.append(label, minusButton, valueSpan, plusButton);
       wrap.appendChild(row);
       const spent = () => defs.reduce((total, entry) => total + costOf(buildWizardState.abilityScores[entry.key]), 0);
@@ -10015,6 +10021,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         plusButton.type = "button";
         plusButton.className = "btn btn-sm btn-outline-secondary flex-shrink-0";
         plusButton.textContent = "+";
+        minusButton.setAttribute("aria-label", `Decrease ${item.label}`);
+        plusButton.setAttribute("aria-label", `Increase ${item.label}`);
+        initTooltip(minusButton, { title: `Decrease ${item.label}` });
+        initTooltip(plusButton, { title: `Increase ${item.label}` });
         row.append(label, minusButton, valueInput, plusButton);
         groupWrap.appendChild(row);
         // Single source of truth for "set this item's total to X" —
@@ -11729,6 +11739,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // id/template/systemIds/mapping/url/data are spread after, so they
     // always win over anything mappedData carries under those keys.
     const merged = mergeImportedCharacterData(mappedData, null);
+    merged.systemIds = initialSchema ? [initialSchema] : [];
+    await linkCharacterSpeciesClassReferences(dataManager, merged);
+    await refreshCharacterSpellSlots(merged);
     const draft = {
       ...merged,
       id: trimmedId,
@@ -11883,6 +11896,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // diffing them would only report "no change" by construction, so
   // they're excluded from the confirmation summary.
   const REIMPORT_PRESERVED_KEYS = ["id", "template", "systemIds", "data", "url", "mapping"];
+  // Not content changes: `kind` is bound by the mapping but stripped by
+  // dataManager.save; featureIds/featureParams are rebuilt from feats/
+  // features by promoteEmbeddedFeatures after confirmation, so the merged
+  // payload doesn't carry them yet when the diff runs.
+  const REIMPORT_NON_CONTENT_KEYS = ["kind", "featureIds", "featureParams"];
 
   function isPlainObject(value) {
     return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -11904,10 +11922,21 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return String(value);
   }
 
+  // Array items are matched by their `name` when every item in both arrays
+  // has a unique one (saving throws, skills, classes), else by position.
+  function arrayItemKeys(a, b) {
+    const named = [a, b].every((list) => {
+      const names = list.map((item) => (isPlainObject(item) && typeof item.name === "string" ? item.name : null));
+      return names.every(Boolean) && new Set(names).size === names.length;
+    });
+    return named ? (item) => item.name : null;
+  }
+
   // Flat list of {path, before, after} for every leaf value that differs
   // between two character payloads — recurses into plain objects (dotted
-  // path, e.g. "identity.level"), but treats an array or shape mismatch
-  // as one leaf via formatReimportValue, not exploded index-by-index.
+  // path, e.g. "identity.level") and arrays (`path[name]` or `path[index]`),
+  // so an unchanged array contributes nothing and a changed one names the
+  // exact leaf. An item present on only one side reads "(added)"/"(removed)".
   function diffCharacterFields(before, after, { skipKeys = [] } = {}) {
     const changes = [];
     function walk(a, b, path) {
@@ -11915,6 +11944,26 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (isPlainObject(a) && isPlainObject(b)) {
         const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
         keys.forEach((key) => walk(a[key], b[key], path ? `${path}.${key}` : key));
+        return;
+      }
+      if (Array.isArray(a) && Array.isArray(b)) {
+        const keyOf = arrayItemKeys(a, b);
+        if (keyOf) {
+          const byName = (list) => new Map(list.map((item) => [keyOf(item), item]));
+          const aMap = byName(a);
+          const bMap = byName(b);
+          new Set([...aMap.keys(), ...bMap.keys()]).forEach((name) => {
+            if (!aMap.has(name)) changes.push({ path: `${path}[${name}]`, before: "(none)", after: "(added)" });
+            else if (!bMap.has(name)) changes.push({ path: `${path}[${name}]`, before: "(removed)", after: "(none)" });
+            else walk(aMap.get(name), bMap.get(name), `${path}[${name}]`);
+          });
+          return;
+        }
+        for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
+          if (index >= a.length) changes.push({ path: `${path}[${index}]`, before: "(none)", after: "(added)" });
+          else if (index >= b.length) changes.push({ path: `${path}[${index}]`, before: "(removed)", after: "(none)" });
+          else walk(a[index], b[index], `${path}[${index}]`);
+        }
         return;
       }
       if (JSON.stringify(a) === JSON.stringify(b)) return;
@@ -11928,31 +11977,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return changes;
   }
 
-  // The confirm modal's body — capped at a handful of lines (a full DDB
-  // re-import can touch 30+ fields) so the dialog stays readable; the
-  // total count still tells the whole story. Values are imported/
-  // untrusted, so every piece goes through escapeHtml before this innerHTML.
+  // The confirm modal's body — every change listed, in a scrolling box so a
+  // long list doesn't grow the dialog. Values are imported/untrusted, so
+  // every piece goes through escapeHtml before this innerHTML.
   function buildReimportChangesHtml(changes) {
     if (!changes.length) {
       return `<p class="text-body-secondary mb-0">No differences found between the current character and its source — nothing would actually change.</p>`;
     }
-    const MAX_LINES = 8;
-    const shown = changes.slice(0, MAX_LINES);
-    const remaining = changes.length - shown.length;
-    const items = shown
+    const items = changes
       .map(
         (change) =>
           `<li><code>${escapeHtml(change.path)}</code>: ${escapeHtml(change.before)} → ${escapeHtml(change.after)}</li>`
       )
       .join("");
-    const remainingLine =
-      remaining > 0
-        ? `<p class="text-body-secondary small mb-0 mt-2">…and ${remaining} more field${remaining === 1 ? "" : "s"}.</p>`
-        : "";
     return `
       <p class="mb-2">This will update <strong>${changes.length}</strong> field${changes.length === 1 ? "" : "s"}:</p>
-      <ul class="small mb-0">${items}</ul>
-      ${remainingLine}
+      <ul class="small mb-0 overflow-auto" style="max-height: 50vh">${items}</ul>
     `;
   }
 
@@ -11992,7 +12032,21 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const existing = await dataManager.get("character", id, { preferLocal: false });
       const priorPayload = existing?.payload || {};
       const merged = mergeImportedCharacterData(freshData, priorPayload);
-      const changes = diffCharacterFields(priorPayload, merged, { skipKeys: REIMPORT_PRESERVED_KEYS });
+      // Stamped before the diff, not just before the save — a fresh fetch
+      // carries no refKind/refId, so diffing first reported every existing
+      // Library link as about to be removed, though it's re-stamped anyway.
+      await linkCharacterSpeciesClassReferences(dataManager, merged);
+      await linkCharacterSpellReferences(dataManager, merged);
+      // Re-import saves via dataManager.save directly, never persistDraft,
+      // so inventory items only get their refKind/refId stamp here.
+      await linkCharacterInventoryReferences(dataManager, merged);
+      // Slots come from the System's own caster tables against the (now
+      // linked) classes, not the source's slot counts — the one path that
+      // handles a multiclass's shared pool plus Pact Magic for any System.
+      await refreshCharacterSpellSlots(merged);
+      // Round-tripped through JSON, as the save will be: undefined array
+      // slots and keys become null/absent, matching the stored prior payload.
+      const changes = diffCharacterFields(priorPayload, JSON.parse(JSON.stringify(merged)), { skipKeys: [...REIMPORT_PRESERVED_KEYS, ...REIMPORT_NON_CONTENT_KEYS] });
       const confirmed = await showConfirmModal({
         title: `Re-import "${label}"?`,
         bodyHtml: `<p>This overwrites the character's current data with a fresh fetch from its original source.</p>${buildReimportChangesHtml(changes)}`,
@@ -12012,12 +12066,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // import was clicked. Always runs here (no `!silent` gate) — unlike
       // persistDraft's own autosave-vs-explicit-Save distinction, Re-import
       // IS always an explicit, deliberate action.
-      await linkCharacterSpeciesClassReferences(dataManager, merged);
-      await linkCharacterSpellReferences(dataManager, merged);
-      // Confirmed real gap this fixes: Re-import never called this at all,
-      // so a re-imported character's inventory items never got a
-      // refKind/refId stamp, no matter how many times Re-import was clicked.
-      await linkCharacterInventoryReferences(dataManager, merged);
       if (hasEmbeddedFeatures(merged, "feats") || hasEmbeddedFeatures(merged, "features")) {
         try {
           const existingFeatures = await fetchKindEntriesWithIds(dataManager, "feature").then(

@@ -19,7 +19,7 @@
       "refId": "sea-elf"
     },
     "class": "Druid",
-    "level": 6,
+    "level": 7,
     "levels": {
       "level_monk": 0,
       "level_multiclass": 0
@@ -28,7 +28,7 @@
     "classes": [
       {
         "name": "Druid",
-        "level": 6,
+        "level": 7,
         "subclass": {
           "name": "Circle of the Sea",
           "refKind": "variant",
@@ -39,15 +39,15 @@
       }
     ]
   },
-  "proficiency": 3,
   "conditions": [],
   "stats": {
+    "proficiencyBonus": 3,
     "hitPoints": {
-      "max": 33,
-      "current": 29,
+      "max": 38,
+      "current": 22,
       "temp": 0
     },
-    "armorClass": 16,
+    "armorClass": 18,
     "senses": {
       "passives": {
         "perception": 17,
@@ -398,7 +398,7 @@
       "canAttune": false,
       "isAttuned": false,
       "canEquip": true,
-      "isEquipped": false,
+      "isEquipped": true,
       "refKind": "wonder",
       "refId": "shield"
     },
@@ -687,7 +687,7 @@
     },
     {
       "name": "Primal Order",
-      "description": "You have dedicated yourself to one of the following sacred roles of your choice.",
+      "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\n**Magician** You know one extra cantrip from the Druid spell list. In addition, your mystical connection to nature gives you a bonus to your Intelligence (Arcana or Nature) checks. The bonus equals your Wisdom modifier (minimum bonus of +1).\n\n**Warden** Trained for battle, you gain proficiency with Martial weapons and training with Medium armor.",
       "level": 1
     },
     {
@@ -714,6 +714,11 @@
       "name": "Wild Resurgence",
       "description": "Once on each of your turns, if you have no uses of Wild Shape left, you can give yourself one use by expending a spell slot (no action required).\n\nIn addition, you can expend one use of Wild Shape (no action required) to give yourself a level 1 spell slot, but you can’t do so again until you finish a Long Rest.",
       "level": 5
+    },
+    {
+      "name": "Elemental Fury",
+      "description": "The might of the elements flows through you. You gain one of the following options of your choice.",
+      "level": 7
     },
     {
       "name": "Ability Score Increases",
@@ -802,13 +807,14 @@
       "Innate Speed (Swimming)",
       "Darkvision",
       "Halberd",
-      "Subclass"
+      "Subclass",
+      "Druid Cantrip Damage"
     ]
   },
   "attacks": [
     {
       "name": "Unarmed Strike",
-      "range": null,
+      "range": "5 ft. Reach",
       "longRange": null,
       "attackBonus": 2,
       "damage": "1-1",
@@ -828,7 +834,7 @@
     },
     {
       "name": "Quarterstaff",
-      "range": "5 ft.",
+      "range": "5 ft. Reach",
       "longRange": "5 ft.",
       "attackBonus": 2,
       "damage": "1d6-1",
@@ -838,7 +844,7 @@
     },
     {
       "name": "Sickle",
-      "range": "5 ft.",
+      "range": "5 ft. Reach",
       "longRange": "5 ft.",
       "attackBonus": 2,
       "damage": "1d4-1",
@@ -860,20 +866,36 @@
   },
   "limitedUses": [
     {
-      "name": "Level 1 Spell Slots",
-      "level": 1,
-      "total": 1,
-      "available": 0,
+      "name": "Level 3 Spell Slots",
+      "level": 3,
+      "total": 3,
+      "available": 2,
       "used": 1,
       "reset": "Long Rest"
     },
     {
-      "name": "Level 3 Spell Slots",
-      "level": 3,
+      "name": "Level 1 Spell Slots",
+      "level": 1,
+      "total": 4,
+      "reset": "Long Rest",
+      "available": 4,
+      "used": 0
+    },
+    {
+      "name": "Level 2 Spell Slots",
+      "level": 2,
+      "total": 3,
+      "reset": "Long Rest",
+      "available": 3,
+      "used": 0
+    },
+    {
+      "name": "Level 4 Spell Slots",
+      "level": 4,
       "total": 1,
-      "available": 0,
-      "used": 1,
-      "reset": "Long Rest"
+      "reset": "Long Rest",
+      "available": 1,
+      "used": 0
     }
   ],
   "campaign": {
@@ -1389,6 +1411,35 @@
           "refId": "call-lightning"
         }
       ]
+    },
+    {
+      "level": 4,
+      "spells": [
+        {
+          "name": "Charm Monster",
+          "level": 4,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 30,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Enchantment",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Control",
+          "duration": "1 Hour (Time)"
+        }
+      ]
     }
   ],
   "featureIds": [
@@ -1406,6 +1457,7 @@
     "feat.druid-wild-companion",
     "feat.druid-druid-subclass",
     "feat.druid-wild-resurgence",
+    "feat.elemental-fury",
     "feat.sea-elf-child-of-the-sea",
     "feat.darkvision.60",
     "feat.bugbear-fey-ancestry",
@@ -1475,6 +1527,11 @@
     "feat.druid-wild-resurgence": {
       "grantedAtLevel": [
         5
+      ]
+    },
+    "feat.elemental-fury": {
+      "grantedAtLevel": [
+        7
       ]
     }
   }

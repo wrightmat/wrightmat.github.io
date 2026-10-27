@@ -38,9 +38,10 @@ import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 // Vault's own Basic Authoring mode rather than a second hand-rolled copy.
 import { createFeatureParamsEditor } from "../../common/js/lib/feature-params-editor.js";
 // Reused as-is from Repository. No options passed — Crucible has no page
-// index/wiki-link/dice/macro/encounter context, and renderMarkdown degrades
-// gracefully without any of that.
+// index/wiki-link/macro/encounter context, and renderMarkdown degrades
+// gracefully without any of that. Dice is the exception — see renderNotesPreview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
+import { applyProseDiceRollers } from "../../repository/js/lib/journal-dice.js";
 import { generateMonsterNote } from "./lib/llm-note.js";
 import { createDirtyGate } from "../../common/js/lib/dirty-gate.js";
 import {
@@ -1303,6 +1304,8 @@ function renderFeatureList(record) {
       empty.textContent = "No traits or actions on this record.";
       elements.featureList.appendChild(empty);
     }
+    applyProseDiceRollers(elements.featureList, { status, dataManager, label: record.name || "Crucible" });
+    refreshTooltips(elements.featureList);
     return;
   }
   // Same row shape as Vault's own renderFeatureList (info + Remove button),
@@ -1395,7 +1398,10 @@ function renderFeatureList(record) {
     side.appendChild(removeButton);
 
     row.append(info, side);
-    row.addEventListener("click", () => selectFeatureRow(featureId));
+    row.addEventListener("click", (event) => {
+      if (event.target.closest(".repository-dice-roller")) return;
+      selectFeatureRow(featureId);
+    });
     elements.featureList.appendChild(row);
   });
 
@@ -1416,6 +1422,7 @@ function renderFeatureList(record) {
       row.append(name, mechanics);
       elements.featureList.appendChild(row);
     });
+  applyProseDiceRollers(elements.featureList, { status, dataManager, label: record.name || "Crucible" });
   refreshTooltips(elements.featureList);
 }
 
@@ -1841,7 +1848,9 @@ function renderNotesPreview() {
   // carries a real tooltip, and this reruns on every edit.
   disposeTooltips(elements.notesPreview);
   elements.notesPreview.innerHTML = "";
-  elements.notesPreview.appendChild(renderMarkdown(currentRecord?.notes || ""));
+  elements.notesPreview.appendChild(
+    renderMarkdown(currentRecord?.notes || "", { interactiveDice: true, status, dataManager })
+  );
   refreshTooltips(elements.notesPreview);
 }
 

@@ -66,7 +66,7 @@ function styleAsChip(button, interactive) {
 // A table reference has no synchronous starting value — resolving one means
 // fetching the referenced Journal page, so the chip mounts showing "…" and
 // resolves once, then behaves like any other chip.
-function buildDiceRoller(expression, { status, interactive, dataManager }) {
+function buildDiceRoller(expression, { status, interactive, dataManager, initialValue, label = "Journal" }) {
   const tableRef = parseTableReferenceExpression(expression);
   const button = el("button", "repository-dice-roller");
   button.type = "button";
@@ -74,7 +74,7 @@ function buildDiceRoller(expression, { status, interactive, dataManager }) {
   const valueEl = el(
     "span",
     "repository-dice-roller-value fw-semibold",
-    tableRef ? "…" : String(rollSilently(expression))
+    tableRef ? "…" : initialValue ?? String(rollSilently(expression))
   );
   const icon = el("span", "iconify repository-dice-roller-icon");
   icon.dataset.icon = "tabler:dice-5";
@@ -91,7 +91,7 @@ function buildDiceRoller(expression, { status, interactive, dataManager }) {
   button.append(icon);
 
   async function performRoll() {
-    const outcome = await rollExpression(expression, { status, label: "Journal", dataManager });
+    const outcome = await rollExpression(expression, { status, label, dataManager });
     if (!outcome) {
       if (tableRef) valueEl.textContent = "—";
       return;
@@ -114,6 +114,44 @@ function buildDiceRoller(expression, { status, interactive, dataManager }) {
     button.addEventListener("click", () => void performRoll());
   }
   return button;
+}
+
+// Stat-block prose writes dice as either "7 (2d6)" (average, then dice) or a
+// bare "2d6+3". The first form keeps its average as the pill's starting
+// value instead of a fresh roll, so generated text reads unchanged until
+// someone actually clicks.
+const PROSE_DICE_PATTERN = /(\d+)\s*\(\s*(\d*d\d+(?:\s*[+-]\s*\d+)?)\s*\)|\b(\d*d\d+(?:\s*[+-]\s*\d+)?)(?![\d\w])/gi;
+
+// Swaps dice notation inside plain text nodes (not authored `dice:` code)
+// for the same live pill. Text already inside a pill or a form control is
+// left alone.
+export function applyProseDiceRollers(container, { status, interactive = true, dataManager, label } = {}) {
+  if (interactive) preloadDiceOverlay(dataManager);
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.parentElement?.closest(".repository-dice-roller, textarea, input, select, button")
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT,
+  });
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+  textNodes.forEach((node) => {
+    const text = node.nodeValue;
+    PROSE_DICE_PATTERN.lastIndex = 0;
+    if (!PROSE_DICE_PATTERN.test(text)) return;
+    PROSE_DICE_PATTERN.lastIndex = 0;
+    const fragment = document.createDocumentFragment();
+    let cursor = 0;
+    let match;
+    while ((match = PROSE_DICE_PATTERN.exec(text)) !== null) {
+      fragment.append(text.slice(cursor, match.index));
+      const expression = (match[2] || match[3]).replace(/\s+/g, "");
+      fragment.append(buildDiceRoller(expression, { status, interactive, dataManager, label, initialValue: match[1] }));
+      cursor = match.index + match[0].length;
+    }
+    fragment.append(text.slice(cursor));
+    node.replaceWith(fragment);
+  });
 }
 
 // Runs after marked+DOMPurify — CommonMark's own backtick syntax already

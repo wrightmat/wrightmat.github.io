@@ -5,7 +5,7 @@ import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
 import { attachHoverDropdown } from "./dom.js";
 import { initSuiteSearch } from "./suite-search.js";
-import { initTooltip } from "./tooltips.js";
+import { initTooltip, installTooltipAutoInit } from "./tooltips.js";
 
 // `icon` is an Iconify `tabler:*` id, same convention used suite-wide.
 // `built` distinguishes real tools from roadmap-only entries — kept
@@ -81,11 +81,11 @@ const TOOL_DEFINITIONS = [
 // its own subfolder, which is why it needs special-casing below.
 const SUITE_ROOT_FOLDER = "undercroft";
 
-export function resolveToolContextPath() {
+export function resolveToolContextPath(pathname = typeof window === "undefined" ? "" : window.location.pathname) {
   if (typeof window === "undefined") {
     return "workbench";
   }
-  const segments = window.location.pathname.split("/").filter(Boolean);
+  const segments = pathname.split("/").filter(Boolean);
   if (segments.length < 2) {
     return "workbench";
   }
@@ -94,6 +94,15 @@ export function resolveToolContextPath() {
   // folder itself — remap to "home" so every resolver below treats it as
   // an ordinary section id.
   return section === SUITE_ROOT_FOLDER ? "home" : section;
+}
+
+// Display name for a resolveToolContextPath() section — the two non-tool
+// pages (Dashboard, account) aren't in TOOL_DEFINITIONS. "" for a section
+// with no name, so a caller can fall back rather than print a raw folder.
+export function resolveToolLabel(section) {
+  if (section === "home") return "Dashboard";
+  if (section === "common") return "Account Settings";
+  return TOOL_DEFINITIONS.find((tool) => tool.id === section)?.label || "";
 }
 
 // Every built tool lives at undercroft/{id}/index.html; a self-link resolves
@@ -602,6 +611,7 @@ export function initAppShell({
   // all (docs.html is the one page in the suite like this).
   rightPane = { size: "default", initial: "expanded" },
 } = {}) {
+  installTooltipAutoInit();
   const headerEl = buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
   if (leftPane) {
     const built = buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });

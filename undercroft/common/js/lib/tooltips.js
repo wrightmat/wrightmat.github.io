@@ -30,6 +30,9 @@
 //   refreshTooltip(element) — prefer over the root-scoped pair when you
 //   already have a direct reference.
 // - Disabled control that still needs an explanatory hover: setDisabledTooltip(control, reason, {wrapper?}).
+// - A plain button carrying data-bs-toggle/data-bs-title needs nothing more:
+//   installTooltipAutoInit (see below) creates a missing instance on first
+//   hover and shows a disabled control's tooltip too.
 // - Live-updating an existing tooltip's text with no flicker: updateTooltipContent(element, title).
 // - Temporary confirmation flash ("Copied!"): flashTooltipMessage(element, message, {duration?}).
 //
@@ -84,10 +87,114 @@ export function disposeTooltips(root = document) {
 export function refreshTooltips(root = document) {
   if (!hasBootstrapTooltip()) return;
   root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((element) => {
-    safeDispose(window.bootstrap.Tooltip.getInstance(element));
-    // eslint-disable-next-line no-new
-    new window.bootstrap.Tooltip(element);
+    // One bad trigger must not abort the sweep — every later trigger in the
+    // container would silently never get its tooltip.
+    try {
+      safeDispose(window.bootstrap.Tooltip.getInstance(element));
+      // eslint-disable-next-line no-new
+      new window.bootstrap.Tooltip(element);
+    } catch (error) {
+      console.warn("tooltips: unable to initialise a tooltip", element, error);
+    }
   });
+}
+
+// Safety net, installed once per page by initAppShell, for two cases no
+// per-call-site discipline can fully cover:
+// (1) a trigger with no tooltip instance (a render path that forgot its
+//     refreshTooltips, or an instance that got lost) — the first hover/focus
+//     builds and shows it, since the mouseenter that would normally do so has
+//     already fired by then.
+// (2) a natively `disabled` control (Save/Delete before a record exists, a
+//     stepper at its limit). Bootstrap's .btn:disabled is pointer-events:none,
+//     so the control never sees the hover (BUG CLASS 1) — and its `disabled`
+//     flips long after build time, so wrapping it up front can't keep up.
+//     Instead the pointer is hit-tested against every disabled trigger and
+//     its tooltip is shown/hidden manually. No DOM is moved, so callers
+//     holding the control as an insertBefore reference or toggling its
+//     d-none class are unaffected.
+let autoInitInstalled = false;
+export function installTooltipAutoInit() {
+  if (autoInitInstalled) return;
+  autoInitInstalled = true;
+
+  const ensure = (event) => {
+    if (!hasBootstrapTooltip() || !(event.target instanceof Element)) return;
+    const trigger = event.target.closest('[data-bs-toggle="tooltip"]');
+    if (!trigger || window.bootstrap.Tooltip.getInstance(trigger)) return;
+    try {
+      window.bootstrap.Tooltip.getOrCreateInstance(trigger).show();
+    } catch (error) {
+      console.warn("tooltips: unable to initialise a tooltip", trigger, error);
+    }
+  };
+  document.addEventListener("pointerover", ensure, true);
+  document.addEventListener("focusin", ensure, true);
+
+  let hoveredDisabled = null;
+  let lastPoint = null;
+  let frameQueued = false;
+
+  const setHoveredDisabled = (next) => {
+    if (next === hoveredDisabled) return;
+    if (hoveredDisabled) {
+      try {
+        window.bootstrap.Tooltip.getInstance(hoveredDisabled)?.hide();
+      } catch (error) {
+        // Best-effort — same timing race safeDispose guards against.
+      }
+    }
+    hoveredDisabled = next;
+    if (!next) return;
+    try {
+      window.bootstrap.Tooltip.getOrCreateInstance(next).show();
+    } catch (error) {
+      console.warn("tooltips: unable to show a disabled control's tooltip", next, error);
+    }
+  };
+
+  const syncDisabledHover = () => {
+    frameQueued = false;
+    if (!hasBootstrapTooltip() || !lastPoint) return;
+    const { x, y } = lastPoint;
+    // elementFromPoint skips pointer-events:none, so it lands on whatever is
+    // beneath the disabled control — which must still be inside the control's
+    // own parent, otherwise a modal/popover is covering that spot.
+    const top = document.elementFromPoint(x, y);
+    let hit = null;
+    if (top) {
+      hit =
+        Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]:disabled')).find((control) => {
+          const rect = control.getBoundingClientRect();
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            x >= rect.left &&
+            x <= rect.right &&
+            y >= rect.top &&
+            y <= rect.bottom &&
+            control.parentElement?.contains(top) &&
+            // Already shown by a setDisabledTooltip/provided wrapper above it.
+            !control.parentElement.closest('[data-bs-toggle="tooltip"]')
+          );
+        }) || null;
+    }
+    if (hoveredDisabled && !hoveredDisabled.isConnected) hoveredDisabled = null;
+    setHoveredDisabled(hit);
+  };
+
+  document.addEventListener(
+    "pointermove",
+    (event) => {
+      lastPoint = { x: event.clientX, y: event.clientY };
+      if (frameQueued) return;
+      frameQueued = true;
+      window.requestAnimationFrame(syncDisabledHover);
+    },
+    { passive: true }
+  );
+  // The pointer leaving the window sends no further pointermove to clear it.
+  document.documentElement.addEventListener("mouseleave", () => setHoveredDisabled(null));
 }
 
 // --- Single-element pair — one specific trigger, zero collateral scope ---

@@ -4,5 +4,6 @@
   "plural": "Encounters",
   "icon": "tabler:swords",
   "readTier": "free",
-  "writeTier": "gm"
+  "writeTier": "gm",
+  "metadataFields": ["started"]
 }

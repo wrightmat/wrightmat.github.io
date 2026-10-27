@@ -48,7 +48,6 @@
         }
       }
     },
-    "proficiency": { "type": "custom", "fn": "proficiencyBonus" },
     "conditions": {
       "type": "pipeline",
       "source": "@conditions",
@@ -60,6 +59,7 @@
     "stats": {
       "type": "object",
       "fields": {
+        "proficiencyBonus": { "type": "custom", "fn": "proficiencyBonus" },
         "hitPoints": { "type": "custom", "fn": "hitPoints" },
         "armorClass": { "type": "custom", "fn": "armorClass" },
         "senses": { "type": "custom", "fn": "sensesTable" },

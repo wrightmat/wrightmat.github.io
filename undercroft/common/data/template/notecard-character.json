@@ -816,7 +816,7 @@
                       "type": "field",
                       "component": "stat",
                       "label": "Proficiency Bonus",
-                      "text": "@proficiency",
+                      "text": "@stats.proficiencyBonus",
                       "textSize": "xs",
                       "className": "press-block",
                       "gap": 0

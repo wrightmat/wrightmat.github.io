@@ -139,6 +139,20 @@
       "url": "https://cdn.tabletoprpgmusic.com/music/standardtracks/Dreamscape.ogg",
       "type": "music",
       "loop": true
+    },
+    {
+      "id": "c499d0a0-442a-4c95-874c-e8e14d71c515",
+      "name": "Vuvuzela",
+      "url": "https://www.myinstants.com/media/sounds/vuvuzela-estourado.mp3",
+      "type": "sfx",
+      "loop": false
+    },
+    {
+      "id": "c3da7754-ea79-4964-a3fd-c57a4c41536f",
+      "name": "Drum Dirge",
+      "url": "https://www.myinstants.com/media/sounds/dune-drums.mp3",
+      "type": "sfx",
+      "loop": false
     }
   ]
 }

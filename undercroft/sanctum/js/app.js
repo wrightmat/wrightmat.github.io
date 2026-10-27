@@ -738,7 +738,7 @@ function renderSpeciesWeightRow(rowsEl, totalEl, entry = { entityId: "", weight:
       ${optionsHtml}
     </select>
     <input class="form-control" type="number" min="0" step="1" style="max-width: 6rem" value="${Number(entry.weight) || 0}" data-species-weight-value />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-species-weight aria-label="Remove species">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-species-weight aria-label="Remove species" data-bs-toggle="tooltip" data-bs-title="Remove species">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
@@ -762,7 +762,7 @@ function renderArchetypeOverrideRow(roll = "", name = "") {
   row.innerHTML = `
     <input class="form-control" style="max-width: 6rem" type="text" placeholder="Roll" value="${escapeHtml(roll)}" data-archetype-override-roll />
     <input class="form-control" type="text" placeholder="Archetype name" value="${escapeHtml(name)}" data-archetype-override-name />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-archetype-override aria-label="Remove override">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-archetype-override aria-label="Remove override" data-bs-toggle="tooltip" data-bs-title="Remove override">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
@@ -778,7 +778,7 @@ function renderFallbackNameRow(entry = { name: "", weight: "" }) {
   row.innerHTML = `
     <input class="form-control" type="text" placeholder="Name" value="${escapeHtml(name)}" data-fallback-name />
     <input class="form-control" type="number" min="0" step="1" style="max-width: 6rem" placeholder="Weight" value="${escapeHtml(weight)}" data-fallback-weight />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-fallback-name aria-label="Remove name">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-fallback-name aria-label="Remove name" data-bs-toggle="tooltip" data-bs-title="Remove name">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
@@ -872,7 +872,7 @@ function renderWeekdayNameRow(name = "") {
   row.className = "d-flex align-items-center gap-2";
   row.innerHTML = `
     <input class="form-control" type="text" placeholder="Weekday name" value="${escapeHtml(name)}" data-weekday-name />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-weekday-name aria-label="Remove weekday">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-weekday-name aria-label="Remove weekday" data-bs-toggle="tooltip" data-bs-title="Remove weekday">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
@@ -886,7 +886,7 @@ function renderMonthRow(entry = { name: "", days: 30 }) {
   row.innerHTML = `
     <input class="form-control" type="text" placeholder="Month name" value="${escapeHtml(entry.name || "")}" data-month-name />
     <input class="form-control" type="number" min="1" step="1" style="max-width: 6rem" placeholder="Days" value="${Number(entry.days) || 30}" data-month-days />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-month aria-label="Remove month">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-month aria-label="Remove month" data-bs-toggle="tooltip" data-bs-title="Remove month">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
@@ -900,7 +900,7 @@ function renderMoonCycleRow(entry = { name: "", days: 29 }) {
   row.innerHTML = `
     <input class="form-control" type="text" placeholder="Moon name" value="${escapeHtml(entry.name || "")}" data-moon-cycle-name />
     <input class="form-control" type="number" min="1" step="1" style="max-width: 6rem" placeholder="Cycle days" value="${Number(entry.days) || 29}" data-moon-cycle-days />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-moon-cycle aria-label="Remove moon">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-moon-cycle aria-label="Remove moon" data-bs-toggle="tooltip" data-bs-title="Remove moon">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;
@@ -919,7 +919,7 @@ function renderSeasonRow(entry = { name: "", days: 91 }) {
   row.innerHTML = `
     <input class="form-control" type="text" placeholder="Season name" value="${escapeHtml(entry.name || "")}" data-season-name />
     <input class="form-control" type="number" min="1" step="1" style="max-width: 6rem" placeholder="Days" value="${Number(entry.days) || 91}" data-season-days />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-season aria-label="Remove season">
+    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-season aria-label="Remove season" data-bs-toggle="tooltip" data-bs-title="Remove season">
       <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
     </button>
   `;

@@ -1020,6 +1020,18 @@ export function createIconPickerField({
     },
   });
   input.addEventListener("change", () => commit(input.value));
+  // Preview follows what's typed, not just what's committed.
+  input.addEventListener("input", () => updatePreview(input.value));
+
+  // For a caller whose field outlives the value it shows (Loom's Macro
+  // editor reloads it per record, undo/redo included) — also resets the
+  // committed value, or re-picking the previous record's icon would be
+  // swallowed as a repeat.
+  wrapper.setValue = (nextValue) => {
+    input.value = nextValue;
+    committedValue = nextValue;
+    updatePreview(nextValue);
+  };
 
   return wrapper;
 }

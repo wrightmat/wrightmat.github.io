@@ -125,7 +125,24 @@ function makeLiveWidgetMacroAction(label) {
   };
 }
 
+// runMacro already awaits every step in order, so a pause is just a step that
+// resolves later — e.g. play a light effect, wait, then turn it off. A
+// ceiling rather than silently clamping, so a typo (3000 for 30) is reported
+// instead of leaving a macro quietly running for an hour.
+const MAX_WAIT_SECONDS = 3600;
+
+async function runTimingMacroAction(action) {
+  if (action?.action !== "wait") {
+    throw new Error(`Unknown Timing macro action "${action?.action}".`);
+  }
+  const seconds = Number(action?.params?.seconds);
+  if (!Number.isFinite(seconds) || seconds < 0) throw new Error("Enter how many seconds to wait.");
+  if (seconds > MAX_WAIT_SECONDS) throw new Error(`Waits are limited to ${MAX_WAIT_SECONDS} seconds.`);
+  await new Promise((resolve) => window.setTimeout(resolve, seconds * 1000));
+}
+
 const ACTION_HANDLERS = {
+  timing: runTimingMacroAction,
   wled: runWledMacroAction,
   homeAssistant: runHaMacroAction,
   soundboard: runSoundboardMacroAction,

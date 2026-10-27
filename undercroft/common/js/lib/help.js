@@ -17,7 +17,9 @@ function normaliseTopic(rawTopic) {
   const title = typeof rawTopic.title === "string" ? rawTopic.title.trim() : id;
   const summary = typeof rawTopic.summary === "string" ? rawTopic.summary.trim() : title;
   const category = typeof rawTopic.category === "string" ? rawTopic.category.trim() : "General";
-  const href = typeof rawTopic.href === "string" && rawTopic.href.trim() ? rawTopic.href.trim() : `docs.html#${id}`;
+  // "" when absent — a topic with no real page behind it (a general concept,
+  // not tied to one tool) has no "Open in" destination, never a fabricated one.
+  const href = typeof rawTopic.href === "string" ? rawTopic.href.trim() : "";
   const details = Array.isArray(rawTopic.details)
     ? rawTopic.details.filter((line) => typeof line === "string" && line.trim()).map((line) => line.trim())
     : [];
@@ -55,9 +57,12 @@ function normaliseTopicsPayload(payload) {
 }
 
 export async function loadHelpTopics(topicsUrl = DEFAULT_TOPICS_URL) {
-  if (!cachedTopicsPromise || topicsUrl !== cachedTopicsUrl) {
-    cachedTopicsUrl = topicsUrl;
-    cachedTopicsPromise = fetch(topicsUrl)
+  // Keyed on the resolved URL so the header search and a page's own help
+  // system, which spell the same file differently, share one fetch.
+  const resolvedUrl = new URL(topicsUrl, document.baseURI).href;
+  if (!cachedTopicsPromise || resolvedUrl !== cachedTopicsUrl) {
+    cachedTopicsUrl = resolvedUrl;
+    cachedTopicsPromise = fetch(resolvedUrl)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Failed to load help topics: ${response.status}`);
@@ -81,6 +86,17 @@ function resolveHelpTopicHref(topic) {
   const base = resolveAccountHref(resolveToolContextPath());
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}help=${encodeURIComponent(topic.id)}`;
+}
+
+// Already on the account page (where the help browser itself lives): jump to
+// the topic in this same page's help browser instead of opening a redundant
+// second tab pointed at itself.
+function openHelpTopic(topic) {
+  if (resolveToolContextPath() === "common") {
+    window.dispatchEvent(new CustomEvent("undercroft:show-help-topic", { detail: { topicId: topic.id } }));
+    return;
+  }
+  window.open(resolveHelpTopicHref(topic), "_blank", "noopener,noreferrer");
 }
 
 function createTriggerElement(topic, { icon, placement, classes, variant } = {}) {
@@ -107,14 +123,7 @@ function createTriggerElement(topic, { icon, placement, classes, variant } = {})
   trigger.appendChild(iconElement);
   trigger.addEventListener("click", (event) => {
     event.preventDefault();
-    // Already on the account page (where the help browser itself lives):
-    // jump to the topic in this same page's help browser instead of opening
-    // a redundant second tab pointed at itself.
-    if (resolveToolContextPath() === "common") {
-      window.dispatchEvent(new CustomEvent("undercroft:show-help-topic", { detail: { topicId: topic.id } }));
-      return;
-    }
-    window.open(resolveHelpTopicHref(topic), "_blank", "noopener,noreferrer");
+    openHelpTopic(topic);
   });
   return trigger;
 }

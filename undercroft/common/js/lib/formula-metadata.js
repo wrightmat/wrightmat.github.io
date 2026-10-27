@@ -20,6 +20,7 @@ const FORMULA_FUNCTION_SIGNATURES = {
   roller: "roller(notation, fallback)",
   lookup: "lookup(table, key)",
   lookupField: "lookupField(table, matchField, matchValue, targetField)",
+  signed: "signed(value)",
   len: "len(value)",
   upper: "upper(value)",
   lower: "lower(value)",

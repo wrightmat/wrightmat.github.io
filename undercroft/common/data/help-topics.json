@@ -14,8 +14,7 @@
         "The center canvas adjusts to the active tool: system schema trees, template layout boards, or interactive character sheets.",
         "The right pane hosts inspectors, metadata, and contextual utilities such as JSON previews or collaboration panels."
       ],
-      "category": "Workbench Fundamentals",
-      "href": "docs.html#workspace-overview"
+      "category": "Workbench Fundamentals"
     },
     {
       "id": "workspace.theme",
@@ -26,8 +25,7 @@
         "\"System\" follows your device or browser's own light/dark setting automatically. Every pane updates its colors immediately when you switch.",
         "Tooltips and icons adjust to match, so contrast stays readable in either theme."
       ],
-      "category": "Workbench Fundamentals",
-      "href": "docs.html#workspace-theme"
+      "category": "Workbench Fundamentals"
     },
     {
       "id": "workspace.undo",
@@ -38,8 +36,7 @@
         "Use Ctrl+Z / Cmd+Z to undo and Ctrl+Shift+Z / Cmd+Shift+Z to redo. The toolbar's Undo/Redo buttons do the same thing.",
         "Your undo history is remembered even if you reload the page or go offline, so you won't lose the ability to undo recent changes."
       ],
-      "category": "Workbench Fundamentals",
-      "href": "docs.html#workspace-undo"
+      "category": "Workbench Fundamentals"
     },
     {
       "id": "system.palette",
@@ -50,8 +47,7 @@
         "Drop a field onto the canvas to add it — the action is undoable, so you can safely experiment.",
         "Number fields let you set a minimum, maximum, and step size once you select them in the inspector."
       ],
-      "category": "System Editor",
-      "href": "docs.html#system-palette"
+      "category": "System Editor"
     },
     {
       "id": "system.inspector",
@@ -62,8 +58,7 @@
         "Saving a System to the server requires Creator tier or higher — you can still build and preview one at any tier.",
         "Computed fields use the same formula syntax everywhere in the suite — a formula that works on a System field works the same way on a Template or Character field."
       ],
-      "category": "System Editor",
-      "href": "docs.html#system-inspector"
+      "category": "System Editor"
     },
     {
       "id": "system.picker",
@@ -74,8 +69,7 @@
         "Use \"New System\" to start from a blank slate, or \"Duplicate\" to clone an existing System (including one of the suite's built-in ones) under a new id as a starting point.",
         "If a built-in System is briefly unavailable, you'll see a status message — everything else keeps working while it's sorted out."
       ],
-      "category": "System Editor",
-      "href": "docs.html#system-builtins"
+      "category": "System Editor"
     },
     {
       "id": "template.library",
@@ -91,7 +85,7 @@
         "A computed field (a total, a modifier) is just a Text component with a formula binding (=sum(...), etc.) — see Bindings & Formulas Reference — not a separately stored value."
       ],
       "category": "Template Builder",
-      "href": "docs.html#template-library"
+      "href": "../workbench/index.html"
     },
     {
       "id": "template.properties",
@@ -103,7 +97,7 @@
         "Advanced options let you adjust formatting, color accents, and responsive behavior without writing any custom CSS."
       ],
       "category": "Template Builder",
-      "href": "docs.html#template-properties"
+      "href": "../workbench/index.html"
     },
     {
       "id": "template.bindings",
@@ -119,6 +113,7 @@
         "String literals need real quotes: `=\"Level \" + @level` concatenates a literal string with a bound number. Unbalanced quotes anywhere in the expression will fail to parse.",
         "A bound value used in a formula is coerced before your expression ever sees it: missing, `null`, and empty-string all become `0`; a numeric-looking value (including a numeric string like `\"15\"`) becomes a real number; anything else (a genuine non-empty string, an array, an object) passes through unchanged. This is what makes a plain `@dc` (with no comparison at all) the right \"does this field have a value\" check — it's already `0`/falsy when the field is null or absent.",
         "`@path.someProperty` (including `.length`) only resolves when the bound value is ITSELF an array or plain object — a template's `.` traversal walks real object/array properties, not a primitive's own built-in ones. `@components.length` works because `components` is an array; `@dc.length` does NOT work because `dc` is a plain number-or-null field, and numbers have no such property to walk into — it resolves to nothing, then gets coerced to `0` the same as any other missing value, rather than causing an error. Use the plain truthy check above instead of `.length` for any number-or-null field.",
+        "Signed numbers: `signed(value)` shows a number with its sign, so `signed(@stats.proficiencyBonus)` reads `+4` (and `-1` stays `-1`). The result is text, so a field using it is display-only.",
         "String functions: `len(value)` — character count for a string, element count for an array. `upper(value)` / `lower(value)` — case conversion. `split(value, separator)` — returns an array (index it directly, e.g. `split(@name,\" \")` then use the result elsewhere in the same expression). `replace(value, search, replacement)` — replaces every occurrence of a literal search string, not a regex (there's no regex support — search text is matched exactly as written). All four take the value first, same argument order as `clamp`/`mod`/`pow`. Native `+` concatenation still works alongside these (`=\"DC \" + @dc`).",
         "Math and rounding functions: `abs(value)`, `ceil(value)`, `floor(value)`, `round(value)`, `sqrt(value)`, `pow(base, exponent)`, `mod(dividend, divisor)`, `clamp(value, min, max)`.",
         "Multi-argument functions (any number of values): `min(...values)`, `max(...values)`, `avg(...values)`, `sum(...values)`, `and(...values)`, `or(...values)`. `not(value)` takes one.",
@@ -130,7 +125,7 @@
         "Colors (Text/Foreground/Background/Border) and the Visible/Collapsible/Locked toggles use this exact same `@binding`/`=formula` convention too — a color swatch's own Binding/Formula box and a boolean toggle's condition field both resolve exactly like every other field described here."
       ],
       "category": "Template Builder",
-      "href": "docs.html#template-bindings"
+      "href": "../workbench/index.html"
     },
     {
       "id": "character.records",
@@ -142,7 +137,7 @@
         "Saving pushes your draft to the server as a real record, keeping your ownership and any sharing permissions intact."
       ],
       "category": "Character Sheet",
-      "href": "docs.html#character-records"
+      "href": "../workbench/index.html"
     },
     {
       "id": "character.dice",
@@ -154,7 +149,7 @@
         "Your roll history is kept for the session, so it's still there if you reload the page while playing."
       ],
       "category": "Character Sheet",
-      "href": "docs.html#character-dice"
+      "href": "../workbench/index.html"
     },
     {
       "id": "character.relationships",
@@ -168,7 +163,7 @@
         "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Character Sheet",
-      "href": "docs.html#character-relationships"
+      "href": "../workbench/index.html"
     },
     {
       "id": "collaboration.shares",
@@ -179,8 +174,7 @@
         "Share links carry randomly generated tokens stored alongside the content id; access is logged for auditing.",
         "A record can be shared with a specific user OR with an entire Campaign Group at once — sharing with a group grants every current member access transparently, and stays current as membership changes. See Campaign Groups and Sharing Content with a Campaign for the full picture."
       ],
-      "category": "Collaboration",
-      "href": "../common/account.html?help=collaboration.shares"
+      "category": "Collaboration"
     },
     {
       "id": "loom.groups.members",
@@ -192,7 +186,7 @@
         "Changes save automatically once you adjust the selection."
       ],
       "category": "Collaboration",
-      "href": "../loom/index.html?help=loom.groups.members"
+      "href": "../loom/index.html?view=groups"
     },
     {
       "id": "accounts.roles",
@@ -204,7 +198,7 @@
         "Creating a Campaign Group requires GM tier or higher — running a game is what GM tier is for, distinct from Creator tier's focus on authoring reusable content (Systems, Templates) for others to use."
       ],
       "category": "Collaboration",
-      "href": "../common/account.html?help=accounts.roles"
+      "href": "../common/account.html"
     },
     {
       "id": "accounts.upgrade",
@@ -216,7 +210,22 @@
         "Admin tier can never be self-selected here — it can only be granted by an existing administrator."
       ],
       "category": "Collaboration",
-      "href": "../common/account.html?help=accounts.upgrade"
+      "href": "../common/account.html"
+    },
+    {
+      "id": "combat.tableLighting",
+      "title": "Table Lighting",
+      "summary": "Light a seat on a lighting strip around the table for whoever's turn it is — and, if you like, whoever is on deck.",
+      "details": [
+        "Click the lightbulb in the Combat Tracker's toolbar, pick a lighting device you've already added in the Lighting widget, and tick \"Light the table by turn\".",
+        "Choose a segment for the GM (used for every monster, NPC and other non-player combatant) and one for each player. The segment lists come from your device — the names you see after using \"Remember layout\" in the Lighting widget. Seats follow the character, so you set them once and they carry into every encounter.",
+        "Each segment's look starts as the Solid effect in green for a player and red for the GM. Open a row's arrow to change its effect, palette, colors, or brightness — the same options as a Macro's \"Set effect / palette / color\" action.",
+        "Tick \"Light whoever is on deck\" to also light the next combatant in the order. Each segment then has an \"On deck\" look beside its \"Their turn\" look. It starts as a copy of the turn look at 10% brightness, and follows that look until you change it — after that it's its own.",
+        "On a hidden combatant's turn, or a player with no segment, the whole table goes dark. Ending combat switches the table's segments off. Only the segments you assign here are ever switched off — anything else on the strip is left alone.",
+        "The lights follow turns only while this Dashboard stays open in a browser that can reach the device. Reopening the page doesn't change the lights until the turn next changes. A Lighting widget on the same Dashboard — or in another tab — refreshes to match whenever the table lighting changes."
+      ],
+      "category": "Dashboard",
+      "href": "../index.html"
     },
     {
       "id": "dashboard.widgets",
@@ -224,12 +233,14 @@
       "summary": "A customizable landing page — build your own play space out of widgets.",
       "details": [
         "Click \"Edit layout\" to add or remove widgets, and drag a widget's header to reorder it.",
-        "GMs get a Combat Tracker widget for running initiative, HP, and conditions; anyone in the group sees a read-only live view of the same encounter.",
+        "GMs get a Combat Tracker widget for running initiative, HP, and conditions; anyone in the group sees a read-only live view of the same encounter. The tracker can also light each player's seat at the table on their turn (see Table Lighting). Any change to your lighting — from a Macro, the tracker, or another tab — refreshes a Lighting widget on the Dashboard to match.",
+        "A Lighting widget pointed at a WLED device shows whatever segments you've set up in WLED itself. WLED forgets them when it reboots, so use the bookmark button to remember the current segments (their LED ranges, grouping, spacing, reverse/mirror, and layering blend mode — not colors or effects). If they ever differ from what's remembered, the widget offers a Restore button; it never overwrites your segments on its own.",
+        "To put a Macro on the Dashboard, add a Board widget and start typing the Macro's name in a bucket's \"Add a card\" box — matching Macros, Journal pages, and other saved records appear as you type (use the arrow keys or Tab to pick one; Enter still adds exactly what you typed). Picking a Macro makes the card a one-click button that runs it — click the card's pencil to set the icon and color. Macros themselves are built in Loom's Macros tab; while editing the layout, clicking the button opens that Macro in Loom instead of running it.",
         "Your layout saves to this browser immediately, and syncs to your account too once you're signed in, so it follows you across devices.",
         "Jump to any tool from the small home/switcher icons in the header — the Dashboard itself isn't in that list, since you're already on it."
       ],
       "category": "Dashboard",
-      "href": "../index.html?help=dashboard.widgets"
+      "href": "../index.html"
     },
     {
       "id": "dashboard.secondScreen",
@@ -243,7 +254,7 @@
         "These settings live only in this browser, since a monitor arrangement is specific to this machine, not something that should follow your account to a different computer."
       ],
       "category": "Dashboard",
-      "href": "../index.html?help=dashboard.secondScreen"
+      "href": "../index.html"
     },
     {
       "id": "press.flow",
@@ -255,7 +266,7 @@
         "Overlays stay enabled by default so trim and safe areas stay visible in both preview and print stacks."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-flow"
+      "href": "../press/index.html"
     },
     {
       "id": "press.selection",
@@ -267,7 +278,7 @@
         "After entering a source value, click Generate Print to pull live data into the preview and print stack."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-selection"
+      "href": "../press/index.html"
     },
     {
       "id": "press.source.ddb",
@@ -281,7 +292,7 @@
         "Click Generate Print to run the Undercroft D&D Beyond parser and load the character into the selected template."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-selection"
+      "href": "../press/index.html"
     },
     {
       "id": "press.source.srd",
@@ -294,7 +305,7 @@
         "Use Generate Print to refresh the preview with the latest SRD payload."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-selection"
+      "href": "../press/index.html"
     },
     {
       "id": "press.source.json",
@@ -306,7 +317,7 @@
         "Re-upload to refresh changes; use Generate Print to reload the preview and print stack with new data."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-selection"
+      "href": "../press/index.html"
     },
     {
       "id": "press.source.manual",
@@ -318,7 +329,7 @@
         "Pair manual notes with any template, size, and orientation to see how they will print."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-selection"
+      "href": "../press/index.html"
     },
     {
       "id": "press.source.library",
@@ -330,7 +341,7 @@
         "These files live under undercroft/common/data/ — most kinds are populated by saving from Loom's Entities pane, but npc entries come from saving a generated character in Forge instead."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-selection"
+      "href": "../press/index.html"
     },
     {
       "id": "loom.mappingDescription",
@@ -341,7 +352,7 @@
         "Only matters for mappings marked Data Type \"Character\" below (see Mapping Data Type) — that's the only picker this description shows up in."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.mappingDataType",
@@ -353,7 +364,7 @@
         "Purely a categorization tag — it doesn't affect how this mapping fetches or maps data, only which picker offers it."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.source.ddb",
@@ -365,7 +376,7 @@
         "Character fetches are always previewable but never saved to the library — they're live/mutable and always re-fetched fresh."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.source.srd",
@@ -376,7 +387,7 @@
         "A list endpoint (e.g. /api/2024/classes) recursively fetches every linked item's full detail as one array."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.source.ddb-monster",
@@ -387,7 +398,7 @@
         "This is a different D&D Beyond endpoint from the Character source above. SRD monsters resolve with no login; a local server with server/ddb-session.local.json configured (same session-cookie mechanism as content-page fetches) may also resolve non-SRD monsters if your account has access."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.source.fantasy-statblocks",
@@ -398,7 +409,7 @@
         "Spellcasting is unstructured prose in this format — names/frequencies come through as-is, not parsed into real spell references."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.source.markdown-wonder",
@@ -410,7 +421,7 @@
         "A file with no italic type/rarity line at all (a mundane/lore item with no real stat block) imports fine — it just carries no rarity/attunement/charges and whatever candidate Features its prose happens to match."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-selection"
+      "href": "../loom/index.html?view=import"
     },
     {
       "id": "loom.libraryTable",
@@ -424,7 +435,7 @@
         "This is separate from the Kind/Entity picker below it, which is for directly editing one entity's raw JSON."
       ],
       "category": "Loom",
-      "href": "../loom/index.html?help=loom.libraryTable"
+      "href": "../loom/index.html?view=library"
     },
     {
       "id": "loom.relationships",
@@ -436,7 +447,7 @@
         "This is the only place to manage relationship records — they're no longer directly editable as raw JSON from the Type/Item pickers above."
       ],
       "category": "Loom",
-      "href": "../loom/index.html?help=loom.relationships"
+      "href": "../loom/index.html?view=library"
     },
     {
       "id": "loom.library",
@@ -449,7 +460,7 @@
         "Assigned Systems controls which System(s) can see this entity — an empty list means it isn't attached to any System yet."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-library"
+      "href": "../loom/index.html?view=library"
     },
     {
       "id": "loom.libraryTemplate",
@@ -461,7 +472,7 @@
         "The Template's own field bindings still need to match this entity's actual data shape to render correctly — assigning a Template doesn't transform the data, it just tells Workbench which layout to use."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-library"
+      "href": "../loom/index.html?view=library"
     },
     {
       "id": "loom.features",
@@ -477,7 +488,7 @@
         "\"Suggest Cost & Tags\" asks an LLM for a starting guess at Behaviors/Recipe Slots/Roles/Creature Types/Cost Budget, grounded in the already-tagged starter Features and a real CR/budget calibration table — it never saves anything on its own; review the suggestion, then save if it looks right."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-features"
+      "href": "../loom/index.html?view=features"
     },
     {
       "id": "loom.featureMechanics",
@@ -490,7 +501,7 @@
         "Picking the wrong Type won't corrupt anything, but it will make the wrong (or no) editing controls appear wherever this Feature gets used in Crucible or Vault — match it to what the Feature actually does, not to how important it feels."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-features"
+      "href": "../loom/index.html?view=features"
     },
     {
       "id": "loom.macros",
@@ -499,11 +510,11 @@
       "details": [
         "Macros are a real Library kind (creator-tier gated, shareable) — this tab is a purpose-built editor for that same data, the same relationship the Systems tab has to the System kind. The generic Library tab can still open a Macro as raw JSON like any other kind.",
         "Each action row targets one widget type (WLED, Home Assistant, Soundboard, Handout, Combat, ...) — the fields shown change to match what that type actually needs (a device alias, an entity, a clip id, a contentRef, ...).",
-        "Actions run top to bottom — order matters (e.g. dim the lights, then play the sting).",
-        "A WLED action's device is a free-text alias, never a literal IP — the GM running the macro maps it to one of their own saved devices the first time it's triggered, so the same Macro works for anyone's own lighting rig. A Home Assistant action targets a live entity picked from a dropdown instead, with no alias step — the first time you try to use one, you'll be prompted to connect your own Home Assistant instance (a URL and an access token), remembered after that."
+        "Actions run top to bottom — order matters (e.g. dim the lights, then play the sting). Use the up and down arrows on each action, or drag its grip handle, to reorder. A Timing → Wait action pauses the Macro for that many seconds before the next action runs, so \"play an effect, wait 5 seconds, turn it off\" is three actions in a row. A Macro only keeps running while the page that started it stays open.",
+        "A WLED action's device is picked from the lighting devices saved in your Dashboard's Lighting widget. What the macro stores is that device's alias, never a literal IP — so when someone else runs the Macro they map it to one of their own saved devices the first time it's triggered, and the same Macro works on anyone's own lighting rig. Picking a device that has no alias yet gives it one. A \"Set effect / palette / color\" action sets a segment's effect, palette, brightness, and its three colors. Each color is either a color or cleared (✕), and a cleared color is off — black, which is how a light holds \"no color\" — so every color is always applied exactly as the swatches show. Effect, palette, and brightness can be left unchanged, so \"Solid\" plus one color, or just a new palette, are each a single action. Picking an effect shows its own controls (speed, intensity, and so on) with that effect's default values filled in, and dims the palette or colors the effect doesn't use. It also turns the light on if it's off, since a look on a switched-off light isn't visible — untick \"Turn the light on if it's off\" to stage a look and reveal it later with a separate \"Turn on\" action. It also turns the device's other segments off, so a look replaces whatever the others were showing (for example, a goal on one side clearing the other) — as an instant cut, with no fade between them — untick \"Turn the device's other segments off\" when several segments should show at once, such as highlighting more than one player seat, or keeping a base layer lit underneath. The preset, effect, palette, and segment lists come live from the selected device, so this editor has to be able to reach it from your browser; if it can't, the saved value is kept. A WLED effect action can name the segment it applies to (e.g. \"North\") instead of a number, which keeps working if segments are renumbered. A Home Assistant action targets a live entity picked from a dropdown instead, with no alias step — the first time you try to use one, you'll be prompted to connect your own Home Assistant instance (a URL and an access token), remembered after that."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-macros"
+      "href": "../loom/index.html?view=macros"
     },
     {
       "id": "loom.systems",
@@ -515,7 +526,7 @@
         "Assigning entities to a System happens from the Library panel above (each entity's Assigned Systems list), not from here."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemJsonPreview",
@@ -527,7 +538,7 @@
         "Read-only — make your changes using the fields above; this panel only ever reflects them."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemProperties",
@@ -544,7 +555,7 @@
         "Preview Data is sample data shown when previewing bindings in Workbench's Template editor — it isn't part of any real character's data."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.reservedKeys",
@@ -556,7 +567,7 @@
         "fieldRoles is itself a reserved key — the one that says which of your OTHER properties plays which role (ability scores, combat bindings, creature type, ...) for tools that need to find them."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.groupSystem",
@@ -568,7 +579,7 @@
         "Leaving this blank falls back to each character's own first Assigned System, and finally to the standard 7 dice (d4/d6/d8/d10/d12/d20/d100) for a character with no System at all."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-groups"
+      "href": "../loom/index.html?view=groups"
     },
     {
       "id": "loom.groupSetting",
@@ -579,7 +590,7 @@
         "A widget that reads Setting-scoped data (e.g. Travel Means, which can define means only available in one Setting) uses this as its own default unless a specific widget instance overrides it."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-groups"
+      "href": "../loom/index.html?view=groups"
     },
     {
       "id": "loom.groupTemplate",
@@ -591,7 +602,7 @@
         "Once set, this campaign appears under Campaigns in Workbench's own character picker — selecting it there shows this Template with Edit mode already available, and every change writes straight through, no Save button involved."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-groups"
+      "href": "../loom/index.html?view=groups"
     },
     {
       "id": "loom.authDdbSession",
@@ -603,7 +614,7 @@
         "A stale cookie doesn't error loudly — D&D Beyond just silently serves its logged-out preview instead, which can look like a successful but truncated import. If an import seems to be missing content partway through, check here first."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-auth"
+      "href": "../loom/index.html?view=auth"
     },
     {
       "id": "loom.authAnthropicKey",
@@ -614,7 +625,7 @@
         "Unlike the D&D Beyond session above, an API key doesn't silently expire, so there's no periodic validity check here — Configured just means a key is on file."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-auth"
+      "href": "../loom/index.html?view=auth"
     },
     {
       "id": "loom.systemArrayOptions",
@@ -634,7 +645,7 @@
         "A binding's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's die) has no dedicated column — it's authored directly in that value's Extra properties JSON instead, the same as any other one-off property (see 'System Properties')."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueCost",
@@ -646,7 +657,7 @@
         "Turn this on for Properties like Activation or Item Form, where every value carries a point cost toward Vault's generation economy."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueWeight",
@@ -657,7 +668,7 @@
         "A System with no Weight set on its currency simply contributes no currency weight; the calculator never invents a value."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueSourceId",
@@ -668,7 +679,7 @@
         "Only needed if you're importing data that identifies things by number instead of by name — most hand-authored values can leave this blank."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueShortName",
@@ -678,7 +689,7 @@
         "One shared property name used the same way across every Property that needs a short form — STR for Strength, LG for Lawful Good, V/S/M for spell components, A/BA/R for Activation's action-economy codes, tiny/sm for Sizes, walking/burrowing for Speeds — rather than each Property inventing its own name for the same idea."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueBinding",
@@ -691,7 +702,7 @@
         "A binding's own extra metadata that's still just a single field's own quirk (Resource's max/temp path, Modifier's ability) isn't a dedicated column — author it directly in that value's Extra properties JSON instead (e.g. {\"maxPath\": \"stats.hitPoints.max\", \"tempPath\": \"stats.hitPoints.temp\"})."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueRecordField",
@@ -703,7 +714,7 @@
         "Not to be confused with Source field (where a value's list of valid *options* comes from) or Library field (a path into a Library record, not the Character)."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueLibraryField",
@@ -715,7 +726,7 @@
         "Paired with Library kind (which category of record) and, where a resolved value needs to land on the Character too, Target path."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueLibraryKind",
@@ -726,7 +737,7 @@
         "Comes from the suite's own registered Library kinds (common/data/kind/*.json)."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueTargetPath",
@@ -737,7 +748,7 @@
         "The one place both a read and a write are needed on the same entry (levelUpBindings' classProgressionTable columns) uses Library field/Record field alongside Target path together."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueDescription",
@@ -749,7 +760,7 @@
         "Without this on, a value's description (if it has one) still round-trips through this row's Extra properties JSON instead — turning this on just gives it its own dedicated field rather than requiring hand-typed JSON."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemValueSourceField",
@@ -761,7 +772,7 @@
         "Most commonly meaningful on a Tags-binding value, but nothing about it is tags-specific — any value that needs its options sourced from another field can use it."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "loom.systemCombatBindings",
@@ -774,7 +785,7 @@
         "If a System has no array using Binding at all, the Combat Tracker and character sheet simply won't show live combat state for it — nothing breaks."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-systems"
+      "href": "../loom/index.html?view=systems"
     },
     {
       "id": "sanctum.setting",
@@ -785,7 +796,7 @@
         "Leave this blank to start a new Setting (New in Setting Properties), or pick an existing one here to edit it or add Locations to it."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-setting-picker"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.npcConfig",
@@ -798,7 +809,7 @@
         "Leave this whole section empty for a Location that will never be used to generate NPCs (a Room, a Structure with no population)."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-npc-config"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.settingSpeciesWeights",
@@ -810,7 +821,7 @@
         "Leave this empty if every Location in this Setting will always define its own population explicitly."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-setting-species-weights"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.calendar",
@@ -822,7 +833,7 @@
         "Leave the whole section empty for a Setting that will never use a Dashboard Calendar widget — a Calendar widget can only be added against a Setting that actually has one defined here."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-calendar"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "press.templates",
@@ -870,7 +881,7 @@
         "Palette clones share a Sortable group with the layout so you can reorder items either in the outline or on the page."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-palette"
+      "href": "../press/index.html"
     },
     {
       "id": "press.sample-data",
@@ -882,7 +893,7 @@
         "When source data is loaded, this panel switches to display the loaded payload instead of the sample JSON."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-sample-data"
+      "href": "../press/index.html"
     },
     {
       "id": "press.page-bindings",
@@ -906,7 +917,7 @@
         "Each side keeps its own layout; switch sides with the toggle above the preview to edit front and back separately."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-layout"
+      "href": "../press/index.html"
     },
     {
       "id": "press.inspector",
@@ -930,7 +941,7 @@
         "Use system print dialogs with 100% scaling and flip on the long edge for duplex output."
       ],
       "category": "Press",
-      "href": "../press/index.html#press-printing"
+      "href": "../press/index.html"
     },
     {
       "id": "forge.generate",
@@ -943,7 +954,7 @@
         "The character note is optional and separate — generate one afterward from the main pane if you want it."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-generate"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.overrides",
@@ -1006,7 +1017,7 @@
         "This is what changes most between locations and settings — the 4D attributes below never do."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-identity"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.fourD",
@@ -1018,7 +1029,7 @@
         "Treat them as a starting point for roleplay, not a fixed personality description."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-fourd"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.stats",
@@ -1030,7 +1041,7 @@
         "Setting-specific archetypes (rolls 22-23) and Wildcard (roll 24) have no fixed identity — if the System also has nothing to independently roll, you'll see a note instead of numbers."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-stats"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.skills",
@@ -1042,7 +1053,7 @@
         "Hidden entirely for a System with no Skill Generation config authored."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-skills"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.features",
@@ -1055,7 +1066,7 @@
         "Unlike Monster/Character, nothing is auto-matched here — Forge NPCs are procedurally generated, not imported from prose, so there's nothing to convert automatically."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-features"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.note",
@@ -1080,7 +1091,7 @@
         "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-relationships"
+      "href": "../forge/index.html"
     },
     {
       "id": "forge.speciesWeights",
@@ -1116,7 +1127,7 @@
         "Nothing shows here until something in Identity is selected."
       ],
       "category": "Forge",
-      "href": "../forge/index.html#forge-identity"
+      "href": "../forge/index.html"
     },
     {
       "id": "campaign.groups",
@@ -1128,7 +1139,7 @@
         "Every group gets a public share link (also from the Groups tab) so players without an account can watch the game log and claim an unclaimed character."
       ],
       "category": "Campaigns",
-      "href": "../common/account.html?help=campaign.groups"
+      "href": "../loom/index.html?view=groups"
     },
     {
       "id": "campaign.active",
@@ -1139,8 +1150,7 @@
         "Picking a group here is what \"Share with [active campaign]\" one-click buttons target, and which campaign the Dashboard's own widgets (Handout, Combat Tracker, ...) read from — no separate per-tool setup needed.",
         "The selection is stored per-browser (not on the server against your account), so switching computers means picking it again."
       ],
-      "category": "Campaigns",
-      "href": "../common/account.html?help=campaign.active"
+      "category": "Campaigns"
     },
     {
       "id": "campaign.sharing",
@@ -1151,8 +1161,7 @@
         "Share dialogs across the suite (Loom's Library inspector, the account page's Owned Content tab, and per-tool inspectors) offer a one-click \"Share with [active campaign]\" button alongside the full user/group picker once you have an active campaign selected.",
         "Shares carry \"view\" or \"edit\" permission — view is the right choice for almost everything shared with players."
       ],
-      "category": "Campaigns",
-      "href": "../common/account.html?help=campaign.sharing"
+      "category": "Campaigns"
     },
     {
       "id": "campaign.spotlight",
@@ -1166,7 +1175,7 @@
         "Whoever's watching sees it in Workbench's \"Now Showing\" panel, next to the Game Log — including anonymous players on the group's public share link."
       ],
       "category": "Campaigns",
-      "href": "../common/account.html?help=campaign.spotlight"
+      "href": "../index.html"
     },
     {
       "id": "campaign.gamelog",
@@ -1178,7 +1187,7 @@
         "Anonymous visitors on a group's public share link see the same log (and Now Showing panel) with no account needed."
       ],
       "category": "Campaigns",
-      "href": "../common/account.html?help=campaign.gamelog"
+      "href": "../workbench/index.html"
     },
     {
       "id": "orrery.maps",
@@ -1190,7 +1199,7 @@
         "Anonymous (signed-out) saves stay local to your own browser, same as every other generator tool in the suite."
       ],
       "category": "Orrery",
-      "href": "../common/account.html?help=orrery.maps"
+      "href": "../orrery/index.html"
     },
     {
       "id": "orrery.markers",
@@ -1202,7 +1211,7 @@
         "On a real-world (tile) base map, pins are anchored to actual coordinates, so they stay in the right place as you pan and zoom — unlike a flat pixel position, which would drift out of place on zoom."
       ],
       "category": "Orrery",
-      "href": "../common/account.html?help=orrery.markers"
+      "href": "../orrery/index.html"
     },
     {
       "id": "orrery.barResourceName",
@@ -1214,7 +1223,7 @@
         "Most Systems track only one resource (Hit Points) and never need this touched — it only matters for a System that tracks more than one, like d20 Modern's Hit Points and Action Points, or Daggerheart's Hope alongside HP. Whichever one looks like Hit Points is already selected for you, marked \"(auto-detected)\", but this can point at any resource a System defines, not just HP."
       ],
       "category": "Orrery",
-      "href": "../common/account.html?help=orrery.barResourceName"
+      "href": "../orrery/index.html"
     },
     {
       "id": "orrery.views",
@@ -1226,7 +1235,7 @@
         "If a map has no Views defined at all, every viewer sees every layer — Views are opt-in, not a default restriction."
       ],
       "category": "Orrery",
-      "href": "../common/account.html?help=orrery.views"
+      "href": "../orrery/index.html"
     },
     {
       "id": "crucible.overrides",
@@ -1273,7 +1282,7 @@
         "The Name field is the only thing here you edit directly; regenerate the monster to get a new resolved Identity instead."
       ],
       "category": "Crucible",
-      "href": "../crucible/index.html#crucible-identity"
+      "href": "../crucible/index.html"
     },
     {
       "id": "crucible.features",
@@ -1318,7 +1327,7 @@
         "An unfulfilled optional slot isn't an error — it just means nothing compatible and synergistic was available, and the result is still a usable, honestly-labeled monster."
       ],
       "category": "Crucible",
-      "href": "../crucible/index.html#crucible-recipe"
+      "href": "../crucible/index.html"
     },
     {
       "id": "crucible.stats",
@@ -1330,7 +1339,7 @@
         "Initiative Bonus is the standard ability-modifier math on Dexterity — it's what the Combat Tracker's \"Roll Initiative\" button uses for this monster once it's added to an encounter."
       ],
       "category": "Crucible",
-      "href": "../crucible/index.html#crucible-stats"
+      "href": "../crucible/index.html"
     },
     {
       "id": "crucible.notes",
@@ -1354,7 +1363,7 @@
         "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Crucible",
-      "href": "../crucible/index.html#crucible-relationships"
+      "href": "../crucible/index.html"
     },
     {
       "id": "vault.lockedFeatures",
@@ -1366,7 +1375,7 @@
         "Leave this empty to let Vault pick everything itself, guided only by the resolved Properties and Signature Feature."
       ],
       "category": "Vault",
-      "href": "../vault/index.html#vault-generate"
+      "href": "../vault/index.html"
     },
     {
       "id": "vault.identity",
@@ -1378,7 +1387,7 @@
         "The Name field is the only thing here you edit directly; regenerate the wonder to get a new resolved set of Properties instead."
       ],
       "category": "Vault",
-      "href": "../vault/index.html#vault-identity"
+      "href": "../vault/index.html"
     },
     {
       "id": "vault.features",
@@ -1425,7 +1434,7 @@
         "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Vault",
-      "href": "../vault/index.html#vault-relationships"
+      "href": "../vault/index.html"
     },
     {
       "id": "sanctum.lockedFeatures",
@@ -1448,7 +1457,7 @@
         "The Name field is the only thing here you edit directly; regenerate the Location to get a new resolved Type/Purpose/Environment instead."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-identity"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.features",
@@ -1460,7 +1469,7 @@
         "This list is exactly what's saved with the Location — there's no separate hidden layer of mechanics behind it."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-features"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.assets",
@@ -1472,7 +1481,7 @@
         "This is deliberately not a full economy or ledger — Assets/Needs describe what a place has or lacks in broad strokes for a GM to use at the table, not a simulated inventory."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-assets-needs"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.relationships",
@@ -1485,7 +1494,7 @@
         "Open jumps straight to the other record's own tool (Forge/Sanctum/Crucible/Workbench, whichever owns that kind)."
       ],
       "category": "Sanctum",
-      "href": "../sanctum/index.html#sanctum-relationships"
+      "href": "../sanctum/index.html"
     },
     {
       "id": "sanctum.notes",
@@ -1518,7 +1527,7 @@
         "Field/Custom/Pipeline entries add a new node under an Object; Map/Filter/Flatten/Group By/Sort entries (shown once a Pipeline node is selected) add a new step to it instead."
       ],
       "category": "Loom",
-      "href": "../loom/index.html#loom-node-palette"
+      "href": "../loom/index.html?view=import#loom-node-palette"
     },
     {
       "id": "orrery.bulkEdit",
@@ -1626,7 +1635,7 @@
         "There's no separate place to configure this — the tag's own text is the whole instruction. Any other tag (prefixed or not) is just a normal freeform tag, filterable but otherwise inert."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-tags"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.completionStamp",
@@ -1638,7 +1647,7 @@
         "Unchecking a task always removes its date, regardless of this setting."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-tags"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.searchScope",
@@ -1650,7 +1659,7 @@
         "A page that only matches in its body (not its title) still shows up in the list — the group tree auto-expands to reveal it while a search is active."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-tags"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.parent",
@@ -1661,7 +1670,7 @@
         "This is different from a tag-based group or a Related link — it's a real parent/child relationship between two specific pages, not just a shared label or a loose reference."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-tags"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.quests",
@@ -1674,7 +1683,7 @@
         "A quest is scoped to the page it's written on — its title only needs to be unique on that one page."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-quests"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.storyBoard",
@@ -1688,7 +1697,7 @@
         "Switch between Freeform (drag cards anywhere) and Swimlane (lane × stage grid) at any time from the canvas toolbar — both layouts are stored on the same node, so switching never loses data."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-story-board"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.relationships",
@@ -1700,7 +1709,7 @@
         "Computed when you open the view (or after a page save), not kept live — it deliberately does NOT ingest a Story Board's own internal planning layout, since that's a separate GM-only planning surface, not existing campaign content."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-relationships"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.timeline",
@@ -1713,7 +1722,7 @@
         "Computed when you open the tab (or after a page save), not kept live — same \"computed on demand\" principle Relationships uses."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-timeline"
+      "href": "../repository/index.html"
     },
     {
       "id": "repository.date",
@@ -1726,7 +1735,7 @@
         "Purely informational — a date chip has no click action; it doesn't yet drive overdue tracking or a timeline view."
       ],
       "category": "Repository",
-      "href": "../repository/index.html#repository-date"
+      "href": "../repository/index.html"
     }
   ]
 }

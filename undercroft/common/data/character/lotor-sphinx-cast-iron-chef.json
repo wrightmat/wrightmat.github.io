@@ -19,16 +19,16 @@
       "refId": "human"
     },
     "class": "Cleric",
-    "level": 7,
+    "level": 8,
     "levels": {
       "level_monk": 0,
       "level_multiclass": 0
     },
-    "inspiration": true,
+    "inspiration": false,
     "classes": [
       {
         "name": "Cleric",
-        "level": 7,
+        "level": 8,
         "subclass": {
           "name": "Life Domain",
           "refKind": "variant",
@@ -39,13 +39,13 @@
       }
     ]
   },
-  "proficiency": 3,
   "conditions": [],
   "stats": {
+    "proficiencyBonus": 3,
     "hitPoints": {
-      "max": 88,
-      "current": 88,
-      "temp": 9
+      "max": 98,
+      "current": 86,
+      "temp": 0
     },
     "armorClass": 19,
     "senses": {
@@ -65,7 +65,7 @@
     "abilities": {
       "strength": 15,
       "dexterity": 12,
-      "constitution": 18,
+      "constitution": 19,
       "intelligence": 8,
       "wisdom": 19,
       "charisma": 15
@@ -349,7 +349,7 @@
     "cp": 0,
     "sp": 0,
     "ep": 0,
-    "gp": 390,
+    "gp": 675,
     "pp": 0
   },
   "inventory": [
@@ -366,16 +366,40 @@
       "refId": "ring-of-free-action"
     },
     {
-      "name": "Potion of Water Breathing",
+      "name": "Trident of Fish Command",
+      "quantity": 1,
+      "weight": 4,
+      "notes": "<p>This magic weapon has 3 charges, and it regains 1d3 expended charges daily at dawn. While you carry it, you can expend 1 charge to cast Dominate Beast (save DC 15) from it on a Beast that has a Swim Speed.</p>",
+      "canAttune": true,
+      "isAttuned": false,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "trident-of-fish-command"
+    },
+    {
+      "name": "Ring of Mind Shielding",
       "quantity": 1,
       "weight": 0,
-      "notes": "<p>You can breathe underwater for 24 hours after drinking this potion.</p>\r\n<p>This potion’s cloudy green fluid smells of the sea and has a jellyfish-like bubble floating in it.</p>",
-      "canAttune": false,
-      "isAttuned": false,
-      "canEquip": false,
-      "isEquipped": false,
+      "notes": "<p>While wearing this ring, you are immune to magic that allows other creatures to read your thoughts, determine whether you are lying, know your alignment, or know your creature type. Creatures can telepathically communicate with you only if you allow it.</p>\r\n<p>You can take a Magic action to cause the ring to become imperceptible until you take another Magic action to make it perceptible, until you remove the ring, or until you die.</p>\r\n<p>If you die while wearing the ring, your soul enters it, unless it already houses a soul. You can remain in the ring or depart for the afterlife. As long as your soul is in the ring, you can telepathically communicate with any creature wearing it. A wearer can’t prevent this telepathic communication.</p>",
+      "canAttune": true,
+      "isAttuned": true,
+      "canEquip": true,
+      "isEquipped": true,
       "refKind": "wonder",
-      "refId": "potion-of-water-breathing"
+      "refId": "ring-of-mind-shielding"
+    },
+    {
+      "name": "Ring of Shooting Stars",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>You can cast Dancing Lights or Light from the ring.</p>\r\n<p>The ring has 6 charges and regains 1d6 expended charges daily at dawn. You can expend its charges to use the properties below.</p>\r\n<p><em><strong>Faerie Fire.</strong></em> You can expend 1 charge to cast Faerie Fire from the ring.</p>\r\n<p><em><strong>Lightning Spheres.</strong></em> You can expend 2 charges as a Magic action to create up to four 3-foot-diameter spheres of lightning.</p>\r\n<p>Each sphere appears in an unoccupied space you can see within 120 feet of yourself. The spheres last as long as you maintain Concentration, up to 1 minute. Each sphere sheds Dim Light in a 30-foot radius.</p>\r\n<p>As a Bonus Action, you can move each sphere up to 30 feet, but no farther than 120 feet away from yourself. The first time the sphere comes within 5 feet of a creature other than you that isn’t behind Total Cover, the sphere discharges lightning at that creature and disappears. That creature makes a DC 15 Dexterity saving throw. On a failed save, the creature takes Lightning damage based on the number of spheres you created, as shown in the following table. On a successful save, the creature takes half as much damage.</p>\r\n<table class=\"table-compendium\">\r\n<thead>\r\n<tr>\r\n<td><strong>Number of Spheres</strong></td>\r\n<td><strong>Lightning Damage</strong></td>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>1</td>\r\n<td>4d12</td>\r\n</tr>\r\n<tr>\r\n<td>2</td>\r\n<td>5d4</td>\r\n</tr>\r\n<tr>\r\n<td>3</td>\r\n<td>2d6</td>\r\n</tr>\r\n<tr>\r\n<td>4</td>\r\n<td>2d4</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n<p><em><strong>Shooting Stars.</strong></em> You can expend 1 to 3 charges as a Magic action. For every charge you expend, you launch a glowing mote of light from the ring at a point you can see within 60 feet of yourself. Each creature in a 15-foot Cube originating from that point is showered in sparks and makes a DC 15 Dexterity saving throw, taking 5d4 Radiant damage on a failed save or half as much damage on a successful one.</p>",
+      "canAttune": true,
+      "isAttuned": true,
+      "canEquip": true,
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "ring-of-shooting-stars"
     },
     {
       "name": "Shield",
@@ -400,18 +424,6 @@
       "isEquipped": true,
       "refKind": "wonder",
       "refId": "splint-armor"
-    },
-    {
-      "name": "Trident",
-      "quantity": 1,
-      "weight": 4,
-      "notes": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>",
-      "canAttune": false,
-      "isAttuned": false,
-      "canEquip": true,
-      "isEquipped": true,
-      "refKind": "wonder",
-      "refId": "trident"
     },
     {
       "name": "Oil",
@@ -460,6 +472,31 @@
       "isEquipped": false,
       "refKind": "wonder",
       "refId": "potion-of-healing-common"
+    },
+    {
+      "name": "Potion of Water Breathing",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>You can breathe underwater for 24 hours after drinking this potion.</p>\r\n<p>This potion’s cloudy green fluid smells of the sea and has a jellyfish-like bubble floating in it.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "refKind": "wonder",
+      "refId": "potion-of-water-breathing"
+    },
+    {
+      "name": "Small Knife",
+      "quantity": 1,
+      "weight": 0,
+      "notes": "<p>A small knife, typically found in a scholar's pack.</p>",
+      "canAttune": false,
+      "isAttuned": false,
+      "canEquip": false,
+      "isEquipped": false,
+      "customName": "Hachet of Gold",
+      "refKind": "wonder",
+      "refId": "small-knife"
     },
     {
       "name": "Iron Pot",
@@ -547,6 +584,12 @@
       "limitedUse": null
     },
     {
+      "name": "Durable",
+      "description": "*General Feat (Prerequisite: Level 4+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Constitution score by 1, to a maximum of 20.\n\n***Defy Death.*** You have Advantage on Death Saving Throws.\n\n***Speedy Recovery.*** As a Bonus Action, you can expend one of your Hit Point Dice, roll the die, and regain a number of Hit Points equal to the roll.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
       "name": "Healer",
       "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n**Battle Medic.** If you have a Healer’s Kit, you can expend one use of it and tend to a creature within 5 feet of yourself as a Utilize action. That creature can expend one of its Hit Point Dice, and you then roll that die. The creature regains a number of Hit Points equal to the roll plus your Proficiency Bonus.\n\n***Healing Rerolls.*** Whenever you roll a die to determine the number of Hit Points you restore with a spell or with this feat’s Battle Medic benefit, you can reroll the die if it rolls a 1, and you must use the new roll.",
       "level": null,
@@ -567,6 +610,12 @@
     {
       "name": "Tough",
       "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
+      "name": "Mark of Sentinel",
+      "description": "*Dragonmark Feat (Prerequisite: Eberron Campaign, Can't Have Another Dragonmark Feat)*\n\nYou gain the following benefits.\n\n**Sentinel's Intuition.** When you make a Wisdom (Insight or Perception) check, you can roll 1d4 and add the number rolled to the ability check.\n\n**Guardian's Shield.** You always have the Shield spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast it using any spell slots you have. Intelligence, Wisdom or Charisma is your spellcsting ability for this spell (choose when you select this feat).\n\n**Vigilant Guardian.** When a creature you can see within 5 feet of you is hit by an attack roll, you can take a Reaction to swap places with that creature, and you are hit by the attack instead. You can use this feature a number of times equal to your Proficiency Bonus and regain all expended uses when you finish a Long Rest.\n\n**Spells of the Mark.** If you have the Spelcasting or Pact Magic class feature, the spells on the Mark of Sentinel Spells table are added to that feature's spell list.\n\nLevel 1: Compelled Duel, Shield of Faith\n\nLevel 2: Warding Bond, Zone of Truth\n\nLevel 3: Counterspell, Protection from Energy\n\nLevel 4: Death Ward, Guardian of Faith\n\nLevel 5: Bigby's Hand",
       "level": null,
       "limitedUse": null
     }
@@ -628,6 +677,11 @@
       "level": 5
     },
     {
+      "name": "8: Ability Score Improvement",
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 12 and 16.",
+      "level": 8
+    },
+    {
       "name": "Blessed Strikes",
       "description": "Divine power infuses you in battle. You gain one of the following options of your choice (if you get either option from a Cleric subclass in an older book, use only the option you choose for this feature).\n\n**Divine Strike.** Once on each of your turns when you hit a creature with an attack roll using a weapon, you can cause the target to take an extra 1d8 Necrotic or Radiant damage (your choice).\n\n**Potent Spellcasting.** Add your Wisdom modifier to the damage you deal with any Cleric cantrip.",
       "level": 7
@@ -678,6 +732,11 @@
       "level": null
     },
     {
+      "name": "Durable",
+      "description": "*General Feat (Prerequisite: Level 4+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Constitution score by 1, to a maximum of 20.\n\n***Defy Death.*** You have Advantage on Death Saving Throws.\n\n***Speedy Recovery.*** As a Bonus Action, you can expend one of your Hit Point Dice, roll the die, and regain a number of Hit Points equal to the roll.",
+      "level": null
+    },
+    {
       "name": "Healer",
       "description": "*Origin Feat*\n\nYou gain the following benefits.\n\n**Battle Medic.** If you have a Healer’s Kit, you can expend one use of it and tend to a creature within 5 feet of yourself as a Utilize action. That creature can expend one of its Hit Point Dice, and you then roll that die. The creature regains a number of Hit Points equal to the roll plus your Proficiency Bonus.\n\n***Healing Rerolls.*** Whenever you roll a die to determine the number of Hit Points you restore with a spell or with this feat’s Battle Medic benefit, you can reroll the die if it rolls a 1, and you must use the new roll.",
       "level": null
@@ -695,6 +754,11 @@
     {
       "name": "Tough",
       "description": "*Origin Feat*\n\nYour Hit Point maximum increases by an amount equal to twice your character level when you gain this feat. Whenever you gain a character level thereafter, your Hit Point maximum increases by an additional 2 Hit Points.",
+      "level": null
+    },
+    {
+      "name": "Mark of Sentinel",
+      "description": "*Dragonmark Feat (Prerequisite: Eberron Campaign, Can't Have Another Dragonmark Feat)*\n\nYou gain the following benefits.\n\n**Sentinel's Intuition.** When you make a Wisdom (Insight or Perception) check, you can roll 1d4 and add the number rolled to the ability check.\n\n**Guardian's Shield.** You always have the Shield spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast it using any spell slots you have. Intelligence, Wisdom or Charisma is your spellcsting ability for this spell (choose when you select this feat).\n\n**Vigilant Guardian.** When a creature you can see within 5 feet of you is hit by an attack roll, you can take a Reaction to swap places with that creature, and you are hit by the attack instead. You can use this feature a number of times equal to your Proficiency Bonus and regain all expended uses when you finish a Long Rest.\n\n**Spells of the Mark.** If you have the Spelcasting or Pact Magic class feature, the spells on the Mark of Sentinel Spells table are added to that feature's spell list.\n\nLevel 1: Compelled Duel, Shield of Faith\n\nLevel 2: Warding Bond, Zone of Truth\n\nLevel 3: Counterspell, Protection from Energy\n\nLevel 4: Death Ward, Guardian of Faith\n\nLevel 5: Bigby's Hand",
       "level": null
     }
   ],
@@ -715,17 +779,19 @@
     ],
     "senses": [],
     "other": [
+      "Radiant",
       "Hit Points",
       "Subclass",
       "Spell Group - Healing",
       "Choose Constitution or Wisdom",
+      "Constitution Score",
       "Hit Points per Level"
     ]
   },
   "attacks": [
     {
       "name": "Unarmed Strike",
-      "range": null,
+      "range": "5 ft. Reach",
       "longRange": null,
       "attackBonus": 5,
       "damage": "1+2",
@@ -735,16 +801,9 @@
     },
     {
       "name": "Channel Divinity: Sear Undead",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
+      "range": "",
       "longRange": null,
-      "attackBonus": 0,
+      "attackBonus": "",
       "damage": "1d8",
       "damageType": "Thunder",
       "notes": "",
@@ -752,30 +811,23 @@
     },
     {
       "name": "Divine Strike",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
+      "range": "",
       "longRange": null,
-      "attackBonus": 0,
+      "attackBonus": "",
       "damage": "1d8",
       "damageType": null,
       "notes": "",
       "description": "<p>Once on each of your turns when you hit a creature with an attack roll using a weapon, you can cause the target to take an extra 1d8 Necrotic or Radiant damage (your choice).</p>"
     },
     {
-      "name": "Trident",
+      "name": "Trident of Fish Command",
       "range": "20 ft.",
       "longRange": "60 ft.",
       "attackBonus": 5,
       "damage": "1d8+2",
       "damageType": "Piercing",
       "notes": "Thrown, Versatile, Topple",
-      "description": "<p>Proficiency with a Trident allows you to add your proficiency bonus to the attack roll for any attack you make with it.</p>\r\n<div class=\"mastery-container\"><hr />\r\n<p>This weapon has the following mastery property. To use this property, you must have a feature that lets you use it.</p>\r\n<p><strong><em>Topple.</em></strong> If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw (DC 8 plus the ability modifier used to make the attack roll and your Proficiency Bonus). On a failed save, the creature has the Prone condition.</p>\r\n</div>"
+      "description": "<p>This magic weapon has 3 charges, and it regains 1d3 expended charges daily at dawn. While you carry it, you can expend 1 charge to cast Dominate Beast (save DC 15) from it on a Beast that has a Swim Speed.</p>"
     }
   ],
   "attacking": {
@@ -789,7 +841,40 @@
     "attack": "+7",
     "save": 15
   },
-  "limitedUses": [],
+  "limitedUses": [
+    {
+      "name": "Level 3 Spell Slots",
+      "level": 3,
+      "total": 3,
+      "available": 2,
+      "used": 1,
+      "reset": "Long Rest"
+    },
+    {
+      "name": "Level 1 Spell Slots",
+      "level": 1,
+      "total": 4,
+      "reset": "Long Rest",
+      "available": 4,
+      "used": 0
+    },
+    {
+      "name": "Level 2 Spell Slots",
+      "level": 2,
+      "total": 3,
+      "reset": "Long Rest",
+      "available": 3,
+      "used": 0
+    },
+    {
+      "name": "Level 4 Spell Slots",
+      "level": 4,
+      "total": 2,
+      "reset": "Long Rest",
+      "available": 2,
+      "used": 0
+    }
+  ],
   "campaign": {
     "id": 2994388,
     "name": "A Merry Band of Gaymers",
@@ -829,12 +914,12 @@
   },
   "notes": {
     "allies": "-\n(Radiant one)\nA Merchant Head, Ermias.\nTasira Vaine-Advratiser\nBoss Voss\nSaza, Tiefling Wizard(su chef in training)\nKeltar, Dragonborn Bard (Head chef in training)\n(Son) Vernon Sphinx",
-    "backstory": "Trying to kill many monsters of the ocean (○Adult Kraken)\nTrying to find Son/Help him\nDestroy Temple of the Aboleth",
+    "backstory": "Trying to kill many monsters of the ocean (○Adult Kraken) Vernon Sphinx, mend relationship.\nWho killed my wife\nDestroy Temple of the Aboleth",
     "enemies": "The Law enforcement",
     "organizations": "Merchant guild\nSome Pirates\nP.A.C.T",
     "personalPossessions": "Garlic String Of Hope (Made of Wife's Hair)",
     "otherHoldings": null,
-    "otherNotes": "46yo"
+    "otherNotes": "51yo"
   },
   "traits": {
     "age": null,
@@ -934,36 +1019,60 @@
           "refId": "guidance"
         },
         {
-          "name": "Light",
+          "name": "Spare the Dying",
           "level": 0,
           "prepared": false,
           "castingTime": "A",
           "range": {
-            "origin": "Touch",
-            "rangeValue": 0,
+            "origin": "Ranged",
+            "rangeValue": 15,
             "aoeType": null,
             "aoeValue": null
           },
-          "school": "Evocation",
+          "school": "Necromancy",
           "source": "class",
           "concentration": false,
           "ritual": false,
           "components": [
             "V",
-            "M"
+            "S"
           ],
           "toHit": null,
           "dc": null,
-          "effect": "Creation",
-          "duration": "1 Hour (Time)",
+          "effect": "Healing",
+          "duration": " (Instantaneous)",
           "refKind": "wonder",
-          "refId": "light"
+          "refId": "spare-the-dying"
         }
       ]
     },
     {
       "level": 1,
       "spells": [
+        {
+          "name": "Shield",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "R",
+          "range": {
+            "origin": "Self",
+            "rangeValue": 0,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "feat",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Warding",
+          "duration": "1 Round (Time)"
+        },
         {
           "name": "Healing Word",
           "level": 1,
@@ -1184,29 +1293,6 @@
           "refId": "spirit-guardians"
         },
         {
-          "name": "Aura of Vitality",
-          "level": 3,
-          "prepared": true,
-          "castingTime": "A",
-          "range": {
-            "origin": "Self",
-            "rangeValue": null,
-            "aoeType": "Emanation",
-            "aoeValue": 30
-          },
-          "school": "Abjuration",
-          "source": "class",
-          "concentration": true,
-          "ritual": false,
-          "components": [
-            "V"
-          ],
-          "toHit": null,
-          "dc": null,
-          "effect": "Healing",
-          "duration": "1 Minute (Concentration)"
-        },
-        {
           "name": "Laeral's Silver Lance",
           "level": 3,
           "prepared": true,
@@ -1230,6 +1316,31 @@
           "dc": 15,
           "effect": null,
           "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Counterspell",
+          "level": 3,
+          "prepared": true,
+          "castingTime": "R",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "S"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Negation",
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "counterspell"
         }
       ]
     },
@@ -1262,16 +1373,45 @@
           "duration": "1 Hour (Concentration)",
           "refKind": "wonder",
           "refId": "locate-creature"
+        },
+        {
+          "name": "Banishment",
+          "level": 4,
+          "prepared": true,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 30,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Abjuration",
+          "source": "class",
+          "concentration": true,
+          "ritual": false,
+          "components": [
+            "V",
+            "S",
+            "M"
+          ],
+          "toHit": null,
+          "dc": 15,
+          "effect": "Control",
+          "duration": "1 Minute (Concentration)",
+          "refKind": "wonder",
+          "refId": "banishment"
         }
       ]
     }
   ],
   "featureIds": [
     "feat.chef",
+    "feat.durable",
     "feat.healer",
     "feat.hermit-ability-score-improvements",
     "feat.lucky",
     "feat.tough",
+    "feat.mark-of-sentinel",
     "feat.cleric-disciple-of-life",
     "feat.cleric-life-domain-spells",
     "feat.cleric-preserve-life",
@@ -1352,6 +1492,5 @@
         7
       ]
     }
-  },
-  "hiddenTags": []
+  }
 }

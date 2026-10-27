@@ -3,6 +3,7 @@
 // (Press-specific bits like its Add Font modal are caller-supplied
 // callbacks, same attachXAutocomplete(input, {onSelect}) shape icon-picker.js
 // uses).
+import { disposeTooltip } from "./tooltips.js";
 import { getAllFontOptions, isCustomFontId, ensureFontLoaded, verifyGoogleFontExists, lookupGoogleFontCategory } from "./font-library.js";
 
 // A comma means it's already a full CSS font-family declaration (e.g.
@@ -153,9 +154,12 @@ export function attachFontFamilyAutocomplete(
         deleteButton.className = "btn btn-sm btn-outline-danger py-0 px-1 flex-shrink-0";
         deleteButton.textContent = "×";
         deleteButton.setAttribute("aria-label", `Delete ${item.option.label} from the font library`);
+        deleteButton.setAttribute("data-bs-toggle", "tooltip");
+        deleteButton.setAttribute("data-bs-title", `Delete ${item.option.label} from the font library`);
         deleteButton.addEventListener("mousedown", (event) => event.preventDefault());
         deleteButton.addEventListener("click", (event) => {
           event.stopPropagation();
+          disposeTooltip(deleteButton);
           close();
           onDeleteFont(item.option);
         });

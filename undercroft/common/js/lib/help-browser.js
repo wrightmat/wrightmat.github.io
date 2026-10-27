@@ -72,6 +72,7 @@ export async function initHelpBrowser({
     srLabel.className = "visually-hidden";
     srLabel.textContent = `Toggle ${title}`;
     toggle.append(icon, srLabel);
+    updateTooltipContent(toggle, `Toggle ${title}`);
     row.append(label, toggle);
     const panel = document.createElement("div");
     panel.className = "d-flex flex-column gap-1";

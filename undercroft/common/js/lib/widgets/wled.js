@@ -23,13 +23,17 @@
 // "haLight", a much smaller on/off + brightness + color surface — see
 // ha-light.js). Kept as two separate driver modules since they share no
 // JSON shape; this file is the composer that picks which driver to call
-// based on the selected device's type. Follow-a-Clock and Advanced Mode
-// stay WLED-only for now. Live Poll (below) is the reverse case — HA-only,
+// based on the selected device's type. Follow-a-Clock and the Advanced
+// section stay WLED-only for now. Live Poll (below) is the reverse case — HA-only,
 // since only an HA light's state can change from outside this widget
 // entirely (a physical switch, another HA automation); a WLED device only
 // changes because this widget told it to, so there's nothing external for
 // a WLED card to poll for.
 import { el } from "../dom.js";
+import { MIN_BRIGHTNESS } from "./wled-look-fields.js";
+import { parseEffectMeta } from "./wled-effects.js";
+import { createWledControl } from "./wled-control.js";
+import { createCollapseToggleButton, setElementCollapsed } from "../collapsible.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, updateTooltipContent } from "../tooltips.js";
 import { resolveActiveSpotlightId, resolveSpotlightData } from "../spotlight.js";
 import { connectLiveStream } from "../live.js";
@@ -74,6 +78,9 @@ const DEFAULT_CONFIG = {
   // — a real dot-clock look, not just a dimmer.
   followMode: "brightness",
   followSegmentIds: [],
+  // Parallel to followSegmentIds ("" for an unnamed segment) — lets Follow
+  // find a segment by name after a layout restore renumbers the device's ids.
+  followSegmentNames: [],
   // Opt-in per card — absent on any card saved before this existed, which
   // correctly defaults to false (no behavior change until a GM turns it on).
   haLivePollEnabled: false,
@@ -94,6 +101,46 @@ async function wledFetchJson(base, path) {
   return response.json();
 }
 
+// Every command any part of the suite sends funnels through wledPostState, so
+// announcing it here is what keeps a mounted Lighting card showing the real
+// state no matter who changed the lights — a macro, the combat tracker, a
+// Journal chip in another tab. Same-page listeners get a window event;
+// other tabs get a BroadcastChannel message (tagged so a page ignores the
+// copy of its own message the channel hands back).
+const WLED_CHANGED_EVENT = "undercroft:wled-changed";
+const WLED_SYNC_CHANNEL = "undercroft-wled";
+const WLED_PAGE_ID = Math.random().toString(16).slice(2);
+let wledSendChannel = null;
+
+function notifyWledChanged(base) {
+  window.dispatchEvent(new CustomEvent(WLED_CHANGED_EVENT, { detail: { base } }));
+  if (typeof BroadcastChannel === "undefined") return;
+  try {
+    wledSendChannel = wledSendChannel || new BroadcastChannel(WLED_SYNC_CHANNEL);
+    wledSendChannel.postMessage({ base, origin: WLED_PAGE_ID });
+  } catch (error) {
+    // Best-effort — a page that can't broadcast just doesn't sync other tabs.
+  }
+}
+
+// `handler(base)` runs for a change made anywhere in the suite; returns the
+// unsubscribe function.
+export function subscribeWledChanges(handler) {
+  const onEvent = (event) => handler(event.detail?.base || "");
+  window.addEventListener(WLED_CHANGED_EVENT, onEvent);
+  let channel = null;
+  if (typeof BroadcastChannel !== "undefined") {
+    channel = new BroadcastChannel(WLED_SYNC_CHANNEL);
+    channel.addEventListener("message", (event) => {
+      if (event.data?.origin !== WLED_PAGE_ID) handler(event.data?.base || "");
+    });
+  }
+  return () => {
+    window.removeEventListener(WLED_CHANGED_EVENT, onEvent);
+    channel?.close();
+  };
+}
+
 // POST to /json (not /json/state) — supported by every WLED version this
 // widget might meet, unlike the newer /json/state-only shorthand. Also
 // exactly what the Advanced/raw-JSON textarea sends, so "basic" controls
@@ -107,6 +154,7 @@ async function wledPostState(base, body) {
   if (!response.ok) {
     throw new Error(`WLED returned ${response.status}`);
   }
+  notifyWledChanged(base);
   try {
     return await response.json();
   } catch (error) {
@@ -126,6 +174,182 @@ async function wledFetchPresets(base) {
   }
 }
 
+// What a segment COVERS and how overlapping segments composite (bm, v16+;
+// segment id order is the layer order) — never on/bri/col/fx/sx/ix/pal,
+// which are the "look" a preset owns. Only the raw bm number is kept: its
+// mode names/values aren't ours to hardcode.
+const SEGMENT_NUMBER_KEYS = ["grp", "spc", "of", "bm"];
+const SEGMENT_FLAG_KEYS = ["rev", "mi"];
+
+function segmentName(seg) {
+  return String(seg?.n ?? "").trim();
+}
+
+function segmentGeometry(seg, name = segmentName(seg)) {
+  const out = { n: name, start: seg.start, stop: seg.stop };
+  SEGMENT_NUMBER_KEYS.forEach((key) => {
+    if (Number.isFinite(seg[key])) out[key] = seg[key];
+  });
+  SEGMENT_FLAG_KEYS.forEach((key) => {
+    if (typeof seg[key] === "boolean") out[key] = seg[key];
+  });
+  return out;
+}
+
+function normalizeSegmentLayout(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter((seg) => seg && segmentName(seg) && Number.isInteger(seg.start) && Number.isInteger(seg.stop) && seg.stop > seg.start)
+    .map((seg) => segmentGeometry(seg));
+}
+
+// Only keys present on BOTH sides are compared — a layout remembered from a
+// pre-v16 device (no bm) shouldn't read as drifted on a v16 one.
+function layoutsMatch(remembered, live) {
+  if (remembered.length !== live.length) return false;
+  return remembered.every((entry, index) => {
+    const seg = segmentGeometry(live[index]);
+    return Object.keys(entry).every((key) => seg[key] === undefined || seg[key] === entry[key]);
+  });
+}
+
+// Names are the stable key (ids shift on restore), so lookup is by name
+// first and only falls back to the numeric id when no name is given.
+export function resolveSegmentId(segs, { segmentName: name, segmentId } = {}) {
+  const wanted = String(name ?? "").trim().toLowerCase();
+  if (wanted) {
+    const match = (Array.isArray(segs) ? segs : []).find((seg) => segmentName(seg).toLowerCase() === wanted);
+    if (!match) throw new Error(`No segment named "${name}" on this device.`);
+    return match.id;
+  }
+  return Number.isFinite(Number(segmentId)) ? Number(segmentId) : 0;
+}
+
+function optionalNumber(value) {
+  if (value === undefined || value === null || value === "") return undefined;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
+}
+
+// One segment's "look" as a WLED `seg` entry — effect, palette, up to three
+// colors, and brightness. Only the fields that are set are sent, and WLED
+// leaves everything else as it is. Shared by the macro action and the combat
+// tracker's table lighting, so both speak the same look vocabulary.
+function buildLookEntry(segmentId, look = {}, { full = false } = {}) {
+  const entry = { id: segmentId };
+  const fx = optionalNumber(look.fx);
+  if (fx !== undefined) entry.fx = fx;
+  const pal = optionalNumber(look.pal);
+  if (pal !== undefined) entry.pal = pal;
+  // The effect's own controls: speed/intensity and the first two custom
+  // sliders run 0–255, the third custom slider 0–31, and the three options
+  // are on/off.
+  ["sx", "ix", "c1", "c2", "c3"].forEach((key) => {
+    const number = optionalNumber(look[key]);
+    if (number !== undefined) entry[key] = Math.max(0, Math.min(key === "c3" ? 31 : 255, Math.round(number)));
+  });
+  ["o1", "o2", "o3"].forEach((key) => {
+    if (typeof look[key] === "boolean") entry[key] = look[key];
+  });
+  // Black is not a color here — a LED can't show it, and it's how WLED holds
+  // "no color" — so a cleared slot is sent as black. A saved look (`full`)
+  // always applies all three slots, exactly as its swatches show; a single
+  // change from the Lighting card (not `full`) sends colors only when one of
+  // them was what changed.
+  if (full || Array.isArray(look.col)) {
+    const slots = Array.isArray(look.col) ? look.col : [];
+    entry.col = [0, 1, 2].map((index) => (/^#?[0-9a-f]{6}$/i.test(slots[index] || "") ? hexToRgb(slots[index]) : [0, 0, 0]));
+  }
+  const bri = optionalNumber(look.bri);
+  if (bri !== undefined) entry.bri = Math.max(MIN_BRIGHTNESS, Math.min(255, Math.round(bri)));
+  return entry;
+}
+
+// Lights the named segments (each with its own look) and switches the
+// `off` ones off, all in ONE request with `tt: 0` — so the swap is an
+// instant cut and the Lighting card sees a single change. Segments are
+// found by name, and ones not on the device are skipped when switching OFF
+// (a stale list shouldn't block anything) but are an error when asked to
+// LIGHT. Nothing lit means the master power is left alone.
+export async function applyWledSegmentScene(device, { lit = [], off = [] } = {}) {
+  const base = normalizeWledBase(device?.ip);
+  if (!base) throw new Error("This device has no IP/hostname.");
+  const state = await wledFetchJson(base, "/json/state");
+  const segs = Array.isArray(state?.seg) ? state.seg : [];
+  const idFor = (name) => {
+    const wanted = String(name ?? "").trim().toLowerCase();
+    return segs.find((seg) => segmentName(seg).toLowerCase() === wanted)?.id;
+  };
+  const litIds = new Set();
+  const litEntries = lit.map(({ name, look }) => {
+    const id = idFor(name);
+    if (id === undefined) throw new Error(`No segment named "${name}" on this device.`);
+    litIds.add(id);
+    return { ...buildLookEntry(id, look, { full: true }), on: true };
+  });
+  const offIds = new Set(off.map(idFor).filter((id) => id !== undefined && !litIds.has(id)));
+  const seg = [...Array.from(offIds, (id) => ({ id, on: false })), ...litEntries];
+  if (!seg.length) return;
+  await wledPostState(base, { tt: 0, ...(litEntries.length ? { on: true } : {}), seg });
+}
+
+// One short-lived lookup per device, shared by every editor that lists its
+// presets/effects/palettes/segments — an editor re-renders on every edit, and
+// each render would otherwise re-hit the device.
+const WLED_CHOICES_TTL_MS = 30000;
+const wledChoicesCache = new Map(); // ip -> { at, promise }
+export function loadWledChoices(device) {
+  const cached = wledChoicesCache.get(device.ip);
+  if (cached && Date.now() - cached.at < WLED_CHOICES_TTL_MS) return cached.promise;
+  const promise = fetchWledChoices(device);
+  wledChoicesCache.set(device.ip, { at: Date.now(), promise });
+  // A failed fetch isn't worth remembering — the next render should retry.
+  promise.catch(() => wledChoicesCache.delete(device.ip));
+  return promise;
+}
+
+// The "effect" macro action's command — only the fields the author set, so a
+// palette-only or color-only macro leaves the segment's effect alone. WLED
+// applies fx/pal only when the key is present and skips an empty `col` slot,
+// which is how a macro can set just the Secondary color. A look on a device
+// (or segment) that's switched off shows nothing, so the command also turns
+// both on unless the author opted out with `turnOn: false` — a macro that
+// stages a look to reveal later with its own "Turn on" step. `otherSegmentIds`
+// (passed unless the author opted out with `exclusive: false`) are switched
+// off in the same request, so a look replaces whatever another segment was
+// showing instead of stacking on it. That swap is sent with `tt: 0` (a
+// one-call transition override; the device's own setting is untouched):
+// WLED crossfades a segment switching on/off, and with the default fade the
+// outgoing segment is still visibly lit while the new one fades in.
+function buildWledLookCommand(segmentId, params = {}, otherSegmentIds = []) {
+  const entry = buildLookEntry(segmentId, params, { full: true });
+  // Colors are always applied, so "nothing chosen" means no effect field, no
+  // brightness, AND no color set.
+  const hasColor = Array.isArray(params.col) && params.col.some((hex) => /^#?[0-9a-f]{6}$/i.test(hex || "") && !/^#?0{6}$/i.test(hex));
+  if (Object.keys(entry).length === 2 && !hasColor) {
+    throw new Error("Choose an effect, palette, brightness, or color for this action.");
+  }
+  const others = otherSegmentIds.map((id) => ({ id, on: false }));
+  const command =
+    params.turnOn === false ? { seg: [...others, entry] } : { on: true, seg: [...others, { ...entry, on: true }] };
+  if (others.length) command.tt = 0;
+  return command;
+}
+
+// Reads the device's state only when the action needs it — a segment NAME to
+// resolve, or the other segments to switch off (the default; see
+// buildWledLookCommand) — so an action that opts out of both stays a single
+// request.
+async function resolveMacroSegment(base, params) {
+  const exclusive = params?.exclusive !== false;
+  const needsState = String(params?.segmentName ?? "").trim() || exclusive;
+  const state = needsState ? await wledFetchJson(base, "/json/state") : null;
+  const segmentId = resolveSegmentId(state?.seg, params);
+  const otherSegmentIds = exclusive
+    ? (Array.isArray(state?.seg) ? state.seg : []).map((seg) => seg.id).filter((id) => id !== segmentId)
+    : [];
+  return { segmentId, otherSegmentIds };
+}
+
 function icon(name) {
   const span = el("span", "iconify");
   span.dataset.icon = name;
@@ -133,7 +357,7 @@ function icon(name) {
   return span;
 }
 
-// `active` (e.g. a section toggle like Follow/Advanced Mode — see
+// `active` (e.g. a section toggle like Follow — see
 // renderDeviceRow) swaps to the "pressed" (primary) variant and sets
 // aria-pressed, so a toggle icon button reads its own current state the
 // same way a plain action icon button (Refresh, Forget) always looks the
@@ -142,7 +366,7 @@ function icon(name) {
 function iconButton(name, label, { variant = "outline-secondary", size = "sm", active = false } = {}) {
   const button = el(
     "button",
-    `btn btn-${size} btn-${active ? "primary" : variant} d-inline-flex align-items-center justify-content-center`
+    `btn btn-${size} btn-${active ? "primary" : variant} d-inline-flex align-items-center justify-content-center flex-shrink-0`
   );
   button.type = "button";
   button.setAttribute("aria-label", label);
@@ -176,6 +400,8 @@ export function initWledWidget(
   let deviceList = Array.isArray(devices) ? devices.slice() : [];
   let deviceState = null; // last full /json GET (state + info + effects + palettes) — WLED only
   let presets = {}; // id -> {n: name, ...} — WLED only
+  // Per-effect control metadata (/json/fxdata), or null when unavailable — WLED only.
+  let effectMeta = null;
   let haLightState = null; // last {state, brightness, rgbColor, supportedColorModes, friendlyName} — HA light only
   // The Add-device form's type toggle — local UI state, not persisted;
   // defaults to whichever type the selected device already is, so adding a
@@ -206,6 +432,10 @@ export function initWledWidget(
   // config.haLivePollEnabled, an HA light is selected, and the widget
   // hasn't been destroyed (see syncHaPollWatch).
   let haPollTimer = null;
+  // Cross-suite change sync (see scheduleExternalRefresh) — `lastWledRefreshAt`
+  // lets a refresh this card just did itself absorb the echo of its own command.
+  let externalRefreshTimer = 0;
+  let lastWledRefreshAt = 0;
   // Dedupes identical clock states between polls so an unchanged clock
   // doesn't repeatedly re-POST the same state every 5s for no reason.
   let lastAppliedFollowKey = "";
@@ -286,10 +516,16 @@ export function initWledWidget(
       render();
     }
     try {
-      const [state, presetMap] = await Promise.all([wledFetchJson(base, "/json"), wledFetchPresets(base)]);
+      const [state, presetMap, fxdata] = await Promise.all([
+        wledFetchJson(base, "/json"),
+        wledFetchPresets(base),
+        // Best-effort — without it the control just leaves every field enabled.
+        wledFetchJson(base, "/json/fxdata").catch(() => null),
+      ]);
       if (destroyed) return;
       deviceState = state;
       presets = presetMap;
+      effectMeta = Array.isArray(fxdata) ? fxdata.map(parseEffectMeta) : null;
       loadError = "";
       const deviceName = state?.info?.name || "";
       if (typeof setTitle === "function") setTitle(deviceName ? `— ${deviceName}` : "");
@@ -300,11 +536,25 @@ export function initWledWidget(
         (error && error.message) ||
         "Unable to reach this device. Check the IP/hostname, that it's powered on and on the same network, and that this page and WLED are loaded over the same protocol (http vs https).";
     } finally {
+      lastWledRefreshAt = Date.now();
       if (!destroyed) {
         loading = false;
         render();
       }
     }
+  }
+
+  // A change announced anywhere in the suite (see notifyWledChanged) — a
+  // macro, the combat tracker, another tab — leaves this card showing stale
+  // state unless it re-reads. Debounced so a burst is one read, and skipped
+  // when this card's own command already refreshed it a moment ago.
+  function scheduleExternalRefresh(base) {
+    if (destroyed || currentDeviceType() !== "wled" || !base || base !== currentBase()) return;
+    window.clearTimeout(externalRefreshTimer);
+    externalRefreshTimer = window.setTimeout(() => {
+      if (destroyed || Date.now() - lastWledRefreshAt < 400) return;
+      void refreshState({ silent: true });
+    }, 200);
   }
 
   // Shared by every failable device request — one place to surface a
@@ -343,6 +593,86 @@ export function initWledWidget(
     await sendRaw({ seg: ids.map((id) => ({ id, ...fields })) });
   }
 
+  function currentDevice() {
+    return deviceList.find((device) => device.type !== "haLight" && normalizeWledBase(device.ip) === currentBase()) || null;
+  }
+
+  function rememberedLayout() {
+    return currentDevice()?.segments || [];
+  }
+
+  // Id order is layer order (lower id = bottom), so sort rather than trust
+  // the response's own ordering.
+  function liveSegments() {
+    const segs = Array.isArray(deviceState?.state?.seg) ? deviceState.state.seg : [];
+    return segs.slice().sort((a, b) => a.id - b.id);
+  }
+
+  function setRememberedLayout(segments) {
+    const device = currentDevice();
+    if (!device) return;
+    persistDevices(
+      deviceList.map((entry) => {
+        if (entry !== device) return entry;
+        const { segments: _previous, ...rest } = entry;
+        return segments.length ? { ...rest, segments } : rest;
+      })
+    );
+  }
+
+  async function rememberLayout() {
+    const live = liveSegments();
+    if (!live.length) return;
+    const names = live.map((seg) => segmentName(seg) || `Segment ${seg.id}`);
+    if (new Set(names.map((name) => name.toLowerCase())).size !== names.length) {
+      status?.show?.("Two segments share a name — rename one in WLED first, names identify segments.", {
+        type: "warning",
+        timeout: 4000,
+      });
+      return;
+    }
+    // Pushed back so the device and the remembered layout agree on the name
+    // a restore will re-send.
+    const unnamed = live.filter((seg) => !segmentName(seg)).map((seg) => ({ id: seg.id, n: `Segment ${seg.id}` }));
+    try {
+      if (unnamed.length) await wledPostState(currentBase(), { seg: unnamed });
+    } catch (error) {
+      status?.show?.(error?.message || "Unable to name those segments on the device.", { type: "error", timeout: 3000 });
+      return;
+    }
+    setRememberedLayout(live.map((seg, index) => segmentGeometry(seg, names[index])));
+    status?.show?.(`Remembered ${live.length} segment${live.length === 1 ? "" : "s"}.`, { type: "success", timeout: 2000 });
+    await refreshState({ silent: true });
+  }
+
+  // A full ordered array (ids 0..n-1, surplus live slots stop:0) because
+  // WLED appends a new segment rather than honoring a requested id — this is
+  // the only way device ids come out matching the remembered layer order.
+  async function restoreLayout() {
+    const remembered = rememberedLayout();
+    if (!remembered.length) return;
+    const live = liveSegments();
+    const maxSegments = deviceState?.info?.leds?.maxseg;
+    if (Number.isFinite(maxSegments) && remembered.length > maxSegments) {
+      status?.show?.(`This device supports at most ${maxSegments} segments.`, { type: "warning", timeout: 4000 });
+      return;
+    }
+    const ledCount = deviceState?.info?.leds?.count;
+    if (Number.isFinite(ledCount) && remembered.some((seg) => seg.stop > ledCount)) {
+      status?.show?.(`The remembered layout needs more than this device's ${ledCount} LEDs.`, { type: "warning", timeout: 4000 });
+      return;
+    }
+    // Pre-v16 firmware never reports bm, so it's only sent where it exists.
+    const supportsBlend = live.some((seg) => "bm" in seg);
+    const seg = remembered.map(({ bm, ...geometry }, id) => ({
+      id,
+      ...geometry,
+      ...(supportsBlend && bm !== undefined ? { bm } : {}),
+    }));
+    live.filter((entry) => entry.id >= remembered.length).forEach((entry) => seg.push({ id: entry.id, stop: 0 }));
+    await sendRaw({ seg });
+  }
+
   function mainSegment() {
     const segs = Array.isArray(deviceState?.state?.seg) ? deviceState.state.seg : [];
     if (!segs.length) return null;
@@ -364,11 +694,15 @@ export function initWledWidget(
     const segments = Number(clockConfig?.segments) || 0;
     const filled = Math.max(0, Math.min(segments, Number(clockConfig?.filled) || 0));
     if (!segments) return;
-    const key = `${filled}/${segments}/${config.followMode}/${config.followSegmentIds.join(",")}`;
+    const live = liveSegments();
+    const ids = config.followSegmentIds.map((id, index) => {
+      const name = String(config.followSegmentNames[index] || "").toLowerCase();
+      return live.find((seg) => name && segmentName(seg).toLowerCase() === name)?.id ?? id;
+    });
+    const key = `${filled}/${segments}/${config.followMode}/${ids.join(",")}`;
     if (key === lastAppliedFollowKey) return;
     lastAppliedFollowKey = key;
-    if (config.followMode === "segments" && config.followSegmentIds.length) {
-      const ids = config.followSegmentIds;
+    if (config.followMode === "segments" && ids.length) {
       const onCount = Math.round((filled / segments) * ids.length);
       await sendRaw({ seg: ids.map((id, index) => ({ id, on: index < onCount })) });
     } else {
@@ -474,11 +808,14 @@ export function initWledWidget(
   }
 
   function renderDeviceRow() {
-    const row = el("div", "d-flex flex-wrap align-items-center gap-1");
+    // Never wraps: the buttons keep their size (flex-shrink-0, see
+    // iconButton) and the device select gives up width instead.
+    const row = el("div", "d-flex flex-nowrap align-items-center gap-1");
 
     const select = document.createElement("select");
     select.className = "form-select form-select-sm";
-    select.style.maxWidth = "14rem";
+    select.style.maxWidth = "10rem";
+    select.style.minWidth = "0";
     const blank = document.createElement("option");
     blank.value = "";
     blank.textContent = deviceList.length ? "Select a device…" : "No devices saved yet";
@@ -545,17 +882,24 @@ export function initWledWidget(
       setDisabledTooltip(followButton, "Follow a Clock (WLED devices only)");
     }
 
-    const advancedButton = iconButton("tabler:code", "Advanced Mode", { active: advancedExpanded });
-    advancedButton.addEventListener("click", () => {
-      advancedExpanded = !advancedExpanded;
+    // Pressed = a layout is remembered and the device still matches it, so a
+    // click then forgets it; otherwise a click (re)remembers the device's
+    // current segments.
+    const remembered = rememberedLayout();
+    const layoutInSync = remembered.length > 0 && deviceState && layoutsMatch(remembered, liveSegments());
+    const layoutLabel = layoutInSync ? "Forget remembered layout" : remembered.length ? "Update remembered layout" : "Remember layout";
+    const layoutButton = iconButton("tabler:bookmark", layoutLabel, { active: layoutInSync });
+    layoutButton.addEventListener("click", () => {
+      if (layoutInSync) setRememberedLayout([]);
+      else void rememberLayout();
       render();
     });
-    row.appendChild(advancedButton);
-    if (isWledSelected) {
-      setDisabledTooltip(advancedButton, "");
-      updateTooltipContent(advancedButton, "Advanced Mode");
+    row.appendChild(layoutButton);
+    if (isWledSelected && deviceState) {
+      setDisabledTooltip(layoutButton, "");
+      updateTooltipContent(layoutButton, layoutLabel);
     } else {
-      setDisabledTooltip(advancedButton, "Advanced Mode (WLED devices only)");
+      setDisabledTooltip(layoutButton, "Remember layout (connect to a WLED device first)");
     }
 
     // HA-light-only, mirroring Follow/Advanced's WLED-only gating — opt-in
@@ -762,146 +1106,117 @@ export function initWledWidget(
     return form;
   }
 
-  function renderSegmentPicker() {
-    const segs = Array.isArray(deviceState?.state?.seg) ? deviceState.state.seg : [];
-    if (segs.length <= 1) return null;
-    const wrap = el("div", "d-flex flex-column gap-1");
-    wrap.appendChild(el("label", "small text-body-secondary mb-0", "Segments (none = main segment)"));
-    const select = document.createElement("select");
-    select.className = "form-select form-select-sm";
-    select.multiple = true;
-    select.size = Math.min(6, segs.length);
-    segs.forEach((seg, index) => {
-      const option = document.createElement("option");
-      option.value = String(seg.id);
-      option.textContent = seg.n || `Segment ${index}`;
-      option.selected = targetSegmentIds.has(seg.id);
-      select.appendChild(option);
-    });
-    select.addEventListener("change", () => {
-      targetSegmentIds.clear();
-      Array.from(select.selectedOptions).forEach((option) => targetSegmentIds.add(Number(option.value)));
+  // Shown only on drift (e.g. after a reboot) and never auto-applied — a
+  // deliberate edit made in WLED's own UI shouldn't be silently undone.
+  function renderLayoutBanner() {
+    const remembered = rememberedLayout();
+    if (!remembered.length || layoutsMatch(remembered, liveSegments())) return null;
+    const banner = el("div", "alert alert-warning py-1 px-2 mb-0 small d-flex flex-wrap align-items-center gap-2");
+    banner.appendChild(
+      el("span", "me-auto", `Segments differ from the remembered layout (${remembered.length}).`)
+    );
+    const restoreButton = el("button", "btn btn-sm btn-primary", "Restore");
+    restoreButton.type = "button";
+    restoreButton.addEventListener("click", () => void restoreLayout());
+    const forgetButton = el("button", "btn btn-sm btn-outline-secondary", "Forget");
+    forgetButton.type = "button";
+    forgetButton.addEventListener("click", () => {
+      setRememberedLayout([]);
       render();
     });
-    wrap.appendChild(select);
-    return wrap;
+    banner.append(restoreButton, forgetButton);
+    return banner;
   }
 
+  // The card's controls are the shared WLED control in "live" mode: it shows
+  // the device's current values, and each change comes back as a patch that
+  // is sent on its own (see wled-control.js). The brightness slider is the
+  // device's master brightness unless segments are targeted.
   function renderWledBasicControls() {
     const seg = mainSegment();
     const isOn = targetSegmentIds.size ? Boolean(seg?.on) : Boolean(deviceState?.state?.on);
     const bri = targetSegmentIds.size ? seg?.bri ?? 128 : deviceState?.state?.bri ?? 128;
-
-    const wrap = el("div", "d-flex flex-column gap-2");
-
-    const powerBriRow = el("div", "d-flex align-items-center gap-2");
-    const powerButton = el("button", `btn btn-sm ${isOn ? "btn-primary" : "btn-outline-secondary"}`, isOn ? "On" : "Off");
-    powerButton.type = "button";
-    powerButton.addEventListener("click", () => void sendCommand({ on: !isOn }));
-    powerBriRow.appendChild(powerButton);
-    const briInput = document.createElement("input");
-    briInput.type = "range";
-    briInput.min = "1";
-    briInput.max = "255";
-    briInput.value = String(bri);
-    briInput.className = "form-range flex-grow-1";
-    briInput.setAttribute("aria-label", "Brightness");
-    briInput.addEventListener("change", () => void sendCommand({ bri: Number(briInput.value) }));
-    powerBriRow.appendChild(briInput);
-    wrap.appendChild(powerBriRow);
-
-    const colors = Array.isArray(seg?.col) ? seg.col : [];
-    const colorRow = el("div", "d-flex align-items-center gap-2");
-    colorRow.appendChild(el("label", "small text-body-secondary mb-0", "Colors"));
-    const colorInputs = [0, 1, 2].map((slot) => {
-      const input = document.createElement("input");
-      input.type = "color";
-      input.className = "form-control form-control-color";
-      input.value = colors[slot] ? rgbToHex(colors[slot]) : "#000000";
-      input.setAttribute("data-bs-toggle", "tooltip");
-      input.setAttribute("data-bs-title", ["Primary", "Secondary", "Tertiary"][slot]);
-      return input;
-    });
-    const commitColors = () => {
-      void sendSegmentCommand({ col: colorInputs.map((input) => hexToRgb(input.value)) });
-    };
-    colorInputs.forEach((input) => {
-      input.addEventListener("change", commitColors);
-      colorRow.appendChild(input);
-    });
-    wrap.appendChild(colorRow);
-
+    const segs = Array.isArray(deviceState?.state?.seg) ? deviceState.state.seg : [];
     // id "0" is WLED's own "no preset" placeholder slot — never a real,
     // nameable preset, so it's excluded rather than shown as a blank entry.
-    const presetEntries = Object.entries(presets).filter(([id, entry]) => id !== "0" && entry?.n);
-    if (presetEntries.length) {
-      const psRow = el("div", "d-flex flex-column gap-1");
-      psRow.appendChild(el("label", "small text-body-secondary mb-0", "Preset"));
-      const psSelect = document.createElement("select");
-      psSelect.className = "form-select form-select-sm";
-      const psBlank = document.createElement("option");
-      psBlank.value = "";
-      psBlank.textContent = "";
-      psSelect.appendChild(psBlank);
-      presetEntries.forEach(([id, entry]) => {
-        const option = document.createElement("option");
-        option.value = id;
-        option.textContent = entry.n;
-        option.selected = Number(id) === deviceState?.state?.ps;
-        psSelect.appendChild(option);
-      });
-      // Presets apply device-wide in WLED (they can carry their own segment
-      // config) — not re-targeted through targetSegmentIds the way the
-      // controls above are.
-      psSelect.addEventListener("change", () => {
-        if (!psSelect.value) return;
-        void sendRaw({ ps: Number(psSelect.value) });
-      });
-      psRow.appendChild(psSelect);
-      wrap.appendChild(psRow);
-    }
+    const presetList = Object.entries(presets)
+      .filter(([id, entry]) => id !== "0" && entry?.n)
+      .map(([id, entry]) => ({ id: Number(id), name: entry.n }));
+    const activePreset = Number(deviceState?.state?.ps);
+    const choices = {
+      effects: Array.isArray(deviceState?.effects) ? deviceState.effects : [],
+      palettes: Array.isArray(deviceState?.palettes) ? deviceState.palettes : [],
+      presets: presetList,
+      effectMeta,
+      segments: segs.map((entry, index) => ({ value: String(entry.id), label: entry.n || `Segment ${index}` })),
+    };
+    // One target segment. An id that isn't in the device's list (entered by
+    // number) is passed as `segmentId` rather than a listed choice.
+    const targetId = targetSegmentIds.size ? Array.from(targetSegmentIds)[0] : undefined;
+    const targetListed = targetId !== undefined && segs.some((entry) => entry.id === targetId);
+    const value = {
+      segments: targetListed ? [String(targetId)] : [],
+      segmentId: targetId !== undefined && !targetListed ? targetId : undefined,
+      power: isOn,
+      preset: activePreset > 0 ? activePreset : undefined,
+      col: (Array.isArray(seg?.col) ? seg.col : []).slice(0, 3).map((slot) => (slot ? rgbToHex(slot) : "")),
+      bri,
+      ...Object.fromEntries(["fx", "pal", "sx", "ix", "c1", "c2", "c3", "o1", "o2", "o3"].map((key) => [key, seg?.[key]])),
+    };
+    return createWledControl({
+      value,
+      mode: "live",
+      loadChoices: () => Promise.resolve(choices),
+      sections: {
+        // Presets apply device-wide (they can carry their own segment config),
+        // so they're never re-targeted through the segment picker.
+        target: segs.length > 1 ? { label: "Segment", noneLabel: "Main segment" } : false,
+        power: { style: "button" },
+        preset: presetList.length > 0,
+        look: true,
+      },
+      stateKey: "lighting-card",
+      onChange: (next, patch) => {
+        if ("segments" in patch || "segmentId" in patch) {
+          targetSegmentIds.clear();
+          if (next.segments?.[0] !== undefined) targetSegmentIds.add(Number(next.segments[0]));
+          else if (next.segmentId !== undefined) targetSegmentIds.add(next.segmentId);
+          render();
+          return;
+        }
+        if ("power" in patch) void sendCommand({ on: Boolean(next.power) });
+        if ("preset" in patch && next.preset !== undefined) void sendRaw({ ps: next.preset });
+        if ("bri" in patch) void sendCommand({ bri: next.bri });
+        const lookPatch = Object.fromEntries(
+          Object.entries(patch).filter(([key]) => !["segments", "power", "preset", "bri"].includes(key))
+        );
+        if (Object.keys(lookPatch).length) {
+          const { id, ...fields } = buildLookEntry(0, lookPatch);
+          if (Object.keys(fields).length) void sendSegmentCommand(fields);
+        }
+      },
+    });
+  }
 
-    const effects = Array.isArray(deviceState?.effects) ? deviceState.effects : [];
-    const palettes = Array.isArray(deviceState?.palettes) ? deviceState.palettes : [];
-
-    if (effects.length) {
-      const fxRow = el("div", "d-flex flex-column gap-1");
-      fxRow.appendChild(el("label", "small text-body-secondary mb-0", "Effect"));
-      const fxSelect = document.createElement("select");
-      fxSelect.className = "form-select form-select-sm";
-      effects.forEach((name, index) => {
-        const option = document.createElement("option");
-        option.value = String(index);
-        option.textContent = name;
-        option.selected = index === (seg?.fx ?? -1);
-        fxSelect.appendChild(option);
-      });
-      fxSelect.addEventListener("change", () => void sendSegmentCommand({ fx: Number(fxSelect.value) }));
-      fxRow.appendChild(fxSelect);
-      wrap.appendChild(fxRow);
-    }
-
-    if (palettes.length) {
-      const palRow = el("div", "d-flex flex-column gap-1");
-      palRow.appendChild(el("label", "small text-body-secondary mb-0", "Palette"));
-      const palSelect = document.createElement("select");
-      palSelect.className = "form-select form-select-sm";
-      palettes.forEach((name, index) => {
-        const option = document.createElement("option");
-        option.value = String(index);
-        option.textContent = name;
-        option.selected = index === (seg?.pal ?? -1);
-        palSelect.appendChild(option);
-      });
-      palSelect.addEventListener("change", () => void sendSegmentCommand({ pal: Number(palSelect.value) }));
-      palRow.appendChild(palSelect);
-      wrap.appendChild(palRow);
-    }
-
-    const segmentPicker = renderSegmentPicker();
-    if (segmentPicker) wrap.appendChild(segmentPicker);
-
-    return wrap;
+  // "Advanced" — a collapsible section (closed until opened) in place of the
+  // old toolbar toggle. Whether it's open lives in advancedExpanded, since the
+  // card re-renders on every change.
+  function renderAdvancedCollapsible() {
+    const body = renderAdvancedSection();
+    const { button } = createCollapseToggleButton({
+      label: "advanced",
+      collapsed: !advancedExpanded,
+      onToggle: (collapsed) => {
+        advancedExpanded = !collapsed;
+        setElementCollapsed(body, collapsed);
+      },
+    });
+    setElementCollapsed(body, !advancedExpanded);
+    const header = el("div", "d-flex align-items-center gap-1");
+    header.append(button, el("span", "small fw-semibold text-body-secondary", "Advanced"));
+    const section = el("div", "d-flex flex-column gap-1");
+    section.append(header, body);
+    return section;
   }
 
   function renderAdvancedSection() {
@@ -1006,7 +1321,10 @@ export function initWledWidget(
         });
         select.addEventListener("change", () => {
           const ids = Array.from(select.selectedOptions).map((option) => Number(option.value));
-          persistInstanceConfig({ followSegmentIds: ids });
+          persistInstanceConfig({
+            followSegmentIds: ids,
+            followSegmentNames: ids.map((id) => segmentName(segs.find((seg) => seg.id === id))),
+          });
           lastAppliedFollowKey = "";
           void refreshFollow();
         });
@@ -1034,89 +1352,56 @@ export function initWledWidget(
   // (an HA automation, another user) — the device row's Refresh button is
   // the way back to a real read.
   function renderHaLightBasicControls() {
-    const wrap = el("div", "d-flex flex-column gap-2");
     const entityId = config.selectedEntityId;
     const isOn = haLightState?.state === "on";
     const brightness = Number.isFinite(haLightState?.brightness) ? haLightState.brightness : 128;
-
-    const powerBriRow = el("div", "d-flex align-items-center gap-2");
-    const powerButton = el("button", `btn btn-sm ${isOn ? "btn-primary" : "btn-outline-secondary"}`, isOn ? "On" : "Off");
-    powerButton.type = "button";
-    powerButton.addEventListener("click", async () => {
-      const nextOn = !isOn;
+    // Every command updates haLightState locally and re-renders — see the
+    // note above on why this never re-fetches. One failure path for all three.
+    const send = async (command, nextState) => {
       try {
-        await setHaLightPower(dataManager, entityId, nextOn);
-        haLightState = { ...(haLightState || {}), state: nextOn ? "on" : "off" };
+        await command();
+        haLightState = { ...(haLightState || {}), ...nextState };
         render();
       } catch (error) {
         status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
       }
+    };
+    // The same control the Lighting card uses, with only what an HA light
+    // offers: power, and (when the entity reports the capability) brightness
+    // and a single color — otherwise a plain on/off entity would get a slider
+    // that silently no-ops on every move.
+    return createWledControl({
+      value: {
+        power: isOn,
+        bri: brightness,
+        col: [Array.isArray(haLightState?.rgbColor) ? rgbToHex(haLightState.rgbColor) : "#ffffff"],
+      },
+      mode: "live",
+      sections: {
+        power: { style: "button" },
+        look: {
+          effect: false,
+          palette: false,
+          effectOptions: false,
+          brightness: haLightSupportsBrightness(haLightState),
+          colors: haLightSupportsColor(haLightState) ? 1 : 0,
+        },
+      },
+      onChange: (next, patch) => {
+        if ("power" in patch) {
+          const nextOn = Boolean(next.power);
+          void send(() => setHaLightPower(dataManager, entityId, nextOn), { state: nextOn ? "on" : "off" });
+        }
+        if ("bri" in patch) {
+          void send(() => setHaLightBrightness(dataManager, entityId, next.bri), { state: "on", brightness: next.bri });
+        }
+        if ("col" in patch) {
+          // A cleared color is black, same as everywhere else.
+          const rgb = hexToRgb(next.col?.[0] || "#000000");
+          void send(() => setHaLightColor(dataManager, entityId, rgb), { state: "on", rgbColor: rgb });
+        }
+      },
     });
-    powerBriRow.appendChild(powerButton);
-
-    // Gated on the entity's reported capability, matching the color
-    // picker's gate below — otherwise a plain on/off entity (no brightness
-    // channel at all) gets a slider that silently no-ops on every move.
-    if (haLightSupportsBrightness(haLightState)) {
-      const briInput = document.createElement("input");
-      briInput.type = "range";
-      // 3, not HA's raw-scale minimum of 1 — matches
-      // setHaLightBrightness's own MIN_SAFE_BRIGHTNESS floor; the slider
-      // shouldn't offer a value that gets silently translated into "off."
-      briInput.min = "3";
-      briInput.max = "255";
-      briInput.value = String(brightness);
-      briInput.className = "form-range flex-grow-1";
-      briInput.setAttribute("aria-label", "Brightness");
-
-      // A plain inline label to the slider's right, not a tooltip/popup —
-      // a floating value bubble (positioned by percentage) could render
-      // partway outside the widget/viewport at the high end and force a
-      // scrollbar. Percentage computed the same way HA's percent-based UI
-      // would (round(value/255*100)). Fixed width so the slider doesn't
-      // visibly resize as the label's text changes between "3%" and "100%".
-      const brightnessPercent = (value) => Math.round((Number(value) / 255) * 100);
-      const briLabel = el("span", "small text-body-secondary text-end", `${brightnessPercent(briInput.value)}%`);
-      briLabel.style.minWidth = "2.5rem";
-      briInput.addEventListener("input", () => {
-        briLabel.textContent = `${brightnessPercent(briInput.value)}%`;
-      });
-      briInput.addEventListener("change", async () => {
-        const nextBrightness = Number(briInput.value);
-        try {
-          await setHaLightBrightness(dataManager, entityId, nextBrightness);
-          haLightState = { ...(haLightState || {}), state: "on", brightness: nextBrightness };
-          render();
-        } catch (error) {
-          status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
-        }
-      });
-      powerBriRow.append(briInput, briLabel);
-    }
-    wrap.appendChild(powerBriRow);
-
-    if (haLightSupportsColor(haLightState)) {
-      const colorRow = el("div", "d-flex align-items-center gap-2");
-      colorRow.appendChild(el("label", "small text-body-secondary mb-0", "Color"));
-      const colorInput = document.createElement("input");
-      colorInput.type = "color";
-      colorInput.className = "form-control form-control-color";
-      colorInput.value = Array.isArray(haLightState?.rgbColor) ? rgbToHex(haLightState.rgbColor) : "#ffffff";
-      colorInput.addEventListener("change", async () => {
-        const rgb = hexToRgb(colorInput.value);
-        try {
-          await setHaLightColor(dataManager, entityId, rgb);
-          haLightState = { ...(haLightState || {}), state: "on", rgbColor: rgb };
-          render();
-        } catch (error) {
-          status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
-        }
-      });
-      colorRow.appendChild(colorInput);
-      wrap.appendChild(colorRow);
-    }
-
-    return wrap;
   }
 
   function render() {
@@ -1129,10 +1414,10 @@ export function initWledWidget(
     wrap.appendChild(renderDeviceRow());
     if (showAddDevice) wrap.appendChild(renderAddDeviceForm());
 
-    // The Follow/Advanced Mode toggle buttons live on the device row
-    // (renderDeviceRow) — this just shows/hides each section's content in
-    // place, rather than a separate always-visible header row for a
-    // section that might not even be in use. Both stay WLED-only.
+    // The Follow toggle button lives on the device row (renderDeviceRow) —
+    // this just shows/hides its section's content in place, rather than a
+    // separate always-visible header row for a section that might not even be
+    // in use. Follow and the Advanced section (below) stay WLED-only.
     const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
     if (isWledSelected && config.followEnabled) {
       wrap.appendChild(renderFollowSection());
@@ -1147,12 +1432,12 @@ export function initWledWidget(
     } else if (currentDeviceType() === "haLight" && haLightState) {
       wrap.appendChild(renderHaLightBasicControls());
     } else if (currentDeviceType() === "wled" && deviceState) {
+      const layoutBanner = renderLayoutBanner();
+      if (layoutBanner) wrap.appendChild(layoutBanner);
       wrap.appendChild(renderWledBasicControls());
     }
 
-    if (isWledSelected && advancedExpanded) {
-      wrap.appendChild(renderAdvancedSection());
-    }
+    if (isWledSelected) wrap.appendChild(renderAdvancedCollapsible());
 
     container.appendChild(wrap);
     refreshTooltips(container);
@@ -1186,8 +1471,8 @@ export function initWledWidget(
         await sendRaw({ bri: Number(params.value) });
         return;
       case "effect": {
-        const segmentId = Number.isFinite(Number(params.segmentId)) ? Number(params.segmentId) : 0;
-        await sendRaw({ seg: [{ id: segmentId, fx: Number(params.fx) }] });
+        const { segmentId, otherSegmentIds } = await resolveMacroSegment(currentBase(), params);
+        await sendRaw(buildWledLookCommand(segmentId, params, otherSegmentIds));
         return;
       }
       default:
@@ -1199,11 +1484,14 @@ export function initWledWidget(
   if (hasSelection()) void refreshState();
   syncFollowWatch();
   syncHaPollWatch();
+  const unsubscribeWledSync = subscribeWledChanges(scheduleExternalRefresh);
 
   return {
     runMacroAction,
     destroy() {
       destroyed = true;
+      unsubscribeWledSync();
+      window.clearTimeout(externalRefreshTimer);
       if (followTimer) followTimer.stop();
       followLiveStream?.close();
       if (haPollTimer) haPollTimer.stop();
@@ -1224,7 +1512,7 @@ export const WLED_MACRO_ACTIONS = {
   off: { label: "Turn off" },
   preset: { label: "Apply preset", params: ["presetId"] },
   brightness: { label: "Set brightness", params: ["value"] },
-  effect: { label: "Set effect", params: ["fx", "segmentId"] },
+  effect: { label: "Set effect / palette / color", params: ["look"] },
 };
 
 // `alias` is deliberately separate from `label` — see this widget's own
@@ -1255,6 +1543,7 @@ export function normalizeWledDeviceList(list) {
                 ip: entry.ip.trim(),
                 label: typeof entry.label === "string" ? entry.label.trim() : "",
                 alias: typeof entry.alias === "string" ? entry.alias.trim() : "",
+                ...(normalizeSegmentLayout(entry.segments).length ? { segments: normalizeSegmentLayout(entry.segments) } : {}),
               }
         )
     : [];
@@ -1303,6 +1592,66 @@ export function resolveWledDeviceByAlias(devices, alias) {
   return (Array.isArray(devices) ? devices : []).find(
     (device) => (device.alias || "").trim().toLowerCase() === normalized
   ) || null;
+}
+
+// What a device offers a macro action to pick from, read live from the
+// device (the same sources the Lighting widget's own selects use) — a macro
+// editor on any machine that can reach the device sees its real presets,
+// effects, and segment names. Rejects only when the device is unreachable.
+export async function fetchWledChoices(device) {
+  const base = normalizeWledBase(device?.ip);
+  if (!base) throw new Error("This device has no IP/hostname.");
+  const [presets, effects, state, palettes, fxdata] = await Promise.allSettled([
+    wledFetchPresets(base),
+    wledFetchJson(base, "/json/eff"),
+    wledFetchJson(base, "/json/state"),
+    wledFetchJson(base, "/json/pal"),
+    wledFetchJson(base, "/json/fxdata"),
+  ]);
+  if (effects.status === "rejected" && state.status === "rejected") {
+    throw new Error(`Can't reach ${device.label || base} from this browser.`);
+  }
+  const liveSegments = state.status === "fulfilled" && Array.isArray(state.value?.seg) ? state.value.seg : [];
+  const segmentNames = Array.from(new Set([...(device.segments || []), ...liveSegments].map(segmentName).filter(Boolean)));
+  return {
+    presets: Object.entries(presets.value || {})
+      .filter(([id, entry]) => id !== "0" && entry?.n)
+      .map(([id, entry]) => ({ id: Number(id), name: entry.n })),
+    effects: effects.status === "fulfilled" && Array.isArray(effects.value) ? effects.value : [],
+    palettes: palettes.status === "fulfilled" && Array.isArray(palettes.value) ? palettes.value : [],
+    // Per-effect control metadata, or null when the device doesn't offer it
+    // (older firmware) — the editor then just leaves everything enabled.
+    effectMeta: fxdata.status === "fulfilled" && Array.isArray(fxdata.value) ? fxdata.value.map(parseEffectMeta) : null,
+    segmentNames,
+    // The shape the control's segment picker reads: macros and table lighting
+    // identify a segment by NAME, so value and label are the same.
+    segments: segmentNames.map((name) => ({ value: name, label: name })),
+  };
+}
+
+// A device can only be referenced by a macro through its alias, and the
+// Lighting widget only asks for one when the device is first added — so
+// picking an alias-less device in the macro editor gives it one, derived from
+// its label (or host) and made unique, rather than leaving it unselectable.
+export async function ensureWledDeviceAlias(dataManager, devices, ip) {
+  const list = normalizeWledDeviceList(devices);
+  const device = list.find((entry) => entry.type !== "haLight" && entry.ip === ip);
+  if (!device) return null;
+  if (device.alias) return { alias: device.alias, devices: list };
+  const stem =
+    String(device.label || device.ip)
+      .replace(/^https?:\/\//i, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "wled";
+  const taken = new Set(list.map((entry) => entry.alias.toLowerCase()));
+  let alias = stem;
+  for (let suffix = 2; taken.has(alias); suffix += 1) alias = `${stem}-${suffix}`;
+  const saved = await saveWledDevices(
+    dataManager,
+    list.map((entry) => (entry === device ? { ...entry, alias } : entry))
+  );
+  return { alias, devices: saved };
 }
 
 // The write half of fetchWledDevices above — same two keys, same local-
@@ -1466,8 +1815,8 @@ export async function runWledMacroAction(action, { wledDevices = [], widgetInsta
       await wledPostState(base, { bri: Number(params.value) });
       return;
     case "effect": {
-      const segmentId = Number.isFinite(Number(params.segmentId)) ? Number(params.segmentId) : 0;
-      await wledPostState(base, { seg: [{ id: segmentId, fx: Number(params.fx) }] });
+      const { segmentId, otherSegmentIds } = await resolveMacroSegment(base, params);
+      await wledPostState(base, buildWledLookCommand(segmentId, params, otherSegmentIds));
       return;
     }
     default:

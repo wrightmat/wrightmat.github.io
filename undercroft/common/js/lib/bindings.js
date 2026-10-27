@@ -134,7 +134,13 @@ function lookupEntryMatches(entry, key) {
 
 function findInLookupTable(table, key) {
   if (Array.isArray(table)) {
-    return table.find((entry) => lookupEntryMatches(entry, key));
+    const match = table.find((entry) => lookupEntryMatches(entry, key));
+    if (match !== undefined) return match;
+    // A positional list of scalars (system-lookup-tables.js) is indexed by
+    // its numeric source id, which a value match above can never find.
+    const index = /^\d+$/.test(String(key).trim()) ? Number(key) : -1;
+    const positional = table[index];
+    return positional !== null && typeof positional === "object" ? undefined : positional;
   }
   if (table && typeof table === "object" && Object.prototype.hasOwnProperty.call(table, key)) {
     return table[key];

@@ -1,0 +1,24 @@
+{
+  "id": "feat.durable",
+  "name": "Durable",
+  "systemIds": [
+    "sys.dnd5e"
+  ],
+  "description": "*General Feat (Prerequisite: Level 4+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Constitution score by 1, to a maximum of 20.\n\n***Defy Death.*** You have Advantage on Death Saving Throws.\n\n***Speedy Recovery.*** As a Bonus Action, you can expend one of your Hit Point Dice, roll the die, and regain a number of Hit Points equal to the roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "*General Feat (Prerequisite: Level 4+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Constitution score by 1, to a maximum of 20.\n\n***Defy Death.*** You have Advantage on Death Saving Throws.\n\n***Speedy Recovery.*** As a Bonus Action, you can expend one of your Hit Point Dice, roll the die, and regain a number of Hit Points equal to the roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "character"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": []
+}

@@ -464,6 +464,19 @@ function flattenActions(actions) {
   return Object.values(actions).reduce((all, group) => (Array.isArray(group) ? all.concat(group) : all), []);
 }
 
+// DDB gives an action's range as either a bare value or a
+// `{range, aoeType, aoeSize, ...}` object; the sheet wants plain text. A
+// melee action (attackTypeRange 1 — an enum, never a distance) carries no
+// range of its own and defaults to 5 ft. Returns "" rather than null for
+// "no range": a null binding renders as the component's placeholder name.
+function flattenActionRange(range, attackTypeRange) {
+  const feet = range && typeof range === "object" ? range.range : range;
+  if (attackTypeRange === 1) return `${feet || 5} ft. Reach`;
+  if (feet) return `${feet} ft.`;
+  if (range?.aoeSize && range?.aoeType) return `${range.aoeSize} ft. ${String(range.aoeType).toLowerCase()}`;
+  return "";
+}
+
 function formatActionDamage(dice) {
   if (!dice) return null;
   const base = typeof dice === "string" ? dice : dice.diceString || "";
@@ -2538,7 +2551,13 @@ return {
 
         return {
           name: definition.name || "Attack",
-          range: definition.range ? `${definition.range} ft.` : null,
+          // A thrown melee weapon (longer long range) keeps its real distance.
+          range:
+            isRanged || definition.longRange > definition.range
+              ? definition.range
+                ? `${definition.range} ft.`
+                : ""
+              : `${definition.range || 5} ft. Reach`,
           longRange: definition.longRange ? `${definition.longRange} ft.` : null,
           attackBonus,
           damage,
@@ -2553,9 +2572,9 @@ return {
       .filter((action) => action.displayAsAttack && !spellNameSet.has((action.name || "").toLowerCase()))
       .map((action) => ({
         name: action.name || "Attack",
-        range: action.range || action.attackTypeRange || "",
-        longRange: action.longRange || null,
-        attackBonus: action.fixedToHit ?? action.value ?? 0,
+        range: flattenActionRange(action.range, action.attackTypeRange),
+        longRange: action.longRange || (action.range?.longRange ? `${action.range.longRange} ft.` : null),
+        attackBonus: action.fixedToHit || action.value || "",
         damage: formatActionDamage(action.dice),
         damageType: resolveSpellDamageType(action.name) || resolveDamageTypeById(action.damageTypeId),
         notes: "",
@@ -2568,7 +2587,7 @@ return {
     const unarmedAbilityMod = monkLevels > 0 ? dexMod : strMod;
     const unarmedStrike = {
       name: "Unarmed Strike",
-      range: null,
+      range: "5 ft. Reach",
       longRange: null,
       attackBonus: unarmedAbilityMod + proficiencyBonus,
       damage: `1${formatSigned(unarmedAbilityMod)}`,

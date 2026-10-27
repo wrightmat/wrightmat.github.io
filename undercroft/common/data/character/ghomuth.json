@@ -19,7 +19,7 @@
       "refId": "locathah"
     },
     "class": "Barbarian",
-    "level": 7,
+    "level": 9,
     "levels": {
       "level_monk": 0,
       "level_multiclass": 0
@@ -28,7 +28,7 @@
     "classes": [
       {
         "name": "Barbarian",
-        "level": 7,
+        "level": 9,
         "subclass": {
           "name": "Path of the Zealot",
           "refKind": "variant",
@@ -39,18 +39,18 @@
       }
     ]
   },
-  "proficiency": 3,
   "conditions": [],
   "stats": {
+    "proficiencyBonus": 4,
     "hitPoints": {
-      "max": 75,
-      "current": 75,
-      "temp": 9
+      "max": 95,
+      "current": 83,
+      "temp": 0
     },
     "armorClass": 6,
     "senses": {
       "passives": {
-        "perception": 13,
+        "perception": 14,
         "investigation": 8,
         "insight": 10
       }
@@ -64,7 +64,7 @@
     },
     "abilities": {
       "strength": 25,
-      "dexterity": 14,
+      "dexterity": 15,
       "constitution": 16,
       "intelligence": 7,
       "wisdom": 10,
@@ -81,7 +81,7 @@
         "name": "strength",
         "friendlyName": "Strength",
         "shortName": "STR",
-        "value": 10,
+        "value": 11,
         "proficiency": 3,
         "advantage": true,
         "disadvantage": false
@@ -101,7 +101,7 @@
         "name": "constitution",
         "friendlyName": "Constitution",
         "shortName": "CON",
-        "value": 6,
+        "value": 7,
         "proficiency": 3,
         "advantage": true,
         "disadvantage": false
@@ -155,7 +155,7 @@
         "friendlyName": "Animal Handling",
         "stat": 4,
         "ability": "WIS",
-        "value": 3,
+        "value": 4,
         "proficiency": 3,
         "advantage": false,
         "disadvantage": false
@@ -177,7 +177,7 @@
         "friendlyName": "Athletics",
         "stat": 0,
         "ability": "STR",
-        "value": 10,
+        "value": 11,
         "proficiency": 3,
         "advantage": true,
         "disadvantage": false
@@ -221,7 +221,7 @@
         "friendlyName": "Intimidation",
         "stat": 5,
         "ability": "CHA",
-        "value": 2,
+        "value": 3,
         "proficiency": 3,
         "advantage": false,
         "disadvantage": false
@@ -243,7 +243,7 @@
         "friendlyName": "Medicine",
         "stat": 4,
         "ability": "WIS",
-        "value": 3,
+        "value": 4,
         "proficiency": 3,
         "advantage": false,
         "disadvantage": false
@@ -254,7 +254,7 @@
         "friendlyName": "Nature",
         "stat": 3,
         "ability": "INT",
-        "value": 1,
+        "value": 2,
         "proficiency": 3,
         "advantage": false,
         "disadvantage": false
@@ -265,7 +265,7 @@
         "friendlyName": "Perception",
         "stat": 4,
         "ability": "WIS",
-        "value": 3,
+        "value": 4,
         "proficiency": 3,
         "advantage": false,
         "disadvantage": false
@@ -331,7 +331,7 @@
         "friendlyName": "Survival",
         "stat": 4,
         "ability": "WIS",
-        "value": 3,
+        "value": 4,
         "proficiency": 3,
         "advantage": false,
         "disadvantage": false
@@ -617,6 +617,12 @@
   },
   "feats": [
     {
+      "name": "Charger",
+      "description": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n***Improved Dash.*** When you take the Dash action, your Speed increases by 10 feet for that action.\n\n***Charge Attack.*** If you move at least 10 feet in a straight line toward a target immediately before hitting it with a melee attack roll as part of the Attack action, choose one of the following effects: gain a 1d8 bonus to the attack’s damage roll, or push the target up to 10 feet away if it is no more than one size larger than you. You can use this benefit only once on each of your turns.",
+      "level": null,
+      "limitedUse": null
+    },
+    {
       "name": "Savage Attacker",
       "description": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.",
       "level": null,
@@ -712,6 +718,16 @@
       "level": 7
     },
     {
+      "name": "8: Ability Score Improvement",
+      "description": "You gain the Ability Score Improvement feat or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 12 and 16.",
+      "level": 8
+    },
+    {
+      "name": "Brutal Strike",
+      "description": "If you use Reckless Attack, you can forgo any Advantage on one Strength-based attack roll of your choice on your turn. The chosen attack roll mustn’t have Disadvantage. If the chosen attack roll hits, the target takes an extra 1d10 damage of the same type dealt by the weapon or Unarmed Strike, and you can cause one Brutal Strike effect of your choice. You have the following effect options.\n\n**Forceful Blow.** The target is pushed 15 feet straight away from you. You can then move up to half your Speed straight toward the target without provoking Opportunity Attacks.\n\n**Hamstring Blow.** The target’s Speed is reduced by 15 feet until the start of your next turn. A target can be affected by only one Hamstring Blow at a time—the most recent one.",
+      "level": 9
+    },
+    {
       "name": "Core Barbarian Traits",
       "description": "As a Level 1 Character:\n\n- Gain all the traits in the Core Barbarian Traits table.\n\n- Gain the Barbarian’s level 1 features.\n\nPrimary Ability: Strength\n\nHit Point Die: D12 per Barbarian level\n\nSaving Throw Proficiencies: Strength and Constitution\n\nSkill Proficiencies: *Choose 2:* Animal Handling, Athletics, Intimidation, Nature, Perception, or Survival\n\nWeapon Proficiencies: Simple and Martial weapons\n\nArmor Training: Light and Medium armor and Shields\n\nStarting Equipment: *Choose A or B:* (A) Greataxe, 4 Handaxes, Explorer’s Pack, and 15 GP; or (B) 75 GP",
       "level": 1
@@ -772,6 +788,11 @@
       "level": null
     },
     {
+      "name": "Charger",
+      "description": "*General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)*\n\nYou gain the following benefits.\n\n***Ability Score Increase.*** Increase your Strength or Dexterity score by 1, to a maximum of 20.\n\n***Improved Dash.*** When you take the Dash action, your Speed increases by 10 feet for that action.\n\n***Charge Attack.*** If you move at least 10 feet in a straight line toward a target immediately before hitting it with a melee attack roll as part of the Attack action, choose one of the following effects: gain a 1d8 bonus to the attack’s damage roll, or push the target up to 10 feet away if it is no more than one size larger than you. You can use this benefit only once on each of your turns.",
+      "level": null
+    },
+    {
       "name": "Savage Attacker",
       "description": "*Origin Feat*\n\nYou’ve trained to deal particularly damaging strikes. Once per turn when you hit a target with a weapon, you can roll the weapon’s damage dice twice and use either roll against the target.",
       "level": null
@@ -821,70 +842,69 @@
   "attacks": [
     {
       "name": "Unarmed Strike",
-      "range": null,
+      "range": "5 ft. Reach",
       "longRange": null,
-      "attackBonus": 10,
+      "attackBonus": 11,
       "damage": "1+7",
       "damageType": "Bludgeoning",
       "notes": "",
       "description": ""
     },
     {
-      "name": "Divine Fury (Necrotic)",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
+      "name": "Brutal Strike",
+      "range": "",
       "longRange": null,
-      "attackBonus": 0,
-      "damage": "1d6 + 3",
-      "damageType": "Necrotic",
+      "attackBonus": "",
+      "damage": "1d10",
+      "damageType": null,
       "notes": "",
-      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
-    },
-    {
-      "name": "Divine Fury (Radiant)",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
-      "longRange": null,
-      "attackBonus": 0,
-      "damage": "1d6 + 3",
-      "damageType": "Thunder",
-      "notes": "",
-      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+      "description": "<p>If you use Reckless Attack, you can forgo any Advantage on one Strength-based attack roll of your choice on your turn. The chosen attack roll mustn&rsquo;t have Disadvantage. If the chosen attack roll hits, the target takes an extra 1d10 damage of the same type dealt by the weapon or Unarmed Strike, and you can cause one Brutal Strike effect of your choice.</p>"
     },
     {
       "name": "Warrior of the Gods: Expend Dice",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
+      "range": "",
       "longRange": null,
-      "attackBonus": 0,
+      "attackBonus": "",
       "damage": "1d12",
       "damageType": null,
       "notes": "",
       "description": "<p>A divine entity helps ensure you can continue the fight. You have a pool of four d12s that you can spend to heal yourself. As a Bonus Action, you can expend dice from the pool, roll them, and regain a number of Hit Points equal to the roll&rsquo;s total.</p>\r\n<p>Your pool regains all expended dice when you finish a Long Rest.</p>\r\n<p>The pool&rsquo;s maximum number of dice increases by one when you reach Barbarian levels 6 (5 dice), 12 (6 dice), and 17 (7 dice).</p>"
     },
     {
+      "name": "Divine Fury (Necrotic)",
+      "range": "5 ft. Reach",
+      "longRange": null,
+      "attackBonus": "",
+      "damage": "1d6 + 4",
+      "damageType": "Necrotic",
+      "notes": "",
+      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+    },
+    {
+      "name": "Divine Fury (Radiant)",
+      "range": "",
+      "longRange": null,
+      "attackBonus": "",
+      "damage": "1d6 + 4",
+      "damageType": "Thunder",
+      "notes": "",
+      "description": "<p>You can channel divine power into your strikes. On each of your turns while your Rage is active, the first creature you hit with a weapon or an Unarmed Strike takes extra damage equal to 1d6 plus half your Barbarian level (round down). The extra damage is Necrotic or Radiant; you choose the type each time you deal the damage.</p>"
+    },
+    {
+      "name": "Charge Attack",
+      "range": "",
+      "longRange": null,
+      "attackBonus": "",
+      "damage": "1d8",
+      "damageType": null,
+      "notes": "",
+      "description": "<p>If you move at least 10 feet in a straight line toward a target immediately before hitting it with a melee attack roll as part of the Attack action, choose one of the following effects: gain a 1d8 bonus to the attack&rsquo;s damage roll, or push the target up to 10 feet away if it is no more than one size larger than you. You can use this benefit only once on each of your turns.</p>"
+    },
+    {
       "name": "Handaxe",
       "range": "20 ft.",
       "longRange": "60 ft.",
-      "attackBonus": 10,
+      "attackBonus": 11,
       "damage": "1d6+7",
       "damageType": "Slashing",
       "notes": "Light, Thrown, Vex",
@@ -892,9 +912,9 @@
     },
     {
       "name": "Greataxe",
-      "range": "5 ft.",
+      "range": "5 ft. Reach",
       "longRange": "5 ft.",
-      "attackBonus": 10,
+      "attackBonus": 11,
       "damage": "1d12+7",
       "damageType": "Slashing",
       "notes": "Heavy, Two-Handed, Cleave",
@@ -902,9 +922,9 @@
     },
     {
       "name": "Maul",
-      "range": "5 ft.",
+      "range": "5 ft. Reach",
       "longRange": "5 ft.",
-      "attackBonus": 10,
+      "attackBonus": 11,
       "damage": "2d6+7",
       "damageType": "Bludgeoning",
       "notes": "Heavy, Two-Handed, Topple",
@@ -914,7 +934,7 @@
       "name": "Trident",
       "range": "20 ft.",
       "longRange": "60 ft.",
-      "attackBonus": 10,
+      "attackBonus": 11,
       "damage": "1d8+7",
       "damageType": "Piercing",
       "notes": "Thrown, Versatile, Topple",
@@ -929,8 +949,8 @@
     "abilityId": null,
     "ability": null,
     "mod": "+0",
-    "attack": "+3",
-    "save": 11
+    "attack": "+4",
+    "save": 12
   },
   "limitedUses": [],
   "campaign": {
@@ -977,7 +997,7 @@
     "organizations": "",
     "personalPossessions": "a trophy from an animal you killed",
     "otherHoldings": null,
-    "otherNotes": "weeks working on weapons: \nweek 1: done\nweek 2: done\nweek 3: done\nweek 4: done\nWeek 5: done\nWeek 6: done\nWeek 7: done\nWeek 8: done\nWeek 9\nWeek10:\n"
+    "otherNotes": "weeks working on weapons: \nweek 1: done\nweek 2: done\nweek 3: done\nweek 4: done\nWeek 5: done\nWeek 6: done\nWeek 7: done\nWeek 8: done\nWeek 9: done\nWeek10:\n"
   },
   "traits": {
     "age": null,
@@ -996,6 +1016,7 @@
   },
   "spells": [],
   "featureIds": [
+    "feat.charger",
     "feat.savage-attacker",
     "feat.sentinel",
     "feat.soldier-ability-score-improvements",
@@ -1014,6 +1035,7 @@
     "feat.barbarian-fast-movement",
     "feat.barbarian-feral-instinct",
     "feat.barbarian-instinctive-pounce",
+    "feat.brutal-strike",
     "feat.core-barbarian-traits",
     "feat.locathah-ability-score-increase",
     "feat.locathah-age",
@@ -1101,6 +1123,11 @@
     "feat.barbarian-instinctive-pounce": {
       "grantedAtLevel": [
         7
+      ]
+    },
+    "feat.brutal-strike": {
+      "grantedAtLevel": [
+        9
       ]
     },
     "feat.core-barbarian-traits": {

@@ -155,6 +155,15 @@ function clamp01(value) {
 // when bindingValue is empty; a non-empty bindingValue disables them and
 // shows evaluate(raw)'s result instead, or an indeterminate state when
 // evaluate returns undefined.
+//
+// Three opt-in modes for hosts that need a plain color and nothing else (the
+// WLED look editor): `hexOnly` drops theme tokens and bindings/formulas (and
+// accepts a bare hex), `compact` drops the label row — the label becomes the
+// swatch's tooltip, so several swatches fit on one line — and `clearable:
+// false` removes Clear for a color that must always have a value. All off by
+// default, so Press/Workbench/Orrery render exactly as before. The returned
+// element also gets setDisabled(disabled, reason) for dimming a swatch the
+// current context doesn't use, without discarding its value.
 export function createColorPickerField(labelText, {
   value = "",
   defaultValue = "#000000",
@@ -164,6 +173,9 @@ export function createColorPickerField(labelText, {
   onClear,
   evaluate,
   placeholder = "@abilities.str.mod or =if(...)",
+  hexOnly = false,
+  compact = false,
+  clearable = true,
 } = {}) {
   const id = nextId(labelText);
   const wrapper = document.createElement("div");
@@ -195,7 +207,13 @@ export function createColorPickerField(labelText, {
   swatchWrap.append(swatch, unsetIcon);
 
   controls.append(swatchWrap);
-  wrapper.append(label, controls);
+  if (compact) {
+    swatch.setAttribute("aria-label", labelText);
+    initTooltip(swatch, { title: labelText });
+    wrapper.append(controls);
+  } else {
+    wrapper.append(label, controls);
+  }
 
   // ---- Popover (built once, appended to swatchWrap, hidden until open) ----
 
@@ -244,7 +262,7 @@ export function createColorPickerField(labelText, {
   valueInput.className = "form-control form-control-sm flex-grow-1";
   valueInput.autocomplete = "off";
   valueInput.spellcheck = false;
-  valueInput.placeholder = "#hex · --theme · @bind · =formula";
+  valueInput.placeholder = hexOnly ? "#rrggbb" : "#hex · --theme · @bind · =formula";
   // The caller's own richer example moves to a hover tooltip — the
   // placeholder above already has to cover all four shapes at once.
   initTooltip(valueInput, { title: placeholder });
@@ -260,9 +278,11 @@ export function createColorPickerField(labelText, {
   clearButton.innerHTML = '<span class="iconify" data-icon="tabler:circle-off" aria-hidden="true"></span>';
   clearButton.setAttribute("aria-label", `Clear ${labelText.toLowerCase()}`);
   initTooltip(clearButton, { title: `Clear ${labelText.toLowerCase()}` });
-  valueRow.append(valueInput, acceptButton, clearButton);
+  valueRow.append(valueInput, acceptButton);
+  if (clearable) valueRow.appendChild(clearButton);
 
-  popover.append(svSquare, hueSlider, themeSwatchRow, valueRow);
+  if (hexOnly) popover.append(svSquare, hueSlider, valueRow);
+  else popover.append(svSquare, hueSlider, themeSwatchRow, valueRow);
   swatchWrap.appendChild(popover);
 
   // ---- State ----
@@ -279,6 +299,10 @@ export function createColorPickerField(labelText, {
   function classifyInput(raw) {
     const trimmed = typeof raw === "string" ? raw.trim() : "";
     if (!trimmed) return { kind: "empty", text: "" };
+    if (hexOnly) {
+      const hex = normalizeHex(trimmed);
+      return hex ? { kind: "hex", text: hex } : { kind: "unrecognized", text: trimmed };
+    }
     if (trimmed.startsWith("#")) return { kind: "hex", text: trimmed };
     if (trimmed.startsWith("--")) return { kind: "theme", text: trimmed };
     if (trimmed.startsWith("@") || trimmed.startsWith("=")) return { kind: "binding", text: trimmed };
@@ -414,7 +438,9 @@ export function createColorPickerField(labelText, {
     } else if (classification.kind === "hex") {
       commitManualColor(normalizeHex(classification.text) || hsvToHex(hsv));
     } else if (classification.kind === "empty") {
-      commitClear();
+      // A color that must always have a value keeps its last one.
+      if (clearable) commitClear();
+      else valueInput.value = committedRawText;
     }
     dirty = false;
     render();
@@ -631,6 +657,14 @@ export function createColorPickerField(labelText, {
   });
 
   render();
+
+  wrapper.setDisabled = (disabled, reason = "") => {
+    wrapper.classList.toggle("color-picker-disabled", Boolean(disabled));
+    swatch.disabled = Boolean(disabled);
+    if (disabled && isOpen) closeAndDiscard();
+    if (disabled && reason) wrapper.title = reason;
+    else wrapper.removeAttribute("title");
+  };
 
   return wrapper;
 }

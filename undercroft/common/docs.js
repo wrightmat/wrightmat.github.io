@@ -1,4 +1,4 @@
-import { initAppShell } from "./js/lib/app-shell.js";
+import { initAppShell, resolveToolContextPath, resolveToolLabel } from "./js/lib/app-shell.js";
 import { DataManager } from "./js/lib/data-manager.js";
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
@@ -159,13 +159,17 @@ function renderTopics(root, groupedTopics) {
         });
       });
       footer.appendChild(permalink);
-      const seeAlso = document.createElement("a");
-      seeAlso.className = "btn btn-sm btn-outline-primary";
-      seeAlso.href = resolveTopicUrl(topic.href);
-      seeAlso.target = "_blank";
-      seeAlso.rel = "noopener noreferrer";
-      seeAlso.textContent = "Open in app";
-      footer.appendChild(seeAlso);
+      if (topic.href) {
+        const destination = resolveTopicUrl(topic.href);
+        const toolLabel = resolveToolLabel(resolveToolContextPath(new URL(destination).pathname));
+        const seeAlso = document.createElement("a");
+        seeAlso.className = "btn btn-sm btn-outline-primary";
+        seeAlso.href = destination;
+        seeAlso.target = "_blank";
+        seeAlso.rel = "noopener noreferrer";
+        seeAlso.textContent = toolLabel ? `Open in ${toolLabel}` : "Open";
+        footer.appendChild(seeAlso);
+      }
       article.appendChild(footer);
       section.appendChild(article);
     });
@@ -214,6 +218,8 @@ function groupTopicsByCategory(topics) {
     renderDescription(descriptionRoot, raw?.metadata || {});
     buildTocList(tocRoot, grouped);
     renderTopics(contentRoot, grouped);
+    // The browser's own hash scroll already ran, before the topics existed.
+    document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
   } catch (error) {
     console.error("Failed to render documentation", error);
     if (contentRoot) {

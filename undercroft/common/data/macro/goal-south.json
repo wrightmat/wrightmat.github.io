@@ -1,0 +1,42 @@
+{
+  "name": "Goal! (South)",
+  "icon": "tabler:soccer-field",
+  "actions": [
+    {
+      "type": "wled",
+      "action": "effect",
+      "target": "table-lights",
+      "params": {
+        "segmentName": "South",
+        "fx": 12,
+        "col": [
+          "#ff6600",
+          "",
+          ""
+        ]
+      }
+    },
+    {
+      "type": "soundboard",
+      "action": "play",
+      "target": "",
+      "params": {
+        "clipId": "c499d0a0-442a-4c95-874c-e8e14d71c515"
+      }
+    },
+    {
+      "type": "timing",
+      "action": "wait",
+      "target": "",
+      "params": {
+        "seconds": 4
+      }
+    },
+    {
+      "type": "wled",
+      "action": "off",
+      "target": "table-lights",
+      "params": {}
+    }
+  ]
+}

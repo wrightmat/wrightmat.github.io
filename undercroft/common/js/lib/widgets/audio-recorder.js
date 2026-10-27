@@ -640,10 +640,12 @@ export function initAudioRecorderWidget(
 
   function renderChunkList() {
     if (!chunksInMemory.length) return null;
-    // One pill per chunk; clicking downloads that chunk. Height-constrained/scrollable for long sessions.
-    const list = el("div", "d-flex flex-wrap gap-1");
-    list.style.maxHeight = "6rem";
-    list.style.overflowY = "auto";
+    // One pill per chunk; clicking downloads that chunk. Grows with the
+    // widget's own resized height (flex-grow-1, shared with the transcript
+    // list below) rather than a fixed cap, with a floor so a long session's
+    // worth of pills scrolls within its own share instead of inflating past it.
+    const list = el("div", "d-flex flex-wrap gap-1 flex-grow-1 overflow-auto");
+    list.style.minHeight = "3rem";
     chunksInMemory.forEach((entry) => {
       const pill = el(
         "button",
@@ -664,7 +666,8 @@ export function initAudioRecorderWidget(
 
   function renderTranscript() {
     if (!config.transcriptionServerId && !transcriptLines.length) return null;
-    const wrap = el("div", "d-flex flex-column gap-1");
+    const wrap = el("div", "d-flex flex-column gap-1 flex-grow-1");
+    wrap.style.minHeight = "0";
     wrap.appendChild(el("span", "small fw-bold text-body-secondary", "Transcript"));
 
     const filterInput = document.createElement("input");
@@ -681,9 +684,11 @@ export function initAudioRecorderWidget(
     const needle = transcriptFilterText.trim().toLowerCase();
     const visibleLines = needle ? transcriptLines.filter((line) => line.text.toLowerCase().includes(needle)) : transcriptLines;
 
-    const list = el("div", "d-flex flex-column gap-1 small");
-    list.style.maxHeight = "10rem";
-    list.style.overflowY = "auto";
+    // Grows with the widget's own resized height (flex-grow-1, sharing
+    // space with the chunk list above) rather than a fixed cap, with a
+    // floor so a short transcript doesn't collapse to nothing.
+    const list = el("div", "d-flex flex-column gap-1 small flex-grow-1 overflow-auto");
+    list.style.minHeight = "4rem";
     if (!visibleLines.length) {
       list.appendChild(el("div", "text-body-secondary", needle ? "No matches." : "Transcript will appear here as chunks are recorded."));
     } else {
@@ -704,7 +709,7 @@ export function initAudioRecorderWidget(
     if (destroyed) return;
     disposeTooltips(container); // dispose before wipe — an orphaned tooltip popup would otherwise stick to <body>
     container.innerHTML = "";
-    const wrap = el("div", "d-flex flex-column gap-2 overflow-auto");
+    const wrap = el("div", "d-flex flex-column gap-2 flex-grow-1");
     wrap.style.minHeight = "0";
 
     wrap.appendChild(renderSettingsSection());

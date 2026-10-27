@@ -37,6 +37,18 @@ import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
 import { resolveCombatantMarkers } from "../combat-map-link.js";
 import { persistViewVisibility } from "../map-live-sync.js";
 import { showConfirmModal } from "../confirm-modal.js";
+import { initHelpSystem } from "../help.js";
+import { applyWledSegmentScene } from "./wled.js";
+import {
+  normalizeLighting,
+  tableSegmentNames,
+  computeTableScene,
+  previewScene,
+  createTableLightingPanel,
+} from "./combat-table-lighting.js";
+
+// Module-relative so it names the same file the Dashboard's own help system loads.
+const HELP_TOPICS_URL = new URL("../../../data/help-topics.json", import.meta.url).href;
 
 const POLL_INTERVAL_MS = 5000; // a physical second-screen display wants combat to feel live
 
@@ -103,6 +115,11 @@ export function initCombatTrackerWidget(
     // supplies this from a live sibling Map widget; omitted in player mode
     // and gracefully absent elsewhere — purely a prep convenience.
     resolveActiveMapId,
+    // Per-instance storage (dashboard.js's contentRef slot) — holds the GM's
+    // table-lighting settings. Absent in player mode and anywhere without a
+    // dashboard to persist into, which just means no lighting panel.
+    contentRef,
+    setContentRef,
   } = {}
 ) {
   if (!container || !dataManager) {
@@ -305,6 +322,138 @@ export function initCombatTrackerWidget(
     pendingEncounterWrite = true;
     render();
     persist();
+  }
+
+  // --- GM: table lighting (see combat-table-lighting.js) ------------------
+  // Lights the current combatant's segment on a WLED strip around the table.
+  // GM mode only — the player view and the second-screen mirror never drive
+  // the lights.
+  let storedRef = contentRef && typeof contentRef === "object" ? contentRef : {};
+  let lighting = normalizeLighting(storedRef.lighting);
+  let lightingMount = null;
+  let lightingOpen = false;
+  let lastLightingPanelSignature = "";
+  let lightingMembers = []; // [{id, name}] — the campaign's party, for seats set before any encounter has them
+  const lightingOpenKeys = new Set();
+  // The last scene's key — undefined until the first encounter is seen, so
+  // loading the page (or the first encounter) never moves the lights; only a
+  // change after that does.
+  let lastSceneKey;
+  // Whether this widget lit something, so ending combat only clears what it
+  // set rather than switching off lights it never touched.
+  let lightsOwned = false;
+  let sceneBusy = false;
+  let pendingScene = null;
+  let sceneFailureShown = false;
+
+  // One request at a time, and only the latest of a burst — pressing Next
+  // quickly shouldn't queue up a stale scene per click. A failure is shown
+  // once per streak, not once per turn.
+  async function pushScene(scene, ip = lighting.deviceIp) {
+    if (!ip) return;
+    if (sceneBusy) {
+      pendingScene = { scene, ip };
+      return;
+    }
+    sceneBusy = true;
+    try {
+      let next = { scene, ip };
+      while (next) {
+        pendingScene = null;
+        try {
+          await applyWledSegmentScene({ ip: next.ip }, next.scene);
+          sceneFailureShown = false;
+        } catch (error) {
+          if (!sceneFailureShown) {
+            sceneFailureShown = true;
+            status?.show?.(`Table lighting: ${error?.message || "couldn't reach the lighting device."}`, {
+              type: "error",
+              timeout: 4000,
+            });
+          }
+        }
+        next = pendingScene;
+      }
+    } finally {
+      sceneBusy = false;
+    }
+  }
+
+  function clearTable(config = lighting) {
+    lightsOwned = false;
+    return pushScene({ lit: [], off: tableSegmentNames(config) }, config.deviceIp);
+  }
+
+  function syncTableLighting() {
+    if (mode !== "gm" || !lighting.enabled || !lighting.deviceIp) return;
+    if (lastSceneKey === undefined && !state.encounter) return;
+    const scene = computeTableScene(state.encounter, lighting);
+    if (lastSceneKey === undefined) {
+      lastSceneKey = scene.key;
+      return;
+    }
+    if (scene.key === lastSceneKey) return;
+    lastSceneKey = scene.key;
+    if (!scene.lit.length && !lightsOwned) return;
+    lightsOwned = scene.lit.length > 0;
+    void pushScene({ lit: scene.lit, off: scene.off });
+  }
+
+  function setLighting(next) {
+    const previous = lighting;
+    lighting = normalizeLighting(next);
+    storedRef = { ...storedRef, lighting };
+    setContentRef?.(storedRef);
+    // Switching it on mid-combat should light the current turn right away,
+    // and moving to another device (or switching off) shouldn't strand lit
+    // segments on the old one.
+    if (!previous.enabled && lighting.enabled) lastSceneKey = "";
+    if (lightsOwned && ((previous.enabled && !lighting.enabled) || previous.deviceIp !== lighting.deviceIp)) {
+      void clearTable(previous);
+    }
+    render();
+  }
+
+  // Everyone who might need a seat: the campaign's party, plus any PC already
+  // in this encounter that the party list doesn't know (matched by character id).
+  function buildLightingRoster() {
+    const byId = new Map(lightingMembers.map((member) => [member.id, member.name]));
+    (state.encounter?.combatants || []).forEach((combatant) => {
+      if ((combatant.isPc || combatant.refKind === "character") && combatant.refId && !byId.has(combatant.refId)) {
+        byId.set(combatant.refId, combatant.name);
+      }
+    });
+    return Array.from(byId, ([id, name]) => ({ id, name }));
+  }
+
+  // Rebuilt only when what it shows changes — its selects and checkboxes are
+  // cheap, but a rebuild closes an open native color picker.
+  function refreshLightingPanel() {
+    const visible = lightingOpen && typeof setContentRef === "function";
+    lightingMount.classList.toggle("d-none", !visible);
+    const roster = buildLightingRoster();
+    const signature = JSON.stringify([visible, lighting, roster]);
+    if (signature === lastLightingPanelSignature) return;
+    lastLightingPanelSignature = signature;
+    disposeTooltips(lightingMount);
+    lightingMount.innerHTML = "";
+    if (!visible) return;
+    lightingMount.appendChild(
+      createTableLightingPanel({
+        lighting,
+        roster,
+        dataManager,
+        openKeys: lightingOpenKeys,
+        onChange: setLighting,
+        onTest: (segmentName) => {
+          lightsOwned = true;
+          void pushScene(previewScene(lighting, segmentName));
+        },
+        onClear: () => void clearTable(),
+      })
+    );
+    refreshTooltips(lightingMount);
+    void initHelpSystem({ root: lightingMount, topicsUrl: HELP_TOPICS_URL });
   }
 
   function icon(name) {
@@ -1312,7 +1461,23 @@ export function initCombatTrackerWidget(
     addPartyButton.addEventListener("click", () => void addPartyCombatants());
     const deleteButton = iconButton("tabler:trash", "Delete encounter", "btn-outline-danger");
     deleteButton.addEventListener("click", deleteEncounter);
-    toolbar.append(startStopButton, prevButton, nextButton, sortButton, rollInitiativeButton, addPartyButton, deleteButton);
+    toolbar.append(startStopButton, prevButton, nextButton, sortButton, rollInitiativeButton, addPartyButton);
+    // Pressed while its panel is open; the lit-bulb variant while the feature
+    // is on, so it reads as active even with the panel closed. Needs
+    // somewhere to save settings, so it's only offered on a dashboard.
+    if (typeof setContentRef === "function") {
+      const lightingButton = iconButton(
+        lighting.enabled ? "tabler:bulb-filled" : "tabler:bulb",
+        "Table lighting",
+        lightingOpen ? "btn-primary" : "btn-outline-secondary"
+      );
+      lightingButton.addEventListener("click", () => {
+        lightingOpen = !lightingOpen;
+        render();
+      });
+      toolbar.appendChild(lightingButton);
+    }
+    toolbar.appendChild(deleteButton);
     return toolbar;
   }
 
@@ -1742,7 +1907,9 @@ export function initCombatTrackerWidget(
     // without an opaque background the list's own rows show through/behind
     // it while scrolling underneath.
     toolbarMount = el("div", "d-flex flex-wrap gap-3 align-items-center justify-content-end d-none sticky-top bg-body py-1");
-    emptyStateMount = el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat.");
+    // The table-lighting settings panel — see refreshLightingPanel.
+    lightingMount = el("div", "d-none");
+    emptyStateMount =el("p", "text-body-secondary small mb-0", "Select or create an encounter to start tracking combat.");
     listMount = el("div", "list-group d-none");
     // Not appended to `root` here — relocated dynamically into listMount
     // right after whichever row is selected. Still created once up front so
@@ -1751,7 +1918,7 @@ export function initCombatTrackerWidget(
     addRowMount = el("div", "d-none"); // starts hidden — only shows once an encounter is selected
     addRowMount.appendChild(renderGmAddCombatantRow());
 
-    root.append(topBarMount, toolbarMount, emptyStateMount, listMount, addRowMount);
+    root.append(topBarMount, toolbarMount, lightingMount, emptyStateMount, listMount, addRowMount);
     container.appendChild(root);
   }
 
@@ -1777,7 +1944,12 @@ export function initCombatTrackerWidget(
   // Same signature-gated approach as refreshTopBar, for the round readout +
   // start/stop/turn/sort/roll/delete buttons.
   function refreshToolbar() {
-    const signature = JSON.stringify({ started: state.encounter?.started, round: state.encounter?.round });
+    const signature = JSON.stringify({
+      started: state.encounter?.started,
+      round: state.encounter?.round,
+      lightingOpen,
+      lightingEnabled: lighting.enabled,
+    });
     if (signature === lastToolbarSignature) return;
     lastToolbarSignature = signature;
     disposeTooltips(toolbarMount);
@@ -1917,6 +2089,7 @@ export function initCombatTrackerWidget(
       renderTagDatalist(TAG_DATALIST_ID, suggestable);
       lastConditionsRendered = datalistSignature;
     }
+    refreshLightingPanel();
     updateVisibilityAction();
   }
 
@@ -1979,6 +2152,7 @@ export function initCombatTrackerWidget(
     if (state.destroyed) return;
     if (mode === "gm") {
       renderGm();
+      syncTableLighting();
     } else {
       renderPlayer();
     }
@@ -2012,6 +2186,14 @@ export function initCombatTrackerWidget(
         render();
       }
       startGmCharacterSync();
+      // The party, for seats set before any encounter has them — best-effort,
+      // the panel still lists every PC already in the encounter without it.
+      if (groupId && typeof setContentRef === "function") {
+        void fetchGroupMemberCharacters(dataManager, groupId).then((members) => {
+          lightingMembers = members;
+          render();
+        });
+      }
     } else {
       await pollActiveEncounter();
       startPolling();

@@ -712,6 +712,26 @@ body[data-theme="dark"] .hover-lift:hover {
   padding: 0 0.1em;
 }
 
+/* The icon picker's preview swatch (input-group preview + each dropdown row) —
+   rendered by common/js/lib/icon-picker.js and ui-components.js, so every tool
+   hosting an icon picker needs them, not just Press. */
+.press-icon-preview,
+.press-icon-option__preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.suite-search-section-label {
+  padding: 0.25rem 0.5rem 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+}
+
 .suite-search-empty {
   padding: 0.5rem;
   font-size: 0.875rem;
@@ -1251,6 +1271,13 @@ a.undercroft-tool-card:focus-visible {
     var(--bs-secondary-bg, var(--bs-tertiary-bg)) 4px,
     var(--bs-secondary-bg, var(--bs-tertiary-bg)) 8px
   );
+}
+
+/* A swatch the current context doesn't use (a color slot the selected WLED
+   effect ignores) — dimmed and inert, but its value is kept and still shown. */
+.color-picker-disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .color-picker-swatch {

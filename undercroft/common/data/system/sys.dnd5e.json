@@ -2506,12 +2506,15 @@
       "label": "Damage Relationships",
       "values": [
         {
+          "id": "resistance",
           "name": "Resistance"
         },
         {
+          "id": "immunity",
           "name": "Immunity"
         },
         {
+          "id": "vulnerability",
           "name": "Vulnerability"
         }
       ]

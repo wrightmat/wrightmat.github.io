@@ -4,7 +4,7 @@ import { resolveApiBase } from "./common/js/lib/api.js";
 import { initAuthControls } from "./common/js/lib/auth-ui.js";
 import { initHelpSystem } from "./common/js/lib/help.js";
 import { initHelpBrowser } from "./common/js/lib/help-browser.js";
-import { refreshTooltips, disposeTooltips, updateTooltipContent } from "./common/js/lib/tooltips.js";
+import { refreshTooltips, disposeTooltips, updateTooltipContent, initTooltip } from "./common/js/lib/tooltips.js";
 import { createIconButton } from "./common/js/lib/ui-components.js";
 import { createSortable } from "./common/js/lib/dnd.js";
 import { initCharacterSummaryWidget } from "./common/js/lib/widgets/character-summary.js";
@@ -468,6 +468,10 @@ const WIDGET_CATALOG = [
         shareToken: ctx.groupContext?.shareToken || ctx.shareParam || "",
         encounterId: ctx.encounterParam || "",
         setRightAction: ctx.setRightAction,
+        // Where the GM's table-lighting settings are saved (this instance's
+        // own slot in the layout).
+        contentRef: ctx.contentRef,
+        setContentRef: ctx.setContentRef,
         // Lets a GM prep "hidden from players" state on a map BEFORE
         // spotlighting it by resolving straight off a live Map widget
         // elsewhere on THIS SAME dashboard, the same findActiveWidgetInstance
@@ -1354,6 +1358,8 @@ function createWidgetCard(instance, label) {
   removeIcon.dataset.icon = "tabler:x";
   removeIcon.setAttribute("aria-hidden", "true");
   removeButton.appendChild(removeIcon);
+  removeButton.setAttribute("aria-label", "Remove widget");
+  initTooltip(removeButton, { title: "Remove widget", placement: "top" });
   removeButton.addEventListener("click", (event) => {
     // Stop this from also bubbling into the delegated selection listener on
     // gridEl — the card is about to be torn down, selecting it first would

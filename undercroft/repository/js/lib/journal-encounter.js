@@ -8,7 +8,7 @@ import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js
 import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "../../../common/js/lib/widgets/combat-bindings.js";
 import { uniquifyCombatantName } from "../../../common/js/lib/widgets/combatant-naming.js";
 import { fetchGroupMemberCharacters } from "../../../common/js/lib/widgets/group-context.js";
-import { resolveActiveSpotlightId, retirePreviousEncounterSpotlight } from "../../../common/js/lib/spotlight.js";
+import { retirePreviousEncounterSpotlight } from "../../../common/js/lib/spotlight.js";
 import { resolveToolHref } from "../../../common/js/lib/app-shell.js";
 import { pingForDashboardTab, requestDashboardFocus } from "../../../common/js/lib/dashboard-channel.js";
 import { setElementVisible } from "../../../common/js/lib/dom.js";
@@ -470,6 +470,25 @@ async function navigateToEncounter({ encounterId, destination, currentSection, s
   }
 }
 
+// The GM's own most-recently-touched STARTED encounter (any — Start Combat
+// and "show to table" are deliberately independent toggles with zero
+// automatic coupling, see combat-tracker.js's own startCombat/showToTable
+// split, so this is spotlight-agnostic on purpose: a GM can be running an
+// encounter privately, never shown to the table, and still get offered "add
+// to it" here), other than `excludeId` (this same block's own encounter —
+// restarting it is just a reset, not a conflict with something else).
+// `started` is a declared metadataField (common/data/kind/encounter.json),
+// so owned list entries already carry it — no per-item fetch needed. Owned
+// entries are also already ordered by modified_at DESC server-side
+// (storage.py's own list query), so the first match found really is the
+// most recently active one.
+async function findRunningOwnedEncounter(dataManager, excludeId) {
+  const listing = await dataManager.list("encounter", { refresh: true }).catch(() => null);
+  const owned = dataManager.collectListEntries(listing?.remote, ["owned"]);
+  const running = owned.find((entry) => entry?.id && entry.id !== excludeId && entry.started);
+  return running ? { id: running.id, name: running.title || running.name || "Untitled encounter" } : null;
+}
+
 // Orchestrates "click a chip -> real running encounter", shared by
 // Repository's editor and Handout's/Board's dashboard-hosted renders.
 // Always prompts (promptStartEncounterOptions) rather than only on conflict —
@@ -483,19 +502,7 @@ export async function startEncounter({ dataManager, status, title, creatures, gr
   }
   if (!creatures || !creatures.length) return;
   try {
-    const activeId = await resolveActiveSpotlightId(dataManager, { groupId, kind: "encounter" });
-    // Only a genuinely DIFFERENT, already-STARTED encounter is offered as an
-    // "add to it" choice — restarting this same block's own encounter
-    // (already active) is just a reset, not a conflict with something else,
-    // and a spotlighted-but-not-yet-started encounter isn't "running" in the
-    // sense this choice means.
-    let conflict = null;
-    if (activeId && activeId !== id) {
-      const active = await dataManager.get("encounter", activeId, { preferLocal: false }).catch(() => null);
-      if (active?.payload?.started) {
-        conflict = { id: activeId, name: active.payload.name || "Untitled encounter" };
-      }
-    }
+    const conflict = await findRunningOwnedEncounter(dataManager, id);
     const choice = await promptStartEncounterOptions({ summary: creatureNameSummary(creatures), conflict });
     if (!choice) return; // cancelled
 

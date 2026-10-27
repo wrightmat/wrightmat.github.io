@@ -57,6 +57,10 @@ export const MACRO_ACTION_CATALOG = {
   character: { label: "Character", actions: CHARACTER_MACRO_ACTIONS },
   clock: { label: "Clock", actions: CLOCK_MACRO_ACTIONS },
   calendar: { label: "Calendar", actions: CALENDAR_MACRO_ACTIONS },
+  timing: {
+    label: "Timing",
+    actions: { wait: { label: "Wait", params: ["seconds"] } },
+  },
 };
 
 // "WLED: Apply preset" / "Soundboard: Play a clip" — a short, human

@@ -19,10 +19,10 @@
       "refId": "triton"
     },
     "class": "Warlock",
-    "level": 6,
+    "level": 7,
     "levels": {
       "level_monk": 0,
-      "level_multiclass": 1
+      "level_multiclass": 2
     },
     "inspiration": false,
     "classes": [
@@ -39,19 +39,19 @@
       },
       {
         "name": "Sorcerer",
-        "level": 1,
+        "level": 2,
         "subclass": {},
         "refKind": "class",
         "refId": "sorcerer"
       }
     ]
   },
-  "proficiency": 3,
   "conditions": [],
   "stats": {
+    "proficiencyBonus": 3,
     "hitPoints": {
-      "max": 56,
-      "current": 56,
+      "max": 64,
+      "current": 64,
       "temp": 0
     },
     "armorClass": 13,
@@ -807,6 +807,21 @@
       "level": 1
     },
     {
+      "name": "Font of Magic",
+      "description": "You can tap into the wellspring of magic within yourself. This wellspring is represented by Sorcery Points, which allow you to create a variety of magical effects.\n\nYou have 2 Sorcery Points, and you gain more as you reach higher levels, as shown in the Sorcery Points column of the Sorcerer Features table. You can’t have more Sorcery Points than the number shown in the table for your level. You regain all expended Sorcery Points when you finish a Long Rest.\n\nYou can use your Sorcery Points to fuel the options below, along with other features, such as Metamagic, that use those points.\n\n**Converting Spell Slots to Sorcery Points.** You can expend a spell slot to gain a number of Sorcery Points equal to the slot’s level (no action required).\n\n**Creating Spell Slots.** As a Bonus Action, you can transform unexpended Sorcery Points into one spell slot. The Creating Spell Slots table shows the cost of creating a spell slot of a given level, and it lists the minimum Sorcerer level you must be to create a slot. You can create a spell slot no higher than level 5.\n\nAny spell slot you create with this feature vanishes when you finish a Long Rest.\n\n| Spell Slot Level | Sorcery Point Cost | Min. Sorcerer Level |\n| --- | --- | --- |\n| 1 | 2 | 2 |\n| 2 | 3 | 3 |\n| 3 | 5 | 5 |\n| 4 | 6 | 7 |\n| 5 | 7 | 9 |",
+      "level": 2
+    },
+    {
+      "name": "Metamagic",
+      "description": "Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from “Metamagic Options” later in this class’s description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.\n\nYou can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.\n\nWhenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don’t know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17.",
+      "level": 2
+    },
+    {
+      "name": "Metamagic Options",
+      "description": "The following options are available to your Metamagic feature. The options are presented in alphabetical order.",
+      "level": 2
+    },
+    {
       "name": "Ability Score Increases",
       "description": "When determining your character’s ability scores, increase one score by 2 and increase a different score by 1, or increase three different scores by 1. Follow this rule regardless of the method you use to determine the scores, such as rolling or point buy. The “Quick Build” section for your character’s class offers suggestions on which scores to increase. You can follow those suggestions or ignore them, but you can’t raise any of your scores above 20.",
       "level": null
@@ -900,7 +915,7 @@
   "attacks": [
     {
       "name": "Unarmed Strike",
-      "range": null,
+      "range": "5 ft. Reach",
       "longRange": null,
       "attackBonus": 3,
       "damage": "1+0",
@@ -910,16 +925,9 @@
     },
     {
       "name": "Tentacle of the Deeps: Attack",
-      "range": {
-        "range": 10,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
+      "range": "10 ft. Reach",
       "longRange": null,
-      "attackBonus": 0,
+      "attackBonus": "",
       "damage": "1d8",
       "damageType": "Cold",
       "notes": "",
@@ -947,7 +955,24 @@
     "attack": "+7",
     "save": 15
   },
-  "limitedUses": [],
+  "limitedUses": [
+    {
+      "name": "Level 1 Spell Slots",
+      "level": 1,
+      "total": 3,
+      "reset": "Long Rest",
+      "available": 3,
+      "used": 0
+    },
+    {
+      "name": "Pact Magic",
+      "level": 3,
+      "total": 2,
+      "reset": "Short Rest",
+      "available": 2,
+      "used": 0
+    }
+  ],
   "campaign": {
     "id": 2994388,
     "name": "A Merry Band of Gaymers",
@@ -1402,6 +1427,55 @@
           "dc": null,
           "effect": "Damage",
           "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Spellfire Flare",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "A",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Evocation",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V",
+            "S"
+          ],
+          "toHit": 7,
+          "dc": null,
+          "effect": null,
+          "duration": " (Instantaneous)"
+        },
+        {
+          "name": "Silvery Barbs",
+          "level": 1,
+          "prepared": false,
+          "castingTime": "R",
+          "range": {
+            "origin": "Ranged",
+            "rangeValue": 60,
+            "aoeType": null,
+            "aoeValue": null
+          },
+          "school": "Enchantment",
+          "source": "class",
+          "concentration": false,
+          "ritual": false,
+          "components": [
+            "V"
+          ],
+          "toHit": null,
+          "dc": null,
+          "effect": "Buff",
+          "duration": " (Instantaneous)",
+          "refKind": "wonder",
+          "refId": "silvery-barbs"
         }
       ]
     },
@@ -1539,6 +1613,9 @@
     "feat.core-sorcerer-traits",
     "feat.sorcerer-spellcasting",
     "feat.sorcerer-innate-sorcery",
+    "feat.font-of-magic",
+    "feat.sorcerer-metamagic",
+    "feat.metamagic-options",
     "feat.water-genasi-amphibious",
     "feat.control-air-and-water",
     "feat.darkvision.60",
@@ -1613,7 +1690,21 @@
       "grantedAtLevel": [
         1
       ]
+    },
+    "feat.font-of-magic": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.sorcerer-metamagic": {
+      "grantedAtLevel": [
+        2
+      ]
+    },
+    "feat.metamagic-options": {
+      "grantedAtLevel": [
+        2
+      ]
     }
-  },
-  "hiddenTags": []
+  }
 }

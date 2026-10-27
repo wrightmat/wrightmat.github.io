@@ -19,16 +19,16 @@
       "refId": "changeling"
     },
     "class": "Rogue",
-    "level": 5,
+    "level": 7,
     "levels": {
       "level_monk": 0,
       "level_multiclass": 0
     },
-    "inspiration": false,
+    "inspiration": true,
     "classes": [
       {
         "name": "Rogue",
-        "level": 5,
+        "level": 7,
         "subclass": {
           "name": "Thief",
           "refKind": "variant",
@@ -39,12 +39,12 @@
       }
     ]
   },
-  "proficiency": 3,
   "conditions": [],
   "stats": {
+    "proficiencyBonus": 3,
     "hitPoints": {
-      "max": 33,
-      "current": 33,
+      "max": 45,
+      "current": 45,
       "temp": 0
     },
     "armorClass": 14,
@@ -275,8 +275,8 @@
         "friendlyName": "Performance",
         "stat": 5,
         "ability": "CHA",
-        "value": 2,
-        "proficiency": 3,
+        "value": 5,
+        "proficiency": 4,
         "advantage": false,
         "disadvantage": false
       },
@@ -286,8 +286,8 @@
         "friendlyName": "Persuasion",
         "stat": 5,
         "ability": "CHA",
-        "value": 2,
-        "proficiency": 3,
+        "value": 5,
+        "proficiency": 4,
         "advantage": false,
         "disadvantage": false
       },
@@ -700,6 +700,21 @@
       "level": 5
     },
     {
+      "name": "6: Expertise",
+      "description": "You gain Expertise in two more of your skill proficiencies of your choice.",
+      "level": 6
+    },
+    {
+      "name": "Evasion",
+      "description": "You can nimbly dodge out of the way of certain dangers. When you’re subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw and only half damage if you fail. You can’t use this feature if you have the Incapacitated condition.",
+      "level": 7
+    },
+    {
+      "name": "Reliable Talent",
+      "description": "Whenever you make an ability check that uses one of your skill or tool proficiencies, you can treat a d20 roll of 9 or lower as a 10.",
+      "level": 7
+    },
+    {
       "name": "Creature Type",
       "description": "You're a Fey.",
       "level": null
@@ -773,7 +788,7 @@
   "attacks": [
     {
       "name": "Unarmed Strike",
-      "range": null,
+      "range": "5 ft. Reach",
       "longRange": null,
       "attackBonus": 5,
       "damage": "1+2",
@@ -783,17 +798,10 @@
     },
     {
       "name": "Sneak Attack",
-      "range": {
-        "range": null,
-        "longRange": null,
-        "aoeType": null,
-        "aoeSize": null,
-        "hasAoeSpecialDescription": false,
-        "minimumRange": null
-      },
+      "range": "",
       "longRange": null,
-      "attackBonus": 0,
-      "damage": "3d6",
+      "attackBonus": "",
+      "damage": "4d6",
       "damageType": null,
       "notes": "",
       "description": "<p>You know how to strike subtly and exploit a foe&rsquo;s distraction. Once per turn, you can deal an extra 1d6 damage to one creature you hit with an attack roll if you have Advantage on the roll and the attack uses a [wprop]Finesse[/wprop] or a Ranged weapon. The extra damage&rsquo;s type is the same as the weapon&rsquo;s type.</p>\r\n<p>You don&rsquo;t need Advantage on the attack roll if at least one of your allies is within 5 feet of the target, the ally doesn&rsquo;t have the [condition]Incapacitated[/condition] condition, and you don&rsquo;t have Disadvantage on the attack roll.</p>\r\n<p>The extra damage increases as you gain Rogue levels, as shown in the Sneak Attack column of the Rogue Features table.</p>"
@@ -898,6 +906,8 @@
     "feat.ability-score-improvement",
     "feat.cunning-strike",
     "feat.rogue-uncanny-dodge",
+    "feat.rogue-evasion",
+    "feat.rogue-reliable-talent",
     "feat.changeling-instincts",
     "feat.shape-shifter",
     "feat.ability-score-increase-feature"
@@ -971,6 +981,16 @@
     "feat.rogue-uncanny-dodge": {
       "grantedAtLevel": [
         5
+      ]
+    },
+    "feat.rogue-evasion": {
+      "grantedAtLevel": [
+        7
+      ]
+    },
+    "feat.rogue-reliable-talent": {
+      "grantedAtLevel": [
+        7
       ]
     }
   }

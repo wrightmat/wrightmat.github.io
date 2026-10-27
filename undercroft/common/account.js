@@ -3,6 +3,7 @@ import { DataManager, ROLE_ORDER, WRITE_ROLE_REQUIREMENTS, roleRank } from "./js
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
 import { initHelpSystem } from "./js/lib/help.js";
+import { initTooltip } from "./js/lib/tooltips.js";
 import { initHelpBrowser as initHelpBrowserModule } from "./js/lib/help-browser.js";
 import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
@@ -1359,6 +1360,7 @@ function renderQuickReference() {
       helpButton.className = "btn btn-link p-0 text-body-secondary d-inline-flex";
       helpButton.setAttribute("aria-label", `More about: ${step.title}`);
       helpButton.innerHTML = '<span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>';
+      initTooltip(helpButton, { title: `More about: ${step.title}` });
       helpButton.addEventListener("click", () => showHelpTopic(step.helpTopic));
       titleRow.appendChild(helpButton);
     }

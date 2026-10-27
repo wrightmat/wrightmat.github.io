@@ -2,6 +2,7 @@ import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
 import { disableForm, attachHoverDropdown } from "./dom.js";
+import { disposeTooltips } from "./tooltips.js";
 
 const MODAL_ID = "undercroft-auth-modal";
 const AUTH_CHANGED_EVENT = "undercroft:auth-changed";
@@ -290,7 +291,7 @@ export function initAuthControls({
               </button>
               ${
                 isActive
-                  ? `<button class="btn btn-sm btn-link text-body-secondary px-2" type="button" data-campaign-clear aria-label="Leave ${escapeHtml(group.name)}">&times;</button>`
+                  ? `<button class="btn btn-sm btn-link text-body-secondary px-2" type="button" data-campaign-clear aria-label="Leave ${escapeHtml(group.name)}" data-bs-toggle="tooltip" data-bs-title="Leave ${escapeHtml(group.name)}">&times;</button>`
                   : ""
               }
             </div>
@@ -341,6 +342,7 @@ export function initAuthControls({
     dropdown.querySelectorAll("[data-campaign-clear]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
+        disposeTooltips(dropdown);
         manager.setActiveGroup(null);
         renderUserMenu(user, groups);
       });

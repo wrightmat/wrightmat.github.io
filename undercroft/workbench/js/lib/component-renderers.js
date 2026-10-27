@@ -623,7 +623,10 @@ export function renderInputContent(component, ctx) {
     if (!labelText) {
       // No visible label — same "aria-label carries what the visible text
       // can't" pattern every icon-only toolbar button follows.
-      button.setAttribute("aria-label", (component.name || "Button").trim() || "Button");
+      const iconOnlyLabel = (component.name || "Button").trim() || "Button";
+      button.setAttribute("aria-label", iconOnlyLabel);
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-title", iconOnlyLabel);
     }
     button.disabled = !editable;
     button.addEventListener("click", () => {
