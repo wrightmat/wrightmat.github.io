@@ -4,6 +4,7 @@
 // not duplicated). Used by character-sheet.js's Initiative roller and the
 // Dice Roller dashboard widget — one roll-and-report path, one quick-dice
 // behavior, not two of each.
+import { postSystemMessage } from "../chat/target.js";
 import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
 import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
 // Rollable Journal tables (`[[Page#^blockId]]`) are recognized/resolved
@@ -127,10 +128,11 @@ async function tryOverlayRoll(expression, dataManager, dice = []) {
 // `{expression, isTable:true, pageTitle, blockId, roll, dieSize, row,
 // headers}` — callers that care check `result.isTable`.
 //
-// `groupContext`/`broadcast`: when both a truthy `broadcast` and a real
+// `groupContext`/`post`: when both a truthy `post` and a real
 // `groupContext.groupId` are given, a successful plain roll also posts a
-// `type:"roll"` group log entry (same shape workbench-character-view.js's
-// own recordGameLogRoll posts). Table rolls aren't broadcast this way.
+// "roll" system message to the active chat thread (same shape
+// workbench-character-view.js's own recordGameLogRoll posts). Table rolls
+// aren't posted this way.
 //
 // `context` passes through to rollDiceExpression's own `@path` variable
 // substitution (Workbench's ability/save/attack rollers reference the live
@@ -147,12 +149,7 @@ export async function rollExpression(
     label,
     dataManager,
     groupContext = null,
-    broadcast = false,
-    // Whisper-style visibility (server/groups.py's create_group_log_entry):
-    // a non-empty list logs the roll but restricts who can see it. Lets the
-    // Dice Roller's Private mode force a log even from a plain Roll button,
-    // whose own default has never logged anything.
-    recipientIds = undefined,
+    post = false,
     dice = [],
     context = {},
     // false only from rollSystemMove, which wants ONE combined "roll +
@@ -183,8 +180,7 @@ export async function rollExpression(
       label,
       dataManager,
       groupContext,
-      broadcast,
-      recipientIds,
+      post,
       dice,
       context,
       targetValue,
@@ -221,30 +217,24 @@ export async function rollExpression(
       const prefix = label ? `${label}: ` : "";
       status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
     }
-    // Logs whenever EITHER broadcast is on OR explicit recipientIds were
-    // given — a Private roll has to log (self-only) even from a call site
-    // whose own `broadcast` default has never logged anything.
-    const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
-    if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
-      void dataManager
-        .createGroupLogEntry({
-          groupId: groupContext.groupId,
-          type: "roll",
-          message: "",
-          recipientIds: hasRecipients ? recipientIds : undefined,
-          payload: {
-            expression: trimmed,
-            notation: result.notation || trimmed,
-            total: result.total,
-            detailHtml: result.detailHtml || undefined,
-            detailText: result.detailText || undefined,
-            dice: Array.isArray(result.dice) && result.dice.length ? result.dice : undefined,
-            label: label || undefined,
-          },
-        })
-        .catch(() => {
-          // Best-effort — the roll itself already succeeded locally.
-        });
+    if (post && dataManager && groupContext?.groupId) {
+      const prefix = label ? `${label}: ` : "";
+      void postSystemMessage(dataManager, {
+        groupId: groupContext.groupId,
+        kind: "roll",
+        summary: `${prefix}${result.notation || trimmed} → ${result.total}`,
+        details: {
+          expression: trimmed,
+          notation: result.notation || trimmed,
+          total: result.total,
+          detailHtml: result.detailHtml || undefined,
+          detailText: result.detailText || undefined,
+          dice: Array.isArray(result.dice) && result.dice.length ? result.dice : undefined,
+          label: label || undefined,
+        },
+      }).catch(() => {
+        // Best-effort — the roll itself already succeeded locally.
+      });
     }
     return { expression: trimmed, total: result.total, result };
   } catch (error) {
@@ -377,32 +367,25 @@ async function tryOverlaySymbolPool(poolCounts, diceById, dataManager) {
 // `poolCounts`/`diceById` match the shapes workbench-character-view.js's
 // and dice-roller.js's own symbol-pool steppers already build. Returns the
 // same `{rolls, counts, net}` shape whether physically rolled or simulated.
-// `groupContext`/`broadcast`/`recipientIds`/`label`/`notation` mirror
-// rollExpression's own logging so the Dice Roller's mode switcher works
-// identically for a symbol pool as for a numeric roll. `notation` is
+// `groupContext`/`post`/`label`/`notation` mirror rollExpression's own
+// posting so the Dice Roller's mode switcher works identically for a symbol
+// pool as for a numeric roll. `notation` is
 // caller-supplied (needs each die's own display label); `resultSummary` is
 // computed here via formatSymbolPoolResult once the roll actually exists.
 export async function rollSymbolPoolExpression(
   poolCounts,
-  { diceById, dataManager, groupContext = null, broadcast = false, recipientIds = undefined, label = "", notation = "" } = {}
+  { diceById, dataManager, groupContext = null, post = false, label = "", notation = "" } = {}
 ) {
   const overlayResult = await tryOverlaySymbolPool(poolCounts, diceById, dataManager).catch(() => null);
   const rolled = overlayResult || rollSymbolDicePool(poolCounts, { diceById });
-  const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
-  if (rolled && (broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
-    void dataManager
-      .createGroupLogEntry({
-        groupId: groupContext.groupId,
-        type: "roll",
-        message: "",
-        recipientIds: hasRecipients ? recipientIds : undefined,
-        payload: {
-          label: label || undefined,
-          notation: notation || undefined,
-          total: formatSymbolPoolResult(rolled.net) || undefined,
-        },
-      })
-      .catch(() => {});
+  if (rolled && post && dataManager && groupContext?.groupId) {
+    const total = formatSymbolPoolResult(rolled.net) || "";
+    void postSystemMessage(dataManager, {
+      groupId: groupContext.groupId,
+      kind: "roll",
+      summary: [label, notation, total && `→ ${total}`].filter(Boolean).join(" "),
+      details: { label: label || undefined, notation: notation || undefined, total: total || undefined },
+    }).catch(() => {});
   }
   return rolled;
 }
@@ -663,15 +646,14 @@ function evaluateMoveVerdict(move, result, targetValue) {
 // field overrides it, so toasts read "Dexterity: 45" / "Dexterity:
 // Regular Success" rather than repeating the Move's generic name.
 //
-// `broadcast`/`groupContext` are handled HERE rather than passed into the
+// `post`/`groupContext` are handled HERE rather than passed into the
 // inner rollExpression call, which has no concept of a verdict and would
 // double-post. A caller with its own richer log-posting (Workbench's
 // recordGameLogRoll) should leave both unset and post the result itself.
 export async function rollSystemMove(
   move,
   {
-    broadcast = false,
-    recipientIds = undefined,
+    post = false,
     groupContext = null,
     dataManager,
     targetValue = undefined,
@@ -679,9 +661,9 @@ export async function rollSystemMove(
     ...rollOptions
   } = {}
 ) {
-  // recipientIds/targetValue destructured out so neither leaks into the
-  // inner call via ...rollOptions — passing recipientIds through would
-  // double-post (once from the inner call's own logging, once here).
+  // post/targetValue destructured out so neither leaks into the inner call
+  // via ...rollOptions — passing post through would double-post (once from
+  // the inner call's own posting, once here).
   // announce:false skips that inner call's own toast, since the combined
   // "roll + verdict" toast below is the only one that should show.
   const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label, announce: false });
@@ -698,29 +680,25 @@ export async function rollSystemMove(
     type: "success",
     timeout: 2600,
   });
-  const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
-  if ((broadcast || hasRecipients) && dataManager && groupContext?.groupId) {
-    void dataManager
-      .createGroupLogEntry({
-        groupId: groupContext.groupId,
-        type: "roll",
-        message: "",
-        recipientIds: hasRecipients ? recipientIds : undefined,
-        payload: {
-          expression: move.expression,
-          notation: rolled.result?.notation || move.expression,
-          total: rolled.total,
-          detailHtml: rolled.result?.detailHtml || undefined,
-          detailText: rolled.result?.detailText || undefined,
-          dice: Array.isArray(rolled.result?.dice) && rolled.result.dice.length ? rolled.result.dice : undefined,
-          label: label || undefined,
-          verdict: verdict?.label || undefined,
-          target: typeof targetValue === "number" ? targetValue : undefined,
-        },
-      })
-      .catch(() => {
-        // Best-effort — the roll already succeeded and was reported above.
-      });
+  if (post && dataManager && groupContext?.groupId) {
+    void postSystemMessage(dataManager, {
+      groupId: groupContext.groupId,
+      kind: "roll",
+      summary: `${prefix}${notation} → ${rolled.total}${verdictSuffix}`,
+      details: {
+        expression: move.expression,
+        notation,
+        total: rolled.total,
+        detailHtml: rolled.result?.detailHtml || undefined,
+        detailText: rolled.result?.detailText || undefined,
+        dice: Array.isArray(rolled.result?.dice) && rolled.result.dice.length ? rolled.result.dice : undefined,
+        label: label || undefined,
+        verdict: verdict?.label || undefined,
+        target: typeof targetValue === "number" ? targetValue : undefined,
+      },
+    }).catch(() => {
+      // Best-effort — the roll already succeeded and was reported above.
+    });
   }
   return { ...rolled, verdict };
 }

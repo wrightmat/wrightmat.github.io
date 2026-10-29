@@ -41,50 +41,15 @@
       <div data-app-shell-header></div>
       <div class="d-flex flex-grow-1 overflow-hidden">
         <div data-pane-content="left">
-          <div class="d-flex flex-column gap-3 overflow-hidden" style="min-height: 0;" data-help-browser>
+          <div class="d-flex flex-column gap-3 overflow-hidden" style="min-height: 0;">
             <div>
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-1">Help &amp; Documentation</h2>
-              <p class="fs-6 text-body-secondary mb-0">Search or browse how each tool and shared concept works. Pin the ones you want close at hand.</p>
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-1">Favorite Documentation</h2>
               <a class="small" href="common/docs.html" target="_blank" rel="noopener noreferrer">
                 Open the full documentation page &#8599;
               </a>
             </div>
-            <input
-              class="form-control form-control-sm"
-              type="search"
-              placeholder="Search topics…"
-              aria-label="Search help topics"
-              data-help-browser-search
-            />
-            <div class="d-none flex-column gap-1" data-help-browser-pinned></div>
-            <div class="d-flex flex-column gap-1 overflow-auto flex-grow-1" style="min-height: 0;" data-help-browser-list>
-              <p class="text-body-secondary small mb-0">Loading topics…</p>
-            </div>
-            <div class="d-none flex-column gap-2 border-top pt-3 overflow-auto" data-help-browser-detail>
-              <div class="d-flex align-items-center justify-content-between">
-                <button
-                  class="btn btn-sm btn-link p-0 align-self-start text-decoration-none d-inline-flex align-items-center gap-1"
-                  type="button"
-                  data-help-browser-back
-                >
-                  <span class="iconify" data-icon="tabler:arrow-left" aria-hidden="true"></span>
-                  Back to topics
-                </button>
-                <button
-                  class="btn btn-sm btn-link p-0 text-decoration-none"
-                  type="button"
-                  data-help-browser-detail-pin
-                  aria-label="Pin topic for quick reference"
-                  data-bs-toggle="tooltip"
-                  data-bs-title="Pin topic for quick reference"
-                >
-                  <span class="iconify" data-icon="tabler:pin" aria-hidden="true"></span>
-                </button>
-              </div>
-              <span class="badge text-bg-secondary align-self-start" data-help-browser-detail-category></span>
-              <h3 class="h6 mb-0" data-help-browser-detail-title></h3>
-              <p class="small text-body-secondary mb-0" data-help-browser-detail-summary></p>
-              <ul class="small ps-3 mb-0 d-flex flex-column gap-1" data-help-browser-detail-list></ul>
+            <div class="d-flex flex-column gap-1 overflow-auto flex-grow-1" style="min-height: 0;" data-doc-favorites>
+              <p class="text-body-secondary small mb-0">Loading…</p>
             </div>
           </div>
         </div>
@@ -99,7 +64,7 @@
                   aria-label="Dashboard title"
                   data-dashboard-title-input
                 />
-                <span class="align-middle" data-help-topic="dashboard.widgets" data-help-insert="replace"></span>
+                <span class="align-middle" data-help-topic="dashboard.basics" data-help-insert="replace"></span>
               </h2>
               <div class="d-flex align-items-center gap-2 flex-wrap">
                 <div
@@ -136,7 +101,10 @@
               <div class="btn-toolbar justify-content-center overflow-x-auto" role="toolbar" aria-label="Widget actions">
                 <div class="btn-group" role="group" aria-label="Widget actions" data-widget-inspector-toolbar-mount></div>
               </div>
-              <span class="badge text-bg-secondary align-self-start" data-widget-inspector-type></span>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge text-bg-secondary" data-widget-inspector-type></span>
+                <span class="align-middle" data-widget-inspector-help data-help-insert="replace"></span>
+              </div>
               <div class="d-flex flex-column gap-2" data-widget-inspector-body></div>
             </div>
           </div>

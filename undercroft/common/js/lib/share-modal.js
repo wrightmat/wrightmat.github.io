@@ -4,6 +4,7 @@
 // open the same modal for whatever record a Share button was clicked on,
 // without every caller re-implementing this ~500 lines of modal wiring.
 import { disableForm } from "./dom.js";
+import { initHelpSystem } from "./help.js";
 
 const MODAL_ID = "undercroft-share-modal";
 const SHARE_SPECIAL_ALL_USERS = "all-users";
@@ -20,7 +21,7 @@ function ensureModal() {
       <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
-            <h2 class="modal-title h5 mb-0" data-share-title>Manage access</h2>
+            <h2 class="modal-title h5 mb-0 d-flex align-items-center gap-2"><span data-share-title>Manage access</span><span class="align-middle" data-help-topic="accounts.sharing" data-help-insert="replace"></span></h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -125,6 +126,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
     throw new Error("initShareModal requires a DataManager instance");
   }
   const modalElement = ensureModal();
+  void initHelpSystem({ root: modalElement });
   const elements = {
     shareModalTitle: modalElement.querySelector("[data-share-title]"),
     shareLinkGroup: modalElement.querySelector("[data-share-link-group]"),

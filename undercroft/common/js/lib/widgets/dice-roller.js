@@ -25,41 +25,31 @@ import { preloadDiceOverlay } from "./dice-overlay.js";
 import { createIconButton, createModeToggleGroup } from "../ui-components.js";
 import { refreshTooltips, disposeTooltips } from "../tooltips.js";
 import { el, setElementVisible } from "../dom.js";
+import { describePostTarget } from "../chat/target.js";
 
 export function initDiceRollerWidget(container, { status, dataManager, groupContext = null } = {}) {
   if (!container) {
     return { destroy() {} };
   }
 
-  // Default/Broadcast/Private is purely additive: "Default" leaves every
-  // button's existing behavior untouched (a Move still auto-broadcasts, a
-  // plain roll stays local). "Broadcast" is GM-only (`access === "owner"`,
-  // same convention as Map's visibility toggle). "Private" is a self-whisper
-  // (recipientIds: [currentUserId]), reusing Game Log's whisper mechanism.
+  // "Post to thread" (the default) records every roll in the active chat
+  // thread. "Private" records nothing — the result is only shown here.
+  // "Broadcast" posts too and additionally animates the roll on everyone's
+  // screen; it's GM-only (`access === "owner"`, same convention as Map's
+  // visibility toggle).
   let mode = "default";
-  const currentUserId = dataManager?.session?.user?.id ?? null;
   const isGm = groupContext?.access === "owner";
 
-  // `defaultBroadcast` is whatever this specific action already does today
-  // (true for Moves, false for plain/symbol rolls) — preserved byte-for-byte
-  // when mode is "default".
-  function resolveVisibility(defaultBroadcast) {
-    if (mode === "private") {
-      return { broadcast: false, recipientIds: currentUserId != null ? [currentUserId] : undefined };
-    }
-    if (mode === "broadcast" && isGm) {
-      return { broadcast: true, recipientIds: undefined };
-    }
-    return { broadcast: defaultBroadcast, recipientIds: undefined };
+  function resolveVisibility() {
+    return { post: mode !== "private" };
   }
 
   // Fires the "show this on everyone's screen" broadcast after a successful
-  // roll (separate from resolveVisibility, which only controls the log
-  // entry's own visibility, since the result isn't known until the roll
-  // resolves). `dieResults` are the real physically-rolled per-die values —
-  // required, since dice-box can't force a remote roll onto a chosen result;
-  // a roll that fell through to the plain Math.random path has none and
-  // simply can't broadcast a visual reveal (the log entry still posts).
+  // roll (separate from resolveVisibility, since the result isn't known until
+  // the roll resolves). `dieResults` are the real physically-rolled per-die
+  // values — required, since dice-box can't force a remote roll onto a chosen
+  // result; a roll that fell through to the plain Math.random path has none
+  // and simply can't broadcast a visual reveal (the message still posts).
   function maybeBroadcastRoll(label, total, dieResults) {
     if (mode !== "broadcast" || !isGm || !dataManager || !groupContext?.groupId) return;
     if (!Array.isArray(dieResults) || !dieResults.length) return;
@@ -69,13 +59,20 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   }
 
   const modeToggleContainer = el("div");
+  const targetLine = el("div", "text-body-secondary small");
+  function renderTargetLine() {
+    const target = describePostTarget(dataManager);
+    targetLine.textContent =
+      mode === "private" ? "Not recorded — only you see the result." : target || "No active campaign — rolls aren't recorded.";
+  }
   function renderModeToggle() {
+    renderTargetLine();
     createModeToggleGroup({
       container: modeToggleContainer,
       ariaLabel: "Roll visibility",
       value: mode,
       options: [
-        { value: "default", label: "Default", icon: "tabler:dice-5" },
+        { value: "default", label: "Post to thread", icon: "tabler:dice-5", tooltip: "Record this roll in the active thread" },
         {
           value: "broadcast",
           label: "Broadcast",
@@ -83,7 +80,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
           disabled: !isGm,
           tooltip: isGm ? "Show this roll animating on everyone's screen" : "GM only",
         },
-        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this roll" },
+        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this roll — nothing is recorded" },
       ],
       onChange: (next) => {
         mode = next;
@@ -149,7 +146,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       dataManager,
       dice: activeDice,
       groupContext,
-      ...resolveVisibility(false),
+      ...resolveVisibility(),
     });
     if (!rolled) return;
     resultLine.textContent = rolled.isTable ? describeTableRow(rolled.row) : `${rolled.expression} → ${rolled.total}`;
@@ -225,16 +222,13 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
     setElementVisible(movesRow, activeSystemRolls.length > 0, "flex");
   }
 
-  // Broadcasts to the active campaign's Game Log via rollSystemMove's own
-  // built-in broadcast — a Move is a meaningful, named action the group
-  // cares about, unlike commitRoll's freeform roll, which never broadcasts.
   async function rollMove(move) {
     const rolled = await rollSystemMove(move, {
       status,
       dataManager,
       dice: activeDice,
       groupContext,
-      ...resolveVisibility(true),
+      ...resolveVisibility(),
     });
     if (!rolled || rolled.isTable) return;
     const verdictText = rolled.verdict?.label ? ` — ${rolled.verdict.label}` : "";
@@ -248,7 +242,6 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   const standardSection = el("div", "d-flex flex-column gap-2");
   standardSection.append(quickGrid, inputRow, movesRow);
 
-  // Never broadcast, matching this widget's own plain-expression rolls.
   const symbolLabel = el("span", "small text-body-secondary", "Dice Pool");
   const symbolSteppers = el("div", "d-flex flex-column gap-2");
   const symbolRollButton = el("button", "btn btn-outline-primary btn-sm align-self-start", "Roll pool");
@@ -318,11 +311,11 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       groupContext,
       label: "Dice Pool",
       notation,
-      ...resolveVisibility(false),
+      ...resolveVisibility(),
     });
     resultLine.textContent = formatSymbolPoolResult(rolled.net);
     // No visual reveal — symbol-dice faces don't fit dice-reveal.js's plain
-    // numeric tile shape; the log entry above still posts normally.
+    // numeric tile shape; the message above still posts normally.
   }
   symbolRollButton.addEventListener("click", executeSymbolPoolRoll);
 
@@ -365,12 +358,17 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   rollButton.addEventListener("click", () => void commitRoll());
 
   renderModeToggle();
-  wrap.append(modeToggleContainer, standardSection, symbolSection, resultLine, tableDatalist);
+  // The target changes when the campaign or the active thread does.
+  window.addEventListener("undercroft:active-thread-changed", renderTargetLine);
+  window.addEventListener("workbench:active-group-changed", renderTargetLine);
+  wrap.append(modeToggleContainer, targetLine, standardSection, symbolSection, resultLine, tableDatalist);
   container.appendChild(wrap);
   refreshTooltips(container);
 
   return {
     destroy() {
+      window.removeEventListener("undercroft:active-thread-changed", renderTargetLine);
+      window.removeEventListener("workbench:active-group-changed", renderTargetLine);
       disposeTooltips(container);
       container.innerHTML = "";
     },
@@ -393,7 +391,7 @@ export async function runDiceRollerMacroAction(action, { dataManager, groupConte
     status,
     dataManager,
     groupContext,
-    broadcast: Boolean(params.announce),
+    post: Boolean(params.announce),
   });
   if (!result) {
     throw new Error(`Unable to roll "${expression}".`);

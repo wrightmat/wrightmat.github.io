@@ -154,10 +154,9 @@ def list_shareable_targets(state: ServerState, content_type: str, user: Optional
 
 
 # Exported (not just used internally by share_with_user/share_with_group):
-# groups.py's create_group_log_entry reuses this too, for the same "spotlight
-# payload references a real record" check — a share and a spotlight log
-# entry should never be creatable against content that was never actually
-# saved.
+# spotlight.py reuses this too, for the same "spotlight payload references a
+# real record" check — a share and a spotlight should never be creatable
+# against content that was never actually saved.
 def content_exists(state: ServerState, content_type: str, content_id: str) -> bool:
     row = state.db.execute(
         "SELECT 1 FROM library_items WHERE kind = ? AND id = ?",

@@ -225,7 +225,7 @@
               <div class="d-flex justify-content-between align-items-center">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
                   <span>Template Properties</span>
-                  <span class="align-middle" data-help-topic="template.bindings" data-help-insert="replace"></span>
+                  <span class="align-middle" data-help-topic="workbench.templateProperties" data-help-insert="replace"></span>
                 </h2>
                 <span data-template-properties-toggle-mount></span>
               </div>
@@ -235,7 +235,7 @@
               <div class="d-flex justify-content-between align-items-center">
                 <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary d-flex align-items-center gap-2 mb-0">
                   <span>Inspector</span>
-                  <span class="align-middle" data-help-topic="template.properties" data-help-insert="replace"></span>
+                  <span class="align-middle" data-help-topic="workbench.inspector" data-help-insert="replace"></span>
                 </h2>
                 <span data-component-properties-toggle-mount></span>
               </div>
@@ -264,13 +264,13 @@
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex flex-column">
                   <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                    <span>Game Log</span>
-                    <span class="align-middle" data-help-topic="collaboration.shares" data-help-insert="replace"></span>
+                    <span>Group Chat</span>
+                    <span class="align-middle" data-help-topic="campaign.chat" data-help-insert="replace"></span>
                   </h2>
                   <span class="text-body-secondary small" data-game-log-group></span>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <div class="btn-group btn-group-sm" role="group" aria-label="Game log tools">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Group chat tools">
                     <button
                       class="btn btn-outline-secondary"
                       type="button"
@@ -278,19 +278,19 @@
                       data-bs-toggle="tooltip"
                       data-bs-placement="left"
                       data-bs-title="Refresh log"
-                      aria-label="Refresh game log"
+                      aria-label="Refresh group chat"
                     >
                       <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
-                      <span class="visually-hidden">Refresh game log</span>
+                      <span class="visually-hidden">Refresh group chat</span>
                     </button>
                   </div>
                   <span data-game-log-toggle-mount></span>
                 </div>
               </div>
-              <!-- Filled entirely by the shared Game Log widget
+              <!-- Filled entirely by the shared Group Chat widget
                    (common/js/lib/widgets/game-log.js's initGameLogWidget) —
                    it builds its own entries list + post form directly into
-                   this container, the same code the Dashboard's own Game Log
+                   this container, the same code the Dashboard's own Group Chat
                    widget uses, just mounted here instead of in a widget
                    card. -->
               <div class="d-flex flex-column gap-3" data-game-log-panel></div>
@@ -365,6 +365,7 @@
               </div>
             </form>
             <form class="needs-validation d-none" novalidate id="import-character-form" data-import-character-form data-add-character-panel="import">
+              <div class="d-flex justify-content-end"><span class="align-middle" data-help-topic="workbench.importCharacter" data-help-insert="replace"></span></div>
               <div data-import-stage-1 class="d-flex flex-column gap-3">
                 <div>
                   <div data-field-mount="import-character-mapping"></div>
@@ -397,6 +398,7 @@
                  navigation between steps instead of a single reveal.
                  Template select reuses the same field as Blank mode. -->
             <div class="d-none d-flex flex-column gap-3" data-add-character-panel="build" data-build-wizard>
+              <div class="d-flex justify-content-end"><span class="align-middle" data-help-topic="workbench.buildCharacter" data-help-insert="replace"></span></div>
               <!-- Only fields genuinely required to create ANY valid
                    Workbench character, for ANY System, live on this step —
                    it's the one step with no System-declared configuration

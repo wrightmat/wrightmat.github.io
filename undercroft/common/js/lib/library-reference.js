@@ -7,6 +7,7 @@
 // Every reference is resolved LAZILY — a chip renders from whatever
 // {kind, id, name} it's given with no fetch, and only looks up the real
 // record once the pointer actually lingers.
+import { fetchChatBacklinks, renderChatBacklinkList } from "./chat/backlinks.js";
 import { fetchKindEntrySummaries } from "./content-fetch.js";
 import { el } from "./dom.js";
 
@@ -306,7 +307,7 @@ function renderNotesPreview(text) {
   return container;
 }
 
-function renderPreviewContent(popover, { name, kind, kindLabel, formSummary, notes }) {
+function renderPreviewContent(popover, { name, kind, kindLabel, formSummary, notes, mentions = [] }) {
   popover.innerHTML = "";
   popover.appendChild(buildPreviewHeader(name, kind, kindLabel, formSummary));
   if (notes) {
@@ -317,6 +318,12 @@ function renderPreviewContent(popover, { name, kind, kindLabel, formSummary, not
     const empty = el("div", null, "No additional details.");
     empty.style.color = "var(--bs-secondary-color, #6c757d)";
     popover.appendChild(empty);
+  }
+  if (mentions.length) {
+    const heading = el("div", null, "Mentioned in chat");
+    heading.style.fontWeight = "600";
+    heading.style.marginTop = "0.5rem";
+    popover.append(heading, renderChatBacklinkList(mentions, { limit: 3, interactive: false }));
   }
 }
 
@@ -413,6 +420,7 @@ export function attachReferencePreview(button, { kind, id, name, dataManager, ki
     // A second await, only incurred for a Wonder with a `properties.form`
     // at all — empty string, no fetch, for every other kind.
     const formSummary = await resolveFormSummary(dataManager, record.payload);
+    const mentions = await fetchChatBacklinks(dataManager, kind, record.id || id);
     if (token !== requestToken || popover.style.display === "none") return; // superseded or dismissed mid-fetch
     renderPreviewContent(popover, {
       name: record.name || name || id,
@@ -420,6 +428,7 @@ export function attachReferencePreview(button, { kind, id, name, dataManager, ki
       kindLabel,
       formSummary,
       notes: resolveNotes(record.payload),
+      mentions,
     });
     positionPopover(popover, button.getBoundingClientRect());
   }

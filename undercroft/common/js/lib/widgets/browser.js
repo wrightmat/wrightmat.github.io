@@ -264,8 +264,8 @@ function initFollowerBrowser(container, { dataManager, groupId = "", shareToken 
   // popped-out second screen or unfocused background tab needs this to not stall (see reliable-interval.js).
   pollTimer = createReliableInterval(() => void refresh(), POLL_INTERVAL_MS);
   // The group log is the one live channel an inline-kind follower watches — matches clocks.js's own follower.
-  const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
-  liveStream.subscribe("group_log", () => void refresh());
+  const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["spotlight"], shareToken });
+  liveStream.subscribe("spotlight", () => void refresh());
 
   return {
     destroy() {

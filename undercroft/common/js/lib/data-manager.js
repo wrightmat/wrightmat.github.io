@@ -5,6 +5,7 @@ const DEFAULT_SESSION_KEY = "undercroft.session";
 // login state (and now the active campaign selection) has to be visible
 // identically across every tool without re-picking it per page.
 const DEFAULT_ACTIVE_GROUP_KEY = "undercroft.activeGroup";
+const DEFAULT_ACTIVE_THREAD_KEY = "undercroft.activeThread";
 const GLOBAL_SCOPE = typeof globalThis !== "undefined" ? globalThis : {};
 
 // Exported (not just used internally by getRequiredTier/hasWriteAccess below)
@@ -306,6 +307,41 @@ export class DataManager {
     }
     storage.setItem(DEFAULT_ACTIVE_GROUP_KEY, JSON.stringify(entry));
     this._emit("workbench:active-group-changed", entry);
+    return entry;
+  }
+
+  // The thread rolls and other system messages land in — shared across tools
+  // in this browser like the active campaign, and only meaningful for the
+  // active campaign (a stale group's thread reads as "none", so callers fall
+  // back to the group's default thread).
+  getActiveThread() {
+    try {
+      const parsed = safeJsonParse(this._requireStorage().getItem(DEFAULT_ACTIVE_THREAD_KEY), null);
+      const group = this.getActiveGroup();
+      if (!parsed || !parsed.threadId || !group || parsed.groupId !== group.groupId) {
+        return null;
+      }
+      return { groupId: parsed.groupId, threadId: String(parsed.threadId), label: parsed.label || "" };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  setActiveThread(groupId, threadId, label = "") {
+    const storage = this._requireStorage();
+    const current = this.getActiveThread();
+    if (!groupId || !threadId) {
+      if (!current) return null;
+      storage.removeItem(DEFAULT_ACTIVE_THREAD_KEY);
+      this._emit("undercroft:active-thread-changed", { groupId: null, threadId: null, label: "" });
+      return null;
+    }
+    const entry = { groupId: String(groupId), threadId: String(threadId), label: label || "" };
+    if (current && current.threadId === entry.threadId && current.label === entry.label) {
+      return current;
+    }
+    storage.setItem(DEFAULT_ACTIVE_THREAD_KEY, JSON.stringify(entry));
+    this._emit("undercroft:active-thread-changed", entry);
     return entry;
   }
 
@@ -1440,67 +1476,279 @@ export class DataManager {
     return payload;
   }
 
-  // `types` (optional) restricts the limit-bounded server query to specific
-  // entry types instead of the group's raw, most-recent-N-of-everything log
-  // — spotlight.js's own resolution passes the three spotlight-related
-  // types so ordinary chat/roll entries can't crowd an unrelated widget's
-  // still-active spotlight entry out of the fetched window. Omit for the
-  // Game Log widget's read, which wants everything, unfiltered.
-  async getGroupLog({ groupId = "", shareToken = "", limit = undefined, types = undefined } = {}) {
-    const token = shareToken ? String(shareToken) : "";
+  // --- Group chat (channels -> threads -> messages) ---------------------------
+  // A share-link visitor passes `shareToken` instead of relying on the path's
+  // group id ("-" is a placeholder; the token decides the group server-side).
+
+  _chatPath(groupId, shareToken, suffix) {
+    if (!groupId && !shareToken) {
+      throw new Error("Group id is required for group chat");
+    }
+    const base = `/groups/${encodeURIComponent(groupId || "-")}/chat${suffix}`;
+    return shareToken ? `${base}${base.includes("?") ? "&" : "?"}share=${encodeURIComponent(shareToken)}` : base;
+  }
+
+  async getChatOverview({ groupId = "", shareToken = "" } = {}) {
+    return this._request(this._chatPath(groupId, shareToken, ""), { method: "GET", auth: !shareToken || this.isAuthenticated() });
+  }
+
+  async getChatMessages({ groupId = "", shareToken = "", threadId, before, after, limit } = {}) {
+    if (!threadId) {
+      throw new Error("Thread id is required");
+    }
     const params = new URLSearchParams();
-    if (limit !== undefined && limit !== null) {
-      params.set("limit", String(limit));
-    }
-    if (Array.isArray(types) && types.length) {
-      params.set("types", types.join(","));
-    }
+    if (before) params.set("before", String(before));
+    if (after) params.set("after", String(after));
+    if (limit) params.set("limit", String(limit));
     const query = params.toString() ? `?${params.toString()}` : "";
-    if (token) {
-      return this._request(`/groups/share/${encodeURIComponent(token)}/log${query}`, {
-        method: "GET",
-        auth: false,
-      });
-    }
-    if (!groupId) {
-      throw new Error("Group id is required to load the game log");
-    }
-    return this._request(`/groups/${encodeURIComponent(groupId)}/log${query}`, {
+    return this._request(this._chatPath(groupId, shareToken, `/threads/${encodeURIComponent(threadId)}/messages${query}`), {
       method: "GET",
+      auth: !shareToken || this.isAuthenticated(),
+    });
+  }
+
+  // `payload` is only for system messages (rolls, shop lines): it must carry a
+  // `kind` and a human-readable `summary`. `refs` are the mention/wikilink/
+  // message references the composer inserted into `body`.
+  async postChatMessage({ groupId = "", shareToken = "", threadId, body = "", payload = undefined, voice = undefined, refs = undefined } = {}) {
+    if (!threadId) {
+      throw new Error("Thread id is required to post");
+    }
+    // A share-link visitor has no group id of their own; the token in the body decides the group.
+    return this._request(this._chatPath(groupId || (shareToken ? "-" : ""), "", `/threads/${encodeURIComponent(threadId)}/messages`), {
+      method: "POST",
+      body: { body, payload, voice, refs, share: shareToken || undefined },
       auth: true,
     });
   }
 
-  async createGroupLogEntry({
-    groupId = "",
-    shareToken = "",
-    type = "message",
-    message = "",
-    payload = undefined,
-    recipientIds = undefined,
-    inCharacter = undefined,
-  } = {}) {
-    const body = { type, message, payload, recipientIds, inCharacter };
-    const token = shareToken ? String(shareToken) : "";
-    if (token) {
-      return this._request(`/groups/share/${encodeURIComponent(token)}/log`, {
-        method: "POST",
-        body,
-        auth: true,
-      });
-    }
-    if (!groupId) {
-      throw new Error("Group id is required to post to the game log");
-    }
-    return this._request(`/groups/${encodeURIComponent(groupId)}/log`, {
+  async editChatMessage({ groupId, messageId, body, refs = undefined } = {}) {
+    return this._request(this._chatPath(groupId, "", `/messages/${encodeURIComponent(messageId)}/edit`), {
       method: "POST",
-      body,
+      body: { body, refs },
       auth: true,
     });
+  }
+
+  async deleteChatMessage({ groupId, messageId } = {}) {
+    return this._request(this._chatPath(groupId, "", `/messages/${encodeURIComponent(messageId)}/delete`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  async toggleChatReaction({ groupId, messageId, emoji } = {}) {
+    return this._request(this._chatPath(groupId, "", `/messages/${encodeURIComponent(messageId)}/reactions`), {
+      method: "POST",
+      body: { emoji },
+      auth: true,
+    });
+  }
+
+  async markChatThreadRead({ groupId, threadId } = {}) {
+    return this._request(this._chatPath(groupId, "", `/threads/${encodeURIComponent(threadId)}/read`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  async createChatChannel({ groupId, name, category = "", linked = undefined, mode = undefined, threadTitle = "" } = {}) {
+    return this._request(this._chatPath(groupId, "", "/channels"), {
+      method: "POST",
+      body: { name, category, linked, mode, threadTitle },
+      auth: true,
+    });
+  }
+
+  async updateChatChannel({ groupId, channelId, fields = {} } = {}) {
+    return this._request(this._chatPath(groupId, "", `/channels/${encodeURIComponent(channelId)}`), {
+      method: "POST",
+      body: fields,
+      auth: true,
+    });
+  }
+
+  async createChatThread({ groupId, channelId, title } = {}) {
+    return this._request(this._chatPath(groupId, "", `/channels/${encodeURIComponent(channelId)}/threads`), {
+      method: "POST",
+      body: { title },
+      auth: true,
+    });
+  }
+
+  async archiveChatThread({ groupId, threadId } = {}) {
+    return this._request(this._chatPath(groupId, "", `/threads/${encodeURIComponent(threadId)}/archive`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  // `[[msg:ID]]` targets for Repository and the reply preview; signed-in only
+  // (an anonymous visitor just gets unresolved links).
+  async resolveChatMessages(ids = []) {
+    const list = [...new Set(ids.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0))];
+    if (!list.length) return { messages: {} };
+    return this._request(`/chat/messages/resolve?ids=${list.join(",")}`, { method: "GET", auth: true });
+  }
+
+  async getBacklinks(kind, id) {
+    if (!kind || !id) {
+      throw new Error("kind and id are required");
+    }
+    return this._request(`/backlinks/${encodeURIComponent(kind)}/${encodeURIComponent(id)}`, { method: "GET", auth: true });
+  }
+
+  async sendDirectMessage({ groupId, recipientIds, body } = {}) {
+    if (!groupId) {
+      throw new Error("Group id is required to send a message");
+    }
+    return this._request(`/groups/${encodeURIComponent(groupId)}/direct-messages`, {
+      method: "POST",
+      body: { recipientIds, body },
+      auth: true,
+    });
+  }
+
+  async getInbox({ unreadOnly = false } = {}) {
+    return this._request(`/inbox${unreadOnly ? "?unread=1" : ""}`, { method: "GET", auth: true });
+  }
+
+  async getInboxCount() {
+    return this._request("/inbox/count", { method: "GET", auth: true });
+  }
+
+  // --- Scheduled sessions (server/sessions.py). Times are UTC ISO strings. ---
+
+  _sessionsPath(groupId, suffix = "") {
+    if (!groupId) {
+      throw new Error("Group id is required for sessions");
+    }
+    return `/groups/${encodeURIComponent(groupId)}/sessions${suffix}`;
+  }
+
+  async getGroupSessions(groupId) {
+    return this._request(this._sessionsPath(groupId), { method: "GET", auth: true });
+  }
+
+  async createGroupSession(groupId, settings) {
+    return this._request(this._sessionsPath(groupId), { method: "POST", body: settings, auth: true });
+  }
+
+  async updateGroupSession(groupId, sessionId, settings) {
+    return this._request(this._sessionsPath(groupId, `/${encodeURIComponent(sessionId)}`), {
+      method: "POST",
+      body: settings,
+      auth: true,
+    });
+  }
+
+  async endGroupSession(groupId, sessionId) {
+    return this._request(this._sessionsPath(groupId, `/${encodeURIComponent(sessionId)}/end`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  // Removes the session, all its dates and their history (unlike endGroupSession).
+  async deleteGroupSession(groupId, sessionId) {
+    return this._request(this._sessionsPath(groupId, `/${encodeURIComponent(sessionId)}/delete`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  async previewSessionSlots(groupId, settings) {
+    return this._request(this._sessionsPath(groupId, "/preview"), { method: "POST", body: settings, auth: true });
+  }
+
+  // Creates a not-yet-announced date of a series early, so it can be edited or cancelled alone.
+  async ensureSessionOccurrence(groupId, sessionId, slotKey) {
+    return this._request(this._sessionsPath(groupId, `/${encodeURIComponent(sessionId)}/slots`), {
+      method: "POST",
+      body: { slotKey },
+      auth: true,
+    });
+  }
+
+  _occurrencePath(groupId, occurrenceId, suffix = "") {
+    return `/groups/${encodeURIComponent(groupId)}/occurrences/${encodeURIComponent(occurrenceId)}${suffix}`;
+  }
+
+  async updateSessionOccurrence(groupId, occurrenceId, settings) {
+    return this._request(this._occurrencePath(groupId, occurrenceId), { method: "POST", body: settings, auth: true });
+  }
+
+  async cancelSessionOccurrence(groupId, occurrenceId) {
+    return this._request(this._occurrencePath(groupId, occurrenceId, "/cancel"), { method: "POST", body: {}, auth: true });
+  }
+
+  async setSessionOccurrenceHistory(groupId, occurrenceId, history) {
+    return this._request(this._occurrencePath(groupId, occurrenceId, "/history"), {
+      method: "POST",
+      body: history,
+      auth: true,
+    });
+  }
+
+  async getSessionOccurrence(occurrenceId) {
+    return this._request(`/sessions/occurrences/${encodeURIComponent(occurrenceId)}`, { method: "GET", auth: true });
+  }
+
+  async rsvpSessionOccurrence(occurrenceId, response) {
+    return this._request(`/sessions/occurrences/${encodeURIComponent(occurrenceId)}/rsvp`, {
+      method: "POST",
+      body: { response },
+      auth: true,
+    });
+  }
+
+  // The GM answering for a player; `response` null clears their answer.
+  async rsvpSessionOccurrenceFor(occurrenceId, userId, response) {
+    return this._request(`/sessions/occurrences/${encodeURIComponent(occurrenceId)}/rsvp-for`, {
+      method: "POST",
+      body: { userId, response },
+      auth: true,
+    });
+  }
+
+  async declineSessionRange(groupId, from, to) {
+    return this._request("/sessions/decline-range", { method: "POST", body: { groupId, from, to }, auth: true });
+  }
+
+  // React to the message behind an Inbox item: a mention or reply reacts to the
+  // chat message itself, a direct message keeps its own reactions.
+  async toggleInboxReaction(itemId, emoji) {
+    return this._request("/inbox/reactions", { method: "POST", body: { itemId, emoji }, auth: true });
+  }
+
+  async deleteInboxItems(ids = []) {
+    return this._request("/inbox/delete", { method: "POST", body: { ids }, auth: true });
+  }
+
+  async setGroupMemberActive({ groupId, characterId, active } = {}) {
+    if (!groupId || !characterId) {
+      throw new Error("groupId and characterId are required");
+    }
+    const payload = await this._request(`/groups/${encodeURIComponent(groupId)}/members/active`, {
+      method: "POST",
+      body: { characterId, active: Boolean(active) },
+      auth: true,
+    });
+    this._groupCache = null;
+    return payload;
+  }
+
+  async markInboxRead({ ids = undefined, all = false } = {}) {
+    return this._request("/inbox/read", { method: "POST", body: { ids, all }, auth: true });
   }
 
   // A transient pointer broadcast (Orrery's click-to-ping map tool) —
-  // deliberately not createGroupLogEntry: a ping never touches the
+  // deliberately not a chat message: a ping never touches the
   // database/group log at all, it only exists in-memory server-side long
   // enough for the live SSE stream's "ping" kind to relay it to subscribers.
   async postMapPing({ groupId = "", shareToken = "", position } = {}) {
@@ -1568,16 +1816,37 @@ export class DataManager {
     });
   }
 
+  // What the group currently has "shown to the table": {items: [{kind, id,
+  // templateId?, data?, postedAt}], version}. A share-link visitor reads it
+  // anonymously.
+  async getGroupSpotlights({ groupId = "", shareToken = "" } = {}) {
+    if (!groupId && !shareToken) {
+      throw new Error("groupId (or shareToken) is required");
+    }
+    const query = shareToken ? `?share=${encodeURIComponent(shareToken)}` : "";
+    return this._request(`/groups/${encodeURIComponent(groupId || "-")}/spotlight${query}`, {
+      method: "GET",
+      auth: !shareToken || this.isAuthenticated(),
+    });
+  }
+
+  async _postSpotlight({ groupId = "", shareToken = "", ...body } = {}) {
+    return this._request(`/groups/${encodeURIComponent(groupId || "-")}/spotlight`, {
+      method: "POST",
+      body: { ...body, share: shareToken || undefined },
+      auth: true,
+    });
+  }
+
   // "Show to table": one call does both halves — grant the group view
   // access (share_with_group is an idempotent upsert, safe on every call),
-  // then post the spotlight log entry the group's share-link page polls
-  // for. Also shares the template (if any): a private, GM-authored
-  // template needs the same visibility grant, or an anonymous viewer's card
-  // render 403s on the template fetch even though the entity fetch succeeds.
+  // then record the spotlight. Also shares the template (if any): a private,
+  // GM-authored template needs the same visibility grant, or an anonymous
+  // viewer's card render 403s on the template fetch even though the entity
+  // fetch succeeds.
   // `skipShare` — for a widget type with no real Library record behind it
-  // (Dashboard's Browser/Clock widgets, whose content lives entirely in
-  // this log entry's `data` payload) — nothing to grant view permission on,
-  // so this skips straight to posting the log entry.
+  // (Dashboard's Browser/Clock widgets, whose content lives entirely in the
+  // spotlight's `data` payload) — nothing to grant view permission on.
   // `data` — the inline payload for those same kinds. Ignored by the server
   // for any kind with a real Library record.
   async spotlightToGroup({ groupId, contentType, contentId, templateId = "", skipShare = false, data = undefined } = {}) {
@@ -1597,10 +1866,13 @@ export class DataManager {
         await this.shareWithGroup({ contentType: "templates", contentId: templateId, groupId, permissions: "view" });
       }
     }
-    const result = await this.createGroupLogEntry({
+    const result = await this._postSpotlight({
       groupId,
-      type: "spotlight",
-      payload: { kind: contentType, id: contentId, templateId: templateId || undefined, data },
+      action: "show",
+      kind: contentType,
+      id: contentId,
+      templateId: templateId || undefined,
+      data,
     });
     // Lets anything watching this browser tab's own actions (dashboard.js's
     // spotlight panel) refresh immediately instead of waiting on the
@@ -1611,34 +1883,27 @@ export class DataManager {
   }
 
   // Refreshes the `data` payload on an already-shown inline-kind spotlight
-  // (a clock tick, a Browser URL edit) without re-announcing it as a new
-  // "show to table" — a fresh `spotlight` entry would re-trigger every
-  // other viewer's accept-prompt/Game Log row on every single edit.
-  // Followers treat this the same as `spotlight` for "is this still active"
-  // purposes; only `spotlight-clear` ends it. Only valid for the server's
-  // inline-spotlight kinds — rejected for anything else.
+  // (a clock tick, a Browser URL edit); a no-op once it's been cleared. Only
+  // valid for the server's inline-spotlight kinds (and an encounter's hidden
+  // flag) — rejected for anything else.
   async updateSpotlightData({ groupId, shareToken = "", kind, id, data } = {}) {
     if ((!groupId && !shareToken) || !kind || !id) {
       throw new Error("groupId (or shareToken), kind, and id are required");
     }
-    return this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-update", payload: { kind, id, data } });
+    return this._postSpotlight({ groupId, shareToken, action: "update", kind, id, data });
   }
 
-  // The other half of "show to table" — posts a `spotlight-clear` entry, so
-  // anything reading "what's currently shown" sees nothing again, without
-  // deleting log history. `kind` + `id` scope the clear to just that one
-  // instance (a widget's eye-icon toggling off shouldn't affect another
-  // instance of the same kind shown alongside it). `id` alone is ignored
-  // (nothing to disambiguate by); `kind` alone clears every instance of that
-  // kind; omitting both clears whatever's currently shown, of any kind
-  // (auth-ui.js's global "stop showing to the table" header action).
+  // The other half of "show to table". `kind` + `id` scope the clear to just
+  // that one instance (a widget's eye-icon toggling off shouldn't affect
+  // another instance of the same kind shown alongside it); `kind` alone
+  // clears every instance of that kind; omitting both clears whatever's
+  // currently shown, of any kind (auth-ui.js's global "stop showing to the
+  // table" header action).
   async clearSpotlight({ groupId, shareToken = "", kind = "", id = "" } = {}) {
     if (!groupId && !shareToken) {
       throw new Error("groupId is required");
     }
-    let payload;
-    if (kind) payload = id ? { kind, id } : { kind };
-    const result = await this.createGroupLogEntry({ groupId, shareToken, type: "spotlight-clear", payload });
+    const result = await this._postSpotlight({ groupId, shareToken, action: "clear", kind, id });
     // See spotlightToGroup's own identical comment — same instant, in-page
     // "this tab's own action just happened" signal, this time for turning
     // something off.

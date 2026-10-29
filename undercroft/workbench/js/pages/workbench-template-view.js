@@ -390,7 +390,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   // `actions`.
   const paletteSection = createFullCollapsibleSection({
     label: "Palette",
-    helpTopic: "template.library",
+    helpTopic: "workbench.templateComponents",
     collapsed: true,
     actions: [{ icon: "tabler:eraser", label: "Clear canvas", variant: "outline-danger", onClick: () => clearCanvas() }],
     content: elements.palettePanel,

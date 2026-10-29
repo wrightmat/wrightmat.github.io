@@ -757,10 +757,10 @@ export function initWledWidget(
     followLiveStream = connectLiveStream({
       dataManager,
       groupId: groupContext.groupId,
-      kinds: ["group_log"],
+      kinds: ["spotlight"],
       shareToken: groupContext.shareToken,
     });
-    followLiveStream.subscribe("group_log", () => void refreshFollow());
+    followLiveStream.subscribe("spotlight", () => void refreshFollow());
   }
 
   // Started/stopped whenever haLivePollEnabled or the selected device

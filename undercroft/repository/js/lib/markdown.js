@@ -110,6 +110,21 @@ function ensureNonEmptyTaskContent(rawBody) {
     .join("\n");
 }
 
+// A trailing ` ^blockId` on a line of prose (how a chat archive tags each
+// message) becomes an invisible anchor the viewer can scroll to. A line that is
+// only `^blockId` is a named-table marker (journal-tables.js) and is left for
+// stripNamedTableMarkers. data-* survives DOMPurify; an id attribute may not.
+const TRAILING_BLOCK_ID = /^(.*\S)[ \t]+\^([A-Za-z0-9_-]+)[ \t]*$/;
+function convertBlockIdMarkers(rawBody) {
+  return String(rawBody || "")
+    .split("\n")
+    .map((line) => {
+      const match = line.includes("`") ? null : TRAILING_BLOCK_ID.exec(line);
+      return match ? `${match[1]} <span data-block-id="${match[2]}"></span>` : line;
+    })
+    .join("\n");
+}
+
 function rewriteWikiLinks(rawBody, resolveWikiLink) {
   return String(rawBody || "")
     .split(CODE_SPAN_SPLIT_PATTERN)
@@ -122,7 +137,10 @@ function rewriteWikiLinksInSegment(rawBody, resolveWikiLink) {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return match;
     const resolved = typeof resolveWikiLink === "function" ? resolveWikiLink(trimmedTitle) : null;
-    const label = (aliasLabel || trimmedTitle).trim();
+    // [[msg:ID]] is a chat-message reference; read as plain text it would be
+    // the cryptic "msg:42".
+    const messageRef = /^msg:(\d+)$/i.exec(trimmedTitle);
+    const label = (aliasLabel || (messageRef ? `Message #${messageRef[1]}` : trimmedTitle)).trim();
     // A heading anchor only makes sense for a link that actually resolves —
     // a not-yet-created page has nothing to jump to. The link's own explicit
     // `#Heading` always wins; `resolved.heading` is a resolver supplying an
@@ -484,7 +502,9 @@ export function renderMarkdown(
   } = {}
 ) {
   const container = document.createElement("div");
-  const withLinks = ensureNonEmptyTaskContent(stripNamedTableMarkers(rewriteWikiLinks(rawBody, resolveWikiLink)));
+  const withLinks = ensureNonEmptyTaskContent(
+    convertBlockIdMarkers(stripNamedTableMarkers(rewriteWikiLinks(rawBody, resolveWikiLink)))
+  );
   const marked = window.marked;
   const DOMPurify = window.DOMPurify;
   if (!marked || !DOMPurify) {

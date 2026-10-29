@@ -244,90 +244,141 @@ body[data-theme="dark"] .hover-lift:hover {
   }
 }
 
-/* Game Log's per-entry leading type icon (game-log.js) — small, inline,
-   distinct sizing from the panel's own larger floating icons above even
-   though both use the same --mine/--available state classes and the same
-   underlying Iconify token per kind. */
-.gamelog-entry-icon {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
-  flex-shrink: 0;
-  border: 1px solid var(--bs-border-color);
-  background: var(--bs-tertiary-bg);
-  color: var(--bs-body-color);
+/* Group chat (chat/*.js, widgets/game-log.js). The scroll area is capped so a
+   long thread scrolls inside its widget instead of stretching the card. */
+.chat-scroll {
+  min-height: 6rem;
+  overflow-y: auto;
 }
 
-.gamelog-entry-icon.gamelog-entry-icon--clickable {
-  cursor: pointer;
+.chat-scroll:not(.chat-scroll--fill) {
+  max-height: 28rem;
 }
 
-.gamelog-entry-icon.spotlight-panel-icon--mine,
-.gamelog-entry-icon.spotlight-panel-icon--available {
-  box-shadow: none;
+/* In a fixed-height card the list takes whatever the composer doesn't. */
+.chat-scroll--fill {
+  flex: 1 1 0;
+  min-height: 8rem;
 }
 
-.gamelog-entry-icon--muted {
-  opacity: 0.5;
-}
-
-.gamelog-entry-meta {
-  font-size: 0.7rem;
-  white-space: nowrap;
-}
-
-/* Confirmed real bug this fixes: a long unbroken URL (posted as a message,
-   or a spotlighted record's own long title/link) forced the Game Log panel
-   wider than its normal layout and produced a horizontal scrollbar instead
-   of wrapping. Two rules are both required — neither alone fixes it:
-   .gamelog-entry-body/.gamelog-entry-text reset Bootstrap's flex-item
-   default `min-width: auto` (flex-grow-1 alone does NOT reset this) so the
-   row can actually shrink to its container's width; overflow-wrap then lets
-   a long token (a URL has nowhere else to break) wrap mid-word once it's
-   been allowed to shrink that far. Applies to the message text and any link
-   inside it (a spotlight's own linked title, or a plain URL typed into a
-   chat message). */
-.gamelog-entry-body,
-.gamelog-entry-text {
+/* flex children default to min-width:auto, so without this a long unbroken
+   URL stretches the row wider than the widget instead of wrapping. */
+.chat-message-body {
   min-width: 0;
 }
 
-/* A whisper that @mentions this viewer, arrived since they last had the log
-   open (game-log.js's own mentionSeenWatermark) — the notification the user
-   asked for, surfaced directly in the log itself rather than a separate
-   mechanism. Left border + tint only, no layout shift (row keeps its own
-   existing padding/border-bottom untouched). */
-.gamelog-entry--unread-mention {
-  background: rgba(var(--bs-warning-rgb), 0.12);
-  border-left: 3px solid var(--bs-warning);
-  padding-left: 0.5rem;
-  margin-left: -0.5rem;
-}
-
-.gamelog-entry-text,
-.gamelog-entry-text a {
+.chat-message-text {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-/* @mention autocomplete's own suggestion list (game-log.js) — anchored to
-   the compose form's own `position-relative`, not the text cursor itself
-   (a plain <input> has no per-character caret position to hook into without
-   a much heavier contenteditable/measurement approach), so it always drops
-   directly below the whole input row. */
-.gamelog-mention-dropdown {
+.chat-message-icon {
+  width: 1.5rem;
+  text-align: center;
+}
+
+.chat-message-side {
+  max-width: 55%;
+}
+
+.chat-message-actions {
+  opacity: 0.4;
+}
+
+/* Slightly larger than a compact button's default so they're easier to hit. */
+.chat-message-actions .btn {
+  font-size: 1.05rem;
+}
+
+/* A reaction is a quiet outlined chip, not a filled button; one you've added
+   just gets a firmer outline. */
+.chat-reaction {
+  background: transparent;
+  border: 1px solid var(--bs-border-color);
+  color: inherit;
+  line-height: 1.4;
+}
+
+.chat-reaction:hover:not(:disabled) {
+  border-color: var(--bs-secondary-color);
+}
+
+.chat-reaction--mine {
+  border-color: var(--bs-secondary-color);
+}
+
+.chat-message:hover .chat-message-actions,
+.chat-message-actions:focus-within {
+  opacity: 1;
+}
+
+.chat-reply-quote {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-voice-select {
+  min-width: 0;
+}
+
+/* Autocomplete lists drop below the composer, anchored to its
+   position-relative wrapper. */
+.chat-dropdown {
+  max-height: 10rem;
+  overflow-y: auto;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.chat-mention-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   z-index: 20;
-  max-height: 10rem;
-  overflow-y: auto;
-  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+/* Material-style floating action button, pinned to the bottom of its pane. */
+.chat-fab {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+/* Room so the floating button never covers the last row. */
+/* The Inbox reaction row sits at the bottom left of the message pane,
+   clear of the floating buttons on the right. */
+.chat-pane-reactions {
+  position: absolute;
+  left: 1rem;
+  right: 13rem;
+  bottom: 1rem;
+  z-index: 2;
+}
+
+/* Further buttons sit to the left of the first. */
+.chat-fab--second {
+  right: 5rem;
+}
+
+.chat-fab--third {
+  right: 9rem;
+}
+
+.chat-fab-clearance {
+  padding-bottom: 5rem !important;
+}
+
+.chat-unread-badge {
+  font-size: 0.7rem;
 }
 
 .status-root > * {
@@ -2516,4 +2567,10 @@ a.undercroft-tool-card:focus-visible {
 
 .cycle-toggle-btn .iconify {
   font-size: 1rem;
+}
+
+/* The hover preview of a favorite documentation topic holds a whole topic, so
+   it is wider than a one-line tooltip. */
+.doc-preview-tooltip {
+  --bs-tooltip-max-width: 26rem;
 }

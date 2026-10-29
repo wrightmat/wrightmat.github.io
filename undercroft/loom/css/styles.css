@@ -105,3 +105,13 @@ pre[data-mapped-preview] {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* A clickable session row in the Groups tab's Sessions list; Bootstrap has no
+   hover-background utility, and the theme tokens keep it right in dark mode. */
+.loom-session-row {
+  transition: background-color 0.12s ease;
+}
+
+.loom-session-row:hover {
+  background-color: var(--bs-tertiary-bg);
+}

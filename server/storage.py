@@ -126,25 +126,12 @@ def init_storage_db(state: ServerState) -> None:
             content_type TEXT NOT NULL,
             content_id TEXT NOT NULL,
             added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            active INTEGER,
             PRIMARY KEY (group_id, content_type, content_id)
         )
         """
     )
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS group_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            group_id TEXT NOT NULL,
-            entry_type TEXT NOT NULL,
-            author_id INTEGER,
-            author_name TEXT,
-            message TEXT,
-            payload TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
-        )
-        """
-    )
+    _create_chat_tables(conn)
     # Account-tied third-party integration credentials (currently: Home
     # Assistant's own base_url + access token) — deliberately its own table
     # rather than a key in users.settings (see integrations.py's own header
@@ -235,8 +222,8 @@ def init_storage_db(state: ServerState) -> None:
     _migrate_deployment_secrets_table_add_model(conn)
     # Group is being migrated onto the same generic library_items/flat-JSON
     # model System/Character/Map already use (see _migrate_groups_to_library_
-    # items's own comment) — group_members/shares/group_logs stay relational
-    # (they're membership facts and an event log, not part of Group's own
+    # items's own comment) — group_members/shares stay relational
+    # (they're membership facts, not part of Group's own
     # document), but their FK against the old bespoke `groups` table has to
     # go, since library_items' primary key is the composite (kind, id), not
     # a bare unique id an FK could point at. SQLite can't ALTER TABLE DROP a
@@ -249,15 +236,9 @@ def init_storage_db(state: ServerState) -> None:
     # away, and so turning enforcement on later wouldn't break silently.
     _migrate_shares_drop_groups_fk(conn)
     _migrate_group_members_drop_groups_fk(conn)
-    _migrate_group_logs_drop_groups_fk(conn)
-    # Must run AFTER _migrate_group_logs_drop_groups_fk, never before: that
-    # migration rebuilds group_logs from a hardcoded old column list (rename
-    # to _legacy_group_logs, recreate, copy just those columns, drop) on any
-    # database that still carries the old FK — running this addition first
-    # would have its new columns silently discarded by that rebuild the very
-    # next line. Running after means it always operates on group_logs' final,
-    # stable shape.
-    _migrate_group_logs_table_add_whisper_columns(conn)
+    _migrate_group_members_add_active(conn)
+    _migrate_inbox_items_for_sessions(conn)
+    _create_session_tables(conn)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(session_token)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_shares_content ON shares(content_type, content_id)")
@@ -271,12 +252,6 @@ def init_storage_db(state: ServerState) -> None:
     )
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_group_members_content ON group_members(content_type, content_id)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_group_logs_group ON group_logs(group_id, id)"
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_group_logs_created ON group_logs(group_id, created_at)"
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_owner ON library_items(kind, owner_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_library_items_kind_public ON library_items(kind, is_public)")
@@ -311,6 +286,10 @@ def init_storage_db(state: ServerState) -> None:
     _backfill_flat_library_kinds(state)
     _drop_dead_legacy_tables(conn)
     conn.commit()
+    # Local import: chat.py imports groups.py, which imports storage lazily.
+    from . import chat
+
+    chat.ensure_default_chat_for_all_groups(state)
 
 
 def _groups_table_exists(conn: sqlite3.Connection) -> bool:
@@ -355,22 +334,296 @@ def _migrate_groups_table_add_setting_id(conn: sqlite3.Connection) -> None:
     conn.execute("ALTER TABLE groups ADD COLUMN setting_id TEXT")
 
 
-def _migrate_group_logs_table_add_whisper_columns(conn: sqlite3.Connection) -> None:
-    # Idempotent add-column migration for the Game Log's whisper/@mention and
-    # in-character support — same nullable-column-needs-no-rebuild reasoning
-    # as _migrate_groups_table_add_system_id above. Unlike that one, no
-    # _groups_table_exists guard is needed: group_logs has its own unconditional
-    # CREATE TABLE IF NOT EXISTS (this module, above) and is never renamed
-    # away the way the old bespoke `groups` table was, so it's always present
-    # by the time this runs. recipient_ids is a JSON array string of user ids
-    # (NULL/empty = public entry, today's behavior for every pre-existing
-    # row); in_character is a plain 0/1 flag. Both default to "absent = the
-    # old public/OOC behavior" so no backfill is needed for existing rows.
-    columns = {row["name"] for row in conn.execute("PRAGMA table_info(group_logs)")}
-    if "recipient_ids" not in columns:
-        conn.execute("ALTER TABLE group_logs ADD COLUMN recipient_ids TEXT")
-    if "in_character" not in columns:
-        conn.execute("ALTER TABLE group_logs ADD COLUMN in_character INTEGER DEFAULT 0")
+def _create_chat_tables(conn: sqlite3.Connection) -> None:
+    # Group chat is relational (high-volume, per-message scoped), not a Library
+    # kind — same precedent as group_members/shares. `group_id` is a plain TEXT
+    # reference to a group's id, never FK-enforced. chat_messages_archive keeps
+    # the exact ids of the rows it received (AUTOINCREMENT on chat_messages never
+    # reuses an id), so refs/reactions/inbox rows keyed by message_id keep
+    # resolving after a thread is archived.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS chat_channels (
+            id TEXT PRIMARY KEY,
+            group_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            category TEXT,
+            linked_kind TEXT,
+            linked_id TEXT,
+            mode TEXT,
+            thread_creator_ids TEXT,
+            sort_order INTEGER DEFAULT 0,
+            is_default INTEGER DEFAULT 0,
+            created_by INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS chat_threads (
+            id TEXT PRIMARY KEY,
+            channel_id TEXT NOT NULL,
+            group_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            created_by INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            archived_at DATETIME,
+            archive_page_id TEXT,
+            is_default INTEGER DEFAULT 0
+        )
+        """
+    )
+    message_columns = """
+            thread_id TEXT NOT NULL,
+            group_id TEXT NOT NULL,
+            author_id INTEGER,
+            author_name TEXT,
+            voice TEXT,
+            body TEXT,
+            payload TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            edited_at DATETIME,
+            deleted_at DATETIME
+    """
+    conn.execute(
+        f"CREATE TABLE IF NOT EXISTS chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, {message_columns})"
+    )
+    conn.execute(
+        f"CREATE TABLE IF NOT EXISTS chat_messages_archive (id INTEGER PRIMARY KEY, {message_columns})"
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS chat_message_refs (
+            message_id INTEGER NOT NULL,
+            ref_type TEXT NOT NULL,
+            target_kind TEXT NOT NULL,
+            target_id TEXT NOT NULL,
+            label TEXT
+        )
+        """
+    )
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(chat_message_refs)")}
+    if "label" not in columns:
+        conn.execute("ALTER TABLE chat_message_refs ADD COLUMN label TEXT")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS chat_reactions (
+            message_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            emoji TEXT NOT NULL,
+            PRIMARY KEY (message_id, user_id, emoji)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS chat_thread_state (
+            thread_id TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            last_read_message_id INTEGER DEFAULT 0,
+            last_voice TEXT,
+            PRIMARY KEY (thread_id, user_id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS direct_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id TEXT NOT NULL,
+            author_id INTEGER,
+            recipient_ids TEXT NOT NULL,
+            body TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS dm_reactions (
+            dm_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            emoji TEXT NOT NULL,
+            PRIMARY KEY (dm_id, user_id, emoji)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS inbox_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            group_id TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            message_id INTEGER,
+            dm_id INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            read_at DATETIME,
+            occurrence_id TEXT,
+            revision INTEGER DEFAULT 0
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_spotlight (
+            group_id TEXT PRIMARY KEY,
+            state TEXT NOT NULL,
+            version INTEGER NOT NULL DEFAULT 0,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_channels_group ON chat_channels(group_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_threads_channel ON chat_threads(channel_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_threads_group ON chat_threads(group_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_group ON chat_messages(group_id, id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_archive_thread ON chat_messages_archive(thread_id, id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_refs_target ON chat_message_refs(target_kind, target_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_refs_message ON chat_message_refs(message_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_inbox_user ON inbox_items(user_id, read_at)")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_inbox_message ON inbox_items(user_id, message_id, reason) "
+        "WHERE message_id IS NOT NULL"
+    )
+
+
+def _migrate_group_members_add_active(conn: sqlite3.Connection) -> None:
+    # `active`: whether a rostered character is the one its player is currently
+    # playing in this group (at most one per player per group). Added to a
+    # database that predates it, every player's earliest-added character becomes
+    # the active one and any others start inactive.
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(group_members)")}
+    if "active" in columns:
+        return
+    conn.execute("ALTER TABLE group_members ADD COLUMN active INTEGER")
+    rows = conn.execute(
+        """
+        SELECT gm.group_id, gm.content_id, li.owner_id
+        FROM group_members AS gm
+        LEFT JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
+        WHERE gm.content_type = 'character'
+        ORDER BY gm.group_id, gm.added_at, gm.content_id
+        """
+    ).fetchall()
+    seen = set()
+    for row in rows:
+        key = (row["group_id"], row["owner_id"])
+        is_active = 0 if key in seen else 1
+        seen.add(key)
+        conn.execute(
+            "UPDATE group_members SET active = ? WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+            (is_active, row["group_id"], row["content_id"]),
+        )
+
+
+def _migrate_inbox_items_for_sessions(conn: sqlite3.Connection) -> None:
+    # Session notices point at an occurrence rather than copying it; `revision`
+    # lets a rescheduled occurrence send a fresh notice without tripping the
+    # unique key that stops the scheduler double-sending.
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(inbox_items)")}
+    if "occurrence_id" not in columns:
+        conn.execute("ALTER TABLE inbox_items ADD COLUMN occurrence_id TEXT")
+    if "revision" not in columns:
+        conn.execute("ALTER TABLE inbox_items ADD COLUMN revision INTEGER DEFAULT 0")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_inbox_occurrence ON inbox_items(user_id, occurrence_id, reason, revision) "
+        "WHERE occurrence_id IS NOT NULL"
+    )
+
+
+def _create_session_tables(conn: sqlite3.Connection) -> None:
+    # Scheduled sessions: everything is a UTC instant stored as a naive ISO
+    # string, like the rest of the server. `group_sessions` is a series (one-off
+    # or recurring); each date is a row in `group_session_occurrences`, created
+    # by the scheduler as it comes within the series' own lead time. No column
+    # here has a built-in default for a user setting: the client supplies each.
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_sessions (
+            id TEXT PRIMARY KEY,
+            group_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
+            kind TEXT NOT NULL,
+            start_at TEXT NOT NULL,
+            duration_minutes INTEGER NOT NULL,
+            recurrence TEXT,
+            location_text TEXT,
+            location_url TEXT,
+            min_players INTEGER,
+            max_players INTEGER,
+            rsvp_cutoff_minutes INTEGER,
+            allow_late_rsvp INTEGER NOT NULL,
+            lead_days INTEGER NOT NULL,
+            reminder_minutes INTEGER NOT NULL,
+            lock_posting INTEGER NOT NULL,
+            thread_ids TEXT,
+            ended_at TEXT,
+            created_by INTEGER,
+            created_at TEXT,
+            updated_at TEXT
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS group_session_occurrences (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            group_id TEXT NOT NULL,
+            slot_key TEXT NOT NULL,
+            start_at TEXT NOT NULL,
+            end_at TEXT NOT NULL,
+            status TEXT NOT NULL,
+            detached INTEGER NOT NULL,
+            overrides TEXT,
+            revision INTEGER NOT NULL,
+            notified_at TEXT,
+            reminder_sent_at TEXT,
+            cutoff_checked_at TEXT,
+            inworld_from_day INTEGER,
+            inworld_to_day INTEGER,
+            recap_thread_id TEXT,
+            recap_page_id TEXT,
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE (session_id, slot_key)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS session_rsvps (
+            occurrence_id TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            character_id TEXT,
+            character_name TEXT,
+            response TEXT NOT NULL,
+            responded_at TEXT,
+            set_by INTEGER,
+            PRIMARY KEY (occurrence_id, user_id)
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS session_decline_ranges (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            from_at TEXT NOT NULL,
+            to_at TEXT NOT NULL,
+            created_at TEXT
+        )
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_group_sessions_group ON group_sessions(group_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_session_occ_group ON group_session_occurrences(group_id, start_at)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_session_occ_session ON group_session_occurrences(session_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_session_decline_group ON session_decline_ranges(group_id, user_id)")
 
 
 def _migrate_shares_table_for_group_targets(conn: sqlite3.Connection) -> None:
@@ -567,37 +820,6 @@ def _migrate_group_members_drop_groups_fk(conn: sqlite3.Connection) -> None:
     conn.execute("DROP TABLE _legacy_group_members")
 
 
-def _migrate_group_logs_drop_groups_fk(conn: sqlite3.Connection) -> None:
-    # Same rebuild again, for group_logs.group_id's own FK against the old
-    # `groups` table (author_id's own FK against `users` is untouched).
-    if not _table_references_groups(conn, "group_logs"):
-        return
-    conn.execute("ALTER TABLE group_logs RENAME TO _legacy_group_logs")
-    conn.execute(
-        """
-        CREATE TABLE group_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            group_id TEXT NOT NULL,
-            entry_type TEXT NOT NULL,
-            author_id INTEGER,
-            author_name TEXT,
-            message TEXT,
-            payload TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
-        )
-        """
-    )
-    conn.execute(
-        """
-        INSERT INTO group_logs (id, group_id, entry_type, author_id, author_name, message, payload, created_at)
-        SELECT id, group_id, entry_type, author_id, author_name, message, payload, created_at
-        FROM _legacy_group_logs
-        """
-    )
-    conn.execute("DROP TABLE _legacy_group_logs")
-
-
 def _migrate_groups_to_library_items(state: ServerState, conn: sqlite3.Connection) -> None:
     # One-time (idempotent) migration of the old bespoke `groups` table onto
     # the exact same generic library_items/flat-JSON-file model every other
@@ -689,7 +911,16 @@ def _migrate_seed_group_inventory_property(state: ServerState, conn: sqlite3.Con
         write_item_raw(state, "group", group_id, payload)
 
 
-_DEAD_LEGACY_TABLES = ("_legacy_characters", "_legacy_templates", "_legacy_systems", "_legacy_groups")
+_DEAD_LEGACY_TABLES = (
+    "_legacy_characters",
+    "_legacy_templates",
+    "_legacy_systems",
+    "_legacy_groups",
+    # The flat game log, replaced by chat_* tables (its content was test data
+    # and deliberately not migrated).
+    "group_logs",
+    "_legacy_group_logs",
+)
 
 
 def _drop_dead_legacy_tables(conn: sqlite3.Connection) -> None:
@@ -1663,14 +1894,12 @@ def get_item(
             # exactly whatever the group currently has spotlighted — any of
             # them, not just whichever was shown most recently (two things
             # can legitimately be up at once, e.g. a Handout and a Map — see
-            # groups.get_active_spotlights's own comment on why this used to
-            # be a single-slot bug, same shape as the one already fixed
-            # client-side in spotlight.js) — the entity itself, or its
+            # spotlight.get_active_spotlights's own comment) — the entity itself, or its
             # templateId — and nothing else. Deliberately narrow: this is not
             # "share this group's members' content", it's "whatever's
             # currently being projected to the table right now." Local
             # import — see list_bucket's own comment on why.
-            from .groups import get_active_spotlights
+            from .spotlight import get_active_spotlights
 
             normalized_kind = normalize_kind(kind)
             for spotlight in get_active_spotlights(state, token_target):

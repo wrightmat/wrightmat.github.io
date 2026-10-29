@@ -3,6 +3,9 @@ import { DataManager } from "./js/lib/data-manager.js";
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
 import { loadHelpTopics } from "./js/lib/help.js";
+import { createCollapsibleSection } from "./js/lib/ui-components.js";
+import { disposeTooltips, refreshTooltips } from "./js/lib/tooltips.js";
+import { createFavoriteStar, loadDocFavorites } from "./js/lib/doc-favorites.js";
 
 // Same shell bootstrap every other page under common/ uses (account.js is
 // the reference). Lives flat in common/ (not common/docs/), matching
@@ -44,28 +47,20 @@ function resolveTopicUrl(href) {
   }
 }
 
-// Just the topic-count/last-updated/version badges — the catalog's
-// free-text description lives in a separate paragraph (renderDescription
-// below) since both sit in the left pane's fixed header.
+// Just the topic-count/last-updated badges — the catalog's free-text
+// description lives in a separate paragraph (renderDescription below) since
+// both sit in the left pane's fixed header.
 function renderMetadata(root, metadata, topics) {
   if (!root) return;
   root.innerHTML = "";
-  const topicCount = document.createElement("span");
-  topicCount.className = "badge text-bg-secondary";
-  topicCount.textContent = `${topics.length} topic${topics.length === 1 ? "" : "s"}`;
-  root.appendChild(topicCount);
-  if (metadata?.lastUpdated) {
+  const pills = [`${topics.length} topic${topics.length === 1 ? "" : "s"}`];
+  if (metadata?.lastUpdated) pills.push(`Last updated ${metadata.lastUpdated}`);
+  pills.forEach((text) => {
     const pill = document.createElement("span");
-    pill.className = "badge text-bg-light text-body";
-    pill.textContent = `Last updated ${metadata.lastUpdated}`;
+    pill.className = "badge text-bg-secondary";
+    pill.textContent = text;
     root.appendChild(pill);
-  }
-  if (metadata?.version) {
-    const pill = document.createElement("span");
-    pill.className = "badge text-bg-light text-body";
-    pill.textContent = `Catalog v${metadata.version}`;
-    root.appendChild(pill);
-  }
+  });
 }
 
 function renderDescription(root, metadata) {
@@ -73,54 +68,160 @@ function renderDescription(root, metadata) {
   root.textContent = metadata?.description || "";
 }
 
+// State both panes share: favorites, which groups are open, and the jump
+// from a left-pane topic to its article in the center.
+const view = {
+  favorites: null,
+  // Left-pane groups the user opened ("<key>") or closed ("closed:<key>").
+  openCategories: new Set(),
+  centerSetters: new Map(),
+  query: "",
+  grouped: [],
+  renderToc: () => {},
+};
+
+// Splits one category's topics into [{section, topics}] in the order the
+// catalog writes them; a category with no sections is a single unnamed group.
+function groupBySection(topics) {
+  const sections = [];
+  topics.forEach((topic) => {
+    let entry = sections.find((candidate) => candidate.section === topic.section);
+    if (!entry) {
+      entry = { section: topic.section, topics: [] };
+      sections.push(entry);
+    }
+    entry.topics.push(topic);
+  });
+  return sections;
+}
+
+function buildSectionLabel(text) {
+  const label = document.createElement("div");
+  label.className = "small fw-semibold text-body-secondary mt-2";
+  label.textContent = text;
+  return label;
+}
+
+function topicMatches(topic, query) {
+  if (!query) return true;
+  return [topic.title, topic.summary, topic.category].some((text) => String(text || "").toLowerCase().includes(query));
+}
+
+function buildTopicLink(topic) {
+  const row = document.createElement("div");
+  row.className = "d-flex align-items-center gap-1";
+  const link = document.createElement("a");
+  link.className = "link-body-emphasis text-decoration-none small flex-grow-1 py-1";
+  link.href = `#${topic.id}`;
+  link.textContent = topic.title;
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    selectTopic(topic.id);
+  });
+  row.append(link, createFavoriteStar(view.favorites, topic.id));
+  return row;
+}
+
+// One collapsible group in the left pane. A search forces matching groups
+// open; otherwise the user's own open/closed choices survive a redraw.
+function buildTocGroup(key, label, topics, { defaultOpen = false } = {}) {
+  const open = Boolean(view.query) || view.openCategories.has(key) || (defaultOpen && !view.openCategories.has(`closed:${key}`));
+  const { section, toggle, panel } = createCollapsibleSection({
+    label,
+    collapsed: !open,
+    className: "d-flex flex-column gap-1",
+    panelClassName: "d-flex flex-column gap-0 ps-2",
+    headingClassName: "text-uppercase small fw-semibold text-body-secondary mb-0",
+  });
+  groupBySection(topics).forEach(({ section, topics: members }) => {
+    if (section) panel.appendChild(buildSectionLabel(section));
+    members.forEach((topic) => panel.appendChild(buildTopicLink(topic)));
+  });
+  toggle.addEventListener("click", () => {
+    view.openCategories.delete(key);
+    view.openCategories.delete(`closed:${key}`);
+    view.openCategories.add(panel.hidden ? `closed:${key}` : key);
+  });
+  return section;
+}
+
 function buildTocList(tocRoot, groupedTopics) {
   if (!tocRoot) return;
+  disposeTooltips(tocRoot);
   tocRoot.innerHTML = "";
+  const favoriteTopics = groupedTopics
+    .flatMap(({ topics }) => topics)
+    .filter((topic) => view.favorites.isFavorite(topic.id) && topicMatches(topic, view.query));
+  if (favoriteTopics.length) {
+    tocRoot.appendChild(buildTocGroup("favorites", "Favorites", favoriteTopics, { defaultOpen: true }));
+  }
+  let shown = 0;
   groupedTopics.forEach(({ category, categoryId, topics }) => {
-    const item = document.createElement("li");
-    const link = document.createElement("a");
-    link.className = "link-body-emphasis text-decoration-none fw-semibold";
-    link.href = `#${categoryId}`;
-    link.textContent = category;
-    item.appendChild(link);
-    if (topics.length) {
-      const innerList = document.createElement("ul");
-      innerList.className = "list-unstyled ps-3 mt-2 d-flex flex-column gap-1";
-      topics.forEach((topic) => {
-        const topicItem = document.createElement("li");
-        const topicLink = document.createElement("a");
-        topicLink.className = "link-body-secondary text-decoration-none";
-        topicLink.href = `#${topic.id}`;
-        topicLink.textContent = topic.title;
-        topicItem.appendChild(topicLink);
-        innerList.appendChild(topicItem);
-      });
-      item.appendChild(innerList);
-    }
-    tocRoot.appendChild(item);
+    const matching = topics.filter((topic) => topicMatches(topic, view.query));
+    if (!matching.length) return;
+    shown += matching.length;
+    tocRoot.appendChild(buildTocGroup(categoryId, category, matching));
   });
+  if (!shown) {
+    const empty = document.createElement("p");
+    empty.className = "text-body-secondary small mb-0";
+    empty.textContent = "No matching topics.";
+    tocRoot.appendChild(empty);
+  }
+  refreshTooltips(tocRoot);
+}
+
+// Opens the topic's group in the center pane and brings its article into view.
+function selectTopic(topicId, { updateHash = true } = {}) {
+  const article = document.getElementById(topicId);
+  if (!article) return;
+  const group = view.grouped.find(({ topics }) => topics.some((topic) => topic.id === topicId));
+  if (group) {
+    view.centerSetters.get(group.categoryId)?.(false);
+    view.openCategories.delete(`closed:${group.categoryId}`);
+    view.openCategories.add(group.categoryId);
+    view.renderToc();
+  }
+  if (updateHash) history.replaceState(null, "", `#${topicId}`);
+  article.scrollIntoView({ block: "start" });
 }
 
 function renderTopics(root, groupedTopics) {
   if (!root) return;
   root.innerHTML = "";
+  view.centerSetters.clear();
   groupedTopics.forEach(({ category, categoryId, topics }) => {
-    const section = document.createElement("section");
-    section.className = "d-flex flex-column gap-3";
-    section.id = categoryId;
+    // Collapsed until a topic is picked on the left.
+    const { section, panel, setCollapsed } = createCollapsibleSection({
+      label: category,
+      id: categoryId,
+      collapsed: true,
+      className: "d-flex flex-column gap-3",
+      headingClassName: "h3 mb-0",
+    });
+    view.centerSetters.set(categoryId, setCollapsed);
 
-    const heading = document.createElement("h2");
-    heading.className = "h3 mb-0";
-    heading.textContent = category;
-    section.appendChild(heading);
-
-    topics.forEach((topic) => {
+    const items = groupBySection(topics).flatMap(({ section, topics: members }) => [
+      ...(section ? [{ heading: section }] : []),
+      ...members.map((member) => ({ topic: member })),
+    ]);
+    items.forEach((item) => {
+      if (item.heading) {
+        const heading = document.createElement("h4");
+        heading.className = "h5 mb-0 mt-2 text-body-secondary";
+        heading.textContent = item.heading;
+        panel.appendChild(heading);
+        return;
+      }
+      const topic = item.topic;
       const article = document.createElement("article");
       article.className = "d-flex flex-column gap-2 border rounded-3 p-3 bg-body";
       article.id = topic.id;
+      // Leaves a little room above the title when a link scrolls here.
+      article.style.scrollMarginTop = "1rem";
       const title = document.createElement("h3");
       title.className = "h4 mb-0 d-flex align-items-center gap-2";
-      title.textContent = topic.title;
+      title.append(document.createTextNode(topic.title), createFavoriteStar(view.favorites, topic.id));
       const badge = document.createElement("span");
       badge.className = "badge text-bg-secondary";
       badge.textContent = topic.category;
@@ -171,7 +272,7 @@ function renderTopics(root, groupedTopics) {
         footer.appendChild(seeAlso);
       }
       article.appendChild(footer);
-      section.appendChild(article);
+      panel.appendChild(article);
     });
     root.appendChild(section);
   });
@@ -198,8 +299,11 @@ function groupTopicsByCategory(topics) {
   const contentRoot = document.querySelector("[data-docs-root]");
   const metaRoot = document.querySelector("[data-docs-metadata]");
   const descriptionRoot = document.querySelector("[data-docs-description]");
+  const searchInput = document.querySelector("[data-docs-search]");
   try {
     const { topics, raw } = await loadHelpTopics("data/help-topics.json");
+    renderMetadata(metaRoot, raw?.metadata || {}, topics);
+    renderDescription(descriptionRoot, raw?.metadata || {});
     if (!topics.length) {
       if (contentRoot) {
         contentRoot.innerHTML = "";
@@ -208,18 +312,29 @@ function groupTopicsByCategory(topics) {
         empty.textContent = "No help topics have been published yet.";
         contentRoot.appendChild(empty);
       }
-      renderMetadata(metaRoot, raw?.metadata || {}, topics);
-      renderDescription(descriptionRoot, raw?.metadata || {});
-      buildTocList(tocRoot, []);
+      if (tocRoot) tocRoot.innerHTML = "";
       return;
     }
-    const grouped = groupTopicsByCategory(topics);
-    renderMetadata(metaRoot, raw?.metadata || {}, topics);
-    renderDescription(descriptionRoot, raw?.metadata || {});
-    buildTocList(tocRoot, grouped);
-    renderTopics(contentRoot, grouped);
+    view.favorites = await loadDocFavorites({ dataManager, topics });
+    view.grouped = groupTopicsByCategory(topics);
+    view.renderToc = () => buildTocList(tocRoot, view.grouped);
+    view.favorites.onChange(view.renderToc);
+    searchInput?.addEventListener("input", () => {
+      view.query = searchInput.value.trim().toLowerCase();
+      view.renderToc();
+    });
+    view.renderToc();
+    renderTopics(contentRoot, view.grouped);
     // The browser's own hash scroll already ran, before the topics existed.
-    document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
+    const openFromHash = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (id) selectTopic(id, { updateHash: false });
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    window.addEventListener("undercroft:show-help-topic", (event) => {
+      if (event.detail?.topicId) selectTopic(event.detail.topicId);
+    });
   } catch (error) {
     console.error("Failed to render documentation", error);
     if (contentRoot) {
@@ -231,8 +346,8 @@ function groupTopicsByCategory(topics) {
     }
     if (tocRoot) {
       tocRoot.innerHTML = "";
-      const item = document.createElement("li");
-      item.className = "text-body-secondary";
+      const item = document.createElement("p");
+      item.className = "text-body-secondary small mb-0";
       item.textContent = "Unable to load topics";
       tocRoot.appendChild(item);
     }

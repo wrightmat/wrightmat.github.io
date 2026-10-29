@@ -364,6 +364,7 @@ const jsonDataPanel = createJsonDataPanel({
 
 const selectionsSection = createCollapsibleSection({
   label: "Selections",
+  helpTopic: "vault.generate",
   collapsed: false,
   content: document.querySelector("[data-selections-panel]"),
 });

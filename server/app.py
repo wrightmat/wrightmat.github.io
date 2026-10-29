@@ -11,7 +11,10 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
+from . import chat as chat_store
 from . import groups as group_store
+from . import sessions as session_store
+from . import spotlight as spotlight_store
 
 from .auth import (
     AuthError,
@@ -60,6 +63,7 @@ from .integrations import (
 from .roles import role_rank
 from .router import Request, Response, Router
 from .shares import (
+    resolve_share_token,
     create_share_link,
     get_share_link,
     list_shareable_targets,
@@ -121,6 +125,7 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
             loader.watch(lambda cfg: self.state.reload(cfg), stop_event=self._shutdown_event)
         self._start_touch_flush_thread()
         self._start_ddb_auth_check_thread()
+        self._start_session_scheduler_thread()
         super().serve_forever(poll_interval=poll_interval)
 
     # Unlike the config watcher above (opt-in, behind config_watch), this
@@ -160,8 +165,19 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
 
         threading.Thread(target=_loop, name="ddb-auth-check", daemon=True).start()
 
+    # No interval: the loop sleeps until the next stored due time and is woken
+    # by anything that could change it (see sessions.scheduler_loop).
+    def _start_session_scheduler_thread(self) -> None:
+        threading.Thread(
+            target=session_store.scheduler_loop,
+            args=(self.state, self._shutdown_event),
+            name="session-scheduler",
+            daemon=True,
+        ).start()
+
     def shutdown(self) -> None:
         self._shutdown_event.set()
+        session_store.wake()
         try:
             flush_pending_touches(self.state)
         except Exception:  # pragma: no cover - best-effort final flush
@@ -273,6 +289,13 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         with self.server.state.lock:
             user = get_user_by_session(self.server.state, token) if token else None
         share_token = (query.get("share", [""])[0] or "").strip()
+        if not user and share_token:
+            with self.server.state.lock:
+                info = resolve_share_token(self.server.state, share_token)
+            if info and info.get("content_type") == "group":
+                group_id = info.get("content_id") or group_id
+            else:
+                share_token = ""
         if not user and not share_token:
             self.send_response(HTTPStatus.UNAUTHORIZED)
             self.send_header("Content-Length", "0")
@@ -298,11 +321,9 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             return
 
         shutdown_event = getattr(self.server, "_shutdown_event", None)
-        # "group_log" is the one special kind: the human-readable campaign
-        # log (group_logs table, spotlight/game-log's own backbone) has its
-        # own monotonic int id, a different watermark shape from every other
-        # kind's library_items.modified_at string — handled as its own case
-        # in the loop below rather than folded into that same query.
+        # "chat" and "spotlight" are group-scoped special kinds (not one
+        # library_items kind each): handled as their own cases in the loop
+        # below rather than folded into the per-kind modified_at query.
         last_seen: Dict[str, Any] = {}
         # The first tick only establishes each kind's current watermark —
         # without this, every record that already existed before the client
@@ -316,21 +337,28 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             changed = []
             with self.server.state.lock:
                 for kind in kinds:
-                    if kind == "group_log":
-                        rows = self.server.state.db.execute(
-                            "SELECT id FROM group_logs WHERE group_id = ? ORDER BY id DESC LIMIT 25",
-                            (group_id,),
-                        ).fetchall()
-                        watermark = last_seen.get(kind, 0)
-                        newest = watermark
-                        for row in rows:
-                            row_id = row["id"]
-                            if not first_tick and row_id > watermark:
-                                changed.append({"kind": "group_log", "id": row_id})
-                            if row_id > newest:
-                                newest = row_id
-                        if newest:
-                            last_seen[kind] = newest
+                    if kind == "chat":
+                        # Every chat write (post/edit/delete/reaction/new
+                        # channel or thread) bumps the group's own
+                        # modified_at, so one string watermark covers them
+                        # all; the client re-fetches what it's showing.
+                        row = self.server.state.db.execute(
+                            "SELECT modified_at FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)
+                        ).fetchone()
+                        modified_at = (row["modified_at"] if row else "") or ""
+                        if not first_tick and modified_at > last_seen.get(kind, ""):
+                            changed.append({"kind": "chat"})
+                        if modified_at:
+                            last_seen[kind] = modified_at
+                        continue
+                    if kind == "spotlight":
+                        row = self.server.state.db.execute(
+                            "SELECT version FROM group_spotlight WHERE group_id = ?", (group_id,)
+                        ).fetchone()
+                        version = row["version"] if row else 0
+                        if not first_tick and version != last_seen.get(kind, 0):
+                            changed.append({"kind": "spotlight"})
+                        last_seen[kind] = version
                         continue
                     if kind == "ping":
                         # Ephemeral — see ServerState.pending_pings' own
@@ -2284,6 +2312,17 @@ def register_routes():
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/members$", handle_update_group_members)
 
+    def handle_set_member_active(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        group = group_store.set_member_active(
+            request.state, user, params["group_id"], str(data.get("characterId") or ""), bool(data.get("active"))
+        )
+        return json_response(group)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/members/active$", handle_set_member_active)
+
     # A Group Property VALUE write (e.g. a player adding a party inventory
     # item) — deliberately NOT the generic /content/group/{id} route Loom's
     # own document edits use, since that route's owner-or-edit-share gate
@@ -2323,44 +2362,372 @@ def register_routes():
 
     router.add("GET", r"^/groups/character/(?P<character_id>[^/]+)$", handle_character_groups)
 
-    def handle_group_log(request: Request) -> Response:
-        user = require_user(request)
-        params = getattr(request, "params")
-        group_id = params["group_id"]
-        from urllib.parse import parse_qs, urlsplit
+    # Group chat (channels -> threads -> messages), direct messages, inbox and
+    # the spotlight state. A share-link visitor reads through `?share=<token>`
+    # (GET) or a `share` body field (POST) with "-" as the group id; the token,
+    # not the path, decides which group.
+    from urllib.parse import parse_qs, urlsplit
 
-        query = parse_qs(urlsplit(request.handler.path).query)
-        limit = query.get("limit", [None])[0]
-        types_raw = query.get("types", [None])[0]
-        entry_types = [t for t in types_raw.split(",") if t] if types_raw else None
-        payload = group_store.list_group_log(request.state, group_id, user, limit=limit, entry_types=entry_types)
+    def chat_query(request: Request) -> Dict[str, list]:
+        return parse_qs(urlsplit(request.handler.path).query)
+
+    def chat_share(request: Request, data: Optional[Dict[str, Any]] = None) -> Optional[str]:
+        value = (data or {}).get("share") or chat_query(request).get("share", [""])[0]
+        return str(value).strip() or None
+
+    def chat_int(raw: Any) -> Optional[int]:
+        try:
+            return int(raw) if raw not in (None, "") else None
+        except (TypeError, ValueError):
+            return None
+
+    def handle_chat_overview(request: Request) -> Response:
+        user = request.handler.current_user()
+        params = getattr(request, "params")
+        payload = chat_store.chat_overview(request.state, params["group_id"], user, share_token=chat_share(request))
         return json_response(payload)
 
-    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/log$", handle_group_log)
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/chat$", handle_chat_overview)
 
-    def handle_group_log_post(request: Request) -> Response:
+    def handle_chat_channel_create(request: Request) -> Response:
         user = require_user(request)
         params = getattr(request, "params")
-        group_id = params["group_id"]
         data = require_json(request)
-        entry_type = data.get("type") or data.get("entry_type") or "message"
-        message = data.get("message") or ""
-        payload = data.get("payload")
-        recipient_ids = data.get("recipientIds") or data.get("recipient_ids")
-        in_character = bool(data.get("inCharacter") or data.get("in_character"))
-        entry = group_store.create_group_log_entry(
+        linked = data.get("linked") if isinstance(data.get("linked"), dict) else {}
+        channel = chat_store.create_channel(
             request.state,
-            group_id,
+            params["group_id"],
             user,
-            entry_type=entry_type,
-            message=message,
-            payload=payload,
-            recipient_ids=recipient_ids,
-            in_character=in_character,
+            name=data.get("name") or "",
+            category=data.get("category") or "",
+            linked_kind=linked.get("kind"),
+            linked_id=linked.get("id"),
+            mode=data.get("mode"),
+            thread_title=data.get("threadTitle") or "",
         )
-        return json_response(entry, status=HTTPStatus.CREATED)
+        return json_response(channel, status=HTTPStatus.CREATED)
 
-    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/log$", handle_group_log_post)
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/chat/channels$", handle_chat_channel_create)
+
+    def handle_chat_channel_update(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        channel = chat_store.update_channel(
+            request.state, params["group_id"], params["channel_id"], user, require_json(request)
+        )
+        return json_response(channel)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/chat/channels/(?P<channel_id>[^/]+)$", handle_chat_channel_update)
+
+    def handle_chat_thread_create(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        thread = chat_store.create_thread(
+            request.state, params["group_id"], params["channel_id"], user, title=data.get("title") or ""
+        )
+        return json_response(thread, status=HTTPStatus.CREATED)
+
+    router.add(
+        "POST", r"^/groups/(?P<group_id>[^/]+)/chat/channels/(?P<channel_id>[^/]+)/threads$", handle_chat_thread_create
+    )
+
+    def handle_chat_thread_archive(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(chat_store.archive_thread(request.state, params["group_id"], params["thread_id"], user))
+
+    router.add(
+        "POST", r"^/groups/(?P<group_id>[^/]+)/chat/threads/(?P<thread_id>[^/]+)/archive$", handle_chat_thread_archive
+    )
+
+    def handle_chat_thread_read(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(chat_store.mark_thread_read(request.state, params["group_id"], params["thread_id"], user))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/chat/threads/(?P<thread_id>[^/]+)/read$", handle_chat_thread_read)
+
+    def handle_chat_messages(request: Request) -> Response:
+        user = request.handler.current_user()
+        params = getattr(request, "params")
+        query = chat_query(request)
+        payload = chat_store.list_messages(
+            request.state,
+            params["group_id"],
+            params["thread_id"],
+            user,
+            share_token=chat_share(request),
+            before=chat_int(query.get("before", [None])[0]),
+            after=chat_int(query.get("after", [None])[0]),
+            limit=chat_int(query.get("limit", [None])[0]),
+        )
+        payload["lastVoice"] = chat_store.get_last_voice(request.state, params["group_id"], params["thread_id"], user)
+        return json_response(payload)
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/chat/threads/(?P<thread_id>[^/]+)/messages$", handle_chat_messages)
+
+    def handle_chat_message_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        message = chat_store.post_message(
+            request.state,
+            params["group_id"],
+            params["thread_id"],
+            user,
+            share_token=chat_share(request, data),
+            body=data.get("body") or "",
+            payload=data.get("payload"),
+            voice=data.get("voice"),
+            refs=data.get("refs"),
+        )
+        return json_response(message, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/chat/threads/(?P<thread_id>[^/]+)/messages$", handle_chat_message_post)
+
+    def handle_chat_message_edit(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        message = chat_store.edit_message(
+            request.state, params["group_id"], int(params["message_id"]), user, body=data.get("body") or "", refs=data.get("refs")
+        )
+        return json_response(message)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/chat/messages/(?P<message_id>\d+)/edit$", handle_chat_message_edit)
+
+    def handle_chat_message_delete(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(chat_store.delete_message(request.state, params["group_id"], int(params["message_id"]), user))
+
+    router.add(
+        "POST", r"^/groups/(?P<group_id>[^/]+)/chat/messages/(?P<message_id>\d+)/delete$", handle_chat_message_delete
+    )
+
+    def handle_chat_reaction(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        result = chat_store.toggle_reaction(
+            request.state, params["group_id"], int(params["message_id"]), user, emoji=data.get("emoji") or ""
+        )
+        return json_response(result)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/chat/messages/(?P<message_id>\d+)/reactions$", handle_chat_reaction)
+
+    def handle_chat_resolve(request: Request) -> Response:
+        user = request.handler.current_user()
+        raw = chat_query(request).get("ids", [""])[0]
+        ids = [int(part) for part in raw.split(",") if part.strip().isdigit()]
+        return json_response(chat_store.resolve_messages(request.state, ids, user))
+
+    router.add("GET", r"^/chat/messages/resolve$", handle_chat_resolve)
+
+    def handle_chat_backlinks(request: Request) -> Response:
+        user = request.handler.current_user()
+        params = getattr(request, "params")
+        return json_response(chat_store.backlinks(request.state, params["kind"], params["item_id"], user))
+
+    router.add("GET", r"^/backlinks/(?P<kind>[^/]+)/(?P<item_id>[^/]+)$", handle_chat_backlinks)
+
+    def handle_direct_message_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        result = chat_store.send_direct_message(
+            request.state, params["group_id"], user, recipient_ids=data.get("recipientIds"), body=data.get("body") or ""
+        )
+        return json_response(result, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/direct-messages$", handle_direct_message_post)
+
+    def handle_inbox(request: Request) -> Response:
+        user = require_user(request)
+        query = chat_query(request)
+        unread_only = (query.get("unread", [""])[0] or "").lower() in ("1", "true")
+        return json_response(chat_store.list_inbox(request.state, user, unread_only=unread_only))
+
+    router.add("GET", r"^/inbox$", handle_inbox)
+
+    def handle_inbox_count(request: Request) -> Response:
+        return json_response(chat_store.inbox_count(request.state, require_user(request)))
+
+    router.add("GET", r"^/inbox/count$", handle_inbox_count)
+
+    def handle_inbox_reaction(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            chat_store.toggle_inbox_reaction(request.state, user, item_id=data.get("itemId"), emoji=data.get("emoji") or "")
+        )
+
+    router.add("POST", r"^/inbox/reactions$", handle_inbox_reaction)
+
+    def handle_inbox_delete(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(chat_store.delete_inbox_items(request.state, user, ids=data.get("ids")))
+
+    router.add("POST", r"^/inbox/delete$", handle_inbox_delete)
+
+    def handle_inbox_read(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            chat_store.mark_inbox_read(request.state, user, ids=data.get("ids"), all_items=bool(data.get("all")))
+        )
+
+    router.add("POST", r"^/inbox/read$", handle_inbox_read)
+
+    # Scheduled sessions (server/sessions.py). Series and date management is the
+    # GM's; RSVPs and the live detail view belong to members.
+    def handle_sessions_list(request: Request) -> Response:
+        user = request.handler.current_user()
+        params = getattr(request, "params")
+        return json_response(session_store.list_sessions(request.state, params["group_id"], user))
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/sessions$", handle_sessions_list)
+
+    def handle_sessions_create(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        payload = session_store.create_series(request.state, params["group_id"], user, require_json(request))
+        return json_response(payload, status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/sessions$", handle_sessions_create)
+
+    def handle_sessions_preview(request: Request) -> Response:
+        require_user(request)
+        return json_response(session_store.preview_slots(require_json(request)))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/sessions/preview$", handle_sessions_preview)
+
+    def handle_sessions_update(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(
+            session_store.update_series(request.state, params["group_id"], user, params["session_id"], require_json(request))
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/sessions/(?P<session_id>[^/]+)$", handle_sessions_update)
+
+    def handle_sessions_end(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(session_store.end_series(request.state, params["group_id"], user, params["session_id"]))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/sessions/(?P<session_id>[^/]+)/end$", handle_sessions_end)
+
+    def handle_sessions_delete(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(session_store.delete_series(request.state, params["group_id"], user, params["session_id"]))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/sessions/(?P<session_id>[^/]+)/delete$", handle_sessions_delete)
+
+    def handle_sessions_slot(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        return json_response(
+            session_store.ensure_occurrence(request.state, params["group_id"], user, params["session_id"], data.get("slotKey"))
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/sessions/(?P<session_id>[^/]+)/slots$", handle_sessions_slot)
+
+    def handle_occurrence_update(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(
+            session_store.update_occurrence(request.state, params["group_id"], user, params["occurrence_id"], require_json(request))
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/occurrences/(?P<occurrence_id>[^/]+)$", handle_occurrence_update)
+
+    def handle_occurrence_cancel(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(session_store.cancel_occurrence(request.state, params["group_id"], user, params["occurrence_id"]))
+
+    router.add(
+        "POST", r"^/groups/(?P<group_id>[^/]+)/occurrences/(?P<occurrence_id>[^/]+)/cancel$", handle_occurrence_cancel
+    )
+
+    def handle_occurrence_history(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(
+            session_store.set_history(request.state, params["group_id"], user, params["occurrence_id"], require_json(request))
+        )
+
+    router.add(
+        "POST", r"^/groups/(?P<group_id>[^/]+)/occurrences/(?P<occurrence_id>[^/]+)/history$", handle_occurrence_history
+    )
+
+    def handle_occurrence_get(request: Request) -> Response:
+        user = request.handler.current_user()
+        params = getattr(request, "params")
+        return json_response(session_store.get_occurrence(request.state, user, params["occurrence_id"]))
+
+    router.add("GET", r"^/sessions/occurrences/(?P<occurrence_id>[^/]+)$", handle_occurrence_get)
+
+    def handle_occurrence_rsvp(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        return json_response(session_store.rsvp(request.state, user, params["occurrence_id"], data.get("response")))
+
+    router.add("POST", r"^/sessions/occurrences/(?P<occurrence_id>[^/]+)/rsvp$", handle_occurrence_rsvp)
+
+    def handle_occurrence_rsvp_for(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        return json_response(
+            session_store.rsvp_for(request.state, user, params["occurrence_id"], data.get("userId"), data.get("response"))
+        )
+
+    router.add("POST", r"^/sessions/occurrences/(?P<occurrence_id>[^/]+)/rsvp-for$", handle_occurrence_rsvp_for)
+
+    def handle_decline_range(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            session_store.decline_range(request.state, user, data.get("groupId"), data.get("from"), data.get("to"))
+        )
+
+    router.add("POST", r"^/sessions/decline-range$", handle_decline_range)
+
+    def handle_group_spotlight(request: Request) -> Response:
+        user = request.handler.current_user()
+        params = getattr(request, "params")
+        payload = spotlight_store.list_group_spotlights(
+            request.state, params["group_id"], user, share_token=chat_share(request)
+        )
+        return json_response(payload)
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/spotlight$", handle_group_spotlight)
+
+    def handle_group_spotlight_post(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        payload = spotlight_store.apply_group_spotlight(
+            request.state,
+            params["group_id"],
+            user,
+            share_token=chat_share(request, data),
+            action=data.get("action") or "show",
+            kind=data.get("kind") or "",
+            item_id=data.get("id") or "",
+            template_id=data.get("templateId") or "",
+            data=data.get("data"),
+        )
+        return json_response(payload)
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/spotlight$", handle_group_spotlight_post)
 
     # A transient pointer-broadcast (Orrery's click-to-ping map tool) — see
     # ServerState.pending_pings' own comment for why this never touches the
@@ -2477,52 +2844,6 @@ def register_routes():
         r"^/groups/(?P<group_id>[^/]+)/share-link/revoke$",
         handle_group_share_link_revoke,
     )
-
-    def handle_group_share_log(request: Request) -> Response:
-        params = getattr(request, "params")
-        token = params["token"]
-        from urllib.parse import parse_qs, urlsplit
-
-        query = parse_qs(urlsplit(request.handler.path).query)
-        limit = query.get("limit", [None])[0]
-        types_raw = query.get("types", [None])[0]
-        entry_types = [t for t in types_raw.split(",") if t] if types_raw else None
-        payload = group_store.list_group_log(
-            request.state,
-            None,
-            None,
-            share_token=token,
-            limit=limit,
-            entry_types=entry_types,
-        )
-        return json_response(payload)
-
-    router.add("GET", r"^/groups/share/(?P<token>[^/]+)/log$", handle_group_share_log)
-
-    def handle_group_share_log_post(request: Request) -> Response:
-        user = require_user(request)
-        params = getattr(request, "params")
-        token = params["token"]
-        data = require_json(request)
-        entry_type = data.get("type") or data.get("entry_type") or "message"
-        message = data.get("message") or ""
-        payload = data.get("payload")
-        recipient_ids = data.get("recipientIds") or data.get("recipient_ids")
-        in_character = bool(data.get("inCharacter") or data.get("in_character"))
-        entry = group_store.create_group_log_entry(
-            request.state,
-            None,
-            user,
-            share_token=token,
-            entry_type=entry_type,
-            message=message,
-            payload=payload,
-            recipient_ids=recipient_ids,
-            in_character=in_character,
-        )
-        return json_response(entry, status=HTTPStatus.CREATED)
-
-    router.add("POST", r"^/groups/share/(?P<token>[^/]+)/log$", handle_group_share_log_post)
 
     def handle_group_share_ping_post(request: Request) -> Response:
         user = require_user(request)

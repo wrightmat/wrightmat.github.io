@@ -7,6 +7,7 @@
 // establishes — usable identically from either caller with zero shared setup.
 import { persistElementUpdate } from "./map-live-sync.js";
 import { persistGroupPropertyValue } from "./group-live-sync.js";
+import { postSystemMessage } from "./chat/target.js";
 import { resolveGroupContext } from "./widgets/group-context.js";
 
 // Human-readable "what this entry actually is" label, shared so the GM's
@@ -276,17 +277,15 @@ export async function claimMarkerContentEntry({
     }
   }
 
-  // Best-effort — a real, persisted Game Log entry (not the transient
+  // Best-effort — a real, persisted chat message (not the transient
   // ping/broadcast mechanism), but its own failure shouldn't undo an
   // otherwise-successful claim the player already sees reflected on screen.
-  void dataManager
-    .createGroupLogEntry({
-      groupId,
-      shareToken,
-      type: "message",
-      message: `${destinationLabel === "the party" ? "The party" : destinationLabel} looted ${claimedLabel}${markerLabel ? ` from ${markerLabel}` : ""}.`,
-    })
-    .catch(() => {});
+  void postSystemMessage(dataManager, {
+    groupId,
+    shareToken,
+    kind: "loot",
+    summary: `${destinationLabel === "the party" ? "The party" : destinationLabel} looted ${claimedLabel}${markerLabel ? ` from ${markerLabel}` : ""}.`,
+  }).catch(() => {});
 
   const destination = isCurrency ? currencyDestination : claimTarget;
   return { entry, label: claimedLabel, destination, destinationLabel, map: freshMap };

@@ -20,6 +20,17 @@
 // data-bs-toggle/data-bs-title BEFORE disposing — disposal only finds
 // elements still carrying that attribute. Always: dispose → then mutate.
 //
+// BUG CLASS 3 — "tooltip stays after the pointer leaves, with no way to clear
+// it": (a) Bootstrap's default trigger is "hover focus", so a button you
+// CLICKED keeps focus and its tooltip survives the mouse leaving; (b) a
+// trigger removed, hidden, or re-rendered while its tooltip is up (a list
+// refreshing on a poll, a modal closing, a pane collapsing) strands the
+// <body>-level popup with nothing left to dismiss it. Per-call-site discipline
+// can't cover every render path, so installTooltipAutoInit installs a
+// page-wide guarantee instead: pointer-driven tooltips hide when the pointer
+// leaves or presses their trigger, removed triggers are disposed, and a sweep
+// removes any popup whose trigger is gone or no longer visible.
+//
 // Which function to use:
 // - One element, tooltip live now: initTooltip(element, {title, placement?, html?})
 // - Many elements in a loop: set data-bs-toggle/data-bs-title on each, then
@@ -195,6 +206,80 @@ export function installTooltipAutoInit() {
   );
   // The pointer leaving the window sends no further pointermove to clear it.
   document.documentElement.addEventListener("mouseleave", () => setHoveredDisabled(null));
+
+  installOrphanGuards();
+}
+
+// --- Orphan prevention (BUG CLASS 3) ---
+
+const TOOLTIP_TRIGGER = '[data-bs-toggle="tooltip"]';
+
+function hideTooltipNow(trigger) {
+  try {
+    window.bootstrap.Tooltip.getInstance(trigger)?.hide();
+  } catch (error) {
+    // Best-effort — same timing race safeDispose guards against.
+  }
+}
+
+// Removes any tooltip popup whose trigger is gone, detached, or no longer laid
+// out. Bootstrap links popup and trigger through aria-describedby, which is
+// what makes "whose trigger?" answerable from the popup alone.
+function sweepOrphanTooltips() {
+  document.querySelectorAll("body > .tooltip").forEach((tip) => {
+    const trigger = tip.id ? document.querySelector(`[aria-describedby~="${CSS.escape(tip.id)}"]`) : null;
+    if (trigger && trigger.isConnected && trigger.getClientRects().length > 0) return;
+    if (trigger) hideTooltipNow(trigger);
+    tip.remove();
+  });
+}
+
+function installOrphanGuards() {
+  // (a) A pointer leaving a trigger, or pressing it, ends its tooltip even if
+  // the click left it focused. Keyboard focus (:focus-visible) keeps its
+  // tooltip until blur, as intended.
+  const hideForPointer = (event) => {
+    if (!hasBootstrapTooltip() || !(event.target instanceof Element)) return;
+    const trigger = event.target.closest(TOOLTIP_TRIGGER);
+    if (!trigger) return;
+    if (event.type === "pointerout" && event.relatedTarget instanceof Node && trigger.contains(event.relatedTarget)) return;
+    if (event.type === "pointerout" && trigger.matches(":focus-visible")) return;
+    hideTooltipNow(trigger);
+  };
+  document.addEventListener("pointerout", hideForPointer, true);
+  document.addEventListener("pointerdown", hideForPointer, true);
+
+  // (b) Triggers removed from the page: dispose their instances (which also
+  // removes the popup), then sweep for anything dispose couldn't reach. A node
+  // that was only moved is still connected and keeps its tooltip.
+  let sweepQueued = false;
+  const queueSweep = () => {
+    if (sweepQueued) return;
+    sweepQueued = true;
+    window.requestAnimationFrame(() => {
+      sweepQueued = false;
+      sweepOrphanTooltips();
+    });
+  };
+  new MutationObserver((records) => {
+    if (!hasBootstrapTooltip()) return;
+    let removed = false;
+    records.forEach((record) => {
+      record.removedNodes.forEach((node) => {
+        if (!(node instanceof Element) || node.isConnected) return;
+        removed = true;
+        if (node.matches(TOOLTIP_TRIGGER)) safeDispose(window.bootstrap.Tooltip.getInstance(node));
+        node.querySelectorAll(TOOLTIP_TRIGGER).forEach((element) => safeDispose(window.bootstrap.Tooltip.getInstance(element)));
+      });
+    });
+    if (removed) queueSweep();
+  }).observe(document.documentElement, { childList: true, subtree: true });
+
+  // (c) Triggers hidden rather than removed (display:none, a collapsed pane)
+  // fire no mutation we can cheaply watch; a slow sweep plus the events that
+  // usually precede such changes covers them.
+  window.setInterval(sweepOrphanTooltips, 1000);
+  ["scroll", "keydown", "click"].forEach((type) => document.addEventListener(type, queueSweep, { capture: true, passive: true }));
 }
 
 // --- Single-element pair — one specific trigger, zero collateral scope ---

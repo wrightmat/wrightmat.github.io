@@ -10,6 +10,7 @@
 // widget-specific code — they're direct dataManager calls, since "show this
 // to the table" and "post a message" are already generic, content-addressed
 // operations (any (kind,id) pair works, posted by anyone).
+import { postToActiveThread } from "../chat/target.js";
 import { runWledMacroAction, resolveWledDeviceByAlias, promptForWledAlias } from "./wled.js";
 import { runHaMacroAction } from "./home-assistant.js";
 import { runSoundboardMacroAction } from "./soundboard.js";
@@ -52,13 +53,13 @@ async function runBrowserMacroAction(action, { dataManager, groupContext }) {
 
 async function runGamelogMacroAction(action, { dataManager, groupContext }) {
   if (action?.action !== "post") {
-    throw new Error(`Unknown Game Log macro action "${action?.action}".`);
+    throw new Error(`Unknown chat macro action "${action?.action}".`);
   }
   const message = String(action?.params?.message || "").trim();
   if (!message) throw new Error("No message given.");
   const groupId = groupContext?.groupId;
   if (!groupId) throw new Error("No active campaign to post to.");
-  await dataManager.createGroupLogEntry({ groupId, type: "message", message });
+  await postToActiveThread(dataManager, { groupId, body: message });
 }
 
 // Handout/Map share the exact same shape — a real Library `contentRef`

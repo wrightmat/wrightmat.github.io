@@ -1,3 +1,5 @@
+import { fetchChatBacklinks, renderChatBacklinkList } from "../../common/js/lib/chat/backlinks.js";
+import { openMessageSummary } from "../../common/js/lib/chat/open-message.js";
 import { initAppShell, resolveToolContextPath } from "../../common/js/lib/app-shell.js";
 import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
@@ -750,6 +752,8 @@ function toggleMode() {
 // are built once per render, not per link — buildQuestIndex re-lexes every
 // page's body, expensive enough to matter with several links on one page.
 function resolveWikiLinkTarget(title, titleIndex, questIndex) {
+  // [[msg:ID]] — a chat message; handleWikiLinkNavigate finds where it lives.
+  if (/^msg:\d+$/i.test(title)) return { id: title.toLowerCase(), title };
   const pageMatch = titleIndex.resolve(title);
   if (pageMatch) return pageMatch;
   const questMatch = questIndex.resolve(title);
@@ -885,9 +889,33 @@ function handleWikiLinkNavigate(target) {
     createDraftEntry({ title: target.title });
     return;
   }
+  if (/^msg:\d+$/.test(target.id)) {
+    void openChatMessageReference(Number(target.id.slice(4)));
+    return;
+  }
   // Arriving via a link never restores a remembered scroll position — a
   // [[Page#Heading]] link jumps to that heading; a plain [[Page]] link lands at the top.
   selectPage(target.id, { heading: target.heading || "", remember: false });
+}
+
+// A [[msg:ID]] link: an archived thread's messages are paragraphs of its
+// archive page (anchored ^m<ID>); a live message is opened in the chat itself.
+async function openChatMessageReference(messageId) {
+  try {
+    const resolved = await dataManager.resolveChatMessages([messageId]);
+    const info = resolved.messages?.[String(messageId)];
+    if (!info) {
+      status?.show("That message isn't available to you.", { type: "info", timeout: 3000 });
+      return;
+    }
+    if (info.archived && info.archivePageId && findEntry(info.archivePageId)) {
+      selectPage(info.archivePageId, { block: `m${messageId}`, remember: false });
+      return;
+    }
+    openMessageSummary(dataManager, info);
+  } catch (error) {
+    status?.show(error.message || "Unable to open that message.", { type: "error", timeout: 3000 });
+  }
 }
 
 // A real content edit (unlike the dice-roller's ephemeral re-rolls) — goes
@@ -1207,18 +1235,29 @@ function renderBacklinks() {
     entries.filter((entry) => entry.id !== selectedId),
     workingPayload.title
   );
-  if (!links.length) {
-    backlinksListEl.appendChild(el("p", "text-body-secondary small mb-0", "Nothing links here yet."));
-    setBacklinksCollapsed(true);
-    return;
-  }
   links.forEach((entry) => {
     const link = el("button", "btn btn-link btn-sm p-0 d-block text-start", titleOf(entry));
     link.type = "button";
     link.addEventListener("click", () => selectPage(entry.id));
     backlinksListEl.appendChild(link);
   });
-  setBacklinksCollapsed(false);
+  const emptyNote = el("p", "text-body-secondary small mb-0", "Nothing links here yet.");
+  if (!links.length) backlinksListEl.appendChild(emptyNote);
+  setBacklinksCollapsed(!links.length);
+  void appendChatBacklinks(emptyNote, links.length);
+}
+
+// Chat messages that link this page ([[Title]] in a message) — added after the
+// page links, since they need a server round trip.
+async function appendChatBacklinks(emptyNote, pageLinkCount) {
+  const pageId = selectedId;
+  if (!pageId) return;
+  const items = await fetchChatBacklinks(dataManager, "journal", pageId);
+  if (pageId !== selectedId || !items.length || !backlinksListEl) return;
+  emptyNote.remove();
+  backlinksListEl.appendChild(el("div", "small fw-semibold mt-2", "Mentioned in chat"));
+  backlinksListEl.appendChild(renderChatBacklinkList(items, { dataManager, limit: 10 }));
+  if (!pageLinkCount) setBacklinksCollapsed(false);
 }
 
 // The parent's group: tag(s) — a child inherits these (handleSetParent) and
@@ -1758,7 +1797,7 @@ function flashElement(target) {
 
 // `pushHistory: false` is only passed by the popstate handler — every other
 // caller is a new navigation step the browser's back/forward should retrace.
-function selectPage(id, { heading = "", remember = true, pushHistory = true } = {}) {
+function selectPage(id, { heading = "", block = "", remember = true, pushHistory = true } = {}) {
   const entry = findEntry(id);
   if (!entry) return;
   captureScrollMemory();
@@ -1777,11 +1816,19 @@ function selectPage(id, { heading = "", remember = true, pushHistory = true } = 
   applyMode("view");
   updateToolbarState();
   if (pushHistory) pushPageHistory(id);
+  const blockTarget = block
+    ? Array.from(previewEl?.querySelectorAll("[data-block-id]") || []).find((node) => node.dataset.blockId === block)
+    : null;
   const headingIndex = findHeadingByText(workingPayload.body, heading);
   // A quest title is checked as a second anchor class whenever it doesn't
   // match a real heading — no parallel navigation mechanism.
   const questIndex = headingIndex < 0 ? findQuestByTitle(workingPayload.body, heading) : -1;
-  if (headingIndex >= 0) {
+  if (blockTarget) {
+    // The anchor span sits inside its paragraph; the paragraph is what to show.
+    const paragraph = blockTarget.parentElement || blockTarget;
+    paragraph.scrollIntoView({ block: "center" });
+    flashElement(paragraph);
+  } else if (headingIndex >= 0) {
     const target = previewEl?.querySelector(`#repo-heading-${headingIndex}`);
     target?.scrollIntoView({ block: "start" });
     flashElement(target);
@@ -2751,11 +2798,13 @@ void refreshEntries().then(() => {
   // `?heading=<text>` — a marker/reference deep link into a heading or quest
   // anchor (kind-tool-route.js's journal route, Orrery's marker link-out).
   const requestedHeading = deepLinkParams.get("heading") || "";
+  // `?block=<id>` — a chat-archive message anchor (a trailing `^id` on a paragraph).
+  const requestedBlock = deepLinkParams.get("block") || "";
   // `?q=<term>` — the suite-wide header search's deep link into a body match
   // (suite-search.js). selectPage's own scroll decision runs first and is
   // superseded by this right after; both synchronous, no visible flash.
   const requestedQuery = deepLinkParams.get("q") || "";
-  if (resolvedId) selectPage(resolvedId, { heading: requestedHeading, remember: true, pushHistory: false });
+  if (resolvedId) selectPage(resolvedId, { heading: requestedHeading, block: requestedBlock, remember: true, pushHistory: false });
   if (resolvedId && requestedQuery) jumpToSearchQuery(requestedQuery);
   replacePageHistory(resolvedId);
 });

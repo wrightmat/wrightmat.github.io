@@ -180,7 +180,7 @@ export function createTableLightingPanel({ lighting, roster = [], dataManager, o
   const head = el("div", "d-flex align-items-center justify-content-between gap-2");
   const title = el("div", "d-flex align-items-center gap-2");
   const help = el("span", "align-middle");
-  help.setAttribute("data-help-topic", "combat.tableLighting");
+  help.setAttribute("data-help-topic", "dashboard.tableLighting");
   help.setAttribute("data-help-insert", "replace");
   title.append(el("span", "fw-semibold small", "Table lighting"), help);
   const headActions = el("div", "d-flex align-items-center gap-3");

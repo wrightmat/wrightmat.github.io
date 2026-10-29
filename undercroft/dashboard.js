@@ -3,12 +3,12 @@ import { DataManager } from "./common/js/lib/data-manager.js";
 import { resolveApiBase } from "./common/js/lib/api.js";
 import { initAuthControls } from "./common/js/lib/auth-ui.js";
 import { initHelpSystem } from "./common/js/lib/help.js";
-import { initHelpBrowser } from "./common/js/lib/help-browser.js";
+import { initFavoriteDocsPane } from "./common/js/lib/doc-favorites-pane.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent, initTooltip } from "./common/js/lib/tooltips.js";
 import { createIconButton } from "./common/js/lib/ui-components.js";
 import { createSortable } from "./common/js/lib/dnd.js";
 import { initCharacterSummaryWidget } from "./common/js/lib/widgets/character-summary.js";
-import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, clearGameLogView } from "./common/js/lib/widgets/game-log.js";
+import { initGameLogWidget } from "./common/js/lib/widgets/game-log.js";
 import { initCombatTrackerWidget } from "./common/js/lib/widgets/combat-tracker.js";
 import { initClockWidget } from "./common/js/lib/widgets/clocks.js";
 import { initHandoutWidget, openHandoutPicker } from "./common/js/lib/widgets/handout.js";
@@ -30,7 +30,7 @@ import { connectLiveStream } from "./common/js/lib/live.js";
 import { playDiceReveal } from "./common/js/lib/widgets/dice-reveal.js";
 import { playCardReveal } from "./common/js/lib/widgets/card-overlay.js";
 import { createSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js";
-import { resolveActiveSpotlightId, resolveIsSpotlighted, createSpotlightTitleCache } from "./common/js/lib/spotlight.js";
+import { resolveActiveSpotlightId, resolveIsSpotlighted, createSpotlightTitleCache, SPOTLIGHT_KIND_LABELS } from "./common/js/lib/spotlight.js";
 import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
 import { el } from "./common/js/lib/dom.js";
 import { listenForDashboardRequests, flashTabTitle } from "./common/js/lib/dashboard-channel.js";
@@ -132,6 +132,7 @@ initHelpSystem({ root: document, topicsUrl: "common/data/help-topics.json" });
 const WIDGET_CATALOG = [
   {
     id: "character",
+    helpTopic: "dashboard.characterSheet",
     label: "Character sheet",
     icon: "tabler:user",
     init: (container, ctx) =>
@@ -148,7 +149,8 @@ const WIDGET_CATALOG = [
   },
   {
     id: "gamelog",
-    label: "Game log",
+    helpTopic: "campaign.chat",
+    label: "Group chat",
     icon: "tabler:message-circle",
     init: (container, ctx) =>
       initGameLogWidget(container, {
@@ -158,43 +160,28 @@ const WIDGET_CATALOG = [
         shareToken: ctx.groupContext?.shareToken || "",
         roster: ctx.groupContext?.members || [],
         ownerId: ctx.groupContext?.ownerId ?? null,
-        resolveKindIcon: ctx.resolveSpotlightKindIcon,
-        isSpotlightOnDashboard: ctx.isSpotlightOnDashboard,
-        onToggleSpotlight: ctx.onToggleSpotlight,
-        ensureTitleCached: ctx.ensureSpotlightTitleCached,
-        getCachedTitle: ctx.getCachedSpotlightTitle,
-        setRightAction: ctx.setRightAction,
+        // The Dashboard card has a set height: the message list takes the slack
+        // and the composer stays at the bottom.
+        fill: true,
       }),
-    renderInspector(container, { api, groupContext }) {
-      const info = document.createElement("p");
-      info.className = "text-body-secondary small mb-0";
-      info.textContent = "Shared, persistent history for the whole campaign — \"Clear log\" only hides older entries from your own view here, it never deletes anything.";
-      container.appendChild(info);
-      const clearButton = document.createElement("button");
-      clearButton.type = "button";
-      clearButton.className = "btn btn-outline-secondary btn-sm align-self-start";
-      clearButton.textContent = "Clear log";
-      clearButton.addEventListener("click", () => {
-        clearGameLogView(groupContext?.groupId || groupContext?.shareToken || "");
-        api?.refresh?.();
-      });
-      container.appendChild(clearButton);
-    },
   },
   {
     id: "diceroller",
+    helpTopic: "dashboard.diceRoller",
     label: "Dice roller",
     icon: "tabler:dice-5",
     init: (container, ctx) => initDiceRollerWidget(container, { status: ctx.status, dataManager: ctx.dataManager, groupContext: ctx.groupContext }),
   },
   {
     id: "deck",
+    helpTopic: "dashboard.deck",
     label: "Deck",
     icon: "tabler:cards",
     init: (container, ctx) => initDeckWidget(container, { status: ctx.status, dataManager: ctx.dataManager, groupContext: ctx.groupContext }),
   },
   {
     id: "calculator",
+    helpTopic: "dashboard.calculator",
     label: "Calculator",
     icon: "tabler:calculator",
     // contentRef holds this instance's Setting scope + rollable-table
@@ -212,6 +199,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "shop",
+    helpTopic: "dashboard.shop",
     label: "Shop",
     icon: "tabler:building-store",
     multiple: true,
@@ -240,6 +228,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "wled",
+    helpTopic: "dashboard.lighting",
     label: "Lighting",
     icon: "tabler:bulb",
     multiple: true,
@@ -268,6 +257,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "audioRecorder",
+    helpTopic: "dashboard.audioRecorder",
     label: "Audio Recorder",
     icon: "tabler:microphone",
     // GM-only, local-only recording/transcription — same bar as Lighting.
@@ -290,6 +280,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "board",
+    helpTopic: "dashboard.board",
     label: "Board",
     icon: "tabler:layout-kanban",
     multiple: true,
@@ -329,6 +320,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "handout",
+    helpTopic: "campaign.spotlight",
     label: "Handout",
     icon: "tabler:file-text",
     multiple: true,
@@ -379,6 +371,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "map",
+    helpTopic: "dashboard.map",
     label: "Map",
     icon: "tabler:map-2",
     multiple: true,
@@ -419,6 +412,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "browser",
+    helpTopic: "dashboard.browser",
     label: "Browser",
     icon: "tabler:world",
     multiple: true,
@@ -442,6 +436,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "combat",
+    helpTopic: "dashboard.combatTracker",
     label: "Combat tracker",
     icon: "tabler:swords",
     // Tier OR campaign ownership — either qualifies. A gm+/creator+/admin
@@ -486,6 +481,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "clock",
+    helpTopic: "dashboard.clock",
     label: "Clock",
     icon: "tabler:clock",
     multiple: true,
@@ -512,6 +508,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "calendar",
+    helpTopic: "dashboard.calendar",
     label: "Calendar",
     icon: "tabler:calendar-time",
     multiple: true,
@@ -539,6 +536,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "soundboard",
+    helpTopic: "dashboard.soundboard",
     label: "Soundboard",
     icon: "tabler:music",
     multiple: true,
@@ -849,21 +847,6 @@ function applyHeaderTitle() {
       titleInput.value = headerTitleOverride || "";
     }
   }
-}
-
-function loadPinnedHelpTopics(serverSettings) {
-  if (Array.isArray(serverSettings?.dashboardPinnedHelpTopics)) {
-    return serverSettings.dashboardPinnedHelpTopics.filter((id) => typeof id === "string");
-  }
-  const local = loadLocalSetting("pinnedHelpTopics");
-  return Array.isArray(local) ? local.filter((id) => typeof id === "string") : [];
-}
-
-function togglePinnedHelpTopic(topicId) {
-  const index = pinnedHelpTopics.indexOf(topicId);
-  if (index === -1) pinnedHelpTopics.push(topicId);
-  else pinnedHelpTopics.splice(index, 1);
-  persistSetting("pinnedHelpTopics", "dashboardPinnedHelpTopics", pinnedHelpTopics);
 }
 
 function loadWledDevices(serverSettings) {
@@ -1227,7 +1210,6 @@ let layout = null;
 let groupContext = null;
 let background = "";
 let headerTitleOverride = "";
-let pinnedHelpTopics = [];
 // Known WLED devices ({ip,label}) — account-wide via persistSetting, same
 // local+server merge-patch sync every other setting on this page uses.
 // Which one a given WLED widget CARD is showing/controlling is separate,
@@ -1289,11 +1271,10 @@ const editToggle = document.querySelector("[data-dashboard-edit-toggle]");
 const layoutTools = document.querySelector("[data-dashboard-layout-tools]");
 const addToolbar = document.querySelector("[data-dashboard-add-toolbar]");
 const screenViewButton = document.querySelector("[data-dashboard-screen-toggle]");
-const leftPane = document.querySelector('[data-pane="left"]');
-const leftPaneToggle = document.querySelector('[data-pane-toggle="left"]');
 const widgetInspectorEmpty = document.querySelector("[data-widget-inspector-empty]");
 const widgetInspectorDetails = document.querySelector("[data-widget-inspector-details]");
 const widgetInspectorType = document.querySelector("[data-widget-inspector-type]");
+const widgetInspectorHelp = document.querySelector("[data-widget-inspector-help]");
 const widgetInspectorBody = document.querySelector("[data-widget-inspector-body]");
 const widgetInspectorRemove = document.querySelector("[data-widget-inspector-remove]");
 
@@ -2237,6 +2218,15 @@ function refreshWidgetInspector() {
   widgetInspectorDetails.classList.toggle("d-none", !instance);
   if (!instance || !entry) return;
   if (widgetInspectorType) widgetInspectorType.textContent = entry.label;
+  if (widgetInspectorHelp) {
+    disposeTooltips(widgetInspectorHelp);
+    widgetInspectorHelp.replaceChildren();
+    delete widgetInspectorHelp.dataset.helpTopicAttached;
+    if (entry.helpTopic) {
+      widgetInspectorHelp.dataset.helpTopic = entry.helpTopic;
+      void initHelpSystem({ root: widgetInspectorHelp.parentElement });
+    }
+  }
   if (widgetInspectorBody) {
     widgetInspectorBody.innerHTML = "";
     if (typeof entry.renderInspector === "function") {
@@ -3074,15 +3064,13 @@ async function boot() {
   }
   background = loadBackground(serverSettings);
   headerTitleOverride = loadHeaderTitle(serverSettings);
-  pinnedHelpTopics = loadPinnedHelpTopics(serverSettings);
   wledDevices = loadWledDevices(serverSettings);
   applyBackground(background);
-  void initHelpBrowser({
-    root: document,
+  initFavoriteDocsPane({
+    list: document.querySelector("[data-doc-favorites]"),
+    dataManager,
     topicsUrl: "common/data/help-topics.json",
-    pane: leftPane ? { element: leftPane, toggle: leftPaneToggle } : null,
-    getPinnedIds: () => pinnedHelpTopics,
-    onTogglePin: togglePinnedHelpTopic,
+    docsHref: "common/docs.html",
   });
   if (encounterParam && !allWidgetTypes().includes("combat")) {
     layout.widgets.push({

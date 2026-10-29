@@ -1,3 +1,4 @@
+import { openInbox, watchInboxCount } from "./chat/inbox.js";
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
@@ -310,7 +311,10 @@ export function initAuthControls({
         data-auth-menu-toggle
         aria-label="Account menu — logged in as ${escapeHtml(user.username)}"
       >
-        <span class="iconify fs-5" data-icon="tabler:user-circle" aria-hidden="true"></span>
+        <span class="position-relative d-inline-flex">
+          <span class="iconify fs-5" data-icon="tabler:user-circle" aria-hidden="true"></span>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-primary" data-inbox-toggle-badge style="display: none; font-size: 0.6rem;"></span>
+        </span>
         <span class="undercroft-auth-text flex-column align-items-start" style="width: 10rem;">
           <span class="undercroft-auth-username text-truncate w-100">${identityLine}</span>
           ${activeStillExists ? `<span class="undercroft-auth-campaign text-body-secondary text-truncate w-100">${escapeHtml(active.name)}</span>` : ""}
@@ -319,6 +323,12 @@ export function initAuthControls({
       <ul class="dropdown-menu dropdown-menu-end undercroft-auth-dropdown">
         <li><span class="dropdown-item-text text-body-secondary">${identityLine}</span></li>
         <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account Settings</a></li>
+        <li>
+          <button class="dropdown-item d-flex justify-content-between align-items-center" type="button" data-inbox-open>
+            Inbox
+            <span class="badge text-bg-primary" data-inbox-menu-badge style="display: none;"></span>
+          </button>
+        </li>
         <li><hr class="dropdown-divider" /></li>
         ${
           groups.length
@@ -330,6 +340,9 @@ export function initAuthControls({
       </ul>
     `;
     container.appendChild(dropdown);
+
+    dropdown.querySelector("[data-inbox-open]")?.addEventListener("click", () => openInbox({ dataManager: manager, status }));
+    applyInboxBadge();
 
     dropdown.querySelectorAll("[data-campaign-select]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -368,6 +381,34 @@ export function initAuthControls({
     const toggle = dropdown.querySelector("[data-auth-menu-toggle]");
     if (toggle) {
       attachHoverDropdown(dropdown, toggle);
+    }
+  }
+
+  // The Inbox's unread count rides on the account menu, which is rebuilt
+  // often, so the number lives here and every render re-applies it.
+  let inboxUnread = 0;
+  let inboxWatcher = null;
+
+  function applyInboxBadge() {
+    container?.querySelectorAll("[data-inbox-toggle-badge], [data-inbox-menu-badge]").forEach((badge) => {
+      badge.textContent = inboxUnread > 99 ? "99+" : String(inboxUnread);
+      badge.style.display = inboxUnread > 0 ? "" : "none";
+    });
+  }
+
+  function syncInboxWatcher(signedIn) {
+    if (signedIn && !inboxWatcher) {
+      inboxWatcher = watchInboxCount({
+        dataManager: manager,
+        onCount: (count) => {
+          inboxUnread = count;
+          applyInboxBadge();
+        },
+      });
+    } else if (!signedIn && inboxWatcher) {
+      inboxWatcher.stop();
+      inboxWatcher = null;
+      inboxUnread = 0;
     }
   }
 
@@ -412,7 +453,9 @@ export function initAuthControls({
       return;
     }
     const user = sessionUser();
-    if (user && manager.isAuthenticated()) {
+    const signedIn = Boolean(user && manager.isAuthenticated());
+    syncInboxWatcher(signedIn);
+    if (signedIn) {
       renderUserMenu(user, []);
       void refreshUserMenu(user);
     } else {

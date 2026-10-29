@@ -276,6 +276,7 @@ document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection
 // expandNpcPropertiesSection opens it on generate/select.
 const npcPropertiesSection = createCollapsibleSection({
   label: "NPC Properties",
+  helpTopic: "forge.convert",
   collapsed: true,
   content: document.querySelector("[data-npc-properties-panel]"),
 });

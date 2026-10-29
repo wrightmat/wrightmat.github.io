@@ -43,6 +43,7 @@ import {
   describeFeaturePromotionOutcome,
 } from "../../common/js/lib/content-feature-matching.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
+import { initGroupSessions } from "./group-sessions.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
 import { roleRank } from "../../common/js/lib/data-manager.js";
@@ -264,15 +265,31 @@ document.querySelector("[data-feature-add-tier-mount]")?.appendChild(
     attrs: { "data-feature-add-tier": true },
   })
 );
-document.querySelector("[data-loom-group-add-property-mount]")?.appendChild(
-  createIconButton({
-    icon: "tabler:plus",
-    label: "Add Property",
-    className: "p-1",
-    attrs: { "data-loom-group-add-property": true },
-  })
-);
-const loomGroupAddPropertyButton = document.querySelector("[data-loom-group-add-property]");
+
+// Group actions (right-pane toolbar, "Group Properties"): add a session or a
+// property, and the campaign's share link. Copy and Disable only exist while a
+// link does (loomUpdateGroupShareDisplay toggles them).
+const groupToolbarButton = (config) =>
+  createIconButton({ variant: "outline-secondary", kind: "toolbar", tooltipPlacement: "top", ...config });
+const loomGroupAddSessionButton = groupToolbarButton({
+  icon: "tabler:calendar-plus",
+  label: "Add Session",
+  variant: "outline-primary",
+  onClick: () => loomGroupSessions?.addSession(),
+});
+const loomGroupAddPropertyButton = groupToolbarButton({
+  icon: "tabler:plus",
+  label: "Add Property",
+  onClick: () => addGroupProperty(),
+});
+const loomGroupShareGenerateButton = groupToolbarButton({ icon: "tabler:link", label: "Generate share link" });
+const loomGroupShareCopyButton = groupToolbarButton({ icon: "tabler:copy", label: "Copy share link" });
+const loomGroupShareDisableButton = groupToolbarButton({ icon: "tabler:link-off", label: "Disable share link", variant: "outline-danger" });
+loomGroupShareCopyButton.hidden = true;
+loomGroupShareDisableButton.hidden = true;
+document
+  .querySelector("[data-loom-group-toolbar-mount]")
+  ?.append(loomGroupAddSessionButton, loomGroupAddPropertyButton, loomGroupShareGenerateButton, loomGroupShareCopyButton, loomGroupShareDisableButton);
 
 // Property Inspector toolbar (right pane) — built via createIconButton
 // directly, not createToolbarButtonGroup: needs top tooltip placement (right
@@ -376,6 +393,7 @@ const mappingSelect = document.querySelector("[data-mapping-select]");
 // Tree/Entities/Data start expanded, matching their original markup.
 const mappingsSection = createCollapsibleSection({
   label: "Selections",
+  helpTopic: "loom.importing",
   collapsed: false,
   content: document.querySelector("[data-mappings-panel]"),
 });
@@ -389,7 +407,7 @@ document.querySelector("[data-mappings-mount]")?.appendChild(mappingsSection.sec
   ["macros", "loom.macros"],
   ["features", "loom.features"],
   ["library", "loom.libraryTable"],
-  ["users", "accounts.roles"],
+  ["users", "loom.users"],
   ["groups", "campaign.groups"],
 ].forEach(([tab, helpTopic]) => {
   const section = createCollapsibleSection({
@@ -2845,6 +2863,8 @@ const loomGroupsMessage = document.querySelector("[data-loom-groups-message]");
 const loomGroupsSelect = document.querySelector("[data-loom-groups-select]");
 const loomGroupEmpty = document.querySelector("[data-loom-group-empty]");
 const loomGroupForm = document.querySelector("[data-loom-group-form]");
+// Built in init() once the DataManager exists.
+let loomGroupSessions = null;
 const loomGroupNameInput = document.querySelector("[data-loom-group-name]");
 const loomGroupSystemSelect = document.querySelector("[data-loom-group-system]");
 const loomGroupSettingSelect = document.querySelector("[data-loom-group-setting]");
@@ -2852,10 +2872,6 @@ const loomGroupTemplateSelect = document.querySelector("[data-loom-group-templat
 const loomGroupPropertyRows = document.querySelector("[data-loom-group-property-rows]");
 const loomGroupMembersList = document.querySelector("[data-loom-group-members]");
 const loomGroupMembersEmpty = document.querySelector("[data-loom-group-members-empty]");
-const loomGroupShareBadge = document.querySelector("[data-loom-group-share-badge]");
-const loomGroupShareGenerateButton = document.querySelector("[data-loom-group-share-generate]");
-const loomGroupShareCopyButton = document.querySelector("[data-loom-group-share-copy]");
-const loomGroupShareDisableButton = document.querySelector("[data-loom-group-share-disable]");
 const loomGroupShareStatus = document.querySelector("[data-loom-group-share-status]");
 const loomGroupNewButton = document.querySelector("[data-loom-group-new]");
 const loomGroupSaveButton = document.querySelector("[data-loom-group-save]");
@@ -2865,7 +2881,9 @@ const loomGroupDeleteButton = document.querySelector("[data-loom-group-delete]")
 // Property Inspector (right pane) — same mechanism as Systems' own
 // (createPropertyInspector below). Collapsible, expanded by default for the
 // same reason Systems' own is.
-const groupInspectorEmpty = document.querySelector("[data-loom-group-inspector-empty]");
+// The inspector toggles an "empty" element when no property is selected; the
+// group panel shows nothing there, so it gets a detached one.
+const groupInspectorEmpty = document.createElement("div");
 const groupInspectorDetails = document.querySelector("[data-loom-group-inspector-details]");
 const groupInspectorFields = document.querySelector("[data-loom-group-inspector-fields]");
 const groupInspectorNewButton = document.querySelector("[data-loom-group-inspector-new]");
@@ -2874,23 +2892,40 @@ const groupInspectorDuplicateButton = document.querySelector("[data-loom-group-i
 const groupInspectorRequiredButton = document.querySelector("[data-loom-group-inspector-required]");
 const groupInspectorContent = document.querySelector("[data-loom-group-inspector-content]");
 const groupInspectorSection = createCollapsibleSection({
-  label: "Property Inspector",
+  label: "Group Properties",
   collapsed: false,
   content: groupInspectorContent,
 }).section;
 document.querySelector("[data-loom-group-inspector-mount]")?.appendChild(groupInspectorSection);
 
-// Share link (right pane) — same static controls, moved into a collapsible
-// section (existing static content div adopted as-is). Expanded by default,
-// unlike Assigned Systems/Settings — a campaign's share link is the one
-// thing a GM reaches for right after picking a group.
-const loomGroupShareList = document.querySelector("[data-loom-group-share-list]");
+// Share Link: collapsed until the group has one, then open (loomUpdateGroupShareDisplay).
 const loomGroupShareSection = createCollapsibleSection({
-  label: "Share link",
-  collapsed: false,
-  content: loomGroupShareList,
-}).section;
-document.querySelector("[data-loom-group-share-mount]")?.appendChild(loomGroupShareSection);
+  label: "Share Link",
+  collapsed: true,
+  content: loomGroupShareStatus,
+});
+document.querySelector("[data-loom-group-share-mount]")?.appendChild(loomGroupShareSection.section);
+
+// The center pane's Characters and Properties blocks are real collapsible
+// sections too (their existing static content adopted as-is), with Sessions
+// between them (group-sessions.js builds that one).
+document.querySelector("[data-loom-group-characters-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "Characters",
+    helpTopic: "loom.groupMembers",
+    collapsed: false,
+    content: document.querySelector("[data-loom-group-characters-content]"),
+  }).section
+);
+document.querySelector("[data-loom-group-properties-mount]")?.appendChild(
+  createCollapsibleSection({
+    label: "Properties",
+    helpTopic: "loom.groupProperties",
+    collapsed: true,
+    actions: [{ icon: "tabler:plus", label: "Add Property", onClick: () => addGroupProperty() }],
+    content: loomGroupPropertyRows,
+  }).section
+);
 
 const loomUsersTierFilter = document.querySelector("[data-loom-users-tier-filter]");
 const loomUsersSelect = document.querySelector("[data-loom-users-select]");
@@ -3501,39 +3536,27 @@ function loomCanSaveGroup() {
 }
 
 function loomUpdateGroupsToolbarState() {
+  const hasGroup = Boolean(loomGroupsState.selectedId);
   if (loomGroupSaveButton) loomGroupSaveButton.disabled = !loomCanSaveGroup();
-  if (loomGroupDuplicateButton) loomGroupDuplicateButton.disabled = !loomGroupsState.selectedId;
-  if (loomGroupDeleteButton) loomGroupDeleteButton.disabled = !loomGroupsState.selectedId;
+  if (loomGroupDuplicateButton) loomGroupDuplicateButton.disabled = !hasGroup;
+  if (loomGroupDeleteButton) loomGroupDeleteButton.disabled = !hasGroup;
+  [loomGroupAddSessionButton, loomGroupAddPropertyButton, loomGroupShareGenerateButton, loomGroupShareCopyButton, loomGroupShareDisableButton].forEach(
+    (button) => {
+      button.disabled = !hasGroup;
+    }
+  );
 }
 
 function loomUpdateGroupShareDisplay(group, nextLink) {
   const link = nextLink || group?.share_link;
-  if (link && link.token) {
-    const url = loomBuildShareUrl("groups", group.id, link.token);
-    if (loomGroupShareBadge) {
-      loomGroupShareBadge.className = "badge text-bg-success align-self-start";
-      loomGroupShareBadge.textContent = "Link active";
-    }
-    if (loomGroupShareCopyButton) {
-      loomGroupShareCopyButton.hidden = false;
-      loomGroupShareCopyButton.dataset.shareUrl = url;
-    }
-    if (loomGroupShareDisableButton) loomGroupShareDisableButton.hidden = false;
-    if (loomGroupShareStatus) loomGroupShareStatus.textContent = url;
-    if (loomGroupShareGenerateButton) loomGroupShareGenerateButton.hidden = true;
-  } else {
-    if (loomGroupShareBadge) {
-      loomGroupShareBadge.className = "badge text-bg-secondary align-self-start";
-      loomGroupShareBadge.textContent = "No link";
-    }
-    if (loomGroupShareCopyButton) {
-      loomGroupShareCopyButton.hidden = true;
-      loomGroupShareCopyButton.dataset.shareUrl = "";
-    }
-    if (loomGroupShareDisableButton) loomGroupShareDisableButton.hidden = true;
-    if (loomGroupShareStatus) loomGroupShareStatus.textContent = "No link yet.";
-    if (loomGroupShareGenerateButton) loomGroupShareGenerateButton.hidden = false;
-  }
+  const active = Boolean(link && link.token);
+  const url = active ? loomBuildShareUrl("groups", group.id, link.token) : "";
+  loomGroupShareCopyButton.dataset.shareUrl = url;
+  loomGroupShareCopyButton.hidden = !active;
+  loomGroupShareDisableButton.hidden = !active;
+  loomGroupShareGenerateButton.hidden = active;
+  if (loomGroupShareStatus) loomGroupShareStatus.textContent = active ? url : "No share link yet.";
+  loomGroupShareSection.setCollapsed(!active);
 }
 
 // Options for the Group System select — "None" (falls through to each
@@ -3650,7 +3673,7 @@ function loomRenderGroupMembersList(group) {
     }
     let label = loomFormatGroupCharacterLabel({ ...character, id: character.id });
     if (character.missing) label = `${label} (not found)`;
-    rows.push({ id: character.id, label, checked: memberMap.has(character.id) });
+    rows.push({ id: character.id, label, checked: memberMap.has(character.id), active: memberMap.get(character.id)?.active });
     if (memberMap.has(character.id)) seenIds.add(character.id);
   });
   memberMap.forEach((member, id) => {
@@ -3664,16 +3687,27 @@ function loomRenderGroupMembersList(group) {
     } else {
       label = `${label} (available)`;
     }
-    rows.push({ id, label, checked: true });
+    rows.push({ id, label, checked: true, active: member.active });
   });
   if (loomGroupMembersEmpty) loomGroupMembersEmpty.hidden = rows.length > 0;
   rows.forEach((row) => {
     const checkboxId = `loom-group-member-${row.id}`;
     const wrapper = document.createElement("div");
-    wrapper.className = "form-check";
+    wrapper.className = "d-flex align-items-center justify-content-between gap-2";
+    // Active: the character this player is currently playing in the group. Only
+    // rostered characters have one, and a player has at most one.
+    const activeSwitch = row.checked
+      ? `<span class="form-check form-switch mb-0 flex-shrink-0">
+           <input class="form-check-input" type="checkbox" role="switch" value="${escapeHtml(row.id)}" id="${escapeHtml(checkboxId)}-active" data-loom-group-member-active ${row.active ? "checked" : ""} />
+           <label class="form-check-label small" for="${escapeHtml(checkboxId)}-active">Active</label>
+         </span>`
+      : "";
     wrapper.innerHTML = `
-      <input class="form-check-input" type="checkbox" value="${escapeHtml(row.id)}" id="${escapeHtml(checkboxId)}" data-loom-group-member-checkbox ${row.checked ? "checked" : ""} />
-      <label class="form-check-label small" for="${escapeHtml(checkboxId)}">${escapeHtml(row.label)}</label>
+      <span class="form-check mb-0">
+        <input class="form-check-input" type="checkbox" value="${escapeHtml(row.id)}" id="${escapeHtml(checkboxId)}" data-loom-group-member-checkbox ${row.checked ? "checked" : ""} />
+        <label class="form-check-label small" for="${escapeHtml(checkboxId)}">${escapeHtml(row.label)}</label>
+      </span>
+      ${activeSwitch}
     `;
     loomGroupMembersList.appendChild(wrapper);
   });
@@ -3693,6 +3727,7 @@ function loomRenderGroupDetail() {
     loomGroupsState.cleanPropertiesJson = null;
     if (loomGroupPropertyRows) loomGroupPropertyRows.innerHTML = "";
     groupPropertyInspector.selectRow(null);
+    loomGroupSessions?.clear();
     loomUpdateGroupsToolbarState();
     return;
   }
@@ -3706,6 +3741,7 @@ function loomRenderGroupDetail() {
   void loomPopulateGroupTemplateSelect(group.system_id, group.template_id);
 
   loomRenderGroupMembersList(group);
+  void loomGroupSessions?.showGroup(group);
 
   loomUpdateGroupShareDisplay(group);
   loomUpdateGroupsToolbarState();
@@ -3824,10 +3860,8 @@ if (loomGroupTemplateSelect) {
 // ever recreated.
 wirePropertyContainerEvents(loomGroupPropertyRows, groupPropertyCtx);
 
-if (loomGroupAddPropertyButton) {
-  loomGroupAddPropertyButton.addEventListener("click", () => {
-    groupPropertyCtx.runChange(() => renderPropertyRow({}, loomGroupPropertyRows, groupPropertyCtx));
-  });
+function addGroupProperty() {
+  groupPropertyCtx.runChange(() => renderPropertyRow({}, loomGroupPropertyRows, groupPropertyCtx));
 }
 
 if (loomGroupNewButton) {
@@ -4004,6 +4038,25 @@ if (loomGroupMembersList) {
       console.error("Unable to update group members", error);
       if (status) status.show(error.message || "Unable to update group", { type: "danger" });
       checkboxes.forEach((input) => (input.disabled = false));
+    }
+  });
+}
+
+if (loomGroupMembersList) {
+  loomGroupMembersList.addEventListener("change", async (event) => {
+    const toggle = event.target.closest("[data-loom-group-member-active]");
+    if (!toggle) return;
+    const group = loomFindGroup(loomGroupsState.selectedId);
+    if (!group) return;
+    toggle.disabled = true;
+    try {
+      await dataManager.setGroupMemberActive({ groupId: group.id, characterId: toggle.value, active: toggle.checked });
+      await loomLoadGroups({ refresh: true });
+    } catch (error) {
+      console.error("Unable to change a character's active state", error);
+      if (status) status.show(error.message || "Unable to change that character", { type: "danger" });
+      toggle.checked = !toggle.checked;
+      toggle.disabled = false;
     }
   });
 }
@@ -4280,7 +4333,7 @@ const LOOM_RELATIONSHIP_TYPE_SUGGESTIONS = [
 const loomRelationshipsListMount = document.querySelector("[data-loom-relationships-list-mount]");
 const loomRelationshipsSection = createCollapsibleSection({
   label: "Relationships",
-  helpTopic: "loom.relationships",
+  helpTopic: "suite.relationships",
   collapsed: true,
   content: document.querySelector("[data-loom-relationships-panel]"),
 });
@@ -6345,7 +6398,7 @@ function renderMacroParamField(fieldName, action, onUpdate) {
     case "broadcast":
       return macroCheckbox(params.broadcast, "Broadcast to the table", (v) => setParam({ broadcast: v }));
     case "announce":
-      return macroCheckbox(params.announce, "Post result to the Game Log", (v) => setParam({ announce: v }));
+      return macroCheckbox(params.announce, "Post result to the Group Chat", (v) => setParam({ announce: v }));
     case "message":
       return macroFieldRow("Message", macroTextInput(params.message, "Text to post", (v) => setParam({ message: v })));
     case "expression":
@@ -7937,6 +7990,12 @@ async function init() {
   undoStack = shell.undoStack;
   const auth = initAuthControls({ status });
   dataManager = auth.dataManager;
+  loomGroupSessions = initGroupSessions({
+    dataManager,
+    getStatus: () => status,
+    centerMount: document.querySelector("[data-loom-group-sessions-mount]"),
+    inspectorMount: document.querySelector("[data-loom-group-session-inspector-mount]"),
+  });
   shareModal = initShareModal({ dataManager, status });
 
   // Loom edits shared suite-wide data — gated to gm+ for the whole tool,

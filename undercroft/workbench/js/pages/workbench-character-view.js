@@ -70,13 +70,14 @@ import {
   resolveBindingFromContexts,
   buildSystemPreviewData,
 } from "../lib/component-data.js";
-import { initGameLogWidget, SPOTLIGHT_KIND_LABELS, SPOTLIGHT_KIND_ICONS, SPOTLIGHT_INLINE_KINDS } from "../../../common/js/lib/widgets/game-log.js";
+import { initGameLogWidget } from "../../../common/js/lib/widgets/game-log.js";
+import { describePostTarget, postSystemMessage } from "../../../common/js/lib/chat/target.js";
 import { renderRelationshipEditor } from "../../../common/js/lib/relationship-editor.js";
 import { buildRelationshipGraph } from "../../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../../common/js/lib/graph-view.js";
 import { createSpotlightPanel } from "../../../common/js/lib/widgets/spotlight-panel.js";
 import { watchActiveSpotlights } from "../../../common/js/lib/spotlight-inbox.js";
-import { createSpotlightTitleCache, resolveActiveSpotlightId } from "../../../common/js/lib/spotlight.js";
+import { createSpotlightTitleCache, resolveActiveSpotlightId, SPOTLIGHT_KIND_LABELS, SPOTLIGHT_KIND_ICONS, SPOTLIGHT_INLINE_KINDS } from "../../../common/js/lib/spotlight.js";
 import {
   reimportViaMapping,
   mergeImportedCharacterData,
@@ -230,6 +231,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   const notesState = { collapsed: true };
   const characterPropertiesState = { collapsed: true };
   const dicePanelState = { collapsed: false };
+  let diceTargetBound = false;
   const gameLogPanelState = { collapsed: false };
   const nowShowingPanelState = { collapsed: false };
   // Assigned once each section is built below (createCollapsibleSection's
@@ -487,7 +489,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     "character-select",
     createCompactField({
       type: "select", id: "character-select", label: "Character", labelClass: "form-label fw-semibold text-body-secondary", controlClass: "form-select",
-      dataAttr: "data-character-select", helpTopic: "character.records", helpPlacement: "right",
+      dataAttr: "data-character-select", helpTopic: "workbench.addCharacter", helpPlacement: "right",
     })
   );
   mountField("new-character-name", createCompactField({ type: "text", id: "new-character-name", label: "Character Name", dataAttr: "data-new-character-name", name: "name", required: true, placeholder: "e.g. Elandra" }));
@@ -664,6 +666,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   if (elements.characterPropertiesPanel) {
     const characterPropertiesSectionBuilt = createCollapsibleSection({
       label: "Character Properties",
+      helpTopic: "workbench.characterSheet",
       collapsed: characterPropertiesState.collapsed,
       content: elements.characterPropertiesPanel,
     });
@@ -724,7 +727,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   if (elements.relationshipsMount && elements.relationshipsPanel) {
     const relationshipsSection = createCollapsibleSection({
       label: "Relationships",
-      helpTopic: "character.relationships",
+      helpTopic: "suite.relationships",
       collapsed: true,
       content: elements.relationshipsPanel,
     });
@@ -733,7 +736,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   {
     const diceSectionBuilt = createCollapsibleSection({
       label: "Dice Roller",
-      helpTopic: "character.dice",
+      helpTopic: "workbench.dice",
       collapsed: dicePanelState.collapsed,
       content: elements.dicePanel,
     });
@@ -745,6 +748,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   {
     const nowShowingSectionBuilt = createCollapsibleSection({
       label: "Now Showing",
+      helpTopic: "campaign.spotlight",
       collapsed: nowShowingPanelState.collapsed,
       content: elements.nowShowingPanel,
     });
@@ -756,6 +760,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   {
     const groupShareSectionBuilt = createCollapsibleSection({
       label: "Group characters",
+      helpTopic: "workbench.groupCharacters",
       collapsed: groupShareState.collapsed,
       content: elements.groupSharePanel,
       // Group Share's click needs bespoke gating (blocked without an active
@@ -3586,6 +3591,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return button;
   }
 
+  // Rolls from this panel land in the active chat thread; this line says which.
+  function syncDiceTarget() {
+    const line = elements.dicePanel?.querySelector("[data-dice-target]");
+    if (line) line.textContent = describePostTarget(dataManager) || "No active campaign — rolls aren't recorded.";
+  }
+
   function ensureDicePanelMarkup() {
     if (!elements.dicePanel) {
       return false;
@@ -3594,6 +3605,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const form = document.createElement("form");
     form.className = "d-flex flex-column gap-3";
     form.setAttribute("data-dice-form", "");
+
+    const targetLine = document.createElement("div");
+    targetLine.className = "small text-body-secondary";
+    targetLine.setAttribute("data-dice-target", "");
+    form.appendChild(targetLine);
+    if (!diceTargetBound) {
+      diceTargetBound = true;
+      window.addEventListener("undercroft:active-thread-changed", syncDiceTarget);
+      window.addEventListener("workbench:active-group-changed", syncDiceTarget);
+    }
 
     // Everything below except the symbol-pool section is the "standard"
     // numeric-dice UI, grouped so refreshDiceAndMoveButtons can hide it all
@@ -3687,6 +3708,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
     form.appendChild(symbolSection);
     elements.dicePanel.appendChild(form);
+    syncDiceTarget();
 
     elements.diceForm = form;
     elements.diceExpression = input;
@@ -4410,23 +4432,21 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
-  // A plain chat message goes through the mounted Game Log widget's own
-  // form — this is the one kind of log entry Workbench still posts
-  // directly, since the shared widget only displays rolls, never initiates
-  // them (game-log.js's describeEntry "roll" case). Posts to the same
-  // createGroupLogEntry endpoint, then refreshes the widget immediately
-  // rather than waiting for its next poll/live-stream tick.
-  // No-ops without an active campaign — the roll result still renders
-  // inline wherever the dice roller shows it, so nothing is lost except a
-  // persistent log entry with nowhere to go.
+  // Posts a roll to the active chat thread as the rolling character, then
+  // refreshes the widget immediately rather than waiting for its next
+  // poll/live-stream tick. No-ops without an active campaign — the roll
+  // result still renders inline wherever the dice roller shows it, so
+  // nothing is lost except a persistent message with nowhere to go.
   function recordGameLogRoll(result, { expression = "", label = "", verdict = "" } = {}) {
     if (!result || !dataManager.isAuthenticated() || (!gameLogContext.groupId && !gameLogContext.shareToken)) {
       return;
     }
     const context = resolveCurrentCharacterContext();
-    const payload = {
+    const notation = result.notation || expression || "";
+    const prefix = label ? `${label}: ` : "";
+    const details = {
       expression: expression || result.expression || result.notation || "",
-      notation: result.notation || expression || "",
+      notation,
       total: result.total,
       label: label || undefined,
       // A System-defined Move's matched band/compare label (e.g. "Partial
@@ -4434,17 +4454,25 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       verdict: verdict || undefined,
       character: context || undefined,
     };
-    dataManager
-      .createGroupLogEntry({
-        groupId: gameLogContext.shareToken ? "" : gameLogContext.groupId,
-        shareToken: gameLogContext.shareToken,
-        type: "roll",
-        message: "",
-        payload,
-      })
+    // Speak as the rolling character only when it's actually on this
+    // campaign's roster under the current user; otherwise the server would
+    // refuse the voice, and the roll is better posted as the person.
+    const onRoster =
+      context &&
+      (gameLogContext.members || []).some(
+        (member) => member?.content_id === context.id && member.owner_id === dataManager.session?.user?.id
+      );
+    postSystemMessage(dataManager, {
+      groupId: gameLogContext.groupId,
+      shareToken: gameLogContext.shareToken,
+      kind: "roll",
+      summary: `${prefix}${notation} → ${result.total}${verdict ? ` — ${verdict}` : ""}`,
+      details,
+      voice: onRoster ? { type: "character", id: context.id } : undefined,
+    })
       .then(() => gameLogWidget?.refresh())
       .catch((error) => {
-        console.error("Character editor: unable to send roll to the game log", error);
+        console.error("Character editor: unable to send roll to the chat", error);
       });
   }
 

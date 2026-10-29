@@ -42,7 +42,7 @@ export const MACRO_ACTION_CATALOG = {
     },
   },
   gamelog: {
-    label: "Game Log",
+    label: "Group Chat",
     actions: { post: { label: "Post a message", params: ["message"] } },
   },
   effects: {

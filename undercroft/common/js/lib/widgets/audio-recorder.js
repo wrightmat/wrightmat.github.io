@@ -2,7 +2,7 @@
 // local-only by design: the recording itself is never shared, spotlighted,
 // or persisted server-side, and stays out of dashboard.js's own
 // TABLE_WIDGET_TYPES (not table-facing, like board.js). One exception:
-// downloadCombinedSessionRecord READS the active campaign's Game Log to
+// downloadCombinedSessionRecord READS the active campaign's Group Chat to
 // interleave with the transcript, but never writes back to it.
 //
 // Recording is chunked (default 5 min) for two reasons: optional live
@@ -23,7 +23,8 @@ import { createIdbStore } from "../idb-store.js";
 import { promptConnectionModal } from "../connection-modal.js";
 import { createIconButton, createCollapsibleSection } from "../ui-components.js";
 import { disposeTooltips, refreshTooltips } from "../tooltips.js";
-import { formatTimestamp, parseTimestamp, summarizeLogEntry } from "./game-log.js";
+import { formatTimestamp, parseTimestamp, summarizeChatMessage } from "../chat/format.js";
+import { resolveActiveThread } from "../chat/target.js";
 
 const DEFAULT_CONFIG = {
   chunkMinutes: 5,
@@ -413,22 +414,22 @@ export function initAudioRecorderWidget(
     downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `session-${sessionId}-transcript.txt`);
   }
 
-  // Interleaves this session's transcript with the campaign's Game Log into
-  // one chronological plain-text record, keyed on each side's own real
-  // timestamp (transcript's startedAtReal, Game Log's created_at).
-  // limit: 200 matches groups.py's own hard cap on one log fetch.
+  // Interleaves this session's transcript with the campaign's active chat
+  // thread into one chronological plain-text record, keyed on each side's own
+  // real timestamp (transcript's startedAtReal, message createdAt).
+  // limit: 200 matches chat.py's own hard cap on one fetch.
   async function downloadCombinedSessionRecord() {
     if (!groupId && !shareToken) return;
-    let log;
+    let chatMessages;
     try {
-      log = await dataManager.getGroupLog({ groupId, shareToken, limit: 200 });
+      const target = await resolveActiveThread(dataManager, groupId);
+      if (!target) throw new Error("There is no thread to read.");
+      const page = await dataManager.getChatMessages({ groupId, shareToken, threadId: target.threadId, limit: 200 });
+      chatMessages = page.messages.filter((message) => !message.deleted);
     } catch (error) {
-      status?.show?.(error?.message || "Unable to load the Game Log for the combined record.", { type: "error" });
+      status?.show?.(error?.message || "Unable to load the chat for the combined record.", { type: "error" });
       return;
     }
-    const logEntries = Array.isArray(log?.entries)
-      ? log.entries.filter((entry) => entry?.type !== "spotlight-update")
-      : [];
     const combined = [
       ...transcriptLines
         .filter((line) => line.startedAtReal)
@@ -436,9 +437,9 @@ export function initAudioRecorderWidget(
           atMs: parseTimestamp(line.startedAtReal),
           text: `Transcript: "${line.text || "(no speech detected)"}"`,
         })),
-      ...logEntries.map((entry) => ({
-        atMs: parseTimestamp(entry.created_at),
-        text: `${entry.author?.name || "System"}: ${summarizeLogEntry(entry)}`,
+      ...chatMessages.map((message) => ({
+        atMs: parseTimestamp(message.createdAt),
+        text: `${message.voice?.name || message.author?.name || "System"}: ${summarizeChatMessage(message)}`,
       })),
     ].sort((a, b) => a.atMs - b.atMs);
     const lines = combined.map(({ atMs, text }) => `[${atMs ? new Date(atMs).toLocaleString() : "?"}] ${text}`);
@@ -625,7 +626,7 @@ export function initAudioRecorderWidget(
         buttonGroup.appendChild(
           createIconButton({
             icon: "tabler:notebook",
-            label: "Download combined session record (transcript + Game Log)",
+            label: "Download combined session record (transcript + Group Chat)",
             onClick: () => void downloadCombinedSessionRecord(),
           })
         );

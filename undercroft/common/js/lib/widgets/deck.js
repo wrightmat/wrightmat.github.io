@@ -16,6 +16,7 @@ import { playCardReveal } from "./card-overlay.js";
 import { createModeToggleGroup } from "../ui-components.js";
 import { refreshTooltips, disposeTooltips } from "../tooltips.js";
 import { el, setElementVisible } from "../dom.js";
+import { describePostTarget, postSystemMessage } from "../chat/target.js";
 
 function randomId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -197,30 +198,31 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
     return { destroy() {} };
   }
 
-  // Same three-mode shape as dice-roller.js's resolveVisibility (Broadcast
-  // GM-only, Private a self-whisper). "Default" means local-only, nothing posted, nothing revealed.
+  // Same three modes as dice-roller.js: "Post to thread" records the draw in
+  // the active thread, "Private" records nothing, "Broadcast" (GM-only) posts
+  // and deals the card face-up on everyone's screen.
   let mode = "default";
-  const currentUserId = dataManager?.session?.user?.id ?? null;
   const isGm = groupContext?.access === "owner";
 
   function resolveVisibility() {
-    if (mode === "private") {
-      return { recipientIds: currentUserId != null ? [currentUserId] : undefined, broadcastReveal: false };
-    }
-    if (mode === "broadcast" && isGm) {
-      return { recipientIds: undefined, broadcastReveal: true };
-    }
-    return { recipientIds: undefined, broadcastReveal: false };
+    return { post: mode !== "private", broadcastReveal: mode === "broadcast" && isGm };
   }
 
   const modeToggleContainer = el("div");
+  const targetLine = el("div", "text-body-secondary small");
+  function renderTargetLine() {
+    const target = describePostTarget(dataManager);
+    targetLine.textContent =
+      mode === "private" ? "Not recorded — only you see the draw." : target || "No active campaign — draws aren't recorded.";
+  }
   function renderModeToggle() {
+    renderTargetLine();
     createModeToggleGroup({
       container: modeToggleContainer,
       ariaLabel: "Draw visibility",
       value: mode,
       options: [
-        { value: "default", label: "Default", icon: "tabler:cards" },
+        { value: "default", label: "Post to thread", icon: "tabler:cards", tooltip: "Record this draw in the active thread" },
         {
           value: "broadcast",
           label: "Broadcast",
@@ -228,7 +230,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
           disabled: !isGm,
           tooltip: isGm ? "Deal this card face-up on everyone's screen" : "GM only",
         },
-        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this draw" },
+        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this draw — nothing is recorded" },
       ],
       onChange: (next) => {
         mode = next;
@@ -376,8 +378,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
     };
     renderCounts();
     resultLine.textContent = drawn.cards.map((card) => card.label).join(", ");
-    const { recipientIds, broadcastReveal } = resolveVisibility();
-    const hasRecipients = Array.isArray(recipientIds) && recipientIds.length > 0;
+    const { post, broadcastReveal } = resolveVisibility();
     const cardsPayload = drawn.cards.map((card) => ({ id: card.id, label: card.label, image: card.image || undefined }));
     // `cards` carries every drawn card in order — playCardReveal already staggers however many it's given, no separate multi-card path needed.
     const revealCards = cardsPayload.map((card) => ({ label: card.label, image: card.image || "" }));
@@ -385,18 +386,15 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
     // dice-roll.js's tryOverlayRoll, which always plays the local animation
     // regardless of Default/Broadcast/Private; the mode only ever gates whether OTHER people see it.
     playCardReveal({ cards: revealCards, backImage: deck.backImage || "" });
-    if (hasRecipients || broadcastReveal) {
-      void dataManager
-        .createGroupLogEntry({
-          groupId: groupContext.groupId,
-          type: "card",
-          message: "",
-          recipientIds: hasRecipients ? recipientIds : undefined,
-          payload: { deckId: deck.id, deckLabel: deck.label, cards: cardsPayload, backImage: deck.backImage || undefined },
-        })
-        .catch(() => {
-          // Best-effort — the draw already succeeded and was reported locally; a failed log post just means nobody else sees it.
-        });
+    if (post) {
+      void postSystemMessage(dataManager, {
+        groupId: groupContext.groupId,
+        kind: "card",
+        summary: `${deck.label}: ${cardsPayload.map((card) => card.label).join(", ")}`,
+        details: { deckId: deck.id, deckLabel: deck.label, cards: cardsPayload, backImage: deck.backImage || undefined },
+      }).catch(() => {
+        // Best-effort — the draw already succeeded and was reported locally; a failed post just means nobody else sees it.
+      });
     }
     if (broadcastReveal) {
       // Delivered via the same ephemeral, never-persisted channel broadcast
@@ -428,7 +426,9 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   shuffleButton.addEventListener("click", () => void handleShuffle());
 
   renderModeToggle();
-  wrap.append(modeToggleContainer, deckSelect, buttonRow, countsLine, resultLine);
+  window.addEventListener("undercroft:active-thread-changed", renderTargetLine);
+  window.addEventListener("workbench:active-group-changed", renderTargetLine);
+  wrap.append(modeToggleContainer, targetLine, deckSelect, buttonRow, countsLine, resultLine);
   container.append(wrap, emptyMessage);
   setElementVisible(emptyMessage, false, "block");
   refreshTooltips(container);
@@ -436,6 +436,8 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
 
   return {
     destroy() {
+      window.removeEventListener("undercroft:active-thread-changed", renderTargetLine);
+      window.removeEventListener("workbench:active-group-changed", renderTargetLine);
       watcher?.stop();
       disposeTooltips(container);
       container.innerHTML = "";
@@ -475,18 +477,16 @@ export async function runDeckMacroAction(action, { dataManager, groupContext, st
   const labels = drawn.cards.map((card) => card.label).join(", ");
   status?.show(`${deck.label}: ${labels}`, { type: "success", timeout: 2600 });
   if (params.announce) {
-    await dataManager
-      .createGroupLogEntry({
-        groupId: groupContext.groupId,
-        type: "card",
-        message: "",
-        payload: {
-          deckId: deck.id,
-          deckLabel: deck.label,
-          cards: drawn.cards.map((card) => ({ id: card.id, label: card.label, image: card.image || undefined })),
-          backImage: deck.backImage || undefined,
-        },
-      })
-      .catch(() => {});
+    await postSystemMessage(dataManager, {
+      groupId: groupContext.groupId,
+      kind: "card",
+      summary: `${deck.label}: ${labels}`,
+      details: {
+        deckId: deck.id,
+        deckLabel: deck.label,
+        cards: drawn.cards.map((card) => ({ id: card.id, label: card.label, image: card.image || undefined })),
+        backImage: deck.backImage || undefined,
+      },
+    }).catch(() => {});
   }
 }

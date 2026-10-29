@@ -664,7 +664,7 @@ export function initCalculatorWidget(
         label: `Day ${day}`,
         dataManager,
         groupContext,
-        broadcast: true,
+        post: true,
       });
       const text = rolled ? (rolled.isTable ? describeTableRow(rolled.row) : `${rolled.expression} → ${rolled.total}`) : "—";
       dailyResultsBox.appendChild(el("div", "", `Day ${day}: ${text}`));

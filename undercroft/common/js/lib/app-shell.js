@@ -146,6 +146,11 @@ export function resolveAccountHref(currentSection) {
   return "../common/account.html";
 }
 
+// The documentation page sits beside account.html, so it resolves the same way.
+export function resolveDocsHref(currentSection) {
+  return resolveAccountHref(currentSection).replace("account.html", "docs.html");
+}
+
 // The same tool-card grid the dropdown builds below — one rendering path
 // for both surfaces. The Dashboard isn't in TOOL_DEFINITIONS; it's reached
 // via the dedicated home icon in initToolNavigation instead.

@@ -1,10 +1,10 @@
-import { initAppShell, resolveToolHref, resolveToolContextPath } from "./js/lib/app-shell.js";
+import { initAppShell } from "./js/lib/app-shell.js";
 import { DataManager, ROLE_ORDER, WRITE_ROLE_REQUIREMENTS, roleRank } from "./js/lib/data-manager.js";
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
-import { initHelpSystem } from "./js/lib/help.js";
-import { initTooltip } from "./js/lib/tooltips.js";
-import { initHelpBrowser as initHelpBrowserModule } from "./js/lib/help-browser.js";
+import { initHelpSystem, loadHelpTopics } from "./js/lib/help.js";
+import { initFavoriteDocsPane } from "./js/lib/doc-favorites-pane.js";
+import { mountInbox } from "./js/lib/chat/inbox.js";
 import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
 import { showConfirmModal } from "./js/lib/confirm-modal.js";
@@ -21,7 +21,6 @@ const { status } = initAppShell({
   namespace: "account",
   leftPane: { size: "lg", initial: "expanded" },
 });
-const loomHref = resolveToolHref("loom", resolveToolContextPath());
 // No storagePrefix override — see dashboard.js's own comment on the same
 // line: unifies this page's local record cache with the rest of the suite's
 // default DataManager namespace, so a delete/save anywhere is visible everywhere.
@@ -45,12 +44,8 @@ const elements = {
   ownedFilter: document.querySelector("[data-admin-owned-filter]"),
   ownedTypeSelect: document.querySelector("[data-admin-owned-type]"),
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
-  quickReference: document.querySelector("[data-quick-reference]"),
-  // Help & Documentation lives in the LEFT pane here (campaign quick
-  // reference is on the right) — named for what's actually there, not
-  // which physical side it happens to be.
-  leftPane: document.querySelector('[data-pane="left"]'),
-  leftPaneToggle: document.querySelector('[data-pane-toggle="left"]'),
+  favoritesList: document.querySelector("[data-doc-favorites]"),
+  inboxMount: document.querySelector("[data-account-inbox]"),
   emailForm: document.querySelector("[data-admin-email-form]"),
   emailError: document.querySelector("[data-admin-email-error]"),
   emailInput: document.getElementById("admin-settings-email"),
@@ -97,8 +92,8 @@ const OWNER_BUCKET_ALIASES = { character: "characters", template: "templates", s
 
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
-const TAB_UPGRADE = "upgrade";
-const AVAILABLE_TABS = [TAB_SETTINGS, TAB_OWNED, TAB_UPGRADE];
+const TAB_INBOX = "inbox";
+const AVAILABLE_TABS = [TAB_SETTINGS, TAB_INBOX, TAB_OWNED];
 
 // Self-service upgrade targets only — "admin" is deliberately excluded (and
 // rejected server-side regardless) since it can only be granted by an
@@ -235,15 +230,15 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
     populateOwnedUserFilter();
     loadOwnedContent();
   }
-  if (target === TAB_UPGRADE) {
-    renderUpgradeTab();
+  if (target === TAB_INBOX && elements.inboxMount) {
+    mountInbox(elements.inboxMount, { dataManager, status });
   }
 }
 
-// Excludes "admin" by construction (TIER_UPGRADE_PLANS never lists it) —
+// The tier cards in the right pane. Excludes "admin" by construction (TIER_UPGRADE_PLANS never lists it) —
 // the server rejects it unconditionally too, so this is a UX nicety on top
 // of a real enforced restriction, not the restriction itself.
-function renderUpgradeTab() {
+function renderUpgrade() {
   if (!elements.upgradeCards) {
     return;
   }
@@ -262,9 +257,8 @@ function renderUpgradeTab() {
     // real restriction.
     const isBelowCurrent = Boolean(user) && !isCurrent && roleRank(plan.value) < userRank;
     const col = document.createElement("div");
-    col.className = "col-12 col-md-6 col-xl-3";
     const card = document.createElement("div");
-    card.className = `card h-100${isCurrent ? " border-primary" : ""}`;
+    card.className = `card${isCurrent ? " border-primary" : ""}`;
     const body = document.createElement("div");
     body.className = "card-body d-flex flex-column gap-2";
 
@@ -325,7 +319,7 @@ async function handleUpgradeClick(plan) {
   }
   try {
     await dataManager.upgradeTier({ tier: plan.value });
-    renderUpgradeTab();
+    renderUpgrade();
     if (status) {
       status.show(`Upgraded to ${plan.label}`, { type: "success", timeout: 2000 });
     }
@@ -1000,7 +994,7 @@ function setPasswordError(message = "") {
 
 
 function handleAuthChanged() {
-  renderQuickReference();
+  renderUpgrade();
   const user = currentUser();
   if (user) {
     showPanel();
@@ -1235,168 +1229,15 @@ if (elements.passwordForm) {
   });
 }
 
-// ===== Help topic browser (left pane) =========================================
-// This page is where every tool's inline (?) help triggers deep-link to —
-// this pane is what they land on, and it's also directly browsable/
-// searchable on its own, independent of the admin-gated content in the main
-// panel (not behind the sign-in gate). Search/browse/detail wiring lives in
-// help-browser.js, shared with the Dashboard's own copy (which adds pinning
-// on top of the same module).
-let helpBrowserApi = null;
-
-async function initHelpBrowser() {
-  helpBrowserApi = await initHelpBrowserModule({
-    topicsUrl: "data/help-topics.json",
-    pane: elements.leftPane ? { element: elements.leftPane, toggle: elements.leftPaneToggle } : null,
-  });
-}
-
-// Exposed on window so the quick-reference steps below can jump straight to
-// a topic without a full navigation — the generic data-help-topic mechanism
-// is for triggers OUTSIDE this page, which open this page in a new tab.
-function showHelpTopic(topicId) {
-  helpBrowserApi?.showTopic(topicId);
-}
-
-// ===== Campaign quick reference (left pane) ===================================
-// Creating a group requires GM tier or higher — the same tier this whole
-// panel is gated on, so everyone who can see this guide can complete every
-// step in it.
-const QUICK_REFERENCE_STEPS = [
-  {
-    title: "Create a Campaign Group",
-    description: "Requires GM tier or higher — this whole guide only shows once you qualify. Manage groups from the Groups tab in Loom.",
-    helpTopic: "campaign.groups",
-    href: loomHref,
-    tabLabel: "Open Loom",
-  },
-  {
-    title: "Add your players' characters",
-    description: "Open the group's row in Loom's Groups tab and pick characters for its roster.",
-    helpTopic: "admin.groups.members",
-    href: loomHref,
-    tabLabel: "Open Loom",
-  },
-  {
-    title: "Pick it as your Active Campaign",
-    description:
-      "Use the Campaign dropdown in the header, next to your account menu — it's on every tool once you're signed in.",
-    helpTopic: "campaign.active",
-  },
-  {
-    title: "Share what the table needs",
-    description:
-      'From any tool’s Save/Export toolbar, or this page’s Share button, choose "Share with [your campaign]" for one click.',
-    helpTopic: "campaign.sharing",
-  },
-  {
-    title: "Show something live",
-    description:
-      "Add a Handout widget to your Dashboard (or a Map widget for maps) and click its eye icon — that's what the table sees.",
-    helpTopic: "campaign.spotlight",
-  },
-  {
-    title: "Give players a way in",
-    description:
-      "Grab the group's public share link from Loom's Groups tab so players without accounts can watch the Game Log and Now Showing panel.",
-    helpTopic: "campaign.gamelog",
-    href: loomHref,
-    tabLabel: "Open Loom",
-  },
-];
-
-function renderQuickReference() {
-  if (!elements.quickReference) return;
-  elements.quickReference.innerHTML = "";
-  const user = currentUser();
-  const eligible = user && roleRank(user.tier) >= roleRank("gm");
-  if (!eligible) {
-    const heading = document.createElement("h2");
-    heading.className = "text-uppercase fs-6 fw-semibold text-body-secondary";
-    heading.textContent = "Running a Campaign";
-    const message = document.createElement("p");
-    message.className = "small text-body-secondary mb-0";
-    message.textContent = user
-      ? "Campaign tools (Groups, sharing, live Show-to-table) are available at GM tier and above."
-      : "Sign in at GM tier or above to see the campaign quick-start guide here.";
-    elements.quickReference.append(heading, message);
-    return;
-  }
-  const header = document.createElement("div");
-  const heading = document.createElement("h2");
-  heading.className = "text-uppercase fs-6 fw-semibold text-body-secondary mb-1";
-  heading.textContent = "Running a Campaign";
-  const subtitle = document.createElement("p");
-  subtitle.className = "small text-body-secondary mb-0";
-  subtitle.textContent = "A step-by-step path from “I GM” to a live table.";
-  header.append(heading, subtitle);
-  elements.quickReference.appendChild(header);
-
-  const list = document.createElement("ol");
-  list.className = "list-unstyled d-flex flex-column gap-3 mb-0";
-  QUICK_REFERENCE_STEPS.forEach((step, index) => {
-    const item = document.createElement("li");
-    item.className = "d-flex gap-2";
-
-    const badge = document.createElement("span");
-    badge.className =
-      "badge rounded-pill text-bg-secondary flex-shrink-0 d-flex align-items-center justify-content-center";
-    badge.style.width = "1.5rem";
-    badge.style.height = "1.5rem";
-    badge.textContent = String(index + 1);
-
-    const body = document.createElement("div");
-    body.className = "d-flex flex-column gap-1";
-
-    const titleRow = document.createElement("div");
-    titleRow.className = "d-flex align-items-center gap-1";
-    const title = document.createElement("span");
-    title.className = "fw-semibold small";
-    title.textContent = step.title;
-    titleRow.appendChild(title);
-    if (step.helpTopic) {
-      const helpButton = document.createElement("button");
-      helpButton.type = "button";
-      helpButton.className = "btn btn-link p-0 text-body-secondary d-inline-flex";
-      helpButton.setAttribute("aria-label", `More about: ${step.title}`);
-      helpButton.innerHTML = '<span class="iconify" data-icon="tabler:help" aria-hidden="true"></span>';
-      initTooltip(helpButton, { title: `More about: ${step.title}` });
-      helpButton.addEventListener("click", () => showHelpTopic(step.helpTopic));
-      titleRow.appendChild(helpButton);
-    }
-    body.appendChild(titleRow);
-
-    const description = document.createElement("p");
-    description.className = "text-body-secondary small mb-0";
-    description.textContent = step.description;
-    body.appendChild(description);
-
-    if (step.href) {
-      const goLink = document.createElement("a");
-      goLink.href = step.href;
-      goLink.className = "btn btn-outline-secondary btn-sm align-self-start";
-      goLink.textContent = step.tabLabel || "Go";
-      body.appendChild(goLink);
-    }
-
-    item.append(badge, body);
-    list.appendChild(item);
-  });
-  elements.quickReference.appendChild(list);
-}
+// ===== Favorite documentation (left pane) ====================================
+initFavoriteDocsPane({
+  list: elements.favoritesList,
+  dataManager,
+  topicsUrl: "data/help-topics.json",
+  docsHref: "docs.html",
+});
 
 window.addEventListener("workbench:content-saved", handleOwnedContentEvent);
 window.addEventListener("workbench:content-deleted", handleOwnedContentEvent);
 
 handleAuthChanged();
-// Same-page shortcut for this page's own inline (?) help triggers —
-// clicking one jumps straight to the topic in this page's own left-pane
-// browser instead of opening a redundant second tab pointed at itself.
-window.addEventListener("undercroft:show-help-topic", (event) => {
-  const topicId = event.detail?.topicId;
-  if (topicId) {
-    showHelpTopic(topicId);
-  }
-});
-
-void initHelpBrowser();

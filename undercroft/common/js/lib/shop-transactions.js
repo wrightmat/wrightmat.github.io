@@ -12,6 +12,7 @@
 // mechanism) with zero new server code, and live sync for free (Group
 // Property changes already live on the "group" kind, tracked by live.js's SSE).
 import { persistGroupPropertyValue } from "./group-live-sync.js";
+import { postSystemMessage } from "./chat/target.js";
 import { resolveOwnCharacter } from "./marker-contents.js";
 import { loadRarityPriceRanges, rollItemPrices, rollResourcePrice, roundPrice, PRICE_CHECK_TIERS } from "./item-pricing.js";
 import { findKindReferenceRecord } from "./library-reference.js";
@@ -292,14 +293,12 @@ export async function buyFromShop({ dataManager, groupId, shareToken = "", locat
     .filter((entry) => !Number.isFinite(entry.stock) || entry.stock > 0);
   await persistGroupPropertyValue({ dataManager, groupId, key, value: { ...freshShop, items: updatedItems } });
 
-  void dataManager
-    .createGroupLogEntry({
-      groupId,
-      shareToken,
-      type: "message",
-      message: `${buyerLabel} bought ${item.label || refId} for ${formatPriceAmount(amount, denomination, denominations)}.`,
-    })
-    .catch(() => {});
+  void postSystemMessage(dataManager, {
+    groupId,
+    shareToken,
+    kind: "shop",
+    summary: `${buyerLabel} bought ${item.label || refId} for ${formatPriceAmount(amount, denomination, denominations)}.`,
+  }).catch(() => {});
 
   return { label: item.label || refId, price: amount, denomination, buyerLabel };
 }
@@ -472,14 +471,12 @@ export async function sellToShop({
 
   const totalLabel = quantity > 1 ? `${quantity} × ${label}` : label;
   const totalPriceText = formatPriceAmount(sellPriceBaseUnits / sellPriceCost, denomination, denominations);
-  void dataManager
-    .createGroupLogEntry({
-      groupId,
-      shareToken,
-      type: "message",
-      message: `${freshCharacter.name || "A character"} sold ${totalLabel} for ${totalPriceText}.`,
-    })
-    .catch(() => {});
+  void postSystemMessage(dataManager, {
+    groupId,
+    shareToken,
+    kind: "shop",
+    summary: `${freshCharacter.name || "A character"} sold ${totalLabel} for ${totalPriceText}.`,
+  }).catch(() => {});
 
   return { label, price: sellPrice, denomination, quantity, totalPrice: sellPriceBaseUnits / sellPriceCost };
 }

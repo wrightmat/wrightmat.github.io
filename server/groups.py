@@ -26,7 +26,7 @@ _GROUP_ID_PREFIX = "grp_"
 # off the old bespoke `groups` table). `storage` is imported lazily inside
 # each function below rather than at module level — storage.py itself
 # imports a handful of functions FROM this module (accessible_group_ids,
-# user_can_access_group, get_active_spotlights), so a top-level import on
+# user_can_access_group), so a top-level import on
 # both sides would cycle; storage.py's own side of that already made its
 # imports of this module function-local for the same reason.
 #
@@ -192,6 +192,7 @@ def _fetch_group_members_batch(state: ServerState, group_ids: List[str]) -> Dict
                gm.content_type,
                gm.content_id,
                gm.added_at,
+               gm.active AS member_active,
                li.title AS character_title,
                li.metadata AS character_metadata,
                li.owner_id AS character_owner_id,
@@ -248,6 +249,9 @@ def _fetch_group_members_batch(state: ServerState, group_ids: List[str]) -> Dict
             "content_type": content_type,
             "content_id": content_id,
             "added_at": row["added_at"],
+            # A NULL (a row written before the flag existed and never backfilled)
+            # reads as active, the same as the migration's own treatment.
+            "active": row["member_active"] != 0,
         }
         if content_type == "character":
             metadata = parsed_metadata.get(content_id, {})
@@ -314,57 +318,6 @@ def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Di
         "share_link": share_link,
         "members": members,
     }
-
-
-def _sanitize_log_limit(raw: Optional[int]) -> int:
-    try:
-        value = int(raw) if raw is not None else 100
-    except (TypeError, ValueError):
-        return 100
-    return max(1, min(value, 200))
-
-
-def _serialize_log_entries(rows: Iterable) -> List[Dict[str, Any]]:
-    entries: List[Dict[str, Any]] = []
-    for row in rows:
-        if not row:
-            continue
-        payload = None
-        payload_raw = row["payload"] if "payload" in row.keys() else None
-        if payload_raw:
-            try:
-                payload = json.loads(payload_raw)
-            except json.JSONDecodeError:
-                payload = None
-        # Absent on a pre-migration row (or a SELECT that doesn't fetch
-        # them) — reads as "public, not in-character," the same as every
-        # row written before this feature existed.
-        recipient_ids: List[int] = []
-        recipient_ids_raw = row["recipient_ids"] if "recipient_ids" in row.keys() else None
-        if recipient_ids_raw:
-            try:
-                parsed = json.loads(recipient_ids_raw)
-                if isinstance(parsed, list):
-                    recipient_ids = [int(entry) for entry in parsed if isinstance(entry, (int, float))]
-            except (json.JSONDecodeError, TypeError, ValueError):
-                recipient_ids = []
-        in_character = bool(row["in_character"]) if "in_character" in row.keys() and row["in_character"] else False
-        entries.append(
-            {
-                "id": row["id"],
-                "type": row["entry_type"],
-                "message": row["message"] or "",
-                "payload": payload,
-                "author": {
-                    "id": row["author_id"],
-                    "name": row["author_name"] or "",
-                },
-                "created_at": row["created_at"],
-                "recipient_ids": recipient_ids,
-                "in_character": in_character,
-            }
-        )
-    return entries
 
 
 def _load_group_access_row(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
@@ -482,7 +435,7 @@ def user_can_access_group(state: ServerState, group_id: str, user: Optional[User
 def _group_member_user_ids(state: ServerState, group_id: str, owner_id: Optional[int]) -> Set[int]:
     """Every user id with real access to this group — the GM (owner_id) plus
     every distinct account that owns a character currently a member of it.
-    Used by create_group_log_entry to validate a whisper's requested
+    Used by chat.py to validate a direct message's requested
     recipient ids against actual membership (same query shape
     _resolve_group_access/user_can_access_group already run for a single
     user at a time, just widened to return the whole set at once) — an id
@@ -541,330 +494,10 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     return list({*owned, *member_of})
 
 
-def _entry_visible_to(entry: Dict[str, Any], viewer_user_id: Optional[int]) -> bool:
-    # A whisper (non-empty recipient_ids) is visible only to its author or an
-    # explicit recipient — the GM gets no automatic override (confirmed
-    # design: the GM is just another mentionable target, not an all-seeing
-    # overseer). viewer_user_id is None for the one truly-anonymous read
-    # path (the share-token GET route, which never passes a User at all) —
-    # None never matches anything below, so an anonymous share-link viewer
-    # never sees any whisper, regardless of who authored/received it.
-    recipient_ids = entry.get("recipient_ids") or []
-    if not recipient_ids:
-        return True
-    if viewer_user_id is None:
-        return False
-    return viewer_user_id == entry.get("author", {}).get("id") or viewer_user_id in recipient_ids
-
-
-def _fetch_group_log_entries(
-    state: ServerState,
-    group_id: str,
-    limit: int,
-    entry_types: Optional[List[str]] = None,
-    viewer_user_id: Optional[int] = None,
-) -> List[Dict[str, Any]]:
-    # entry_types (optional) restricts the LIMIT-bounded window to specific
-    # types instead of the group's raw, most-recent-N-of-everything log —
-    # needed because ordinary chat/roll entries and a single chatty
-    # inline-kind widget's own spotlight-update refreshes (a Clock ticking,
-    # a Browser URL edit — every one of those is its own row, see
-    # create_group_log_entry's own comment) all share this same bounded
-    # window. Without this, enough of either can silently push an unrelated
-    # widget's still-active `spotlight` entry outside the fetched window,
-    # making resolveIsSpotlighted (spotlight.js) wrongly conclude it's no
-    # longer shown even though nothing ever cleared it — confirmed as the
-    # cause of the second-screen mirror going completely blank whenever a
-    # Clock widget had been ticked/edited enough times. Callers resolving
-    # "what's currently spotlighted" pass the three spotlight-related types;
-    # the Game Log widget's own read (wanting everything, unfiltered) omits
-    # this entirely.
-    # Whisper visibility is filtered in Python below, AFTER this SQL LIMIT —
-    # cheap here since the log is already bounded to <=200 rows, but it means
-    # a heavily-whispered window could under-fill `limit` for a viewer who
-    # can't see much of it. Only message/roll/card rows ever carry
-    # recipient_ids (create_group_log_entry), so over-fetch (bounded at the
-    # same 200 cap _sanitize_log_limit already enforces) only when one of
-    # those is actually possible in this result set — a types-restricted
-    # spotlight read never includes them, so it skips the over-fetch
-    # entirely.
-    types_may_carry_recipients = not entry_types or any(t in entry_types for t in ("message", "roll", "card"))
-    fetch_limit = min(limit * 3, 200) if types_may_carry_recipients else limit
-    columns = "id, entry_type, author_id, author_name, message, payload, created_at, recipient_ids, in_character"
-    if entry_types:
-        placeholders = ",".join("?" for _ in entry_types)
-        rows = state.db.execute(
-            f"""
-            SELECT {columns}
-            FROM group_logs
-            WHERE group_id = ? AND entry_type IN ({placeholders})
-            ORDER BY id DESC
-            LIMIT ?
-            """,
-            (group_id, *entry_types, fetch_limit),
-        ).fetchall()
-    else:
-        rows = state.db.execute(
-            f"""
-            SELECT {columns}
-            FROM group_logs
-            WHERE group_id = ?
-            ORDER BY id DESC
-            LIMIT ?
-            """,
-            (group_id, fetch_limit),
-        ).fetchall()
-    ordered = list(rows)
-    ordered.reverse()
-    entries = _serialize_log_entries(ordered)
-    if types_may_carry_recipients:
-        entries = [entry for entry in entries if _entry_visible_to(entry, viewer_user_id)]
-        if len(entries) > limit:
-            entries = entries[-limit:]
-    return entries
-
-
-def get_active_spotlights(state: ServerState, group_id: str, limit: int = 200) -> List[Dict[str, Any]]:
-    """Every (kind, id) pair currently spotlighted in this group — replayed
-    forward through the group's own `spotlight`/`spotlight-clear` history,
-    same per-instance resolution spotlight.js's own resolveIsSpotlighted
-    applies client-side (a later entry, scoped by kind+id, kind-only, or
-    fully global, supersedes an earlier one), just computed for every kind
-    at once rather than one at a time — storage.py's get_item (the
-    share-token special case that lets an anonymous share-link visitor read
-    exactly whatever's currently shown, and nothing else) needs to check an
-    arbitrary requested (kind, id) — or, for a template fetch, match against
-    any currently-active entry's own templateId — without knowing in advance
-    which kind is actually active. No access check here by design — only
-    ever called from a context that has already resolved group access.
-    Bounded to the most recent `limit` spotlight/spotlight-clear entries
-    (chronological order, oldest first, so a later clear is correctly
-    applied after the spotlight it clears) — same practical "recent window,
-    not full unbounded history" tradeoff resolveIsSpotlighted's own default
-    `limit` makes client-side; a GM realistically never has anywhere close
-    to this many simultaneously-relevant show/hide toggles outstanding."""
-    # Pure read — only ever called from storage.py's get_item, an unlocked
-    # route. See is_owner's own comment (storage.py) on why read_db is safe.
-    rows = state.read_db.execute(
-        """
-        SELECT entry_type, payload
-        FROM group_logs
-        WHERE group_id = ? AND entry_type IN ('spotlight', 'spotlight-clear')
-        ORDER BY id DESC
-        LIMIT ?
-        """,
-        (group_id, limit),
-    ).fetchall()
-    active: Dict[Tuple[str, str], Dict[str, Any]] = {}
-    for row in reversed(rows):
-        if not row["payload"]:
-            continue
-        try:
-            payload = json.loads(row["payload"])
-        except json.JSONDecodeError:
-            continue
-        if not isinstance(payload, dict):
-            continue
-        if row["entry_type"] == "spotlight":
-            kind_value = str(payload.get("kind") or "")
-            id_value = str(payload.get("id") or "")
-            if kind_value and id_value:
-                active[(kind_value, id_value)] = payload
-        else:  # spotlight-clear
-            clear_kind = payload.get("kind")
-            if not clear_kind:
-                active.clear()  # Global clear.
-                continue
-            clear_kind = str(clear_kind)
-            clear_id = payload.get("id")
-            if clear_id:
-                active.pop((clear_kind, str(clear_id)), None)
-            else:
-                for key in [k for k in active if k[0] == clear_kind]:
-                    active.pop(key, None)
-    return list(active.values())
-
-
-_VALID_LOG_ENTRY_TYPES = {"message", "roll", "spotlight", "spotlight-clear", "spotlight-update"}
-
-
-def list_group_log(
-    state: ServerState,
-    group_id: Optional[str],
-    user: Optional[User],
-    *,
-    share_token: Optional[str] = None,
-    limit: Optional[int] = None,
-    entry_types: Optional[List[str]] = None,
-) -> Dict[str, Any]:
-    row, share_mode = _resolve_group_access(state, group_id, user, share_token=share_token)
-    limit_value = _sanitize_log_limit(limit)
-    # Silently drops anything not a real entry_type rather than erroring —
-    # this is a read-side filter, not user input worth rejecting a whole
-    # request over.
-    types_value = [t for t in entry_types if t in _VALID_LOG_ENTRY_TYPES] if entry_types else None
-    viewer_user_id = user.id if user else None
-    entries = _fetch_group_log_entries(state, row["id"], limit_value, types_value, viewer_user_id)
-    payload: Dict[str, Any] = {
-        "group": {"id": row["id"], "name": row["name"], "type": row["type"]},
-        "entries": entries,
-    }
-    if share_mode and share_token:
-        payload["share"] = {"token": share_token}
-    return payload
-
-
-def create_group_log_entry(
-    state: ServerState,
-    group_id: Optional[str],
-    user: Optional[User],
-    *,
-    share_token: Optional[str] = None,
-    entry_type: str = "message",
-    message: str = "",
-    payload: Optional[Dict[str, Any]] = None,
-    recipient_ids: Optional[List[Any]] = None,
-    in_character: bool = False,
-) -> Dict[str, Any]:
-    if not user:
-        raise AuthError("Sign in to post to the game log")
-    row, _ = _resolve_group_access(state, group_id, user, share_token=share_token)
-    normalized_type = (entry_type or "").strip().lower() or "message"
-    if normalized_type not in {"message", "roll", "card", "spotlight", "spotlight-clear", "spotlight-update"}:
-        raise AuthError("Unsupported log entry type")
-    text = (message or "").strip()
-    if text:
-        text = text[:2000]
-    payload_value: Optional[Dict[str, Any]] = None
-    if isinstance(payload, dict) and payload:
-        payload_value = payload
-    if normalized_type == "message" and not text and not payload_value:
-        raise AuthError("Message cannot be empty")
-    if normalized_type == "roll":
-        if not payload_value:
-            raise AuthError("Roll payload is required")
-    if normalized_type == "card":
-        # A drawn card's own log entry — same "trust the client, no
-        # fairness/re-verification" precedent as a roll (see this
-        # function's own roll handling above); a card's identity is no more
-        # independently checkable server-side than a die's settled face is.
-        if not payload_value:
-            raise AuthError("Card payload is required")
-    if normalized_type == "spotlight":
-        # {kind, id, templateId, data} — templateId is optional (the "Now
-        # showing" viewer can fall back to a generic display if the GM didn't
-        # pick a print template), but kind/id are required to know what to
-        # fetch. `data` is only meaningful for _INLINE_SPOTLIGHT_KINDS (see
-        # that set's own comment) — ignored otherwise, since a real
-        # Library-backed kind's content always comes from its own record.
-        if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
-            raise AuthError("Spotlight payload requires kind and id")
-        kind_value = str(payload_value["kind"])
-        if kind_value not in _INLINE_SPOTLIGHT_KINDS:
-            # Defense in depth: spotlightToGroup (data-manager.js) always
-            # shares the entity first via share_with_group, which already
-            # enforces this same check — but that's a client-side
-            # convention, not something this route itself relies on. Without
-            # checking again here, posting a spotlight entry straight to
-            # this endpoint (bypassing the share step) could reference a
-            # generated-but-never-saved record, which then fails later —
-            # and confusingly, on a viewer's screen — instead of immediately
-            # telling the GM to save it first.
-            if not content_exists(state, kind_value, str(payload_value["id"])):
-                raise AuthError("Save this record before showing it to the table")
-            template_id = payload_value.get("templateId")
-            if template_id and not content_exists(state, "template", str(template_id)):
-                raise AuthError("Save this template before showing it to the table")
-    if normalized_type == "spotlight-update":
-        # A silent data refresh on an already-shown spotlight — usually a
-        # content refresh for an inline-kind widget (a clock tick, a Browser
-        # URL edit), whose content already lives in, and is always re-fetched
-        # from, the log entry itself rather than a record. "encounter" is the
-        # one Library-backed exception, allowed here only to patch
-        # `data.hidden` without re-announcing — see
-        # _SPOTLIGHT_UPDATE_ALLOWED_KINDS' own comment for why.
-        if not payload_value or not payload_value.get("kind") or not payload_value.get("id"):
-            raise AuthError("Spotlight update payload requires kind and id")
-        kind_value = str(payload_value["kind"])
-        if kind_value not in _SPOTLIGHT_UPDATE_ALLOWED_KINDS:
-            raise AuthError("This kind does not support inline spotlight updates")
-    payload_data = None
-    if payload_value is not None:
-        try:
-            payload_data = json.dumps(payload_value)
-        except (TypeError, ValueError) as exc:
-            raise AuthError("Invalid payload") from exc
-    # Whisper recipients now apply to message/roll/card — a roll/card
-    # "whispered to yourself" is exactly how Private rolls/draws work (see
-    # the Cards/Decks plan): same visibility filter (_entry_visible_to
-    # below), zero new logic, just widened which entry types can carry it.
-    # in_character stays message-only — a roll/card has no "voice" concept.
-    # Silently ignoring recipient_ids/in_character on any OTHER type
-    # (spotlight/etc.) rather than erroring matches this function's
-    # existing "read-side filter, not user input worth rejecting a whole
-    # request over" convention elsewhere in this function.
-    recipient_ids_data = None
-    in_character_value = 0
-    if normalized_type in ("message", "roll", "card"):
-        if recipient_ids:
-            coerced_ids: Set[int] = set()
-            for raw_id in recipient_ids:
-                try:
-                    coerced_ids.add(int(raw_id))
-                except (TypeError, ValueError):
-                    continue
-            valid_ids = _group_member_user_ids(state, row["id"], row.get("owner_id"))
-            filtered = sorted(coerced_ids & valid_ids)
-            if filtered:
-                recipient_ids_data = json.dumps(filtered)
-    if normalized_type == "message":
-        in_character_value = 1 if in_character else 0
-    timestamp = datetime.utcnow().isoformat()
-    cursor = state.db.execute(
-        """
-        INSERT INTO group_logs
-            (group_id, entry_type, author_id, author_name, message, payload, created_at,
-             recipient_ids, in_character)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            row["id"],
-            normalized_type,
-            user.id,
-            user.username or "",
-            text or None,
-            payload_data,
-            timestamp,
-            recipient_ids_data,
-            in_character_value,
-        ),
-    )
-    # Same "bump the group's own modified_at on log activity" behavior the
-    # old `groups` table always had (used for list_groups' own recency
-    # sort) — now targeting library_items directly, same as
-    # update_group_members' identical comment on this same pattern.
-    state.db.execute(
-        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
-        (timestamp, row["id"]),
-    )
-    state.db.commit()
-    entry_row = state.db.execute(
-        """
-        SELECT id, entry_type, author_id, author_name, message, payload, created_at,
-               recipient_ids, in_character
-        FROM group_logs
-        WHERE id = ?
-        """,
-        (cursor.lastrowid,),
-    ).fetchone()
-    serialized = _serialize_log_entries([entry_row])
-    return serialized[0] if serialized else {}
-
-
 # A map "ping" — a transient pointer broadcast (Orrery's click-to-ping tool),
-# never written to group_logs/library_items at all (see
+# never written to the chat tables/library_items at all (see
 # ServerState.pending_pings' own comment for why). Reuses the exact same
-# membership check create_group_log_entry does via _resolve_group_access —
+# membership check chat posting does via _resolve_group_access —
 # only an actual member (or the owner/admin) of a real campaign group can
 # post one, same as posting to the group's own log.
 def record_group_ping(
@@ -907,7 +540,7 @@ def record_dice_roll_broadcast(
     # die_results (the REAL settled per-die values, dice-roll.js's own
     # tryOverlayRoll) is what dice-reveal.js's tiles actually need — trusted
     # client-side data, same "the server verifies SOMETHING was sent, not
-    # that it's fair/real" precedent create_group_log_entry's own "roll"
+    # that it's fair/real" precedent chat.py's own roll
     # handling already establishes; there's no more an independent way to
     # verify a client's own physically-rolled dice-box values server-side
     # than there is for a plain roll's own total.
@@ -1266,6 +899,10 @@ def create_group(state: ServerState, owner: Optional[User], name: str, type_: Op
     # kind-wide creation gating is exactly what that shared mechanism
     # already does for every other kind, no bespoke duplicate needed.
     storage.save_item(state, "group", group_id, payload, owner)
+    if normalized_type == "campaign":
+        from . import chat
+
+        chat.ensure_default_chat(state, group_id, owner.id)
     row = _load_group_row(state, group_id)
     members: List[Dict[str, Any]] = []
     return _serialize_group(row, _attach_member_status(members, owner.id), None)
@@ -1384,14 +1021,121 @@ def delete_group(state: ServerState, owner: Optional[User], group_id: str) -> No
     _require_owner(state, group_id, owner)
     # Clears the group's own library_items row + JSON file, and (same as
     # every other kind) its shares/share_links rows. group_members/
-    # group_logs have no FK-cascade to rely on (this codebase never enables
-    # SQLite FK enforcement, so the old `groups` table's own ON DELETE
-    # CASCADE never actually fired either), so they're cleaned up
-    # explicitly here, matching delete_item's own explicit-cleanup style.
+    # group_members and the chat tables have no FK-cascade to rely on (this
+    # codebase never enables SQLite FK enforcement, so the old `groups`
+    # table's own ON DELETE CASCADE never actually fired either), so they're
+    # cleaned up explicitly here, matching delete_item's own explicit-cleanup
+    # style. Archive pages (journal records) are user content and stay.
+    from . import chat
+
     storage.delete_item(state, "group", group_id, owner)
     state.db.execute("DELETE FROM group_members WHERE group_id = ?", (group_id,))
-    state.db.execute("DELETE FROM group_logs WHERE group_id = ?", (group_id,))
+    chat.delete_group_chat(state, group_id)
+    from . import sessions
+
+    sessions.delete_group_sessions(state, group_id)
     state.db.commit()
+
+
+def _owner_of_character(state: ServerState, character_id: str) -> Optional[int]:
+    row = state.db.execute(
+        "SELECT owner_id FROM library_items WHERE kind = 'character' AND id = ?", (character_id,)
+    ).fetchone()
+    return row["owner_id"] if row else None
+
+
+def _owner_has_active(state: ServerState, group_id: str, owner_id: Optional[int], *, excluding: str = "") -> bool:
+    if owner_id is None:
+        return False
+    row = state.db.execute(
+        """
+        SELECT 1 FROM group_members AS gm
+        JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
+        WHERE gm.group_id = ? AND gm.content_type = 'character' AND li.owner_id = ?
+          AND COALESCE(gm.active, 1) != 0 AND gm.content_id != ?
+        LIMIT 1
+        """,
+        (group_id, owner_id, excluding),
+    ).fetchone()
+    return bool(row)
+
+
+def _default_active_for_new_member(state: ServerState, group_id: str, character_id: str) -> int:
+    """A newly rostered character is the player's active one unless that player
+    already has another active character in this group."""
+    return 0 if _owner_has_active(state, group_id, _owner_of_character(state, character_id), excluding=character_id) else 1
+
+
+def _ensure_one_active(state: ServerState, group_id: str, owner_ids: Iterable[int]) -> None:
+    """After a roster change, a player who still has characters here but no
+    active one gets their earliest-added character made active."""
+    for owner_id in owner_ids:
+        if _owner_has_active(state, group_id, owner_id):
+            continue
+        row = state.db.execute(
+            """
+            SELECT gm.content_id FROM group_members AS gm
+            JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
+            WHERE gm.group_id = ? AND gm.content_type = 'character' AND li.owner_id = ?
+            ORDER BY gm.added_at, gm.content_id LIMIT 1
+            """,
+            (group_id, owner_id),
+        ).fetchone()
+        if row:
+            state.db.execute(
+                "UPDATE group_members SET active = 1 WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+                (group_id, row["content_id"]),
+            )
+
+
+def set_member_active(
+    state: ServerState, user: Optional[User], group_id: str, character_id: str, active: bool
+) -> Dict[str, Any]:
+    """Marks one rostered character active or inactive. The group's GM (or an
+    admin) can change any of them; a player can change their own. Activating a
+    character deactivates that player's other characters in the group."""
+    if not user:
+        raise AuthError("Authentication required")
+    row = _load_group_row(state, group_id)
+    if not row:
+        raise AuthError("Group not found")
+    member = state.db.execute(
+        "SELECT 1 FROM group_members WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+        (group_id, character_id),
+    ).fetchone()
+    if not member:
+        raise AuthError("That character isn't in this group")
+    character_owner = _owner_of_character(state, character_id)
+    is_gm = user.tier == "admin" or row["owner_id"] == user.id
+    if not (is_gm or character_owner == user.id):
+        raise AuthError("You can only change your own characters")
+    if active and character_owner is not None:
+        state.db.execute(
+            """
+            UPDATE group_members SET active = 0
+            WHERE group_id = ? AND content_type = 'character' AND content_id IN (
+                SELECT gm.content_id FROM group_members AS gm
+                JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
+                WHERE gm.group_id = ? AND gm.content_type = 'character' AND li.owner_id = ?
+            )
+            """,
+            (group_id, group_id, character_owner),
+        )
+    state.db.execute(
+        "UPDATE group_members SET active = ? WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+        (1 if active else 0, group_id, character_id),
+    )
+    state.db.execute(
+        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
+        (datetime.utcnow().isoformat(), group_id),
+    )
+    state.db.commit()
+    from . import sessions
+
+    sessions.on_roster_changed(state, group_id)
+    refreshed = _load_group_row(state, group_id)
+    members = _attach_member_status(_fetch_group_members(state, group_id), refreshed["owner_id"])
+    return _serialize_group(refreshed, members, get_share_link(state, "group", group_id))
 
 
 def update_group_members(state: ServerState, owner: Optional[User], group_id: str, character_ids: Iterable[str]) -> Dict[str, Any]:
@@ -1421,16 +1165,38 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
         # admin); that's the actual authorization boundary for "who may
         # decide which characters belong to this group," not who owns each
         # individual character.
-    state.db.execute("DELETE FROM group_members WHERE group_id = ? AND content_type = 'character'", (group_id,))
+    # A diff, not delete-and-reinsert: a kept character keeps its added_at and
+    # its active flag, and only genuinely new characters get a fresh row.
+    current = {
+        row["content_id"]
+        for row in state.db.execute(
+            "SELECT content_id FROM group_members WHERE group_id = ? AND content_type = 'character'", (group_id,)
+        )
+    }
+    wanted = set(normalized_ids)
+    removed_owner_ids = set()
+    for character_id in current - wanted:
+        owner_row = state.db.execute(
+            "SELECT owner_id FROM library_items WHERE kind = 'character' AND id = ?", (character_id,)
+        ).fetchone()
+        if owner_row and owner_row["owner_id"] is not None:
+            removed_owner_ids.add(owner_row["owner_id"])
+        state.db.execute(
+            "DELETE FROM group_members WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+            (group_id, character_id),
+        )
     timestamp = datetime.utcnow().isoformat()
     for character_id in normalized_ids:
+        if character_id in current:
+            continue
         state.db.execute(
             """
-            INSERT OR REPLACE INTO group_members (group_id, content_type, content_id, added_at)
-            VALUES (?, 'character', ?, ?)
+            INSERT INTO group_members (group_id, content_type, content_id, added_at, active)
+            VALUES (?, 'character', ?, ?, ?)
             """,
-            (group_id, character_id, timestamp),
+            (group_id, character_id, timestamp, _default_active_for_new_member(state, group_id, character_id)),
         )
+    _ensure_one_active(state, group_id, removed_owner_ids)
     # Touches library_items.modified_at directly (not a full storage.save_item
     # call — nothing about the group's own JSON document changed here, just
     # its membership) — this is also what the "group" live-stream kind polls
@@ -1442,6 +1208,9 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
         (timestamp, group_id),
     )
     state.db.commit()
+    from . import sessions
+
+    sessions.on_roster_changed(state, group_id)
     refreshed = _load_group_row(state, group_id)
     members = _attach_member_status(_fetch_group_members(state, group_id), refreshed["owner_id"])
     share_link = get_share_link(state, "group", group_id)
@@ -1638,7 +1407,16 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
         """,
         (user.id, timestamp, timestamp, character_id),
     )
+    # A player can have only one active character per group: the claimed one
+    # starts active only if they have no other active one here.
+    state.db.execute(
+        "UPDATE group_members SET active = ? WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+        (0 if _owner_has_active(state, group_id, user.id, excluding=character_id) else 1, group_id, character_id),
+    )
     state.db.commit()
+    from . import sessions
+
+    sessions.on_roster_changed(state, group_id)
     touch_share_link(state, token)
     claimed_system_ids = metadata.get("systemIds") or ([metadata["system"]] if metadata.get("system") else [])
     return {

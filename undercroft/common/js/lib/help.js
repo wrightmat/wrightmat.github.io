@@ -1,7 +1,8 @@
 import { refreshTooltips } from "./tooltips.js";
-import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
+import { resolveDocsHref, resolveToolContextPath } from "./app-shell.js";
 
-const DEFAULT_TOPICS_URL = "../common/data/help-topics.json";
+// Module-relative, so it resolves the same from every page.
+const DEFAULT_TOPICS_URL = new URL("../../data/help-topics.json", import.meta.url).href;
 
 let cachedTopicsPromise = null;
 let cachedTopicsUrl = "";
@@ -17,6 +18,8 @@ function normaliseTopic(rawTopic) {
   const title = typeof rawTopic.title === "string" ? rawTopic.title.trim() : id;
   const summary = typeof rawTopic.summary === "string" ? rawTopic.summary.trim() : title;
   const category = typeof rawTopic.category === "string" ? rawTopic.category.trim() : "General";
+  // Optional sub-heading within a category ("" when the category isn't divided).
+  const section = typeof rawTopic.section === "string" ? rawTopic.section.trim() : "";
   // "" when absent — a topic with no real page behind it (a general concept,
   // not tied to one tool) has no "Open in" destination, never a fabricated one.
   const href = typeof rawTopic.href === "string" ? rawTopic.href.trim() : "";
@@ -29,6 +32,7 @@ function normaliseTopic(rawTopic) {
     title,
     summary,
     category,
+    section,
     href,
     details,
   };
@@ -47,11 +51,19 @@ function normaliseTopicsPayload(payload) {
       map.set(normalised.id, normalised);
     });
   }
+  // Categories follow the catalog's own `metadata.categories` order; inside a
+  // category topics keep the order they are written in, so sections stay together.
+  const categoryOrder = Array.isArray(payload?.metadata?.categories) ? payload.metadata.categories : [];
+  const rank = (category) => {
+    const index = categoryOrder.indexOf(category);
+    return index === -1 ? categoryOrder.length : index;
+  };
+  const written = new Map(topics.map((topic, index) => [topic, index]));
   topics.sort((a, b) => {
     if (a.category === b.category) {
-      return a.title.localeCompare(b.title);
+      return written.get(a) - written.get(b);
     }
-    return a.category.localeCompare(b.category);
+    return rank(a.category) - rank(b.category) || a.category.localeCompare(b.category);
   });
   return { topics, map, raw: payload || { topics: [] } };
 }
@@ -80,19 +92,17 @@ export async function loadHelpTopics(topicsUrl = DEFAULT_TOPICS_URL) {
 
 // Every topic's own stored `href` (help-topics.json) points at destinations
 // that don't reliably exist across tools, so this ignores it entirely and
-// always builds a fresh link to the account page's help browser — the one
-// destination guaranteed to exist and work from every tool.
+// always builds a fresh link to the documentation page, which opens the
+// topic from the URL hash — the one destination guaranteed to exist and work
+// from every tool.
 function resolveHelpTopicHref(topic) {
-  const base = resolveAccountHref(resolveToolContextPath());
-  const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}help=${encodeURIComponent(topic.id)}`;
+  return `${resolveDocsHref(resolveToolContextPath())}#${encodeURIComponent(topic.id)}`;
 }
 
-// Already on the account page (where the help browser itself lives): jump to
-// the topic in this same page's help browser instead of opening a redundant
-// second tab pointed at itself.
+// Already on the documentation page: jump to the topic there instead of
+// opening a redundant second tab pointed at itself.
 function openHelpTopic(topic) {
-  if (resolveToolContextPath() === "common") {
+  if (document.body.dataset.undercroftTool === "docs") {
     window.dispatchEvent(new CustomEvent("undercroft:show-help-topic", { detail: { topicId: topic.id } }));
     return;
   }

@@ -1,4 +1,4 @@
-// Watches a campaign group's log for the CURRENT set of active spotlights —
+// Watches a campaign group's spotlight state for the CURRENT set of active spotlights —
 // "what's shown to the table right now," kept live. Hands the caller the
 // complete, freshly-resolved active set on every poll rather than a
 // diff-since-last-seen, so it can report an un-spotlight (not just new
@@ -40,8 +40,8 @@ export function watchActiveSpotlights({
   void refresh();
   const pollTimer = createReliableInterval(() => void refresh(), pollIntervalMs);
 
-  const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
-  liveStream.subscribe("group_log", () => void refresh());
+  const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["spotlight"], shareToken });
+  liveStream.subscribe("spotlight", () => void refresh());
 
   return {
     // Lets a caller that already knows a change happened (e.g. dashboard.js's

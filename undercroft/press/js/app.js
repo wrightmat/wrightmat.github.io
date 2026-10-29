@@ -366,14 +366,14 @@ mountInspectorField(
   "format-select",
   createCompactField({
     type: "select", id: "formatSelect", label: "Size", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
-    helpTopic: "press.size", helpPlacement: "left",
+    helpTopic: "press.templates", helpPlacement: "left",
   })
 );
 mountInspectorField(
   "orientation-select",
   createCompactField({
     type: "select", id: "orientationSelect", label: "Orientation", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select",
-    helpTopic: "press.orientation", helpPlacement: "left",
+    helpTopic: "press.templates", helpPlacement: "left",
   })
 );
 mountInspectorField(
@@ -5670,6 +5670,7 @@ function initPressCollapsibles() {
 
   const templateSection = createCollapsibleSection({
     label: "Template Properties",
+    helpTopic: "press.templateProperties",
     collapsed: false,
     className: "d-flex flex-column gap-4",
     // Clear Uniqueness is template-scoped, not part of the left-pane

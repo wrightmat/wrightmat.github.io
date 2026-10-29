@@ -337,6 +337,7 @@ const elements = {
 // collapsed; expandMonsterPropertiesSection opens it on generate/select.
 const monsterPropertiesSection = createCollapsibleSection({
   label: "Monster Properties",
+  helpTopic: "crucible.convert",
   collapsed: true,
   content: document.querySelector("[data-monster-properties-panel]"),
 });
@@ -435,6 +436,7 @@ const jsonDataPanel = createJsonDataPanel({
 
 const selectionsSection = createCollapsibleSection({
   label: "Selections",
+  helpTopic: "crucible.generate",
   collapsed: false,
   content: document.querySelector("[data-selections-panel]"),
 });

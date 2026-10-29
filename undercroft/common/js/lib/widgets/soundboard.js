@@ -259,8 +259,8 @@ function initFollowerSoundboard(container, { dataManager, groupId = "", shareTok
 
   void refresh();
   pollTimer = createReliableInterval(() => void refresh(), POLL_INTERVAL_MS);
-  const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["group_log"], shareToken });
-  liveStream.subscribe("group_log", () => void refresh());
+  const liveStream = connectLiveStream({ dataManager, groupId, kinds: ["spotlight"], shareToken });
+  liveStream.subscribe("spotlight", () => void refresh());
 
   return {
     destroy() {

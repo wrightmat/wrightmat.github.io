@@ -1,7 +1,7 @@
 // Spotlight resolution — lets Dashboard widgets (Handout/Map/Clock/Browser/
 // Calendar/Soundboard/Combat) find out what's currently shown to the active
-// campaign group, via the group log's `spotlight`/`spotlight-update`/
-// `spotlight-clear` entries (server/groups.py). Each widget posts/clears its
+// campaign group, via the group's spotlight state (server/spotlight.py). Each
+// widget posts/clears its
 // own spotlight directly through dataManager.spotlightToGroup/clearSpotlight
 // — this module mostly only reads that state back; retirePreviousEncounterSpotlight
 // below is the one deliberate exception, enforcing the single-slot
@@ -26,65 +26,94 @@ export async function listPrintTemplates(dataManager) {
 // picker is skipped entirely.
 export const LINK_ONLY_KINDS = new Set(["map", "encounter"]);
 
-// Passed to getGroupLog's `types` filter so the LIMIT-bounded window is
-// spent entirely on spotlight-relevant rows — otherwise a chatty inline
-// widget's own frequent spotlight-update refreshes (a ticking Clock) can
-// crowd an unrelated widget's still-active `spotlight` entry out of the
-// window, making resolveIsSpotlighted wrongly report it as no longer shown.
-const SPOTLIGHT_LOG_TYPES = ["spotlight", "spotlight-update", "spotlight-clear"];
+// What each spotlighted kind is called in "Showed <article> to the table"
+// phrasing, and the fallback whenever a real resource title (fetched
+// separately) isn't available yet.
+export const SPOTLIGHT_KIND_LABELS = {
+  npc: "an NPC",
+  location: "a Location",
+  monster: "a Monster",
+  wonder: "a Wonder",
+  journal: "a Journal page",
+  map: "a Map",
+  encounter: "an Encounter",
+  clock: "a Clock",
+  browser: "a link",
+  calendar: "a calendar",
+  soundboard: "a soundboard",
+  shop: "a Shop",
+};
 
-// "What's the most recently spotlighted thing of this kind, if still
-// active" — a SINGLE-SLOT resolution for consumers with no specific id to
-// check (Combat Tracker's player-mode poll, Character sheet's initiative
-// push — Combat Tracker only ever has one instance per dashboard). NOT for
-// a widget type that can have multiple simultaneous instances of the same
-// kind — see resolveIsSpotlighted below for that; Handout/Map/Clock use it.
-//
-// Server entries come back oldest-first, sorted newest-first here. Only
-// looks at entries ABOUT this kind: a matching `spotlight`/
-// `spotlight-update`/`spotlight-clear`, or a kind-agnostic `spotlight-clear`
-// (clearSpotlight can omit kind for "clear whatever's shown, of any kind";
-// nothing currently posts one, but it's supported). `spotlight-update` is a
-// silent data refresh on an already-shown kind, treated the same as
-// `spotlight` here so a Clock tick doesn't read as "no longer shown."
-// Returns null if nothing of `kind` is currently spotlighted.
-async function resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind, limit = 100 } = {}) {
-  if (!dataManager || (!groupId && !shareToken)) return null;
+// Mirrors dashboard.js's own WIDGET_CATALOG icon for whichever widget type
+// each kind becomes there, kept as its own table since the catalog's icon
+// there doubles as "is this addable to a dashboard" — a question that only
+// makes sense on the Dashboard, whereas Workbench's read-only "Now Showing"
+// panel just needs "what icon represents this kind."
+export const SPOTLIGHT_KIND_ICONS = {
+  npc: "tabler:file-text",
+  location: "tabler:file-text",
+  monster: "tabler:file-text",
+  wonder: "tabler:file-text",
+  journal: "tabler:file-text",
+  encounter: "tabler:swords",
+  map: "tabler:map-2",
+  clock: "tabler:clock",
+  browser: "tabler:world",
+  calendar: "tabler:calendar-time",
+  soundboard: "tabler:music",
+  shop: "tabler:building-store",
+};
+
+// Kinds with no Library record to fetch a title from at all — spotlighted by
+// an id that isn't a `kind/id` Library path. Guards a title-cache fetch that
+// would otherwise 404 forever, once per poll. `shop`'s own state lives on the
+// campaign Group (shop-transactions.js), not on any one GM's widget instance,
+// but there's still no Library record to fetch a title from, so it shares
+// this guard — a Shop widget reads its id straight off contentRef.followId.
+export const SPOTLIGHT_INLINE_KINDS = new Set(["clock", "browser", "calendar", "soundboard", "shop"]);
+
+// The group's spotlight state, newest-shown first, in the same entry shape
+// the Dashboard and Workbench already consume (`payload` holds
+// kind/id/templateId/data). Empty on any failure — "nothing shown" is the
+// safe reading.
+async function fetchSpotlightEntries(dataManager, { groupId, shareToken } = {}) {
+  if (!dataManager || (!groupId && !shareToken)) return [];
   try {
-    const log = await dataManager.getGroupLog({ groupId, shareToken, limit, types: SPOTLIGHT_LOG_TYPES });
-    const entries = Array.isArray(log?.entries) ? log.entries : [];
-    entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
-    const latest = entries.find((entry) => {
-      if (entry?.type === "spotlight" || entry?.type === "spotlight-update") return entry.payload?.kind === kind;
-      if (entry?.type === "spotlight-clear") return !entry.payload?.kind || entry.payload.kind === kind;
-      return false;
-    });
-    if (!latest || latest.type === "spotlight-clear") {
-      return null;
-    }
-    return latest;
+    const state = await dataManager.getGroupSpotlights({ groupId, shareToken });
+    const items = Array.isArray(state?.items) ? state.items : [];
+    return items
+      .map((item) => ({ type: "spotlight", payload: item, created_at: item.postedAt }))
+      .sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
   } catch (error) {
-    return null;
+    return [];
   }
 }
 
-export async function resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind, limit = 100 } = {}) {
-  const entry = await resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind, limit });
+// "What's the most recently spotlighted thing of this kind" — a SINGLE-SLOT
+// resolution for consumers with no specific id to check (Combat Tracker's
+// player-mode poll, Character sheet's initiative push — Combat Tracker only
+// ever has one instance per dashboard). NOT for a widget type that can have
+// multiple simultaneous instances of the same kind — see resolveIsSpotlighted
+// below for that; Handout/Map/Clock use it. Returns null if nothing of `kind`
+// is currently spotlighted.
+async function resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind } = {}) {
+  const entries = await fetchSpotlightEntries(dataManager, { groupId, shareToken });
+  return entries.find((entry) => entry.payload?.kind === kind) || null;
+}
+
+export async function resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind } = {}) {
+  const entry = await resolveActiveSpotlightEntry(dataManager, { groupId, shareToken, kind });
   return entry?.payload?.id || "";
 }
 
-// Confirmed real bug this fixes: dataManager.spotlightToGroup only ever
-// APPENDS a new `spotlight` log entry — nothing ever cleared whichever
-// encounter was previously spotlighted before a GM started/switched to a
-// new one (via Repository's `encounter:` chip, or Combat Tracker's own
-// "Show to table"). resolveActiveSpotlightId above already treats
-// "encounter" as single-slot per campaign (its own comment says so), but
-// resolveActiveSpotlights (the Dashboard's own spotlight-tray data source)
-// deliberately allows several simultaneous entries PER KIND — correct for
-// Handout/Map/Clock, which really can have more than one instance shown at
-// once, but wrong for "encounter": every encounter ever spotlighted in a
-// session kept showing in the tray forever, since nothing ever superseded
-// it. Called by both of the only two places an encounter ever becomes newly
+// dataManager.spotlightToGroup only ever adds a spotlight — nothing clears
+// whichever encounter was previously shown before a GM starts/switches to a
+// new one (via Repository's `encounter:` chip, or Combat Tracker's own "Show
+// to table"). "encounter" is single-slot per campaign (resolveActiveSpotlightId
+// above), but the Dashboard's spotlight tray deliberately allows several
+// simultaneous entries PER KIND (correct for Handout/Map/Clock), so every
+// encounter ever spotlighted would otherwise keep showing there forever.
+// Called by both of the only two places an encounter ever becomes newly
 // spotlighted, right before their own spotlightToGroup call — a no-op when
 // there's nothing previously spotlighted, or it's this same encounter.
 export async function retirePreviousEncounterSpotlight(dataManager, { groupId, nextEncounterId }) {
@@ -97,103 +126,25 @@ export async function retirePreviousEncounterSpotlight(dataManager, { groupId, n
 
 // "Everything currently spotlighted, across every kind" — the full active
 // set, unlike every resolver above (each scoped to one `kind` or one
-// `(kind, id)`). Needed for spotlight-inbox.js's catch-up scan when a
-// viewer first starts watching a group: without this, someone joining after
-// the GM spotlighted both a Map and an NPC handout would only learn about
-// whichever is the single most recent log entry.
-//
-// Same "latest entry per key wins" reconstruction as the resolvers above,
-// applied across every (kind,id) pair at once. `limit` defaults higher
-// (200 vs 100) since reconstructing several independent keys needs a wider
-// window than settling just one.
-export async function resolveActiveSpotlights(dataManager, { groupId, shareToken, limit = 200 } = {}) {
-  if (!dataManager || (!groupId && !shareToken)) return [];
-  let entries;
-  try {
-    const log = await dataManager.getGroupLog({ groupId, shareToken, limit, types: SPOTLIGHT_LOG_TYPES });
-    entries = Array.isArray(log?.entries) ? log.entries : [];
-  } catch (error) {
-    return [];
-  }
-  entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
-  // Walking newest-first: the FIRST entry seen for a (kind,id) key is the
-  // latest, so it alone decides that key's state (`decided.has(key)` skips
-  // older entries for the same key). A kind-wide clear (kind, no id)
-  // retroactively decides every OLDER same-kind spotlight as cleared
-  // (clearedKinds) without touching a NEWER one already resolved active. A
-  // global clear (no kind) stops the walk — nothing older survives.
-  const decided = new Map(); // "kind:id" -> true (active) | false (cleared)
-  const clearedKinds = new Set();
-  const active = [];
-  for (const entry of entries) {
-    if (entry?.type === "spotlight-clear") {
-      const clearKind = entry.payload?.kind;
-      const clearId = entry.payload?.id;
-      if (!clearKind) break; // Global clear — nothing older survives.
-      if (!clearId) {
-        clearedKinds.add(clearKind);
-        continue;
-      }
-      const key = `${clearKind}:${clearId}`;
-      if (!decided.has(key)) decided.set(key, false);
-      continue;
-    }
-    if (entry?.type !== "spotlight" && entry?.type !== "spotlight-update") continue;
-    const kind = String(entry.payload?.kind || "").trim();
-    const id = String(entry.payload?.id || "").trim();
-    if (!kind || !id) continue;
-    const key = `${kind}:${id}`;
-    if (decided.has(key)) continue;
-    if (clearedKinds.has(kind)) {
-      decided.set(key, false);
-      continue;
-    }
-    decided.set(key, true);
-    active.push(entry);
-  }
-  return active;
+// `(kind, id)`). Needed for spotlight-inbox.js's catch-up scan when a viewer
+// first starts watching a group.
+export async function resolveActiveSpotlights(dataManager, { groupId, shareToken } = {}) {
+  return fetchSpotlightEntries(dataManager, { groupId, shareToken });
 }
 
 // "Is THIS SPECIFIC (kind, id) currently shown" — what a widget type with
 // multiple simultaneous instances of the same kind needs (two Handouts, two
 // Maps, two Clocks — Clock's own kind is ALWAYS "clock" regardless of which
-// clock, so without this a second clock's spotlight made the first one's
-// still-active spotlight invisible via resolveActiveSpotlightId's
-// single-slot answer).
-//
-// An entry is "about" (kind, id) if it's a matching `spotlight`/
-// `spotlight-update`, a matching `spotlight-clear` (or one matching kind
-// with no id — "clear every instance of this kind," supported but unused),
-// or a kind-agnostic `spotlight-clear` (matches everything, same
-// global-clear escape hatch as resolveActiveSpotlightId). The latest such
-// entry decides; spotlighted only if it's `spotlight`/`spotlight-update`.
-async function resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
-  if (!dataManager || (!groupId && !shareToken) || !kind || !id) return null;
-  try {
-    const log = await dataManager.getGroupLog({ groupId, shareToken, limit, types: SPOTLIGHT_LOG_TYPES });
-    const entries = Array.isArray(log?.entries) ? log.entries : [];
-    entries.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
-    const latest = entries.find((entry) => {
-      if (entry?.type === "spotlight" || entry?.type === "spotlight-update") {
-        return entry.payload?.kind === kind && entry.payload?.id === id;
-      }
-      if (entry?.type === "spotlight-clear") {
-        const clearKind = entry.payload?.kind;
-        if (!clearKind) return true; // Global clear — matches every (kind, id).
-        if (clearKind !== kind) return false;
-        const clearId = entry.payload?.id;
-        return !clearId || clearId === id; // Kind-wide clear, or this exact instance.
-      }
-      return false;
-    });
-    return latest && latest.type !== "spotlight-clear" ? latest : null;
-  } catch (error) {
-    return null;
-  }
+// clock, so a single-slot answer would hide the first one's still-active
+// spotlight behind the second's).
+async function resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id } = {}) {
+  if (!kind || !id) return null;
+  const entries = await fetchSpotlightEntries(dataManager, { groupId, shareToken });
+  return entries.find((entry) => entry.payload?.kind === kind && entry.payload?.id === id) || null;
 }
 
-export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
-  const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit });
+export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, kind, id } = {}) {
+  const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id });
   return Boolean(entry);
 }
 
@@ -201,8 +152,8 @@ export async function resolveIsSpotlighted(dataManager, { groupId, shareToken, k
 // entry's `data` payload instead of a boolean — what a follower of an
 // _INLINE_SPOTLIGHT_KINDS widget (Clock, Browser — see server/groups.py)
 // reads instead of fetching a Library record, since these kinds have none.
-export async function resolveSpotlightData(dataManager, { groupId, shareToken, kind, id, limit = 100 } = {}) {
-  const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id, limit });
+export async function resolveSpotlightData(dataManager, { groupId, shareToken, kind, id } = {}) {
+  const entry = await resolveActiveInstanceEntry(dataManager, { groupId, shareToken, kind, id });
   return entry?.payload?.data ?? null;
 }
 

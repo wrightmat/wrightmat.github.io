@@ -440,24 +440,6 @@ document.querySelector("[data-add-view-mount]")?.appendChild(
 );
 
 document
-  .querySelector("[data-layers-help-mount]")
-  ?.appendChild(
-    createHelpButton(
-      "Layers hold vector shapes, grids, rasters, or markers. Add a layer to start placing content on the map.",
-      "About layers"
-    )
-  );
-document
-  .querySelector("[data-groups-help-mount]")
-  ?.appendChild(
-    createHelpButton("Groups organize layers or grid cells so you can manage related content together.", "About groups")
-  );
-document
-  .querySelector("[data-basemap-help-mount]")
-  ?.appendChild(
-    createHelpButton("Choose and configure the background tiles, image, or canvas for the map.", "About base map settings")
-  );
-document
   .querySelector("[data-selection-help-mount]")
   ?.appendChild(
     createHelpButton("Inspect and edit the currently selected layer, view, group, or grid cells.", "About selection details")
@@ -2495,7 +2477,7 @@ function renderWallSelectionEditor(layer, wallElement) {
 
     const doorHelp = document.createElement("span");
     doorHelp.className = "align-middle";
-    doorHelp.dataset.helpTopic = "orrery.doors";
+    doorHelp.dataset.helpTopic = "orrery.walls";
     doorHelp.dataset.helpInsert = "replace";
     container.appendChild(doorHelp);
     initHelpSystem({ root: container });
@@ -6332,7 +6314,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     bulkNotice.appendChild(noticeLabel);
     const help = document.createElement("span");
     help.className = "align-middle";
-    help.dataset.helpTopic = "orrery.bulkEdit";
+    help.dataset.helpTopic = "orrery.gridSelection";
     help.dataset.helpInsert = "replace";
     bulkNotice.appendChild(help);
   }
