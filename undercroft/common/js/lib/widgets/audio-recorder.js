@@ -2,7 +2,7 @@
 // local-only by design: the recording itself is never shared, spotlighted,
 // or persisted server-side, and stays out of dashboard.js's own
 // TABLE_WIDGET_TYPES (not table-facing, like board.js). One exception:
-// downloadCombinedSessionRecord READS the active campaign's Group Chat to
+// downloadCombinedSessionRecord READS the active group's Group Chat to
 // interleave with the transcript, but never writes back to it.
 //
 // Recording is chunked (default 5 min) for two reasons: optional live
@@ -414,7 +414,7 @@ export function initAudioRecorderWidget(
     downloadBlob(new Blob([text], { type: "text/plain;charset=utf-8" }), `session-${sessionId}-transcript.txt`);
   }
 
-  // Interleaves this session's transcript with the campaign's active chat
+  // Interleaves this session's transcript with the group's active chat
   // thread into one chronological plain-text record, keyed on each side's own
   // real timestamp (transcript's startedAtReal, message createdAt).
   // limit: 200 matches chat.py's own hard cap on one fetch.

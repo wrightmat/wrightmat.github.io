@@ -162,13 +162,13 @@ const auth = initAuthControls({ status });
 const dataManager = auth.dataManager;
 
 // Unlike Crucible/Forge/Vault, Orrery has no System selector — the only
-// relevant System is whichever the active campaign's running Encounter is
+// relevant System is whichever the active group's running Encounter is
 // tagged with. Proactively fetches that Encounter rather than relying on
 // primeResourceBarCache (which only runs during actual map rendering) —
 // Settings is reachable with no map loaded, so nothing may have primed the
 // cache yet.
 function currentResourceBarSettingsSystemId() {
-  const groupId = getActiveCampaignGroupId();
+  const groupId = getActiveGroupId();
   if (!groupId) return "";
   ensureActiveEncounterCached(groupId, () => {});
   const encounter = getCachedActiveEncounter(groupId);
@@ -939,7 +939,7 @@ function applyMapSnapshot(snapshot) {
 // (moving their own character's token) is possible at all — it no longer
 // signals "trusted co-author of the whole map." Reusing allowsDelete here
 // would make it (and currentUserHasFullMapAccess below, which every
-// restricted-viewer check branches on) return true for ANY campaign
+// restricted-viewer check branches on) return true for ANY group
 // member, silently granting full authoring access to a mere player.
 function mapAllowsDelete(id) {
   if (dataManager?.getUserTier() === "admin") return true;
@@ -1181,7 +1181,7 @@ function applyRemoteMapLayers(nextMap) {
 // tab) into Orrery's own authoring view, via the same poll+live-stream
 // mechanism that widget already uses (common/js/lib/map-live-sync.js) — see
 // its own header for why the live-stream half is a no-op here (Orrery has
-// no campaign-group context for a map, unlike a Dashboard widget) while the
+// no group context for a map, unlike a Dashboard widget) while the
 // plain poll still works regardless. Deliberately conservative about when
 // to actually apply an incoming change: never while there's an unsaved
 // local edit (isMapDirty()), an active selection, or a Map Properties field
@@ -1213,7 +1213,7 @@ function watchCurrentMap(id, shareToken = "") {
     shareToken,
     // Orrery has no other group context of its own — this also activates
     // the SSE "wake sooner" half of onChange below.
-    groupId: getActiveCampaignGroupId(),
+    groupId: getActiveGroupId(),
     // No reason to poll a screen nobody's watching more than every 20s.
     pollIntervalMs: 20000,
     onChange: (nextMap) => {
@@ -1230,7 +1230,7 @@ function watchCurrentMap(id, shareToken = "") {
     },
     onPing: renderIncomingPing,
   });
-  const groupId = getActiveCampaignGroupId();
+  const groupId = getActiveGroupId();
   if (groupId) {
     conditionLiveStream = connectLiveStream({ dataManager, groupId, kinds: ["encounter", "character"], shareToken });
     conditionLiveStream.subscribe("encounter", () => {
@@ -3347,7 +3347,7 @@ function primeCharacterPayloadCache() {
 // icons — fires the active Encounter fetch (once per group) and then its
 // System's conditions fetch. No-op with no active group or no such marker.
 function primeMonsterConditionCache() {
-  const groupId = getActiveCampaignGroupId();
+  const groupId = getActiveGroupId();
   if (!groupId) return;
   const hasMonsterMarker = (state.map.layers || []).some(
     (layer) =>
@@ -3370,7 +3370,7 @@ function primeMonsterConditionCache() {
 // active Encounter whenever the map has ANY referenced marker, not gated
 // on Monster/NPC presence the way primeMonsterConditionCache is.
 function primeResourceBarCache() {
-  const groupId = getActiveCampaignGroupId();
+  const groupId = getActiveGroupId();
   if (!groupId) return;
   const hasCombatantMarker = (state.map.layers || []).some(
     (layer) =>
@@ -3497,7 +3497,7 @@ function isMarkerDraggableForFullAccess(layer) {
 function triggerShapeEffectElement(layer, shapeElement) {
   resetParticleEffectPlayState(shapeElement.id);
   renderLayerOverlays();
-  const groupId = getActiveCampaignGroupId();
+  const groupId = getActiveGroupId();
   if (!groupId || !dataManager) return;
   void dataManager
     .postEffectBroadcast({ groupId, mapId: state.map.id, elementId: shapeElement.id })
@@ -3840,7 +3840,7 @@ function openRestrictedMarkerLinkPopover(layer, markerElement, dotEl) {
     claimButton.addEventListener("click", async () => {
       claimButton.disabled = true;
       try {
-        const groupId = getActiveCampaignGroupId();
+        const groupId = getActiveGroupId();
         const result = await claimMarkerContentEntry({
           dataManager,
           groupId,
@@ -4958,7 +4958,7 @@ function ensureCharacterSystemFieldsCached(refId, characterPayload, onLoaded) {
   })();
 }
 
-// The campaign's active/spotlighted Encounter, cached by groupId (a GM
+// The group's active/spotlighted Encounter, cached by groupId (a GM
 // could switch campaigns mid-session, so not a single global slot) —
 // map-viewer.js's shared resolveMarkerConditionIcons reads a Monster/NPC
 // combatant's live conditions from here, since Monster/NPC records are
@@ -5027,7 +5027,7 @@ function resolveMarkerConditionIconsForMarker(markerElement) {
     getCharacterSystemId: getCachedCharacterSystemId,
     getSystemConditions: getCachedSystemConditions,
     getActiveEncounter: () => {
-      const groupId = getActiveCampaignGroupId();
+      const groupId = getActiveGroupId();
       return groupId ? getCachedActiveEncounter(groupId) : null;
     },
   });
@@ -5112,7 +5112,7 @@ function resolveEffectiveBarResourceName(systemId) {
 // and the Dashboard's map.js widget can't quietly drift apart on what a
 // marker's Marker Resource Bar actually shows.
 function resolveMarkerResourceBarForMarker(markerElement) {
-  const groupId = getActiveCampaignGroupId();
+  const groupId = getActiveGroupId();
   const encounter = groupId ? getCachedActiveEncounter(groupId) : null;
   if (!encounter?.systemId) return null;
   return resolveMarkerResourceBar(markerElement, encounter, resolveEffectiveBarResourceName(encounter.systemId));
@@ -5843,7 +5843,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   // refId (three Goblins, one Monster record). Absent outside combat or
   // with zero/one match — the common case resolves automatically.
   if (markerElement.refKind === "monster" || markerElement.refKind === "npc") {
-    const groupId = getActiveCampaignGroupId();
+    const groupId = getActiveGroupId();
     if (groupId) {
       ensureActiveEncounterCached(groupId, () => renderSelection());
       const activeEncounter = getCachedActiveEncounter(groupId);
@@ -5878,7 +5878,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   }
 
   // Contents — createMarkerContentEntry items a player can later claim
-  // into their Character inventory or the campaign's Party Inventory (see
+  // into their Character inventory or the group's Party Inventory (see
   // marker-contents.js's header for the claim mechanism). Any marker can
   // carry this, not a separate "Container" marker type.
   const contentsList = document.createElement("div");
@@ -5943,7 +5943,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         if (!value) return;
         giveToSelect.disabled = true;
         try {
-          const groupId = getActiveCampaignGroupId();
+          const groupId = getActiveGroupId();
           const roster = await loadGiveToRoster();
           const recipient =
             value === "party"
@@ -5980,7 +5980,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   let giveToRosterPromise = null;
   function loadGiveToRoster() {
     if (!giveToRosterPromise) {
-      const groupId = getActiveCampaignGroupId();
+      const groupId = getActiveGroupId();
       giveToRosterPromise = groupId ? resolveGiveToOptions(dataManager, groupId, currentShareToken).catch(() => []) : Promise.resolve([]);
     }
     return giveToRosterPromise;
@@ -6041,7 +6041,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     },
   });
 
-  // System-defined currency, resolved fresh against whichever campaign is
+  // System-defined currency, resolved fresh against whichever group is
   // currently active — never a hardcoded denomination vocabulary (5e's
   // cp/sp/ep/gp/pp is just one System's choice; a different System defines
   // its own or none at all). No "Add Currency" row for a System with no
@@ -8458,9 +8458,9 @@ function setupLightTool() {
   });
 }
 
-// The account's single "active campaign" (header user menu, auth-ui.js) —
+// The account's single "active group" (header user menu, auth-ui.js) —
 // reused here rather than a second Orrery-local picker that could desync.
-function getActiveCampaignGroupId() {
+function getActiveGroupId() {
   return dataManager?.getActiveGroup?.()?.groupId || "";
 }
 
@@ -8496,8 +8496,8 @@ function renderIncomingPing({ position, by }) {
   host.appendChild(createPingMarker(baseMapManager, state.map, position, by || ""));
 }
 
-// Click-to-ping — a transient broadcast to a campaign group's table (not
-// Orrery's own map "Groups"). Requires an active campaign: the ping
+// Click-to-ping — a transient broadcast to a player group's table (not
+// Orrery's own map "Groups"). Requires an active group: the ping
 // endpoint needs one, and it's what activates the live-stream subscription
 // the echo rides on — so the toggle stays disabled without one.
 function setupPingTool() {
@@ -8507,7 +8507,7 @@ function setupPingTool() {
   let active = false;
 
   function updateToggleAvailability() {
-    const hasGroup = Boolean(getActiveCampaignGroupId());
+    const hasGroup = Boolean(getActiveGroupId());
     elements.pingToggle.disabled = !hasGroup;
     // Tooltip must say why it's disabled. Set on the wrapping span, not the
     // button — a native `disabled` button doesn't reliably fire the
@@ -8515,7 +8515,7 @@ function setupPingTool() {
     const tooltipTarget = elements.pingToggleWrap || elements.pingToggle;
     tooltipTarget.setAttribute(
       "data-bs-title",
-      hasGroup ? "Click the map to ping" : "Select a campaign from the account menu (top right) to enable pinging"
+      hasGroup ? "Click the map to ping" : "Select a group from the account menu (top right) to enable pinging"
     );
     refreshTooltips(tooltipTarget.parentElement || document);
     if (!hasGroup && active) {
@@ -8528,7 +8528,7 @@ function setupPingTool() {
 
   updateToggleAvailability();
 
-  // The header's campaign switcher fires this from any tool's page, so
+  // The header's group switcher fires this from any tool's page, so
   // switching campaigns takes effect immediately without a reload.
   window.addEventListener("workbench:active-group-changed", () => {
     updateToggleAvailability();
@@ -8547,7 +8547,7 @@ function setupPingTool() {
 
   mapContainer.addEventListener("pointerdown", (event) => {
     if (!active || event.button !== 0 || !dataManager) return;
-    const groupId = getActiveCampaignGroupId();
+    const groupId = getActiveGroupId();
     if (!groupId) return;
     const overlay = baseMapManager.getOverlayContainer();
     if (!overlay) return;

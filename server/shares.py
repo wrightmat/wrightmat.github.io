@@ -218,7 +218,7 @@ def revoke_share(state: ServerState, content_type: str, content_id: str, usernam
 def _group_belongs_to(state: ServerState, group_id: str, user: User) -> bool:
     # Only a group's own owner (or admin) can use it as a share target —
     # sharing "with a group" grants every member's owner access, which should
-    # only ever be the acting GM's own call for their own campaign, not
+    # only ever be the acting GM's own call for their own group, not
     # something any user can do to an arbitrary group they merely know the
     # id of.
     if user.tier == "admin":

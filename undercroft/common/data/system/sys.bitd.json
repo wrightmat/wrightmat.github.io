@@ -880,64 +880,64 @@
       "label": "NPC Types",
       "values": [
         {
-          "name": "Ghost"
-        },
-        {
-          "name": "Hull"
-        },
-        {
-          "name": "Whisper-Cultist"
-        },
-        {
-          "name": "Leech-Doctor"
-        },
-        {
-          "name": "Spider"
-        },
-        {
-          "name": "Ash-Priest"
-        },
-        {
-          "name": "Bluecoat Inspector"
-        },
-        {
-          "name": "Bravo"
-        },
-        {
-          "name": "Smuggler"
-        },
-        {
-          "name": "Fence"
+          "name": "Laborer"
         },
         {
           "name": "Shopkeep"
         },
         {
-          "name": "Laborer"
+          "name": "Dockhand"
         },
         {
-          "name": "Dockhand"
+          "name": "Fence"
         },
         {
           "name": "Servant"
         },
         {
+          "name": "Smuggler"
+        },
+        {
           "name": "Factory Worker"
+        },
+        {
+          "name": "Bravo"
         },
         {
           "name": "Street Urchin"
         },
         {
+          "name": "Bluecoat Inspector"
+        },
+        {
           "name": "Cutpurse"
+        },
+        {
+          "name": "Ash-Priest"
         },
         {
           "name": "Beggar"
         },
         {
+          "name": "Spider"
+        },
+        {
           "name": "Noble's Attendant"
         },
         {
+          "name": "Leech-Doctor"
+        },
+        {
           "name": "Bluecoat Sergeant"
+        },
+        {
+          "name": "Whisper-Cultist"
+        },
+        {
+          "name": "Hull"
+        },
+        {
+          "name": "Ghost"
         }
       ]
     },

@@ -1,4 +1,4 @@
-"""Scheduled real-world sessions for Campaign Groups.
+"""Scheduled real-world sessions for player groups.
 
 A *series* (`group_sessions`) is a one-off or recurring game; each date is an
 *occurrence* (`group_session_occurrences`). Every moment is a naive-UTC ISO
@@ -22,6 +22,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from .auth import AuthError, User
 from .groups import _resolve_group_access
+from . import campaigns
 from .state import ServerState
 
 KINDS = ("live", "pbp")
@@ -311,6 +312,9 @@ def _clean_series(data: Dict[str, Any], *, partial: bool) -> Dict[str, Any]:
     low, high = cleaned.get("min_players"), cleaned.get("max_players")
     if low is not None and high is not None and high < low:
         raise AuthError("The maximum players can't be below the minimum")
+    # Optional: the campaign this series belongs to (blank = none).
+    if "campaign_id" in data:
+        cleaned["campaign_id"] = str(data["campaign_id"] or "").strip() or None
     return cleaned
 
 
@@ -416,6 +420,7 @@ def _serialize_series(row: Any, next_slot: Optional[str]) -> Dict[str, Any]:
         "reminderMinutes": row["reminder_minutes"],
         "lockPosting": bool(row["lock_posting"]),
         "threadIds": _json_list(row["thread_ids"]),
+        "campaignId": row["campaign_id"],
         "endedAt": row["ended_at"],
         "nextSlot": next_slot,
     }
@@ -726,6 +731,14 @@ def scheduler_loop(state: ServerState, shutdown_event: threading.Event) -> None:
         try:
             with state.lock:
                 next_due = run_due(state)
+                from . import signals
+
+                from . import applications
+
+                moment = utcnow()
+                for pending in (signals.run_due(state, moment), applications.expire_due(state, moment)):
+                    if pending is not None and (next_due is None or pending < next_due):
+                        next_due = pending
         except Exception:  # pragma: no cover - a bad pass must never kill the thread
             logging.exception("Session scheduler pass failed")
         if shutdown_event.is_set():
@@ -778,6 +791,8 @@ def preview_slots(data: Dict[str, Any]) -> Dict[str, Any]:
 def create_series(state: ServerState, group_id: Optional[str], user: Optional[User], data: Dict[str, Any]) -> Dict[str, Any]:
     row = _gm_access(state, group_id, user)
     cleaned = _clean_series(data, partial=False)
+    if cleaned.get("campaign_id"):
+        campaigns.require_open_campaign(state, row["id"], cleaned["campaign_id"])
     now = utcnow()
     session_id = _new_id("ses")
     state.db.execute(
@@ -785,12 +800,12 @@ def create_series(state: ServerState, group_id: Optional[str], user: Optional[Us
         INSERT INTO group_sessions
             (id, group_id, title, description, kind, start_at, duration_minutes, recurrence, location_text, location_url,
              min_players, max_players, rsvp_cutoff_minutes, allow_late_rsvp, lead_days, reminder_minutes, lock_posting,
-             thread_ids, created_by, created_at, updated_at)
+             thread_ids, campaign_id, created_by, created_at, updated_at)
         VALUES (:id, :group_id, :title, :description, :kind, :start_at, :duration_minutes, :recurrence, :location_text,
                 :location_url, :min_players, :max_players, :rsvp_cutoff_minutes, :allow_late_rsvp, :lead_days,
-                :reminder_minutes, :lock_posting, :thread_ids, :created_by, :created_at, :updated_at)
+                :reminder_minutes, :lock_posting, :thread_ids, :campaign_id, :created_by, :created_at, :updated_at)
         """,
-        {**cleaned, "id": session_id, "group_id": row["id"], "created_by": user.id, "created_at": iso(now), "updated_at": iso(now)},
+        {"campaign_id": None, **cleaned, "id": session_id, "group_id": row["id"], "created_by": user.id, "created_at": iso(now), "updated_at": iso(now)},
     )
     materialize_series(state, _series_row(state, session_id), now)
     state.db.commit()
@@ -803,6 +818,10 @@ def update_series(state: ServerState, group_id: Optional[str], user: Optional[Us
     row = _gm_access(state, group_id, user)
     series = _series_row(state, session_id, row["id"])
     cleaned = _clean_series(data, partial=True)
+    # Only a change of campaign is checked, so a series in a campaign that has
+    # since completed can still be edited.
+    if cleaned.get("campaign_id") and cleaned["campaign_id"] != series["campaign_id"]:
+        campaigns.require_open_campaign(state, row["id"], cleaned["campaign_id"])
     now = utcnow()
     if cleaned:
         assignments = ", ".join(f"{name} = :{name}" for name in cleaned)
@@ -856,7 +875,7 @@ def end_series(state: ServerState, group_id: Optional[str], user: Optional[User]
         "SELECT * FROM group_session_occurrences WHERE session_id = ? AND status = 'scheduled' AND start_at > ?",
         (series["id"], iso(now)),
     ).fetchall():
-        _cancel(state, occurrence, now)
+        _cancel(state, occurrence, now, ledger=False)
     state.db.commit()
     wake()
     ended = _series_row(state, session_id)
@@ -935,6 +954,9 @@ def update_occurrence(
         (start_at, end_at, json.dumps(overrides) if overrides else None, iso(now), occurrence_id),
     )
     if time_changed:
+        from . import signals
+
+        signals.on_rescheduled(state, series, occurrence, effective(series, occurrence), now)
         _reset_for_new_time(state, occurrence_id, now)
     elif "max_players" in data:
         _promote_waitlist(state, occurrence_id, now)
@@ -943,7 +965,13 @@ def update_occurrence(
     return _serialize_occurrence(state, series, _occurrence_row(state, occurrence_id))
 
 
-def _cancel(state: ServerState, occurrence: Any, now: datetime) -> None:
+def _cancel(state: ServerState, occurrence: Any, now: datetime, *, ledger: bool = True) -> None:
+    """`ledger=False` is for ending a series, which isn't counted against the GM."""
+    if ledger and occurrence["status"] == "scheduled":
+        from . import signals
+
+        series = _series_row(state, occurrence["session_id"])
+        signals.on_cancelled(state, series, occurrence, effective(series, occurrence), now)
     state.db.execute(
         """
         UPDATE group_session_occurrences
@@ -1122,6 +1150,10 @@ def _write_rsvp(state: ServerState, occurrence_id: str, person: Dict[str, Any], 
         """,
         (occurrence_id, person["user_id"], person["character_id"], person["character_name"], response, iso(now), set_by),
     )
+    if response == "accept":
+        from . import signals
+
+        signals.on_accepted(state, occurrence_id, person["user_id"], now)
 
 
 def rsvp(state: ServerState, user: Optional[User], occurrence_id: str, response: Any) -> Dict[str, Any]:
@@ -1209,9 +1241,15 @@ def get_occurrence(state: ServerState, user: Optional[User], occurrence_id: str)
     attendees: List[Dict[str, Any]] = []
     listed = set()
 
+    from . import signals
+
+    attendance = signals.attendance_by_user(state, occurrence_id)
+
     def label(user_id: int, username: str, character: Optional[str]) -> Dict[str, Any]:
         reply = responses.get(user_id)
         return {
+            "attendance": (attendance.get(user_id) or {}).get("outcome"),
+            "attendanceAuto": (attendance.get(user_id) or {}).get("auto", False),
             "userId": user_id,
             "username": username,
             "characterName": (reply["character_name"] if reply else None) or character or "",

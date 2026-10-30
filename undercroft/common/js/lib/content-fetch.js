@@ -4,9 +4,11 @@
 // source picker can both use it without duplicating the fetch/parse logic.
 // press/js/source-data.js now re-exports from this module unchanged.
 
+import { sessionAuthHeaders } from "./data-manager.js";
 import { applyMapping } from "./mapping-engine.js";
 import { deriveLookupTables } from "./system-lookup-tables.js";
 import { createMappingCustomFunctions } from "./mapping-custom-functions.js";
+import { apiUrl } from "./api.js";
 
 const SRD_BASE_URL = "https://www.dnd5eapi.co";
 const DDB_CHARACTER_URL = "https://character-service.dndbeyond.com/character/v5/character/";
@@ -142,7 +144,7 @@ export function extractDdbId(value) {
 // monster-service/class pages use, not just a public one.
 export async function fetchDdbCharacter(id) {
   const url = `${DDB_CHARACTER_URL}${id}`;
-  const localResponse = await fetch(`/ddb-proxy?url=${encodeURIComponent(url)}`).catch(() => null);
+  const localResponse = await fetch(apiUrl(`/ddb-proxy?url=${encodeURIComponent(url)}`), { headers: sessionAuthHeaders() }).catch(() => null);
   if (localResponse) {
     if (localResponse.ok) {
       const payload = await parseJsonResponse(localResponse, url);
@@ -472,7 +474,7 @@ export async function fetchDdbContentPage(url) {
   // subclasses) resolves fully, never routing that cookie through a third
   // party. Falls back to the public CORS proxy when the local route isn't
   // available — e.g. Press hosted without the Python backend.
-  const localResponse = await fetch(`/ddb-proxy?url=${encodeURIComponent(url)}`).catch(() => null);
+  const localResponse = await fetch(apiUrl(`/ddb-proxy?url=${encodeURIComponent(url)}`), { headers: sessionAuthHeaders() }).catch(() => null);
   if (localResponse) {
     if (localResponse.ok) {
       return localResponse.text();
@@ -556,7 +558,7 @@ export function loadMappingDefinition(mappingId) {
 // (listCharacterMappings below) doesn't duplicate this fetch.
 export async function listAvailableMappings() {
   try {
-    const response = await fetch("/list/loom-mappings");
+    const response = await fetch(apiUrl("/list/loom-mappings"));
     if (!response.ok) return [];
     const payload = await response.json();
     return (payload.files || []).map((entry) => entry.filename).filter(Boolean);
@@ -786,7 +788,7 @@ export const LIBRARY_KINDS = [
 // consumption is exactly "public content only," what an unauthenticated
 // fetch naturally returns.
 export async function fetchLibraryEntry(kind, id) {
-  const response = await fetch(`/content/${kind}/${encodeURIComponent(id)}`, { cache: "no-store" });
+  const response = await fetch(apiUrl(`/content/${kind}/${encodeURIComponent(id)}`), { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Failed to load ${kind}/${id} (${response.status}).`);
   }
@@ -798,7 +800,7 @@ export async function fetchLibraryEntry(kind, id) {
 // populate a kind's entry picker with just ids, without fetching every
 // entry's full body.
 export async function listLibraryKind(kind) {
-  const response = await fetch(`/list/${kind}`);
+  const response = await fetch(apiUrl(`/list/${kind}`));
   if (!response.ok) {
     throw new Error(`Failed to list ${kind} (${response.status}).`);
   }

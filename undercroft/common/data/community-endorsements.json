@@ -1,0 +1,54 @@
+{
+  "items": [
+    {
+      "id": "welcoming-table",
+      "name": "Welcoming table",
+      "appliesTo": "gm"
+    },
+    {
+      "id": "great-pacing",
+      "name": "Great pacing",
+      "appliesTo": "gm"
+    },
+    {
+      "id": "fair-rulings",
+      "name": "Fair rulings",
+      "appliesTo": "gm"
+    },
+    {
+      "id": "well-prepared",
+      "name": "Well prepared",
+      "appliesTo": "gm"
+    },
+    {
+      "id": "creative-storyteller",
+      "name": "Creative storyteller",
+      "appliesTo": "gm"
+    },
+    {
+      "id": "great-teammate",
+      "name": "Great teammate",
+      "appliesTo": "player"
+    },
+    {
+      "id": "engaged",
+      "name": "Engaged",
+      "appliesTo": "player"
+    },
+    {
+      "id": "creative-roleplayer",
+      "name": "Creative roleplayer",
+      "appliesTo": "player"
+    },
+    {
+      "id": "reliable",
+      "name": "Reliable",
+      "appliesTo": "player"
+    },
+    {
+      "id": "welcoming-newcomers",
+      "name": "Welcoming to newcomers",
+      "appliesTo": "player"
+    }
+  ]
+}

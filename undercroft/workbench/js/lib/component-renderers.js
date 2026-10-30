@@ -1,4 +1,5 @@
 import { applyTextFormatting, applyImageStyles } from "./component-styles.js";
+import { parseHtmlBody } from "../../../common/js/lib/dom.js";
 import { resolveIconClassList } from "../../../common/js/lib/icon-picker.js";
 import { createLabeledField } from "./component-layout.js";
 import { createReferenceChip } from "../../../common/js/lib/library-reference.js";
@@ -259,9 +260,7 @@ function stripHtmlTags(value) {
   if (typeof value !== "string" || !/<[a-z][\s\S]*>/i.test(value)) {
     return value;
   }
-  const scratch = document.createElement("div");
-  scratch.innerHTML = value;
-  return (scratch.textContent || "").replace(/\s+/g, " ").trim();
+  return (parseHtmlBody(value).textContent || "").replace(/\s+/g, " ").trim();
 }
 
 // A bound value shaped {refKind, refId, name} (Character.subclass, a

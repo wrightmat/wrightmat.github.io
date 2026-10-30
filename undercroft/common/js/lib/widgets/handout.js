@@ -714,7 +714,7 @@ export function initHandoutWidget(
 
   async function toggleVisibility() {
     if (!groupId) {
-      status?.show("No active campaign to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
       return;
     }
     try {

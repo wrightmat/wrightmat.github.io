@@ -8,7 +8,7 @@
 // bag (suit/rank, arcana/suit/rank, whatever a System needs) — never hardcoded field names.
 
 import { persistGroupPropertyValue, watchGroupForChanges } from "../group-live-sync.js";
-// resolveActiveDice resolves the active campaign's System DEFINITION
+// resolveActiveDice resolves the active group's System DEFINITION
 // generically (Group.systemId first, then a character's Assigned Systems)
 // — despite its dice-specific name it has no dice knowledge of its own, it's just what extractSystemDice/Decks/Rolls all read from.
 import { resolveActiveDice } from "./dice-roll.js";
@@ -51,7 +51,7 @@ export function extractSystemDecks(systemDefinition) {
 // Deck instance state — the one place cards aren't simply "dice with
 // pictures" (a die is stateless; a deck has real, shared-across-the-table
 // state: which cards remain, what's been discarded). Modeled as a Group
-// Property, the same mechanism Party Inventory uses for per-campaign
+// Property, the same mechanism Party Inventory uses for per-group
 // mutable shared state — see group-live-sync.js's fetch-fresh/mutate/save
 // concurrency reasoning, reused as-is. One property, keyed
 // ACTIVE_DECKS_PROPERTY_KEY: an array of {id, deckName, remainingCardIds,
@@ -213,7 +213,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   function renderTargetLine() {
     const target = describePostTarget(dataManager);
     targetLine.textContent =
-      mode === "private" ? "Not recorded — only you see the draw." : target || "No active campaign — draws aren't recorded.";
+      mode === "private" ? "Not recorded — only you see the draw." : target || "No active group — draws aren't recorded.";
   }
   function renderModeToggle() {
     renderTargetLine();
@@ -461,7 +461,7 @@ export async function runDeckMacroAction(action, { dataManager, groupContext, st
     throw new Error("No deck given.");
   }
   if (!dataManager || !groupContext?.groupId) {
-    throw new Error("No active campaign.");
+    throw new Error("No active group.");
   }
   const systemDefinition = await resolveActiveDice({ dataManager, groupContext }).catch(() => null);
   const deck = extractSystemDecks(systemDefinition).find((entry) => entry.id === deckId);

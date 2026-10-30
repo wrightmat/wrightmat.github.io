@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Find a Game</title>
+    <script src="js/theme-init.js"></script>
+    <link rel="stylesheet" href="css/shell.css" />
+  </head>
+  <body class="bg-body text-body" data-undercroft-tool="find-a-game">
+    <div class="d-flex flex-column min-vh-100 workbench-app">
+      <div data-app-shell-header></div>
+      <div class="d-flex flex-grow-1 overflow-hidden">
+        <div data-pane-content="left">
+          <div class="d-flex flex-column gap-3 overflow-auto pane-scroll" style="min-height: 0;">
+            <div data-fag-mode></div>
+            <div class="d-flex flex-column gap-2" data-fag-filters></div>
+            <a class="small" href="account.html#profile">Edit my profile &#8599;</a>
+          </div>
+        </div>
+        <main class="workbench-main flex-grow-1 p-3 overflow-auto d-flex flex-column gap-3">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <h1 class="h5 mb-0 d-flex align-items-center gap-2">
+              <span data-fag-title>Open listings</span>
+              <span class="align-middle" data-help-topic="community.finding" data-help-insert="replace"></span>
+            </h1>
+            <div class="d-flex align-items-center gap-2" data-fag-sort-wrap>
+              <label class="small text-body-secondary mb-0" for="fag-sort">Sort</label>
+              <select class="form-select form-select-sm" id="fag-sort" data-fag-sort style="width: auto;"></select>
+            </div>
+          </div>
+          <div class="d-flex flex-column gap-3" data-fag-results>
+            <p class="text-body-secondary mb-0">Loading…</p>
+          </div>
+        </main>
+        <div data-pane-content="right">
+          <div class="d-flex flex-column gap-3 overflow-auto pane-scroll" data-fag-detail>
+            <p class="text-body-secondary small mb-0">Pick a listing or a person to see the details.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="status-root" data-status-root></div>
+    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js" integrity="sha384-Ok2uDHnWhbSMsjjXrs20mYHBe3BLztRYQuPMBhyLnjPNH7OqWdv/c8Bmv54yhfKR" crossorigin="anonymous"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="find-a-game.js"></script>
+  </body>
+</html>

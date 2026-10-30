@@ -1,0 +1,268 @@
+// The signed-in user's own community profile: every field, saved in one go
+// through the validated profile endpoint.
+import { el } from "../dom.js";
+import { createLocationPicker } from "./location-picker.js";
+import { loadCommunityReference, loadSystemChoices } from "./reference.js";
+import { createScaleControl } from "./scale-control.js";
+import { renderProfileView } from "./profile-view.js";
+import { initHelpSystem } from "../help.js";
+import { helpBadge } from "./help-badge.js";
+
+function field(label, control, hint, topic) {
+  const wrap = el("div", "d-flex flex-column gap-1");
+  const heading = el("label", "form-label small fw-semibold mb-0", label);
+  if (topic) heading.appendChild(helpBadge(topic));
+  wrap.appendChild(heading);
+  wrap.appendChild(control);
+  if (hint) wrap.appendChild(el("div", "text-body-secondary small", hint));
+  return wrap;
+}
+
+function optionSelect(options, value, placeholder) {
+  const node = el("select", "form-select form-select-sm");
+  node.appendChild(new Option(placeholder, ""));
+  options.forEach((entry) => node.appendChild(new Option(entry.label, entry.id)));
+  node.value = value || "";
+  return node;
+}
+
+function checkRow(label, checked, onChange) {
+  const row = el("label", "form-check small");
+  const input = el("input", "form-check-input");
+  input.type = "checkbox";
+  input.checked = checked;
+  input.addEventListener("change", () => onChange(input.checked));
+  row.append(input, el("span", "form-check-label", label));
+  return row;
+}
+
+function timeZones() {
+  try {
+    return Intl.supportedValuesOf("timeZone");
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function mountProfileEditor(container, { dataManager, status } = {}) {
+  container.replaceChildren(el("div", "text-body-secondary small", "Loading…"));
+  const [reference, systems, saved] = await Promise.all([
+    loadCommunityReference(),
+    loadSystemChoices(dataManager),
+    dataManager.getCommunityProfile(),
+  ]);
+  const profile = {
+    public: false, bio: "", role: "", experience: "", openTo: "", playMode: "", sessionLength: "", timezone: "",
+    systems: [], availability: {}, safetyTools: [], scales: {}, location: { precision: "hidden" }, ...(saved.profile || {}),
+  };
+  profile.timezone = profile.timezone || "";
+  profile.role = profile.role || "";
+  profile.experience = profile.experience || "";
+  profile.openTo = profile.openTo || "";
+  profile.playMode = profile.playMode || "";
+  profile.sessionLength = profile.sessionLength || "";
+  const opt = reference.options;
+  const root = el("div", "d-flex flex-column gap-3");
+
+  const publicRow = checkRow("Make my profile public", profile.public, (v) => (profile.public = v));
+  publicRow.appendChild(helpBadge("community.privacy"));
+  const bio = el("textarea", "form-control form-control-sm");
+  bio.rows = 3;
+  bio.maxLength = 2000;
+  bio.value = profile.bio;
+  bio.addEventListener("input", () => (profile.bio = bio.value));
+  const selects = {
+    openTo: optionSelect(opt.openTo, profile.openTo, "Not looking"),
+    role: optionSelect(opt.role, profile.role, "Not set"),
+    experience: optionSelect(opt.experience, profile.experience, "Not set"),
+    sessionLength: optionSelect(opt.sessionLength, profile.sessionLength, "No preference"),
+    playMode: optionSelect(opt.playMode, profile.playMode, "No preference"),
+  };
+  Object.entries(selects).forEach(([key, node]) => node.addEventListener("change", () => (profile[key] = node.value)));
+
+  const zones = timeZones();
+  const timezone = el("input", "form-control form-control-sm");
+  timezone.setAttribute("list", "profile-timezones");
+  timezone.value = profile.timezone;
+  timezone.placeholder = Intl.DateTimeFormat().resolvedOptions().timeZone || "Time zone";
+  timezone.addEventListener("input", () => (profile.timezone = timezone.value.trim()));
+  const zoneList = el("datalist");
+  zoneList.id = "profile-timezones";
+  zones.forEach((zone) => zoneList.appendChild(new Option(zone)));
+
+  // Systems known: Library systems plus free text.
+  const systemList = el("div", "d-flex flex-wrap gap-1");
+  const systemSelect = el("select", "form-select form-select-sm");
+  const systemText = el("input", "form-control form-control-sm");
+  systemText.placeholder = "Another system";
+  function renderSystems() {
+    systemList.replaceChildren(
+      ...profile.systems.map((entry, index) => {
+        const chip = el("span", "badge text-bg-secondary d-inline-flex align-items-center gap-1");
+        chip.append(entry.systemId ? systems.find((s) => s.id === entry.systemId)?.title || entry.systemId : entry.name);
+        const remove = el("button", "btn-close btn-close-white");
+        remove.type = "button";
+        remove.style.fontSize = "0.55rem";
+        remove.setAttribute("aria-label", "Remove system");
+        remove.addEventListener("click", () => {
+          profile.systems.splice(index, 1);
+          renderSystems();
+        });
+        chip.appendChild(remove);
+        return chip;
+      }),
+    );
+    systemSelect.replaceChildren(new Option("Add a system…", ""), ...systems.map((s) => new Option(s.title, s.id)));
+  }
+  systemSelect.addEventListener("change", () => {
+    if (systemSelect.value && !profile.systems.some((e) => e.systemId === systemSelect.value)) {
+      profile.systems.push({ systemId: systemSelect.value, name: systems.find((s) => s.id === systemSelect.value)?.title || "" });
+    }
+    renderSystems();
+  });
+  systemText.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" || !systemText.value.trim()) return;
+    event.preventDefault();
+    profile.systems.push({ systemId: null, name: systemText.value.trim() });
+    systemText.value = "";
+    renderSystems();
+  });
+  renderSystems();
+
+  // Availability: a day × time-of-day grid in the profile's own time zone.
+  const grid = el("table", "table table-sm table-bordered text-center align-middle mb-0 small");
+  const header = el("tr");
+  header.appendChild(el("th"));
+  opt.dayParts.forEach((part) => header.appendChild(el("th", "fw-normal", part.label)));
+  grid.appendChild(el("thead")).appendChild(header);
+  const gridBody = el("tbody");
+  opt.weekdays.forEach((day) => {
+    const row = el("tr");
+    row.appendChild(el("th", "fw-normal text-start", day.label));
+    opt.dayParts.forEach((part) => {
+      const cell = el("td");
+      const box = el("input", "form-check-input");
+      box.type = "checkbox";
+      box.setAttribute("aria-label", `${day.label} ${part.label}`);
+      box.checked = Boolean(profile.availability[day.id]?.includes(part.id));
+      box.addEventListener("change", () => {
+        const set = new Set(profile.availability[day.id] || []);
+        box.checked ? set.add(part.id) : set.delete(part.id);
+        if (set.size) profile.availability[day.id] = [...set];
+        else delete profile.availability[day.id];
+      });
+      cell.appendChild(box);
+      row.appendChild(cell);
+    });
+    gridBody.appendChild(row);
+  });
+  grid.appendChild(gridBody);
+
+  // Safety tools, grouped by when they're used.
+  const tools = el("div", "d-flex flex-column gap-2");
+  [["before", "Before play"], ["during", "During play"], ["after", "After play"]].forEach(([phase, title]) => {
+    const entries = reference.safetyTools.filter((tool) => tool.phase === phase);
+    if (!entries.length) return;
+    const group = el("div", "d-flex flex-column");
+    group.appendChild(el("span", "small fw-semibold text-body-secondary", title));
+    entries.forEach((tool) => {
+      const row = checkRow(tool.name, profile.safetyTools.includes(tool.id), (on) => {
+        profile.safetyTools = on ? [...profile.safetyTools, tool.id] : profile.safetyTools.filter((id) => id !== tool.id);
+      });
+      row.title = tool.description;
+      group.appendChild(row);
+    });
+    tools.appendChild(group);
+  });
+
+  const scales = el("div", "d-flex flex-column gap-3");
+  reference.scales.forEach((scale) => {
+    scales.appendChild(
+      createScaleControl(scale, profile.scales[scale.id], {
+        points: reference.points,
+        onChange: (value) => {
+          if (value == null) delete profile.scales[scale.id];
+          else profile.scales[scale.id] = value;
+        },
+      }).element,
+    );
+  });
+
+  const picker = await createLocationPicker(profile.location, { onChange: (value) => (profile.location = value) });
+
+  const preview = el("div", "border rounded p-3");
+  preview.hidden = true;
+  const saveButton = el("button", "btn btn-primary btn-sm", "Save profile");
+  saveButton.type = "button";
+  const previewButton = el("button", "btn btn-outline-secondary btn-sm", "See how others see my profile");
+  previewButton.type = "button";
+  const payload = () => ({ ...profile, location: picker.getValue() });
+  // Save stays disabled until something differs from what was last loaded or saved.
+  let savedSnapshot = JSON.stringify(payload());
+  const syncSaveState = () => {
+    saveButton.disabled = JSON.stringify(payload()) === savedSnapshot;
+  };
+  syncSaveState();
+  saveButton.addEventListener("click", async () => {
+    saveButton.disabled = true;
+    try {
+      const result = await dataManager.saveCommunityProfile(payload());
+      Object.assign(profile, result.profile);
+      savedSnapshot = JSON.stringify(payload());
+      status?.show("Profile saved.", { type: "success", timeout: 2500 });
+    } catch (error) {
+      status?.show(error.message || "Could not save the profile.", { type: "error" });
+    } finally {
+      syncSaveState();
+    }
+  });
+  previewButton.addEventListener("click", () => {
+    preview.hidden = !preview.hidden;
+    if (!preview.hidden) {
+      preview.replaceChildren(
+        renderProfileView({ username: "You", profile: { ...payload(), locationLabel: "" } }, { reference, systems }),
+      );
+    }
+  });
+
+  const col = (...children) => {
+    const wrap = el("div", "d-flex flex-column gap-3");
+    wrap.append(...children);
+    return wrap;
+  };
+  const row = el("div", "row g-4");
+  const left = el("div", "col-12 col-xl-6");
+  const right = el("div", "col-12 col-xl-6");
+  left.appendChild(
+    col(
+      field("Bio", bio),
+      field("Open to", selects.openTo),
+      field("Role", selects.role),
+      field("Experience", selects.experience),
+      field("Systems known", col(systemList, systemSelect, systemText)),
+      field("Preferred session length", selects.sessionLength),
+      field("In-person or online", selects.playMode),
+      field("Time zone", col(timezone, zoneList)),
+      field("Typical availability", grid, "In your time zone."),
+      field("Location", picker.element, undefined, "community.location"),
+      field("Safety tools", tools, undefined, "community.safetyTools"),
+    ),
+  );
+  const scalesHeading = el("div", "text-uppercase fs-6 fw-semibold text-body-secondary", "What I like in a game");
+  scalesHeading.appendChild(helpBadge("community.scales"));
+  right.appendChild(col(scalesHeading, scales));
+  row.append(left, right);
+  const actions = el("div", "d-flex flex-wrap align-items-center gap-3");
+  actions.append(saveButton, previewButton, publicRow);
+  // Setting Open to only lists you in Find a Game once the profile is public.
+  const openToHint = el("div", "small text-warning", "You'll only appear in Find a Game once your profile is public.");
+  const syncOpenToHint = () => {
+    openToHint.hidden = !(profile.openTo && !profile.public);
+  };
+  syncOpenToHint();
+  ["input", "change", "click"].forEach((type) => root.addEventListener(type, () => window.setTimeout(syncOpenToHint, 0)));
+  root.append(actions, openToHint, preview, row);
+  ["input", "change", "click", "keydown"].forEach((type) => root.addEventListener(type, () => window.setTimeout(syncSaveState, 0)));
+  container.replaceChildren(root);
+  void initHelpSystem({ root: container });
+}

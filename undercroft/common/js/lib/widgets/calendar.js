@@ -8,12 +8,12 @@
 // just a running day/time).
 //
 // The day/time, and which Setting they're read against, are NOT this
-// widget's own contentRef — they're ambient campaign state, the same tier
+// widget's own contentRef — they're ambient group state, the same tier
 // as the active Group's own systemId/settingId (group-context.js's
-// resolveGroupContext; data-manager.js's setCampaignDate). Every Calendar
+// resolveGroupContext; data-manager.js's setGroupDate). Every Calendar
 // widget on a dashboard reads/writes the SAME shared day/time — advancing
 // it from one instance reflects in every other immediately (the
-// "undercroft:campaign-date-changed" event below). `contentRef` only holds
+// "undercroft:group-date-changed" event below). `contentRef` only holds
 // this ONE instance's own display preferences — `{ time: { enabled,
 // autoTickEnabled, autoTickSeconds, autoTickMinutes } }`.
 import { el } from "../dom.js";
@@ -378,7 +378,7 @@ function initFollowerCalendar(container, { dataManager, groupId = "", shareToken
   };
 }
 
-// No `minutesOfDay` here — that's the ambient value now (sourced from groupContext/the campaign-date-changed event).
+// No `minutesOfDay` here — that's the ambient value now (sourced from groupContext/the group-date-changed event).
 function normalizeTime(raw) {
   return {
     enabled: Boolean(raw?.enabled),
@@ -420,7 +420,7 @@ export function initCalendarWidget(
     shareToken = "",
     // Read once at mount for settingId/the initial day/time — a Setting
     // reassignment triggers dashboard.js's own full rebuild, so this never
-    // re-resolves mid-lifetime; day/time stay live via the campaign-date-changed event below.
+    // re-resolves mid-lifetime; day/time stay live via the group-date-changed event below.
     groupContext,
     canToggleVisibility = false,
     setRightAction,
@@ -442,11 +442,11 @@ export function initCalendarWidget(
     return initFollowerCalendar(container, { dataManager, groupId, shareToken, followId: instanceId, setTitle });
   }
 
-  // The campaign's ambient Setting/day/time — settingId is fixed for this
-  // instance's lifetime; dayIndex/minutesOfDay stay live via handleCampaignDateChanged below.
+  // The group's ambient Setting/day/time — settingId is fixed for this
+  // instance's lifetime; dayIndex/minutesOfDay stay live via handleGroupDateChanged below.
   const settingId = groupContext?.settingId || "";
-  let dayIndex = Number(groupContext?.campaignDayIndex) || 0;
-  let minutesOfDay = Number(groupContext?.campaignMinutesOfDay) || 0;
+  let dayIndex = Number(groupContext?.groupDayIndex) || 0;
+  let minutesOfDay = Number(groupContext?.groupMinutesOfDay) || 0;
   let time = normalizeTime(contentRef?.time);
   let destroyed = false;
   let visible = false;
@@ -502,11 +502,11 @@ export function initCalendarWidget(
 
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
-      status?.show("No active campaign to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
       return;
     }
     if (!settingId) {
-      status?.show("This campaign has no Setting assigned yet — nothing to show.", { type: "warning", timeout: 2500 });
+      status?.show("This group has no Setting assigned yet — nothing to show.", { type: "warning", timeout: 2500 });
       return;
     }
     try {
@@ -556,8 +556,8 @@ export function initCalendarWidget(
     render();
     startAutoTick();
     void pushVisibleUpdate();
-    void dataManager.setCampaignDate(groupId, { dayIndex, minutesOfDay }).catch((error) => {
-      status?.show(error?.message || "Unable to update the campaign date.", { type: "error" });
+    void dataManager.setGroupDate(groupId, { dayIndex, minutesOfDay }).catch((error) => {
+      status?.show(error?.message || "Unable to update the group date.", { type: "error" });
     });
   }
 
@@ -744,7 +744,7 @@ export function initCalendarWidget(
           "text-body-secondary small mb-0",
           settingId
             ? "This Setting has no calendar defined — add one in Sanctum."
-            : "This campaign has no Setting assigned yet — assign one to use the Calendar widget."
+            : "This group has no Setting assigned yet — assign one to use the Calendar widget."
         )
       );
       setTitle?.("Calendar");
@@ -791,9 +791,9 @@ export function initCalendarWidget(
   }
 
   // Keeps this instance's day/time mirror current with whatever ANY
-  // Calendar widget just wrote via setCampaignDate — the event already
-  // carries the new values. Filtered to this widget's own campaign.
-  function handleCampaignDateChanged(event) {
+  // Calendar widget just wrote via setGroupDate — the event already
+  // carries the new values. Filtered to this widget's own group.
+  function handleGroupDateChanged(event) {
     if (destroyed || event.detail?.groupId !== groupId) return;
     if (event.detail?.dayIndex !== undefined) dayIndex = Number(event.detail.dayIndex) || 0;
     if (event.detail?.minutesOfDay !== undefined) minutesOfDay = Number(event.detail.minutesOfDay) || 0;
@@ -807,7 +807,7 @@ export function initCalendarWidget(
     void refreshVisibility();
   }
   void boot();
-  window.addEventListener("undercroft:campaign-date-changed", handleCampaignDateChanged);
+  window.addEventListener("undercroft:group-date-changed", handleGroupDateChanged);
 
   return {
     runMacroAction,
@@ -818,7 +818,7 @@ export function initCalendarWidget(
     async destroy(removed) {
       destroyed = true;
       stopAutoTick();
-      window.removeEventListener("undercroft:campaign-date-changed", handleCampaignDateChanged);
+      window.removeEventListener("undercroft:group-date-changed", handleGroupDateChanged);
       container.innerHTML = "";
       if (removed && visible && groupId && instanceId) {
         try {

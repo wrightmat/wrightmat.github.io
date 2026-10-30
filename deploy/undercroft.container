@@ -1,0 +1,41 @@
+# /etc/containers/systemd/undercroft.container
+#
+# Build the image first:  sudo podman build -t localhost/undercroft -f deploy/Containerfile deploy
+# Then:                   sudo systemctl daemon-reload && sudo systemctl start undercroft
+#
+# Host layout:
+#   /srv/containers/undercroft/app      the git checkout (read-only in the container)
+#   /srv/containers/undercroft/data     database, Library content, community lists, mappings (uid 10001)
+#   /srv/containers/undercroft/secrets  encryption key, credentials, email.json, metrics-token.txt (uid 10001, mode 700)
+#   /srv/containers/undercroft/config   server.config.json (read-only in the container)
+
+[Unit]
+Description=Undercroft
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+ContainerName=undercroft
+Image=localhost/undercroft
+# Network=host is how every container on this host runs, so the app binds 127.0.0.1:8100 (set in the
+# config), never 0.0.0.0: that would let LAN clients bypass Caddy's TLS, body cap and slow-client handling.
+Network=host
+Volume=/srv/containers/undercroft/app:/app:ro
+Volume=/srv/containers/undercroft/data:/data
+Volume=/srv/containers/undercroft/secrets:/secrets
+Volume=/srv/containers/undercroft/config:/config:ro
+ReadOnly=true
+Tmpfs=/tmp
+NoNewPrivileges=true
+DropCapability=ALL
+HealthCmd=python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/undercroft/api/healthz', timeout=3)"
+HealthInterval=30s
+HealthRetries=3
+
+[Service]
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

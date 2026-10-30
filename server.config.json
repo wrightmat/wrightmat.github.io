@@ -8,9 +8,11 @@
     "log_level": "info",
     "require_email_verification": true,
     "debug_verification_codes": false,
-    "default_admin_username": "admin",
-    "default_admin_password": "admin",
-    "default_admin_email": "admin@example.com",
+    "seed_dev_accounts": true,
+    "require_invite": false,
+    "local_file_access": true,
+    "trusted_proxies": [],
+    "static_roots": ["undercroft", "beer", "codex", "controlpanel", "dnd", "mapping", "sheets"],
     "ddb_proxy_allowed_hosts": ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com", "character-service.dndbeyond.com"]
   },
   "database": {

@@ -1,0 +1,93 @@
+{
+  "points": 5,
+  "scales": [
+    {
+      "id": "presentation",
+      "label": "Presentation",
+      "description": "Maps, music, props and voices.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "fantasy",
+      "label": "Fantasy",
+      "description": "Immersion and make-believe.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "narrative",
+      "label": "Narrative",
+      "description": "Story and drama.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "challenge",
+      "label": "Challenge",
+      "description": "Tactics, puzzles and real risk.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "fellowship",
+      "label": "Fellowship",
+      "description": "Camaraderie at the table.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "discovery",
+      "label": "Discovery",
+      "description": "Exploration and secrets.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "expression",
+      "label": "Expression",
+      "description": "Character creation and leaving a mark.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "relaxation",
+      "label": "Relaxation",
+      "description": "Relaxed, low-stakes play.",
+      "kind": "aesthetic"
+    },
+    {
+      "id": "tone",
+      "label": "Tone",
+      "description": "How light or dark the game feels.",
+      "kind": "feel",
+      "low": "Lighthearted",
+      "high": "Dark"
+    },
+    {
+      "id": "lethality",
+      "label": "Lethality",
+      "description": "How easily characters die.",
+      "kind": "feel",
+      "low": "Forgiving",
+      "high": "Deadly"
+    },
+    {
+      "id": "structure",
+      "label": "Structure",
+      "description": "How open or scripted the story is.",
+      "kind": "feel",
+      "low": "Sandbox",
+      "high": "Linear"
+    },
+    {
+      "id": "rulesWeight",
+      "label": "Rules weight",
+      "description": "How much the rules matter at the table.",
+      "kind": "feel",
+      "low": "Rules-light",
+      "high": "Crunchy"
+    },
+    {
+      "id": "seriousness",
+      "label": "Seriousness",
+      "description": "How seriously the table takes itself.",
+      "kind": "feel",
+      "low": "Comedic",
+      "high": "Serious"
+    }
+  ]
+}

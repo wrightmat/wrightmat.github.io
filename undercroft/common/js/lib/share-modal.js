@@ -235,7 +235,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
 
   // The datalist input holds one merged namespace — usernames and campaign
   // group names — since a group is just another share target. Group options
-  // get a "(Campaign Group)" suffix; findEligibleShareEntry below resolves
+  // get a "(Player Group)" suffix; findEligibleShareEntry below resolves
   // whichever matched by checking `type`.
   function updateShareUsernameOptions() {
     if (!elements.shareUsernameOptions) return;
@@ -265,7 +265,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
         if (entry.special) option.dataset.special = entry.special;
         let label;
         if (isGroup) {
-          label = `${value} (Campaign Group)`;
+          label = `${value} (Player Group)`;
         } else if (entry.special === SHARE_SPECIAL_ALL_USERS) {
           label = `${SHARE_ALL_USERS_LABEL} (View only)`;
           option.value = SHARE_ALL_USERS_LABEL;
@@ -307,7 +307,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
     }
   }
 
-  // Only shown once a GM has an active campaign (auth-ui.js's header
+  // Only shown once a GM has an active group (auth-ui.js's header
   // control) and a record is selected.
   function renderShareQuickButton() {
     if (!elements.shareQuick || !elements.shareQuickButton) return;
@@ -315,7 +315,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
     const show = Boolean(shareState.record && active && active.groupId);
     elements.shareQuick.hidden = !show;
     if (show) {
-      elements.shareQuickButton.textContent = `Share with ${active.name || "active campaign"}`;
+      elements.shareQuickButton.textContent = `Share with ${active.name || "active group"}`;
       elements.shareQuickButton.disabled = shareState.loading;
     }
   }
@@ -407,7 +407,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
         const special = entry?.special || "";
         const isAllUsers = special === SHARE_SPECIAL_ALL_USERS;
         const isGroup = entry?.type === "group";
-        const displayName = isGroup ? `${entry.group_name} (Campaign Group)` : isAllUsers ? SHARE_ALL_USERS_LABEL : entry.username;
+        const displayName = isGroup ? `${entry.group_name} (Player Group)` : isAllUsers ? SHARE_ALL_USERS_LABEL : entry.username;
         userCell.textContent = displayName;
         const actionCell = document.createElement("td");
         actionCell.className = "text-end";
@@ -630,9 +630,9 @@ export function initShareModal({ dataManager, status = null } = {}) {
         // data-manager.js's spotlightToGroup, same reasoning).
         const quickSharePermissions = contentType === "map" ? "edit" : "view";
         await dataManager.shareWithGroup({ contentType, contentId: shareState.record.id, groupId: active.groupId, permissions: quickSharePermissions });
-        if (status) status.show(`Shared with ${active.name || "active campaign"}.`, { type: "success", timeout: 1800 });
+        if (status) status.show(`Shared with ${active.name || "active group"}.`, { type: "success", timeout: 1800 });
       } catch (error) {
-        console.error("Failed to share with active campaign", error);
+        console.error("Failed to share with active group", error);
         if (status) status.show(error.message || "Unable to share", { type: "danger" });
       } finally {
         elements.shareQuickButton.disabled = false;
@@ -648,7 +648,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
       const typedValue = (elements.shareUsername?.value || "").trim();
       let permissions = elements.sharePermission?.value || "view";
       if (!typedValue) {
-        if (status) status.show("Enter a username or campaign group to share with.", { type: "warning", timeout: 1800 });
+        if (status) status.show("Enter a username or group to share with.", { type: "warning", timeout: 1800 });
         return;
       }
       const match = findEligibleShareEntry(typedValue);
@@ -684,7 +684,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
     elements.shareUsername.addEventListener("change", handler);
   }
 
-  // Keeps the quick-share button in sync if the active campaign changes
+  // Keeps the quick-share button in sync if the active group changes
   // elsewhere while this modal is open.
   window.addEventListener("workbench:active-group-changed", () => {
     renderShareQuickButton();

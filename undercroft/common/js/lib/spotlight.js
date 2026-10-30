@@ -1,6 +1,6 @@
 // Spotlight resolution — lets Dashboard widgets (Handout/Map/Clock/Browser/
 // Calendar/Soundboard/Combat) find out what's currently shown to the active
-// campaign group, via the group's spotlight state (server/spotlight.py). Each
+// player group, via the group's spotlight state (server/spotlight.py). Each
 // widget posts/clears its
 // own spotlight directly through dataManager.spotlightToGroup/clearSpotlight
 // — this module mostly only reads that state back; retirePreviousEncounterSpotlight
@@ -67,7 +67,7 @@ export const SPOTLIGHT_KIND_ICONS = {
 // Kinds with no Library record to fetch a title from at all — spotlighted by
 // an id that isn't a `kind/id` Library path. Guards a title-cache fetch that
 // would otherwise 404 forever, once per poll. `shop`'s own state lives on the
-// campaign Group (shop-transactions.js), not on any one GM's widget instance,
+// Group (shop-transactions.js), not on any one GM's widget instance,
 // but there's still no Library record to fetch a title from, so it shares
 // this guard — a Shop widget reads its id straight off contentRef.followId.
 export const SPOTLIGHT_INLINE_KINDS = new Set(["clock", "browser", "calendar", "soundboard", "shop"]);
@@ -109,7 +109,7 @@ export async function resolveActiveSpotlightId(dataManager, { groupId, shareToke
 // dataManager.spotlightToGroup only ever adds a spotlight — nothing clears
 // whichever encounter was previously shown before a GM starts/switches to a
 // new one (via Repository's `encounter:` chip, or Combat Tracker's own "Show
-// to table"). "encounter" is single-slot per campaign (resolveActiveSpotlightId
+// to table"). "encounter" is single-slot per group (resolveActiveSpotlightId
 // above), but the Dashboard's spotlight tray deliberately allows several
 // simultaneous entries PER KIND (correct for Handout/Map/Clock), so every
 // encounter ever spotlighted would otherwise keep showing there forever.

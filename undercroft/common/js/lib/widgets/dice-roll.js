@@ -243,7 +243,7 @@ export async function rollExpression(
   }
 }
 
-// Which System's dice are in effect: the active campaign Group's own
+// Which System's dice are in effect: the active Group's own
 // System wins first, then the character's own first Assigned System, else
 // `null` (falls back to the standard 7). A System with no `dice` array at
 // all (D&D) returns a payload with no usable dice, same as "no System".

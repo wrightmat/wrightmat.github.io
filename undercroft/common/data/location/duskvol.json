@@ -37,14 +37,14 @@
       "weight": 2
     }
   ],
-  "archetypeOverrides": {
-    "22": {
+  "archetypes": [
+    {
       "name": "Bluecoat Officer"
     },
-    "23": {
+    {
       "name": "Spirit Warden"
     }
-  },
+  ],
   "genericNameFallback": [
     "Ambrose",
     "Branwen",

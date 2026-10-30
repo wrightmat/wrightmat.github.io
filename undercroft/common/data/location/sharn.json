@@ -75,14 +75,14 @@
       "weight": 2
     }
   ],
-  "archetypeOverrides": {
-    "22": {
+  "archetypes": [
+    {
       "name": "Dragonmarked House Agent"
     },
-    "23": {
+    {
       "name": "Sharn Watch Officer"
     }
-  },
+  ],
   "genericNameFallback": [
     {
       "name": "Aris"

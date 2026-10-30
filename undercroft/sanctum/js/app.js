@@ -1,4 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { bindNoteButton } from "../../common/js/lib/note-button.js";
 import { resolveFieldRole } from "../../common/js/lib/field-roles.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
@@ -49,6 +50,7 @@ import {
   setGenerateButtonReadiness,
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
+import { createArchetypeEntriesEditor } from "../../common/js/lib/archetype-entries.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
 import { openShop, closeShop, locationIsShop } from "../../common/js/lib/shop-transactions.js";
 // Repository's own markdown renderer, reused for the Notes View mode — same
@@ -328,6 +330,8 @@ function slugify(name) {
   );
 }
 
+const archetypeEntriesEditor = createArchetypeEntriesEditor({ container: elements.archetypeOverrideRows });
+
 function currentSystemId() {
   return elements.systemSelect?.value || "";
 }
@@ -450,7 +454,7 @@ async function loadSettingIntoForm(id) {
 // relationship records the first time they're seen. Idempotent — checked
 // against the current edge set before creating anything, so a Setting with
 // nothing left to migrate does zero writes. This is what makes "no
-// separate Sanctum relationship concept" true for EXISTING campaign data,
+// separate Sanctum relationship concept" true for EXISTING group data,
 // not just newly authored ones.
 async function migrateLegacyLocationRelationships(rawLocations) {
   const edges = await fetchAllRelationships(dataManager).catch(() => []);
@@ -756,20 +760,6 @@ function updateSpeciesWeightTotal(rowsEl, totalEl) {
   totalEl.textContent = `Total: ${total}`;
 }
 
-function renderArchetypeOverrideRow(roll = "", name = "") {
-  if (!elements.archetypeOverrideRows) return;
-  const row = document.createElement("div");
-  row.className = "d-flex align-items-center gap-2";
-  row.innerHTML = `
-    <input class="form-control" style="max-width: 6rem" type="text" placeholder="Roll" value="${escapeHtml(roll)}" data-archetype-override-roll />
-    <input class="form-control" type="text" placeholder="Archetype name" value="${escapeHtml(name)}" data-archetype-override-name />
-    <button class="btn btn-outline-danger btn-sm flex-shrink-0" type="button" data-remove-archetype-override aria-label="Remove override" data-bs-toggle="tooltip" data-bs-title="Remove override">
-      <span class="iconify" data-icon="tabler:trash" aria-hidden="true"></span>
-    </button>
-  `;
-  elements.archetypeOverrideRows.appendChild(row);
-}
-
 function renderFallbackNameRow(entry = { name: "", weight: "" }) {
   if (!elements.fallbackNameRows) return;
   const row = document.createElement("div");
@@ -798,12 +788,7 @@ function populateNpcConfigForm(record) {
     (record?.speciesWeights || []).forEach((entry) => renderSpeciesWeightRow(elements.speciesWeightRows, elements.speciesWeightTotal, entry));
     updateSpeciesWeightTotal(elements.speciesWeightRows, elements.speciesWeightTotal);
   }
-  if (elements.archetypeOverrideRows) {
-    elements.archetypeOverrideRows.innerHTML = "";
-    Object.entries(record?.archetypeOverrides || {}).forEach(([roll, override]) =>
-      renderArchetypeOverrideRow(roll, override?.name || "")
-    );
-  }
+  archetypeEntriesEditor.setEntries(record?.archetypes || []);
   if (elements.fallbackNameRows) {
     elements.fallbackNameRows.innerHTML = "";
     (record?.genericNameFallback || []).forEach((entry) => renderFallbackNameRow(entry));
@@ -822,14 +807,9 @@ function readSpeciesWeightsFromRows(rowsEl) {
     .filter((entry) => entry.entityId);
 }
 
-function collectNpcConfigFromForm() {
+function collectNpcConfigFromForm({ strict = true } = {}) {
   const speciesWeights = readSpeciesWeightsFromRows(elements.speciesWeightRows);
-  const archetypeOverrides = {};
-  Array.from(elements.archetypeOverrideRows?.children || []).forEach((row) => {
-    const roll = row.querySelector("[data-archetype-override-roll]").value.trim();
-    const name = row.querySelector("[data-archetype-override-name]").value.trim();
-    if (roll && name) archetypeOverrides[roll] = { name };
-  });
+  const archetypes = archetypeEntriesEditor.getEntries({ strict });
   const genericNameFallback = Array.from(elements.fallbackNameRows?.children || [])
     .map((row) => {
       const name = row.querySelector("[data-fallback-name]").value.trim();
@@ -841,7 +821,7 @@ function collectNpcConfigFromForm() {
   return {
     mixingCoefficient: Number(elements.mixingCoefficientInput?.value) || 0,
     speciesWeights,
-    archetypeOverrides,
+    archetypes,
     genericNameFallback,
   };
 }
@@ -1200,7 +1180,7 @@ function addAssetOrNeed(listKey, kind, refId) {
 
 // --- Shop (Open/Close, GM-only) ---------------------------------------------
 //
-// A shop's live inventory lives on the campaign Group as a Group Property
+// A shop's live inventory lives on the Group as a Group Property
 // (shop-transactions.js's own openShop/closeShop), not on the Location
 // record — these controls just need to know which group is "active" for
 // this session. resolveGroupContext is Sanctum's own existing mechanism
@@ -1235,7 +1215,7 @@ async function renderShopControls(record) {
   const groupId = await loadShopGroupId();
   if (currentRecord?.id !== locationId) return; // selection changed while awaiting
   if (!groupId) {
-    if (elements.shopStatus) elements.shopStatus.textContent = "No active campaign group — select one to manage this shop.";
+    if (elements.shopStatus) elements.shopStatus.textContent = "No active group — select one to manage this shop.";
     elements.openShopButton?.classList.add("d-none");
     elements.closeShopButton?.classList.add("d-none");
     return;
@@ -1257,7 +1237,7 @@ elements.openShopButton?.addEventListener("click", async () => {
   if (!currentRecord?.id) return;
   const groupId = await loadShopGroupId();
   if (!groupId) {
-    status?.show("No active campaign group to open this shop in.", { type: "warning", timeout: 3000 });
+    status?.show("No active group to open this shop in.", { type: "warning", timeout: 3000 });
     return;
   }
   try {
@@ -1472,7 +1452,7 @@ function buildLocationSnapshot() {
     notes: elements.notesText?.value || "",
     systemIds: currentSystemId() ? [currentSystemId()] : [],
     settingIds: (currentSettingId || elements.settingSelect?.value) ? [currentSettingId || elements.settingSelect.value] : [],
-    ...collectNpcConfigFromForm(),
+    ...collectNpcConfigFromForm({ strict: false }),
   };
 }
 
@@ -1817,6 +1797,13 @@ async function handleSave() {
     status?.show("Enter a Location name first.", { type: "warning", timeout: 2500 });
     return;
   }
+  let npcConfig;
+  try {
+    npcConfig = collectNpcConfigFromForm();
+  } catch (error) {
+    status?.show(error.message, { type: "warning", timeout: 3500 });
+    return;
+  }
   // Captured before currentRecord.name is overwritten below — Name isn't
   // live-synced into currentRecord until save time, so this is still the
   // last-saved/loaded value. Only an existing (already-saved) Location can
@@ -1832,7 +1819,7 @@ async function handleSave() {
   // plural just future-proofs a place reachable from more than one Setting.
   currentRecord.systemIds = currentSystemId() ? [currentSystemId()] : [];
   currentRecord.settingIds = settingId ? [settingId] : [];
-  Object.assign(currentRecord, collectNpcConfigFromForm());
+  Object.assign(currentRecord, npcConfig);
   const id = currentLocationId || slugify(name);
   currentRecord.id = id;
   try {
@@ -2037,6 +2024,7 @@ async function init() {
     status,
   });
   dataManager = auth.dataManager;
+  bindNoteButton(elements.generateNoteButton, dataManager);
 
   initCollapsibles();
 
@@ -2155,10 +2143,7 @@ async function init() {
       elements.mixingCoefficientValue.textContent = Number(elements.mixingCoefficientInput.value).toFixed(2);
     }
   });
-  elements.addArchetypeOverrideButton?.addEventListener("click", () => renderArchetypeOverrideRow());
-  elements.archetypeOverrideRows?.addEventListener("click", (event) => {
-    if (event.target.closest("[data-remove-archetype-override]")) event.target.closest(".d-flex").remove();
-  });
+  elements.addArchetypeOverrideButton?.addEventListener("click", () => archetypeEntriesEditor.addEntry());
   elements.addFallbackNameButton?.addEventListener("click", () => renderFallbackNameRow());
   elements.fallbackNameRows?.addEventListener("click", (event) => {
     if (event.target.closest("[data-remove-fallback-name]")) event.target.closest(".d-flex").remove();
@@ -2229,7 +2214,7 @@ async function init() {
   elements.display?.addEventListener("change", updateActionButtons);
 
   // Named (not an inline listener) so the init flow below can also call
-  // this directly when auto-selecting the active campaign group's System.
+  // this directly when auto-selecting the active player group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     // A different System means any previously loaded Location (and the
@@ -2451,7 +2436,7 @@ async function init() {
   // resolved the location's own System/Setting and ran the FULL cascade
   // (reloadReferenceData's 8 parallel fetches, then EVERY Location in the
   // Setting for the picker) before ever calling selectLocation, so a deep
-  // link into a large campaign sat on a blank screen through all of that.
+  // link into a large group sat on a blank screen through all of that.
   // Phase 1 (awaited, blocks return): fetch just the target Location and
   // render it. Phase 2 (fired but NOT awaited): the System/Setting cascade
   // + full picker population, in the background — the record is already on
@@ -2510,9 +2495,9 @@ async function init() {
     }
   }
 
-  // If a campaign group is active and has its own System/Setting assigned,
+  // If a player group is active and has its own System/Setting assigned,
   // default Sanctum's own pickers to THOSE specifically — a real, GM-chosen
-  // fact about the campaign, not a guess — to make mid-campaign generation
+  // fact about the group, not a guess — to make mid-campaign generation
   // faster. Falls through to the original placeholder sequence when
   // there's no active group, or its System/Setting isn't one this tool's
   // own lists contain. An explicit `?location=`/`?setting=` deep link

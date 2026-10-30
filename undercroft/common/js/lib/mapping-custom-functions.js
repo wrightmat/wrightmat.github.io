@@ -15,6 +15,7 @@
 // `context.root` is always the original raw character object, regardless of
 // how deep the mapping tree has descended.
 import { resolveDottedPath as resolvePath } from "./dotted-path.js";
+import { parseHtmlBody } from "./dom.js";
 import { evaluateDerivedFormula } from "./derived-formulas.js";
 
 // A factory, not a static export: ABILITIES/SAVING_THROW_SUBTYPES/SKILLS/
@@ -805,9 +806,7 @@ function determineSpellcastingAbility(classes) {
 // only runs in a browser) to decode entities/strip nested tags rather than a
 // hand-rolled entity table.
 function stripHtmlToText(html) {
-  const el = document.createElement("div");
-  el.innerHTML = html;
-  return (el.textContent || "").replace(/\s+/g, " ").trim();
+  return (parseHtmlBody(html).textContent || "").replace(/\s+/g, " ").trim();
 }
 
 // A Character-domain feat/feature/racial-trait's description text is raw
@@ -827,8 +826,7 @@ function stripHtmlToMarkdown(html) {
   if (typeof html !== "string" || !/<[a-z][\s\S]*>/i.test(html)) {
     return html;
   }
-  const el = document.createElement("div");
-  el.innerHTML = html;
+  const el = parseHtmlBody(html);
   el.querySelectorAll("strong, b").forEach((node) => {
     node.replaceWith(document.createTextNode(`**${node.textContent}**`));
   });
@@ -840,8 +838,7 @@ function stripHtmlToMarkdown(html) {
 
 function htmlBlocksToText(html) {
   if (!html) return "";
-  const container = document.createElement("div");
-  container.innerHTML = String(html);
+  const container = parseHtmlBody(html);
   const lines = [];
   const walk = (node) => {
     Array.from(node.childNodes).forEach((child) => {

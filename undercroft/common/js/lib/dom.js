@@ -1,5 +1,22 @@
 // Tiny, generic DOM helpers shared across widgets/pages.
 
+export function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Parses untrusted markup into an inert document (no images load, no handlers run) and returns its body.
+export function parseHtmlBody(html) {
+  const body = new DOMParser().parseFromString(String(html ?? ""), "text/html").body;
+  body.querySelectorAll("script, style").forEach((node) => node.remove());
+  return body;
+}
+
+// Sets markup that may be user- or imported-authored: sanitized when DOMPurify is loaded, plain text otherwise.
+export function setSanitizedHtml(element, html) {
+  if (window.DOMPurify) element.innerHTML = window.DOMPurify.sanitize(String(html ?? ""));
+  else element.textContent = String(html ?? "");
+}
+
 export function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -36,7 +53,7 @@ export function disableForm(form, disabled) {
 }
 
 // Mouseover-opens/closes a Bootstrap dropdown — shared by the tool switcher
-// (app-shell.js) and the account/campaign menu (auth-ui.js). Resolves the
+// (app-shell.js) and the account/group menu (auth-ui.js). Resolves the
 // Bootstrap Dropdown instance INSIDE each handler rather than once up front:
 // every page's module script runs before Bootstrap's own deferred CDN
 // <script>, so resolving early loses that race and leaves the menu click-only.

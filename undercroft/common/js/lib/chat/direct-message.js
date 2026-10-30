@@ -1,4 +1,4 @@
-// Who can receive a direct message in a campaign: the GM plus each rostered
+// Who can receive a direct message in a group: the GM plus each rostered
 // character's owner, minus the sender. Composing happens in the Inbox.
 export function listDirectMessageRecipients({ roster = [], ownerId = null, ownerName = "GM", currentUserId = null } = {}) {
   const people = new Map();

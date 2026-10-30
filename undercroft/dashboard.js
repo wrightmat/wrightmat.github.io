@@ -149,7 +149,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "gamelog",
-    helpTopic: "campaign.chat",
+    helpTopic: "group.chat",
     label: "Group chat",
     icon: "tabler:message-circle",
     init: (container, ctx) =>
@@ -205,7 +205,7 @@ const WIDGET_CATALOG = [
     multiple: true,
     // contentRef holds only which shop Location this instance shows (id) —
     // the shop's own live state (open/closed, stock, treasury) lives on the
-    // campaign Group instead (a Group Property), not here, so every
+    // Group instead (a Group Property), not here, so every
     // player's copy of this widget for the same Location always shows the
     // same thing. Same show-to-table eye icon as Map/Handout — a GM picks
     // the shop Location and toggles it visible; a player who doesn't
@@ -232,7 +232,7 @@ const WIDGET_CATALOG = [
     label: "Lighting",
     icon: "tabler:bulb",
     multiple: true,
-    // Account-scoped device config (wledDevices, above) with no campaign/
+    // Account-scoped device config (wledDevices, above) with no group/
     // role concept, unlike Combat Tracker/Calendar/Soundboard below — tier
     // alone is the right gate here.
     canAdd: () => dataManager.meetsTier("gm"),
@@ -265,7 +265,7 @@ const WIDGET_CATALOG = [
     // for concurrent recording comes up. groupId/shareToken ARE passed
     // through (unlike most of this widget's local-only design) — only for
     // its combined session-record export, which reads (never writes) the
-    // active campaign's Game Log to interleave with the transcript;
+    // active group's Game Log to interleave with the transcript;
     // nothing about the recording itself becomes shared/server-side.
     canAdd: () => dataManager.meetsTier("gm"),
     init: (container, ctx) =>
@@ -320,7 +320,7 @@ const WIDGET_CATALOG = [
   },
   {
     id: "handout",
-    helpTopic: "campaign.spotlight",
+    helpTopic: "group.spotlight",
     label: "Handout",
     icon: "tabler:file-text",
     multiple: true,
@@ -439,13 +439,13 @@ const WIDGET_CATALOG = [
     helpTopic: "dashboard.combatTracker",
     label: "Combat tracker",
     icon: "tabler:swords",
-    // Tier OR campaign ownership — either qualifies. A gm+/creator+/admin
+    // Tier OR group ownership — either qualifies. A gm+/creator+/admin
     // account can always add one; so can a player-tier account that GMs
-    // their own active campaign (ctx.groupContext.access === "owner") — a
+    // their own active group (ctx.groupContext.access === "owner") — a
     // mere player joining someone else's game can't.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // GM vs player mode is which ROLE this viewer has in the active
-    // CAMPAIGN (groupContext.access — "owner" means this viewer GMs this
+    // GROUP (groupContext.access — "owner" means this viewer GMs this
     // specific group), not their account tier. A gm/creator/admin-tier
     // user who's just a PLAYER in someone else's game mounting in "gm"
     // mode would never poll the group log for a spotlighted encounter
@@ -512,10 +512,10 @@ const WIDGET_CATALOG = [
     label: "Calendar",
     icon: "tabler:calendar-time",
     multiple: true,
-    // Tier OR campaign ownership — same rule as Combat Tracker's canAdd.
+    // Tier OR group ownership — same rule as Combat Tracker's canAdd.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // No pickContentRef — the Setting this widget tracks a day count
-    // against is the campaign's own ambient one (the active Group's
+    // against is the group's own ambient one (the active Group's
     // settingId), not a per-widget pick. contentRef only holds this
     // instance's own display preferences (show/auto-tick time of day).
     init: (container, ctx) =>
@@ -540,7 +540,7 @@ const WIDGET_CATALOG = [
     label: "Soundboard",
     icon: "tabler:music",
     multiple: true,
-    // Tier OR campaign ownership — same rule as Combat Tracker's canAdd.
+    // Tier OR group ownership — same rule as Combat Tracker's canAdd.
     canAdd: () => dataManager.meetsTier("gm") || groupContext?.access === "owner",
     // No pickContentRef, and the widget never calls setContentRef — clip
     // definitions live in a shared, server-persisted library
@@ -812,7 +812,7 @@ function applyBackground(color) {
   mainEl.style.backgroundColor = color || "";
 }
 
-// "" means no override — falls back to the computed default (campaign name
+// "" means no override — falls back to the computed default (group name
 // → signed-in user's name → "Welcome!") every time it's applied, so
 // switching campaigns or signing in later updates it live.
 function loadHeaderTitle(serverSettings) {
@@ -1083,8 +1083,8 @@ function refreshSpotlightPanel(activeEntries) {
   // `editing` alone would be wrong: that flag just means "I'm customizing
   // MY OWN dashboard layout," which any player can trivially turn on.
   // Scoped to groupContext.access === "owner" (the GM of THIS specific
-  // active campaign) — not dataManager.meetsTier("gm"), since a gm-tier
-  // account who merely joined someone else's campaign as a player has no
+  // active group) — not dataManager.meetsTier("gm"), since a gm-tier
+  // account who merely joined someone else's group as a player has no
   // more business force-clearing that table's spotlights than any other
   // player does.
   spotlightPanel.render(items, {
@@ -1110,9 +1110,9 @@ function forceClearSpotlight({ kind, id }) {
 }
 
 // Re-created whenever groupContext changes (boot, and onPinCharacter after a
-// campaign switch) — the log being watched depends on which group that is.
-// The baseline reset here is what keeps a campaign switch from flourishing
-// every already-active item on the new campaign's board as if it just
+// group switch) — the log being watched depends on which group that is.
+// The baseline reset here is what keeps a group switch from flourishing
+// every already-active item on the new group's board as if it just
 // arrived.
 let spotlightPanelWatcher = null;
 let diceRevealLiveStream = null;
@@ -1129,7 +1129,7 @@ function startSpotlightPanelWatcher() {
 }
 
 // Broadcast-mode dice rolls/card draws need to reach every Dashboard tab
-// watching this campaign, not just tabs that happen to have the Game Log
+// watching this group, not just tabs that happen to have the Game Log
 // widget mounted — a player without Game Log open never opens the
 // live-stream connection, so a subscription living inside game-log.js's
 // own init would never run for them. Both reveal overlays are page-level
@@ -1173,7 +1173,7 @@ function startDiceRevealWatcher() {
   });
 }
 
-// Registered once (not re-added on every campaign switch — always reads
+// Registered once (not re-added on every group switch — always reads
 // spotlightPanelWatcher fresh via closure) — reacts to THIS tab's own
 // dataManager.spotlightToGroup/clearSpotlight calls with an immediate
 // re-fetch, instead of leaving the "show to table" action waiting on the
@@ -1990,8 +1990,8 @@ function renderWelcomeScreen() {
   welcomeEl.innerHTML = `
     <div class="d-flex flex-column gap-2" style="max-width: 48rem;">
       <p class="fs-5 mb-0">
-        Undercroft is a suite of connected tools for running and playing tabletop campaigns —
-        build character sheets and rules systems, manage your whole campaign library, draw and
+        Undercroft is a suite of connected tools for running and playing tabletop games —
+        build character sheets and rules systems, manage your whole game library, draw and
         run interactive maps, write your world's lore, print sheets and cards, and more, all
         designed to work together instead of as separate apps.
       </p>
@@ -2003,7 +2003,7 @@ function renderWelcomeScreen() {
             <span class="iconify fs-2 text-primary" data-icon="tabler:stack-2" aria-hidden="true"></span>
             <h3 class="h6 mb-0">A connected toolbox</h3>
             <p class="small text-body-secondary mb-0">
-              Workbench for character sheets, Loom for your campaign library, Orrery for maps,
+              Workbench for character sheets, Loom for your game library, Orrery for maps,
               Repository for journals, Press for printing — content made in one tool is
               immediately usable in the others.
             </p>
@@ -2028,9 +2028,9 @@ function renderWelcomeScreen() {
             <span class="iconify fs-2 text-info" data-icon="tabler:users-group" aria-hidden="true"></span>
             <h3 class="h6 mb-0">Why register anyway?</h3>
             <p class="small text-body-secondary mb-0">
-              An account syncs your work across devices, lets you share your table's campaign
+              An account syncs your work across devices, lets you share your table's group
               (game log, spotlighted content, live maps) with your players, and unlocks GM-tier
-              tools like the Combat Tracker and campaign groups.
+              tools like the Combat Tracker and groups.
             </p>
           </div>
         </div>
@@ -2339,7 +2339,7 @@ function findActiveWidgetInstance(widgetType) {
 // else the first already-mounted-but-hidden instance of that type if one
 // exists, else adds a brand new one — Calendar needs no contentRef to add
 // any more than Clock does, now that the Setting it tracks is the
-// campaign's own ambient one rather than a per-widget pick.
+// group's own ambient one rather than a per-widget pick.
 async function ensureLiveWidgetInstance(widgetType) {
   const active = findActiveWidgetInstance(widgetType);
   if (active) return active;
@@ -2387,14 +2387,15 @@ async function ensureWidgetForMacroAction(action) {
     // which device it's pointed at would route the command through a card
     // showing the WRONG device's state (the command reaches the physical
     // device either way, but no card showing that device ever refreshes).
-    // Matches by the resolved device's ip against each existing card's
-    // persisted contentRef.selectedIp first.
+    // Matches by the resolved device's alias against each existing card's
+    // persisted contentRef.selectedAlias first.
     const device = resolveWledDeviceByAlias(wledDevices, action?.target);
+    const sameAlias = (a, b) => String(a || "").trim().toLowerCase() === String(b || "").trim().toLowerCase();
     const matching = device
-      ? layout.widgets.find((widget) => widget.widgetType === "wled" && widget.contentRef?.selectedIp === device.ip)
+      ? layout.widgets.find((widget) => widget.widgetType === "wled" && sameAlias(widget.contentRef?.selectedAlias, device.alias))
       : null;
     if (matching) return mounted.get(matching.instanceId) || null;
-    const instance = addWidget(catalogId, device ? { selectedIp: device.ip } : null);
+    const instance = addWidget(catalogId, device ? { selectedAlias: device.alias } : null);
     return instance ? mounted.get(instance.instanceId) || null : null;
   }
   // Prefers a candidate whose mounted api actually exposes runMacroAction
@@ -2546,7 +2547,7 @@ async function onPinCharacter(characterId) {
   persistLayout();
   // Pinning a character no longer touches groupContext (and so can't
   // change the dashboard's campaign-name header title, or which group's
-  // log the spotlight watcher follows) — the header's Campaign dropdown is
+  // log the spotlight watcher follows) — the header's Group dropdown is
   // the sole source of truth for which campaign is active, independent of
   // which character happens to be pinned here. Still re-renders, since the
   // Character Sheet widget reads layout.pinnedCharacterId directly and
@@ -3094,7 +3095,7 @@ async function boot() {
   // reset button) — populateAddToolbar already covers its own dynamically
   // built buttons.
   refreshTooltips(document);
-  // Picking a different campaign from the header's Campaign dropdown while
+  // Picking a different group from the header's Group dropdown while
   // the Dashboard is already open needs to take effect live — the header
   // selector is the sole source of truth for groupContext, not just a
   // value read once at boot. Mirrors Workbench's identical listener.

@@ -321,7 +321,12 @@ export function attachFormulaAutocomplete(input, options = {}) {
   input.addEventListener("blur", handleBlur);
 
   return {
-    update: updateSuggestions,
+    // A programmatic refresh (e.g. after new data loads) must not pop the list open under an input
+    // the user isn't in; the input's own focus/click/input handlers open it.
+    update() {
+      if (input.ownerDocument.activeElement === input) updateSuggestions();
+      else closeSuggestions();
+    },
     close: closeSuggestions,
     destroy() {
       input.removeEventListener("input", handleInput);

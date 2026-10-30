@@ -1,5 +1,15 @@
 const DEFAULT_STORAGE_PREFIX = "undercroft";
-const DEFAULT_SESSION_KEY = "undercroft.session";
+export const DEFAULT_SESSION_KEY = "undercroft.session";
+
+// For plain fetch() calls outside DataManager that hit routes requiring a login.
+export function sessionAuthHeaders() {
+  try {
+    const token = JSON.parse(globalThis.localStorage?.getItem(DEFAULT_SESSION_KEY))?.token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (error) {
+    return {};
+  }
+}
 // Same "shared, unprefixed" trick as the session key — every tool's
 // DataManager instance uses its own storagePrefix for local content, but
 // login state (and now the active campaign selection) has to be visible
@@ -265,7 +275,7 @@ export class DataManager {
     return this._session ? this._session.user : null;
   }
 
-  // "Open a campaign" once and every tool/page sees the same selection —
+  // "Open a group" once and every tool/page sees the same selection —
   // shared, unprefixed storage, same as the session key. Cleared
   // automatically on logout (see _persistSession above).
   getActiveGroup() {
@@ -311,8 +321,8 @@ export class DataManager {
   }
 
   // The thread rolls and other system messages land in — shared across tools
-  // in this browser like the active campaign, and only meaningful for the
-  // active campaign (a stale group's thread reads as "none", so callers fall
+  // in this browser like the active group, and only meaningful for the
+  // active group (a stale group's thread reads as "none", so callers fall
   // back to the group's default thread).
   getActiveThread() {
     try {
@@ -700,6 +710,13 @@ export class DataManager {
       const error = new Error(message || `Request failed with status ${response.status}`);
       error.status = response.status;
       error.payload = data;
+      // The server no longer recognizes the token we sent (expired, signed out elsewhere, or revoked), so
+      // the signed-in look is stale: drop it and reload as a signed-out visitor.
+      if (response.status === 401 && message === "Authentication required" && headers["Authorization"]) {
+        this.clearSession();
+        window.dispatchEvent(new CustomEvent("undercroft:auth-changed", { detail: { session: null } }));
+        window.location.reload();
+      }
       throw error;
     }
     return data;
@@ -715,6 +732,26 @@ export class DataManager {
       this._persistSession({ token: session.token, user: session.user });
     }
     return session;
+  }
+
+  async getRegistrationOptions() {
+    return this._request("/auth/registration", { auth: false });
+  }
+
+  async listInvites() {
+    return (await this._request("/admin/invites", { auth: true })).invites;
+  }
+
+  async createInvite(invite) {
+    return this._request("/admin/invites", { method: "POST", body: invite, auth: true });
+  }
+
+  async updateInvite(code, changes) {
+    return this._request(`/admin/invites/${encodeURIComponent(code)}`, { method: "POST", body: changes, auth: true });
+  }
+
+  async deleteInvite(code) {
+    return this._request(`/admin/invites/${encodeURIComponent(code)}/delete`, { method: "POST", body: {}, auth: true });
   }
 
   async verifyRegistration(payload) {
@@ -856,7 +893,7 @@ export class DataManager {
   // `true` — for an anonymous user the local mirror is the only copy, so
   // local-first is correct by necessity; for a signed-in user it's purely a
   // read-acceleration cache with no invalidation signal from another
-  // writer (tool, tab, device, campaign member), so a flat `true` default
+  // writer (tool, tab, device, group member), so a flat `true` default
   // is wrong far more often than not there. Passing `preferLocal` explicitly
   // always wins outright; only the unspecified (`null`) case is resolved
   // here, per-call, against live auth state.
@@ -1044,6 +1081,15 @@ export class DataManager {
     return result;
   }
 
+  async getUrlTicket(purpose) {
+    const result = await this._request("/auth/ticket", { method: "POST", body: { purpose }, auth: true });
+    return result.ticket;
+  }
+
+  async revokeOtherSessions() {
+    return this._request("/auth/profile/sessions/revoke-others", { method: "POST", body: {}, auth: true });
+  }
+
   async updatePassword({ current_password, new_password }) {
     return this._request("/auth/profile/password", {
       method: "POST",
@@ -1053,7 +1099,7 @@ export class DataManager {
   }
 
   // A small per-user JSON blob stored directly on the users row (see
-  // auth.py's _migrate_users_table_for_settings), not a Library kind — this
+  // the `settings` column on `users`), not a Library kind — this
   // is account-level preference (today: the Dashboard's widget layout), not
   // shareable/owned content. Only meaningful when signed in; callers fall
   // back to localStorage otherwise (same local-first pattern every other
@@ -1103,7 +1149,7 @@ export class DataManager {
   }
 
   // Deployment-wide auth credentials (D&D Beyond session cookie, Anthropic
-  // API key) — Loom's Auth tab is the intended caller. No client-side tier
+  // API key) — Loom's Admin tab is the intended caller. No client-side tier
   // check here — the server independently enforces gm-reads/admin-writes.
   // Never returns either secret value, only {configured, ...}.
   async getAuthCredentialsStatus() {
@@ -1326,7 +1372,7 @@ export class DataManager {
     return normalized;
   }
 
-  async createGroup({ name, type = "campaign" } = {}) {
+  async createGroup({ name, type = "player-group" } = {}) {
     const payload = await this._request("/groups", {
       method: "POST",
       body: { name, type },
@@ -1336,7 +1382,7 @@ export class DataManager {
     return payload;
   }
 
-  async updateGroup({ id, name, systemId, settingId, templateId, properties, campaignDayIndex, campaignMinutesOfDay } = {}) {
+  async updateGroup({ id, name, systemId, settingId, templateId, properties, groupDayIndex, groupMinutesOfDay } = {}) {
     if (!id) {
       throw new Error("Group id is required");
     }
@@ -1344,19 +1390,19 @@ export class DataManager {
     if (name !== undefined) body.name = name;
     if (systemId !== undefined) body.system_id = systemId;
     if (settingId !== undefined) body.setting_id = settingId;
-    // The campaign's own "Party Data" template (Workbench's no-character
+    // The group's own "Party Data" template (Workbench's no-character
     // mode) — independent of any one Character's own `template` field.
     if (templateId !== undefined) body.template_id = templateId;
     // The Group Properties SCHEMA (Loom's own Group tab) — not a value
     // write, see updateGroupPropertyValue below for that.
     if (properties !== undefined) body.properties = properties;
-    // The campaign's own tracked "what date is it in the fiction" — same
-    // conceptual tier as systemId/settingId above. setCampaignDate below
+    // The group's own tracked "what date is it in the fiction" — same
+    // conceptual tier as systemId/settingId above. setGroupDate below
     // is the purpose-named entry point most callers actually want; this
     // stays generic so a future combined save (e.g. a Loom Group editor
     // field) can still set it alongside other Group fields in one request.
-    if (campaignDayIndex !== undefined) body.campaign_day_index = campaignDayIndex;
-    if (campaignMinutesOfDay !== undefined) body.campaign_minutes_of_day = campaignMinutesOfDay;
+    if (groupDayIndex !== undefined) body.group_day_index = groupDayIndex;
+    if (groupMinutesOfDay !== undefined) body.group_minutes_of_day = groupMinutesOfDay;
     const payload = await this._request(`/groups/${encodeURIComponent(id)}`, {
       method: "POST",
       body,
@@ -1367,17 +1413,17 @@ export class DataManager {
   }
 
   // Thin, purpose-named wrapper over updateGroup for the one common write
-  // every campaign-date UI needs — advance the day, optionally the time of
+  // every group-date UI needs — advance the day, optionally the time of
   // day too. Emits its own event (unlike updateGroup, whose callers already
   // re-render off their own await): more than one Calendar widget can be on
   // the same dashboard, each reading this shared value, and only the one
   // that made this change already knows to re-render itself.
-  async setCampaignDate(groupId, { dayIndex, minutesOfDay } = {}) {
-    const payload = await this.updateGroup({ id: groupId, campaignDayIndex: dayIndex, campaignMinutesOfDay: minutesOfDay });
-    this._emit("undercroft:campaign-date-changed", {
+  async setGroupDate(groupId, { dayIndex, minutesOfDay } = {}) {
+    const payload = await this.updateGroup({ id: groupId, groupDayIndex: dayIndex, groupMinutesOfDay: minutesOfDay });
+    this._emit("undercroft:group-date-changed", {
       groupId,
-      dayIndex: payload?.campaign_day_index,
-      minutesOfDay: payload?.campaign_minutes_of_day,
+      dayIndex: payload?.group_day_index,
+      minutesOfDay: payload?.group_minutes_of_day,
     });
     return payload;
   }
@@ -1720,6 +1766,210 @@ export class DataManager {
     return this._request("/sessions/decline-range", { method: "POST", body: { groupId, from, to }, auth: true });
   }
 
+  // The GM (or an admin) marks an Accepted player a no-show, or clears one.
+  async setSessionNoShow(occurrenceId, userId, noShow) {
+    return this._request(`/sessions/occurrences/${encodeURIComponent(occurrenceId)}/no-show`, {
+      method: "POST",
+      body: { userId, noShow },
+      auth: true,
+    });
+  }
+
+  // The player contests their own no-show.
+  async disputeSessionNoShow(occurrenceId) {
+    return this._request(`/sessions/occurrences/${encodeURIComponent(occurrenceId)}/dispute`, {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  // --- Group membership and campaigns (server/groups.py, campaigns.py) ---
+
+  _groupPath(groupId, suffix = "") {
+    if (!groupId) {
+      throw new Error("Group id is required");
+    }
+    return `/groups/${encodeURIComponent(groupId)}${suffix}`;
+  }
+
+  async leaveGroup(groupId) {
+    return this._request(this._groupPath(groupId, "/leave"), { method: "POST", body: {}, auth: true });
+  }
+
+  async removeGroupPlayer(groupId, userId) {
+    return this._request(this._groupPath(groupId, `/players/${encodeURIComponent(userId)}/remove`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  // A player takes one of the GM's unclaimed characters.
+  async claimRosterCharacter(groupId, characterId) {
+    return this._request(this._groupPath(groupId, "/roster/claim"), { method: "POST", body: { characterId }, auth: true });
+  }
+
+  // A player puts a character they own on the roster.
+  async addOwnRosterCharacter(groupId, characterId) {
+    return this._request(this._groupPath(groupId, "/roster/own-character"), {
+      method: "POST",
+      body: { characterId },
+      auth: true,
+    });
+  }
+
+  async getGroupCampaigns(groupId) {
+    return this._request(this._groupPath(groupId, "/campaigns"), { method: "GET", auth: true });
+  }
+
+  async createGroupCampaign(groupId, { name, status }) {
+    return this._request(this._groupPath(groupId, "/campaigns"), { method: "POST", body: { name, status }, auth: true });
+  }
+
+  async updateGroupCampaign(groupId, campaignId, changes) {
+    return this._request(this._groupPath(groupId, `/campaigns/${encodeURIComponent(campaignId)}`), {
+      method: "POST",
+      body: changes,
+      auth: true,
+    });
+  }
+
+  async reorderGroupCampaigns(groupId, ids) {
+    return this._request(this._groupPath(groupId, "/campaigns/order"), { method: "POST", body: { ids }, auth: true });
+  }
+
+  async getServerLoad(minutes = 5) {
+    return this._request(`/admin/load?minutes=${encodeURIComponent(minutes)}`, { auth: true });
+  }
+
+  async getNoteQuota() {
+    return this._request("/notes/quota", { auth: true });
+  }
+
+  async deleteGroupCampaign(groupId, campaignId) {
+    return this._request(this._groupPath(groupId, `/campaigns/${encodeURIComponent(campaignId)}/delete`), {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  // --- Community: profiles, signals, endorsements, listings, applications (server/community.py and friends) ---
+
+  async getCommunityProfile() {
+    return this._request("/community/profile", { method: "GET", auth: true });
+  }
+
+  async saveCommunityProfile(profile) {
+    return this._request("/community/profile", { method: "POST", body: profile, auth: true });
+  }
+
+  async getCommunityPerson(userId) {
+    return this._request(`/community/people/${encodeURIComponent(userId)}`, { method: "GET", auth: true });
+  }
+
+  async listCommunityPeople(filters = {}) {
+    return this._request(`/community/people${this._query(filters)}`, { method: "GET", auth: true });
+  }
+
+  async getCommunitySignals(userId) {
+    return this._request(`/community/signals/${encodeURIComponent(userId)}`, { method: "GET", auth: true });
+  }
+
+  async listEndorsable() {
+    return this._request("/community/endorsable", { method: "GET", auth: true });
+  }
+
+  async endorsePerson({ userId, scopeKey, tagId }) {
+    return this._request("/community/endorse", { method: "POST", body: { userId, scopeKey, tagId }, auth: true });
+  }
+
+  _query(params) {
+    const search = new URLSearchParams();
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        search.set(key, value);
+      }
+    });
+    const text = search.toString();
+    return text ? `?${text}` : "";
+  }
+
+  async listCommunityListings(filters = {}) {
+    return this._request(`/community/listings${this._query(filters)}`, { method: "GET", auth: true });
+  }
+
+  async getCommunityListing(listingId) {
+    return this._request(`/community/listings/${encodeURIComponent(listingId)}`, { method: "GET", auth: true });
+  }
+
+  // Creates the listing, or updates it when `listing.id` is set.
+  async saveCommunityListing(listing) {
+    const path = listing.id ? `/community/listings/${encodeURIComponent(listing.id)}` : "/community/listings";
+    return this._request(path, { method: "POST", body: listing, auth: true });
+  }
+
+  async deleteCommunityListing(listingId) {
+    return this._request(`/community/listings/${encodeURIComponent(listingId)}/delete`, { method: "POST", body: {}, auth: true });
+  }
+
+  async getCommunityTags() {
+    return this._request("/community/tags", { method: "GET", auth: true });
+  }
+
+  async rewriteCommunityTag({ from, to }) {
+    return this._request("/community/tags/rewrite", { method: "POST", body: { from, to }, auth: true });
+  }
+
+  async applyToListing(listingId, body) {
+    return this._request(`/community/listings/${encodeURIComponent(listingId)}/apply`, {
+      method: "POST",
+      body: { body },
+      auth: true,
+    });
+  }
+
+  async getApplication(applicationId) {
+    return this._request(`/community/applications/${encodeURIComponent(applicationId)}`, { method: "GET", auth: true });
+  }
+
+  async replyToApplication(applicationId, body) {
+    return this._request(`/community/applications/${encodeURIComponent(applicationId)}/reply`, {
+      method: "POST",
+      body: { body },
+      auth: true,
+    });
+  }
+
+  // `action` is accept, decline or withdraw.
+  async answerApplication(applicationId, action) {
+    return this._request(`/community/applications/${encodeURIComponent(applicationId)}/${action}`, {
+      method: "POST",
+      body: {},
+      auth: true,
+    });
+  }
+
+  // Admin-edited community lists (safety tools, endorsement tags) and the settings object.
+  // The community-defined lists keep the routes the tools already use; the rest live under /community/lists.
+  _communityListRoute(name) {
+    const routes = { fonts: "/custom-fonts", clips: "/soundboard/clips", tokens: "/token-library", sizes: "/press/custom-sizes" };
+    return routes[name] || `/community/lists/${encodeURIComponent(name)}`;
+  }
+
+  async saveCommunityListItem(name, item) {
+    return this._request(this._communityListRoute(name), { method: "POST", body: { item }, auth: true });
+  }
+
+  async saveCommunityListOrder(name, ids) {
+    return this._request(`${this._communityListRoute(name)}/order`, { method: "POST", body: { ids }, auth: true });
+  }
+
+  async deleteCommunityListItem(name, id) {
+    return this._request(`${this._communityListRoute(name)}/delete`, { method: "POST", body: { id }, auth: true });
+  }
+
   // React to the message behind an Inbox item: a mention or reply reacts to the
   // chat message itself, a direct message keeps its own reactions.
   async toggleInboxReaction(itemId, emoji) {
@@ -1989,7 +2239,7 @@ export class DataManager {
     return result;
   }
 
-  // Sibling of shareWithUser/revokeShare for a campaign-group target instead
+  // Sibling of shareWithUser/revokeShare for a group target instead
   // of a single user — grants every member's owning user access at once
   // (server/shares.py's share_with_group + storage.py's group-membership
   // resolution), same /shares endpoint, same permissions vocabulary.

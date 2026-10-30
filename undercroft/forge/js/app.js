@@ -1,4 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { bindNoteButton } from "../../common/js/lib/note-button.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import {
@@ -18,6 +19,7 @@ import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.j
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
+import { createArchetypeEntriesEditor } from "../../common/js/lib/archetype-entries.js";
 import {
   loadForgeTables,
   listSettingsForSystem,
@@ -382,6 +384,7 @@ const speciesWeightTotal = document.querySelector("[data-species-weight-total]")
 const mixingCoefficientInput = document.querySelector("[data-mixing-coefficient]");
 const mixingCoefficientValue = document.querySelector("[data-mixing-coefficient-value]");
 const archetypeOverrideRows = document.querySelector("[data-archetype-override-rows]");
+const archetypeEntriesEditor = createArchetypeEntriesEditor({ container: archetypeOverrideRows, readOnly: true });
 
 const speciesLabelInput = document.querySelector("[data-species-label]");
 const speciesNameModeSelect = document.querySelector("[data-species-name-mode]");
@@ -573,10 +576,14 @@ function statsKeyOptionsFrom(statsByName) {
 // entries have no extra keys at all, which is exactly how a Stats-less
 // System (Blades in the Dark) ends up contributing nothing to a generated
 // NPC's `stats`.
-function resolveArchetypeStats(statsByName, systemId) {
+function resolveStatsKeys(systemId) {
   const explicitKeys = getStatsKeysPreference(systemId);
   const availableKeys = archetypeStatKeyOptions.map((option) => option.value);
-  const keys = explicitKeys !== null ? explicitKeys : availableKeys;
+  return explicitKeys !== null ? explicitKeys : availableKeys;
+}
+
+function resolveArchetypeStats(statsByName, systemId) {
+  const keys = resolveStatsKeys(systemId);
   const result = {};
   if (!keys.length) return result;
   Object.entries(statsByName || {}).forEach(([name, entry]) => {
@@ -616,6 +623,8 @@ async function refreshSystemVocabulary(systemId) {
     tables.alignmentFaces = alignmentFaces;
     tables.archetype = { entries: archetypeTable.entries };
     tables.stats = resolveArchetypeStats(archetypeTable.statsByName, systemId);
+    // Also applied to a Location's own archetype properties.
+    tables.statsKeys = resolveStatsKeys(systemId);
     tables.npcAttitudes = npcAttitudes;
     // Threaded through to getStatsForArchetype so it can tell an ability
     // score apart from any other stat and bundle it into stats.<key> — the
@@ -1473,7 +1482,7 @@ function npcAllowsDelete(id) {
 // Every saved NPC at the currently selected Location — "New / unsaved" as
 // the default so a fresh Generate NPC keeps working as before. With no
 // Location selected, falls back to every NPC belonging to the whole
-// Setting instead of an empty list — a campaign's auto-selected
+// Setting instead of an empty list — a group's auto-selected
 // System/Setting never auto-selects a Location, so without this a GM's
 // previously-saved NPCs wouldn't show up until reselecting it by hand.
 async function populateNpcSelect() {
@@ -1549,22 +1558,6 @@ function updateSpeciesWeightTotal() {
   speciesWeightTotal.textContent = `Total: ${total}`;
 }
 
-function renderArchetypeOverrideRows(overrides = {}) {
-  archetypeOverrideRows.innerHTML = "";
-  const overridable = (tables.archetype.entries || []).filter((entry) => entry.overridable);
-  overridable.forEach((entry) => {
-    const row = document.createElement("div");
-    row.className = "d-flex align-items-center gap-2";
-    row.dataset.archetypeOverrideRoll = String(entry.roll);
-    const value = overrides[String(entry.roll)]?.name || "";
-    row.innerHTML = `
-      <label class="form-label mb-0 flex-shrink-0" style="width: 5rem">Roll ${entry.roll}</label>
-      <input class="form-control" type="text" placeholder="Setting-specific archetype name" value="${escapeHtml(value)}" data-archetype-override-value readonly />
-    `;
-    archetypeOverrideRows.appendChild(row);
-  });
-}
-
 function populateLocationForm(location) {
   locationNameInput.value = location?.name || "";
   locationSystemInput.value = systemSelect.selectedOptions[0]?.textContent || "";
@@ -1573,7 +1566,7 @@ function populateLocationForm(location) {
   mixingCoefficientValue.textContent = Number(mixingCoefficientInput.value).toFixed(2);
   speciesWeightRows.innerHTML = "";
   (location?.speciesWeights || []).forEach((entry) => renderSpeciesWeightRow(entry));
-  renderArchetypeOverrideRows(location?.archetypeOverrides || {});
+  archetypeEntriesEditor.setEntries(location?.archetypes || []);
   updateSpeciesWeightTotal();
 }
 
@@ -1680,7 +1673,7 @@ function updateInspector() {
 
   const def = IDENTITY_FIELD_DEFS.find((entry) => entry.key === selectedFieldKey) || FOURD_FIELD_DEFS.find((entry) => entry.key === selectedFieldKey);
   inspectorRollTitle.textContent = def?.label || selectedFieldKey;
-  inspectorRollCurrent.textContent = currentRecord ? `This NPC's roll: ${getFieldCurrentValue(selectedFieldKey)}` : "";
+  inspectorRollCurrent.textContent = currentRecord ? `This NPC's value: ${getFieldCurrentValue(selectedFieldKey)}` : "";
   inspectorRollJson.textContent = JSON.stringify(getFieldTableData(selectedFieldKey), null, 2);
 }
 
@@ -2153,7 +2146,7 @@ function updateGenerateButtonReadiness() {
 }
 
 // Named (not an inline listener) so the init flow below can also call this
-// directly when auto-selecting the active campaign group's own System.
+// directly when auto-selecting the active player group's own System.
 async function handleSystemSelectChange() {
   const systemId = systemSelect.value;
   markRequiredControl(systemSelect, Boolean(systemId));
@@ -2338,6 +2331,7 @@ async function init() {
     status,
   });
   dataManager = auth.dataManager;
+  bindNoteButton(generateNoteButton, dataManager);
 
   // Stats key checklist, in a gear-icon Settings modal — which of an
   // Archetype entry's own extra keys become NPC Stats. Which field IS the
@@ -2386,7 +2380,7 @@ async function init() {
 
   // No blanket auto-selected defaults — the GM picks System, then Setting,
   // then Location explicitly, same forced-choice convention Sanctum/
-  // Crucible/Vault use. The one exception: if a campaign group is active and
+  // Crucible/Vault use. The one exception: if a player group is active and
   // has its own System/Setting assigned, default to THOSE. Falls through to
   // the "nothing chosen yet" placeholders otherwise.
   const systems = await populateSystemSelect();

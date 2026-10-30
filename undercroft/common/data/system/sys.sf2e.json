@@ -66,58 +66,58 @@
       "label": "Background",
       "values": [
         {
-          "name": "Ace Pilot"
-        },
-        {
-          "name": "Bounty Hunter"
+          "name": "Spacer"
         },
         {
           "name": "Colonist"
         },
         {
-          "name": "Corporate Agent"
-        },
-        {
-          "name": "Courier"
-        },
-        {
-          "name": "Diplomat"
-        },
-        {
-          "name": "Explorer"
-        },
-        {
-          "name": "Field Medic"
-        },
-        {
-          "name": "Gang Member"
-        },
-        {
-          "name": "Icon"
-        },
-        {
-          "name": "Mercenary"
-        },
-        {
-          "name": "Outlaw"
-        },
-        {
-          "name": "Prospector"
+          "name": "Technician"
         },
         {
           "name": "Scavenger"
         },
         {
+          "name": "Courier"
+        },
+        {
+          "name": "Prospector"
+        },
+        {
+          "name": "Corporate Agent"
+        },
+        {
+          "name": "Gang Member"
+        },
+        {
+          "name": "Outlaw"
+        },
+        {
           "name": "Scholar"
         },
         {
-          "name": "Spacer"
+          "name": "Field Medic"
         },
         {
-          "name": "Technician"
+          "name": "Mercenary"
+        },
+        {
+          "name": "Explorer"
+        },
+        {
+          "name": "Diplomat"
+        },
+        {
+          "name": "Bounty Hunter"
         },
         {
           "name": "Xenobiologist"
+        },
+        {
+          "name": "Ace Pilot"
+        },
+        {
+          "name": "Icon"
         }
       ]
     },

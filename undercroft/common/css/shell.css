@@ -856,7 +856,7 @@ body[data-theme="dark"] .hover-lift:hover {
   font-size: 0.95rem;
 }
 
-.undercroft-auth-campaign {
+.undercroft-auth-group {
   font-size: 0.65rem;
 }
 
@@ -1085,6 +1085,13 @@ a.undercroft-tool-card:focus-visible {
   flex: 1 1 auto;
   overflow: auto;
   min-height: 0;
+}
+
+/* A scroller inside a pane sits at the pane's far right edge: the negative margin cancels the
+   pane's own 1rem padding and the matching padding keeps the content clear of the scrollbar. */
+.workbench-pane-content .pane-scroll {
+  margin-right: -1rem;
+  padding-right: 1rem;
 }
 
 .workbench-sticky-pane {

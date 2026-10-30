@@ -264,14 +264,14 @@ function ensureLibraryKinds() {
   return libraryKindsPromise;
 }
 
-// The active campaign's Setting `.calendar`, read synchronously by renderPreview
+// The active group's Setting `.calendar`, read synchronously by renderPreview
 // via `` `date:...` `` chips — same resolve-once grace period as validKindIds
-// above. Re-resolved when the active campaign changes, not on every date advance.
+// above. Re-resolved when the active group changes, not on every date advance.
 let activeCalendar = null;
-// The ambient campaign date, read synchronously via `` `date:current` ``/`` `date:today` ``
+// The ambient group date, read synchronously via `` `date:current` ``/`` `date:today` ``
 // chips (journal-date.js). Unlike activeCalendar, also refreshed live off the
-// "undercroft:campaign-date-changed" event the Calendar widget broadcasts.
-let activeCampaignDayIndex = null;
+// "undercroft:group-date-changed" event the Calendar widget broadcasts.
+let activeGroupDayIndex = null;
 async function refreshActiveCalendar() {
   let groupContext = null;
   try {
@@ -279,7 +279,7 @@ async function refreshActiveCalendar() {
   } catch (error) {
     groupContext = null;
   }
-  activeCampaignDayIndex = Number.isFinite(groupContext?.campaignDayIndex) ? groupContext.campaignDayIndex : null;
+  activeGroupDayIndex = Number.isFinite(groupContext?.groupDayIndex) ? groupContext.groupDayIndex : null;
   if (!groupContext?.settingId) {
     activeCalendar = null;
     return;
@@ -780,7 +780,7 @@ function renderPreview() {
     onStartEncounter: (creatures, blockIndex) => void handleStartEncounter(creatures, blockIndex),
     interactiveDice: true,
     interactiveMacros: true,
-    // This GM's own active campaign, not a per-page setting — same source
+    // This GM's own active group, not a per-page setting — same source
     // Combat Tracker's autoShowOnStart uses.
     groupContext: { groupId: dataManager.getActiveGroup()?.groupId || "" },
     dataManager,
@@ -792,7 +792,7 @@ function renderPreview() {
     // Empty until refreshActiveCalendar resolves — a `` `date:...` `` chip
     // reads as a plain "Day <N>" until then.
     activeCalendar,
-    currentDayIndex: activeCampaignDayIndex,
+    currentDayIndex: activeGroupDayIndex,
   });
   previewEl.appendChild(node);
   // Positional pairing with the Outline panel (extractOutline scans the same
@@ -939,7 +939,7 @@ function handleToggleTask(lineIndex, checkboxEl) {
 // Clicking an `encounter:` chip — builds and starts a real Combat Tracker
 // encounter from the parsed creature list (journal-encounter.js owns the whole
 // flow: match, resolve stats, save, spotlight, reload Dashboard). groupId is
-// this GM's own active campaign, same source Combat Tracker's autoShowOnStart uses.
+// this GM's own active group, same source Combat Tracker's autoShowOnStart uses.
 function handleStartEncounter(creatures, blockIndex) {
   if (!workingPayload || !selectedId) return;
   void startEncounter({
@@ -1653,14 +1653,14 @@ function formatTimelineDayHeading(dayIndex) {
   return describeDate(activeCalendar || {}, dayIndex);
 }
 
-// Grouped by day, with a "Today" divider inserted wherever activeCampaignDayIndex
+// Grouped by day, with a "Today" divider inserted wherever activeGroupDayIndex
 // falls in the sorted list (not just appended at the end), so past and upcoming
 // read as genuinely separated.
 function renderTimeline() {
   if (!timelineListEl) return;
   timelineListEl.innerHTML = "";
-  const groups = groupTimelineByDay(timelineData || [], activeCampaignDayIndex);
-  const hasToday = Number.isFinite(activeCampaignDayIndex);
+  const groups = groupTimelineByDay(timelineData || [], activeGroupDayIndex);
+  const hasToday = Number.isFinite(activeGroupDayIndex);
   timelineEmptyEl?.classList.toggle("d-none", Boolean(groups.length));
   if (!groups.length) {
     if (timelineEmptyEl) {
@@ -1676,7 +1676,7 @@ function renderTimeline() {
   }
   let todayInserted = !hasToday;
   groups.forEach((group) => {
-    if (!todayInserted && group.dayIndex >= activeCampaignDayIndex) {
+    if (!todayInserted && group.dayIndex >= activeGroupDayIndex) {
       timelineListEl.appendChild(el("div", "repository-timeline-today-divider small text-primary fw-semibold", "Today"));
       todayInserted = true;
     }
@@ -2771,7 +2771,7 @@ void refreshActiveCalendar().then(() => {
   if (currentMode === "view") renderPreview();
   if (activeTab === "timeline") renderTimeline();
 });
-// A different campaign can mean a different Setting, so calendar vocabulary
+// A different group can mean a different Setting, so calendar vocabulary
 // needs re-resolving too (data-manager.js's setActiveGroup emits this).
 window.addEventListener("workbench:active-group-changed", () => {
   void refreshActiveCalendar().then(() => {
@@ -2779,12 +2779,12 @@ window.addEventListener("workbench:active-group-changed", () => {
     if (activeTab === "timeline") renderTimeline();
   });
 });
-// Advancing the campaign date from any Calendar widget broadcasts this —
+// Advancing the group date from any Calendar widget broadcasts this —
 // updates the cached day index directly (payload already carries it) and
 // re-renders so a `` `date:current` `` chip or the Timeline's Today divider reflects it immediately.
-window.addEventListener("undercroft:campaign-date-changed", (event) => {
+window.addEventListener("undercroft:group-date-changed", (event) => {
   const dayIndex = event.detail?.dayIndex;
-  activeCampaignDayIndex = Number.isFinite(dayIndex) ? dayIndex : null;
+  activeGroupDayIndex = Number.isFinite(dayIndex) ? dayIndex : null;
   if (currentMode === "view") renderPreview();
   if (activeTab === "timeline") renderTimeline();
 });

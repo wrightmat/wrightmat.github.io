@@ -1,6 +1,6 @@
 {
   "title": "Test Genesys Campaign",
-  "type": "campaign",
+  "type": "player-group",
   "systemId": "sys.genesys",
   "settingId": null,
   "templateId": null,

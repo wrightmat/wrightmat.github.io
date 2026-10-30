@@ -30,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from server.auth import ensure_default_admin, get_user_by_username  # noqa: E402
+from server.auth import get_user_by_username  # noqa: E402
 from server.config import ConfigLoader  # noqa: E402
 from server.state import ServerState  # noqa: E402
 from server.storage import delete_item, init_storage_db, save_item  # noqa: E402
@@ -50,17 +50,7 @@ def resolve_user(state: ServerState, username: str):
     user = get_user_by_username(state, username)
     if user:
         return user
-    # Only ever creates the one conventional default-admin row (a no-op if
-    # it already exists under a different username you passed) — this
-    # script never invents a NEW user of its own.
-    ensure_default_admin(state)
-    user = get_user_by_username(state, username)
-    if not user:
-        raise SystemExit(
-            f"No user '{username}' found, and the default admin uses a different username. "
-            "Pass --username with a real account on this server."
-        )
-    return user
+    raise SystemExit(f"No user '{username}' found. Pass --username with a real account on this server.")
 
 
 # Mirrors the real shape found in common/data/feature/*.json — enough fields

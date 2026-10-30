@@ -40,15 +40,28 @@ class DatabaseConfig:
 class ServerOptions:
     host: str = "127.0.0.1"
     port: int = 8000
-    cors_origin: str = "*"
+    cors_origin: str = ""
     session_ttl_days: int = 7
     config_watch: bool = False
     log_level: str = "info"
     require_email_verification: bool = False
     debug_verification_codes: bool = False
-    default_admin_username: str = "admin"
-    default_admin_password: str = "admin"
-    default_admin_email: str = "admin@example.com"
+    # Creates the free/player/gm/creator test accounts on start (never an admin). Development only.
+    seed_dev_accounts: bool = False
+    # Registration needs a valid invite code (see invites.py).
+    require_invite: bool = False
+    # Lets a GM embed files from this machine's disk (Browser widget). Local single-user setups only.
+    local_file_access: bool = False
+    # Addresses of reverse proxies whose X-Forwarded-For header may be believed.
+    trusted_proxies: List[str] = field(default_factory=list)
+    # Top-level folders of the checkout that are served as static files. Nothing else is reachable.
+    static_roots: List[str] = field(default_factory=list)
+    # Where everything the server writes lives (Library content, community lists, mappings, page sizes),
+    # and where the encryption key and credential files live. Empty means the checkout itself (development).
+    data_dir: str = ""
+    secrets_dir: str = ""
+    # The folder holding the code (undercroft/, server/). Empty means the folder the config file sits in.
+    root_dir: str = ""
     # Hosts the /ddb-proxy route is allowed to fetch from — the one place the
     # otherwise system-agnostic core server has to know about a specific
     # third-party game-content service (D&D Beyond). Configurable rather than
@@ -112,15 +125,20 @@ class ConfigLoader:
         options = ServerOptions(
             host=server_opts.get("host", "127.0.0.1"),
             port=int(server_opts.get("port", 8000)),
-            cors_origin=server_opts.get("cors_origin", "*"),
+            cors_origin=server_opts.get("cors_origin", ""),
             session_ttl_days=int(server_opts.get("session_ttl_days", 7)),
             config_watch=bool(server_opts.get("config_watch", False)),
             log_level=server_opts.get("log_level", "info"),
             require_email_verification=bool(server_opts.get("require_email_verification", False)),
             debug_verification_codes=bool(server_opts.get("debug_verification_codes", False)),
-            default_admin_username=server_opts.get("default_admin_username", "admin"),
-            default_admin_password=server_opts.get("default_admin_password", "admin"),
-            default_admin_email=server_opts.get("default_admin_email", "admin@example.com"),
+            seed_dev_accounts=bool(server_opts.get("seed_dev_accounts", False)),
+            require_invite=bool(server_opts.get("require_invite", False)),
+            local_file_access=bool(server_opts.get("local_file_access", False)),
+            trusted_proxies=[str(item) for item in server_opts.get("trusted_proxies", [])],
+            static_roots=[str(item).strip("/") for item in server_opts.get("static_roots", [])],
+            data_dir=str(server_opts.get("data_dir", "") or ""),
+            secrets_dir=str(server_opts.get("secrets_dir", "") or ""),
+            root_dir=str(server_opts.get("root_dir", "") or ""),
             ddb_proxy_allowed_hosts=list(
                 server_opts.get(
                     "ddb_proxy_allowed_hosts",
@@ -132,7 +150,13 @@ class ConfigLoader:
         db_opts = payload.get("database", {})
         db_config = DatabaseConfig(path=Path(db_opts.get("path", "undercroft/workbench/data/database.sqlite")))
 
-        email_opts = payload.get("email", {})
+        email_opts = dict(payload.get("email", {}))
+        # Mail credentials live with the other secrets, so a file there replaces the config's email block.
+        secrets_dir = options.secrets_dir
+        email_file = Path(secrets_dir) / "email.json" if secrets_dir else None
+        if email_file and email_file.exists():
+            with email_file.open("r", encoding="utf-8") as fp:
+                email_opts = json.load(fp)
         smtp_username = email_opts.get("smtp_username")
         if isinstance(smtp_username, str) and not smtp_username.strip():
             smtp_username = None

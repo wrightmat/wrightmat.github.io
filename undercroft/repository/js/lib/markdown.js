@@ -476,8 +476,8 @@ function applyCalloutStyling(container) {
 // action. `activeCalendar` is the active Setting's own `.calendar` field
 // (or omitted), used only by `` `date:...` `` chips; omitted, a date chip
 // renders as a plain "Day <N>" reading. `currentDayIndex` is the ambient
-// campaign date, consulted only by `` `date:current` ``/`` `date:today` ``;
-// omitted, that chip reads "No campaign date set".
+// group date, consulted only by `` `date:current` ``/`` `date:today` ``;
+// omitted, that chip reads "No group date set".
 export function renderMarkdown(
   rawBody,
   {

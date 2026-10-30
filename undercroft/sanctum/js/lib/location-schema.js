@@ -1,3 +1,5 @@
+import { normalizeLocationArchetypes } from "../../../common/js/lib/archetype-entries.js";
+
 function randomId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -10,7 +12,7 @@ function randomId() {
 // slug ids in the wild (e.g. "sharn"), so this only invents a `loc_<uuid>` id
 // for a location that didn't already have one; re-saving preserves the original.
 export function createLocationRecord(generated, existingId) {
-  return {
+  return normalizeLocationArchetypes({
     kind: "location",
     name: "",
     // Defaults guard against `generated` being an existing record loaded from
@@ -34,7 +36,7 @@ export function createLocationRecord(generated, existingId) {
     notes: "",
     ...generated,
     id: existingId || `loc_${randomId()}`,
-  };
+  });
 }
 
 // Already Press-compatible (flat, JSON-serializable) — kept as its own

@@ -68,9 +68,9 @@ const HA_POLL_INTERVAL_MS = 30000;
 
 const DEFAULT_CONFIG = {
   // Absent/"wled" on any card saved before the Lighting generalization —
-  // selectedIp being set is exactly what "wled" already implies.
+  // selectedAlias being set is exactly what "wled" already implies.
   selectedType: "wled",
-  selectedIp: "",
+  selectedAlias: "",
   selectedEntityId: "",
   followEnabled: false,
   // "brightness" maps the clock's fill percentage onto master brightness;
@@ -93,8 +93,82 @@ function normalizeWledBase(raw) {
   return withProtocol.replace(/\/+$/, "");
 }
 
-async function wledFetchJson(base, path) {
-  const response = await fetch(`${base}${path}`, { method: "GET" });
+function aliasKey(alias) {
+  return String(alias ?? "").trim().toLowerCase();
+}
+
+// A WLED device is identified by its alias. Its address and the optional fallback only say how to reach it,
+// so either can change without anything else that refers to the device noticing.
+function wledTarget(device) {
+  const key = aliasKey(device?.alias);
+  const addresses = [device?.ip, device?.fallback]
+    .map(normalizeWledBase)
+    .filter((address, index, all) => address && all.indexOf(address) === index);
+  return key && addresses.length ? { key, label: device.label || device.alias, addresses } : null;
+}
+
+const WLED_ATTEMPT_TIMEOUT_MS = 2500;
+const WLED_PRIMARY_RETRY_MS = 60000;
+// alias key -> { base: the address that last answered, retryPrimaryAt: when to try the primary again while on the fallback }
+const wledActiveAddress = new Map();
+
+// A page opened over https can't call a plain-http address (the browser refuses before anything is sent),
+// except on localhost, so such an address is skipped rather than tried.
+function blockedAsMixedContent(base) {
+  if (typeof location === "undefined" || location.protocol !== "https:") return false;
+  try {
+    const url = new URL(base);
+    return url.protocol === "http:" && !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  } catch (error) {
+    return false;
+  }
+}
+
+// The address a device is currently being reached at (empty until it has answered once).
+export function activeWledAddress(device) {
+  const target = wledTarget(device);
+  return target ? wledActiveAddress.get(target.key)?.base || "" : "";
+}
+
+// Tries the primary address, then the fallback. Only a network failure or timeout moves on to the next one;
+// any HTTP response, even an error status, means the device answered.
+async function wledRequest(target, path, init = {}) {
+  const primary = target.addresses[0];
+  let order = target.addresses;
+  const active = wledActiveAddress.get(target.key);
+  let primaryRetry = false;
+  if (active && order.includes(active.base)) {
+    primaryRetry = active.base !== primary && Date.now() >= active.retryPrimaryAt;
+    if (!primaryRetry) order = [active.base, ...order.filter((address) => address !== active.base)];
+  }
+  const skipped = order.filter(blockedAsMixedContent);
+  const failed = [];
+  for (const base of order) {
+    if (skipped.includes(base)) continue;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), WLED_ATTEMPT_TIMEOUT_MS);
+    try {
+      const response = await fetch(`${base}${path}`, { ...init, signal: controller.signal });
+      if (!active || active.base !== base) {
+        wledActiveAddress.set(target.key, { base, retryPrimaryAt: Date.now() + WLED_PRIMARY_RETRY_MS });
+      }
+      return { response, base };
+    } catch (error) {
+      failed.push(base);
+      if (primaryRetry && base === primary && active) active.retryPrimaryAt = Date.now() + WLED_PRIMARY_RETRY_MS;
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+  wledActiveAddress.delete(target.key);
+  const reasons = [];
+  if (failed.length) reasons.push(`no answer from ${failed.join(" or ")}`);
+  if (skipped.length) reasons.push(`${skipped.join(" or ")} can't be used from a page opened over https`);
+  throw new Error(`Unable to reach ${target.label}: ${reasons.join("; ")}. Check that it's powered on and reachable from this device.`);
+}
+
+async function wledFetchJson(target, path) {
+  const { response } = await wledRequest(target, path, { method: "GET" });
   if (!response.ok) {
     throw new Error(`WLED returned ${response.status}`);
   }
@@ -112,27 +186,37 @@ const WLED_SYNC_CHANNEL = "undercroft-wled";
 const WLED_PAGE_ID = Math.random().toString(16).slice(2);
 let wledSendChannel = null;
 
-function notifyWledChanged(base) {
-  window.dispatchEvent(new CustomEvent(WLED_CHANGED_EVENT, { detail: { base } }));
+function notifyWledChanged(key) {
+  window.dispatchEvent(new CustomEvent(WLED_CHANGED_EVENT, { detail: { key } }));
   if (typeof BroadcastChannel === "undefined") return;
   try {
     wledSendChannel = wledSendChannel || new BroadcastChannel(WLED_SYNC_CHANNEL);
-    wledSendChannel.postMessage({ base, origin: WLED_PAGE_ID });
+    wledSendChannel.postMessage({ key, origin: WLED_PAGE_ID });
   } catch (error) {
     // Best-effort — a page that can't broadcast just doesn't sync other tabs.
   }
 }
 
-// `handler(base)` runs for a change made anywhere in the suite; returns the
+// A saved device's alias was renamed. Anything holding the old alias (a Lighting card's selection,
+// the Combat Tracker's table lighting) follows it to the new one instead of losing the device.
+const WLED_DEVICE_EDITED_EVENT = "undercroft:wled-device-edited";
+
+export function subscribeWledDeviceEdits(handler) {
+  const onEvent = (event) => handler(event.detail || {});
+  window.addEventListener(WLED_DEVICE_EDITED_EVENT, onEvent);
+  return () => window.removeEventListener(WLED_DEVICE_EDITED_EVENT, onEvent);
+}
+
+// `handler(aliasKey)` runs for a change made anywhere in the suite; returns the
 // unsubscribe function.
 export function subscribeWledChanges(handler) {
-  const onEvent = (event) => handler(event.detail?.base || "");
+  const onEvent = (event) => handler(event.detail?.key || "");
   window.addEventListener(WLED_CHANGED_EVENT, onEvent);
   let channel = null;
   if (typeof BroadcastChannel !== "undefined") {
     channel = new BroadcastChannel(WLED_SYNC_CHANNEL);
     channel.addEventListener("message", (event) => {
-      if (event.data?.origin !== WLED_PAGE_ID) handler(event.data?.base || "");
+      if (event.data?.origin !== WLED_PAGE_ID) handler(event.data?.key || "");
     });
   }
   return () => {
@@ -145,8 +229,8 @@ export function subscribeWledChanges(handler) {
 // widget might meet, unlike the newer /json/state-only shorthand. Also
 // exactly what the Advanced/raw-JSON textarea sends, so "basic" controls
 // and "advanced" commands are the same request shape underneath.
-async function wledPostState(base, body) {
-  const response = await fetch(`${base}/json`, {
+async function wledPostState(target, body) {
+  const { response } = await wledRequest(target, "/json", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: typeof body === "string" ? body : JSON.stringify(body),
@@ -154,7 +238,7 @@ async function wledPostState(base, body) {
   if (!response.ok) {
     throw new Error(`WLED returned ${response.status}`);
   }
-  notifyWledChanged(base);
+  notifyWledChanged(target.key);
   try {
     return await response.json();
   } catch (error) {
@@ -165,9 +249,9 @@ async function wledPostState(base, body) {
 // Best-effort — a device with no presets saved (or an older firmware
 // without this endpoint) just gets an empty preset list, not an error;
 // presets are a bonus, not a required capability.
-async function wledFetchPresets(base) {
+async function wledFetchPresets(target) {
   try {
-    const presets = await wledFetchJson(base, "/presets.json");
+    const presets = await wledFetchJson(target, "/presets.json");
     return presets && typeof presets === "object" ? presets : {};
   } catch (error) {
     return {};
@@ -271,9 +355,9 @@ function buildLookEntry(segmentId, look = {}, { full = false } = {}) {
 // (a stale list shouldn't block anything) but are an error when asked to
 // LIGHT. Nothing lit means the master power is left alone.
 export async function applyWledSegmentScene(device, { lit = [], off = [] } = {}) {
-  const base = normalizeWledBase(device?.ip);
-  if (!base) throw new Error("This device has no IP/hostname.");
-  const state = await wledFetchJson(base, "/json/state");
+  const target = wledTarget(device);
+  if (!target) throw new Error("This device has no alias or address.");
+  const state = await wledFetchJson(target, "/json/state");
   const segs = Array.isArray(state?.seg) ? state.seg : [];
   const idFor = (name) => {
     const wanted = String(name ?? "").trim().toLowerCase();
@@ -289,21 +373,22 @@ export async function applyWledSegmentScene(device, { lit = [], off = [] } = {})
   const offIds = new Set(off.map(idFor).filter((id) => id !== undefined && !litIds.has(id)));
   const seg = [...Array.from(offIds, (id) => ({ id, on: false })), ...litEntries];
   if (!seg.length) return;
-  await wledPostState(base, { tt: 0, ...(litEntries.length ? { on: true } : {}), seg });
+  await wledPostState(target, { tt: 0, ...(litEntries.length ? { on: true } : {}), seg });
 }
 
 // One short-lived lookup per device, shared by every editor that lists its
 // presets/effects/palettes/segments — an editor re-renders on every edit, and
 // each render would otherwise re-hit the device.
 const WLED_CHOICES_TTL_MS = 30000;
-const wledChoicesCache = new Map(); // ip -> { at, promise }
+const wledChoicesCache = new Map(); // alias key -> { at, promise }
 export function loadWledChoices(device) {
-  const cached = wledChoicesCache.get(device.ip);
+  const key = aliasKey(device.alias);
+  const cached = wledChoicesCache.get(key);
   if (cached && Date.now() - cached.at < WLED_CHOICES_TTL_MS) return cached.promise;
   const promise = fetchWledChoices(device);
-  wledChoicesCache.set(device.ip, { at: Date.now(), promise });
+  wledChoicesCache.set(key, { at: Date.now(), promise });
   // A failed fetch isn't worth remembering — the next render should retry.
-  promise.catch(() => wledChoicesCache.delete(device.ip));
+  promise.catch(() => wledChoicesCache.delete(key));
   return promise;
 }
 
@@ -339,10 +424,10 @@ function buildWledLookCommand(segmentId, params = {}, otherSegmentIds = []) {
 // resolve, or the other segments to switch off (the default; see
 // buildWledLookCommand) — so an action that opts out of both stays a single
 // request.
-async function resolveMacroSegment(base, params) {
+async function resolveMacroSegment(target, params) {
   const exclusive = params?.exclusive !== false;
   const needsState = String(params?.segmentName ?? "").trim() || exclusive;
-  const state = needsState ? await wledFetchJson(base, "/json/state") : null;
+  const state = needsState ? await wledFetchJson(target, "/json/state") : null;
   const segmentId = resolveSegmentId(state?.seg, params);
   const otherSegmentIds = exclusive
     ? (Array.isArray(state?.seg) ? state.seg : []).map((seg) => seg.id).filter((id) => id !== segmentId)
@@ -415,6 +500,8 @@ export function initWledWidget(
   let loading = false;
   let loadError = "";
   let showAddDevice = false;
+  // The deviceKey being edited, or "" while the form is adding a new device.
+  let editingKey = "";
   let destroyed = false;
   // The Advanced section's draft/expanded state, kept outside render() —
   // every render() call fully rebuilds the DOM, which would otherwise wipe
@@ -450,8 +537,8 @@ export function initWledWidget(
     if (typeof onDevicesChange === "function") onDevicesChange(deviceList.slice());
   }
 
-  function currentBase() {
-    return normalizeWledBase(config.selectedIp);
+  function currentTarget() {
+    return wledTarget(currentDevice());
   }
 
   function currentDeviceType() {
@@ -503,8 +590,8 @@ export function initWledWidget(
   }
 
   async function refreshWledState({ silent = false } = {}) {
-    const base = currentBase();
-    if (!base) {
+    const target = currentTarget();
+    if (!target) {
       deviceState = null;
       loadError = "";
       render();
@@ -517,10 +604,10 @@ export function initWledWidget(
     }
     try {
       const [state, presetMap, fxdata] = await Promise.all([
-        wledFetchJson(base, "/json"),
-        wledFetchPresets(base),
+        wledFetchJson(target, "/json"),
+        wledFetchPresets(target),
         // Best-effort — without it the control just leaves every field enabled.
-        wledFetchJson(base, "/json/fxdata").catch(() => null),
+        wledFetchJson(target, "/json/fxdata").catch(() => null),
       ]);
       if (destroyed) return;
       deviceState = state;
@@ -532,9 +619,7 @@ export function initWledWidget(
     } catch (error) {
       if (destroyed) return;
       deviceState = null;
-      loadError =
-        (error && error.message) ||
-        "Unable to reach this device. Check the IP/hostname, that it's powered on and on the same network, and that this page and WLED are loaded over the same protocol (http vs https).";
+      loadError = (error && error.message) || "Unable to reach this device.";
     } finally {
       lastWledRefreshAt = Date.now();
       if (!destroyed) {
@@ -548,8 +633,8 @@ export function initWledWidget(
   // macro, the combat tracker, another tab — leaves this card showing stale
   // state unless it re-reads. Debounced so a burst is one read, and skipped
   // when this card's own command already refreshed it a moment ago.
-  function scheduleExternalRefresh(base) {
-    if (destroyed || currentDeviceType() !== "wled" || !base || base !== currentBase()) return;
+  function scheduleExternalRefresh(key) {
+    if (destroyed || currentDeviceType() !== "wled" || !key || key !== aliasKey(config.selectedAlias)) return;
     window.clearTimeout(externalRefreshTimer);
     externalRefreshTimer = window.setTimeout(() => {
       if (destroyed || Date.now() - lastWledRefreshAt < 400) return;
@@ -560,10 +645,10 @@ export function initWledWidget(
   // Shared by every failable device request — one place to surface a
   // network/HTTP error as a toast and refresh afterward.
   async function sendRaw(body) {
-    const base = currentBase();
-    if (!base) return;
+    const target = currentTarget();
+    if (!target) return;
     try {
-      await wledPostState(base, body);
+      await wledPostState(target, body);
       await refreshState({ silent: true });
     } catch (error) {
       status?.show?.(error?.message || "Unable to send command to WLED.", { type: "error", timeout: 3000 });
@@ -594,7 +679,7 @@ export function initWledWidget(
   }
 
   function currentDevice() {
-    return deviceList.find((device) => device.type !== "haLight" && normalizeWledBase(device.ip) === currentBase()) || null;
+    return deviceList.find((device) => device.type !== "haLight" && aliasKey(device.alias) === aliasKey(config.selectedAlias)) || null;
   }
 
   function rememberedLayout() {
@@ -635,7 +720,7 @@ export function initWledWidget(
     // a restore will re-send.
     const unnamed = live.filter((seg) => !segmentName(seg)).map((seg) => ({ id: seg.id, n: `Segment ${seg.id}` }));
     try {
-      if (unnamed.length) await wledPostState(currentBase(), { seg: unnamed });
+      if (unnamed.length) await wledPostState(currentTarget(), { seg: unnamed });
     } catch (error) {
       status?.show?.(error?.message || "Unable to name those segments on the device.", { type: "error", timeout: 3000 });
       return;
@@ -712,7 +797,7 @@ export function initWledWidget(
   }
 
   async function refreshFollow() {
-    if (!config.followEnabled || !currentBase() || !dataManager || !groupContext?.groupId) return;
+    if (!config.followEnabled || !currentTarget() || !dataManager || !groupContext?.groupId) return;
     try {
       const clockId = await resolveActiveSpotlightId(dataManager, {
         groupId: groupContext.groupId,
@@ -744,7 +829,7 @@ export function initWledWidget(
       followLiveStream.close();
       followLiveStream = null;
     }
-    if (!config.followEnabled || !currentBase() || !dataManager || !groupContext?.groupId) return;
+    if (!config.followEnabled || !currentTarget() || !dataManager || !groupContext?.groupId) return;
     lastAppliedFollowKey = "";
     void refreshFollow();
     // createReliableInterval (not plain setInterval) — same reasoning
@@ -781,23 +866,23 @@ export function initWledWidget(
   // colliding (a WLED IP and an HA entity id live in different namespaces)
   // — encode/decode kept together so population and parsing can't drift.
   function deviceKey(device) {
-    return device.type === "haLight" ? `haLight::${device.entityId}` : `wled::${device.ip}`;
+    return device.type === "haLight" ? `haLight::${device.entityId}` : `wled::${aliasKey(device.alias)}`;
   }
 
   function currentSelectionKey() {
-    return currentDeviceType() === "haLight" ? `haLight::${config.selectedEntityId || ""}` : `wled::${config.selectedIp || ""}`;
+    return currentDeviceType() === "haLight" ? `haLight::${config.selectedEntityId || ""}` : `wled::${aliasKey(config.selectedAlias)}`;
   }
 
   function hasSelection() {
-    return currentDeviceType() === "haLight" ? Boolean(config.selectedEntityId) : Boolean(config.selectedIp);
+    return currentDeviceType() === "haLight" ? Boolean(config.selectedEntityId) : Boolean(config.selectedAlias);
   }
 
   function selectDevice(key) {
     const [type, id] = String(key || "").split("::");
     if (type === "haLight") {
-      persistInstanceConfig({ selectedType: "haLight", selectedEntityId: id || "", selectedIp: "" });
+      persistInstanceConfig({ selectedType: "haLight", selectedEntityId: id || "", selectedAlias: "" });
     } else {
-      persistInstanceConfig({ selectedType: "wled", selectedIp: id || "", selectedEntityId: "" });
+      persistInstanceConfig({ selectedType: "wled", selectedAlias: id || "", selectedEntityId: "" });
     }
     targetSegmentIds.clear();
     deviceState = null;
@@ -823,7 +908,7 @@ export function initWledWidget(
     deviceList.forEach((device) => {
       const option = document.createElement("option");
       option.value = deviceKey(device);
-      option.textContent = device.label || (device.type === "haLight" ? device.entityId : device.ip);
+      option.textContent = device.label || (device.type === "haLight" ? device.entityId : device.alias);
       select.appendChild(option);
     });
     select.value = hasSelection() ? currentSelectionKey() : "";
@@ -832,11 +917,28 @@ export function initWledWidget(
 
     const addButton = iconButton("tabler:plus", "Add a device");
     addButton.addEventListener("click", () => {
-      showAddDevice = !showAddDevice;
+      showAddDevice = !showAddDevice || Boolean(editingKey);
+      editingKey = "";
       addDeviceType = currentDeviceType();
       render();
     });
     row.appendChild(addButton);
+
+    const editButton = iconButton("tabler:pencil", "Edit this device");
+    editButton.addEventListener("click", () => {
+      if (!hasSelection()) return;
+      editingKey = currentSelectionKey();
+      addDeviceType = currentDeviceType();
+      showAddDevice = true;
+      render();
+    });
+    row.appendChild(editButton);
+    if (hasSelection()) {
+      setDisabledTooltip(editButton, "");
+      updateTooltipContent(editButton, "Edit this device");
+    } else {
+      setDisabledTooltip(editButton, "Edit this device (select a device first)");
+    }
 
     const refreshButton = iconButton("tabler:refresh", "Reconnect / refresh");
     refreshButton.disabled = !hasSelection();
@@ -849,7 +951,7 @@ export function initWledWidget(
       if (!hasSelection()) return;
       const key = currentSelectionKey();
       persistDevices(deviceList.filter((device) => deviceKey(device) !== key));
-      persistInstanceConfig({ selectedIp: "", selectedEntityId: "" });
+      persistInstanceConfig({ selectedAlias: "", selectedEntityId: "" });
       deviceState = null;
       haLightState = null;
       syncFollowWatch();
@@ -862,7 +964,7 @@ export function initWledWidget(
     // than a separate row of their own — fewer rows competing for space on
     // a small widget card (see render() for what each shows/hides). Both
     // stay WLED-only for now.
-    const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
+    const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedAlias);
     const followButton = iconButton("tabler:clock", "Follow a Clock", { active: config.followEnabled });
     followButton.addEventListener("click", () => {
       const next = !config.followEnabled;
@@ -933,6 +1035,8 @@ export function initWledWidget(
   // widget's normal card width.
   function renderAddDeviceForm() {
     const form = el("div", "d-flex flex-column gap-1");
+    const editing = editingKey ? deviceList.find((device) => deviceKey(device) === editingKey) || null : null;
+    const formType = editing ? (editing.type === "haLight" ? "haLight" : "wled") : addDeviceType;
 
     const typeRow = el("div", "d-flex align-items-center gap-1");
     const typeSelect = document.createElement("select");
@@ -945,9 +1049,11 @@ export function initWledWidget(
       const option = document.createElement("option");
       option.value = value;
       option.textContent = optionLabel;
-      option.selected = value === addDeviceType;
+      option.selected = value === formType;
       typeSelect.appendChild(option);
     });
+    // A saved device keeps its type; only a new one chooses.
+    typeSelect.disabled = Boolean(editing);
     typeSelect.addEventListener("change", () => {
       addDeviceType = typeSelect.value;
       render();
@@ -960,7 +1066,7 @@ export function initWledWidget(
     // ever prompts once, the first time there's no connection at all — once
     // configured, however wrong, there's no way back into that modal
     // without this.
-    if (addDeviceType === "haLight") {
+    if (formType === "haLight" && !editing) {
       const manageButton = el("button", "btn btn-sm btn-outline-secondary", "Manage connection");
       manageButton.type = "button";
       manageButton.addEventListener("click", () => void manageHaConnection({ dataManager, status }));
@@ -975,22 +1081,33 @@ export function initWledWidget(
     labelInput.className = "form-control form-control-sm";
     labelInput.style.maxWidth = "9rem";
     labelInput.placeholder = "Label (optional)";
+    labelInput.value = editing?.label || "";
 
-    // WLED-only — this is the stable name a shared `wled`-type Macro action
-    // references this device by, not what shows up in this dropdown.
-    // Keeping it separate from Label means renaming how a device displays
-    // never breaks a macro that already references it. HA's own macro
+    // WLED-only — the device's identity: what Macro actions, Table Lighting and every Lighting card refer to
+    // it by, never its address. Keeping it separate from Label means renaming how a device displays
+    // never breaks anything that already references it. HA's own macro
     // actions target an entityId directly — no alias-resolution step, so
     // an HA-light entry has nothing to put here.
     const aliasInput = document.createElement("input");
     aliasInput.type = "text";
     aliasInput.className = "form-control form-control-sm";
     aliasInput.style.maxWidth = "9rem";
-    aliasInput.placeholder = "Macro alias (optional)";
+    aliasInput.placeholder = "Alias (required)";
+    aliasInput.value = editing?.alias || "";
 
     let confirmAdd = () => {};
 
-    if (addDeviceType === "haLight") {
+    if (formType === "haLight" && editing) {
+      const entityName = el("span", "small text-body-secondary text-truncate", editing.entityId);
+      entityName.style.maxWidth = "12rem";
+      confirmAdd = () => {
+        persistDevices(deviceList.map((device) => (device === editing ? { ...device, label: labelInput.value.trim() } : device)));
+        showAddDevice = false;
+        editingKey = "";
+        render();
+      };
+      fieldsRow.append(entityName, labelInput);
+    } else if (formType === "haLight") {
       const entitySelect = document.createElement("select");
       entitySelect.className = "form-select form-select-sm";
       entitySelect.style.maxWidth = "12rem";
@@ -1049,6 +1166,7 @@ export function initWledWidget(
         const label = labelInput.value.trim() || selectedEntity?.friendlyName || "";
         persistDevices([...deviceList, { type: "haLight", entityId, label }]);
         showAddDevice = false;
+        editingKey = "";
         selectDevice(`haLight::${entityId}`);
       };
 
@@ -1057,8 +1175,17 @@ export function initWledWidget(
       const ipInput = document.createElement("input");
       ipInput.type = "text";
       ipInput.className = "form-control form-control-sm";
-      ipInput.style.maxWidth = "10rem";
-      ipInput.placeholder = "IP or hostname";
+      ipInput.style.maxWidth = "16rem";
+      ipInput.placeholder = "Address: IP, hostname or https://";
+      ipInput.value = editing?.ip || "";
+
+      // Used when the address above doesn't answer (away from home, say), e.g. an https address reached through a tunnel.
+      const fallbackInput = document.createElement("input");
+      fallbackInput.type = "text";
+      fallbackInput.className = "form-control form-control-sm";
+      fallbackInput.style.maxWidth = "16rem";
+      fallbackInput.placeholder = "Fallback address (optional)";
+      fallbackInput.value = editing?.fallback || "";
 
       confirmAdd = () => {
         const base = normalizeWledBase(ipInput.value);
@@ -1066,18 +1193,40 @@ export function initWledWidget(
           ipInput.focus();
           return;
         }
-        if (deviceList.some((device) => device.type !== "haLight" && device.ip === base)) {
-          status?.show?.("That device is already saved.", { type: "warning", timeout: 2400 });
+        const alias = aliasInput.value.trim();
+        if (!alias) {
+          aliasInput.focus();
+          status?.show?.("Give the device an alias; it is what Macros and the rest of Undercroft use to refer to it.", { type: "warning", timeout: 3200 });
+          return;
+        }
+        if (deviceList.some((device) => device !== editing && device.type !== "haLight" && aliasKey(device.alias) === aliasKey(alias))) {
+          status?.show?.("Another device already uses that alias.", { type: "warning", timeout: 2400 });
+          aliasInput.focus();
           return;
         }
         const label = labelInput.value.trim();
-        const alias = aliasInput.value.trim();
-        persistDevices([...deviceList, { type: "wled", ip: base, label, alias }]);
+        const fallback = normalizeWledBase(fallbackInput.value);
+        const entry = { type: "wled", ip: base, ...(fallback && fallback !== base ? { fallback } : {}), label, alias };
+        if (editing) {
+          const previous = editing.alias;
+          persistDevices(deviceList.map((device) => (device === editing ? { ...device, ip: base, fallback: entry.fallback, label, alias } : device)));
+          showAddDevice = false;
+          editingKey = "";
+          if (aliasKey(previous) !== aliasKey(alias)) {
+            wledChoicesCache.delete(aliasKey(previous));
+            window.dispatchEvent(new CustomEvent(WLED_DEVICE_EDITED_EVENT, { detail: { from: previous, to: alias } }));
+            status?.show?.(`Macros that use the alias "${previous}" need the new alias, "${alias}".`, { type: "warning", timeout: 4200 });
+          }
+          void refreshState();
+          render();
+          return;
+        }
+        persistDevices([...deviceList, entry]);
         showAddDevice = false;
-        selectDevice(`wled::${base}`);
+        selectDevice(`wled::${aliasKey(alias)}`);
       };
 
-      fieldsRow.append(ipInput, labelInput, aliasInput);
+      fieldsRow.append(ipInput, fallbackInput, aliasInput, labelInput);
     }
 
     // Delegated rather than per-input — covers whichever fields the branch
@@ -1091,13 +1240,14 @@ export function initWledWidget(
       }
     });
 
-    const addButton = iconButton("tabler:plus", "Add", { variant: "primary" });
+    const addButton = iconButton(editing ? "tabler:check" : "tabler:plus", editing ? "Save changes" : "Add", { variant: "primary" });
     addButton.addEventListener("click", () => confirmAdd());
     fieldsRow.appendChild(addButton);
 
     const cancelButton = iconButton("tabler:x", "Cancel");
     cancelButton.addEventListener("click", () => {
       showAddDevice = false;
+      editingKey = "";
       render();
     });
     fieldsRow.appendChild(cancelButton);
@@ -1267,7 +1417,7 @@ export function initWledWidget(
 
     if (!dataManager || !groupContext?.groupId) {
       panel.appendChild(
-        el("div", "small text-body-secondary", "No active campaign — pick one from the Campaign menu to enable this.")
+        el("div", "small text-body-secondary", "No active group — pick one from the group menu to enable this.")
       );
       return panel;
     }
@@ -1418,9 +1568,15 @@ export function initWledWidget(
     // this just shows/hides its section's content in place, rather than a
     // separate always-visible header row for a section that might not even be
     // in use. Follow and the Advanced section (below) stay WLED-only.
-    const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedIp);
+    const isWledSelected = currentDeviceType() === "wled" && Boolean(config.selectedAlias);
     if (isWledSelected && config.followEnabled) {
       wrap.appendChild(renderFollowSection());
+    }
+
+    const shownDevice = currentDevice();
+    const activeAddress = shownDevice ? activeWledAddress(shownDevice) : "";
+    if (activeAddress && activeAddress !== normalizeWledBase(shownDevice.ip)) {
+      wrap.appendChild(el("div", "small text-body-secondary", `Connected through the fallback address: ${activeAddress}`));
     }
 
     if (loading) {
@@ -1428,7 +1584,7 @@ export function initWledWidget(
     } else if (loadError) {
       wrap.appendChild(el("div", "small text-danger", loadError));
     } else if (!hasSelection() && currentDeviceType() === "wled") {
-      wrap.appendChild(el("div", "small text-body-secondary", "Add a WLED device's IP address or hostname to get started."));
+      wrap.appendChild(el("div", "small text-body-secondary", "Add a WLED device's address to get started."));
     } else if (currentDeviceType() === "haLight" && haLightState) {
       wrap.appendChild(renderHaLightBasicControls());
     } else if (currentDeviceType() === "wled" && deviceState) {
@@ -1471,7 +1627,7 @@ export function initWledWidget(
         await sendRaw({ bri: Number(params.value) });
         return;
       case "effect": {
-        const { segmentId, otherSegmentIds } = await resolveMacroSegment(currentBase(), params);
+        const { segmentId, otherSegmentIds } = await resolveMacroSegment(currentTarget(), params);
         await sendRaw(buildWledLookCommand(segmentId, params, otherSegmentIds));
         return;
       }
@@ -1485,12 +1641,19 @@ export function initWledWidget(
   syncFollowWatch();
   syncHaPollWatch();
   const unsubscribeWledSync = subscribeWledChanges(scheduleExternalRefresh);
+  // A renamed alias (from this card or another) moves this card's selection with it.
+  const unsubscribeDeviceEdits = subscribeWledDeviceEdits(({ from, to }) => {
+    if (!from || !to || aliasKey(config.selectedAlias) !== aliasKey(from)) return;
+    persistInstanceConfig({ selectedAlias: to });
+    render();
+  });
 
   return {
     runMacroAction,
     destroy() {
       destroyed = true;
       unsubscribeWledSync();
+      unsubscribeDeviceEdits();
       window.clearTimeout(externalRefreshTimer);
       if (followTimer) followTimer.stop();
       followLiveStream?.close();
@@ -1522,7 +1685,23 @@ export const WLED_MACRO_ACTIONS = {
 // real `ip`, an HA-light entry needs a real `entityId`; a bare/legacy entry
 // (no `type` at all) is treated as "wled", matching DEFAULT_CONFIG's own
 // selectedType fallback.
+// Derives an alias for a device saved without one (from its label, else its address), unique within the list.
+function deriveWledAlias(entry, taken) {
+  const stem =
+    String(entry.label || entry.ip)
+      .replace(/^https?:\/\//i, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "wled";
+  let alias = stem;
+  for (let suffix = 2; taken.has(alias); suffix += 1) alias = `${stem}-${suffix}`;
+  return alias;
+}
+
 export function normalizeWledDeviceList(list) {
+  const taken = new Set(
+    (Array.isArray(list) ? list : []).filter((entry) => entry?.type !== "haLight" && typeof entry?.alias === "string").map((entry) => aliasKey(entry.alias)).filter(Boolean)
+  );
   return Array.isArray(list)
     ? list
         .filter((entry) => {
@@ -1538,13 +1717,20 @@ export function normalizeWledDeviceList(list) {
                 label: typeof entry.label === "string" ? entry.label.trim() : "",
                 alias: typeof entry.alias === "string" ? entry.alias.trim() : "",
               }
-            : {
-                type: "wled",
-                ip: entry.ip.trim(),
-                label: typeof entry.label === "string" ? entry.label.trim() : "",
-                alias: typeof entry.alias === "string" ? entry.alias.trim() : "",
-                ...(normalizeSegmentLayout(entry.segments).length ? { segments: normalizeSegmentLayout(entry.segments) } : {}),
-              }
+            : (() => {
+                const alias = typeof entry.alias === "string" ? entry.alias.trim() : "";
+                const fallback = typeof entry.fallback === "string" ? entry.fallback.trim() : "";
+                const derived = alias || deriveWledAlias(entry, taken);
+                taken.add(aliasKey(derived));
+                return {
+                  type: "wled",
+                  ip: entry.ip.trim(),
+                  ...(fallback ? { fallback } : {}),
+                  label: typeof entry.label === "string" ? entry.label.trim() : "",
+                  alias: derived,
+                  ...(normalizeSegmentLayout(entry.segments).length ? { segments: normalizeSegmentLayout(entry.segments) } : {}),
+                };
+              })()
         )
     : [];
 }
@@ -1599,17 +1785,17 @@ export function resolveWledDeviceByAlias(devices, alias) {
 // editor on any machine that can reach the device sees its real presets,
 // effects, and segment names. Rejects only when the device is unreachable.
 export async function fetchWledChoices(device) {
-  const base = normalizeWledBase(device?.ip);
-  if (!base) throw new Error("This device has no IP/hostname.");
+  const target = wledTarget(device);
+  if (!target) throw new Error("This device has no alias or address.");
   const [presets, effects, state, palettes, fxdata] = await Promise.allSettled([
-    wledFetchPresets(base),
-    wledFetchJson(base, "/json/eff"),
-    wledFetchJson(base, "/json/state"),
-    wledFetchJson(base, "/json/pal"),
-    wledFetchJson(base, "/json/fxdata"),
+    wledFetchPresets(target),
+    wledFetchJson(target, "/json/eff"),
+    wledFetchJson(target, "/json/state"),
+    wledFetchJson(target, "/json/pal"),
+    wledFetchJson(target, "/json/fxdata"),
   ]);
   if (effects.status === "rejected" && state.status === "rejected") {
-    throw new Error(`Can't reach ${device.label || base} from this browser.`);
+    throw new Error(effects.reason?.message || `Can't reach ${target.label} from this browser.`);
   }
   const liveSegments = state.status === "fulfilled" && Array.isArray(state.value?.seg) ? state.value.seg : [];
   const segmentNames = Array.from(new Set([...(device.segments || []), ...liveSegments].map(segmentName).filter(Boolean)));
@@ -1627,31 +1813,6 @@ export async function fetchWledChoices(device) {
     // identify a segment by NAME, so value and label are the same.
     segments: segmentNames.map((name) => ({ value: name, label: name })),
   };
-}
-
-// A device can only be referenced by a macro through its alias, and the
-// Lighting widget only asks for one when the device is first added — so
-// picking an alias-less device in the macro editor gives it one, derived from
-// its label (or host) and made unique, rather than leaving it unselectable.
-export async function ensureWledDeviceAlias(dataManager, devices, ip) {
-  const list = normalizeWledDeviceList(devices);
-  const device = list.find((entry) => entry.type !== "haLight" && entry.ip === ip);
-  if (!device) return null;
-  if (device.alias) return { alias: device.alias, devices: list };
-  const stem =
-    String(device.label || device.ip)
-      .replace(/^https?:\/\//i, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "wled";
-  const taken = new Set(list.map((entry) => entry.alias.toLowerCase()));
-  let alias = stem;
-  for (let suffix = 2; taken.has(alias); suffix += 1) alias = `${stem}-${suffix}`;
-  const saved = await saveWledDevices(
-    dataManager,
-    list.map((entry) => (entry === device ? { ...entry, alias } : entry))
-  );
-  return { alias, devices: saved };
 }
 
 // The write half of fetchWledDevices above — same two keys, same local-
@@ -1714,7 +1875,8 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
   // WLED-only — an HA-light entry has no `.ip` at all, and this whole flow
   // only ever runs for a `wled`-type macro action, so an HA-light entry
   // showing up here would just be a broken, irrelevant option.
-  const deviceList = normalizeWledDeviceList(devices).filter((device) => device.type !== "haLight");
+  const fullList = normalizeWledDeviceList(devices);
+  const deviceList = fullList.filter((device) => device.type !== "haLight");
   if (!deviceList.length) {
     status?.show?.(
       `No WLED device aliased "${alias}", and none saved to pick from yet — add one in the WLED widget first.`,
@@ -1735,10 +1897,10 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
   }
   if (select) {
     select.innerHTML = "";
-    deviceList.forEach((device) => {
+    deviceList.forEach((device, index) => {
       const option = document.createElement("option");
-      option.value = device.ip;
-      option.textContent = device.label || device.ip;
+      option.value = String(index);
+      option.textContent = device.label || device.alias;
       select.appendChild(option);
     });
   }
@@ -1752,12 +1914,12 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
       resolve(result);
     };
     const onConfirm = () => {
-      const device = deviceList.find((entry) => entry.ip === select?.value);
+      const device = deviceList[Number(select?.value)];
       if (!device) {
         finish(null);
         return;
       }
-      const updated = deviceList.map((entry) => (entry.ip === device.ip ? { ...entry, alias } : entry));
+      const updated = fullList.map((entry) => (entry === device ? { ...entry, alias } : entry));
       modal?.hide();
       void saveWledDevices(dataManager, updated)
         .then(() => finish(updated))
@@ -1796,27 +1958,27 @@ export async function runWledMacroAction(action, { wledDevices = [], widgetInsta
   if (!device) {
     throw new Error(`No WLED device aliased "${action?.target || ""}".`);
   }
-  const base = normalizeWledBase(device.ip);
-  if (!base) {
-    throw new Error(`The device aliased "${action.target}" has no valid IP/hostname.`);
+  const target = wledTarget(device);
+  if (!target) {
+    throw new Error(`The device aliased "${action.target}" has no valid address.`);
   }
   const params = action?.params || {};
   switch (action?.action) {
     case "on":
-      await wledPostState(base, { on: true });
+      await wledPostState(target, { on: true });
       return;
     case "off":
-      await wledPostState(base, { on: false });
+      await wledPostState(target, { on: false });
       return;
     case "preset":
-      await wledPostState(base, { ps: Number(params.presetId) });
+      await wledPostState(target, { ps: Number(params.presetId) });
       return;
     case "brightness":
-      await wledPostState(base, { bri: Number(params.value) });
+      await wledPostState(target, { bri: Number(params.value) });
       return;
     case "effect": {
-      const { segmentId, otherSegmentIds } = await resolveMacroSegment(base, params);
-      await wledPostState(base, buildWledLookCommand(segmentId, params, otherSegmentIds));
+      const { segmentId, otherSegmentIds } = await resolveMacroSegment(target, params);
+      await wledPostState(target, buildWledLookCommand(segmentId, params, otherSegmentIds));
       return;
     }
     default:

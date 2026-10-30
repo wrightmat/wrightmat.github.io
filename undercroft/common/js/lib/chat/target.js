@@ -1,6 +1,6 @@
 // Which thread rolls and other system messages land in: the "active thread",
-// shared across tools in this browser like the active campaign. Falls back to
-// the campaign's default thread, which is also what opens first.
+// shared across tools in this browser like the active group. Falls back to
+// the group's default thread, which is also what opens first.
 
 export function formatThreadLabel(channelName, threadTitle) {
   return `${channelName} › ${threadTitle}`;
@@ -15,7 +15,7 @@ export function findThread(overview, threadId) {
 }
 
 // Synchronous wording for a dice/deck interface's "where will this go" line.
-// Empty when there is no active campaign (nothing can be posted anywhere).
+// Empty when there is no active group (nothing can be posted anywhere).
 export function describePostTarget(dataManager) {
   if (!dataManager?.getActiveGroup?.()) return "";
   const thread = dataManager.getActiveThread();

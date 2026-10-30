@@ -17,6 +17,7 @@
   "supportedSources": [
     "ddb",
     "srd",
+    "library",
     "json",
     "manual"
   ],

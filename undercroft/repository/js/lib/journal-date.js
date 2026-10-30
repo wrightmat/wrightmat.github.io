@@ -11,7 +11,7 @@ import { setDisabledTooltip } from "../../../common/js/lib/tooltips.js";
 
 // `123` or `123|Label` — dayIndex is a raw signed integer, the same day-
 // count representation the Calendar widget uses (day 0 = campaign start).
-// `current`/`today` (case-insensitive) means "whatever the campaign's
+// `current`/`today` (case-insensitive) means "whatever the group's
 // ambient date is right now", resolved by the caller via `currentDayIndex`
 // below rather than a literal number ever appearing in the source.
 const DATE_CODE_PATTERN = /^date:\s*(-?\d+|current|today)\s*(?:\|\s*(.+))?$/i;
@@ -45,8 +45,8 @@ function buildDateChip(dayIndex, label, calendar, { isCurrent = false } = {}) {
   icon.dataset.icon = isCurrent ? "tabler:calendar-star" : "tabler:calendar-event";
   icon.setAttribute("aria-hidden", "true");
   if (dayIndex === null) {
-    button.append(icon, el("span", null, label ? `${label}: no campaign date set` : "No campaign date set"));
-    return { button, tooltipText: "This campaign has no active date yet — set one from a Calendar widget." };
+    button.append(icon, el("span", null, label ? `${label}: no group date set` : "No group date set"));
+    return { button, tooltipText: "This group has no active date yet — set one from a Calendar widget." };
   }
   const formatted = describeDate(calendar || {}, dayIndex);
   button.append(icon, el("span", null, label ? `${label}: ${formatted}` : formatted));

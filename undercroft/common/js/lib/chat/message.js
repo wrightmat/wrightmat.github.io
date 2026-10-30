@@ -39,11 +39,11 @@ function renderReply(message, ctx) {
 }
 
 function renderReactions(message, ctx) {
-  return renderReactionChips(message.reactions, { canReact: ctx.canReact, onToggle: (emoji) => ctx.onReact?.(message, emoji) });
+  return renderReactionChips(message.reactions, { canReact: ctx.canReact, descriptions: ctx.reactionDescriptions, onToggle: (emoji) => ctx.onReact?.(message, emoji) });
 }
 
 function renderEmojiPicker(message, ctx) {
-  return buildEmojiPicker(ctx.reactionEmoji, (emoji) => ctx.onReact?.(message, emoji));
+  return buildEmojiPicker(ctx.reactionEmoji, (emoji) => ctx.onReact?.(message, emoji), ctx.reactionDescriptions);
 }
 
 function renderEditor(message, ctx, bodyHost, restore) {

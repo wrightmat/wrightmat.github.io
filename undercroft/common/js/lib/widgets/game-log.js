@@ -1,7 +1,7 @@
 // Group chat widget — mounted as a Dashboard widget card and inline in
 // Workbench's own collapsible section (workbench-character-view.js), one real
 // implementation for both. Channels -> threads -> messages; the pieces live in
-// ../chat/ and this module only orchestrates them for one campaign.
+// ../chat/ and this module only orchestrates them for one group.
 import { connectLiveStream } from "../live.js";
 import { el, setElementVisible } from "../dom.js";
 import { fetchKindEntriesWithIds, fetchKindEntrySummaries } from "../content-fetch.js";
@@ -28,14 +28,14 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
     return { destroy() {} };
   }
   if (!groupId && !shareToken) {
-    container.appendChild(el("p", "text-body-secondary small mb-0", "No active campaign — pick one from the header menu."));
+    container.appendChild(el("p", "text-body-secondary small mb-0", "No active group — pick one from the header menu."));
     return { refresh() {}, destroy: () => (container.innerHTML = "") };
   }
 
   const authed = dataManager.isAuthenticated();
   // A share-link visitor mounts with a token and no group id; the overview
   // reports the group the token points at.
-  const campaignId = () => groupId || overview?.group?.id || "";
+  const activeGroupId = () => groupId || overview?.group?.id || "";
   const currentUserId = dataManager.session?.user?.id ?? null;
   let destroyed = false;
   let overview = null;
@@ -120,9 +120,9 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
     const code = Number(error?.status) || 0;
     const message =
       code === 401 || code === 403
-        ? "You don't have access to this campaign's messages."
+        ? "You don't have access to this group's messages."
         : code === 404
-          ? "This campaign's messages couldn't be found."
+          ? "This group's messages couldn't be found."
           : code
             ? "Unable to load messages — the server returned an error."
             : "Unable to load messages — check your connection.";
@@ -135,6 +135,7 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
       viewer: { userId: currentUserId, isGm: Boolean(overview?.viewer?.isGm) },
       dataManager,
       reactionEmoji: overview?.reactionEmoji || [],
+      reactionDescriptions: overview?.reactionDescriptions || {},
       canPost: authed && !archived,
       canReact: authed && !archived,
       archived,
@@ -177,7 +178,7 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
       archivedNote.textContent = current.thread.archivedAt ? "This thread is archived and read-only." : "";
       if (composer) setElementVisible(composer.element, !current.thread.archivedAt, "flex");
       if (authed && !current.thread.archivedAt) {
-        await dataManager.markChatThreadRead({ groupId: campaignId(), threadId: current.thread.id }).catch(() => {});
+        await dataManager.markChatThreadRead({ groupId: activeGroupId(), threadId: current.thread.id }).catch(() => {});
       }
     } catch (error) {
       console.error("Chat widget: unable to load messages", error);
@@ -226,7 +227,7 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
   }
 
   // A message reference: scroll to it if it's loaded, switch threads if it's
-  // elsewhere in this campaign, or open its archive page.
+  // elsewhere in this group, or open its archive page.
   async function openMessage(messageId) {
     if (flash(messageId)) return;
     try {
@@ -259,7 +260,7 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
     }
   }
 
-  const react = (message, emoji) => act(() => dataManager.toggleChatReaction({ groupId: campaignId(), messageId: message.id, emoji }), "Unable to react.");
+  const react = (message, emoji) => act(() => dataManager.toggleChatReaction({ groupId: activeGroupId(), messageId: message.id, emoji }), "Unable to react.");
 
   async function remove(message) {
     const confirmed = await showConfirmModal({
@@ -268,13 +269,13 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
       confirmLabel: "Delete",
       confirmVariant: "danger",
     });
-    if (confirmed) await act(() => dataManager.deleteChatMessage({ groupId: campaignId(), messageId: message.id }), "Unable to delete the message.");
+    if (confirmed) await act(() => dataManager.deleteChatMessage({ groupId: activeGroupId(), messageId: message.id }), "Unable to delete the message.");
   }
 
   async function edit(message, text) {
     const refs = collectRefs(text, { directory: mentionDirectory, journalIndex });
     try {
-      await dataManager.editChatMessage({ groupId: campaignId(), messageId: message.id, body: text, refs });
+      await dataManager.editChatMessage({ groupId: activeGroupId(), messageId: message.id, body: text, refs });
       await loadMessages();
     } catch (error) {
       status?.show(error.message || "Unable to edit the message.", { type: "error" });
@@ -287,7 +288,7 @@ export function initGameLogWidget(container, { dataManager, status, groupId = ""
     openInbox({
       dataManager,
       status,
-      compose: { groupId: campaignId(), selectedIds: [message.author.id], title: `Message ${message.author.name || "them"}` },
+      compose: { groupId: activeGroupId(), selectedIds: [message.author.id], title: `Message ${message.author.name || "them"}` },
     });
   }
 

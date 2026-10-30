@@ -6,7 +6,8 @@
     "categories": [
       "Suite Basics",
       "Accounts & Sharing",
-      "Campaigns",
+      "Groups",
+      "Community",
       "Dashboard",
       "Workbench",
       "Loom",
@@ -73,8 +74,8 @@
       "details": [
         "Signed out, Save keeps your work in this browser only. It stays there until you clear the browser's site data.",
         "Signed in, Save stores the work on the server as a record you own. You can open it from any device and share it.",
-        "Signing in doesn't discard what you saved while signed out. Some tools, such as Loom and the campaign tools, need an account at a particular tier; see Account Tiers.",
-        "Sharing and campaign features need a record saved to your account first."
+        "Signing in doesn't discard what you saved while signed out. Some tools, such as Loom and the group tools, need an account at a particular tier; see Account Tiers.",
+        "Sharing and group features need a record saved to your account first."
       ],
       "category": "Suite Basics",
       "href": "account.html"
@@ -112,7 +113,7 @@
         "Any ? badge in a tool opens its topic on the documentation page. The search box in the header finds topics too.",
         "On the documentation page, groups in the left list open and close, and picking a topic opens its group and scrolls to it. The search box above the list narrows it.",
         "Click the star next to a topic to favorite it. Your favorites show at the top of the documentation list, on your Dashboard's left pane, and on your Account page.",
-        "Some topics are favorites automatically for a tier: Running a Campaign, for example, is starred for GMs. Un-star it and it stays gone."
+        "Some topics are favorites automatically for a tier: Running a Game, for example, is starred for GMs. Un-star it and it stays gone."
       ],
       "category": "Suite Basics",
       "href": "docs.html"
@@ -316,10 +317,10 @@
     {
       "id": "workbench.groupCharacters",
       "title": "Group Characters and Party Data",
-      "summary": "Open a campaign's characters from its share link, and keep party-wide values like a shared inventory.",
+      "summary": "Open a group's characters from its share link, and keep party-wide values like a shared inventory.",
       "details": [
-        "When you arrive through a campaign's share link, Group characters in the left pane lists the group's unclaimed characters. Sign in and claim one to play it.",
-        "A GM can give a campaign a Party Template in Loom. The campaign then appears in the character list, and opening it shows that sheet for the whole group with no character needed.",
+        "When you arrive through a group's share link, Group characters in the left pane lists the group's unclaimed characters. Sign in and claim one to play it.",
+        "A GM can give a group a Party Template in Loom. The group then appears in the character list, and opening it shows that sheet for the whole group with no character needed.",
         "Changes to party data save as you make them; there is no Save button."
       ],
       "category": "Workbench",
@@ -329,11 +330,11 @@
     {
       "id": "loom.overview",
       "title": "Loom at a Glance",
-      "summary": "Loom is where you manage your content: import it, organize it, and define the Systems and campaigns it belongs to.",
+      "summary": "Loom is where you manage your content: import it, organize it, and define the Systems and groups it belongs to.",
       "details": [
         "Import brings in content from other services. Library lists every saved record and lets you edit, assign and share it.",
         "Systems define a game's properties, dice and vocabulary. Features are the building blocks the Crucible and Vault generators draw on. Macros are lists of actions you can run from the Dashboard.",
-        "Groups is where a GM runs a campaign: its characters, sessions and share link. Users and Admin are for administrators, and Auth holds the server's saved credentials.",
+        "Groups is where a GM runs a group: its characters, sessions and share link. Users, Community and Admin are for administrators; Admin also holds the server's saved credentials.",
         "Loom needs GM tier or higher, and some tabs need more. Each tab shows only what your account is allowed to do."
       ],
       "category": "Loom",
@@ -375,7 +376,7 @@
       "details": [
         "A plain number, or a character sheet URL, fetches the live character from D&D Beyond.",
         "A page URL for a class, background or species, such as https://www.dndbeyond.com/classes/2190875-barbarian, fetches that content.",
-        "A character is always fetched fresh and is never stored in the Library, because it changes on D&D Beyond. Gated pages need a current D&D Beyond session; see the Auth tab."
+        "A character is always fetched fresh and is never stored in the Library, because it changes on D&D Beyond. Gated pages need a current D&D Beyond session; see the Admin tab."
       ],
       "category": "Loom",
       "section": "Import",
@@ -387,7 +388,7 @@
       "summary": "Enter a monster number or monster-service URL to fetch that monster's stat block.",
       "details": [
         "A plain number, or a URL like https://monster-service.dndbeyond.com/v1/Monster/16909, fetches the stat block.",
-        "SRD monsters need no login. Other monsters can be fetched when the server has a current D&D Beyond session saved in the Auth tab and your account has access to them."
+        "SRD monsters need no login. Other monsters can be fetched when the server has a current D&D Beyond session saved in the Admin tab and your account has access to them."
       ],
       "category": "Loom",
       "section": "Import",
@@ -466,7 +467,7 @@
         "Unlike the Owned content list on your Account page, which shows only your own records, this covers the whole Library.",
         "Use the Type filter to narrow the list to one kind at a time.",
         "Pick an item to see its owner, created date and last accessed date, and a Share button.",
-        "Share opens the same dialog used across the suite: a public link, or view or edit access for a specific user or Campaign Group."
+        "Share opens the same dialog used across the suite: a public link, or view or edit access for a specific user or Group."
       ],
       "category": "Loom",
       "section": "Library",
@@ -509,6 +510,7 @@
         "An Array property is either an Enum, a fixed list of values shared by every record (such as Rarity), or Records, a repeating group of sub-fields where each record has its own items (such as an Inventory of Name, Quantity and Weight), with a Display field naming what represents each row.",
         "Each value of an Enum has an options row that shows only the columns it needs; see Array Value Options.",
         "Extra properties (JSON) on a value holds anything without its own column, and is kept as you wrote it.",
+        "The list a System uses for Forge's NPC types is read most common first: the first entry comes up most often and the last least often, however long the list is.",
         "Preview Data is sample data used when previewing bindings in the Template editor. It isn't part of any real character."
       ],
       "category": "Loom",
@@ -676,7 +678,7 @@
     {
       "id": "loom.groupProperties",
       "title": "Group Properties",
-      "summary": "Named values that belong to the whole campaign group, such as a party inventory.",
+      "summary": "Named values that belong to the whole group, such as a party inventory.",
       "details": [
         "Add a property with the Add Property button in the toolbar, then edit it in the Group Properties pane or in the Properties list.",
         "Mark a property Public to let players change its value, for example to add to the party inventory. Properties that aren't public can only be changed by you."
@@ -688,9 +690,9 @@
     {
       "id": "loom.groupSystem",
       "title": "Group System",
-      "summary": "The System this campaign runs. Its dice and vocabulary become the default for everyone playing in it.",
+      "summary": "The System this group runs. Its dice and vocabulary become the default for everyone playing in it.",
       "details": [
-        "Once set, the System's own dice take priority over each character's own System for quick dice buttons and rolls made in this campaign. See System Dice.",
+        "Once set, the System's own dice take priority over each character's own System for quick dice buttons and rolls made in this group. See System Dice.",
         "The list of characters you can add to the group shows only characters assigned to this System. Leave the System blank to allow any character.",
         "With no System set, each character uses its own first System, and a character with none uses the standard seven dice."
       ],
@@ -701,9 +703,9 @@
     {
       "id": "loom.groupSetting",
       "title": "Group Setting",
-      "summary": "The Setting the campaign takes place in, used as the default for Setting-specific data.",
+      "summary": "The Setting the group takes place in, used as the default for Setting-specific data.",
       "details": [
-        "Optional. Leave it blank for a homebrew or generic campaign.",
+        "Optional. Leave it blank for a homebrew or generic game.",
         "Widgets that read Setting-specific data, such as the Calculator's travel means, use it unless that widget is set to something else."
       ],
       "category": "Loom",
@@ -713,11 +715,11 @@
     {
       "id": "loom.groupTemplate",
       "title": "Party Template",
-      "summary": "The Workbench Template that shows the campaign's party data, with no character needed.",
+      "summary": "The Workbench Template that shows the group's party data, with no character needed.",
       "details": [
-        "The list shows Templates built for the campaign's System, so set the System first. Leave the System blank to see every Template.",
+        "The list shows Templates built for the group's System, so set the System first. Leave the System blank to see every Template.",
         "Bind the Template's components only to @group paths, such as a Repeater on @group.inventory. It is shown with no character loaded, so any other binding comes out empty.",
-        "Once set, the campaign appears under Campaigns in Workbench's character list. Opening it shows this Template with Edit ready, and changes save as you make them."
+        "Once set, the group appears under Groups in Workbench's character list. Opening it shows this Template with Edit ready, and changes save as you make them."
       ],
       "category": "Loom",
       "section": "Groups",
@@ -726,7 +728,7 @@
     {
       "id": "loom.groupMembers",
       "title": "Group Members",
-      "summary": "Choose which characters are in a campaign group, and which one each player is currently playing.",
+      "summary": "Choose which characters are in a group, and which one each player is currently playing.",
       "details": [
         "Select a group to see its character list. Tick a character to add it and untick it to remove it. Changes save automatically.",
         "Each character in the group has an Active switch. A player has one active character per group, the one they are playing now; turning one on turns their other off. Players can also switch their own from a session invitation in their Inbox.",
@@ -762,7 +764,23 @@
       "details": [
         "Filter by tier, choose a user, and edit their email, tier or status. To add someone, start a new user and give a username, email and password.",
         "You can't change your own tier or status here, so an administrator can't lock themselves out.",
-        "Tiers run from Free through Player, GM and Creator to Admin. See Account Tiers."
+        "Tiers run from Free through Player, GM and Creator to Admin. See Account Tiers.",
+        "Each account shows the invite it joined with, if any. See Invites."
+      ],
+      "category": "Loom",
+      "section": "Users",
+      "href": "../loom/index.html?view=users"
+    },
+    {
+      "id": "loom.invites",
+      "title": "Invites",
+      "summary": "A shareable sign-up link that can start new accounts at a chosen tier and shows where each sign-up came from.",
+      "details": [
+        "Create an invite with a label (for example where you'll post the link), the tier an account starts at, an optional limit on how many accounts can use it, and an optional expiry. Copy its link and share it. Opening the link brings up the sign-up form with the code filled in.",
+        "The starting tier applies only to accounts created through that invite, and an invite can never create an administrator. A high-tier invite is powerful, so keep its limit low or its expiry short.",
+        "Each invite lists how many accounts have used it and who they are. A sign-up that is still waiting for its email code counts toward the limit.",
+        "Switch an invite off to stop it working without deleting it, or delete it to remove it. Accounts that already joined keep working either way, and changing an invite's tier doesn't change them.",
+        "By default an invite code is optional on the sign-up form. The server can instead require one for every new account; that is a setting in the server's configuration file."
       ],
       "category": "Loom",
       "section": "Users",
@@ -771,9 +789,10 @@
     {
       "id": "loom.admin",
       "title": "Admin Overview",
-      "summary": "An administrator's dashboard for the health of the whole server's content.",
+      "summary": "An administrator's dashboard for the health of the whole server's content, with the server's saved credentials at the bottom.",
       "details": [
-        "System Content Health checks every System for problems. Library Content Inventory counts every record by type and flags orphans. Users & Tiers and Campaign Groups summarize accounts and campaigns.",
+        "System Content Health checks every System for problems. Library Content Inventory counts every record by type and flags orphans. Users & Tiers and Groups summarize accounts and groups.",
+        "The sections are collapsed until they have something to show. Below them are the D&D Beyond session and Anthropic API key, which have their own help topics.",
         "Each section shows a count and links to the tab that has the details. Select Check now on a section, or Check all, to run it again.",
         "This tab is for administrators."
       ],
@@ -783,16 +802,20 @@
     },
     {
       "id": "loom.authDdbSession",
-      "title": "D&D Beyond Session",
+      "title": "D&D Beyond Session Cookie",
       "summary": "The sign-in cookie the server uses to fetch gated D&D Beyond pages. It expires and needs a fresh one now and then.",
       "details": [
-        "To get one, sign in to dndbeyond.com, open your browser's developer tools, find the CobaltSession cookie under Application or Storage, and paste its value here. The CobaltSession= prefix is added if you leave it off.",
-        "Check Now tests the saved cookie against a real D&D Beyond page. The same check runs once a day and whenever the cookie is used for a real fetch.",
-        "An expired cookie doesn't show an error. D&D Beyond quietly serves its signed-out preview, which can look like a successful import that is missing content. If an import seems to stop partway, check here first."
+        "To get a fresh cookie, sign in to dndbeyond.com and open your browser's developer tools (F12, or Ctrl+Shift+I; Cmd+Option+I on a Mac).",
+        "Open the Application tab (Chrome or Edge) or the Storage tab (Firefox), expand Cookies in the left sidebar, and select https://www.dndbeyond.com.",
+        "Find the row named CobaltSession and double-click directly into its Value cell to select just that text. Copying the whole row grabs every column at once and silently fails.",
+        "Paste just that value into the field and click Save. The CobaltSession= prefix is added if you leave it off.",
+        "Check now tests the saved cookie against a real D&D Beyond page. The same check runs once a day and whenever the cookie is used for a real fetch.",
+        "An expired cookie doesn't show an error. D&D Beyond quietly serves its signed-out preview, which can look like a successful import that is missing content. If an import seems to stop partway, or comes back truncated or empty, check here first.",
+        "Treat the value like a password: anyone with it can act as that D&D Beyond account. It expires periodically."
       ],
       "category": "Loom",
-      "section": "Auth",
-      "href": "../loom/index.html?view=auth"
+      "section": "Credentials",
+      "href": "../loom/index.html?view=admin"
     },
     {
       "id": "loom.authAnthropicKey",
@@ -803,8 +826,8 @@
         "Unlike the D&D Beyond session, an API key doesn't quietly expire, so there is no regular check. “Configured” just means a key is saved."
       ],
       "category": "Loom",
-      "section": "Auth",
-      "href": "../loom/index.html?view=auth"
+      "section": "Credentials",
+      "href": "../loom/index.html?view=admin"
     },
     {
       "id": "dashboard.basics",
@@ -895,7 +918,7 @@
         "Choose a type from the menu: Dice Probability, Travel Time, Item Price, Inventory Weight, or Encounter Difficulty & XP.",
         "Dice Probability shows the average and range of an expression like 3d6. Travel Time uses the travel means your System or Setting defines, with hours per day and a pace; a daily roll or table can run once for each day of the trip.",
         "Item Price prices a saved Wonder. Inventory Weight totals a character's gear, with currency weight optional. Encounter Difficulty & XP reads the System's table of level thresholds.",
-        "Travel means and level tables belong to the System and Setting, so the options you see depend on the campaign."
+        "Travel means and level tables belong to the System and Setting, so the options you see depend on the group."
       ],
       "category": "Dashboard",
       "section": "Running a Game",
@@ -944,10 +967,10 @@
     {
       "id": "dashboard.calendar",
       "title": "Calendar Widget",
-      "summary": "Track the in-world date, and optionally the time of day, for the whole campaign.",
+      "summary": "Track the in-world date, and optionally the time of day, for the whole group.",
       "details": [
         "The date is read against a Setting's calendar, so the Setting needs a calendar defined in Sanctum. See Calendar.",
-        "Every Calendar widget in the campaign shows the same date. Advance it from one and the others update.",
+        "Every Calendar widget in the group shows the same date. Advance it from one and the others update.",
         "Use Advance or retreat to move by days or minutes. Turn on Track time of day to add a clock, and Auto to let time pass on its own.",
         "Show to table puts the date in front of the group."
       ],
@@ -960,7 +983,10 @@
       "title": "Lighting Widget",
       "summary": "Control a WLED light strip, or a Home Assistant light, from the Dashboard.",
       "details": [
-        "Add a device by its IP address or host name and an optional label. A device can also be given a Macro alias, so Macros work on anyone's own rig.",
+        "Add a WLED device with its address (an IP address, host name or full web address), an alias and an optional label. The alias is the device's identity: Macros, Table Lighting and every Lighting card refer to it by alias, never by address, so an address can change without breaking anything.",
+        "You can also give a fallback address. Undercroft tries the main address first and uses the fallback when it doesn't answer, for example an IP address at home and an https address through a tunnel when you're away. It returns to the main address when that answers again, and the card says when the fallback is in use.",
+        "Use the pencil button to change a saved device's address, fallback, alias or label. Renaming the alias moves your Lighting cards and Table Lighting to the new name, but Macros that use the old alias need the new one.",
+        "When Undercroft is opened over https, a browser only lets it reach a lighting device over https as well, and a WLED strip doesn't offer https itself. Setting that up is up to you. A secure tunnel such as Tailscale, or a reverse proxy in front of the device such as Caddy or nginx, both work; Undercroft can't provide one. On a home network you can instead open Undercroft over http and use the device's IP address directly.",
         "A WLED strip shows the segments you've set up in WLED itself. WLED forgets them when it restarts, so use the bookmark button to remember the current segments: their LED ranges, grouping, spacing, reverse or mirror, and blend mode, but not colors or effects.",
         "If the segments later differ from what's remembered, a Restore button appears. It never changes your segments on its own.",
         "Changes made from a Macro, the Combat Tracker or another tab refresh the widget to match."
@@ -1281,7 +1307,7 @@
       "summary": "Any marker can hold items that a player claims by clicking it on the map: a chest, a crate, loot on a body.",
       "details": [
         "Add a free-form item with a name and quantity, or choose Add Wonder to reference an existing Vault spell or magic item.",
-        "Claim Target decides where a claimed item goes: the clicking player's character inventory, or the campaign's shared Party Inventory.",
+        "Claim Target decides where a claimed item goes: the clicking player's character inventory, or the group's shared Party Inventory.",
         "A marker with unclaimed contents shows a small badge. A player who clicks it sees Claim buttons for what is left. Claiming takes just that one item, so several players can split a container.",
         "Combine this with a marker's Hidden from Players switch to keep a container secret until you reveal it."
       ],
@@ -1295,7 +1321,7 @@
       "summary": "Choose which Combat Binding resource the small bar above each combatant's marker shows.",
       "details": [
         "This is a personal setting for this browser. It isn't saved into the System and doesn't affect anyone else.",
-        "It appears once your campaign has an active encounter in the Combat Tracker, and the bar always follows that encounter's live values.",
+        "It appears once your group has an active encounter in the Combat Tracker, and the bar always follows that encounter's live values.",
         "Most Systems track only Hit Points, which is chosen automatically and marked “(auto-detected)”. This matters for a System with more than one resource, such as Action Points beside Hit Points, or Hope beside HP."
       ],
       "category": "Orrery",
@@ -1388,7 +1414,7 @@
       "title": "Generating an NPC",
       "summary": "Pick a Location, then Generate NPC to roll a full Identity and 4D set for it.",
       "details": [
-        "The Location determines Species weights and the two setting-specific Archetype entries (rolls 22-23) — everything else (Alignment, Gender, Attitude, and the 4D tables) is the same everywhere.",
+        "The Location determines the species weights and any archetypes it adds for itself. Everything else (Alignment, Gender, Attitude and the 4D tables) is the same everywhere.",
         "Generate NPC rolls every attribute at once. After that, each Identity and 4D value has its own reroll button if you want to redo just one thing.",
         "You can fix Species, Archetype, Alignment and Gender to a specific value instead of rolling them. See Fixing Specific Attributes.",
         "The note is optional and separate. Add one afterward from the main pane; see Notes and Generate Note."
@@ -1416,7 +1442,7 @@
       "summary": "Who this NPC is in the world, shaped by the selected Location.",
       "details": [
         "Species, Archetype, Alignment, Gender, Age, Relationship and Attitude are concrete facts about this NPC.",
-        "Species and Archetype come from the selected Location's own tables. Alignment, Gender, Age, Relationship and Attitude are the same everywhere.",
+        "Species and Archetype come from the selected Location and the System. Alignment, Gender, Age, Relationship and Attitude are the same everywhere.",
         "Identity is what changes most from one Location to another. The 4D attributes never do."
       ],
       "category": "Forge",
@@ -1441,9 +1467,9 @@
       "title": "Stats",
       "summary": "The numbers for this NPC, either set by the Archetype or rolled independently.",
       "details": [
-        "A value the Archetype already defines, such as D&D 5e's ability scores, AC and HP, is looked up and updates whenever you generate or reroll the Archetype.",
+        "A value the Archetype already defines, such as D&D 5e's ability scores, AC and HP, is looked up and updates whenever you generate or reroll the Archetype. A Location archetype can supply its own through its extra properties.",
         "A value the Archetype doesn't carry, but that the System gives a minimum and maximum, is rolled independently instead of left blank. Call of Cthulhu's Characteristics, Hit Points and Move work this way.",
-        "Setting-specific Archetypes and the Wildcard have no fixed identity. If the System has nothing to roll for them, you see a note instead of numbers."
+        "A Location archetype with no extra properties has no fixed numbers. If the System also has nothing to roll independently, you see a note instead of numbers."
       ],
       "category": "Forge",
       "section": "Generating NPCs",
@@ -1507,7 +1533,7 @@
       "summary": "A Location's basics. Locations are created and edited in Sanctum.",
       "details": [
         "Selecting a Location here only chooses which one to generate NPCs from. To create a Location or change its Type, Purpose, Environment, Features or Setting, open Sanctum.",
-        "Species Weights, Mixing Coefficient and Setting-Specific Archetypes are the parts of a Location that Forge itself edits, since they're about how NPCs are generated there."
+        "Species Weights, Mixing Coefficient and Location Archetypes are the parts of a Location that Forge shows, since they're about how NPCs are generated there. Edit them in Sanctum."
       ],
       "category": "Forge",
       "section": "Locations and Species",
@@ -1542,13 +1568,14 @@
       "href": "../forge/index.html"
     },
     {
-      "id": "forge.archetypeOverrides",
-      "title": "Setting-Specific Archetypes",
-      "summary": "Fills the D&D5e archetype table's two location-overridable rolls (22 and 23) with entries specific to this location.",
+      "id": "forge.locationArchetypes",
+      "title": "Location Archetypes and Odds",
+      "summary": "A Location can add archetypes of its own, and the list's order sets how likely each one is.",
       "details": [
-        "The archetype table is 2d12: rolls 2-21 and 24 (Wildcard) are fixed and never change regardless of location.",
-        "Rolls 22 and 23 are reserved for setting-specific archetypes — enter whatever fits this location (a local guard title, a regional faction agent, etc.).",
-        "Leaving either blank falls back to a generic \"Setting Specific\" placeholder when that roll comes up."
+        "The archetypes a Location can roll are its own, followed by the System's. A Location's archetype with the same name as a System one replaces it at that Location.",
+        "Each list is read most common first. Of N archetypes the first has the most weight, the next one less, down to the last, so adding or removing an archetype needs no re-weighting. For 20 archetypes the first comes up about 9.5% of the time and the last about 0.5%.",
+        "A Location's archetypes are listed first, so a local archetype is among the most common there. Reorder them, or add extra properties to give one its own stats, in Sanctum's Location Properties.",
+        "The Inspector lists every archetype the Location can roll, with its chance."
       ],
       "category": "Forge",
       "section": "Locations and Species",
@@ -1855,10 +1882,24 @@
       "title": "Location Properties",
       "summary": "Optional settings Forge uses to generate NPCs at this Location. Not every place needs them.",
       "details": [
-        "Species Weights, Mixing Coefficient and Setting-Specific Archetypes control Forge's species roll and name blending for this Location.",
+        "Species Weights, Mixing Coefficient and Location Archetypes control Forge's species roll, name blending and archetypes for this Location.",
         "A Location's own Species Weights come before the Setting's general ones. Leave them empty to fall back to the Setting's population.",
         "Generic Name Fallback lists names to use when a rolled species is “Other” or can't be matched to a real Species. Each has a name and an optional weight, which is 1 if left blank; a higher weight is picked more often.",
         "Leave the whole section empty for a Location that will never generate NPCs, such as a room or a building with no population."
+      ],
+      "category": "Sanctum",
+      "section": "Locations",
+      "href": "../sanctum/index.html"
+    },
+    {
+      "id": "sanctum.locationArchetypes",
+      "title": "Location Archetypes",
+      "summary": "Optional. NPC types that only exist at this Location, rolled by Forge alongside the System's.",
+      "details": [
+        "Add a row for each archetype and type its name. Drag the grip to reorder: the top of the list is the most common, and a Location's archetypes are rolled before the System's own.",
+        "Extra JSON is optional. Use the same keys the System's own archetypes use, for example {\"armorClass\": 12, \"hitPoints\": 11}. Without it, Forge rolls the System's usual ranges for that archetype.",
+        "Giving an archetype the same name as one of the System's replaces it at this Location, which is also a way to make a System archetype more common here by moving it to the top.",
+        "Leave the list empty if the Location needs no archetypes of its own."
       ],
       "category": "Sanctum",
       "section": "Locations",
@@ -1918,7 +1959,7 @@
     {
       "id": "repository.basics",
       "title": "Writing Pages",
-      "summary": "The Repository is a wiki-style journal for your campaign: pages of formatted text that link to each other and to your other records.",
+      "summary": "The Repository is a wiki-style journal for your game: pages of formatted text that link to each other and to your other records.",
       "details": [
         "Pages are written in Markdown. Use View and Edit to switch between reading a page and changing it; the toolbar helps with headings, styles and inserting things.",
         "Link to another page with its title in double square brackets, like [[Page Title]]. Refer to a saved record, such as an NPC or Location, with a name in backticks, like `npc:Name` or `location:Name`.",
@@ -1991,7 +2032,7 @@
         "A quest belongs to the page it's written on, so its title only has to be unique on that page."
       ],
       "category": "Repository",
-      "section": "Campaign Tools",
+      "section": "Game Tools",
       "href": "../repository/index.html"
     },
     {
@@ -2006,21 +2047,21 @@
         "Switch between Freeform (drag cards anywhere) and Swimlane (a grid of lanes and stages) from the canvas toolbar at any time. Both layouts are stored on each card, so switching never loses anything."
       ],
       "category": "Repository",
-      "section": "Campaign Tools",
+      "section": "Game Tools",
       "href": "../repository/index.html"
     },
     {
       "id": "repository.date",
       "title": "Date References",
-      "summary": "A `date:` code span shows as a formatted date chip against your campaign's calendar.",
+      "summary": "A `date:` code span shows as a formatted date chip against your group's calendar.",
       "details": [
-        "`date:123` shows Day 123 in the active Setting's calendar, or a plain “Day 123” if that Setting has none. Negative numbers count back from the campaign's Day 0.",
-        "`date:current` (or `date:today`) always shows the campaign's live date, wherever it appears.",
+        "`date:123` shows Day 123 in the active Setting's calendar, or a plain “Day 123” if that Setting has none. Negative numbers count back from the group's Day 0.",
+        "`date:current` (or `date:today`) always shows the group's live date, wherever it appears.",
         "Add a label with a pipe: `date:30|Festival begins` shows “Festival begins: ” and the date.",
         "Every date reference also appears in the Timeline. A date chip is informational and doesn't mark anything overdue."
       ],
       "category": "Repository",
-      "section": "Campaign Tools",
+      "section": "Game Tools",
       "href": "../repository/index.html"
     },
     {
@@ -2034,7 +2075,7 @@
         "The list is built when you open the Timeline, and after you save a page, not continuously."
       ],
       "category": "Repository",
-      "section": "Campaign Tools",
+      "section": "Game Tools",
       "href": "../repository/index.html"
     },
     {
@@ -2044,74 +2085,74 @@
       "details": [
         "Every [[Page Title]] link draws a connection between pages. A link that matches a quest connects to that quest.",
         "Every record reference, such as `npc:` or `location:`, draws a connection from the page to that record.",
-        "The diagram is read-only and is built when you open it, and after you save a page, not continuously. It leaves out a Story Board's own planning layout, since that is a GM-only planning surface rather than campaign content."
+        "The diagram is read-only and is built when you open it, and after you save a page, not continuously. It leaves out a Story Board's own planning layout, since that is a GM-only planning surface rather than game content."
       ],
       "category": "Repository",
-      "section": "Campaign Tools",
+      "section": "Game Tools",
       "href": "../repository/index.html"
     },
     {
-      "id": "campaign.running",
-      "title": "Running a Campaign",
+      "id": "group.running",
+      "title": "Running a Game",
       "summary": "A step-by-step path from “I GM” to a live table.",
       "details": [
-        "Create a Campaign Group. This needs GM tier or higher; manage groups from the Groups tab in Loom.",
+        "Create a Group. This needs GM tier or higher; manage groups from the Groups tab in Loom.",
         "Add your players' characters: open the group in Loom's Groups tab and pick characters for its roster.",
-        "Pick it as your Active Campaign with the Campaign dropdown in the header, next to your account menu. It is there on every tool once you are signed in.",
-        "Share what the table needs: from any tool's Save/Export toolbar, or the Owned content list on your Account page, choose “Share with [your campaign]” for one click.",
+        "Pick it as your Active Group with the group dropdown in the header, next to your account menu. It is there on every tool once you are signed in.",
+        "Share what the table needs: from any tool's Save/Export toolbar, or the Owned content list on your Account page, choose “Share with [your group]” for one click.",
         "Show something live: add a Handout widget to your Dashboard (or a Map widget for maps) and click its eye icon. That is what the table sees.",
         "Give players a way in: grab the group's public share link from Loom's Groups tab so players without accounts can read the Group Chat and Now Showing panel."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Getting Started",
       "favoriteTier": "gm"
     },
     {
-      "id": "campaign.groups",
-      "title": "Campaign Groups",
-      "summary": "A Campaign Group is how a GM organizes a table: an owner, a roster of characters, a threaded chat and a public share link.",
+      "id": "group.about",
+      "title": "Groups",
+      "summary": "A Group is how a GM organizes a table: an owner, a roster of characters, a threaded chat and a public share link.",
       "details": [
         "Create one from Loom's Groups tab. This needs GM tier or higher.",
         "Add players' characters to the roster from the same tab. The roster decides who can read and post in the group's chat while signed in.",
         "Every group has a public share link, also in the Groups tab, so players without an account can read the chat and claim an unclaimed character.",
         "Schedule real-world game sessions for the group from the Sessions section further down the same tab."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Getting Started",
       "href": "../loom/index.html?view=groups"
     },
     {
-      "id": "campaign.active",
-      "title": "Active Campaign",
-      "summary": "The campaign picker in the header sets the campaign every tool works with, and it follows you from tool to tool.",
+      "id": "group.active",
+      "title": "Active Group",
+      "summary": "The group picker in the header sets the group every tool works with, and it follows you from tool to tool.",
       "details": [
-        "It lists every campaign you own or have a character in.",
-        "The active campaign is what one-click “Share with [active campaign]” buttons use, which campaign the Dashboard's widgets read from, and where your rolls are posted.",
+        "It lists every group you own or have a character in.",
+        "The active group is what one-click “Share with [active group]” buttons use, which group the Dashboard's widgets read from, and where your rolls are posted.",
         "The choice is remembered in this browser, not on your account, so you need to pick it again on a different computer."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Getting Started"
     },
     {
-      "id": "campaign.spotlight",
+      "id": "group.spotlight",
       "title": "Handouts and Now Showing",
       "summary": "Put one card up in front of the table, live. Add a Handout widget to your Dashboard and click its visibility icon.",
       "details": [
         "Add a Handout from the Dashboard's Edit layout toolbar. Pick the record (an NPC, Location, Monster or Wonder) and, if you like, a Press print template to draw it with. With no template, the table sees a plain name and description card.",
-        "Click the eye icon on the Handout's header to show it to your active campaign, and again to stop. The icon always reflects what is actually visible, even after a reload.",
+        "Click the eye icon on the Handout's header to show it to your active group, and again to stop. The icon always reflects what is actually visible, even after a reload.",
         "The record must already be saved. Showing an unsaved draft fails with a clear message instead of quietly showing nothing.",
         "Maps work the same way from a Map widget, or from Orrery's signed-in menu. A map is always a plain link back into Orrery, never a card.",
         "Anyone watching sees it in the Now Showing panel on the Dashboard and in Workbench, including players on the group's public share link. Showing something doesn't post anything in the chat."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "At the Table"
     },
     {
-      "id": "campaign.chat",
+      "id": "group.chat",
       "title": "Group Chat",
       "summary": "A threaded chat for the table: channels hold threads, and threads hold messages. It suits a live session and play-by-post alike.",
       "details": [
-        "Choose a channel and thread from the picker at the top. Every campaign starts with a General channel and thread, so a table that never adds more has one running log.",
+        "Choose a channel and thread from the picker at the top. Every group starts with a General channel and thread, so a table that never adds more has one running log.",
         "The newest messages sit at the top, with the box to write a new one above them.",
         "Type @ to mention a person, a character or any saved record, and [[ to link a Repository page. Reply quotes the message you are answering. React with the emoji button; reactions never notify anyone.",
         "You can edit or delete your own messages. The GM can edit or delete anyone's. A deleted message leaves a “message deleted” note so replies still make sense.",
@@ -2119,11 +2160,11 @@
         "Mentions, replies to your messages and direct messages arrive in your Inbox. Ordinary new posts show only as unread counts on threads and channels.",
         "Anonymous visitors on a group's public share link can read the chat but not post."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Group Chat"
     },
     {
-      "id": "campaign.chatChannels",
+      "id": "group.chatChannels",
       "title": "Channels and Threads",
       "summary": "The GM organizes the chat into channels, and each channel into threads.",
       "details": [
@@ -2131,61 +2172,61 @@
         "The GM can let specific players start threads in a channel.",
         "A thread's creator, or the GM, can archive it. See Archiving a Thread."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Group Chat"
     },
     {
-      "id": "campaign.chatVoices",
+      "id": "group.chatVoices",
       "title": "Posting As",
       "summary": "“Post as” chooses who is speaking: you, one of your characters, or for the GM, any NPC or Monster.",
       "details": [
-        "You can speak as yourself or as one of your own characters in this campaign, limited by the channel's mode. In an in-character channel you speak as a character; in an out-of-character channel, as yourself.",
+        "You can speak as yourself or as one of your own characters in this group, limited by the channel's mode. In an in-character channel you speak as a character; in an out-of-character channel, as yourself.",
         "The GM can also speak as any NPC or Monster.",
         "The last voice you used in a thread is remembered."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Group Chat"
     },
     {
-      "id": "campaign.chatArchive",
+      "id": "group.chatArchive",
       "title": "Archiving a Thread",
       "summary": "Archiving turns a thread's messages into a Repository page and makes the thread read-only.",
       "details": [
-        "The page is owned by the GM and shared with the campaign, and each message keeps its place so links to it still work.",
+        "The page is owned by the GM and shared with the group, and each message keeps its place so links to it still work.",
         "Messages from an archived thread open its Repository page from your Inbox.",
         "A thread's creator, or the GM, can archive it."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Group Chat"
     },
     {
-      "id": "campaign.inbox",
+      "id": "group.inbox",
       "title": "Inbox and Direct Messages",
-      "summary": "Your Inbox collects what is aimed at you across every campaign: mentions, replies, direct messages and session invitations.",
+      "summary": "Your Inbox collects what is aimed at you across every group: mentions, replies, direct messages and session invitations.",
       "details": [
         "Open it from the account menu in any tool, or from the Inbox tab on your Account page. A badge shows how many are unread.",
         "A mention is an @ of you or one of your characters. A reply is any message that quotes one of yours.",
-        "A direct message is a private note to one or more people in a campaign. It isn't posted in any thread and is never archived. Use the envelope button on a message to message its author. You can react to a direct message, and a reaction to a mention shows in the chat too.",
+        "A direct message is a private note to one or more people in a group. It isn't posted in any thread and is never archived. Use the envelope button on a message to message its author. You can react to a direct message, and a reaction to a mention shows in the chat too.",
         "Opening an item takes you to that message in the chat. Messages from an archived thread open its Repository page.",
         "Session invitations, reminders and “not enough players” alerts arrive here too. See Session Invitations.",
         "Delete removes an item from your Inbox. A session notice can be deleted only once that session has ended or been cancelled."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Inbox and Sessions"
     },
     {
-      "id": "campaign.sessions",
+      "id": "group.sessions",
       "title": "Session Invitations",
       "summary": "When your GM schedules a session, an invitation arrives in your Inbox for you to answer.",
       "details": [
-        "You're invited when you have an active character in the campaign. If you play more than one, choose which is active with “Playing as” on the invitation. You are then invited to upcoming sessions only.",
+        "You're invited when you have an active character in the group. If you play more than one, choose which is active with “Playing as” on the invitation. You are then invited to upcoming sessions only.",
         "The invitation always shows the session's current details and who has answered. Choose Accept, Tentative or Decline. Tentative answers are shown separately and don't count toward the minimum.",
         "When a session is full, Accept becomes Join waitlist. If someone drops out before the session, the longest-waiting person is accepted automatically and gets a notice in their Inbox.",
         "The GM can close RSVPs at a cutoff before the session. Your answer isn't counted until you give one.",
         "Away for a while? Once you have declined a session, use “Decline a range” to decline every session between two dates in one go, including ones announced later.",
         "You get a reminder before each session. You can delete a session notice once the session has ended or been cancelled."
       ],
-      "category": "Campaigns",
+      "category": "Groups",
       "section": "Inbox and Sessions"
     },
     {
@@ -2195,7 +2236,8 @@
       "details": [
         "From lowest to highest the tiers are Free, Player, GM, Creator and Admin. Each kind of record has its own minimum tier to read and to save. Most generator output is open to everyone; authoring-heavy kinds such as Systems need Creator or higher.",
         "Signed out, you can use the tools in read-only mode and keep drafts in your own browser. Saving to the server needs an account.",
-        "Creating a Campaign Group needs GM tier or higher. Running a game is what GM tier is for, while Creator tier is about writing reusable content like Systems and Templates for others."
+        "Creating a Group needs GM tier or higher. Running a game is what GM tier is for, while Creator tier is about writing reusable content like Systems and Templates for others.",
+        "If someone sent you an invite link, creating your account through it can start you at a higher tier than Free."
       ],
       "category": "Accounts & Sharing",
       "href": "account.html"
@@ -2238,16 +2280,328 @@
     {
       "id": "accounts.sharing",
       "title": "Sharing Records",
-      "summary": "Give someone, or a whole campaign, access to a record you've saved.",
+      "summary": "Give someone, or a whole group, access to a record you've saved.",
       "details": [
-        "A saved record can be shared with a specific person or with an entire Campaign Group. Sharing with a group gives every current member access and stays current as the group changes.",
+        "A saved record can be shared with a specific person or with an entire Group. Sharing with a group gives every current member access and stays current as the group changes.",
         "Each share is “view” or “edit”. View is the right choice for nearly anything shared with players.",
         "Sharing works on anything you've saved: a Location, NPC, Monster, Wonder, Map, System, Template or Character. The record has to be saved first; sharing an unsaved draft fails with a message.",
-        "Share dialogs are in Loom's Library inspector, the Owned content list and the tools' own inspectors. Once you have an active campaign, they offer a one-click “Share with [active campaign]” beside the full picker.",
+        "Share dialogs are in Loom's Library inspector, the Owned content list and the tools' own inspectors. Once you have an active group, they offer a one-click “Share with [active group]” beside the full picker.",
         "A share link lets someone open a record without an account. Public sharing lets anyone view it."
       ],
       "category": "Accounts & Sharing",
       "href": "account.html"
+    },
+    {
+      "id": "community.finding",
+      "title": "Finding a Game",
+      "summary": "Browse open listings, or people looking for a game or recruiting, and compare their preferences with yours.",
+      "details": [
+        "Anyone can browse the open listings. Seeing a person's profile or history needs you to be signed in.",
+        "Filter listings by kind, system, platform, session length, age range, or a tag. The People view lists public profiles that say they are looking for a game or recruiting.",
+        "Each card shows how your own preferences compare: “Close on 3 of 5 shared scales”. You can sort listings by that. The comparison is never turned into a single score.",
+        "Pick a listing to see its schedule, its preferences side by side with yours, the GM's and members' history, and the Apply box."
+      ],
+      "category": "Community",
+      "section": "Finding a Game",
+      "href": "find-a-game.html"
+    },
+    {
+      "id": "community.profile",
+      "title": "Your Profile",
+      "summary": "A profile tells GMs and players what you like and how you play. Everything on it is optional.",
+      "details": [
+        "Open Account Settings and choose the Profile tab. A profile holds a bio, your role, experience, systems you know, time zone, typical availability, preferred session length, safety tools, an open-to status and your preferences.",
+        "Profiles are private until you make yours public. A public profile also makes your history (see Signals) visible to other signed-in users.",
+        "“See how others see my profile” previews exactly what a visitor would see.",
+        "Choosing “Looking for a game” or “Recruiting” lists your public profile in the People view of Find a Game."
+      ],
+      "category": "Community",
+      "section": "Finding a Game",
+      "href": "account.html#profile"
+    },
+    {
+      "id": "community.scales",
+      "title": "Preference Scales",
+      "summary": "Thirteen five-point scales describe what you like in a game. Listings use the same scales, so they can be compared directly.",
+      "details": [
+        "The first eight are the aesthetics of play: Presentation, Fantasy, Narrative, Challenge, Fellowship, Discovery, Expression and Relaxation.",
+        "The other five describe how a campaign feels, each between two poles: Tone (lighthearted to dark), Lethality (forgiving to deadly), Structure (sandbox to linear), Rules weight (rules-light to crunchy) and Seriousness (comedic to serious).",
+        "Every scale starts at “Don't care”. You can set one and later put it back. A scale set to “Don't care” is ignored when comparing.",
+        "“Close on N of M shared scales” counts the scales both sides have set that are within one point of each other. It is a quick read, not a rating."
+      ],
+      "category": "Community",
+      "section": "Finding a Game",
+      "href": "account.html#profile"
+    },
+    {
+      "id": "community.location",
+      "title": "Location Privacy",
+      "summary": "Location is optional and you choose how precise it is. Only that precision ever leaves your browser.",
+      "details": [
+        "Hidden shows nothing. Country shows only your country. Region shows your state, province or county.",
+        "Area is available in the United States only. You type your ZIP code, only the first three digits are kept, and it is shown as a place name such as “Chicago, IL”, never as digits.",
+        "Separately from location, you say whether you want in-person play, online play or both."
+      ],
+      "category": "Community",
+      "section": "Finding a Game",
+      "href": "account.html#profile"
+    },
+    {
+      "id": "community.applications",
+      "title": "Applying to a Game",
+      "summary": "Applying opens a private conversation with the GM, carried in both of your Inboxes.",
+      "details": [
+        "Press Apply on a listing and write a short introduction. That message is the application. You can only have one pending application per listing.",
+        "The GM can Accept or Decline at any time while it is pending, and either of you can keep replying. Withdraw cancels your own application.",
+        "An application nobody answers is declined automatically after the period the GM set on the listing.",
+        "When you are accepted you join the group. From the application in your Inbox you can then claim a character from the GM's slate or add one of your own. Until you have an active character you receive no session invitations and cannot respond to sessions."
+      ],
+      "category": "Community",
+      "section": "Finding a Game"
+    },
+    {
+      "id": "community.recruiting",
+      "title": "Recruiting Players",
+      "summary": "A listing advertises one session or a whole campaign so players can apply.",
+      "details": [
+        "Open the Groups tab in Loom, pick your group and use the Recruitment section. Your profile must be public first, because the listing shows your history.",
+        "A listing shows whether it is a session or a campaign, the system, the schedule (taken from the sessions themselves), open seats, the preference scales, tags, safety tools, session length, age range, platform, and the history of you and your current members.",
+        "You choose how many seats are offered and how many days an application can sit unanswered. The listing closes itself when every seat is taken and reopens if a seat frees up.",
+        "Applications arrive in your Inbox. Accepting adds the player to the group."
+      ],
+      "category": "Community",
+      "section": "Recruiting",
+      "href": "../loom/index.html?view=groups"
+    },
+    {
+      "id": "community.campaigns",
+      "title": "Campaigns",
+      "summary": "A campaign is a named run of sessions inside a group.",
+      "details": [
+        "Add campaigns in the Campaigns section of a group in Loom. A campaign is active, on hiatus or completed.",
+        "Every session belongs to its group and can also belong to a campaign, chosen when you create or edit the session. One-shots and session zeros need no campaign.",
+        "A completed campaign takes no new sessions. Deleting a campaign keeps its sessions; they just stop belonging to it.",
+        "Campaigns matter for retention and endorsements: leaving mid-campaign is counted, and you can endorse someone once for each campaign you played together."
+      ],
+      "category": "Community",
+      "section": "Recruiting",
+      "href": "../loom/index.html?view=groups"
+    },
+    {
+      "id": "community.players",
+      "title": "Players and Membership",
+      "summary": "A group's players are the people who belong to it, separately from their characters.",
+      "details": [
+        "A player joins by being accepted from a listing, or when a character they own is added to the roster.",
+        "Removing a character from the roster does not remove the player. Use Remove player in the group's Players section to remove someone, which also takes their characters off the roster. A removal never counts against anyone.",
+        "Players can leave a group themselves from the Profile tab of Account Settings. Leaving while one of the group's campaigns is running counts as a departure.",
+        "A player with no active character in the group receives no session invitations and cannot respond to sessions."
+      ],
+      "category": "Community",
+      "section": "Recruiting",
+      "href": "../loom/index.html?view=groups"
+    },
+    {
+      "id": "community.signals",
+      "title": "Signals, Not Judgments",
+      "summary": "Observed signals describe what has happened. They are not a verdict on anyone and are never combined into a score.",
+      "details": [
+        "The signals are tenure, session count, sessions per system, reliability and retention. They are shown separately for games you have played and games you have run.",
+        "Each shows a recent window first, with lifetime figures beside it. Tenure is lifetime only.",
+        "Wherever a signal is a rate it shows its denominator, for example “6% · 18 sessions”. Below the minimum sample only the count is shown, because a rate from a handful of sessions says little.",
+        "There are no ratings and no written reviews. The only opinion on a profile is the endorsements people have chosen to give."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.tenure",
+      "title": "Tenure",
+      "summary": "How long someone has had an Undercroft account.",
+      "details": [
+        "Shown in whole years, or as “less than 1 year” for anyone newer.",
+        "Tenure is lifetime only and has no recent window. It says nothing about how often someone plays."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.sessionCount",
+      "title": "Session Count",
+      "summary": "How many sessions someone has played or run, and with which systems.",
+      "details": [
+        "As a player it counts the sessions you were Accepted for that took place, excluding any marked as a no-show. A contested no-show still counts, since it doesn't count against you.",
+        "As a GM it counts the sessions you ran: dates that were announced, not cancelled, and have ended.",
+        "Sessions per system groups the same counts by the system of the group they were played in.",
+        "There is no check-in. A session counts as having happened once its scheduled time has passed without being cancelled."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.reliabilityPlayer",
+      "title": "Player Reliability",
+      "summary": "For players, reliability is the no-show rate.",
+      "details": [
+        "A GM can mark a player who had Accepted a session as a no-show once it has ended. The player is told and can dispute it.",
+        "No-show rate = no-shows ÷ (sessions attended + no-shows), over sessions the player had Accepted. A disputed no-show is shown as contested and is left out of both numbers.",
+        "For play-by-post, a no-show is recorded automatically when a player accepted a posting window but posted nothing in the linked thread. It is only recorded when a thread is linked, and the GM can clear it.",
+        "A GM or an admin can clear a no-show, including a contested one."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.reliabilityGm",
+      "title": "GM Reliability",
+      "summary": "For GMs, reliability is the cancellation rate, with late changes counted separately.",
+      "details": [
+        "Cancellation rate = cancelled dates ÷ (dates run + dates cancelled), counting only dates that had been announced to players.",
+        "Ending a series is not a cancellation. Only cancelling an individual date is counted.",
+        "A cancellation or a change of start time is late when it comes after that date's cutoff for RSVPs. A date with no cutoff has nothing that can be late.",
+        "A cancellation because the players who had accepted fell below the minimum is counted as a cancellation but is never late.",
+        "Late cancellations and late reschedules are shown as counts beside the rate."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.retention",
+      "title": "Retention",
+      "summary": "Whether people stay through a campaign.",
+      "details": [
+        "A participation is a player's first Accepted session in a campaign. A departure is a player leaving the group on their own while one of its campaigns is active or on hiatus. Someone who leaves before ever playing still counts as both.",
+        "Retention = 1 − departures ÷ participations. A departure counts against both the player who left and the GM.",
+        "Removal by the GM counts against nobody. Leaving after the campaign is completed counts against nobody.",
+        "A GM's retention pools every player across all their campaigns."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.window",
+      "title": "Recent Window and Minimum Sample",
+      "summary": "Why some numbers show only a count.",
+      "details": [
+        "The recent window is always the last 12 months; lifetime covers everything.",
+        "A rate is only shown once at least 5 cases are behind it. Below that, only the count is shown."
+      ],
+      "category": "Community",
+      "section": "Signals"
+    },
+    {
+      "id": "community.endorsements",
+      "title": "Endorsements",
+      "summary": "A positive tag one person can give another after sharing a table.",
+      "details": [
+        "Tags come from a list curated by an admin; each tag is for GMs, for players, or for both. There are no negative tags and no written reviews.",
+        "You can only endorse someone you have shared a table with, and only once per person for each campaign (or for each session that isn't part of a campaign). Neither of you can be a no-show for the date you shared.",
+        "Endorsements are shown as counts per tag. Who gave them is not shown to anyone.",
+        "Endorse people from the Profile tab of Account Settings, or from a session's notice in your Inbox once it has ended."
+      ],
+      "category": "Community",
+      "section": "Signals",
+      "href": "account.html#profile"
+    },
+    {
+      "id": "community.privacy",
+      "title": "Who Can See What",
+      "summary": "Public profiles are opt-in.",
+      "details": [
+        "Your own profile and history are always visible to you, and to admins.",
+        "If you make your profile public, other signed-in users can see it and your history.",
+        "Without a public profile, your history is visible only to GMs of games you apply to and to people who share a group with you.",
+        "Anyone, signed in or not, can browse open listings, but profiles and histories need you to be signed in."
+      ],
+      "category": "Community",
+      "section": "Signals",
+      "href": "account.html#profile"
+    },
+    {
+      "id": "community.safetyTools",
+      "title": "Safety Tools",
+      "summary": "Techniques a table can use before, during and after play. Choose the ones you use.",
+      "details": [
+        "Safety tools are grouped by when they are used. You pick any that apply on your profile, and a GM picks them on a listing.",
+        "Content topics themselves aren't tracked. They are meant to be settled at session zero, and a listing only signals them through its themes and safety tools.",
+        "Admins edit the list in Loom's Community tab."
+      ],
+      "category": "Community",
+      "section": "Safety",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.tags",
+      "title": "Listing Tags",
+      "summary": "Short tags that give the vibe of a game, like genre or mood, chosen from a curated list.",
+      "details": [
+        "An admin curates the list in Loom's Community tab: add a tag, rename it, drag to reorder, or remove it. The list starts with a set of common genres.",
+        "When a GM adds a tag to a listing the curated tags are suggested, so similar listings use the same words. A GM can still type one that isn't on the list.",
+        "Renaming a tag, or renaming it to match another, updates every listing that carries it. Removing a tag takes it off every listing."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.reactions",
+      "title": "Chat Reactions",
+      "summary": "The emoji people can react with in group chat and the Inbox.",
+      "details": [
+        "Admins curate the list in Loom's Community tab: add, change, remove or reorder emoji, and give each a short description shown as a tooltip when you hover over it.",
+        "A reaction never has a mechanical effect and never sends a notification."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.fonts",
+      "title": "Fonts",
+      "summary": "The fonts Press and Workbench offer.",
+      "details": [
+        "Creators add fonts from Press or Workbench. Admins can also edit, reorder and remove them from Loom's Community tab.",
+        "A font is a name and a CSS font-family. A Google Fonts name is optional and loads the font from Google when it's used."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.clips",
+      "title": "Audio Clips",
+      "summary": "The music and sound effects on the Dashboard's Soundboard.",
+      "details": [
+        "GMs add clips from the Soundboard widget. Admins can also edit, reorder and remove them from Loom's Community tab.",
+        "A clip is a name and a link to an audio file, marked as music or a sound effect, and optionally set to loop."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.tokens",
+      "title": "Map Tokens",
+      "summary": "The image links offered as map tokens and portraits.",
+      "details": [
+        "GMs add tokens from the token picker. Admins can also edit, reorder and remove them from Loom's Community tab.",
+        "A token is a name and a link to an image hosted elsewhere."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.pageSizes",
+      "title": "Page Sizes",
+      "summary": "The custom page sizes Press offers besides the standard ones.",
+      "details": [
+        "Creators add custom sizes from Press. Admins can also edit, reorder and remove them from Loom's Community tab.",
+        "A size is a name with a width and height in inches."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
     }
   ]
 }

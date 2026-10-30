@@ -18,17 +18,47 @@ def _normalise_path(relative_path: str) -> str:
     return cleaned
 
 
+# Names that must never leave the machine: server code, the database, credentials and VCS data.
+_BLOCKED_TOP_LEVEL = {"server", "data"}
+_BLOCKED_SUFFIXES = (".py", ".pyc", ".sqlite", ".sqlite-wal", ".sqlite-shm", ".db", ".log", ".bat", ".sh")
+
+
+def _is_blocked(relative_path: str) -> bool:
+    parts = [part for part in relative_path.replace("\\", "/").split("/") if part]
+    if not parts:
+        return False
+    if parts[0].lower() in _BLOCKED_TOP_LEVEL:
+        return True
+    # Library content lives in per-kind folders under common/data and is served by the API
+    # (with its owner and sharing rules); only the flat reference files beside them are static.
+    if len(parts) > 4 and [p.lower() for p in parts[:3]] == ["undercroft", "common", "data"]:
+        return True
+    if "__pycache__" in parts:
+        return True
+    for part in parts:
+        lowered = part.lower()
+        if lowered.startswith("."):
+            return True
+    name = parts[-1].lower()
+    if name in {"server.config.json", "secret.local.json"} or name.endswith(".local.json"):
+        return True
+    return name.endswith(_BLOCKED_SUFFIXES) or ".bak" in name
+
+
 def _serve_from_base(
     base: Path,
     relative_path: str,
     *,
     directory_listing: bool,
     directory_extensions: list[str] | None = None,
+    if_none_match: str | None = None,
 ) -> Response:
     base = base.resolve()
     cleaned = _normalise_path(unquote(relative_path))
     target = base if not cleaned else (base / cleaned)
     target = target.resolve()
+    if _is_blocked(str(target.relative_to(base)) if target != base and base in target.parents else cleaned):
+        raise FileNotFoundError(relative_path)
 
     try:
         target.relative_to(base)
@@ -53,32 +83,41 @@ def _serve_from_base(
     if not target.exists():
         raise FileNotFoundError(relative_path)
 
+    return _file_response(target, if_none_match)
+
+
+def _file_response(target: Path, if_none_match: str | None) -> Response:
     content_type, _ = mimetypes.guess_type(str(target))
     if not content_type:
         content_type = "application/octet-stream"
     data = target.read_bytes()
-    # No Cache-Control here at all meant every static asset (every JS module,
-    # every CSS file) was left to the browser's own heuristic caching, which
-    # can silently serve a stale cached copy on an ordinary navigation (e.g.
-    # journal-encounter.js's own location.search-driven reload) while a
-    # manual hard refresh happens to force revalidation and picks up the
-    # current file — confirmed as the actual cause of a "works after
-    # refresh, not right after" symptom that had nothing to do with the
-    # widget/render code itself. This is a local dev server with no build
-    # step or filename versioning, so there's no upside to letting the
-    # browser cache these at all.
-    return Response(
-        status=HTTPStatus.OK,
-        body=data,
-        headers={"Content-Type": content_type, "Cache-Control": "no-cache"},
-    )
+    # no-cache plus an ETag: the browser revalidates every time but only re-downloads a changed file.
+    stat = target.stat()
+    etag = f'"{stat.st_mtime_ns:x}-{stat.st_size:x}"'
+    headers = {"Content-Type": content_type, "Cache-Control": "no-cache", "ETag": etag}
+    if if_none_match and etag in [tag.strip() for tag in if_none_match.split(",")]:
+        return Response(status=HTTPStatus.NOT_MODIFIED, body=None, headers=headers)
+    return Response(status=HTTPStatus.OK, body=data, headers=headers)
 
 
-def serve_from_root(state: ServerState, relative_path: str) -> Response:
+def serve_from_root(state: ServerState, relative_path: str, if_none_match: str | None = None) -> Response:
+    cleaned = _normalise_path(unquote(relative_path)).replace("\\", "/")
+    if cleaned.split("/", 1)[0] not in state.config.options.static_roots:
+        raise FileNotFoundError(relative_path)
+    # With a separate data directory, the few files the server writes next to the shipped ones are served from there.
+    parts = [part for part in cleaned.split("/") if part]
+    if state.config.options.data_dir and ".." not in parts and len(parts) == 4 and parts[0] == "undercroft":
+        logical = parts[1:]
+        overlay_dirs = (["common", "data"], ["press", "data"], ["loom", "mappings"])
+        if logical[:2] in overlay_dirs and not _is_blocked(cleaned):
+            candidate = state.write_path(*logical)
+            if candidate.is_file():
+                return _file_response(candidate, if_none_match)
     return _serve_from_base(
         state.root_dir,
         relative_path,
         directory_listing=False,
+        if_none_match=if_none_match,
     )
 
 

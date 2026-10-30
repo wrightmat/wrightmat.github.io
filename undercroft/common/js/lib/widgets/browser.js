@@ -100,8 +100,8 @@ function fileUrlToPath(fileUrl) {
   }
 }
 
-function buildLocalFileEmbedSrc(fileUrl, token) {
-  const params = new URLSearchParams({ path: fileUrlToPath(fileUrl), token });
+function buildLocalFileEmbedSrc(fileUrl, ticket) {
+  const params = new URLSearchParams({ path: fileUrlToPath(fileUrl), ticket });
   return `${resolveApiBase()}/local-file?${params.toString()}`;
 }
 
@@ -189,8 +189,14 @@ function renderLocalFile(target, url, dataManager) {
   }
   const wrap = el("div", "d-flex flex-column gap-1 flex-grow-1");
   wrap.style.minHeight = "0";
-  wrap.appendChild(
-    buildEmbedElement(url, buildLocalFileEmbedSrc(url, token), { allowSameOrigin: false })
+  // The embed's URL carries a one-use ticket rather than the session token, so it is fetched first.
+  void dataManager.getUrlTicket("local-file").then(
+    (ticket) => {
+      wrap.prepend(buildEmbedElement(url, buildLocalFileEmbedSrc(url, ticket), { allowSameOrigin: false }));
+    },
+    () => {
+      wrap.prepend(el("p", "text-body-secondary small mb-0", "Local file preview isn't available."));
+    }
   );
   const openLink = document.createElement("a");
   openLink.href = url;
@@ -327,7 +333,7 @@ export function initBrowserWidget(
 
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
-      status?.show("No active campaign to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
       return;
     }
     try {

@@ -26,7 +26,7 @@ export async function buildTimeline(dataManager) {
 // Resolves every `isCurrent` entry's null dayIndex against the live ambient
 // day, then groups by resolved day and sorts ascending — the shape
 // repository/js/app.js's renderTimeline draws directly. `currentDayIndex`
-// absent/non-finite (no active campaign date yet) drops `isCurrent` entries
+// absent/non-finite (no active group date yet) drops `isCurrent` entries
 // from the result rather than guessing a day for them.
 export function groupTimelineByDay(items, currentDayIndex) {
   const hasCurrentDay = Number.isFinite(currentDayIndex);

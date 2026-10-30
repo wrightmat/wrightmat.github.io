@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "sender": "Undercroft <no-reply@your-domain.example>",
+  "smtp_host": "smtp.your-provider.example",
+  "smtp_port": 587,
+  "smtp_username": "your-smtp-username",
+  "smtp_password": "your-smtp-password",
+  "use_tls": true,
+  "use_ssl": false,
+  "timeout": 10
+}

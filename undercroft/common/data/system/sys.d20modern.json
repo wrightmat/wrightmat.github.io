@@ -19,80 +19,80 @@
       "label": "Starting Occupation",
       "values": [
         {
-          "name": "Academic",
-          "description": "Librarians, archaeologists, and scholars — a life spent in research and study."
-        },
-        {
-          "name": "Adventurer",
-          "description": "Professional daredevils, big-game hunters, and treasure seekers who live for the next expedition."
-        },
-        {
-          "name": "Athlete",
-          "description": "A professional or amateur competitor whose training has honed body and reflexes alike."
-        },
-        {
           "name": "Blue Collar",
           "description": "Tradespeople and laborers — mechanics, electricians, construction workers — who know how things actually get built and fixed."
         },
         {
-          "name": "Celebrity",
-          "description": "Someone famous, for better or worse — an actor, musician, or public figure whose name opens doors."
-        },
-        {
-          "name": "Creative",
-          "description": "Artists, writers, and performers who make a living from imagination."
-        },
-        {
-          "name": "Criminal",
-          "description": "Someone who's lived on the wrong side of the law — a thief, a con artist, or worse."
-        },
-        {
-          "name": "Dilettante",
-          "description": "Independently wealthy, with no need to work — free to pursue whatever catches their interest."
-        },
-        {
-          "name": "Doctor",
-          "description": "A physician, surgeon, or psychiatrist trained to heal the human body and mind."
-        },
-        {
-          "name": "Emergency Services",
-          "description": "Firefighters, paramedics, and first responders trained to run toward danger, not away from it."
-        },
-        {
-          "name": "Entrepreneur",
-          "description": "A business owner who built something from nothing, and knows how to make a deal."
-        },
-        {
-          "name": "Investigative",
-          "description": "Private investigators and journalists who dig for the truth others would rather stayed buried."
-        },
-        {
-          "name": "Law Enforcement",
-          "description": "Police officers and detectives sworn to uphold the law."
-        },
-        {
-          "name": "Military",
-          "description": "Trained soldiers, veterans of a service branch, disciplined in combat and command."
-        },
-        {
-          "name": "Religious",
-          "description": "Clergy and the devout, whose calling shapes how they see the world."
-        },
-        {
-          "name": "Rural",
-          "description": "Farmers, ranchers, and small-town folk with practical, hands-on know-how."
+          "name": "White Collar",
+          "description": "Office professionals — accountants, lawyers, managers — who navigate institutions for a living."
         },
         {
           "name": "Student",
           "description": "Still in school — high school, college, or graduate study — with a major field in mind."
         },
         {
+          "name": "Rural",
+          "description": "Farmers, ranchers, and small-town folk with practical, hands-on know-how."
+        },
+        {
           "name": "Technician",
           "description": "Engineers, programmers, and IT professionals fluent in the machinery of the modern world."
         },
         {
-          "name": "White Collar",
-          "description": "Office professionals — accountants, lawyers, managers — who navigate institutions for a living."
+          "name": "Law Enforcement",
+          "description": "Police officers and detectives sworn to uphold the law."
+        },
+        {
+          "name": "Entrepreneur",
+          "description": "A business owner who built something from nothing, and knows how to make a deal."
+        },
+        {
+          "name": "Criminal",
+          "description": "Someone who's lived on the wrong side of the law — a thief, a con artist, or worse."
+        },
+        {
+          "name": "Creative",
+          "description": "Artists, writers, and performers who make a living from imagination."
+        },
+        {
+          "name": "Academic",
+          "description": "Librarians, archaeologists, and scholars — a life spent in research and study."
+        },
+        {
+          "name": "Religious",
+          "description": "Clergy and the devout, whose calling shapes how they see the world."
+        },
+        {
+          "name": "Emergency Services",
+          "description": "Firefighters, paramedics, and first responders trained to run toward danger, not away from it."
+        },
+        {
+          "name": "Doctor",
+          "description": "A physician, surgeon, or psychiatrist trained to heal the human body and mind."
+        },
+        {
+          "name": "Military",
+          "description": "Trained soldiers, veterans of a service branch, disciplined in combat and command."
+        },
+        {
+          "name": "Athlete",
+          "description": "A professional or amateur competitor whose training has honed body and reflexes alike."
+        },
+        {
+          "name": "Investigative",
+          "description": "Private investigators and journalists who dig for the truth others would rather stayed buried."
+        },
+        {
+          "name": "Dilettante",
+          "description": "Independently wealthy, with no need to work — free to pursue whatever catches their interest."
+        },
+        {
+          "name": "Celebrity",
+          "description": "Someone famous, for better or worse — an actor, musician, or public figure whose name opens doors."
+        },
+        {
+          "name": "Adventurer",
+          "description": "Professional daredevils, big-game hunters, and treasure seekers who live for the next expedition."
         }
       ]
     },

@@ -1,0 +1,36 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8100,
+    "root_dir": "/app",
+    "data_dir": "/data",
+    "secrets_dir": "/secrets",
+    "cors_origin": "",
+    "session_ttl_days": 7,
+    "config_watch": false,
+    "log_level": "info",
+    "require_email_verification": true,
+    "require_invite": false,
+    "debug_verification_codes": false,
+    "seed_dev_accounts": false,
+    "local_file_access": false,
+    "trusted_proxies": ["127.0.0.1"],
+    "static_roots": ["undercroft"],
+    "ddb_proxy_allowed_hosts": ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com", "character-service.dndbeyond.com"]
+  },
+  "database": {
+    "path": "/data/database.sqlite"
+  },
+  "email": {
+    "enabled": false
+  },
+  "mounts": [
+    {
+      "name": "loom-mappings",
+      "type": "static",
+      "root": "/data/mappings",
+      "directory_listing": true,
+      "directory_extensions": [".json"]
+    }
+  ]
+}

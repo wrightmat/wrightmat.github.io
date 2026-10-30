@@ -1,4 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { bindNoteButton } from "../../common/js/lib/note-button.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent } from "../../common/js/lib/tooltips.js";
@@ -1620,6 +1621,7 @@ async function init() {
     status,
   });
   dataManager = auth.dataManager;
+  bindNoteButton(elements.generateNoteButton, dataManager);
 
   // Generate starts disabled (see its own toolbar definition above) —
   // recomputed once reloadReferenceData resolves. Proactively disables
@@ -1687,7 +1689,7 @@ async function init() {
     refreshWonderView();
   });
   // Named (not an inline listener) so the init flow below can also call
-  // this directly when auto-selecting the active campaign group's System.
+  // this directly when auto-selecting the active player group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     // A different System means any previously loaded Wonder (and the
@@ -1773,7 +1775,7 @@ async function init() {
   // own change-handler body.
   // Two-phase, not one straight-line await chain — same "show the linked
   // record first, load everything else in the background" fix Sanctum's
-  // own deep link needed once a campaign had enough saved content for the
+  // own deep link needed once a group had enough saved content for the
   // full reference-data reload to be genuinely slow. Phase 1 (awaited):
   // render THIS wonder directly. Phase 2 (fired but not awaited): the
   // System reference-data reload populates wonderSelect's own option list;
@@ -1825,7 +1827,7 @@ async function init() {
     }
   }
 
-  // If a campaign group is active and has its own System assigned, default
+  // If a player group is active and has its own System assigned, default
   // Vault's System select to it — a real, GM-chosen fact about the
   // campaign, not a guess — to make mid-campaign generation faster. Falls
   // through to the original placeholder when there's no active group, or

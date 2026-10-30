@@ -19,7 +19,7 @@ import {
 } from "./tag-editor.js";
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { connectLiveStream } from "../live.js";
-import { el } from "../dom.js";
+import { el, escapeHtml } from "../dom.js";
 import { confirmDelete } from "../ownership.js";
 import { loadSystemFields, deriveCombatBindings, resolveCombatantStats } from "./combat-bindings.js";
 import { uniquifyCombatantName } from "./combatant-naming.js";
@@ -38,7 +38,7 @@ import { resolveCombatantMarkers } from "../combat-map-link.js";
 import { persistViewVisibility } from "../map-live-sync.js";
 import { showConfirmModal } from "../confirm-modal.js";
 import { initHelpSystem } from "../help.js";
-import { applyWledSegmentScene } from "./wled.js";
+import { applyWledSegmentScene, fetchWledDevices, resolveWledDeviceByAlias, subscribeWledDeviceEdits } from "./wled.js";
 import {
   normalizeLighting,
   tableSegmentNames,
@@ -264,7 +264,7 @@ export function initCombatTrackerWidget(
     if (!markers.length) return; // not on the active map — nothing to offer
     const confirmed = await showConfirmModal({
       title: nextHidden ? "Also hide on the map?" : "Also show on the map?",
-      bodyHtml: `<p>"${combatant.name}" is also placed on the active map. ${nextHidden ? "Hide" : "Show"} it there too?</p>`,
+      bodyHtml: `<p>"${escapeHtml(combatant.name)}" is also placed on the active map. ${nextHidden ? "Hide" : "Show"} it there too?</p>`,
       confirmLabel: nextHidden ? "Also hide on map" : "Also show on map",
       cancelLabel: "Just the tracker",
     });
@@ -333,7 +333,7 @@ export function initCombatTrackerWidget(
   let lightingMount = null;
   let lightingOpen = false;
   let lastLightingPanelSignature = "";
-  let lightingMembers = []; // [{id, name}] — the campaign's party, for seats set before any encounter has them
+  let lightingMembers = []; // [{id, name}] — the group's party, for seats set before any encounter has them
   const lightingOpenKeys = new Set();
   // The last scene's key — undefined until the first encounter is seen, so
   // loading the page (or the first encounter) never moves the lights; only a
@@ -349,19 +349,30 @@ export function initCombatTrackerWidget(
   // One request at a time, and only the latest of a burst — pressing Next
   // quickly shouldn't queue up a stale scene per click. A failure is shown
   // once per streak, not once per turn.
-  async function pushScene(scene, ip = lighting.deviceIp) {
-    if (!ip) return;
+  // The saved lighting devices, re-read at most every 30 s (a scene is pushed on every turn).
+  let lightingDevices = { at: 0, list: [] };
+  async function lightingDeviceFor(alias) {
+    if (Date.now() - lightingDevices.at > 30000 || !resolveWledDeviceByAlias(lightingDevices.list, alias)) {
+      lightingDevices = { at: Date.now(), list: await fetchWledDevices(dataManager) };
+    }
+    const device = resolveWledDeviceByAlias(lightingDevices.list, alias);
+    if (!device) throw new Error(`no lighting device aliased "${alias}"`);
+    return device;
+  }
+
+  async function pushScene(scene, alias = lighting.deviceAlias) {
+    if (!alias) return;
     if (sceneBusy) {
-      pendingScene = { scene, ip };
+      pendingScene = { scene, alias };
       return;
     }
     sceneBusy = true;
     try {
-      let next = { scene, ip };
+      let next = { scene, alias };
       while (next) {
         pendingScene = null;
         try {
-          await applyWledSegmentScene({ ip: next.ip }, next.scene);
+          await applyWledSegmentScene(await lightingDeviceFor(next.alias), next.scene);
           sceneFailureShown = false;
         } catch (error) {
           if (!sceneFailureShown) {
@@ -381,11 +392,11 @@ export function initCombatTrackerWidget(
 
   function clearTable(config = lighting) {
     lightsOwned = false;
-    return pushScene({ lit: [], off: tableSegmentNames(config) }, config.deviceIp);
+    return pushScene({ lit: [], off: tableSegmentNames(config) }, config.deviceAlias);
   }
 
   function syncTableLighting() {
-    if (mode !== "gm" || !lighting.enabled || !lighting.deviceIp) return;
+    if (mode !== "gm" || !lighting.enabled || !lighting.deviceAlias) return;
     if (lastSceneKey === undefined && !state.encounter) return;
     const scene = computeTableScene(state.encounter, lighting);
     if (lastSceneKey === undefined) {
@@ -408,13 +419,13 @@ export function initCombatTrackerWidget(
     // and moving to another device (or switching off) shouldn't strand lit
     // segments on the old one.
     if (!previous.enabled && lighting.enabled) lastSceneKey = "";
-    if (lightsOwned && ((previous.enabled && !lighting.enabled) || previous.deviceIp !== lighting.deviceIp)) {
+    if (lightsOwned && ((previous.enabled && !lighting.enabled) || previous.deviceAlias !== lighting.deviceAlias)) {
       void clearTable(previous);
     }
     render();
   }
 
-  // Everyone who might need a seat: the campaign's party, plus any PC already
+  // Everyone who might need a seat: the group's party, plus any PC already
   // in this encounter that the party list doesn't know (matched by character id).
   function buildLightingRoster() {
     const byId = new Map(lightingMembers.map((member) => [member.id, member.name]));
@@ -593,7 +604,7 @@ export function initCombatTrackerWidget(
       state.encounter = null;
       await loadOwnedEncounters();
       render();
-      // Deleting the campaign's currently-spotlighted encounter would
+      // Deleting the group's currently-spotlighted encounter would
       // otherwise leave every viewer stuck re-fetching a dead id forever —
       // checked against the group's actual active spotlight, not the
       // local-only state.announced flag (which resets on reload).
@@ -716,7 +727,7 @@ export function initCombatTrackerWidget(
   }
 
   // Convenience for "everyone's here, let's roll" — adds every current
-  // campaign's party member in one action instead of the GM re-adding each
+  // group's party member in one action instead of the GM re-adding each
   // PC by hand through the Add Combatant row below. Skips anyone already in
   // the encounter (matched by character refId), so a second click doesn't
   // duplicate the whole party.
@@ -724,7 +735,7 @@ export function initCombatTrackerWidget(
     if (!state.encounter || !groupId) return;
     const members = await fetchGroupMemberCharacters(dataManager, groupId);
     if (!members.length) {
-      status?.show("This campaign has no party members yet.", { type: "info", timeout: 3000 });
+      status?.show("This group has no party members yet.", { type: "info", timeout: 3000 });
       return;
     }
     const existingIds = new Set(state.encounter.combatants.filter((c) => c.refKind === "character").map((c) => c.refId));
@@ -915,7 +926,7 @@ export function initCombatTrackerWidget(
     if (!state.encounter || state.announced) return;
     const active = dataManager.getActiveGroup();
     if (!active?.groupId) {
-      status?.show("Pick an active campaign first (see the Campaign menu in the header).", {
+      status?.show("Pick an active group first (see the group menu in the header).", {
         type: "warning",
         timeout: 3000,
       });
@@ -1001,7 +1012,7 @@ export function initCombatTrackerWidget(
     if (encounterId) return encounterId;
     const id = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
     if (!id) return "";
-    // A hidden encounter is still the campaign's ACTIVE encounter —
+    // A hidden encounter is still the group's ACTIVE encounter —
     // character-sheet.js's initiative push needs to find it regardless of
     // visibility — but a player-mode tracker's rendering must still respect
     // "not shown to the table." Checking the resolved data (not just the id) makes that distinction.
@@ -1480,6 +1491,17 @@ export function initCombatTrackerWidget(
     toolbar.appendChild(deleteButton);
     return toolbar;
   }
+
+  // The lighting device's alias was renamed in the Lighting widget: follow it, without treating it as a
+  // switch to another device (which would try to clear the table on a device that no longer answers to the old name).
+  const unsubscribeDeviceEdits = subscribeWledDeviceEdits(({ from, to }) => {
+    if (mode !== "gm" || !from || !to || String(lighting.deviceAlias).trim().toLowerCase() !== String(from).trim().toLowerCase()) return;
+    lighting = { ...lighting, deviceAlias: to };
+    lightingDevices = { at: 0, list: [] };
+    storedRef = { ...storedRef, lighting };
+    setContentRef?.(storedRef);
+    render();
+  });
 
   // Separate from Start/Stop — visibility and whether combat is actively
   // running are independent. Lives in the Dashboard card's header
@@ -2235,6 +2257,7 @@ export function initCombatTrackerWidget(
     // permanently stuck "active" in the group log. `state.announced` is this widget's equivalent of that missing flag.
     async destroy(removed) {
       state.destroyed = true;
+      unsubscribeDeviceEdits();
       stopPolling();
       stopGmCharacterSync();
       liveStream?.close();
@@ -2296,7 +2319,7 @@ export async function runCombatMacroAction(action, { dataManager, groupContext, 
 
   if (actionName === "show" || actionName === "hide") {
     const groupId = groupContext?.groupId;
-    if (!groupId) throw new Error("No active campaign to show/hide this to.");
+    if (!groupId) throw new Error("No active group to show/hide this to.");
     if (actionName === "show") {
       await retirePreviousEncounterSpotlight(dataManager, { groupId, nextEncounterId: encounterId });
       await dataManager.spotlightToGroup({ groupId, contentType: "encounter", contentId: encounterId });

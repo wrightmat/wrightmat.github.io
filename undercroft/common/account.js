@@ -5,10 +5,13 @@ import { initAuthControls } from "./js/lib/auth-ui.js";
 import { initHelpSystem, loadHelpTopics } from "./js/lib/help.js";
 import { initFavoriteDocsPane } from "./js/lib/doc-favorites-pane.js";
 import { mountInbox } from "./js/lib/chat/inbox.js";
+import { mountProfileEditor } from "./js/lib/community/profile-editor.js";
+import { renderMyGroups } from "./js/lib/community/my-groups.js";
+import { renderEndorsePanel } from "./js/lib/community/endorse-panel.js";
 import { confirmDelete } from "./js/lib/ownership.js";
 import { initShareModal } from "./js/lib/share-modal.js";
 import { showConfirmModal } from "./js/lib/confirm-modal.js";
-import { disableForm } from "./js/lib/dom.js";
+import { disableForm, el } from "./js/lib/dom.js";
 import {
   DICE_THEMES,
   DICE_THEME_NAMES,
@@ -46,10 +49,14 @@ const elements = {
   ownedSortHeaders: Array.from(document.querySelectorAll("[data-admin-owned-sort]")),
   favoritesList: document.querySelector("[data-doc-favorites]"),
   inboxMount: document.querySelector("[data-account-inbox]"),
+  profileMount: document.querySelector("[data-account-profile]"),
+  myGroupsMount: document.querySelector("[data-account-my-groups]"),
+  endorseMount: document.querySelector("[data-account-endorse]"),
   emailForm: document.querySelector("[data-admin-email-form]"),
   emailError: document.querySelector("[data-admin-email-error]"),
   emailInput: document.getElementById("admin-settings-email"),
   passwordForm: document.querySelector("[data-admin-password-form]"),
+  revokeSessionsButton: document.querySelector("[data-admin-revoke-sessions]"),
   passwordError: document.querySelector("[data-admin-password-error]"),
   passwordConfirm: document.getElementById("admin-settings-password-confirm"),
   favoriteColorControl: document.querySelector("[data-favorite-color-control]"),
@@ -93,7 +100,8 @@ const OWNER_BUCKET_ALIASES = { character: "characters", template: "templates", s
 const TAB_SETTINGS = "settings";
 const TAB_OWNED = "owned";
 const TAB_INBOX = "inbox";
-const AVAILABLE_TABS = [TAB_SETTINGS, TAB_INBOX, TAB_OWNED];
+const TAB_PROFILE = "profile";
+const AVAILABLE_TABS = [TAB_PROFILE, TAB_SETTINGS, TAB_INBOX, TAB_OWNED];
 
 // Self-service upgrade targets only — "admin" is deliberately excluded (and
 // rejected server-side regardless) since it can only be granted by an
@@ -106,7 +114,7 @@ const AVAILABLE_TABS = [TAB_SETTINGS, TAB_INBOX, TAB_OWNED];
 const TIER_UPGRADE_PLANS = [
   { value: "free", label: "Free", price: "Free", description: "A limited number of saves to your account." },
   { value: "player", label: "Player", price: "$10 one-time", description: "Unlimited saves of your characters and content." },
-  { value: "gm", label: "GM", price: "$50 one-time", description: "Run live campaigns: Combat Tracker, Show-to-table, Campaign Groups." },
+  { value: "gm", label: "GM", price: "$50 one-time", description: "Run live games: Combat Tracker, Show-to-table, Groups." },
   { value: "creator", label: "Creator", price: "$99 one-time", description: "Author and share Systems, Templates, and other reusable content." },
 ];
 
@@ -115,7 +123,7 @@ const dateFormatter = typeof Intl !== "undefined" && typeof Intl.DateTimeFormat 
   : null;
 
 const viewState = {
-  activeTab: TAB_SETTINGS,
+  activeTab: TAB_PROFILE,
   users: [],
   owned: {
     owner: null,
@@ -156,7 +164,7 @@ function tierMeetsOwnerRequirement(tier, bucket) {
 
 function resolveTabFromHash() {
   const hash = window.location.hash ? window.location.hash.slice(1).toLowerCase() : "";
-  return AVAILABLE_TABS.includes(hash) ? hash : TAB_SETTINGS;
+  return AVAILABLE_TABS.includes(hash) ? hash : TAB_PROFILE;
 }
 
 viewState.activeTab = resolveTabFromHash();
@@ -184,7 +192,7 @@ function updateLocationHash(tab) {
     return;
   }
   const base = `${window.location.pathname}${window.location.search || ""}`;
-  if (tab === TAB_SETTINGS) {
+  if (tab === TAB_PROFILE) {
     window.history.replaceState(null, "", base);
   } else {
     window.history.replaceState(null, "", `${base}#${tab}`);
@@ -232,6 +240,17 @@ function setActiveTab(name, { updateHash = true, force = false } = {}) {
   }
   if (target === TAB_INBOX && elements.inboxMount) {
     mountInbox(elements.inboxMount, { dataManager, status });
+  }
+  if (target === TAB_PROFILE && elements.profileMount && !dataManager.isAuthenticated()) {
+    elements.profileMount.replaceChildren(el("p", "text-body-secondary mb-0", "Sign in to edit your profile."));
+    elements.myGroupsMount?.replaceChildren();
+    elements.endorseMount?.replaceChildren();
+  } else if (target === TAB_PROFILE && elements.profileMount) {
+    mountProfileEditor(elements.profileMount, { dataManager, status }).catch((error) => {
+      status?.show(error.message || "Unable to load your profile.", { type: "error" });
+    });
+    if (elements.myGroupsMount) void renderMyGroups(elements.myGroupsMount, { dataManager, status });
+    if (elements.endorseMount) void renderEndorsePanel(elements.endorseMount, { dataManager, status });
   }
 }
 
@@ -335,6 +354,10 @@ async function handleUpgradeClick(plan) {
 
 function populateSettings({ force = false } = {}) {
   const user = currentUser();
+  // Lets a password manager tie the password fields to this account.
+  document.querySelectorAll("[data-admin-username-hint]").forEach((input) => {
+    input.value = user?.username || "";
+  });
   if (elements.emailInput && (force || document.activeElement !== elements.emailInput)) {
     elements.emailInput.value = user?.email || "";
   }
@@ -1017,7 +1040,7 @@ function handleAuthChanged() {
     populateOwnedUserFilter();
     showOwnedEmpty("Sign in to see your saved content.");
     updateOwnedSummary(null, 0);
-    setActiveTab(TAB_SETTINGS, { updateHash: false, force: true });
+    setActiveTab(TAB_PROFILE, { updateHash: false, force: true });
   }
 }
 
@@ -1035,7 +1058,7 @@ if (elements.tabs) {
     if (!button) {
       return;
     }
-    const tab = button.getAttribute("data-admin-tab") || TAB_SETTINGS;
+    const tab = button.getAttribute("data-admin-tab") || TAB_PROFILE;
     setActiveTab(tab, { updateHash: true });
   });
 }
@@ -1194,6 +1217,15 @@ if (elements.emailForm) {
   });
 }
 
+elements.revokeSessionsButton?.addEventListener("click", async () => {
+  try {
+    await dataManager.revokeOtherSessions();
+    status?.show("Signed out of your other devices.", { type: "success", timeout: 2500 });
+  } catch (error) {
+    status?.show(error.message || "Unable to sign out other devices.", { type: "error" });
+  }
+});
+
 if (elements.passwordForm) {
   elements.passwordForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1206,8 +1238,8 @@ if (elements.passwordForm) {
       setPasswordError("Current password is required");
       return;
     }
-    if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters long");
+    if (newPassword.length < 10) {
+      setPasswordError("New password must be at least 10 characters long");
       return;
     }
     if (newPassword !== confirmPassword) {

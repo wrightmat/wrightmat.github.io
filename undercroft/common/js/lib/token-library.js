@@ -1,3 +1,4 @@
+import { apiUrl } from "./api.js";
 // A shared, server-persisted library of GM-added token image links (links
 // only — no file hosting) for map tokens/portraits — same pattern as
 // audio-clip-library.js/font-library.js: a flat JSON file, not a Library
@@ -65,7 +66,7 @@ function authHeaders(authToken) {
 }
 
 export async function saveToken(token, authToken) {
-  const response = await fetch("/token-library", {
+  const response = await fetch(apiUrl("/token-library"), {
     method: "POST",
     headers: authHeaders(authToken),
     body: JSON.stringify({ token }),
@@ -80,7 +81,7 @@ export async function saveToken(token, authToken) {
 // This server has no true HTTP DELETE wired up anywhere — every deletion in
 // this codebase is POST .../delete instead.
 export async function deleteToken(id, authToken) {
-  const response = await fetch("/token-library/delete", {
+  const response = await fetch(apiUrl("/token-library/delete"), {
     method: "POST",
     headers: authHeaders(authToken),
     body: JSON.stringify({ id }),

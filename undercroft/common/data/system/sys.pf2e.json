@@ -86,61 +86,7 @@
       "label": "Background",
       "values": [
         {
-          "name": "Acolyte"
-        },
-        {
-          "name": "Acrobat"
-        },
-        {
-          "name": "Animal Whisperer"
-        },
-        {
-          "name": "Artisan"
-        },
-        {
-          "name": "Bandit"
-        },
-        {
-          "name": "Barkeep"
-        },
-        {
-          "name": "Barrister"
-        },
-        {
-          "name": "Charlatan"
-        },
-        {
-          "name": "Criminal"
-        },
-        {
-          "name": "Detective"
-        },
-        {
-          "name": "Emissary"
-        },
-        {
-          "name": "Entertainer"
-        },
-        {
           "name": "Farmhand"
-        },
-        {
-          "name": "Field Medic"
-        },
-        {
-          "name": "Fortune Teller"
-        },
-        {
-          "name": "Gladiator"
-        },
-        {
-          "name": "Guard"
-        },
-        {
-          "name": "Herbalist"
-        },
-        {
-          "name": "Hunter"
         },
         {
           "name": "Laborer"
@@ -149,25 +95,79 @@
           "name": "Merchant"
         },
         {
-          "name": "Noble"
+          "name": "Artisan"
         },
         {
-          "name": "Nomad"
+          "name": "Guard"
         },
         {
-          "name": "Sailor"
-        },
-        {
-          "name": "Scholar"
-        },
-        {
-          "name": "Scout"
+          "name": "Barkeep"
         },
         {
           "name": "Street Urchin"
         },
         {
+          "name": "Sailor"
+        },
+        {
+          "name": "Hunter"
+        },
+        {
+          "name": "Acolyte"
+        },
+        {
+          "name": "Entertainer"
+        },
+        {
+          "name": "Criminal"
+        },
+        {
+          "name": "Bandit"
+        },
+        {
+          "name": "Herbalist"
+        },
+        {
           "name": "Warrior"
+        },
+        {
+          "name": "Scout"
+        },
+        {
+          "name": "Nomad"
+        },
+        {
+          "name": "Scholar"
+        },
+        {
+          "name": "Charlatan"
+        },
+        {
+          "name": "Field Medic"
+        },
+        {
+          "name": "Barrister"
+        },
+        {
+          "name": "Acrobat"
+        },
+        {
+          "name": "Fortune Teller"
+        },
+        {
+          "name": "Detective"
+        },
+        {
+          "name": "Noble"
+        },
+        {
+          "name": "Emissary"
+        },
+        {
+          "name": "Animal Whisperer"
+        },
+        {
+          "name": "Gladiator"
         }
       ]
     },

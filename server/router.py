@@ -56,6 +56,9 @@ class Router:
         return None
 
 
+# Largest request body accepted (the biggest stored record is well under 1 MB).
+MAX_BODY_BYTES = 25 * 1024 * 1024
+
 class Request:
     def __init__(self, handler):
         self.handler = handler
@@ -79,7 +82,13 @@ class Request:
         # whatever comes next — independent of which handler runs or
         # whether it happens to read the body itself.
         length = int(handler.headers.get("Content-Length", "0") or "0")
-        self._body_bytes = handler.rfile.read(length) if length else b""
+        self.oversize = length > MAX_BODY_BYTES
+        if self.oversize:
+            # Unread bytes would corrupt the next request on a kept-alive socket, so the connection ends.
+            handler.close_connection = True
+            self._body_bytes = b""
+        else:
+            self._body_bytes = handler.rfile.read(length) if length else b""
 
     def json(self) -> Any:
         if not self._body_bytes:

@@ -1,3 +1,4 @@
+import { apiUrl } from "./api.js";
 // A shared, server-persisted library of GM-added audio clips (links only,
 // no file hosting — see soundboard.js) for the Dashboard's Soundboard
 // widget, same pattern as press/js/font-library.js: a flat JSON file, not
@@ -65,7 +66,7 @@ function authHeaders(authToken) {
 }
 
 export async function saveClip(clip, authToken) {
-  const response = await fetch("/soundboard/clips", {
+  const response = await fetch(apiUrl("/soundboard/clips"), {
     method: "POST",
     headers: authHeaders(authToken),
     body: JSON.stringify({ clip }),
@@ -80,7 +81,7 @@ export async function saveClip(clip, authToken) {
 // This server has no true HTTP DELETE wired up anywhere — every deletion in
 // this codebase is POST .../delete instead.
 export async function deleteClip(id, authToken) {
-  const response = await fetch("/soundboard/clips/delete", {
+  const response = await fetch(apiUrl("/soundboard/clips/delete"), {
     method: "POST",
     headers: authHeaders(authToken),
     body: JSON.stringify({ id }),

@@ -13,6 +13,7 @@
 import { createLookupFn, createLookupFieldFn } from "./bindings.js";
 import { resolveDottedPath } from "./dotted-path.js";
 import { fetchKindEntriesWithIds } from "./content-fetch.js";
+import { pendingLibraryKinds } from "./library-pending.js";
 
 // Module-level (not per-caller) — Press can have several Handouts/inspector
 // previews alive at once; they share one fetch/cache per kind instead of
@@ -21,7 +22,6 @@ import { fetchKindEntriesWithIds } from "./content-fetch.js";
 // only about avoiding a redundant empty-then-reload flash per caller, not
 // about avoiding duplicate network calls.
 const libraryEntriesCache = new Map(); // kind -> entries[] ({id, entity} pairs)
-const libraryEntriesFetching = new Set();
 
 // The three cache primitives, exported separately from the formula function
 // itself — Workbench's own Repeater Add-picker and id-storage-Repeater
@@ -41,18 +41,18 @@ export function getCachedLibraryEntries(kind) {
 }
 
 export function ensureLibraryKindCached(dataManager, kind, onDataReady) {
-  if (!kind || libraryEntriesCache.has(kind) || libraryEntriesFetching.has(kind) || !dataManager) return;
-  libraryEntriesFetching.add(kind);
+  if (!kind || libraryEntriesCache.has(kind) || pendingLibraryKinds.has(kind) || !dataManager) return;
+  pendingLibraryKinds.add(kind);
   fetchKindEntriesWithIds(dataManager, kind)
     .then((entries) => {
       libraryEntriesCache.set(kind, entries);
+      pendingLibraryKinds.delete(kind);
       onDataReady?.();
     })
     .catch(() => {
       libraryEntriesCache.set(kind, []);
-    })
-    .finally(() => {
-      libraryEntriesFetching.delete(kind);
+      pendingLibraryKinds.delete(kind);
+      onDataReady?.();
     });
 }
 

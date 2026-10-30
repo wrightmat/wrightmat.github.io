@@ -63,7 +63,7 @@ import {
 import { resolveNotes } from "../../../common/js/lib/library-reference.js";
 import { formatSymbolPoolResult } from "../lib/symbol-dice.js";
 import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
-import { setElementVisible } from "../../../common/js/lib/dom.js";
+import { setElementVisible, setSanitizedHtml } from "../../../common/js/lib/dom.js";
 import {
   normalizeOptionEntries,
   resolveTabEntries,
@@ -100,7 +100,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   const templateCatalog = new Map();
   const characterCatalog = new Map();
   // Owned + member campaigns, offered in the character picker's own
-  // "Campaigns" optgroup for Party Data mode (loadGroupPartyView).
+  // "Groups" optgroup for Party Data mode (loadGroupPartyView).
   const groupCatalog = new Map();
   const systemCatalog = new Map();
   const systemDefinitionCache = new Map();
@@ -131,13 +131,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     systemPreviewData: {},
     viewLocked: false,
     shareToken: "",
-    // The active campaign's Group Properties, merged into the binding
+    // The active group's Group Properties, merged into the binding
     // context under "group" (see getBindingContext) so "group.partyInventory"
     // resolves like any ordinary binding. Never written into `draft` itself
     // — that's what gets persisted as the character's saved JSON.
     groupContext: null,
     // True only when loadGroupPartyView explicitly set this up — groupContext
-    // itself gets populated ambiently for any active campaign (so Game
+    // itself gets populated ambiently for any active group (so Game
     // Log/Now Showing can follow it) whether or not Party Data was chosen.
     // Anything gating "are we showing Party Data right now" must check this
     // flag, not groupContext, or it flashes/restores state no one chose.
@@ -149,7 +149,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   const componentRollDirectives = new Map();
   const collapsedComponents = new Map();
   const diceQuickButtons = new Map();
-  // Dice pane's quick-dice source: the active campaign Group's own System
+  // Dice pane's quick-dice source: the active Group's own System
   // wins over the character's own Assigned Systems, else the standard 7.
   // Starts at the standard-7 default; refreshDiceAndMoveButtons() (called
   // once group/System context resolves) rebuilds with the real answer.
@@ -184,7 +184,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     ownerId: null,
   };
   // {refresh,destroy}/{refresh,stop,...} widget instances — none have an
-  // "update groupId" method, so a campaign change destroys and recreates
+  // "update groupId" method, so a group change destroys and recreates
   // them rather than mutating in place (see setGameLogContext/
   // clearGameLogContext).
   let gameLogWidget = null;
@@ -355,7 +355,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return setValueAtContext(state.draft, pathSegments, value);
   }
 
-  // Merges the active campaign's Group Properties into the same context a
+  // Merges the active group's Group Properties into the same context a
   // plain "@inventory" binding resolves against, under "group" — so
   // "@group.partyInventory.quantity" walks the same resolveBinding/
   // getValueAtPath machinery, no new binding vocabulary needed. Derived and
@@ -748,7 +748,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   {
     const nowShowingSectionBuilt = createCollapsibleSection({
       label: "Now Showing",
-      helpTopic: "campaign.spotlight",
+      helpTopic: "group.spotlight",
       collapsed: nowShowingPanelState.collapsed,
       content: elements.nowShowingPanel,
     });
@@ -869,7 +869,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       elements.characterSelect.addEventListener("change", async () => {
         const selectedId = elements.characterSelect.value;
         if (!selectedId) return;
-        // "group:<id>" values are this picker's own Campaigns optgroup (see
+        // "group:<id>" values are this picker's own Groups optgroup (see
         // syncCharacterOptions) — Party Data mode, no character involved.
         if (selectedId.startsWith("group:")) {
           const option = elements.characterSelect.selectedOptions?.[0];
@@ -1407,7 +1407,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         return { value: entry.id, label, sortLabel: label.toLowerCase() };
       })
       .sort((a, b) => a.sortLabel.localeCompare(b.sortLabel, undefined, { sensitivity: "base" }));
-    // Party Data campaigns get a separate optgroup, "group:<id>" values so
+    // Party Data groups get a separate optgroup, "group:<id>" values so
     // they can't collide with a real character id. groupName is stashed on
     // the option itself so the change handler avoids a second lookup.
     const groupOptions = Array.from(groupCatalog.values())
@@ -1416,7 +1416,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         value: `group:${entry.id}`,
         label: `${entry.name} (Party Data)`,
         sortLabel: entry.name.toLowerCase(),
-        group: "Campaigns",
+        group: "Groups",
         dataset: { groupName: entry.name },
       }))
       .sort((a, b) => a.sortLabel.localeCompare(b.sortLabel, undefined, { sensitivity: "base" }));
@@ -1426,8 +1426,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       { placeholder: "Select character" }
     );
     // state.partyMode, not state.groupContext — groupContext is populated
-    // ambiently for any active campaign regardless of whether Party Data
-    // was ever opened, so using it here would show a campaign "selected"
+    // ambiently for any active group regardless of whether Party Data
+    // was ever opened, so using it here would show a group "selected"
     // on a fresh page load nobody actually picked.
     const value = state.draft?.id || (state.partyMode && state.groupContext ? `group:${state.groupContext.groupId}` : "");
     elements.characterSelect.value = value;
@@ -1546,7 +1546,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Only meaningful for a character carrying import metadata (loom/js/
     // app.js's saveEntity sets it when a mapping produced the content).
     // Gated on character owner, campaign owner, or admin — deliberately
-    // wider than canEditRecord, since a campaign GM may lack an explicit
+    // wider than canEditRecord, since a group GM may lack an explicit
     // edit-share on a player's character but should still be able to
     // re-import to keep the party's sheets current. The server's own
     // ownership/share check has final say on the actual save; this only
@@ -3436,7 +3436,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // button's typed text) scopes the lookup to THIS CHARACTER's own System
   // Moves (state.systemDefinition) — never activeSystemRolls, which is
   // campaign-priority and would show a different System's Move bands
-  // whenever another campaign happened to be active. A caller with no
+  // whenever another group happened to be active. A caller with no
   // `rollKey` checks the typed/inserted text against activeSystemRolls
   // instead — the same list rendered as that panel's buttons.
   async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined, rollKey = "" } = {}) {
@@ -3473,7 +3473,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // Delegates to spotlight.js's resolveActiveSpotlightId, kind-scoped to
   // "encounter" — an encounter spotlighted earlier stays active even if
   // the GM later also shows an unrelated NPC/map card. Returns "" if
-  // nothing's spotlighted, it isn't an encounter, or there's no campaign.
+  // nothing's spotlighted, it isn't an encounter, or there's no group.
   async function resolveActiveEncounterId() {
     if (!gameLogContext.groupId && !gameLogContext.shareToken) {
       return "";
@@ -3594,7 +3594,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // Rolls from this panel land in the active chat thread; this line says which.
   function syncDiceTarget() {
     const line = elements.dicePanel?.querySelector("[data-dice-target]");
-    if (line) line.textContent = describePostTarget(dataManager) || "No active campaign — rolls aren't recorded.";
+    if (line) line.textContent = describePostTarget(dataManager) || "No active group — rolls aren't recorded.";
   }
 
   function ensureDicePanelMarkup() {
@@ -3998,7 +3998,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
-  // Populates groupCatalog for the character picker's "Campaigns" optgroup
+  // Populates groupCatalog for the character picker's "Groups" optgroup
   // — includeMemberGroups: true is the same scope syncGameLogContext's
   // dataManager.listGroups call uses (owned + member-via-character
   // campaigns), and dataManager's request-level cache means this doesn't cost a second
@@ -4017,7 +4017,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         groupCatalog.set(group.id, { id: group.id, name: group.name || group.id, templateId: group.template_id || "" });
       });
     } catch (error) {
-      console.warn("Character editor: unable to list campaigns", error);
+      console.warn("Character editor: unable to list groups", error);
     }
     syncCharacterOptions();
   }
@@ -4242,7 +4242,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // the widget's own fallback already renders those non-interactive. No
   // setRightAction either — only the Refresh button below. Always mounted,
   // even with an empty groupId/shareToken — the widget's own render()
-  // already shows "No active campaign" for that case.
+  // already shows "No active group" for that case.
   function mountGameLog() {
     gameLogWidget?.destroy();
     gameLogWidget = initGameLogWidget(elements.gameLogPanel, {
@@ -4255,7 +4255,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     });
   }
 
-  // (Re)subscribes state.groupContext to the active campaign's Group
+  // (Re)subscribes state.groupContext to the active group's Group
   // Properties — remounted alongside the Game Log widget, off the same
   // gameLogContext (see syncGameLogContext) rather than re-resolving
   // group/access a second time. `isOwner` is captured once, since it only
@@ -4281,7 +4281,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       shareToken: gameLogContext.shareToken,
       isOwner: gameLogContext.access === "owner",
       onChange: (payload) => {
-        // The active campaign may have already moved on by the time this
+        // The active group may have already moved on by the time this
         // resolves — discard rather than repopulating the wrong group's data.
         if (!state.groupContext || state.groupContext.groupId !== groupId) return;
         state.groupContext.schema = Array.isArray(payload?.properties) ? payload.properties : [];
@@ -4303,7 +4303,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   }
 
-  // Resets to "no active campaign" — same shape as setGameLogContext below,
+  // Resets to "no active group" — same shape as setGameLogContext below,
   // just always landing on the empty case, so both share one `changed`
   // remount decision.
   function clearGameLogContext() {
@@ -4434,7 +4434,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   // Posts a roll to the active chat thread as the rolling character, then
   // refreshes the widget immediately rather than waiting for its next
-  // poll/live-stream tick. No-ops without an active campaign — the roll
+  // poll/live-stream tick. No-ops without an active group — the roll
   // result still renders inline wherever the dice roller shows it, so
   // nothing is lost except a persistent message with nowhere to go.
   function recordGameLogRoll(result, { expression = "", label = "", verdict = "" } = {}) {
@@ -4455,7 +4455,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       character: context || undefined,
     };
     // Speak as the rolling character only when it's actually on this
-    // campaign's roster under the current user; otherwise the server would
+    // group's roster under the current user; otherwise the server would
     // refuse the voice, and the roll is better posted as the person.
     const onRoster =
       context &&
@@ -4498,12 +4498,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // source of truth for "which table am I watching" — see
   // common/js/lib/widgets/group-context.js's own resolveGroupContext (the
   // Dashboard-side mirror of this function) for the full reasoning. A
-  // loaded character's own campaign membership used to take priority over
+  // loaded character's own group membership used to take priority over
   // it — confirmed real bug this replaced: that silently overrode whatever
   // the header showed (a user could pick a DIFFERENT campaign there and see
   // nothing change), and had no way to express "I own characters in several
   // campaigns, let me pick which table I'm at right now." A character's
-  // membership still determines whether a campaign is a legal choice in the
+  // membership still determines whether a group is a legal choice in the
   // dropdown at all (listGroups' own member scope) — it just never silently
   // substitutes for actually choosing it.
   async function syncGameLogContext() {
@@ -4531,7 +4531,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (active?.groupId) {
       // Resolve real ownership rather than assuming "owner" — listGroups'
       // member scope (group-context.js's resolveGroupContext) lets a mere
-      // member select a campaign they don't own, and this file has GM-only
+      // member select a group they don't own, and this file has GM-only
       // controls gated on gameLogContext's access that shouldn't show for
       // a non-owner even though the server would still reject the action.
       try {
@@ -4931,7 +4931,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       let metadata = templateCatalog.get(id);
       if (!metadata) {
         // The local catalog only lists templates this user owns/shares/sees as public — a
-        // campaign member's own Party Template usually belongs to the GM and was never
+        // group member's own Party Template usually belongs to the GM and was never
         // separately shared. Fall back to a direct fetch, which storage.py's
         // _template_visible_via_group grants any member of a group using this template.
         const fallback = await dataManager.get("templates", id, { preferLocal: false }).catch(() => null);
@@ -4971,9 +4971,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // character sheet, rooted at a Group instead — state.draft stays {}, and
   // every component in the Party Template is expected to bind only to
   // @group.* paths (getBindingContext/updateGroupBinding already handle a
-  // null character). Setting the campaign active makes picking it here
+  // null character). Setting the group active makes picking it here
   // equivalent to the header's own selector, so Now Showing/Game Log follow
-  // along the same as any other campaign switch.
+  // along the same as any other group switch.
   async function loadGroupPartyView(groupId, groupName = "") {
     if (!groupId || !dataManager) {
       return;
@@ -5021,18 +5021,18 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         templateId = result?.templateId || "";
       }
     } catch (error) {
-      console.error("Character editor: failed to load campaign", error);
-      status.show("Unable to load this campaign", { type: "error", timeout: 2500 });
+      console.error("Character editor: failed to load group", error);
+      status.show("Unable to load this group", { type: "error", timeout: 2500 });
       return;
     }
-    // The active campaign may have moved on while this fetch was in flight —
-    // discard rather than loading the wrong campaign's template.
+    // The active group may have moved on while this fetch was in flight —
+    // discard rather than loading the wrong group's template.
     if (gameLogContext.groupId !== groupId) {
       return;
     }
     if (!templateId) {
       elements.canvasRoot?.replaceChildren(
-        createCanvasPlaceholder("This campaign has no Party Template assigned — pick one in Loom's Group tab.", {
+        createCanvasPlaceholder("This group has no Party Template assigned — pick one in Loom's Group tab.", {
           variant: "root",
         })
       );
@@ -5378,16 +5378,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     elements.canvasRoot.innerHTML = "";
     if (!state.draft?.id && !state.template?.id) {
       // state.partyMode (NOT the mere presence of state.groupContext, which
-      // populates ambiently for any active campaign regardless of whether
+      // populates ambiently for any active group regardless of whether
       // Party Data was ever actually chosen — see its own comment on state)
-      // means loadGroupPartyView is active for a campaign with no Party
+      // means loadGroupPartyView is active for a group with no Party
       // Template assigned — a more specific, actionable message than the
       // generic "pick something" one below (also covers the brief render
       // that happens before that function's own template lookup resolves).
       const message =
         state.partyMode && state.groupContext
-          ? "This campaign has no Party Template assigned yet — pick one in Loom's Group tab."
-          : "Select a character or campaign to view a sheet.";
+          ? "This group has no Party Template assigned yet — pick one in Loom's Group tab."
+          : "Select a character or group to view a sheet.";
       elements.canvasRoot.appendChild(createCanvasPlaceholder(message, { variant: "root" }));
       refreshTooltips(elements.canvasRoot);
       return;
@@ -6834,7 +6834,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // A caller that re-creates this picker from scratch on every pick hands the
     // existing selection back in as `initialSelectedId` so it isn't forgotten.
     const initialOption = initialSelectedId ? options.find((option) => option.id === initialSelectedId) : null;
-    details.innerHTML = initialOption ? initialOption.description || "No description available." : "";
+    setSanitizedHtml(details, initialOption ? initialOption.description || "No description available." : "");
     if (!initialOption) {
       details.textContent = "Select an option to see its description.";
     }
@@ -6867,7 +6867,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         row.append(icon, label);
         row.addEventListener("click", () => {
           selectedId = option.id;
-          details.innerHTML = option.description || "No description available.";
+          setSanitizedHtml(details, option.description || "No description available.");
           renderList();
           onSelect(option);
         });
@@ -8430,7 +8430,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // resolved item-relatively ("@name", never "@group.name" — see
   // resolveRepeaterItemValue) even when the repeater itself is bound to
   // "@group.partyInventory". Without this, state.mode === "edit" would let
-  // a character's own owner edit another campaign member's non-public
+  // a character's own owner edit another group member's non-public
   // group data just by opening their own sheet in Edit mode.
   function isRepeaterCellEditable(comp, itemContext) {
     if (!itemContext) {
@@ -12515,7 +12515,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
   });
 
-  // Picking a different campaign from the header dropdown while Workbench
+  // Picking a different group from the header dropdown while Workbench
   // is already open should immediately follow it — the dropdown is
   // syncGameLogContext's sole source of truth for the signed-in case.
   window.addEventListener("workbench:active-group-changed", () => {

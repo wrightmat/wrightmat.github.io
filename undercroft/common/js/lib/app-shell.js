@@ -6,6 +6,7 @@ import { KeyboardShortcuts } from "./keyboard.js";
 import { attachHoverDropdown } from "./dom.js";
 import { initSuiteSearch } from "./suite-search.js";
 import { initTooltip, installTooltipAutoInit } from "./tooltips.js";
+import { DEFAULT_SESSION_KEY, roleRank } from "./data-manager.js";
 
 // `icon` is an Iconify `tabler:*` id, same convention used suite-wide.
 // `built` distinguishes real tools from roadmap-only entries — kept
@@ -29,7 +30,7 @@ const TOOL_DEFINITIONS = [
     id: "repository",
     label: "Repository",
     icon: "tabler:notebook",
-    summary: "Wiki-style campaign journal",
+    summary: "Wiki-style game journal",
     built: true,
   },
   {
@@ -73,8 +74,24 @@ const TOOL_DEFINITIONS = [
     icon: "tabler:cloud-download",
     summary: "Manage data or import external content",
     built: true,
+    // Lowest tier that sees the tool in the nav at all.
+    minTier: "gm",
   },
 ];
+
+// The signed-in user's tier as the session already stored it; no one signed in is "free".
+function currentTier() {
+  try {
+    return JSON.parse(window.localStorage.getItem(DEFAULT_SESSION_KEY))?.user?.tier || "free";
+  } catch (error) {
+    return "free";
+  }
+}
+
+function isToolVisible(tool) {
+  return !tool.minTier || roleRank(currentTier()) >= roleRank(tool.minTier);
+}
+
 
 // The suite's own root folder name — every relative path here assumes this
 // fixed layout. The Dashboard alone lives directly inside it rather than
@@ -151,6 +168,10 @@ export function resolveDocsHref(currentSection) {
   return resolveAccountHref(currentSection).replace("account.html", "docs.html");
 }
 
+export function resolveFindGameHref(currentSection) {
+  return resolveAccountHref(currentSection).replace("account.html", "find-a-game.html");
+}
+
 // The same tool-card grid the dropdown builds below — one rendering path
 // for both surfaces. The Dashboard isn't in TOOL_DEFINITIONS; it's reached
 // via the dedicated home icon in initToolNavigation instead.
@@ -159,7 +180,7 @@ export function renderToolGrid(container, { currentSection = resolveToolContextP
     return;
   }
   container.innerHTML = "";
-  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false);
+  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false && isToolVisible(tool));
   const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
   const grid = document.createElement("div");
   grid.className = "undercroft-tool-grid";
@@ -226,10 +247,6 @@ function initToolNavigation(root = document) {
   const currentSection = resolveToolContextPath();
   // Current tool leads the grid, then the rest in definition order. No
   // matching definition (account.html) means plain order, none marked current.
-  const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false);
-  const orderedBuilt = activeDefinition
-    ? [activeDefinition, ...builtTools.filter((tool) => tool.id !== activeTool)]
-    : builtTools;
   const unbuiltOthers = TOOL_DEFINITIONS.filter((tool) => tool.built === false);
 
   primaryNav.innerHTML = "";
@@ -268,9 +285,16 @@ function initToolNavigation(root = document) {
 
   const grid = document.createElement("div");
   grid.className = "undercroft-tool-grid";
-  orderedBuilt.forEach((tool) =>
-    grid.appendChild(buildToolCard(tool, currentSection, true, tool.id === activeTool))
-  );
+  // Rebuilt when the user signs in or out, since which tools show depends on their tier.
+  const fillGrid = () => {
+    const builtTools = TOOL_DEFINITIONS.filter((tool) => tool.built !== false && isToolVisible(tool));
+    const orderedBuilt = activeDefinition && isToolVisible(activeDefinition)
+      ? [activeDefinition, ...builtTools.filter((tool) => tool.id !== activeTool)]
+      : builtTools;
+    grid.replaceChildren(...orderedBuilt.map((tool) => buildToolCard(tool, currentSection, true, tool.id === activeTool)));
+  };
+  fillGrid();
+  window.addEventListener("undercroft:auth-changed", fillGrid);
   menu.appendChild(grid);
 
   if (unbuiltOthers.length) {

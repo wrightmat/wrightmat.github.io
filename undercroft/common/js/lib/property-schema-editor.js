@@ -157,7 +157,7 @@ export function fieldValueColumnState(field) {
 // with it (push an undo entry, mark dirty, or nothing at all) in the
 // second. Both are optional — omit them for a container that doesn't need
 // undo integration at all.
-export function initPropertySortable(container, ctx = {}) {
+export function initPropertySortable(container, ctx = {}, { handle = null } = {}) {
   if (!container) return;
   // SortableJS is a deferred CDN script (see Loom's own index.html comment
   // on load order) — this can run before it's finished loading the very
@@ -166,13 +166,13 @@ export function initPropertySortable(container, ctx = {}) {
   // before yielding to any timer, so a setTimeout(0) retry is guaranteed to
   // land after Sortable.min.js has finished executing.
   if (typeof Sortable === "undefined") {
-    window.setTimeout(() => initPropertySortable(container, ctx), 0);
+    window.setTimeout(() => initPropertySortable(container, ctx, { handle }), 0);
     return;
   }
   let dragBeforeSnapshot = null;
   createSortable(container, {
-    handle: null,
-    filter: "input, select, textarea, button:not([data-property-type])",
+    handle,
+    filter: handle ? undefined : "input, select, textarea, button:not([data-property-type])",
     preventOnFilter: false,
     onStart: () => {
       dragBeforeSnapshot = ctx.captureDragSnapshot ? ctx.captureDragSnapshot() : null;
@@ -288,7 +288,13 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
   if (!container) return null;
   void ensureReservedKeyDatalist();
   const row = document.createElement("div");
-  row.className = "border rounded-3 p-2 d-flex flex-column gap-2";
+  // The rows inside a Records field or an Object's sub-fields sit flat, like
+  // an Enum's value rows, instead of each getting a card border. They keep
+  // `border rounded-3` because the handlers below find a row by that
+  // selector; `border-0` hides it.
+  row.className = container.matches("[data-system-item-children], [data-system-children]")
+    ? "border border-0 rounded-3 d-flex flex-column gap-2"
+    : "border rounded-3 p-2 d-flex flex-column gap-2";
   // Kept so collectFieldFromRow can merge its output back over this instead
   // of reconstructing the field from only the inputs below — any property
   // this editor has no dedicated control for (a single field's own stat
@@ -347,6 +353,7 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
     field.type === "object" && field.values && typeof field.values === "object" && !Array.isArray(field.values);
   row.innerHTML = `
     <div class="d-flex align-items-center gap-2">
+      <span class="flex-shrink-0 text-body-secondary d-inline-flex" style="cursor: grab;" data-sortable-handle><span class="iconify" data-icon="tabler:grip-vertical" aria-hidden="true"></span></span>
       <button
         type="button"
         class="btn btn-outline-secondary btn-sm flex-shrink-0"
@@ -511,6 +518,7 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
   const valuesSection = row.querySelector("[data-system-values-section]");
   const itemSection = row.querySelector("[data-system-item-section]");
   const valueRowsContainer = row.querySelector("[data-system-value-rows]");
+  initPropertySortable(valueRowsContainer, ctx, { handle: "[data-sortable-handle]" });
 
   const showHide = (el, show) => {
     el.hidden = !show;
@@ -637,6 +645,7 @@ export function renderPropertyRow(field = {}, container, ctx = {}) {
       // call's own comment.
       ctx.refreshTooltips?.(entryRow);
       const entryValueRows = entryRow.querySelector("[data-system-object-map-value-rows]");
+      initPropertySortable(entryValueRows, ctx, { handle: "[data-sortable-handle]" });
       (Array.isArray(templateValues) ? templateValues : []).forEach((entry) => {
         const valueRow = renderValueRow(entry, entryValueRows);
         ctx.refreshTooltips?.(valueRow);
@@ -730,6 +739,7 @@ export function renderValueRow(entry = {}, container) {
   row.dataset.systemValueRow = "";
   row._originalValue = entry;
   row.innerHTML = `
+    <span class="flex-shrink-0 text-body-secondary d-inline-flex" style="cursor: grab;" data-sortable-handle><span class="iconify" data-icon="tabler:grip-vertical" aria-hidden="true"></span></span>
     <input class="form-control form-control-sm flex-shrink-0" style="width: 10rem;" placeholder="Name" value="${escapeHtml(name)}" data-value-name />
     ${columnInputs}
     <input class="form-control form-control-sm font-monospace flex-grow-1" style="min-width: 6rem;" placeholder="Extra JSON" value="${escapeHtml(extraJson)}" data-value-extra />

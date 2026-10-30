@@ -304,7 +304,7 @@ export function initMapWidget(
   // drawing/shape, not just their own — fetched once via the same generic
   // ownership.js helper every other record's owner-check uses. Deliberately
   // matchesOwner()/admin-tier ONLY, not allowsDelete()'s broader "or an
-  // edit-permission share" rule — every campaign member already holds an
+  // edit-permission share" rule — every group member already holds an
   // edit share on a spotlighted map (that's what lets players save their
   // OWN marker moves/drawings), so allowsDelete() would let any player
   // manage any other player's drawing too.
@@ -436,7 +436,7 @@ export function initMapWidget(
     if (event.button !== 0 || !baseMapManager || !map) return;
     if (activeTool === "ping") {
       if (!groupId) {
-        status?.show("No active campaign to ping in.", { type: "warning", timeout: 2500 });
+        status?.show("No active group to ping in.", { type: "warning", timeout: 2500 });
         return;
       }
       const overlay = baseMapManager.getOverlayContainer();
@@ -655,7 +655,7 @@ export function initMapWidget(
 
   async function toggleVisibility() {
     if (!groupId) {
-      status?.show("No active campaign to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
       return;
     }
     try {
@@ -956,11 +956,11 @@ export function initMapWidget(
     })();
   }
 
-  // The campaign's currently active/spotlighted Encounter — same shape and
+  // The group's currently active/spotlighted Encounter — same shape and
   // reasoning as orrery/js/app.js's own activeEncounterCache: a Monster/NPC
   // combatant's live conditions only exist per-instance on the Encounter
   // record, never the shared record itself. groupId is fixed for this
-  // widget's whole lifetime, unlike Orrery's per-campaign-switch cache
+  // widget's whole lifetime, unlike Orrery's per-group-switch cache
   // keyed by groupId — a single slot is enough here. Same staleness fix as
   // characterPayloadCache above.
   const ACTIVE_ENCOUNTER_STALE_MS = 8000;

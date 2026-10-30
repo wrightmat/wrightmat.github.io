@@ -1,0 +1,202 @@
+{
+  "role": [
+    {
+      "id": "gm",
+      "label": "GM"
+    },
+    {
+      "id": "player",
+      "label": "Player"
+    },
+    {
+      "id": "both",
+      "label": "Both"
+    }
+  ],
+  "experience": [
+    {
+      "id": "new",
+      "label": "New to tabletop RPGs"
+    },
+    {
+      "id": "some",
+      "label": "Some experience"
+    },
+    {
+      "id": "experienced",
+      "label": "Experienced"
+    },
+    {
+      "id": "veteran",
+      "label": "Veteran"
+    }
+  ],
+  "sessionLength": [
+    {
+      "id": "short",
+      "label": "Under 2 hours"
+    },
+    {
+      "id": "medium",
+      "label": "2 to 3 hours"
+    },
+    {
+      "id": "long",
+      "label": "3 to 4 hours"
+    },
+    {
+      "id": "marathon",
+      "label": "Over 4 hours"
+    }
+  ],
+  "ageRange": [
+    {
+      "id": "all",
+      "label": "All ages"
+    },
+    {
+      "id": "teen",
+      "label": "13 and up"
+    },
+    {
+      "id": "adult",
+      "label": "18 and up"
+    },
+    {
+      "id": "mature",
+      "label": "21 and up"
+    }
+  ],
+  "platform": [
+    {
+      "id": "in-person",
+      "label": "In person"
+    },
+    {
+      "id": "online",
+      "label": "Online (any)"
+    },
+    {
+      "id": "discord",
+      "label": "Discord"
+    },
+    {
+      "id": "roll20",
+      "label": "Roll20"
+    },
+    {
+      "id": "foundry",
+      "label": "Foundry VTT"
+    },
+    {
+      "id": "owlbear",
+      "label": "Owlbear Rodeo"
+    },
+    {
+      "id": "tabletop-sim",
+      "label": "Tabletop Simulator"
+    },
+    {
+      "id": "play-by-post",
+      "label": "Play by post"
+    }
+  ],
+  "openTo": [
+    {
+      "id": "looking",
+      "label": "Looking for a game"
+    },
+    {
+      "id": "recruiting",
+      "label": "Recruiting"
+    }
+  ],
+  "playMode": [
+    {
+      "id": "in-person",
+      "label": "In person"
+    },
+    {
+      "id": "online",
+      "label": "Online"
+    },
+    {
+      "id": "both",
+      "label": "Both"
+    }
+  ],
+  "dayParts": [
+    {
+      "id": "morning",
+      "label": "Morning",
+      "startHour": 6,
+      "endHour": 12
+    },
+    {
+      "id": "afternoon",
+      "label": "Afternoon",
+      "startHour": 12,
+      "endHour": 17
+    },
+    {
+      "id": "evening",
+      "label": "Evening",
+      "startHour": 17,
+      "endHour": 22
+    },
+    {
+      "id": "night",
+      "label": "Late night",
+      "startHour": 22,
+      "endHour": 6
+    }
+  ],
+  "weekdays": [
+    {
+      "id": "mon",
+      "label": "Monday"
+    },
+    {
+      "id": "tue",
+      "label": "Tuesday"
+    },
+    {
+      "id": "wed",
+      "label": "Wednesday"
+    },
+    {
+      "id": "thu",
+      "label": "Thursday"
+    },
+    {
+      "id": "fri",
+      "label": "Friday"
+    },
+    {
+      "id": "sat",
+      "label": "Saturday"
+    },
+    {
+      "id": "sun",
+      "label": "Sunday"
+    }
+  ],
+  "locationPrecision": [
+    {
+      "id": "hidden",
+      "label": "Hidden"
+    },
+    {
+      "id": "country",
+      "label": "Country"
+    },
+    {
+      "id": "region",
+      "label": "Region"
+    },
+    {
+      "id": "area",
+      "label": "Area"
+    }
+  ]
+}

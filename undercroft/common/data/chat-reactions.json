@@ -1,3 +1,64 @@
 {
-  "emoji": ["👍", "👎", "❤️", "😂", "😮", "😢", "🎉", "🎲", "⚔️", "🛡️", "🔥", "👀"]
+  "emoji": [
+    {
+      "id": "reaction-1",
+      "emoji": "👍",
+      "description": "Agree"
+    },
+    {
+      "id": "reaction-2",
+      "emoji": "👎",
+      "description": "Disagree"
+    },
+    {
+      "id": "reaction-3",
+      "emoji": "❤️",
+      "description": "Love it"
+    },
+    {
+      "id": "reaction-4",
+      "emoji": "😂",
+      "description": "Funny"
+    },
+    {
+      "id": "reaction-5",
+      "emoji": "😮",
+      "description": "Surprised"
+    },
+    {
+      "id": "reaction-6",
+      "emoji": "😢",
+      "description": "Sad"
+    },
+    {
+      "id": "reaction-7",
+      "emoji": "🎉",
+      "description": "Celebrate"
+    },
+    {
+      "id": "reaction-8",
+      "emoji": "🎲",
+      "description": "Great roll"
+    },
+    {
+      "id": "reaction-9",
+      "emoji": "⚔️",
+      "description": "Battle cry"
+    },
+    {
+      "id": "reaction-10",
+      "emoji": "🛡️",
+      "description": "Defend"
+    },
+    {
+      "id": "reaction-11",
+      "emoji": "🔥",
+      "description": "Awesome"
+    },
+    {
+      "id": "reaction-12",
+      "emoji": "👀",
+      "description": "Watching closely"
+    }
+  ]
 }

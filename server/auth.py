@@ -15,11 +15,40 @@ from typing import Any, Dict, Optional
 
 from .roles import role_rank
 from .state import ServerState
+from .metrics import METRICS
+from .throttle import Throttle
 
 PBKDF2_ITERATIONS = 240_000
 PBKDF2_ALGO = "sha256"
 SALT_BYTES = 16
 VERIFICATION_CODE_TTL_MINUTES = 15
+MIN_PASSWORD_LENGTH = 10
+# A verification code that is guessed wrong this many times is burned; a new one must be requested.
+CODE_ATTEMPT_LIMIT = 5
+# At most one verification email per account per minute.
+RESEND_COOLDOWN_SECONDS = 60
+
+_code_attempts = Throttle(limit=CODE_ATTEMPT_LIMIT, window_seconds=VERIFICATION_CODE_TTL_MINUTES * 60)
+_resend_cooldown = Throttle(limit=1, window_seconds=RESEND_COOLDOWN_SECONDS)
+
+# The most common passwords seen in public breach lists; a short guard, not a full dictionary.
+_COMMON_PASSWORDS = frozenset(
+    """password password1 password12 password123 passw0rd p@ssw0rd p@ssword 1234567890 12345678 123456789
+    1234567 qwertyuiop qwerty123 qwertyuiop1 1q2w3e4r5t iloveyou123 letmein123 welcome123 admin12345
+    administrator changeme123 abc123456 abcdefghij 0123456789 1111111111 0000000000 football123 monkey1234
+    dragon1234 baseball123 sunshine123 princess123 trustno1234 undercroft""".split()
+)
+
+
+def validate_password(password: str, username: str = "", email: str = "") -> None:
+    value = password or ""
+    if len(value) < MIN_PASSWORD_LENGTH:
+        raise AuthError(f"Password must be at least {MIN_PASSWORD_LENGTH} characters long")
+    lowered = value.lower()
+    if lowered in _COMMON_PASSWORDS or len(set(lowered)) < 4:
+        raise AuthError("That password is too easy to guess")
+    if lowered in {(username or "").strip().lower(), (email or "").strip().lower()}:
+        raise AuthError("Password can't be the same as your username or email")
 
 
 @dataclass
@@ -42,7 +71,7 @@ def sanitize_user_row(row: sqlite3.Row) -> Dict[str, Any]:
         last_activity = row["last_login"] or None
     else:
         last_activity = None
-    return {
+    user = {
         "id": row["id"],
         "email": row["email"],
         "username": row["username"],
@@ -52,6 +81,10 @@ def sanitize_user_row(row: sqlite3.Row) -> Dict[str, Any]:
         "last_activity": last_activity,
         "is_active": bool(row["is_active"]),
     }
+    if "invite_label" in keys:
+        user["invite_label"] = row["invite_label"]
+        user["invite_code"] = row["invite_code"]
+    return user
 
 
 def hash_password(password: str) -> str:
@@ -85,7 +118,24 @@ def init_auth_db(conn: sqlite3.Connection) -> None:
             tier TEXT DEFAULT 'free',
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             last_login DATETIME,
-            is_active INTEGER DEFAULT 1
+            is_active INTEGER DEFAULT 1,
+            settings TEXT,
+            invite_code TEXT
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS invites (
+            code TEXT PRIMARY KEY,
+            label TEXT NOT NULL,
+            tier TEXT NOT NULL,
+            created_by INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at DATETIME,
+            max_uses INTEGER,
+            active INTEGER DEFAULT 1,
+            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
         )
         """
     )
@@ -119,21 +169,10 @@ def init_auth_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
-    _migrate_users_table_for_settings(conn)
 
 
-# A plain nullable column with no constraint — unlike storage.py's
-# rename-and-rebuild migrations (needed there for structural changes SQLite
-# can't ALTER around), a bare ADD COLUMN is all this needs. Holds a small
-# per-user JSON blob (today: {"dashboardLayout": {...}}) — deliberately
-# general-purpose rather than dashboard-specific, so future per-user
-# preferences can land in the same column without another migration.
-def _migrate_users_table_for_settings(conn: sqlite3.Connection) -> None:
-    columns = {row["name"] for row in conn.execute("PRAGMA table_info(users)")}
-    if "settings" in columns:
-        return
-    conn.execute("ALTER TABLE users ADD COLUMN settings TEXT")
-    conn.commit()
+# `settings` is a small per-user JSON blob (today: {"dashboardLayout": {...}, "profile": {...}}),
+# general-purpose so future per-user preferences land in the same column.
 
 
 def get_user_settings(state: ServerState, user: User) -> Dict[str, Any]:
@@ -150,6 +189,8 @@ def get_user_settings(state: ServerState, user: User) -> Dict[str, Any]:
 def update_user_settings(state: ServerState, user: User, patch: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(patch, dict):
         raise AuthError("Settings patch must be an object")
+    if "profile" in patch:
+        raise AuthError("The community profile is saved from the Profile page")
     current = get_user_settings(state, user)
     current.update(patch)
     state.db.execute(
@@ -189,10 +230,12 @@ def latest_verification_record(state: ServerState, user_id: int) -> Optional[sql
 
 
 def send_verification_email(state: ServerState, email: str, code: str) -> None:
-    logging.info("Verification code for %s: %s", email, code)
+    if state.config.options.debug_verification_codes:
+        logging.info("Verification code for %s: %s", email, code)
     config = state.config.email
     if not config.enabled or not config.smtp_host or not config.sender:
         logging.info("Email delivery disabled or SMTP not configured; skipping send")
+        METRICS.inc("verification_emails_total", "skipped")
         return
 
     message = EmailMessage()
@@ -226,9 +269,16 @@ def send_verification_email(state: ServerState, email: str, code: str) -> None:
                 if config.smtp_username:
                     smtp.login(config.smtp_username, config.smtp_password or "")
                 smtp.send_message(message)
+        METRICS.inc("verification_emails_total", "sent")
     except Exception as exc:  # pragma: no cover - depends on SMTP environment
         logging.exception("Failed to send verification email")
+        METRICS.inc("verification_emails_total", "failed")
         raise AuthError("Unable to send verification email") from exc
+
+
+# Only a hash of each session token is stored, so a copy of the database can't be replayed as logins.
+def hash_session_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 def create_session(state: ServerState, user_id: int, ip: str, user_agent: str) -> Dict[str, str]:
@@ -239,7 +289,7 @@ def create_session(state: ServerState, user_id: int, ip: str, user_agent: str) -
         INSERT INTO sessions (user_id, session_token, ip_address, user_agent, expires_at)
         VALUES (?, ?, ?, ?, ?)
         """,
-        (user_id, token, ip, user_agent, expires_at.isoformat()),
+        (user_id, hash_session_token(token), ip, user_agent, expires_at.isoformat()),
     )
     state.db.commit()
     return {"token": token, "expires_at": expires_at.isoformat()}
@@ -288,6 +338,7 @@ def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[Us
     normalized = _normalize_session_token(token)
     if not normalized:
         return None
+    normalized = hash_session_token(normalized)
     try:
         row = state.read_db.execute(
             """
@@ -322,6 +373,13 @@ def get_user_by_session(state: ServerState, token: Optional[str]) -> Optional[Us
         )
         state.db.commit()
     return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"])
+
+
+def get_user_by_id(state: ServerState, user_id: int) -> Optional[User]:
+    row = state.db.execute(
+        "SELECT id, email, username, tier FROM users WHERE id = ? AND is_active = 1", (user_id,)
+    ).fetchone()
+    return User(id=row["id"], email=row["email"], username=row["username"], tier=row["tier"]) if row else None
 
 
 def get_user_by_username(state: ServerState, username: str) -> Optional[User]:
@@ -377,6 +435,8 @@ def list_users(state: ServerState) -> Dict[str, list[Dict[str, Any]]]:
             u.created_at,
             u.last_login,
             u.is_active,
+            u.invite_code,
+            i.label AS invite_label,
             CASE
                 WHEN u.last_login IS NULL AND s.last_accessed_at IS NULL THEN NULL
                 ELSE MAX(COALESCE(u.last_login, ''), COALESCE(s.last_accessed_at, ''))
@@ -388,6 +448,7 @@ def list_users(state: ServerState) -> Dict[str, list[Dict[str, Any]]]:
             WHERE is_active = 1
             GROUP BY user_id
         ) AS s ON s.user_id = u.id
+        LEFT JOIN invites AS i ON i.code = u.invite_code
         ORDER BY u.username
         """
     ).fetchall()
@@ -467,18 +528,23 @@ def update_email_address(state: ServerState, user: User, new_email: str, passwor
     return {"user": sanitize_user_row(updated)}
 
 
-def update_password(state: ServerState, user: User, current_password: str, new_password: str) -> Dict[str, Any]:
+# The password check and the new hash are slow on purpose, so both happen before the database lock is taken.
+def update_password(
+    state: ServerState, user: User, current_password: str, new_password: str, keep_token: Optional[str] = None
+) -> Dict[str, Any]:
     current = (current_password or "").strip()
     new = (new_password or "").strip()
-    if len(new) < 8:
-        raise AuthError("New password must be at least 8 characters long")
-    row = state.db.execute("SELECT password_hash FROM users WHERE id = ?", (user.id,)).fetchone()
+    validate_password(new, user.username, user.email)
+    row = state.read_db.execute("SELECT password_hash FROM users WHERE id = ?", (user.id,)).fetchone()
     if not row:
         raise AuthError("User not found")
     if not verify_password(current, row["password_hash"]):
         raise AuthError("Incorrect current password")
-    state.db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(new), user.id))
-    state.db.commit()
+    new_hash = hash_password(new)
+    with state.lock:
+        state.db.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash, user.id))
+        state.db.commit()
+        revoke_other_sessions(state, user.id, keep_token)
     return {"ok": True}
 
 
@@ -519,6 +585,7 @@ def admin_create_user(state: ServerState, username: str, email: str, password: s
         raise AuthError("username, email, and password are required")
     if tier_value not in tiers:
         raise AuthError("Unknown tier")
+    validate_password(password, username, email_value)
     password_hash = hash_password(password)
     try:
         # is_active=1 unconditionally — an admin creating the account directly
@@ -535,65 +602,87 @@ def admin_create_user(state: ServerState, username: str, email: str, password: s
     return {"user": sanitize_user_row(user_row)}
 
 
+REGISTRATION_NOTICE = "If that address can be used, a verification code is on its way."
+
+
+def _has_unfinished_signup(state: ServerState, user_id: int) -> bool:
+    # An account that was never verified is a pending signup; one an admin has switched off
+    # (it did verify once) is not, and registering can't bring it back.
+    verified = state.db.execute(
+        "SELECT 1 FROM email_verifications WHERE user_id = ? AND verified_at IS NOT NULL LIMIT 1", (user_id,)
+    ).fetchone()
+    return verified is None
+
+
+# Hashing and the verification email (SMTP can take seconds) both happen outside the database lock.
 def register_user(state: ServerState, payload: Dict[str, str]) -> Dict[str, str]:
     email = payload.get("email", "").strip().lower()
     username = payload.get("username", "").strip()
     password = payload.get("password", "")
     if not email or not username or not password:
         raise AuthError("email, username, and password are required")
-    password_hash = hash_password(password)
+    # Checked first, so a bad code never says anything about which accounts exist.
+    from .invites import validate_invite
+
+    invite_code = str(payload.get("invite") or "").strip().lower()
+    if state.config.options.require_invite and not invite_code:
+        raise AuthError("You need an invite code to create an account")
+    if invite_code:
+        validate_invite(state, invite_code)
+    validate_password(password, username, email)
     require_verification = state.config.options.require_email_verification
-    is_active = 0 if require_verification else 1
-    try:
-        state.db.execute(
-            "INSERT INTO users (email, username, password_hash, tier, is_active) VALUES (?, ?, ?, ?, ?)",
-            (email, username, password_hash, "free", is_active),
-        )
-        state.db.commit()
-    except sqlite3.IntegrityError as exc:
+    password_hash = hash_password(password)
+    to_send = None
+    with state.lock:
         existing = state.db.execute(
             "SELECT * FROM users WHERE email = ? OR username = ?",
             (email, username),
         ).fetchone()
-        if existing and not existing["is_active"] and require_verification:
+        if existing:
+            if not require_verification:
+                raise AuthError("email or username already exists")
+            # Existing accounts are never touched and the reply is the same as for a new one, so this
+            # route can't be used to learn who has an account. A pending signup just gets a fresh code.
+            if (
+                not existing["is_active"]
+                and _has_unfinished_signup(state, existing["id"])
+                and not _resend_cooldown.wait_seconds([f"user:{existing['id']}"])
+            ):
+                _resend_cooldown.record([f"user:{existing['id']}"])
+                to_send = (existing["email"], create_verification_record(state, existing["id"]))
+            result = {"requires_verification": True, "message": REGISTRATION_NOTICE}
+        else:
+            is_active = 0 if require_verification else 1
+            # Checked again under the lock that inserts the account, so two sign-ups can't both take the last seat.
+            invite = validate_invite(state, invite_code) if invite_code else None
             state.db.execute(
-                "UPDATE users SET password_hash = ? WHERE id = ?",
-                (password_hash, existing["id"]),
+                "INSERT INTO users (email, username, password_hash, tier, is_active, invite_code) VALUES (?, ?, ?, ?, ?, ?)",
+                (email, username, password_hash, invite["tier"] if invite else "free", is_active, invite["code"] if invite else None),
             )
             state.db.commit()
-            code = create_verification_record(state, existing["id"])
-            send_verification_email(state, existing["email"], code)
-            result = {
-                "requires_verification": True,
-                "message": "Verification code resent",
-                "user": sanitize_user_row(existing),
-            }
-            if state.config.options.debug_verification_codes:
-                result["verification_code"] = code
-            return result
-        raise AuthError("email or username already exists") from exc
-    user_row = state.db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-    sanitized = sanitize_user_row(user_row)
-    if require_verification:
-        code = create_verification_record(state, user_row["id"])
-        send_verification_email(state, email, code)
-        result = {
-            "requires_verification": True,
-            "user": sanitized,
-        }
-        if state.config.options.debug_verification_codes:
-            result["verification_code"] = code
-        return result
-    session = create_session(state, user_row["id"], payload.get("ip", ""), payload.get("user_agent", ""))
-    return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitized}
+            user_row = state.db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+            if require_verification:
+                _resend_cooldown.record([f"user:{user_row['id']}"])
+                code = create_verification_record(state, user_row["id"])
+                to_send = (email, code)
+                result = {"requires_verification": True, "message": REGISTRATION_NOTICE}
+                if state.config.options.debug_verification_codes:
+                    result["verification_code"] = code
+            else:
+                session = create_session(state, user_row["id"], payload.get("ip", ""), payload.get("user_agent", ""))
+                result = {"token": session["token"], "expires_at": session["expires_at"], "user": sanitize_user_row(user_row)}
+    if to_send:
+        send_verification_email(state, *to_send)
+    return result
 
 
+# The slow password check runs on the lock-free read connection; only the writes take the database lock.
 def login_user(state: ServerState, payload: Dict[str, str], ip: str, user_agent: str) -> Dict[str, str]:
     username = payload.get("username", "").strip()
     if not username:
         username = payload.get("username_or_email", "").strip()
     password = payload.get("password", "")
-    row = state.db.execute(
+    row = state.read_db.execute(
         "SELECT id, password_hash FROM users WHERE (username = ? OR email = ?) AND is_active = 1",
         (username, username),
     ).fetchone()
@@ -601,10 +690,12 @@ def login_user(state: ServerState, payload: Dict[str, str], ip: str, user_agent:
         raise AuthError("Invalid credentials")
     if not verify_password(password, row["password_hash"]):
         raise AuthError("Invalid credentials")
-    state.db.execute("UPDATE users SET last_login = ? WHERE id = ?", (datetime.utcnow().isoformat(), row["id"]))
-    state.db.commit()
-    session = create_session(state, row["id"], ip, user_agent)
-    user_row = state.db.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
+    with state.lock:
+        state.db.execute("UPDATE users SET last_login = ? WHERE id = ?", (datetime.utcnow().isoformat(), row["id"]))
+        state.db.commit()
+        cleanup_sessions(state)
+        session = create_session(state, row["id"], ip, user_agent)
+        user_row = state.db.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
     return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitize_user_row(user_row)}
 
 
@@ -620,10 +711,6 @@ def verify_registration(state: ServerState, payload: Dict[str, str]) -> Dict[str
     if not user_row:
         raise AuthError("User not found")
     record = latest_verification_record(state, user_row["id"])
-    if user_row["is_active"] and not record:
-        session = create_session(state, user_row["id"], payload.get("ip", ""), payload.get("user_agent", ""))
-        sanitized = sanitize_user_row(user_row)
-        return {"token": session["token"], "expires_at": session["expires_at"], "user": sanitized}
     if not record:
         raise AuthError("No verification code found")
     expires_at = _parse_expiry(record["expires_at"])
@@ -631,7 +718,13 @@ def verify_registration(state: ServerState, payload: Dict[str, str]) -> Dict[str
         state.db.execute("UPDATE email_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
         state.db.commit()
         raise AuthError("Verification code expired")
+    attempt_key = f"code:{record['id']}"
     if record["code"].strip() != code:
+        _code_attempts.record([attempt_key])
+        if _code_attempts.wait_seconds([attempt_key]):
+            state.db.execute("UPDATE email_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+            state.db.commit()
+            raise AuthError("Too many incorrect codes. Request a new code.")
         raise AuthError("Invalid verification code")
     state.db.execute(
         "UPDATE email_verifications SET is_used = 1, verified_at = ? WHERE id = ?",
@@ -650,31 +743,32 @@ def verify_registration(state: ServerState, payload: Dict[str, str]) -> Dict[str
 def logout_user(state: ServerState, token: Optional[str]) -> None:
     if not token:
         return
-    state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (token,))
+    state.db.execute("UPDATE sessions SET is_active = 0 WHERE session_token = ?", (hash_session_token(token),))
+    state.db.commit()
+
+
+def revoke_other_sessions(state: ServerState, user_id: int, keep_token: Optional[str]) -> None:
+    keep = hash_session_token(keep_token) if keep_token else ""
+    state.db.execute(
+        "UPDATE sessions SET is_active = 0 WHERE user_id = ? AND session_token != ?",
+        (user_id, keep),
+    )
     state.db.commit()
 
 
 def cleanup_sessions(state: ServerState) -> None:
     now = datetime.utcnow().isoformat()
-    state.db.execute("UPDATE sessions SET is_active = 0 WHERE expires_at < ?", (now,))
+    state.db.execute("DELETE FROM sessions WHERE is_active = 0 OR expires_at < ?", (now,))
     state.db.commit()
 
 
-def ensure_default_admin(state: ServerState) -> None:
-    options = state.config.options
-    username = (options.default_admin_username or "admin").strip() or "admin"
-    email = (options.default_admin_email or f"{username}@example.com").strip().lower()
-    password = options.default_admin_password or "admin"
-    existing = state.db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
-    if existing:
-        return
-    password_hash = hash_password(password)
-    state.db.execute(
-        "INSERT INTO users (email, username, password_hash, tier, is_active) VALUES (?, ?, ?, ?, 1)",
-        (email, username, password_hash, "admin"),
-    )
-    state.db.commit()
-    logging.info("Created default admin user '%s'", username)
+def has_active_admin(state: ServerState) -> bool:
+    return count_active_admins(state) > 0
+
+
+def create_admin_user(state: ServerState, username: str, email: str, password: str) -> None:
+    result = admin_create_user(state, username, email, password, "admin")
+    logging.info("Created admin user '%s'", result["user"]["username"])
 
 
 def ensure_default_test_users(state: ServerState) -> None:

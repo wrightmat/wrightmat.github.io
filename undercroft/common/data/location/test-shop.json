@@ -43,6 +43,6 @@
   "id": "test-shop",
   "mixingCoefficient": 0.2,
   "speciesWeights": [],
-  "archetypeOverrides": {},
+  "archetypes": [],
   "genericNameFallback": []
 }

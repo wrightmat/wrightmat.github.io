@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import http.server
 import json
+import hmac
+from contextlib import contextmanager
 import logging
 import sys
 import threading
@@ -13,6 +15,13 @@ from typing import Any, Callable, Dict, Optional
 
 from . import chat as chat_store
 from . import groups as group_store
+from . import campaigns as campaign_store
+from . import shared_lists
+from . import profiles as profile_store
+from . import applications as application_store
+from . import listings as listing_store
+from . import signal_report as report_store
+from . import signals as signal_store
 from . import sessions as session_store
 from . import spotlight as spotlight_store
 
@@ -20,7 +29,10 @@ from .auth import (
     AuthError,
     User,
     cleanup_sessions,
-    ensure_default_admin,
+    create_admin_user,
+    get_user_by_id,
+    has_active_admin,
+    revoke_other_sessions,
     ensure_default_test_users,
     get_user_by_session,
     get_user_by_username,
@@ -51,6 +63,7 @@ from .integrations import (
     get_ha_connection,
     is_deployment_secret_configured,
     list_deployment_secrets,
+    deployment_secret_updated_at,
     resolve_anthropic_api_key,
     resolve_ddb_session_cookie,
     resolve_deployment_secret,
@@ -76,6 +89,11 @@ from .shares import (
 )
 from .state import ServerState, configure_logging
 from .static import serve_from_root, serve_local_file
+from .metrics import METRICS, file_size, process_memory_bytes, route_label
+from . import invites as invite_store
+from .data_dir import prepare_secrets_dir, seed_data_dir, sync_defaults
+from .throttle import Throttle
+from .tickets import issue_ticket, redeem_ticket
 from .kinds import normalize_kind
 from .storage import (
     AuthError as StorageAuthError,
@@ -95,7 +113,7 @@ from .storage import (
 TOUCH_FLUSH_INTERVAL_SECONDS = 30
 # A credential that changes on the order of weeks (a D&D Beyond session
 # cookie) doesn't need anything tighter than a daily check — this exists so
-# staleness is caught (and visible in Loom's Auth tab, plus the proactive
+# staleness is caught (and visible in Loom's Admin tab, plus the proactive
 # toast) even on a long-running deployment nobody happens to trigger a real
 # DDB fetch or an explicit Check Now on for a while.
 DDB_AUTH_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
@@ -108,6 +126,30 @@ DDB_AUTH_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 # stream lifetime this way — rather than looping forever — bounds how many
 # stale threads a browser tab left open in a background window could ever
 # accumulate.
+# Simultaneous open connections (each live-stream subscriber holds one for its whole window).
+MAX_CONNECTIONS = 400
+
+# 'unsafe-eval' is for the formula engine (common/js/lib/formula-engine.js builds each formula with `new Function`);
+# without it every template and System formula would fail once this policy is enforced.
+# `http:` and `https:` in connect-src are for WLED lights, which the page talks to directly at whatever address the
+# user entered (a LAN IP, or an https address reached through a tunnel such as Tailscale).
+# Report-only until every page has been seen to load without violations; violations are POSTed to /csp-report.
+CSP_REPORT_ONLY = (
+    "default-src 'self'; "
+    "script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; "
+    "worker-src 'self' blob:; "
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+    "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; "
+    "img-src 'self' data: blob: https:; media-src 'self' blob: https:; "
+    "connect-src 'self' https://corsproxy.io https://www.dnd5eapi.co https://cdn.jsdelivr.net "
+    "https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com http: https:; "
+    "frame-src 'self' blob: https:; object-src 'none'; base-uri 'self'; form-action 'self'; "
+    "frame-ancestors 'self'; report-uri /undercroft/api/csp-report"
+)
+
+# Every API route lives under this prefix; everything else is a static file.
+API_PREFIX = "/undercroft/api"
+
 LIVE_STREAM_SECONDS = 55
 LIVE_POLL_INTERVAL_SECONDS = 1.0
 
@@ -116,7 +158,28 @@ class SheetsHTTPServer(http.server.ThreadingHTTPServer):
     def __init__(self, server_address, RequestHandlerClass, state: ServerState):
         super().__init__(server_address, RequestHandlerClass)
         self.state = state
+        self._connection_slots = threading.BoundedSemaphore(MAX_CONNECTIONS)
+        self.open_connections = 0
+        self._connection_count_lock = threading.Lock()
         self._shutdown_event = threading.Event()
+
+    # Past the cap a new connection is dropped at once rather than queued on yet another thread.
+    def process_request(self, request, client_address) -> None:
+        if not self._connection_slots.acquire(blocking=False):
+            METRICS.inc("connections_refused_total")
+            self.shutdown_request(request)
+            return
+        with self._connection_count_lock:
+            self.open_connections += 1
+        super().process_request(request, client_address)
+
+    def process_request_thread(self, request, client_address) -> None:
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            with self._connection_count_lock:
+                self.open_connections -= 1
+            self._connection_slots.release()
 
     def serve_forever(self, poll_interval: float = 0.5) -> None:
         loader = self.state.config_loader
@@ -216,15 +279,104 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
 
     router = Router()
 
+    # Applied to every request, so the pool of threads a slow or stalled client can hold is bounded.
+    timeout = 60
+
+    def _begin(self, route: str = "static") -> None:
+        self._t0 = time.perf_counter()
+        self._route = route
+        self._lock_wait = 0.0
+        self._lock_hold = 0.0
+        self._bytes = 0
+
+    @contextmanager
+    def _timed_lock(self):
+        """The database lock, with how long this request waited for it and held it recorded."""
+        lock = self.server.state.lock
+        asked = time.perf_counter()
+        lock.acquire()
+        got = time.perf_counter()
+        self._lock_wait += got - asked
+        try:
+            yield
+        finally:
+            held = time.perf_counter() - got
+            lock.release()
+            self._lock_hold += held
+            METRICS.record_lock(got - asked, held)
+
+    def log_request(self, code="-", size="-") -> None:
+        started = getattr(self, "_t0", None)
+        if started is None:
+            return
+        self._t0 = None
+        seconds = time.perf_counter() - started
+        try:
+            status = int(code)
+        except (TypeError, ValueError):
+            status = 0
+        METRICS.record_request(self._route, status, seconds, self._lock_wait)
+        logging.info(
+            "access %s",
+            json.dumps(
+                {
+                    "ip": self.client_ip(),
+                    "method": self.command,
+                    "route": self._route,
+                    "status": status,
+                    "ms": round(seconds * 1000, 1),
+                    "bytes": self._bytes,
+                    "auth": bool(self.headers.get("Authorization")),
+                    "lock_ms": round(self._lock_wait * 1000, 1),
+                    "held_ms": round(self._lock_hold * 1000, 1),
+                },
+                separators=(",", ":"),
+            ),
+        )
+
     def log_message(self, fmt: str, *args) -> None:  # pragma: no cover - uses logging
-        logging.info("%s - - %s", self.client_address[0], fmt % args)
+        # Query strings can carry tickets and share tokens, so only the path is logged.
+        line = fmt % args
+        if "?" in line:
+            head, _, rest = line.partition("?")
+            line = head + "?…" + (" " + rest.rsplit(" ", 1)[-1] if " " in rest else "")
+        logging.info("%s - - %s", self.client_address[0], line)
+
+    def client_ip(self) -> str:
+        """The caller's address; X-Forwarded-For is believed only when it comes from a trusted proxy."""
+        direct = self.client_address[0]
+        trusted = self.server.state.config.options.trusted_proxies
+        if direct not in trusted:
+            return direct
+        forwarded = [part.strip() for part in self.headers.get("X-Forwarded-For", "").split(",") if part.strip()]
+        for candidate in reversed(forwarded):
+            if candidate not in trusted:
+                return candidate
+        return direct
+
+    def _is_secure(self) -> bool:
+        trusted = self.server.state.config.options.trusted_proxies
+        return self.client_address[0] in trusted and self.headers.get("X-Forwarded-Proto", "") == "https"
+
+    def _send_security_headers(self, content_type: str = "") -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "same-origin")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
+        self.send_header("Permissions-Policy", "camera=(), geolocation=(), microphone=(self)")
+        if self._is_secure():
+            self.send_header("Strict-Transport-Security", "max-age=31536000")
+        if content_type.startswith("text/html"):
+            self.send_header("Content-Security-Policy-Report-Only", CSP_REPORT_ONLY)
 
     # Utility methods
     def _send_response(self, response: Response) -> None:
         self.send_response(response.status)
-        self.send_header("Access-Control-Allow-Origin", self.server.state.config.options.cors_origin)
-        self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        cors_origin = self.server.state.config.options.cors_origin
+        if cors_origin:
+            self.send_header("Access-Control-Allow-Origin", cors_origin)
+            self.send_header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self._send_security_headers(response.headers.get("Content-Type", ""))
         for key, value in response.headers.items():
             self.send_header(key, value)
         if response.body is None:
@@ -232,6 +384,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             return
         self.send_header("Content-Length", str(len(response.body)))
+        self._bytes = len(response.body)
         self.end_headers()
         self.wfile.write(response.body)
 
@@ -263,10 +416,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # library_items.modified_at and reports what moved.
     #
     # EventSource (the browser API this feeds) cannot set a custom
-    # Authorization header, so auth here is a `token` query param instead,
-    # checked through the same session lookup every other endpoint's Bearer
-    # token goes through — not a separate, weaker auth path, just a
-    # different place the same token has to travel from.
+    # Authorization header, so auth here is a short-lived one-use `ticket` query param
+    # (POST /auth/ticket) instead of the session token, which must not appear in a URL or a log.
     #
     # The one hard constraint: server.state.lock (see do_GET's own comment
     # on it) still serializes every write and every not-yet-audited GET route
@@ -275,7 +426,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
     # only ever held for the brief "check what changed" query each tick,
     # released before writing to the socket or sleeping.
     def _handle_live_stream(self, group_id: str, query: Dict[str, list]) -> None:
-        token = (query.get("token", [""])[0] or "").strip()
+        ticket = (query.get("ticket", [""])[0] or "").strip()
         # Every other DB touch in this class (do_GET/do_POST's own handler
         # dispatch, and this same method's polling loop further below) holds
         # state.lock while it runs — this call is a session lookup, which
@@ -287,7 +438,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         # a live-stream connection stays open (and threads keep firing
         # ordinary API requests) for the whole LIVE_STREAM_SECONDS window.
         with self.server.state.lock:
-            user = get_user_by_session(self.server.state, token) if token else None
+            ticket_user_id = redeem_ticket(ticket, "live") if ticket else None
+            user = get_user_by_id(self.server.state, ticket_user_id) if ticket_user_id else None
         share_token = (query.get("share", [""])[0] or "").strip()
         if not user and share_token:
             with self.server.state.lock:
@@ -315,7 +467,8 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/event-stream")
             self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "keep-alive")
-            self.send_header("Access-Control-Allow-Origin", self.server.state.config.options.cors_origin)
+            if self.server.state.config.options.cors_origin:
+                self.send_header("Access-Control-Allow-Origin", self.server.state.config.options.cors_origin)
             self.end_headers()
         except (BrokenPipeError, ConnectionResetError, OSError):
             return
@@ -465,22 +618,39 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 return
             time.sleep(LIVE_POLL_INTERVAL_SECONDS)
 
-    def do_GET(self) -> None:
+    def _api_path(self) -> Optional[str]:
+        """The request path with the API prefix removed, or None for anything that is not an API call."""
         path_only = self.path.split("?")[0]
-        if path_only.startswith("/live/"):
+        if path_only == API_PREFIX or path_only.startswith(API_PREFIX + "/"):
+            return path_only[len(API_PREFIX) :] or "/"
+        return None
+
+    def do_GET(self) -> None:
+        self._begin()
+        api_path = self._api_path()
+        if api_path is not None and api_path.startswith("/live/"):
             from urllib.parse import parse_qs, urlsplit
 
-            group_id = path_only[len("/live/") :]
+            self._route = "/live/{group_id}"
+            group_id = api_path[len("/live/") :]
             query = parse_qs(urlsplit(self.path).query)
+            METRICS.live_subscribers(1)
             try:
                 self._handle_live_stream(group_id, query)
             except Exception:  # pragma: no cover - best-effort stream, never crash the server
                 logging.exception("Live stream error")
+            finally:
+                METRICS.live_subscribers(-1)
             return
         request = self._request()
-        match = self.router.match("GET", request.handler.path.split("?")[0])
+        match = self.router.match("GET", api_path) if api_path is not None else None
+        if api_path is not None and not match:
+            self._route = "api_unmatched"
+            self.respond(Response.json({"error": "Not found"}, status=HTTPStatus.NOT_FOUND))
+            return
         if match:
             route, params = match
+            self._route = route_label(route.pattern.pattern)
             request.params = params  # type: ignore[attr-defined]
             try:
                 # ThreadingHTTPServer runs each request on its own thread, but
@@ -505,7 +675,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 if route.unlocked:
                     result = route.handler(request)
                 else:
-                    with self.server.state.lock:
+                    with self._timed_lock():
                         result = route.handler(request)
                 self.respond(result)
                 return
@@ -520,29 +690,46 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 return
             except Exception as exc:  # pragma: no cover - fallback
                 logging.exception("GET handler error")
-                self.respond(Response.json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR))
+                self.respond(Response.json({"error": "Something went wrong"}, status=HTTPStatus.INTERNAL_SERVER_ERROR))
                 return
         # static fallback: serve any file relative to the repository root
         path_only = request.handler.path.split("?")[0]
+        if path_only == "/undercroft":
+            # Relative asset URLs only resolve from the trailing-slash form.
+            self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+            self.send_header("Location", "/undercroft/")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         relative_path = path_only.lstrip("/")
         try:
-            response = serve_from_root(self.server.state, relative_path)
+            response = serve_from_root(self.server.state, relative_path, self.headers.get("If-None-Match"))
         except FileNotFoundError:
             self.send_error(HTTPStatus.NOT_FOUND, "Not Found")
             return
         self.respond(response)
 
     def do_POST(self) -> None:
+        self._begin()
         request = self._request()
-        match = self.router.match("POST", request.handler.path.split("?")[0])
+        if request.oversize:
+            self.respond(Response.json({"error": "Request too large"}, status=HTTPStatus.REQUEST_ENTITY_TOO_LARGE))
+            return
+        api_path = self._api_path()
+        match = self.router.match("POST", api_path) if api_path is not None else None
         if match:
             route, params = match
+            self._route = route_label(route.pattern.pattern)
             request.params = params  # type: ignore[attr-defined]
             try:
                 # See do_GET's comment — same shared-connection concurrency
-                # concern applies to writes.
-                with self.server.state.lock:
+                # concern applies to writes; a route marked unlocked takes the lock itself, only around
+                # the writes it makes.
+                if route.unlocked:
                     result = route.handler(request)
+                else:
+                    with self._timed_lock():
+                        result = route.handler(request)
                 self.respond(result)
                 return
             except AuthError as exc:
@@ -556,7 +743,7 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
                 return
             except Exception as exc:  # pragma: no cover
                 logging.exception("POST handler error")
-                self.respond(Response.json({"error": str(exc)}, status=HTTPStatus.INTERNAL_SERVER_ERROR))
+                self.respond(Response.json({"error": "Something went wrong"}, status=HTTPStatus.INTERNAL_SERVER_ERROR))
                 return
         self.respond(Response.json({"error": "Not found"}, status=HTTPStatus.NOT_FOUND))
 
@@ -576,6 +763,37 @@ def register_routes():
         if not user:
             raise AuthError("Authentication required")
         return user
+
+    def require_tier(request: Request, tier: str) -> User:
+        user = require_user(request)
+        if role_rank(user.tier) < role_rank(tier):
+            raise AuthError(f"{tier.capitalize()} tier or higher required")
+        return user
+
+    # Each user's recent AI-note calls, so one account can't run up the shared API key.
+    NOTE_LIMIT_COUNT = 20
+    NOTE_LIMIT_WINDOW_SECONDS = 3600
+    note_calls: Dict[int, list] = {}
+    note_calls_lock = threading.Lock()
+
+    def note_quota(user: User, spend: bool = False) -> tuple[int, int]:
+        """(notes left in the window, seconds until the oldest call ages out); with `spend`, records a call and reports the count left before it."""
+        now = time.monotonic()
+        with note_calls_lock:
+            recent = [t for t in note_calls.get(user.id, []) if now - t < NOTE_LIMIT_WINDOW_SECONDS]
+            remaining = max(0, NOTE_LIMIT_COUNT - len(recent))
+            if spend and remaining > 0:
+                recent.append(now)
+            note_calls[user.id] = recent
+            reset = int(NOTE_LIMIT_WINDOW_SECONDS - (now - min(recent))) + 1 if recent else 0
+            return remaining, reset
+
+    # GET /notes/quota — lets the AI-note buttons dither (with an explanation) before a click is wasted.
+    def handle_note_quota(request: Request) -> Response:
+        remaining, reset = note_quota(require_user(request))
+        return json_response({"limit": NOTE_LIMIT_COUNT, "remaining": remaining, "resetsInSeconds": reset})
+
+    router.add("GET", r"^/notes/quota$", handle_note_quota)
 
     def bucket_from_content_type(content_type: str) -> str:
         # content_type and Library `kind` are the same string now — every kind
@@ -667,196 +885,26 @@ def register_routes():
 
     router.add("GET", r"^/content/builtins$", handle_content_builtins)
 
-    # POST /press/custom-sizes
-    def resolve_press_custom_sizes_path(state: ServerState) -> Path:
-        return state.root_dir / "undercroft" / "press" / "data" / "custom-page-sizes.json"
+    # Community-defined lists (fonts, clips, tokens, page sizes, reactions, safety tools,
+    # endorsement and listing tags): one set of routes per list, see shared_lists.py.
+    def register_shared_list(name: str, spec) -> None:
+        def handle_save(request: Request) -> Response:
+            return json_response(shared_lists.save_item(request.state, request.handler.current_user(), name, require_json(request)))
 
-    def handle_press_custom_size_save(request: Request) -> Response:
-        payload = require_json(request)
-        size = payload.get("size", payload)
-        if not size or not isinstance(size, dict) or not size.get("id"):
-            return json_response({"error": "Invalid custom page size payload"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_press_custom_sizes_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        sizes = existing.get("sizes") if isinstance(existing.get("sizes"), list) else []
-        sizes = [entry for entry in sizes if entry.get("id") != size.get("id")]
-        sizes.append(size)
-        serialized = json.dumps({"sizes": sizes}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "sizes": sizes})
+        def handle_delete(request: Request) -> Response:
+            data = require_json(request)
+            return json_response(shared_lists.delete_item(request.state, request.handler.current_user(), name, data.get("id")))
 
-    router.add("POST", r"^/press/custom-sizes$", handle_press_custom_size_save)
+        def handle_order(request: Request) -> Response:
+            data = require_json(request)
+            return json_response(shared_lists.save_order(request.state, request.handler.current_user(), name, data.get("ids")))
 
-    # POST /custom-fonts — a shared, server-persisted font library, not a
-    # Press-specific concept (Workbench's own Font field reads/writes the
-    # same list; see common/js/lib/font-library.js), same pattern as
-    # /soundboard/clips below.
-    def resolve_custom_fonts_path(state: ServerState) -> Path:
-        return state.root_dir / "undercroft" / "common" / "data" / "custom-fonts.json"
+        router.add("POST", rf"^{spec.route}$", handle_save)
+        router.add("POST", rf"^{spec.route}/delete$", handle_delete)
+        router.add("POST", rf"^{spec.route}/order$", handle_order)
 
-    def handle_custom_font_save(request: Request) -> Response:
-        user = request.handler.current_user()
-        if not user:
-            raise AuthError("Authentication required")
-        if role_rank(user.tier) < role_rank("creator"):
-            raise AuthError("Creator tier or higher required to add fonts")
-        payload = require_json(request)
-        font = payload.get("font", payload)
-        if not font or not isinstance(font, dict) or not font.get("id"):
-            return json_response({"error": "Invalid custom font payload"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_custom_fonts_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        fonts = existing.get("fonts") if isinstance(existing.get("fonts"), list) else []
-        fonts = [entry for entry in fonts if entry.get("id") != font.get("id")]
-        fonts.append(font)
-        serialized = json.dumps({"fonts": fonts}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "fonts": fonts})
-
-    router.add("POST", r"^/custom-fonts$", handle_custom_font_save)
-
-    # POST /custom-fonts/delete — this server has no do_DELETE at all
-    # (only do_GET/do_POST are wired up), so every deletion in this codebase
-    # goes through a POST .../delete route instead of a true HTTP DELETE
-    # (see /auth/users/delete, /content/{bucket}/{id}/delete).
-    def handle_custom_font_delete(request: Request) -> Response:
-        user = request.handler.current_user()
-        if not user or user.tier != "admin":
-            raise AuthError("Admin only")
-        payload = require_json(request)
-        font_id = payload.get("id")
-        if not font_id:
-            return json_response({"error": "font id required"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_custom_fonts_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        fonts = existing.get("fonts") if isinstance(existing.get("fonts"), list) else []
-        fonts = [entry for entry in fonts if entry.get("id") != font_id]
-        serialized = json.dumps({"fonts": fonts}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "fonts": fonts})
-
-    router.add("POST", r"^/custom-fonts/delete$", handle_custom_font_delete)
-
-    # POST /soundboard/clips — a shared, GM-buildable audio clip library for
-    # the Dashboard's own Soundboard widget, same pattern as custom-fonts.json
-    # above (a flat, server-persisted JSON list anyone gm+ can add to,
-    # upserted by id) rather than a Library kind — there's no per-clip
-    # ownership/sharing to model, just one shared catalog.
-    def resolve_soundboard_clips_path(state: ServerState) -> Path:
-        return state.root_dir / "undercroft" / "common" / "data" / "audio-clips.json"
-
-    def handle_soundboard_clip_save(request: Request) -> Response:
-        user = request.handler.current_user()
-        if not user:
-            raise AuthError("Authentication required")
-        if role_rank(user.tier) < role_rank("gm"):
-            raise AuthError("GM tier or higher required to add clips")
-        payload = require_json(request)
-        clip = payload.get("clip", payload)
-        if not clip or not isinstance(clip, dict) or not clip.get("id") or not clip.get("url"):
-            return json_response({"error": "Invalid clip payload"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_soundboard_clips_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        clips = existing.get("clips") if isinstance(existing.get("clips"), list) else []
-        clips = [entry for entry in clips if entry.get("id") != clip.get("id")]
-        clips.append(clip)
-        serialized = json.dumps({"clips": clips}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "clips": clips})
-
-    router.add("POST", r"^/soundboard/clips$", handle_soundboard_clip_save)
-
-    # POST /soundboard/clips/delete — same "no true HTTP DELETE" reasoning as
-    # /press/custom-fonts/delete above.
-    def handle_soundboard_clip_delete(request: Request) -> Response:
-        user = request.handler.current_user()
-        if not user or user.tier != "admin":
-            raise AuthError("Admin only")
-        payload = require_json(request)
-        clip_id = payload.get("id")
-        if not clip_id:
-            return json_response({"error": "clip id required"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_soundboard_clips_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        clips = existing.get("clips") if isinstance(existing.get("clips"), list) else []
-        clips = [entry for entry in clips if entry.get("id") != clip_id]
-        serialized = json.dumps({"clips": clips}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "clips": clips})
-
-    router.add("POST", r"^/soundboard/clips/delete$", handle_soundboard_clip_delete)
-
-    # POST /token-library — a shared, GM-buildable library of map-token image
-    # links (Orrery marker tokens, Forge NPC/Crucible Monster portraits),
-    # same pattern as audio-clips.json/custom-fonts.json above: a flat,
-    # server-persisted JSON list anyone gm+ can add to, upserted by id,
-    # rather than a Library kind — there's no per-token ownership/sharing to
-    # model, just one shared catalog of externally-hosted image links (no
-    # upload, no file hosting by this app).
-    def resolve_token_library_path(state: ServerState) -> Path:
-        return state.root_dir / "undercroft" / "common" / "data" / "token-library.json"
-
-    def handle_token_library_save(request: Request) -> Response:
-        user = request.handler.current_user()
-        if not user:
-            raise AuthError("Authentication required")
-        if role_rank(user.tier) < role_rank("gm"):
-            raise AuthError("GM tier or higher required to add tokens")
-        payload = require_json(request)
-        token = payload.get("token", payload)
-        if not token or not isinstance(token, dict) or not token.get("id") or not token.get("url"):
-            return json_response({"error": "Invalid token payload"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_token_library_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        tokens = existing.get("tokens") if isinstance(existing.get("tokens"), list) else []
-        tokens = [entry for entry in tokens if entry.get("id") != token.get("id")]
-        tokens.append(token)
-        serialized = json.dumps({"tokens": tokens}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "tokens": tokens})
-
-    router.add("POST", r"^/token-library$", handle_token_library_save)
-
-    # POST /token-library/delete — same "no true HTTP DELETE" reasoning as
-    # /soundboard/clips/delete above.
-    def handle_token_library_delete(request: Request) -> Response:
-        user = request.handler.current_user()
-        if not user or user.tier != "admin":
-            raise AuthError("Admin only")
-        payload = require_json(request)
-        token_id = payload.get("id")
-        if not token_id:
-            return json_response({"error": "token id required"}, status=HTTPStatus.BAD_REQUEST)
-        path = resolve_token_library_path(request.state)
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-        except (json.JSONDecodeError, OSError):
-            existing = {}
-        tokens = existing.get("tokens") if isinstance(existing.get("tokens"), list) else []
-        tokens = [entry for entry in tokens if entry.get("id") != token_id]
-        serialized = json.dumps({"tokens": tokens}, indent=2, sort_keys=False)
-        path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "tokens": tokens})
-
-    router.add("POST", r"^/token-library/delete$", handle_token_library_delete)
+    for _list_name, _list_spec in shared_lists.LISTS.items():
+        register_shared_list(_list_name, _list_spec)
 
     # GET /google-fonts-metadata — shared by both Press's and Workbench's
     # Font pickers (common/js/lib/font-library.js), not Press-specific.
@@ -888,17 +936,18 @@ def register_routes():
 
         return Response(status=200, body=body, headers={"Content-Type": "application/json; charset=utf-8"})
 
-    router.add("GET", r"^/google-fonts-metadata$", handle_google_fonts_metadata)
+    router.add("GET", r"^/google-fonts-metadata$", handle_google_fonts_metadata, unlocked=True)
 
     # POST /loom/mappings/{id}
     def resolve_loom_mapping_path(state: ServerState, mapping_id: str) -> Path:
-        base_dir = state.root_dir / "undercroft" / "loom" / "mappings"
+        base_dir = state.write_path("loom", "mappings")
         candidate = (base_dir / f"{mapping_id}.json").resolve()
         if not str(candidate).startswith(str(base_dir.resolve())):
             raise AuthError("Invalid mapping path")
         return candidate
 
     def handle_loom_mapping_save(request: Request) -> Response:
+        require_tier(request, "creator")
         params = getattr(request, "params")
         mapping_id = params["id"]
         payload = require_json(request)
@@ -908,12 +957,13 @@ def register_routes():
         path = resolve_loom_mapping_path(request.state, mapping_id)
         serialized = json.dumps(definition, indent=2, sort_keys=False)
         path.write_text(f"{serialized}\n", encoding="utf-8")
-        return json_response({"ok": True, "path": str(path.relative_to(request.state.root_dir))})
+        return json_response({"ok": True, "path": path.name})
 
     router.add("POST", r"^/loom/mappings/(?P<id>[^/]+)$", handle_loom_mapping_save)
 
     # POST /loom/mappings/{id}/rename
     def handle_loom_mapping_rename(request: Request) -> Response:
+        require_tier(request, "creator")
         params = getattr(request, "params")
         mapping_id = params["id"]
         payload = require_json(request)
@@ -927,7 +977,7 @@ def register_routes():
         if new_path.exists():
             return json_response({"error": "A mapping with that id already exists"}, status=HTTPStatus.CONFLICT)
         old_path.rename(new_path)
-        return json_response({"ok": True, "path": str(new_path.relative_to(request.state.root_dir))})
+        return json_response({"ok": True, "path": new_path.name})
 
     router.add("POST", r"^/loom/mappings/(?P<id>[^/]+)/rename$", handle_loom_mapping_rename)
 
@@ -946,7 +996,7 @@ def register_routes():
     # handle_google_fonts_metadata/handle_ddb_proxy above (urllib
     # only), reading the API key via integrations.py's own
     # resolve_anthropic_api_key (the encrypted deployment_secrets store,
-    # managed through Loom's Auth tab — falls back to a one-time migration
+    # managed through Loom's Admin tab — falls back to a one-time migration
     # from the legacy server/anthropic.local.json file if that's all a
     # given deployment has).
     FORGE_NOTE_SYSTEM_PROMPT = (
@@ -994,12 +1044,20 @@ def register_routes():
         import urllib.error
         import urllib.request
 
+        user = require_user(request)
+        remaining_before, _ = note_quota(user, spend=True)
+        if remaining_before <= 0:
+            METRICS.inc("throttled_total", "notes")
+            return json_response(
+                {"error": f"Note limit reached ({NOTE_LIMIT_COUNT} per hour). Try again later."},
+                status=HTTPStatus.TOO_MANY_REQUESTS,
+            )
         api_key = resolve_anthropic_api_key(request.state)
         if not api_key:
             return json_response(
                 {
                     "error": (
-                        "Missing Anthropic API key — set one in Loom's Auth tab (admin only), or copy "
+                        "Missing Anthropic API key — set one in Loom's Admin tab (admin only), or copy "
                         "server/anthropic.local.json.example to server/anthropic.local.json and fill in api_key."
                     )
                 },
@@ -1081,7 +1139,7 @@ def register_routes():
             format_result=_format_note_only,
         )
 
-    router.add("POST", r"^/forge/generate-note$", handle_forge_generate_note)
+    router.add("POST", r"^/forge/generate-note$", handle_forge_generate_note, unlocked=True)
 
     # POST /crucible/generate-note
     #
@@ -1138,7 +1196,7 @@ def register_routes():
             format_result=_format_name_and_note,
         )
 
-    router.add("POST", r"^/crucible/generate-note$", handle_crucible_generate_note)
+    router.add("POST", r"^/crucible/generate-note$", handle_crucible_generate_note, unlocked=True)
 
     # POST /vault/generate-note
     #
@@ -1195,7 +1253,7 @@ def register_routes():
             format_result=_format_name_and_note,
         )
 
-    router.add("POST", r"^/vault/generate-note$", handle_vault_generate_note)
+    router.add("POST", r"^/vault/generate-note$", handle_vault_generate_note, unlocked=True)
 
     # POST /sanctum/generate-note
     #
@@ -1255,7 +1313,7 @@ def register_routes():
             format_result=_format_name_and_note,
         )
 
-    router.add("POST", r"^/sanctum/generate-note$", handle_sanctum_generate_note)
+    router.add("POST", r"^/sanctum/generate-note$", handle_sanctum_generate_note, unlocked=True)
 
     # --- Home Assistant integration -----------------------------------------
     #
@@ -1399,7 +1457,7 @@ def register_routes():
             entities.append({"entityId": entity_id, "domain": entity_id.split(".", 1)[0], "friendlyName": friendly_name})
         return json_response({"entities": entities})
 
-    router.add("GET", r"^/home-assistant/entities$", handle_ha_entities)
+    router.add("GET", r"^/home-assistant/entities$", handle_ha_entities, unlocked=True)
 
     # GET /home-assistant/entity-state?entityId=... — unlike /entities above
     # (trimmed to just what a picker needs), this proxies ONE entity's real
@@ -1454,7 +1512,7 @@ def register_routes():
             }
         )
 
-    router.add("GET", r"^/home-assistant/entity-state$", handle_ha_entity_state)
+    router.add("GET", r"^/home-assistant/entity-state$", handle_ha_entity_state, unlocked=True)
 
     # POST /home-assistant/call-service — the one action route, generic
     # enough to cover both "control a device" and "trigger a routine": a
@@ -1501,7 +1559,7 @@ def register_routes():
             return json_response({"error": f"Unable to reach Home Assistant ({exc.reason})"}, status=HTTPStatus.BAD_GATEWAY)
         return json_response({"ok": True})
 
-    router.add("POST", r"^/home-assistant/call-service$", handle_ha_call_service)
+    router.add("POST", r"^/home-assistant/call-service$", handle_ha_call_service, unlocked=True)
 
     # --- Audio transcription (optional, for the Audio Recorder widget) -----
     #
@@ -1583,14 +1641,14 @@ def register_routes():
     #
     # Same gm-reads/admin-writes split as the transcription-server list
     # above, for the same reason — these affect every account's imports/
-    # note-generation, not just whoever edits them. Loom's own Auth tab
+    # note-generation, not just whoever edits them. Loom's own Admin tab
     # (admin-only) is the intended caller.
     # GET /auth/credentials — never returns either secret value, only
     # whether each is configured (same masking as get_ha_connection/
     # list_deployment_secrets' own hasKey above), plus the DDB session's
     # own last-known validity (server/ddb_auth_status.py).
     def handle_get_auth_credentials(request: Request) -> Response:
-        require_gm(request)
+        require_admin(request)
         ddb_status = get_ddb_auth_status(request.state)
         return json_response(
             {
@@ -1600,6 +1658,7 @@ def register_routes():
                 },
                 "anthropic": {
                     "configured": is_deployment_secret_configured(request.state, "anthropic"),
+                    "updatedAt": deployment_secret_updated_at(request.state, "anthropic"),
                 },
             }
         )
@@ -1648,11 +1707,11 @@ def register_routes():
     router.add("POST", r"^/auth/credentials/anthropic$", handle_save_anthropic_api_key)
 
     def handle_check_ddb_auth_status(request: Request) -> Response:
-        require_gm(request)
+        require_admin(request)
         result = check_ddb_auth_status(request.state)
         return json_response({"ddb": {"configured": is_deployment_secret_configured(request.state, "ddb-session"), **result}})
 
-    router.add("POST", r"^/auth/credentials/ddb-session/check$", handle_check_ddb_auth_status)
+    router.add("POST", r"^/auth/credentials/ddb-session/check$", handle_check_ddb_auth_status, unlocked=True)
 
     # POST /audio/transcribe-chunk — body is the raw audio bytes for ONE
     # recording chunk (a few minutes, never the whole session — see
@@ -1736,7 +1795,7 @@ def register_routes():
             )
         return json_response({"text": str(result.get("text") or "").strip()})
 
-    router.add("POST", r"^/audio/transcribe-chunk$", handle_audio_transcribe_chunk)
+    router.add("POST", r"^/audio/transcribe-chunk$", handle_audio_transcribe_chunk, unlocked=True)
 
     # POST /loom/suggest-feature-tags
     #
@@ -1834,7 +1893,7 @@ def register_routes():
     )
 
     def _load_feature_tag_examples(state: ServerState, limit: int = 60) -> list:
-        feature_dir = state.root_dir / "undercroft" / "common" / "data" / "feature"
+        feature_dir = state.write_path("common", "data", "feature")
         examples = []
         if not feature_dir.is_dir():
             return examples
@@ -1916,12 +1975,14 @@ def register_routes():
         import urllib.error
         import urllib.request
 
+        require_tier(request, "creator")
+
         api_key = resolve_anthropic_api_key(request.state)
         if not api_key:
             return json_response(
                 {
                     "error": (
-                        "Missing Anthropic API key — set one in Loom's Auth tab (admin only), or copy "
+                        "Missing Anthropic API key — set one in Loom's Admin tab (admin only), or copy "
                         "server/anthropic.local.json.example to server/anthropic.local.json and fill in api_key."
                     )
                 },
@@ -2005,7 +2066,7 @@ def register_routes():
         missing_ids = sorted(requested_ids - suggestions.keys())
         return json_response({"suggestions": suggestions, "missingIds": missing_ids})
 
-    router.add("POST", r"^/loom/suggest-feature-tags$", handle_loom_suggest_feature_tags)
+    router.add("POST", r"^/loom/suggest-feature-tags$", handle_loom_suggest_feature_tags, unlocked=True)
 
     # /library/{kind}/... (POST save/delete, GET list) is retired — every
     # Library kind (including the 9 that used to be plain, unauthenticated
@@ -2020,7 +2081,7 @@ def register_routes():
     # Fetches a dndbeyond.com (or monster-service.dndbeyond.com) resource
     # server-side and attaches a session cookie resolved via integrations.py's
     # own resolve_ddb_session_cookie (the encrypted deployment_secrets store,
-    # managed through Loom's Auth tab) — never from the request, never
+    # managed through Loom's Admin tab) — never from the request, never
     # from a third party. This exists because some D&D Beyond content (e.g.
     # non-free subclasses, or non-SRD monsters via monster-service) is only
     # served in full to a logged-in session; routing that session cookie
@@ -2037,6 +2098,7 @@ def register_routes():
         import urllib.request
         from urllib.parse import parse_qs, urlsplit
 
+        require_tier(request, "player")
         query = parse_qs(urlsplit(request.handler.path).query)
         target = query.get("url", [""])[0]
         if not target:
@@ -2075,7 +2137,7 @@ def register_routes():
 
         return Response(status=200, body=body, headers={"Content-Type": f"{content_type}; charset=utf-8"})
 
-    router.add("GET", r"^/ddb-proxy$", handle_ddb_proxy)
+    router.add("GET", r"^/ddb-proxy$", handle_ddb_proxy, unlocked=True)
 
     # GET /local-file?path=<absolute path>&token=<session token>
     #
@@ -2108,22 +2170,25 @@ def register_routes():
     # filesystem access) just gets a failed embed here, not a security
     # hole.
     #
-    # img/iframe src can't set a custom Authorization header (same
-    # limitation _handle_live_stream's own comment documents for
-    # EventSource) — token travels as a query param instead, checked
-    # through the same session lookup every other endpoint's Bearer token
-    # goes through.
+    # img/iframe src can't set a custom Authorization header (same limitation
+    # _handle_live_stream's own comment documents for EventSource), so the request carries a
+    # one-use ticket from POST /auth/ticket.
     LOCAL_FILE_ALLOWED_CLIENT_IPS = {"127.0.0.1", "::1"}
 
     def handle_local_file(request: Request) -> Response:
         from urllib.parse import parse_qs, urlsplit
 
+        # Behind a reverse proxy every request arrives from the proxy's loopback address, so the
+        # address check alone proves nothing there; the option must be on, and a forwarded request is refused.
+        if not request.state.config.options.local_file_access:
+            raise AuthError("Local file access is turned off")
         client_ip = request.handler.client_address[0]
-        if client_ip not in LOCAL_FILE_ALLOWED_CLIENT_IPS:
+        if client_ip not in LOCAL_FILE_ALLOWED_CLIENT_IPS or request.handler.headers.get("X-Forwarded-For"):
             raise AuthError("Local file access is only available from this machine")
         query = parse_qs(urlsplit(request.handler.path).query)
-        token = (query.get("token", [""])[0] or "").strip()
-        user = get_user_by_session(request.state, token) if token else None
+        ticket = (query.get("ticket", [""])[0] or "").strip()
+        user_id = redeem_ticket(ticket, "local-file") if ticket else None
+        user = get_user_by_id(request.state, user_id) if user_id else None
         if not user:
             raise AuthError("Authentication required")
         if role_rank(user.tier) < role_rank("gm"):
@@ -2268,8 +2333,8 @@ def register_routes():
         setting_id = data.get("setting_id")
         template_id = data.get("template_id")
         properties = data.get("properties")
-        campaign_day_index = data.get("campaign_day_index")
-        campaign_minutes_of_day = data.get("campaign_minutes_of_day")
+        group_day_index = data.get("group_day_index")
+        group_minutes_of_day = data.get("group_minutes_of_day")
         group = group_store.update_group(
             request.state,
             user,
@@ -2279,8 +2344,8 @@ def register_routes():
             setting_id=setting_id,
             template_id=template_id,
             properties=properties,
-            campaign_day_index=campaign_day_index,
-            campaign_minutes_of_day=campaign_minutes_of_day,
+            group_day_index=group_day_index,
+            group_minutes_of_day=group_minutes_of_day,
         )
         return json_response(group)
 
@@ -2322,6 +2387,213 @@ def register_routes():
         return json_response(group)
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/members/active$", handle_set_member_active)
+
+    # Players and campaigns are rows in group_members (see campaigns.py).
+    def handle_leave_group(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(group_store.leave_group(request.state, user, getattr(request, "params")["group_id"]))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/leave$", handle_leave_group)
+
+    def handle_remove_player(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(group_store.remove_player(request.state, user, params["group_id"], int(params["user_id"])))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/players/(?P<user_id>\d+)/remove$", handle_remove_player)
+
+    def handle_claim_roster_character(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            group_store.claim_roster_character(
+                request.state, user, getattr(request, "params")["group_id"], str(data.get("characterId") or "")
+            )
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/roster/claim$", handle_claim_roster_character)
+
+    def handle_add_own_character(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            group_store.add_own_character(
+                request.state, user, getattr(request, "params")["group_id"], str(data.get("characterId") or "")
+            )
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/roster/own-character$", handle_add_own_character)
+
+    def handle_get_own_profile(request: Request) -> Response:
+        return json_response(profile_store.get_own_profile(request.state, request.handler.current_user()))
+
+    router.add("GET", r"^/community/profile$", handle_get_own_profile)
+
+    def handle_save_profile(request: Request) -> Response:
+        return json_response(profile_store.save_profile(request.state, request.handler.current_user(), require_json(request)))
+
+    router.add("POST", r"^/community/profile$", handle_save_profile)
+
+    def handle_get_profile_view(request: Request) -> Response:
+        user = request.handler.current_user()
+        return json_response(profile_store.get_profile_view(request.state, user, int(getattr(request, "params")["user_id"])))
+
+    router.add("GET", r"^/community/people/(?P<user_id>\d+)$", handle_get_profile_view)
+
+    def handle_list_people(request: Request) -> Response:
+        from urllib.parse import parse_qs, urlsplit
+
+        parsed = parse_qs(urlsplit(request.handler.path).query)
+        query = {key: values[0] for key, values in parsed.items() if values}
+        return json_response(profile_store.list_people(request.state, request.handler.current_user(), query))
+
+    router.add("GET", r"^/community/people$", handle_list_people)
+
+    def handle_get_signals(request: Request) -> Response:
+        user = request.handler.current_user()
+        return json_response(report_store.get_signals(request.state, user, int(getattr(request, "params")["user_id"])))
+
+    router.add("GET", r"^/community/signals/(?P<user_id>\d+)$", handle_get_signals)
+
+    def handle_list_endorsable(request: Request) -> Response:
+        return json_response(report_store.list_endorsable(request.state, request.handler.current_user()))
+
+    router.add("GET", r"^/community/endorsable$", handle_list_endorsable)
+
+    def handle_endorse(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            report_store.endorse(request.state, user, data.get("userId"), data.get("scopeKey"), data.get("tagId"))
+        )
+
+    router.add("POST", r"^/community/endorse$", handle_endorse)
+
+    def handle_list_listings(request: Request) -> Response:
+        from urllib.parse import parse_qs, urlsplit
+
+        parsed = parse_qs(urlsplit(request.handler.path).query)
+        filters = {key: values[0] for key, values in parsed.items() if values}
+        return json_response(listing_store.list_listings(request.state, request.handler.current_user(), filters))
+
+    router.add("GET", r"^/community/listings$", handle_list_listings)
+
+    def handle_get_listing(request: Request) -> Response:
+        return json_response(
+            listing_store.get_listing(request.state, request.handler.current_user(), getattr(request, "params")["listing_id"])
+        )
+
+    router.add("GET", r"^/community/listings/(?P<listing_id>[^/]+)$", handle_get_listing)
+
+    def handle_create_listing(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            listing_store.create_listing(request.state, user, str(data.get("groupId") or ""), data), status=HTTPStatus.CREATED
+        )
+
+    router.add("POST", r"^/community/listings$", handle_create_listing)
+
+    def handle_update_listing(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(
+            listing_store.update_listing(request.state, user, getattr(request, "params")["listing_id"], require_json(request))
+        )
+
+    router.add("POST", r"^/community/listings/(?P<listing_id>[^/]+)$", handle_update_listing)
+
+    def handle_delete_listing(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(listing_store.delete_listing(request.state, user, getattr(request, "params")["listing_id"]))
+
+    router.add("POST", r"^/community/listings/(?P<listing_id>[^/]+)/delete$", handle_delete_listing)
+
+    def handle_tag_usage(request: Request) -> Response:
+        return json_response(listing_store.tag_usage(request.state))
+
+    router.add("GET", r"^/community/tags$", handle_tag_usage)
+
+    def handle_rewrite_tag(request: Request) -> Response:
+        user = request.handler.current_user()
+        data = require_json(request)
+        return json_response(listing_store.rewrite_tag(request.state, user, data.get("from"), data.get("to")))
+
+    router.add("POST", r"^/community/tags/rewrite$", handle_rewrite_tag)
+
+    def handle_apply(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            application_store.apply(request.state, user, getattr(request, "params")["listing_id"], data.get("body")),
+            status=HTTPStatus.CREATED,
+        )
+
+    router.add("POST", r"^/community/listings/(?P<listing_id>[^/]+)/apply$", handle_apply)
+
+    def handle_get_application(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(application_store.get_application(request.state, user, getattr(request, "params")["application_id"]))
+
+    router.add("GET", r"^/community/applications/(?P<application_id>[^/]+)$", handle_get_application)
+
+    def handle_application_reply(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            application_store.reply(request.state, user, getattr(request, "params")["application_id"], data.get("body"))
+        )
+
+    router.add("POST", r"^/community/applications/(?P<application_id>[^/]+)/reply$", handle_application_reply)
+
+    def application_action(action: str) -> None:
+        def handler(request: Request) -> Response:
+            user = require_user(request)
+            return json_response(
+                getattr(application_store, action)(request.state, user, getattr(request, "params")["application_id"])
+            )
+
+        router.add("POST", rf"^/community/applications/(?P<application_id>[^/]+)/{action}$", handler)
+
+    for _action in ("accept", "decline", "withdraw"):
+        application_action(_action)
+
+    def handle_list_campaigns(request: Request) -> Response:
+        user = request.handler.current_user()
+        return json_response(campaign_store.list_campaigns(request.state, getattr(request, "params")["group_id"], user))
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/campaigns$", handle_list_campaigns)
+
+    def handle_create_campaign(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            campaign_store.create_campaign(request.state, user, getattr(request, "params")["group_id"], data),
+            status=HTTPStatus.CREATED,
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/campaigns$", handle_create_campaign)
+
+    def handle_reorder_campaigns(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(campaign_store.reorder_campaigns(request.state, user, getattr(request, "params")["group_id"], data.get("ids")))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/campaigns/order$", handle_reorder_campaigns)
+
+    def handle_update_campaign(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        data = require_json(request)
+        return json_response(campaign_store.update_campaign(request.state, user, params["group_id"], params["campaign_id"], data))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/campaigns/(?P<campaign_id>[^/]+)$", handle_update_campaign)
+
+    def handle_delete_campaign(request: Request) -> Response:
+        user = require_user(request)
+        params = getattr(request, "params")
+        return json_response(campaign_store.delete_campaign(request.state, user, params["group_id"], params["campaign_id"]))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/campaigns/(?P<campaign_id>[^/]+)/delete$", handle_delete_campaign)
 
     # A Group Property VALUE write (e.g. a player adding a party inventory
     # item) — deliberately NOT the generic /content/group/{id} route Loom's
@@ -2691,6 +2963,23 @@ def register_routes():
 
     router.add("POST", r"^/sessions/occurrences/(?P<occurrence_id>[^/]+)/rsvp-for$", handle_occurrence_rsvp_for)
 
+    def handle_set_no_show(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            signal_store.set_no_show(
+                request.state, user, getattr(request, "params")["occurrence_id"], data.get("userId"), data.get("noShow")
+            )
+        )
+
+    router.add("POST", r"^/sessions/occurrences/(?P<occurrence_id>[^/]+)/no-show$", handle_set_no_show)
+
+    def handle_dispute_no_show(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(signal_store.dispute_no_show(request.state, user, getattr(request, "params")["occurrence_id"]))
+
+    router.add("POST", r"^/sessions/occurrences/(?P<occurrence_id>[^/]+)/dispute$", handle_dispute_no_show)
+
     def handle_decline_range(request: Request) -> Response:
         user = require_user(request)
         data = require_json(request)
@@ -2877,21 +3166,54 @@ def register_routes():
     router.add("POST", r"^/groups/share/(?P<token>[^/]+)/claim$", handle_group_share_claim)
 
     # POST /auth/register
+    # Failure/attempt limits for the unauthenticated account routes; per client address, and
+    # per client + account for the guessable ones, so one visitor can't lock a real user out.
+    login_ip_throttle = Throttle(limit=20, window_seconds=900)
+    login_account_throttle = Throttle(limit=5, window_seconds=900)
+    verify_ip_throttle = Throttle(limit=20, window_seconds=900)
+    verify_account_throttle = Throttle(limit=5, window_seconds=900)
+    register_throttle = Throttle(limit=5, window_seconds=3600)
+
+    def too_many_attempts(wait: int, limiter: str) -> Response:
+        METRICS.inc("throttled_total", limiter)
+        minutes = max(1, (wait + 59) // 60)
+        return json_response(
+            {"error": f"Too many attempts. Try again in {minutes} minute{'' if minutes == 1 else 's'}."},
+            status=HTTPStatus.TOO_MANY_REQUESTS,
+        )
+
     def handle_register(request: Request) -> Response:
         data = require_json(request)
-        data["ip"] = request.handler.client_address[0]
+        data["ip"] = request.handler.client_ip()
+        ip_key = f"ip:{data['ip']}"
+        wait = register_throttle.wait_seconds([ip_key])
+        if wait:
+            return too_many_attempts(wait, "register")
+        register_throttle.record([ip_key])
         data["user_agent"] = request.handler.headers.get("User-Agent", "")
         result = register_user(request.state, data)
+        METRICS.inc("registrations_total")
         return json_response(result, status=HTTPStatus.CREATED)
 
-    router.add("POST", r"^/auth/register$", handle_register)
+    router.add("POST", r"^/auth/register$", handle_register, unlocked=True)
 
     # POST /auth/verify
     def handle_verify(request: Request) -> Response:
         data = require_json(request)
-        data["ip"] = request.handler.client_address[0]
+        data["ip"] = request.handler.client_ip()
         data["user_agent"] = request.handler.headers.get("User-Agent", "")
-        result = verify_registration(request.state, data)
+        who = str(data.get("email") or data.get("username") or "").strip().lower()
+        keys = [f"ip:{data['ip']}"]
+        account_keys = [f"acct:{data['ip']}:{who}"]
+        wait = max(verify_ip_throttle.wait_seconds(keys), verify_account_throttle.wait_seconds(account_keys))
+        if wait:
+            return too_many_attempts(wait, "verify")
+        try:
+            result = verify_registration(request.state, data)
+        except AuthError:
+            verify_ip_throttle.record(keys)
+            verify_account_throttle.record(account_keys)
+            raise
         return json_response(result)
 
     router.add("POST", r"^/auth/verify$", handle_verify)
@@ -2899,15 +3221,24 @@ def register_routes():
     # POST /auth/login
     def handle_login(request: Request) -> Response:
         data = require_json(request)
-        session = login_user(
-            request.state,
-            data,
-            request.handler.client_address[0],
-            request.handler.headers.get("User-Agent", ""),
-        )
+        ip = request.handler.client_ip()
+        who = str(data.get("username") or data.get("username_or_email") or "").strip().lower()
+        keys = [f"ip:{ip}"]
+        account_key = f"acct:{ip}:{who}"
+        wait = max(login_ip_throttle.wait_seconds(keys), login_account_throttle.wait_seconds([account_key]))
+        if wait:
+            return too_many_attempts(wait, "login")
+        try:
+            session = login_user(request.state, data, ip, request.handler.headers.get("User-Agent", ""))
+        except AuthError:
+            METRICS.inc("login_failures_total")
+            login_ip_throttle.record(keys)
+            login_account_throttle.record([account_key])
+            raise
+        login_account_throttle.reset(account_key)
         return json_response(session)
 
-    router.add("POST", r"^/auth/login$", handle_login)
+    router.add("POST", r"^/auth/login$", handle_login, unlocked=True)
 
     # POST /auth/logout
     def handle_logout(request: Request) -> Response:
@@ -3027,15 +3358,123 @@ def register_routes():
         if not user:
             raise AuthError("Authentication required")
         data = require_json(request)
+        auth_header = request.handler.headers.get("Authorization", "")
         result = update_password(
             request.state,
             user,
             data.get("current_password", ""),
             data.get("new_password", ""),
+            keep_token=auth_header[7:] if auth_header.startswith("Bearer ") else None,
         )
         return json_response(result)
 
-    router.add("POST", r"^/auth/profile/password$", handle_update_password)
+    # GET /metrics — Prometheus text. An admin session or the scraper token in the secrets folder may read it.
+    def handle_metrics(request: Request) -> Response:
+        user = request.handler.current_user()
+        allowed = bool(user) and role_rank(user.tier) >= role_rank("admin")
+        if not allowed:
+            try:
+                expected = request.state.secrets_path("metrics-token.txt").read_text(encoding="utf-8").strip()
+            except OSError:
+                expected = ""
+            header = request.handler.headers.get("Authorization", "")
+            given = header[7:].strip() if header.startswith("Bearer ") else ""
+            allowed = bool(expected) and hmac.compare_digest(given.encode("utf-8"), expected.encode("utf-8"))
+        if not allowed:
+            raise AuthError("Admin only")
+        return Response(
+            status=HTTPStatus.OK,
+            body=METRICS.render_prometheus().encode("utf-8"),
+            headers={"Content-Type": "text/plain; version=0.0.4; charset=utf-8"},
+        )
+
+    router.add("GET", r"^/metrics$", handle_metrics, unlocked=True)
+
+    # GET /admin/load — the recent-load figures behind Loom's Admin "Server load" card.
+    def handle_load_summary(request: Request) -> Response:
+        require_admin(request)
+        from urllib.parse import parse_qs, urlsplit
+
+        raw = parse_qs(urlsplit(request.handler.path).query).get("minutes", ["5"])[0]
+        minutes = max(1, min(60, int(raw))) if raw.isdigit() else 5
+        return json_response(METRICS.summary(minutes))
+
+    router.add("GET", r"^/admin/load$", handle_load_summary, unlocked=True)
+
+    # POST /csp-report — browsers send Content-Security-Policy violations here while the policy is report-only.
+    csp_report_throttle = Throttle(limit=60, window_seconds=60)
+
+    def handle_csp_report(request: Request) -> Response:
+        ip_key = f"ip:{request.handler.client_ip()}"
+        if not csp_report_throttle.wait_seconds([ip_key]):
+            csp_report_throttle.record([ip_key])
+            try:
+                report = json.loads(request._body_bytes.decode("utf-8")).get("csp-report", {})
+                summary = {
+                    key: str(report.get(key, ""))[:120]
+                    for key in ("document-uri", "violated-directive", "blocked-uri", "source-file", "line-number")
+                }
+            except (ValueError, AttributeError):
+                summary = {"unparsed": request._body_bytes[:200].decode("utf-8", "replace")}
+            logging.warning("CSP report: %s", json.dumps(summary))
+        return Response(status=HTTPStatus.NO_CONTENT)
+
+    router.add("POST", r"^/csp-report$", handle_csp_report)
+
+    # GET /auth/registration — what the sign-up form needs to know before anyone is signed in.
+    def handle_registration_options(request: Request) -> Response:
+        options = request.state.config.options
+        return json_response({"inviteRequired": options.require_invite, "emailVerification": options.require_email_verification})
+
+    router.add("GET", r"^/auth/registration$", handle_registration_options, unlocked=True)
+
+    # Invites (admin only): shareable sign-up links that start an account at a chosen tier and record where
+    # each account came from. See invites.py.
+    def handle_list_invites(request: Request) -> Response:
+        require_admin(request)
+        return json_response({"invites": invite_store.list_invites(request.state)})
+
+    router.add("GET", r"^/admin/invites$", handle_list_invites)
+
+    def handle_create_invite(request: Request) -> Response:
+        admin = require_admin(request)
+        return json_response(invite_store.create_invite(request.state, admin.id, require_json(request)), status=HTTPStatus.CREATED)
+
+    router.add("POST", r"^/admin/invites$", handle_create_invite)
+
+    def handle_update_invite(request: Request) -> Response:
+        require_admin(request)
+        return json_response(invite_store.update_invite(request.state, getattr(request, "params")["code"], require_json(request)))
+
+    router.add("POST", r"^/admin/invites/(?P<code>[a-z0-9]+)$", handle_update_invite)
+
+    def handle_delete_invite(request: Request) -> Response:
+        require_admin(request)
+        invite_store.delete_invite(request.state, getattr(request, "params")["code"])
+        return json_response({"ok": True})
+
+    router.add("POST", r"^/admin/invites/(?P<code>[a-z0-9]+)/delete$", handle_delete_invite)
+
+    # POST /auth/ticket — a 30-second, single-use stand-in for the session token in URLs.
+    def handle_issue_ticket(request: Request) -> Response:
+        user = require_user(request)
+        purpose = str(require_json(request).get("purpose") or "")
+        if purpose not in {"live", "local-file"}:
+            raise AuthError("Unknown ticket purpose")
+        return json_response({"ticket": issue_ticket(user.id, purpose)})
+
+    router.add("POST", r"^/auth/ticket$", handle_issue_ticket)
+
+    # POST /auth/profile/sessions/revoke-others — sign out every other device.
+    def handle_revoke_other_sessions(request: Request) -> Response:
+        user = require_user(request)
+        auth_header = request.handler.headers.get("Authorization", "")
+        revoke_other_sessions(request.state, user.id, auth_header[7:] if auth_header.startswith("Bearer ") else None)
+        return json_response({"ok": True})
+
+    router.add("POST", r"^/auth/profile/sessions/revoke-others$", handle_revoke_other_sessions)
+
+    router.add("POST", r"^/auth/profile/password$", handle_update_password, unlocked=True)
 
     # POST /auth/profile/upgrade — self-service tier change (distinct from
     # /auth/upgrade, which is admin-only and targets another user by
@@ -3251,18 +3690,61 @@ def create_server(config_path: str) -> SheetsHTTPServer:
     loader = ConfigLoader(Path(config_path))
     configure_logging(loader.get().options.log_level)
     state = ServerState.from_loader(loader)
+    prepare_secrets_dir(state)
+    seed_data_dir(state)
     init_auth_db(state.db)
-    ensure_default_admin(state)
-    ensure_default_test_users(state)
+    if state.config.options.seed_dev_accounts:
+        ensure_default_test_users(state)
     init_storage_db(state)
     cleanup_sessions(state)
+    if not has_active_admin(state):
+        logging.warning("No active admin account exists. Create one with: python web-server.py --create-admin")
     server = SheetsHTTPServer((state.config.options.host, state.config.options.port), RequestHandler, state)
+    db_path = str(state.config.database.path)
+    METRICS.register_gauge("open_connections", lambda: server.open_connections)
+    METRICS.register_gauge("connection_cap", lambda: MAX_CONNECTIONS)
+    METRICS.register_gauge("threads", lambda: threading.active_count())
+    METRICS.register_gauge("database_bytes", lambda: file_size(db_path))
+    METRICS.register_gauge("database_wal_bytes", lambda: file_size(db_path + "-wal"))
+    METRICS.register_gauge("process_resident_bytes", process_memory_bytes)
+    METRICS.register_gauge("process_cpu_seconds", time.process_time)
     logging.info("Server listening on %s:%s", state.config.options.host, state.config.options.port)
     return server
 
 
+def create_admin(config_path: str) -> None:
+    import getpass
+
+    loader = ConfigLoader(Path(config_path))
+    state = ServerState.from_loader(loader)
+    init_auth_db(state.db)
+    username = input("Admin username: ").strip()
+    email = input("Admin email: ").strip()
+    password = getpass.getpass("Password: ")
+    if getpass.getpass("Confirm password: ") != password:
+        raise SystemExit("Passwords do not match.")
+    try:
+        create_admin_user(state, username, email, password)
+    except AuthError as exc:
+        raise SystemExit(str(exc))
+    print(f"Admin '{username}' created.")
+
+
+def sync_default_files(config_path: str) -> None:
+    state = ServerState.from_loader(ConfigLoader(Path(config_path)))
+    print(f"Copied {sync_defaults(state)} shipped file(s) that were missing from the data directory.")
+
+
 def main(config_path: str) -> None:
+    import signal
+
     server = create_server(config_path)
+
+    def stop(signum, frame):
+        raise KeyboardInterrupt
+
+    # `podman stop` / `systemctl stop` send SIGTERM, which should end the server as cleanly as Ctrl+C does.
+    signal.signal(signal.SIGTERM, stop)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -3270,6 +3752,11 @@ def main(config_path: str) -> None:
     finally:
         server.shutdown()
         server.server_close()
+        try:
+            with server.state.lock:
+                server.state.db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        except Exception:  # pragma: no cover - best effort on the way out
+            logging.exception("Could not checkpoint the database on shutdown")
 
 
 if __name__ == "__main__":  # pragma: no cover

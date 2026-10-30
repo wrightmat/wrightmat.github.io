@@ -39,7 +39,7 @@ def normalize_kind(kind: str) -> str:
 
 
 def kind_registry_path(state: ServerState, kind: str) -> Path:
-    return state.root_dir / "undercroft" / "common" / "data" / "kind" / f"{normalize_kind(kind)}.json"
+    return state.write_path("common", "data", "kind", f"{normalize_kind(kind)}.json")
 
 
 def load_kind_policy(state: ServerState, kind: str) -> Dict[str, Any]:

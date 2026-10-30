@@ -345,7 +345,7 @@ export function initCalculatorWidget(
   const rosterRowsWrap = el("div", "d-flex flex-column gap-1");
   const addRosterRowButton = el("button", "btn btn-outline-secondary btn-sm", "Add level");
   addRosterRowButton.type = "button";
-  const autoFillButton = el("button", "btn btn-outline-secondary btn-sm", "Auto-fill from campaign roster");
+  const autoFillButton = el("button", "btn btn-outline-secondary btn-sm", "Auto-fill from group roster");
   autoFillButton.type = "button";
   const rosterButtonsRow = el("div", "d-flex gap-2 flex-wrap");
   rosterButtonsRow.append(addRosterRowButton, autoFillButton);
@@ -410,7 +410,7 @@ export function initCalculatorWidget(
   scopeSelect.style.maxWidth = "12rem";
   [
     ["character", "This character"],
-    ["campaign", "Entire campaign"],
+    ["group", "Entire group"],
   ].forEach(([value, label]) => {
     const option = document.createElement("option");
     option.value = value;
@@ -581,7 +581,7 @@ export function initCalculatorWidget(
   }
 
   // Blank means "no override for this widget" — falls back to the active
-  // campaign's own Setting (Group.settingId) rather than "no Setting at
+  // group's own Setting (Group.settingId) rather than "no Setting at
   // all," so a GM doesn't re-pick it per card. The blank option's label
   // reflects whichever it actually resolves to.
   function resolvedSettingId() {
@@ -593,13 +593,13 @@ export function initCalculatorWidget(
     settingSelect.innerHTML = "";
     const anyOption = document.createElement("option");
     anyOption.value = "";
-    const campaignSetting = groupContext?.settingId
+    const groupDefaultSetting = groupContext?.settingId
       ? settingsCatalog.find((entry) => entry.id === groupContext.settingId)
       : null;
-    anyOption.textContent = campaignSetting
-      ? `Use campaign default (${campaignSetting.name})`
+    anyOption.textContent = groupDefaultSetting
+      ? `Use group default (${groupDefaultSetting.name})`
       : groupContext?.settingId
-        ? "Use campaign default"
+        ? "Use group default"
         : "Any (universal means only)";
     settingSelect.appendChild(anyOption);
     settingsCatalog.forEach((entry) => {
@@ -807,11 +807,11 @@ export function initCalculatorWidget(
     renderRosterRows();
     if (skipped > 0) {
       status?.show(
-        `${skipped} campaign member${skipped === 1 ? "" : "s"} have no resolvable level and were skipped — add them manually if needed.`,
+        `${skipped} group member${skipped === 1 ? "" : "s"} have no resolvable level and were skipped — add them manually if needed.`,
         { type: "info", timeout: 3500 }
       );
     } else if (!roster.length) {
-      status?.show("No campaign members with a resolvable level were found.", { type: "info", timeout: 2500 });
+      status?.show("No group members with a resolvable level were found.", { type: "info", timeout: 2500 });
     }
   });
 
@@ -913,9 +913,9 @@ export function initCalculatorWidget(
   // --- Wiring: Inventory Weight -----------------------------------------
 
   function updateInventoryScopeVisibility() {
-    setElementVisible(characterPickerRow, scopeSelect.value !== "campaign", "flex");
+    setElementVisible(characterPickerRow, scopeSelect.value !== "group", "flex");
   }
-  scopeSelect.value = config.inventoryScope === "campaign" ? "campaign" : "character";
+  scopeSelect.value = config.inventoryScope === "group" ? "group" : "character";
   scopeSelect.addEventListener("change", () => {
     persistConfig({ inventoryScope: scopeSelect.value });
     updateInventoryScopeVisibility();
@@ -925,9 +925,9 @@ export function initCalculatorWidget(
   });
 
   async function loadInventoryOptions() {
-    const campaignOption = scopeSelect.querySelector('option[value="campaign"]');
-    if (campaignOption) campaignOption.disabled = !groupContext?.groupId;
-    if (!groupContext?.groupId && scopeSelect.value === "campaign") {
+    const groupScopeOption = scopeSelect.querySelector('option[value="group"]');
+    if (groupScopeOption) groupScopeOption.disabled = !groupContext?.groupId;
+    if (!groupContext?.groupId && scopeSelect.value === "group") {
       scopeSelect.value = "character";
       persistConfig({ inventoryScope: "character" });
     }
@@ -974,12 +974,12 @@ export function initCalculatorWidget(
     const unit = resolveWeightUnitLabel(systemDefinition);
     inventoryResultBox.innerHTML = "";
 
-    if (scopeSelect.value === "campaign") {
+    if (scopeSelect.value === "group") {
       if (!groupContext?.groupId || !dataManager) {
-        status?.show("No campaign selected.", { type: "info", timeout: 2000 });
+        status?.show("No group selected.", { type: "info", timeout: 2000 });
         return;
       }
-      inventoryResultBox.appendChild(el("div", "text-body-secondary", "Loading campaign roster…"));
+      inventoryResultBox.appendChild(el("div", "text-body-secondary", "Loading group roster…"));
       // Owner-only fetch, skipped entirely (not attempted-then-caught) for a
       // non-owner — a plain member has no share grant on the group document,
       // so the request would always 401.

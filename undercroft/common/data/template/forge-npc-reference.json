@@ -121,108 +121,104 @@
                   "className": "card-body-text",
                   "columns": [
                     {
-                      "header": "Roll",
-                      "bind": "@roll",
-                      "width": "20%"
+                      "header": "Chance (%)",
+                      "bind": "@chance",
+                      "width": "25%"
                     },
                     {
                       "header": "Archetype",
                       "bind": "@name",
-                      "width": "80%"
+                      "width": "75%"
                     }
                   ],
                   "rows": [
                     {
-                      "roll": 2,
-                      "name": "Archmage"
+                      "name": "City Watch Officer",
+                      "chance": 8.7
                     },
                     {
-                      "roll": 3,
-                      "name": "Cult Fanatic"
+                      "name": "Zhentarim Agent",
+                      "chance": 8.3
                     },
                     {
-                      "roll": 4,
-                      "name": "Berserker"
+                      "name": "Commoner",
+                      "chance": 7.9
                     },
                     {
-                      "roll": 5,
-                      "name": "Gladiator"
+                      "name": "Noble",
+                      "chance": 7.5
                     },
                     {
-                      "roll": 6,
-                      "name": "Tribal Warrior"
+                      "name": "Guard",
+                      "chance": 7.1
                     },
                     {
-                      "roll": 7,
-                      "name": "Druid"
+                      "name": "Priest",
+                      "chance": 6.7
                     },
                     {
-                      "roll": 8,
-                      "name": "Knight"
+                      "name": "Bandit",
+                      "chance": 6.3
                     },
                     {
-                      "roll": 9,
-                      "name": "Veteran"
+                      "name": "Spy",
+                      "chance": 5.9
                     },
                     {
-                      "roll": 10,
-                      "name": "Spy"
+                      "name": "Acolyte",
+                      "chance": 5.5
                     },
                     {
-                      "roll": 11,
-                      "name": "Priest"
+                      "name": "Veteran",
+                      "chance": 5.1
                     },
                     {
-                      "roll": 12,
-                      "name": "Noble"
+                      "name": "Thug",
+                      "chance": 4.7
                     },
                     {
-                      "roll": 13,
-                      "name": "Commoner"
+                      "name": "Knight",
+                      "chance": 4.3
                     },
                     {
-                      "roll": 14,
-                      "name": "Guard"
+                      "name": "Scout",
+                      "chance": 4.0
                     },
                     {
-                      "roll": 15,
-                      "name": "Bandit"
+                      "name": "Druid",
+                      "chance": 3.6
                     },
                     {
-                      "roll": 16,
-                      "name": "Acolyte"
+                      "name": "Cultist",
+                      "chance": 3.2
                     },
                     {
-                      "roll": 17,
-                      "name": "Thug"
+                      "name": "Tribal Warrior",
+                      "chance": 2.8
                     },
                     {
-                      "roll": 18,
-                      "name": "Scout"
+                      "name": "Mage",
+                      "chance": 2.4
                     },
                     {
-                      "roll": 19,
-                      "name": "Cultist"
+                      "name": "Gladiator",
+                      "chance": 2.0
                     },
                     {
-                      "roll": 20,
-                      "name": "Mage"
+                      "name": "Bandit Captain",
+                      "chance": 1.6
                     },
                     {
-                      "roll": 21,
-                      "name": "Bandit Captain"
+                      "name": "Berserker",
+                      "chance": 1.2
                     },
                     {
-                      "roll": 22,
-                      "name": "City Watch Officer"
+                      "name": "Cult Fanatic",
+                      "chance": 0.8
                     },
                     {
-                      "roll": 23,
-                      "name": "Zhentarim Agent"
-                    },
-                    {
-                      "roll": 24,
-                      "name": "Wildcard"
+                      "name": "Archmage",
+                      "chance": 0.4
                     }
                   ]
                 }

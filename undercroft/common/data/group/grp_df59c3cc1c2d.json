@@ -1,11 +1,11 @@
 {
   "title": "A Merry Band of Gaymers",
-  "type": "campaign",
+  "type": "player-group",
   "systemId": "sys.dnd5e",
   "settingId": "eberron",
   "templateId": "tpl.d-d-party",
-  "campaignDayIndex": 17925,
-  "campaignMinutesOfDay": 540,
+  "groupDayIndex": 17925,
+  "groupMinutesOfDay": 540,
   "properties": [
     {
       "type": "array",

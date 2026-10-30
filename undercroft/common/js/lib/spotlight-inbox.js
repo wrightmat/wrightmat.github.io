@@ -1,4 +1,4 @@
-// Watches a campaign group's spotlight state for the CURRENT set of active spotlights —
+// Watches a player group's spotlight state for the CURRENT set of active spotlights —
 // "what's shown to the table right now," kept live. Hands the caller the
 // complete, freshly-resolved active set on every poll rather than a
 // diff-since-last-seen, so it can report an un-spotlight (not just new

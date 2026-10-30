@@ -1,16 +1,16 @@
-// Shared "which campaign group am I looking at" resolution for Dashboard
+// Shared "which player group am I looking at" resolution for Dashboard
 // widgets (Game Log, Now Showing, Combat Tracker's player mode) — mirrors
 // workbench-character-view.js's syncGameLogContext priority order exactly
-// (share token > the header's Campaign dropdown selection), centralized once
+// (share token > the header's Group dropdown selection), centralized once
 // here since several Dashboard widgets need the same answer.
 //
-// Deliberately does NOT fall back to a pinned/loaded character's own campaign
+// Deliberately does NOT fall back to a pinned/loaded character's own group
 // membership — that used to silently override the active-group selection
 // (the header could show "no campaign selected" while the Dashboard actually
-// showed another campaign's spotlights, and picking a different campaign
+// showed another group's spotlights, and picking a different group
 // from the header did nothing). The header selector is the single source of
 // truth for "which table am I watching" — a character's membership only
-// determines whether that campaign is a legal choice there at all, never an
+// determines whether that group is a legal choice there at all, never an
 // automatic substitute for choosing it.
 export async function resolveGroupContext(dataManager, { shareToken = "" } = {}) {
   if (shareToken) {
@@ -24,10 +24,10 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
           systemId: group.system_id || "",
           settingId: group.setting_id || "",
           // `?? null`, not `|| ""` — 0 is a real, meaningful day index (the
-          // campaign's own start epoch), not an absent value the way an
+          // group's own start epoch), not an absent value the way an
           // empty string id would be.
-          campaignDayIndex: group.campaign_day_index ?? null,
-          campaignMinutesOfDay: group.campaign_minutes_of_day ?? null,
+          groupDayIndex: group.group_day_index ?? null,
+          groupMinutesOfDay: group.group_minutes_of_day ?? null,
           shareToken,
           access: dataManager.isAuthenticated() ? "share" : "viewer",
           // Game Log's @mention roster (character label + owner_id per
@@ -55,7 +55,7 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
     // picked — no owner_id, so "access" can't be inferred from this alone.
     // Assuming "owner" unconditionally was safe back when a group you don't
     // own could never be selected as active at all; now that a mere member
-    // can select a campaign they don't own (listGroups' member scope), that
+    // can select a group they don't own (listGroups' member scope), that
     // assumption wrongly exposed GM-only controls (e.g. Map's show/hide
     // toggle) client-side to a non-owner member — the server's own
     // authorization still rejected the actual action, but the button
@@ -71,8 +71,8 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
           groupName: match.name || active.name || "",
           systemId: match.system_id || "",
           settingId: match.setting_id || "",
-          campaignDayIndex: match.campaign_day_index ?? null,
-          campaignMinutesOfDay: match.campaign_minutes_of_day ?? null,
+          groupDayIndex: match.group_day_index ?? null,
+          groupMinutesOfDay: match.group_minutes_of_day ?? null,
           shareToken: "",
           access: ownerId === userId ? "owner" : "member",
           members: Array.isArray(match.members) ? match.members : [],
@@ -88,8 +88,8 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
       groupName: active.name || "",
       systemId: "",
       settingId: "",
-      campaignDayIndex: null,
-      campaignMinutesOfDay: null,
+      groupDayIndex: null,
+      groupMinutesOfDay: null,
       shareToken: "",
       access: "owner",
       // No roster available (the listGroups lookup failed) — the "owner"
@@ -102,7 +102,7 @@ export async function resolveGroupContext(dataManager, { shareToken = "" } = {})
 }
 
 // Auto-default helper for the generator tools (Forge/Crucible/Vault/
-// Sanctum): if a campaign group is active and assigned to a System/Setting,
+// Sanctum): if a player group is active and assigned to a System/Setting,
 // default these tools' own pickers to it. `key` is "systemId" or
 // "settingId"; `options` is the tool's already-loaded list for that picker.
 // Returns "" whenever there's no active group, no assigned value, or the

@@ -37,6 +37,7 @@ import {
   applyAutoWidthCaps,
   applyAutoFontSizing,
   applyOverflowIndicators,
+  configureTemplateDataSource,
 } from "./template-renderer.js";
 import { expandPane } from "../../common/js/lib/panes.js";
 import {
@@ -59,7 +60,7 @@ import {
   resolveTemplateData,
 } from "./templates.js";
 import { getSourceById, getSources } from "./sources.js";
-import { loadSourceData, LIBRARY_KINDS } from "./source-data.js";
+import { loadSourceData, loadLibraryKinds } from "./source-data.js";
 import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, subscribeSampleData } from "./sample-data.js";
 import { resolveBinding } from "../../common/js/lib/bindings.js";
 import { createFormulaFunctions } from "../../common/js/lib/formula-functions.js";
@@ -1651,7 +1652,7 @@ function createBlankTemplate() {
     origin: "draft",
     type: "sheet",
     formats,
-    supportedSources: ["ddb", "srd", "json", "manual"],
+    supportedSources: ["ddb", "srd", "library", "json", "manual"],
     sides: ["front", "back"],
     pages: {
       front: { data: "@", layout: createEmptyLayout() },
@@ -5431,10 +5432,12 @@ async function renderLibrarySourceInput(source, labelRow) {
   const kindSelect = document.createElement("select");
   kindSelect.className = "form-select flex-fill";
   kindSelect.id = `${source.id}-input`;
-  LIBRARY_KINDS.forEach((kind) => {
+  // Every kind in the live registry, not a fixed list, so a new kind shows up here without a code change.
+  const kinds = (await loadLibraryKinds()).slice().sort((a, b) => String(a.label || a.id).localeCompare(String(b.label || b.id)));
+  kinds.forEach((kind) => {
     const option = document.createElement("option");
-    option.value = kind;
-    option.textContent = kind === "npc" ? "NPC" : kind.charAt(0).toUpperCase() + kind.slice(1);
+    option.value = kind.id;
+    option.textContent = kind.label || kind.id;
     kindSelect.appendChild(option);
   });
 
@@ -5442,7 +5445,7 @@ async function renderLibrarySourceInput(source, labelRow) {
   itemSelect.className = "form-select flex-fill";
 
   const [savedKind, savedId] = String(sourceValues[source.id] || "").split("/");
-  if (savedKind && LIBRARY_KINDS.includes(savedKind)) {
+  if (savedKind && kinds.some((kind) => kind.id === savedKind)) {
     kindSelect.value = savedKind;
   }
 
@@ -5476,7 +5479,8 @@ async function renderLibrarySourceInput(source, labelRow) {
     }
     const allOption = document.createElement("option");
     allOption.value = "*";
-    allOption.textContent = `All ${pluralizeKind(kindSelect.value)} (${names.length})`;
+    const chosenKind = kinds.find((kind) => kind.id === kindSelect.value);
+    allOption.textContent = `All ${chosenKind?.plural ? chosenKind.plural.toLowerCase() : pluralizeKind(kindSelect.value)} (${names.length})`;
     itemSelect.appendChild(allOption);
     names.forEach((name) => {
       const option = document.createElement("option");
@@ -7551,6 +7555,8 @@ async function initPress() {
   // disambiguate its content, so a tool-specific prefix on top would be
   // redundant and complicate suite-search.js's cross-tool lookup.
   dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  // libraryEntries() in a template's formulas needs a data source, and re-renders once its records arrive.
+  configureTemplateDataSource(dataManager, () => renderPreview());
   initAuthControls({ root: document, status, dataManager });
   initPressCollapsibles();
   removeDuplicateSampleDataSections();

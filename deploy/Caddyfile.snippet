@@ -1,0 +1,15 @@
+# Add inside the existing site block for the hostname, BEFORE the catch-all that serves the Homepage.
+# `handle` (not `handle_path`) keeps the /undercroft prefix, which the app expects. The trailing-slash
+# matcher keeps /undercroftanything out of this route.
+
+	redir /undercroft /undercroft/ permanent
+
+	handle /undercroft/* {
+		request_body {
+			max_size 26MB
+		}
+		reverse_proxy 127.0.0.1:8100 {
+			# Live-stream (server-sent events) responses must not be buffered.
+			flush_interval -1
+		}
+	}

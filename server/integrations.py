@@ -33,7 +33,7 @@ class EncryptionUnavailable(Exception):
 
 
 def _secret_path(state: ServerState) -> Path:
-    return state.root_dir / "server" / _SECRET_FILENAME
+    return state.secrets_path(_SECRET_FILENAME)
 
 
 def _require_fernet():
@@ -57,17 +57,20 @@ def _require_fernet():
 def _load_or_create_key(state: ServerState) -> bytes:
     Fernet = _require_fernet()
     path = _secret_path(state)
-    if path.exists():
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            existing = str(data.get("fernet_key") or "").strip()
-            if existing:
-                return existing.encode("utf-8")
-        except (json.JSONDecodeError, OSError):
-            pass
-    key = Fernet.generate_key()
-    path.write_text(json.dumps({"fernet_key": key.decode("utf-8")}, indent=2) + "\n", encoding="utf-8")
-    return key
+    # Two requests creating the key at once would each write a different one.
+    with state.lock:
+        if path.exists():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                existing = str(data.get("fernet_key") or "").strip()
+                if existing:
+                    return existing.encode("utf-8")
+            except (json.JSONDecodeError, OSError):
+                pass
+        key = Fernet.generate_key()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"fernet_key": key.decode("utf-8")}, indent=2) + "\n", encoding="utf-8")
+        return key
 
 
 def encrypt_token(state: ServerState, plaintext: str) -> bytes:
@@ -104,26 +107,28 @@ def get_ha_connection(state: ServerState, user_id: int) -> dict:
 
 def save_ha_connection(state: ServerState, user_id: int, base_url: str, token: str) -> None:
     encrypted = encrypt_token(state, token)
-    state.db.execute(
-        """
-        INSERT INTO integration_credentials (user_id, provider, base_url, encrypted_token, updated_at)
-        VALUES (?, 'home-assistant', ?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(user_id, provider) DO UPDATE SET
-            base_url = excluded.base_url,
-            encrypted_token = excluded.encrypted_token,
-            updated_at = excluded.updated_at
-        """,
-        (user_id, base_url, encrypted),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            """
+            INSERT INTO integration_credentials (user_id, provider, base_url, encrypted_token, updated_at)
+            VALUES (?, 'home-assistant', ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id, provider) DO UPDATE SET
+                base_url = excluded.base_url,
+                encrypted_token = excluded.encrypted_token,
+                updated_at = excluded.updated_at
+            """,
+            (user_id, base_url, encrypted),
+        )
+        state.db.commit()
 
 
 def clear_ha_connection(state: ServerState, user_id: int) -> None:
-    state.db.execute(
-        "DELETE FROM integration_credentials WHERE user_id = ? AND provider = 'home-assistant'",
-        (user_id,),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            "DELETE FROM integration_credentials WHERE user_id = ? AND provider = 'home-assistant'",
+            (user_id,),
+        )
+        state.db.commit()
 
 
 # The "edit just the URL" path — confirmed a real gap without this: fixing a
@@ -133,12 +138,13 @@ def clear_ha_connection(state: ServerState, user_id: int) -> None:
 # connection already exists (app.py's own handle_save_ha_connection checks
 # that before reaching here) — nothing to "update" otherwise.
 def update_ha_connection_url(state: ServerState, user_id: int, base_url: str) -> None:
-    state.db.execute(
-        "UPDATE integration_credentials SET base_url = ?, updated_at = CURRENT_TIMESTAMP "
-        "WHERE user_id = ? AND provider = 'home-assistant'",
-        (base_url, user_id),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            "UPDATE integration_credentials SET base_url = ?, updated_at = CURRENT_TIMESTAMP "
+            "WHERE user_id = ? AND provider = 'home-assistant'",
+            (base_url, user_id),
+        )
+        state.db.commit()
 
 
 # Decrypted token, for the proxy routes' own outgoing calls only — never
@@ -186,28 +192,30 @@ def save_deployment_secret(
     state: ServerState, provider: str, entry_id: str, label: str, base_url: str, model: str, token: str
 ) -> None:
     encrypted = encrypt_token(state, token) if token else None
-    state.db.execute(
-        """
-        INSERT INTO deployment_secrets (provider, id, label, base_url, model, encrypted_token, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(provider, id) DO UPDATE SET
-            label = excluded.label,
-            base_url = excluded.base_url,
-            model = excluded.model,
-            encrypted_token = excluded.encrypted_token,
-            updated_at = excluded.updated_at
-        """,
-        (provider, entry_id, label, base_url, model, encrypted),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            """
+            INSERT INTO deployment_secrets (provider, id, label, base_url, model, encrypted_token, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(provider, id) DO UPDATE SET
+                label = excluded.label,
+                base_url = excluded.base_url,
+                model = excluded.model,
+                encrypted_token = excluded.encrypted_token,
+                updated_at = excluded.updated_at
+            """,
+            (provider, entry_id, label, base_url, model, encrypted),
+        )
+        state.db.commit()
 
 
 def clear_deployment_secret(state: ServerState, provider: str, entry_id: str) -> None:
-    state.db.execute(
-        "DELETE FROM deployment_secrets WHERE provider = ? AND id = ?",
-        (provider, entry_id),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            "DELETE FROM deployment_secrets WHERE provider = ? AND id = ?",
+            (provider, entry_id),
+        )
+        state.db.commit()
 
 
 # Decrypted token, for the proxy routes' own outgoing calls only — never
@@ -246,7 +254,7 @@ def resolve_deployment_secret(state: ServerState, provider: str, entry_id: str) 
 # its value into the DB automatically the first time this provider's status
 # is checked OR its value is resolved — both routes call
 # _ensure_bare_secret_migrated below, not just the resolvers, since a
-# GET /auth/credentials status check (Loom's Auth tab, on every load) can
+# GET /auth/credentials status check (Loom's Admin tab, on every load) can
 # easily run before anything ever calls resolve_anthropic_api_key/
 # resolve_ddb_session_cookie for real (e.g. before Generate Note is ever
 # used) — checking status alone must not keep reporting "Not configured"
@@ -270,7 +278,7 @@ def _ensure_bare_secret_migrated(state: ServerState, provider: str) -> None:
     if row:
         return
     filename, label, value_key = _LOCAL_FILE_SECRETS[provider]
-    path = state.root_dir / "server" / filename
+    path = state.secrets_path(filename)
     if not path.exists():
         return
     try:
@@ -281,6 +289,15 @@ def _ensure_bare_secret_migrated(state: ServerState, provider: str) -> None:
     if not value:
         return
     save_deployment_secret(state, provider, "default", label, "", "", value)
+
+
+def deployment_secret_updated_at(state: ServerState, provider: str, entry_id: str = "default") -> Optional[str]:
+    """When the credential was last saved (UTC), or None if it isn't configured."""
+    row = state.read_db.execute(
+        "SELECT updated_at FROM deployment_secrets WHERE provider = ? AND id = ? AND encrypted_token IS NOT NULL",
+        (provider, entry_id),
+    ).fetchone()
+    return row["updated_at"] if row else None
 
 
 def is_deployment_secret_configured(state: ServerState, provider: str, entry_id: str = "default") -> bool:

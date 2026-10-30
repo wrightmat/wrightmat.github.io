@@ -219,7 +219,7 @@ export async function buyFromShop({ dataManager, groupId, shareToken = "", locat
   const payFromParty = recipient?.type === "party" || (!recipient && shop.currency === "party");
   const character = payFromParty ? null : await resolveShopCharacter(dataManager, groupId, shareToken, recipient);
   if (!payFromParty && !character) {
-    throw new Error("You don't have a character in this campaign to buy with.");
+    throw new Error("You don't have a character in this group to buy with.");
   }
 
   const denomination = item.price?.denomination || "gp";

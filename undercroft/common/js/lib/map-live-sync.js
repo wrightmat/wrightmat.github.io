@@ -4,7 +4,7 @@
 // second copy. A poll (createReliableInterval) plus an optional live-stream
 // wake-up (connectLiveStream's "map" kind) — no new server infrastructure.
 //
-// connectLiveStream requires a real campaign `groupId` (no-op otherwise) —
+// connectLiveStream requires a real group `groupId` (no-op otherwise) —
 // Dashboard widgets always have one, but Orrery's standalone editing surface
 // currently has no group association for a map (Maps are account-owned, not
 // group-scoped). Callers without a groupId still get the plain poll; the

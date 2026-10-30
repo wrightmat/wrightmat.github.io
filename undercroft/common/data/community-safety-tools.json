@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "id": "session-zero",
+      "name": "Session Zero",
+      "phase": "before",
+      "description": "A first meeting to agree on expectations before the campaign starts."
+    },
+    {
+      "id": "lines-and-veils",
+      "name": "Lines and Veils",
+      "phase": "before",
+      "description": "Lines are topics left out entirely; veils are topics handled off-screen."
+    },
+    {
+      "id": "cats",
+      "name": "CATS (Content, Aim, Tone, Subject matter)",
+      "phase": "before",
+      "description": "A short pitch format covering what the game contains and how it will feel."
+    },
+    {
+      "id": "consent-checklist",
+      "name": "Consent Checklist",
+      "phase": "before",
+      "description": "A private checklist where each player marks topics they do or don't want."
+    },
+    {
+      "id": "x-card",
+      "name": "X-Card",
+      "phase": "during",
+      "description": "Anyone can tap the card to skip or change the current content, no explanation needed."
+    },
+    {
+      "id": "script-change",
+      "name": "Script Change",
+      "phase": "during",
+      "description": "Pause, rewind, fast-forward or frame-skip the scene like a film."
+    },
+    {
+      "id": "open-door",
+      "name": "Open Door",
+      "phase": "during",
+      "description": "Anyone may leave the table at any time without explaining."
+    },
+    {
+      "id": "check-ins",
+      "name": "Check-ins",
+      "phase": "during",
+      "description": "The table pauses now and then to ask how everyone is doing."
+    },
+    {
+      "id": "stars-and-wishes",
+      "name": "Stars and Wishes",
+      "phase": "after",
+      "description": "Each player names something that went well and something they'd like next time."
+    },
+    {
+      "id": "roses-and-thorns",
+      "name": "Roses and Thorns",
+      "phase": "after",
+      "description": "Each player shares a highlight and a low point from the session."
+    },
+    {
+      "id": "debrief",
+      "name": "Debrief",
+      "phase": "after",
+      "description": "A short talk after play to decompress and raise concerns."
+    }
+  ]
+}

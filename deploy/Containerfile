@@ -1,0 +1,21 @@
+# Undercroft server image. The code is NOT baked in: it is mounted read-only at /app, so an update is
+# a git pull plus a restart. Rebuild this image only to pick up base-image security patches or a new
+# dependency (monthly is a sensible cadence).
+#
+#   sudo podman build -t localhost/undercroft -f deploy/Containerfile deploy
+FROM docker.io/library/python:3.13-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# `cryptography` encrypts the stored Anthropic key / D&D Beyond cookie; everything else is standard library.
+RUN pip install --no-cache-dir "cryptography==50.0.0"
+
+# Containers on this host are rootful with no user namespace, so container root is host root. Run as an
+# unprivileged user with a fixed id; the data and secrets folders must be owned by this id.
+RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin undercroft
+USER 10001:10001
+
+WORKDIR /app
+EXPOSE 8100
+CMD ["python", "/app/web-server.py", "--config", "/config/server.config.json"]

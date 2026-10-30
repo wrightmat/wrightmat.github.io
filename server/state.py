@@ -189,9 +189,37 @@ class ServerState:
             db=db,
             mounts=mounts,
             lock=lock,
-            root_dir=loader.path.resolve().parent,
+            root_dir=Path(config.options.root_dir).resolve() if config.options.root_dir else loader.path.resolve().parent,
             _read_db_path=str(config.database.path),
         )
+
+    # Files the server writes sit under undercroft/ in the checkout; with `data_dir` set they live there instead,
+    # grouped by what they are. `write_path` is where such a file lives, `read_path` falls back to the copy shipped
+    # with the code (reference data that was never copied across), and `secrets_path` is the credentials folder.
+    _DATA_DIR_MAP = (
+        (("common", "data"), "content"),
+        (("loom", "mappings"), "mappings"),
+        (("press", "data"), "press"),
+    )
+
+    def shipped_path(self, *parts: str) -> Path:
+        return self.root_dir.joinpath("undercroft", *parts)
+
+    def write_path(self, *parts: str) -> Path:
+        data_dir = self.config.options.data_dir
+        if data_dir:
+            for prefix, folder in self._DATA_DIR_MAP:
+                if tuple(parts[: len(prefix)]) == prefix:
+                    return Path(data_dir).joinpath(folder, *parts[len(prefix) :])
+        return self.shipped_path(*parts)
+
+    def read_path(self, *parts: str) -> Path:
+        path = self.write_path(*parts)
+        return path if path.exists() else self.shipped_path(*parts)
+
+    def secrets_path(self, name: str) -> Path:
+        secrets_dir = self.config.options.secrets_dir
+        return Path(secrets_dir) / name if secrets_dir else self.root_dir / "server" / name
 
     def reload(self, new_config: ServerConfig | None = None) -> None:
         if new_config is None:
@@ -214,7 +242,7 @@ class ServerState:
                 self._read_local = threading.local()
             self.config = new_config
             self.mounts = dict(new_config.mounts)
-            self.root_dir = self.config_loader.path.resolve().parent
+            self.root_dir = Path(new_config.options.root_dir).resolve() if new_config.options.root_dir else self.config_loader.path.resolve().parent
             self.kind_policy_cache = {}
             self.library_kind_synced_mtimes = {}
 

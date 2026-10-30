@@ -1,5 +1,5 @@
 // The Inbox: mentions of you or your characters, replies/references to your
-// messages, and direct messages, across every campaign you're in. Ordinary
+// messages, and direct messages, across every group you're in. Ordinary
 // posts are never Inbox items — they show as unread counts on threads.
 // A modal laid out like a mail client: the list on the left, the selected
 // item (or the compose form) on the right.
@@ -12,6 +12,9 @@ import { renderEmojiPicker, renderReactionChips } from "./reactions.js";
 import { listDirectMessageRecipients } from "./direct-message.js";
 import { localDateToUtc } from "../sessions/local.js";
 import { describeDuration, formatSessionRange } from "../sessions/format.js";
+import { renderAttendance } from "../sessions/attendance.js";
+import { renderEndorsePanel } from "../community/endorse-panel.js";
+import { applicationCounterpart, renderApplicationPane } from "./application-pane.js";
 
 const POLL_INTERVAL_MS = 45000;
 export const INBOX_CHANGED_EVENT = "undercroft:inbox-changed";
@@ -24,6 +27,9 @@ const REASON_LABELS = {
   session_reminder: "Session reminder",
   session_alert: "Session needs players",
   session_promoted: "Waitlist: you're in",
+  session_noshow: "Marked as a no-show",
+  session_dispute: "No-show disputed",
+  application: "Application",
 };
 
 // Keeps `onCount(unread)` current: immediately, then on a timer and whenever
@@ -55,12 +61,17 @@ export function watchInboxCount({ dataManager, onCount } = {}) {
   };
 }
 
-function senderOf(item) {
+function senderOf(item, viewerId) {
   if (item.session) return item.session.title;
+  if (item.application) return applicationCounterpart(item.application, viewerId);
   return item.message ? item.message.voiceName : item.direct?.authorName || "Someone";
 }
 
 function previewOf(item) {
+  if (item.application) {
+    const last = item.application.messages[item.application.messages.length - 1];
+    return `${item.application.status === "pending" ? "" : `${item.application.status[0].toUpperCase()}${item.application.status.slice(1)} · `}${last ? last.body : ""}`;
+  }
   if (item.session) {
     const when = formatSessionRange(item.session.startAt, item.session.endAt, { kind: item.session.kind });
     return item.session.status === "cancelled" ? `Cancelled · ${when}` : when;
@@ -82,6 +93,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
   let selectedId = null;
   let groups = null;
   let reactionEmoji = [];
+  let reactionDescriptions = {};
 
   // Floating buttons, each at the bottom right of the pane it acts on.
   const newButton = createIconButton({
@@ -152,7 +164,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
       const row = el("button", `list-group-item list-group-item-action d-flex flex-column gap-1${item.id === selectedId ? " active" : ""}`);
       row.type = "button";
       const top = el("div", "d-flex justify-content-between align-items-baseline gap-2");
-      top.appendChild(el("span", `text-truncate${item.read ? "" : " fw-bold"}`, `${item.read ? "" : "● "}${senderOf(item)}`));
+      top.appendChild(el("span", `text-truncate${item.read ? "" : " fw-bold"}`, `${item.read ? "" : "● "}${senderOf(item, currentUserId)}`));
       top.appendChild(el("small", "flex-shrink-0 opacity-75", formatTimestamp(item.createdAt)));
       const meta = el("small", "opacity-75 text-truncate", `${REASON_LABELS[item.reason] || item.reason} · ${item.groupName}`);
       const excerpt = el("small", "text-truncate opacity-75", previewOf(item));
@@ -168,6 +180,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
       const result = await dataManager.getInbox();
       items = result.items;
       reactionEmoji = result.reactionEmoji || [];
+      reactionDescriptions = result.reactionDescriptions || {};
     } catch (error) {
       listPane.textContent = "";
       listPane.appendChild(el("p", "text-danger small p-3 mb-0", error.message || "Unable to load the inbox."));
@@ -192,10 +205,12 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
   // Delete floats beside New private message while an item is open. A session
   // notice's stays disabled (and says why) until the session has ended.
   function addDeleteFab(item) {
-    const over = !item.session || sessionIsOver(item.session);
+    const over = item.session
+      ? sessionIsOver(item.session)
+      : !(item.application && item.application.status === "pending");
     deleteFab = createIconButton({
       icon: "tabler:trash",
-      label: over ? "Delete" : "Can be deleted once the session has ended",
+      label: over ? "Delete" : item.application ? "Can be deleted once the application is answered" : "Can be deleted once the session has ended",
       variant: "danger",
       tooltipPlacement: "top",
       className: "chat-fab chat-fab--second",
@@ -241,7 +256,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
       const titleRow = el("div", "d-flex flex-wrap align-items-center gap-2");
       titleRow.appendChild(el("h3", "h5 mb-0", detail.title));
       const sessionHelp = el("span", "align-middle");
-      sessionHelp.dataset.helpTopic = "campaign.sessions";
+      sessionHelp.dataset.helpTopic = "group.sessions";
       sessionHelp.dataset.helpInsert = "replace";
       titleRow.appendChild(sessionHelp);
       void initHelpSystem({ root: titleRow });
@@ -331,6 +346,21 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
       });
       pane.appendChild(groups);
 
+      const attendance = renderAttendance(detail, {
+        dataManager,
+        status,
+        onChange: async () => {
+          window.dispatchEvent(new CustomEvent(INBOX_CHANGED_EVENT));
+          await render();
+        },
+      });
+      if (attendance) pane.appendChild(attendance);
+      if (detail.ended && detail.status !== "cancelled") {
+        const endorse = el("div");
+        pane.appendChild(endorse);
+        void renderEndorsePanel(endorse, { dataManager, status, groupId: detail.groupId });
+      }
+
       // The player's own characters in this group; picking one makes it the one they play.
       if (!detail.viewer.isGm && detail.viewer.characters.length > 1) {
         const picker = el("select", "form-select form-select-sm w-auto");
@@ -412,7 +442,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
       wrap.textContent = "";
       if (item.message?.deleted) return;
       const row = el("div", "d-flex flex-wrap align-items-center gap-2");
-      row.appendChild(renderReactionChips(item.reactions || [], { onToggle: toggle, justify: "start" }));
+      row.appendChild(renderReactionChips(item.reactions || [], { onToggle: toggle, justify: "start", descriptions: reactionDescriptions }));
       row.appendChild(
         createIconButton({
           icon: "tabler:mood-smile",
@@ -425,7 +455,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
               picker = null;
               return;
             }
-            picker = renderEmojiPicker(reactionEmoji, toggle);
+            picker = renderEmojiPicker(reactionEmoji, toggle, reactionDescriptions);
             wrap.prepend(picker);
           },
         })
@@ -439,6 +469,21 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
   function showItem(item) {
     if (item.session) {
       showSession(item);
+      return;
+    }
+    if (item.application) {
+      setPane(
+        renderApplicationPane(item.application, {
+          dataManager,
+          status,
+          onChanged: (updated) => {
+            item.application = updated;
+            window.dispatchEvent(new CustomEvent(INBOX_CHANGED_EVENT));
+            renderList();
+          },
+        }),
+      );
+      addDeleteFab(item);
       return;
     }
     const pane = el("div", "d-flex flex-column gap-3");
@@ -484,36 +529,36 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
   async function ensureGroups() {
     if (!groups) {
       const result = await dataManager.listGroups({ includeMemberGroups: true }).catch(() => ({ groups: [] }));
-      groups = Array.isArray(result?.groups) ? result.groups.filter((group) => (group.type || "campaign") === "campaign") : [];
+      groups = Array.isArray(result?.groups) ? result.groups.filter((group) => (group.type || "player-group") === "player-group") : [];
     }
     return groups;
   }
 
-  // The compose form, in the right pane. Recipients follow the chosen campaign.
+  // The compose form, in the right pane. Recipients follow the chosen group.
   async function showCompose({ groupId = "", selectedIds = [], title: heading = "New private message" } = {}) {
     selectedId = null;
     renderList();
-    const campaigns = await ensureGroups();
-    if (!campaigns.length) {
-      setPane(placeholder("You aren't in any campaigns yet."));
+    const playerGroups = await ensureGroups();
+    if (!playerGroups.length) {
+      setPane(placeholder("You aren't in any groups yet."));
       return;
     }
     const pane = el("form", "d-flex flex-column gap-3");
     pane.appendChild(el("h3", "h5 mb-0", heading));
 
     const groupSelect = el("select", "form-select");
-    campaigns.forEach((group) => {
+    playerGroups.forEach((group) => {
       const option = el("option", null, group.name);
       option.value = group.id;
       groupSelect.appendChild(option);
     });
     const active = dataManager.getActiveGroup()?.groupId;
-    groupSelect.value = [groupId, active].find((id) => id && campaigns.some((group) => group.id === id)) || campaigns[0].id;
+    groupSelect.value = [groupId, active].find((id) => id && playerGroups.some((group) => group.id === id)) || playerGroups[0].id;
 
     const recipientsHost = el("div", "d-flex flex-wrap gap-3");
     let checks = [];
     function renderRecipients(preselected) {
-      const group = campaigns.find((entry) => entry.id === groupSelect.value);
+      const group = playerGroups.find((entry) => entry.id === groupSelect.value);
       const people = listDirectMessageRecipients({
         roster: group?.members || [],
         ownerId: group?.owner_id ?? null,
@@ -529,7 +574,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
         recipientsHost.appendChild(label);
         return { id: person.id, box };
       });
-      if (!people.length) recipientsHost.appendChild(el("span", "text-body-secondary small", "Nobody else is in this campaign."));
+      if (!people.length) recipientsHost.appendChild(el("span", "text-body-secondary small", "Nobody else is in this group."));
     }
     renderRecipients(selectedIds);
     groupSelect.addEventListener("change", () => renderRecipients([]));
@@ -551,7 +596,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
       wrap.append(el("label", "form-label small mb-1", label), control);
       return wrap;
     };
-    pane.append(field("Campaign", groupSelect), field("To", recipientsHost), field("Message", text), buttons);
+    pane.append(field("Group", groupSelect), field("To", recipientsHost), field("Message", text), buttons);
     pane.addEventListener("submit", async (event) => {
       event.preventDefault();
       const recipientIds = checks.filter((entry) => entry.box.checked).map((entry) => entry.id);
@@ -597,7 +642,7 @@ export function openInbox({ dataManager, status, compose = null } = {}) {
   const title = el("h2", "modal-title fs-5", "Inbox");
   title.id = "undercroft-inbox-title";
   const titleHelp = el("span", "align-middle ms-2");
-  titleHelp.dataset.helpTopic = "campaign.inbox";
+  titleHelp.dataset.helpTopic = "group.inbox";
   titleHelp.dataset.helpInsert = "replace";
   title.appendChild(titleHelp);
   const close = el("button", "btn-close ms-auto");

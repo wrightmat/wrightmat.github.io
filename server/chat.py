@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from .auth import AuthError, User
-from .groups import _group_member_user_ids, _resolve_group_access, accessible_group_ids
+from .groups import PLAYER_GROUP_TYPE, _group_member_user_ids, _resolve_group_access, accessible_group_ids
 from .shares import content_exists
 from .state import ServerState
 
@@ -35,13 +35,23 @@ def _is_gm(row: Dict[str, Any], user: Optional[User]) -> bool:
 
 
 def _reaction_emoji(state: ServerState) -> List[str]:
-    path = state.root_dir / "undercroft" / "common" / "data" / "chat-reactions.json"
+    path = state.read_path("common", "data", "chat-reactions.json")
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return []
-    emoji = data.get("emoji") if isinstance(data, dict) else data
-    return [str(entry) for entry in emoji if isinstance(entry, str)] if isinstance(emoji, list) else []
+    entries = data.get("emoji") if isinstance(data, dict) else data
+    return [entry["emoji"] for entry in entries if isinstance(entry, dict) and entry.get("emoji")] if isinstance(entries, list) else []
+
+
+def _reaction_descriptions(state: ServerState) -> Dict[str, str]:
+    """The tooltip text for each reaction emoji."""
+    path = state.read_path("common", "data", "chat-reactions.json")
+    try:
+        entries = json.loads(path.read_text(encoding="utf-8")).get("emoji") or []
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return {}
+    return {entry["emoji"]: entry.get("description") or "" for entry in entries if isinstance(entry, dict) and entry.get("emoji")}
 
 
 def _json_list(raw: Optional[str]) -> List[Any]:
@@ -110,7 +120,7 @@ def ensure_default_chat(state: ServerState, group_id: str, created_by: Optional[
 def ensure_default_chat_for_all_groups(state: ServerState) -> None:
     for row in state.db.execute("SELECT id, owner_id, metadata FROM library_items WHERE kind = 'group'").fetchall():
         metadata = _json_object(row["metadata"]) or {}
-        if str(metadata.get("type") or "campaign").lower() != "campaign":
+        if str(metadata.get("type") or PLAYER_GROUP_TYPE).lower() != PLAYER_GROUP_TYPE:
             continue
         ensure_default_chat(state, row["id"], row["owner_id"])
 
@@ -190,6 +200,7 @@ def chat_overview(
         "channels": channels,
         "defaultThreadId": default_thread_id,
         "reactionEmoji": _reaction_emoji(state),
+        "reactionDescriptions": _reaction_descriptions(state),
         "viewer": {
             "userId": user.id if user else None,
             "isGm": gm,
@@ -1099,6 +1110,13 @@ def list_inbox(state: ServerState, user: Optional[User], *, unread_only: bool = 
             if not summary:
                 continue
             entry["session"] = summary
+        elif item["application_id"]:
+            from . import applications
+
+            application = applications.inbox_entry(state, item, user)
+            if not application:
+                continue
+            entry["application"] = application
         elif item["message_id"]:
             message = messages.get(item["message_id"])
             if not message:
@@ -1121,7 +1139,7 @@ def list_inbox(state: ServerState, user: Optional[User], *, unread_only: bool = 
             }
             entry["reactions"] = dm_reactions.get(dm["id"], [])
         items.append(entry)
-    return {"items": items, "reactionEmoji": _reaction_emoji(state)}
+    return {"items": items, "reactionEmoji": _reaction_emoji(state), "reactionDescriptions": _reaction_descriptions(state)}
 
 
 def inbox_count(state: ServerState, user: Optional[User]) -> Dict[str, Any]:
@@ -1168,6 +1186,11 @@ def delete_inbox_items(state: ServerState, user: Optional[User], *, ids: Any = N
                 "SELECT status, end_at FROM group_session_occurrences WHERE id = ?", (item["occurrence_id"],)
             ).fetchone()
             if occurrence and occurrence["status"] != "cancelled" and (occurrence["end_at"] or "") > now:
+                skipped.append(item_id)
+                continue
+        if item["application_id"]:
+            application = state.db.execute("SELECT status FROM applications WHERE id = ?", (item["application_id"],)).fetchone()
+            if application and application["status"] == "pending":
                 skipped.append(item_id)
                 continue
         state.db.execute("DELETE FROM inbox_items WHERE id = ?", (item_id,))

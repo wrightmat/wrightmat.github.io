@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "id": "tag-fantasy",
+      "name": "Fantasy"
+    },
+    {
+      "id": "tag-dark-fantasy",
+      "name": "Dark fantasy"
+    },
+    {
+      "id": "tag-sci-fi",
+      "name": "Sci-fi"
+    },
+    {
+      "id": "tag-space-opera",
+      "name": "Space opera"
+    },
+    {
+      "id": "tag-horror",
+      "name": "Horror"
+    },
+    {
+      "id": "tag-cosmic-horror",
+      "name": "Cosmic horror"
+    },
+    {
+      "id": "tag-mystery-investigation",
+      "name": "Mystery/investigation"
+    },
+    {
+      "id": "tag-intrigue-political",
+      "name": "Intrigue/political"
+    },
+    {
+      "id": "tag-heist",
+      "name": "Heist"
+    },
+    {
+      "id": "tag-post-apocalyptic",
+      "name": "Post-apocalyptic"
+    },
+    {
+      "id": "tag-cyberpunk",
+      "name": "Cyberpunk"
+    },
+    {
+      "id": "tag-superhero",
+      "name": "Superhero"
+    },
+    {
+      "id": "tag-historical",
+      "name": "Historical"
+    },
+    {
+      "id": "tag-western",
+      "name": "Western"
+    },
+    {
+      "id": "tag-modern-urban",
+      "name": "Modern/urban"
+    },
+    {
+      "id": "tag-cozy-slice-of-life",
+      "name": "Cozy/slice-of-life"
+    },
+    {
+      "id": "tag-war",
+      "name": "War"
+    },
+    {
+      "id": "tag-pirate-nautical",
+      "name": "Pirate/nautical"
+    },
+    {
+      "id": "tag-dungeon-crawl",
+      "name": "Dungeon crawl"
+    },
+    {
+      "id": "tag-hexcrawl-exploration",
+      "name": "Hexcrawl/exploration"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { bindNoteButton } from "../../common/js/lib/note-button.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
@@ -2363,6 +2364,7 @@ async function init() {
     status,
   });
   dataManager = auth.dataManager;
+  bindNoteButton(elements.generateNoteButton, dataManager);
 
   // Generate starts disabled — recomputed once reloadReferenceData
   // resolves. Proactively disables (with an explanatory tooltip) instead of
@@ -2394,7 +2396,7 @@ async function init() {
   });
   elements.multiattackAddOptionButton?.addEventListener("click", addMultiattackOption);
   // Named (not an inline listener) so the init flow below can also call
-  // this directly when auto-selecting the active campaign group's System.
+  // this directly when auto-selecting the active player group's System.
   async function handleSystemSelectChange() {
     markRequiredControl(elements.systemSelect, Boolean(elements.systemSelect.value));
     // A different System means any previously loaded Monster (and the
@@ -2612,7 +2614,7 @@ async function init() {
     }
   }
 
-  // If a campaign group is active and has its own System assigned, default
+  // If a player group is active and has its own System assigned, default
   // Crucible's System select to it. Falls through to the "nothing chosen
   // yet" placeholder otherwise. An explicit `?monster=` deep link always
   // wins over both.

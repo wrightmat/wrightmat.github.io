@@ -1,8 +1,8 @@
 import { openInbox, watchInboxCount } from "./chat/inbox.js";
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
-import { resolveAccountHref, resolveToolContextPath } from "./app-shell.js";
-import { disableForm, attachHoverDropdown } from "./dom.js";
+import { resolveAccountHref, resolveFindGameHref, resolveToolContextPath } from "./app-shell.js";
+import { disableForm, attachHoverDropdown, escapeHtml } from "./dom.js";
 import { disposeTooltips } from "./tooltips.js";
 
 const MODAL_ID = "undercroft-auth-modal";
@@ -59,11 +59,15 @@ function ensureModal() {
                 <div class="row g-3">
                   <div class="col-12">
                     <label class="form-label" for="auth-register-password">Password</label>
-                    <input class="form-control" id="auth-register-password" type="password" name="password" autocomplete="new-password" required />
+                    <input class="form-control" id="auth-register-password" type="password" name="password" autocomplete="new-password" minlength="10" required />
                   </div>
                   <div class="col-12">
                     <label class="form-label" for="auth-register-confirm">Confirm password</label>
                     <input class="form-control" id="auth-register-confirm" type="password" name="confirm" autocomplete="new-password" required />
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="auth-register-invite" data-auth-invite-label>Invite code (optional)</label>
+                    <input class="form-control" id="auth-register-invite" name="invite" autocomplete="off" spellcheck="false" />
                   </div>
                 </div>
                 <div class="text-danger small min-h-1" data-auth-error></div>
@@ -114,9 +118,7 @@ function setError(element, message) {
 
 // Exported so other tools (Forge/Loom/Sanctum/Workbench) share one
 // implementation instead of re-defining it.
-export function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
-}
+export { escapeHtml };
 
 export function initAuthControls({
   root = document,
@@ -150,7 +152,30 @@ export function initAuthControls({
   const state = {
     pendingVerification: null,
   };
+
+  // An invite link (?invite=<code>) opens the sign-up form with the code filled in. The code is taken once and
+  // removed from the address bar so it isn't left in history or copied onward by accident.
+  const inviteInput = registerForm.querySelector("[name='invite']");
+  const inviteLabel = registerForm.querySelector("[data-auth-invite-label]");
+  const pageParams = new URLSearchParams(window.location.search);
+  const linkedInvite = (pageParams.get("invite") || "").trim();
+  if (pageParams.has("invite")) {
+    pageParams.delete("invite");
+    const rest = pageParams.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${rest ? `?${rest}` : ""}${window.location.hash}`);
+  }
+  if (linkedInvite) inviteInput.value = linkedInvite;
+  // Whether the server requires a code decides the label and the field's required state.
+  void manager
+    .getRegistrationOptions()
+    .then((options) => {
+      if (!options?.inviteRequired) return;
+      inviteLabel.textContent = "Invite code";
+      inviteInput.required = true;
+    })
+    .catch(() => {});
   const resolvedAccountHref = resolveAccountHref(resolveToolContextPath());
+  const resolvedFindGameHref = resolveFindGameHref(resolveToolContextPath());
 
   function showView(name) {
     views.forEach((view) => {
@@ -218,7 +243,7 @@ export function initAuthControls({
   }
 
   // Resolves each distinct system_id/setting_id across `groups` to its real
-  // title once (deduped), for the small-print line under a campaign's name.
+  // title once (deduped), for the small-print line under a group's name.
   // Best-effort per id: a deleted/inaccessible record falls back to its
   // own raw id, the same convention used suite-wide.
   async function resolveTitles(bucket, ids) {
@@ -277,7 +302,7 @@ export function initAuthControls({
         return `
           <li>
             <div class="d-flex align-items-center">
-              <button class="dropdown-item flex-grow-1${isActive ? " active" : ""}" type="button" data-campaign-select="${escapeHtml(group.id)}">
+              <button class="dropdown-item flex-grow-1${isActive ? " active" : ""}" type="button" data-group-select="${escapeHtml(group.id)}">
                 <div class="d-flex flex-column align-items-start lh-sm">
                   <span class="d-inline-flex align-items-center gap-1">
                     ${escapeHtml(group.name)}
@@ -292,7 +317,7 @@ export function initAuthControls({
               </button>
               ${
                 isActive
-                  ? `<button class="btn btn-sm btn-link text-body-secondary px-2" type="button" data-campaign-clear aria-label="Leave ${escapeHtml(group.name)}" data-bs-toggle="tooltip" data-bs-title="Leave ${escapeHtml(group.name)}">&times;</button>`
+                  ? `<button class="btn btn-sm btn-link text-body-secondary px-2" type="button" data-group-clear aria-label="Leave ${escapeHtml(group.name)}" data-bs-toggle="tooltip" data-bs-title="Leave ${escapeHtml(group.name)}">&times;</button>`
                   : ""
               }
             </div>
@@ -317,23 +342,24 @@ export function initAuthControls({
         </span>
         <span class="undercroft-auth-text flex-column align-items-start" style="width: 10rem;">
           <span class="undercroft-auth-username text-truncate w-100">${identityLine}</span>
-          ${activeStillExists ? `<span class="undercroft-auth-campaign text-body-secondary text-truncate w-100">${escapeHtml(active.name)}</span>` : ""}
+          ${activeStillExists ? `<span class="undercroft-auth-group text-body-secondary text-truncate w-100">${escapeHtml(active.name)}</span>` : ""}
         </span>
       </button>
       <ul class="dropdown-menu dropdown-menu-end undercroft-auth-dropdown">
         <li><span class="dropdown-item-text text-body-secondary">${identityLine}</span></li>
-        <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account Settings</a></li>
+        <li><a class="dropdown-item" href="${resolvedAccountHref}" data-auth-settings>Account</a></li>
         <li>
           <button class="dropdown-item d-flex justify-content-between align-items-center" type="button" data-inbox-open>
             Inbox
             <span class="badge text-bg-primary" data-inbox-menu-badge style="display: none;"></span>
           </button>
         </li>
+        <li><a class="dropdown-item" href="${resolvedFindGameHref}">Find a Game</a></li>
         <li><hr class="dropdown-divider" /></li>
         ${
           groups.length
             ? groupItems
-            : `<li><span class="dropdown-item-text text-body-secondary">No campaign groups yet</span></li>`
+            : `<li><span class="dropdown-item-text text-body-secondary">No groups yet</span></li>`
         }
         <li><hr class="dropdown-divider" /></li>
         <li><button class="dropdown-item" type="button" data-auth-logout>Log out</button></li>
@@ -344,15 +370,15 @@ export function initAuthControls({
     dropdown.querySelector("[data-inbox-open]")?.addEventListener("click", () => openInbox({ dataManager: manager, status }));
     applyInboxBadge();
 
-    dropdown.querySelectorAll("[data-campaign-select]").forEach((button) => {
+    dropdown.querySelectorAll("[data-group-select]").forEach((button) => {
       button.addEventListener("click", () => {
-        const groupId = button.getAttribute("data-campaign-select");
+        const groupId = button.getAttribute("data-group-select");
         const group = groups.find((entry) => entry.id === groupId);
         manager.setActiveGroup(groupId, group ? group.name : "");
         renderUserMenu(user, groups);
       });
     });
-    dropdown.querySelectorAll("[data-campaign-clear]").forEach((button) => {
+    dropdown.querySelectorAll("[data-group-clear]").forEach((button) => {
       button.addEventListener("click", (event) => {
         event.stopPropagation();
         disposeTooltips(dropdown);
@@ -436,7 +462,7 @@ export function initAuthControls({
       const result = await manager.listGroups({ includeMemberGroups: true });
       groups = Array.isArray(result?.groups) ? result.groups : [];
     } catch (error) {
-      console.warn("Unable to load campaign groups", error);
+      console.warn("Unable to load groups", error);
     }
     resyncActiveGroup(groups);
     const contextLabels = await resolveGroupContextLabels(groups).catch(() => ({
@@ -497,7 +523,7 @@ export function initAuthControls({
     }
     disableForm(registerForm, true);
     try {
-      const result = await manager.register({ email, username, password });
+      const result = await manager.register({ email, username, password, invite: String(formData.get("invite") || "").trim() });
       if (result && result.token && result.user) {
         handleSession(result, `Account created for ${result.user.username}`);
         return;
@@ -570,8 +596,10 @@ export function initAuthControls({
     openModal("login");
   });
 
+  if (linkedInvite && !manager.isAuthenticated()) openModal("register");
+
   // Keep the header in sync when something else changes the active
-  // campaign (e.g. a "Share with [active campaign]" flow elsewhere).
+  // campaign (e.g. a "Share with [active group]" flow elsewhere).
   window.addEventListener("workbench:active-group-changed", () => {
     const user = sessionUser();
     if (user && manager.isAuthenticated()) {

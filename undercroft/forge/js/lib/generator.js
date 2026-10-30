@@ -8,6 +8,7 @@ import {
   rollArchetype,
   rollFourD,
   getStatsForArchetype,
+  getLocationArchetypeStats,
 } from "./tables.js";
 import { generateSpeciesName } from "./name-generator.js";
 
@@ -31,11 +32,12 @@ function rollIndependentStats(ranges, existingKeys, random) {
 // undefined-valued keys) from "this System has Stats, but not for this
 // particular archetype" (a real `stats: null`, rendered as "No stat block
 // available" rather than silently disappearing).
-function resolveStats(tables, archetypeName, random) {
+function resolveStats(tables, archetypeName, random, location) {
   const hasStatsTable = tables.stats && Object.keys(tables.stats).length > 0;
   const independentRanges = tables.independentStatRanges || [];
   if (!hasStatsTable && !independentRanges.length) return undefined;
-  const archetypeEntry = hasStatsTable ? tables.stats[archetypeName] : null;
+  // A Location's own properties for this archetype win over the System's.
+  const archetypeEntry = getLocationArchetypeStats(tables, location, archetypeName) || (hasStatsTable ? tables.stats[archetypeName] : null);
   if (!archetypeEntry && !independentRanges.length) return null;
   const existingKeys = new Set(Object.keys(archetypeEntry || {}));
   const rolled = rollIndependentStats(independentRanges, existingKeys, random);
@@ -111,7 +113,7 @@ export function generateNpc(location, tables, { overrides = {}, random = Math.ra
       drive: fourD.drive.label,
       direction: fourD.direction.label,
     },
-    stats: resolveStats(tables, archetype.name, random),
+    stats: resolveStats(tables, archetype.name, random, location),
     // Present only for a System with a skillGeneration config authored —
     // omitted entirely for every other System, same as `stats` above.
     skills: rollSkills(tables.skillGeneration, random),
@@ -163,7 +165,7 @@ export function rerollAttribute(record, tables, location, attribute, { random = 
       const archetype = rollArchetype(tables.archetype, location, { random });
       next.identity.archetype = archetype.name;
       next.rolls.archetype = archetype;
-      next.stats = resolveStats(tables, archetype.name, random);
+      next.stats = resolveStats(tables, archetype.name, random, location);
       next.skills = rollSkills(tables.skillGeneration, random);
       break;
     }

@@ -434,7 +434,7 @@ export function initSoundboardWidget(
 
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
-      status?.show("No active campaign to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
       return;
     }
     try {

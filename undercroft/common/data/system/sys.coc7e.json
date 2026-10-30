@@ -3,6 +3,390 @@
   "version": "0.1",
   "fields": [
     {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item Name",
+          "required": true
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "currency",
+      "label": "Currency",
+      "values": [
+        {
+          "name": "Dollar",
+          "shortName": "$",
+          "cost": 100
+        },
+        {
+          "name": "Cent",
+          "shortName": "¢",
+          "cost": 1
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "sides": 100,
+          "name": "d100",
+          "description": "The Investigator's core resolution die — percentile, roll-under."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "expression": "d100",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 1,
+              "label": "Critical Success"
+            },
+            {
+              "min": 100,
+              "max": 100,
+              "label": "Fumble"
+            },
+            {
+              "min": 96,
+              "max": 99,
+              "targetBelow": 50,
+              "label": "Fumble"
+            },
+            {
+              "targetMaxFraction": 0.2,
+              "label": "Extreme Success"
+            },
+            {
+              "targetMaxFraction": 0.5,
+              "label": "Hard Success"
+            },
+            {
+              "targetMaxFraction": 1,
+              "label": "Regular Success"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "Failure"
+            }
+          ],
+          "name": "Skill / Characteristic Check (d100, Roll Under)",
+          "description": "Roll d100 against the skill or characteristic being tested. Fired from a field's own roll button (a Skill's % input, a Characteristic score), which passes that field's current value through as the target — Regular/Hard/Extreme success, and the conditional 96-99 Fumble, are evaluated live against it. Fired from the Moves panel with no associated field, only the two fixed thresholds (Critical Success on a 1, Fumble on 100) can match.",
+          "shortName": "Skill"
+        },
+        {
+          "expression": "d100",
+          "resultMode": "band",
+          "bands": [
+            {
+              "targetExceeds": true,
+              "label": "Luck Regained"
+            },
+            {
+              "targetMinFraction": 0,
+              "label": "No Change"
+            }
+          ],
+          "name": "Luck Regain (Optional, d100 Roll Over)",
+          "description": "Optional rule: roll d100 against your current Luck. Rolling OVER your current Luck regains it to a new (usually higher) rolled value.",
+          "shortName": "Luck"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "derivedFormulas",
+      "label": "Derived Formulas",
+      "values": [
+        {
+          "formula": "floor((@size + @constitution) / 10)",
+          "name": "hitPoints",
+          "binding": "hitPoints"
+        },
+        {
+          "formula": "floor(@power / 5)",
+          "name": "magicPoints",
+          "binding": "magicPoints"
+        },
+        {
+          "formula": "@power",
+          "name": "sanityStart",
+          "binding": "sanityStart"
+        },
+        {
+          "formula": "if(and(@strength < @size, @dexterity < @size), 7, if(and(@strength > @size, @dexterity > @size), 9, 8))",
+          "name": "moveRate",
+          "binding": "moveRate"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "buildSteps",
+      "label": "Build Steps",
+      "values": [
+        {
+          "step": "abilities",
+          "desc": "Assign your investigator's eight characteristics — either the standard point array, or roll for them (Strength/Constitution/Dexterity/Appearance/Power use 3D6×5; Size/Intelligence/Education use (2D6+6)×5).",
+          "methods": [
+            {
+              "name": "array",
+              "label": "Standard array",
+              "values": [
+                {
+                  "name": "40",
+                  "value": 40
+                },
+                {
+                  "name": "50",
+                  "value": 50
+                },
+                {
+                  "name": "50",
+                  "value": 50
+                },
+                {
+                  "name": "50",
+                  "value": 50
+                },
+                {
+                  "name": "60",
+                  "value": 60
+                },
+                {
+                  "name": "60",
+                  "value": 60
+                },
+                {
+                  "name": "70",
+                  "value": 70
+                },
+                {
+                  "name": "80",
+                  "value": 80
+                }
+              ]
+            },
+            {
+              "name": "roll",
+              "label": "Roll",
+              "formula": "3d6*5",
+              "formulas": {
+                "size": "(2d6+6)*5",
+                "intelligence": "(2d6+6)*5",
+                "education": "(2d6+6)*5"
+              }
+            }
+          ],
+          "name": "Characteristics"
+        },
+        {
+          "step": "class",
+          "desc": "Your Occupation grants a Credit Rating range and a skill-point budget you'll spend on its own list of occupation skills next.",
+          "name": "Occupation",
+          "libraryKind": "class"
+        },
+        {
+          "step": "occupationSkills",
+          "type": "pointAllocation",
+          "budgetSource": {
+            "from": "class",
+            "libraryField": "occupationSkillsFormula"
+          },
+          "scopeSource": {
+            "from": "class",
+            "libraryField": "occupationSkills"
+          },
+          "unitLabel": "points",
+          "desc": "Spend your Occupation's own skill-point budget across the skills it grants access to — including Credit Rating itself.",
+          "name": "Occupation Skills",
+          "sourceField": "skills"
+        },
+        {
+          "step": "personalInterest",
+          "type": "pointAllocation",
+          "budgetFormula": "@intelligence * 2",
+          "exclude": [
+            "skills.cthulhuMythos"
+          ],
+          "unitLabel": "points",
+          "desc": "Spend a budget equal to twice your Intelligence on any skills you like, reflecting interests outside your Occupation — Cthulhu Mythos excluded.",
+          "name": "Personal Interest",
+          "sourceField": "skills"
+        },
+        {
+          "step": "input",
+          "inputs": [
+            {
+              "label": "Player",
+              "placeholder": "Your own name",
+              "optional": true
+            },
+            {
+              "label": "Age",
+              "placeholder": "15-90"
+            },
+            {
+              "label": "Sex",
+              "placeholder": "Optional",
+              "optional": true
+            },
+            {
+              "label": "Residence",
+              "placeholder": "Where they live now"
+            },
+            {
+              "label": "Birthplace",
+              "placeholder": "Where they're from"
+            },
+            {
+              "label": "Personal Description",
+              "placeholder": "Age, build, distinguishing features"
+            },
+            {
+              "label": "Ideology or Beliefs",
+              "placeholder": "What they hold true"
+            },
+            {
+              "label": "Significant People",
+              "placeholder": "Who matters to them, and why"
+            },
+            {
+              "label": "Meaningful Locations",
+              "placeholder": "A place that matters"
+            },
+            {
+              "label": "Treasured Possessions",
+              "placeholder": "Something they'd hate to lose"
+            },
+            {
+              "label": "Traits",
+              "placeholder": "A defining habit or quirk"
+            },
+            {
+              "label": "Injuries & Scars",
+              "placeholder": "Optional",
+              "optional": true
+            },
+            {
+              "label": "Phobias & Manias",
+              "placeholder": "Optional",
+              "optional": true
+            },
+            {
+              "label": "Arcane Tomes, Spells & Artifacts",
+              "placeholder": "Optional",
+              "optional": true
+            },
+            {
+              "label": "Encounters with Strange Entities",
+              "placeholder": "Optional",
+              "optional": true
+            }
+          ],
+          "targetPaths": [
+            "player",
+            "age",
+            "sex",
+            "residence",
+            "birthplace",
+            "background.description",
+            "background.ideology",
+            "background.significantPeople",
+            "background.meaningfulLocations",
+            "background.treasuredPossessions",
+            "background.traits",
+            "background.injuriesScars",
+            "background.phobiasManias",
+            "background.arcaneTomes",
+            "background.encounters"
+          ],
+          "name": "Personal Details & Backstory"
+        },
+        {
+          "step": "details",
+          "name": "Details"
+        },
+        {
+          "step": "review",
+          "name": "Review"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
+        },
+        {
+          "name": "characteristics → abilityScores",
+          "sourceField": "characteristics",
+          "binding": "abilityScores"
+        },
+        {
+          "name": "creatureTypes → creatureType",
+          "sourceField": "creatureTypes",
+          "binding": "creatureType"
+        },
+        {
+          "name": "combatScaling → combatScaling",
+          "sourceField": "combatScaling",
+          "binding": "combatScaling"
+        },
+        {
+          "name": "occupations → archetypeTable",
+          "sourceField": "occupations",
+          "binding": "archetypeTable"
+        },
+        {
+          "name": "environment → environment",
+          "sourceField": "environment",
+          "binding": "environment"
+        },
+        {
+          "name": "rarity → generatorProperty",
+          "sourceField": "rarity",
+          "binding": "generatorProperty"
+        },
+        {
+          "name": "rarity → budgetCeiling",
+          "sourceField": "rarity",
+          "binding": "budgetCeiling"
+        }
+      ]
+    },
+    {
       "type": "string",
       "key": "name",
       "label": "Investigator Name",
@@ -118,9 +502,9 @@
       "type": "number",
       "key": "luck",
       "label": "Luck",
+      "rollFormula": "3d6*5",
       "minimum": 15,
-      "maximum": 90,
-      "rollFormula": "3d6*5"
+      "maximum": 90
     },
     {
       "type": "number",
@@ -515,7 +899,6 @@
       "type": "array",
       "key": "weapons",
       "label": "Weapons & Combat",
-      "values": [],
       "children": [
         {
           "type": "string",
@@ -551,48 +934,6 @@
           "type": "string",
           "key": "malfunction",
           "label": "Malfunction"
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "key": "inventory",
-      "label": "Inventory",
-      "values": [],
-      "children": [
-        {
-          "type": "string",
-          "key": "name",
-          "label": "Item Name",
-          "required": true
-        },
-        {
-          "type": "number",
-          "key": "quantity",
-          "label": "Quantity",
-          "minimum": 0
-        },
-        {
-          "type": "string",
-          "key": "notes",
-          "label": "Notes"
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "key": "currency",
-      "label": "Currency",
-      "values": [
-        {
-          "name": "Dollar",
-          "shortName": "$",
-          "cost": 100
-        },
-        {
-          "name": "Cent",
-          "shortName": "¢",
-          "cost": 1
         }
       ]
     },
@@ -695,67 +1036,67 @@
       "type": "array",
       "key": "damageBonusBuildTable",
       "label": "Damage Bonus / Build",
-      "values": [
-        {
-          "name": "STR+SIZ 2-64",
-          "min": 2,
-          "max": 64,
-          "damageBonus": "-2",
-          "build": -2
-        },
-        {
-          "name": "STR+SIZ 65-84",
-          "min": 65,
-          "max": 84,
-          "damageBonus": "-1",
-          "build": -1
-        },
-        {
-          "name": "STR+SIZ 85-124",
-          "min": 85,
-          "max": 124,
-          "damageBonus": "0",
-          "build": 0
-        },
-        {
-          "name": "STR+SIZ 125-164",
-          "min": 125,
-          "max": 164,
-          "damageBonus": "+1D4",
-          "build": 1
-        },
-        {
-          "name": "STR+SIZ 165-204",
-          "min": 165,
-          "max": 204,
-          "damageBonus": "+1D6",
-          "build": 2
-        },
-        {
-          "name": "STR+SIZ 205-284",
-          "min": 205,
-          "max": 284,
-          "damageBonus": "+2D6",
-          "build": 3
-        },
-        {
-          "name": "STR+SIZ 285-364",
-          "min": 285,
-          "max": 364,
-          "damageBonus": "+3D6",
-          "build": 4
-        },
-        {
-          "name": "STR+SIZ 365-444",
-          "min": 365,
-          "max": 444,
-          "damageBonus": "+4D6",
-          "build": 5
-        }
-      ],
       "sumFields": [
         "strength",
         "size"
+      ],
+      "values": [
+        {
+          "min": 2,
+          "max": 64,
+          "damageBonus": "-2",
+          "build": -2,
+          "name": "STR+SIZ 2-64"
+        },
+        {
+          "min": 65,
+          "max": 84,
+          "damageBonus": "-1",
+          "build": -1,
+          "name": "STR+SIZ 65-84"
+        },
+        {
+          "min": 85,
+          "max": 124,
+          "damageBonus": "0",
+          "build": 0,
+          "name": "STR+SIZ 85-124"
+        },
+        {
+          "min": 125,
+          "max": 164,
+          "damageBonus": "+1D4",
+          "build": 1,
+          "name": "STR+SIZ 125-164"
+        },
+        {
+          "min": 165,
+          "max": 204,
+          "damageBonus": "+1D6",
+          "build": 2,
+          "name": "STR+SIZ 165-204"
+        },
+        {
+          "min": 205,
+          "max": 284,
+          "damageBonus": "+2D6",
+          "build": 3,
+          "name": "STR+SIZ 205-284"
+        },
+        {
+          "min": 285,
+          "max": 364,
+          "damageBonus": "+3D6",
+          "build": 4,
+          "name": "STR+SIZ 285-364"
+        },
+        {
+          "min": 365,
+          "max": 444,
+          "damageBonus": "+4D6",
+          "build": 5,
+          "name": "STR+SIZ 365-444"
+        }
       ]
     },
     {
@@ -816,100 +1157,24 @@
     },
     {
       "type": "array",
-      "key": "dice",
-      "label": "Dice",
-      "values": [
-        {
-          "name": "d100",
-          "sides": 100,
-          "description": "The Investigator's core resolution die — percentile, roll-under."
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "key": "rolls",
-      "label": "Rolls",
-      "values": [
-        {
-          "name": "Skill / Characteristic Check (d100, Roll Under)",
-          "expression": "d100",
-          "resultMode": "band",
-          "description": "Roll d100 against the skill or characteristic being tested. Fired from a field's own roll button (a Skill's % input, a Characteristic score), which passes that field's current value through as the target — Regular/Hard/Extreme success, and the conditional 96-99 Fumble, are evaluated live against it. Fired from the Moves panel with no associated field, only the two fixed thresholds (Critical Success on a 1, Fumble on 100) can match.",
-          "bands": [
-            {
-              "max": 1,
-              "label": "Critical Success"
-            },
-            {
-              "min": 100,
-              "max": 100,
-              "label": "Fumble"
-            },
-            {
-              "min": 96,
-              "max": 99,
-              "targetBelow": 50,
-              "label": "Fumble"
-            },
-            {
-              "targetMaxFraction": 0.2,
-              "label": "Extreme Success"
-            },
-            {
-              "targetMaxFraction": 0.5,
-              "label": "Hard Success"
-            },
-            {
-              "targetMaxFraction": 1.0,
-              "label": "Regular Success"
-            },
-            {
-              "targetMinFraction": 0,
-              "label": "Failure"
-            }
-          ],
-          "shortName": "Skill"
-        },
-        {
-          "name": "Luck Regain (Optional, d100 Roll Over)",
-          "shortName": "Luck",
-          "expression": "d100",
-          "resultMode": "band",
-          "description": "Optional rule: roll d100 against your current Luck. Rolling OVER your current Luck regains it to a new (usually higher) rolled value.",
-          "bands": [
-            {
-              "targetExceeds": true,
-              "label": "Luck Regained"
-            },
-            {
-              "targetMinFraction": 0,
-              "label": "No Change"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "array",
       "key": "combatBindings",
       "label": "Combat Bindings",
       "values": [
         {
-          "name": "Hit Points",
           "maxPath": "stats.hitPoints.max",
+          "name": "Hit Points",
           "recordField": "stats.hitPoints.current",
           "binding": "resource"
         },
         {
-          "name": "Magic Points",
           "maxPath": "stats.magicPoints.max",
+          "name": "Magic Points",
           "recordField": "stats.magicPoints.current",
           "binding": "resource"
         },
         {
-          "name": "Sanity",
           "maxPath": "stats.sanity.max",
+          "name": "Sanity",
           "recordField": "stats.sanity.current",
           "binding": "resource"
         },
@@ -920,8 +1185,8 @@
         },
         {
           "name": "Conditions",
-          "sourceField": "conditions",
           "recordField": "conditions",
+          "sourceField": "conditions",
           "binding": "tags"
         }
       ]
@@ -1101,294 +1366,74 @@
       "label": "Creature Types",
       "values": [
         {
-          "shortName": "great-old-one",
           "name": "Great Old One",
-          "description": "A vast, sleeping or imprisoned cosmic entity worshipped by cults across the world."
+          "description": "A vast, sleeping or imprisoned cosmic entity worshipped by cults across the world.",
+          "shortName": "great-old-one"
         },
         {
-          "shortName": "outer-god",
           "name": "Outer God",
-          "description": "A being of near-limitless, alien power dwelling beyond ordinary reality, indifferent to mortal concerns."
+          "description": "A being of near-limitless, alien power dwelling beyond ordinary reality, indifferent to mortal concerns.",
+          "shortName": "outer-god"
         },
         {
-          "shortName": "elder-god",
           "name": "Elder God",
-          "description": "A rare, comparatively benign cosmic power, sometimes opposed to the Outer Gods and Great Old Ones."
+          "description": "A rare, comparatively benign cosmic power, sometimes opposed to the Outer Gods and Great Old Ones.",
+          "shortName": "elder-god"
         },
         {
-          "shortName": "deep-one",
           "name": "Deep One",
-          "description": "An amphibious, fish-like humanoid dwelling in undersea cities and interbreeding with coastal humans."
+          "description": "An amphibious, fish-like humanoid dwelling in undersea cities and interbreeding with coastal humans.",
+          "shortName": "deep-one"
         },
         {
-          "shortName": "ghoul",
           "name": "Ghoul",
-          "description": "A degenerate, subterranean carrion-eater, once human, dwelling in graveyards and tunnels."
+          "description": "A degenerate, subterranean carrion-eater, once human, dwelling in graveyards and tunnels.",
+          "shortName": "ghoul"
         },
         {
-          "shortName": "mi-go",
           "name": "Mi-Go",
-          "description": "A fungoid, crustacean-like being from beyond the stars, harvesting minds and specimens."
+          "description": "A fungoid, crustacean-like being from beyond the stars, harvesting minds and specimens.",
+          "shortName": "mi-go"
         },
         {
-          "shortName": "byakhee",
           "name": "Byakhee",
-          "description": "A winged, star-faring horror summoned to carry a cultist across the void."
+          "description": "A winged, star-faring horror summoned to carry a cultist across the void.",
+          "shortName": "byakhee"
         },
         {
-          "shortName": "servitor",
           "name": "Servitor",
-          "description": "A monstrous agent bound or summoned to carry out a greater power's will."
+          "description": "A monstrous agent bound or summoned to carry out a greater power's will.",
+          "shortName": "servitor"
         },
         {
-          "shortName": "star-vampire",
           "name": "Star Vampire",
-          "description": "An invisible, blood-draining horror from beyond the visible spectrum."
+          "description": "An invisible, blood-draining horror from beyond the visible spectrum.",
+          "shortName": "star-vampire"
         },
         {
-          "shortName": "hound-of-tindalos",
           "name": "Hound of Tindalos",
-          "description": "A lean, angular predator that hunts time travelers through the angles of reality."
+          "description": "A lean, angular predator that hunts time travelers through the angles of reality.",
+          "shortName": "hound-of-tindalos"
         },
         {
-          "shortName": "elder-thing",
           "name": "Elder Thing",
-          "description": "An ancient, star-headed being, among the first intelligent life on Earth."
+          "description": "An ancient, star-headed being, among the first intelligent life on Earth.",
+          "shortName": "elder-thing"
         },
         {
-          "shortName": "shoggoth",
           "name": "Shoggoth",
-          "description": "A vast, shapeless mass of protoplasm and eyes, bred as a slave by the Elder Things."
+          "description": "A vast, shapeless mass of protoplasm and eyes, bred as a slave by the Elder Things.",
+          "shortName": "shoggoth"
         },
         {
-          "shortName": "nightgaunt",
           "name": "Nightgaunt",
-          "description": "A faceless, black-winged creature that carries off wanderers in the Dreamlands."
+          "description": "A faceless, black-winged creature that carries off wanderers in the Dreamlands.",
+          "shortName": "nightgaunt"
         },
         {
-          "shortName": "independent-race",
           "name": "Independent Race",
-          "description": "A Mythos-adjacent race with its own agenda, not bound in service to a greater power."
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "key": "derivedFormulas",
-      "label": "Derived Formulas",
-      "values": [
-        {
-          "formula": "floor((@size + @constitution) / 10)",
-          "name": "hitPoints",
-          "binding": "hitPoints"
-        },
-        {
-          "formula": "floor(@power / 5)",
-          "name": "magicPoints",
-          "binding": "magicPoints"
-        },
-        {
-          "formula": "@power",
-          "name": "sanityStart",
-          "binding": "sanityStart"
-        },
-        {
-          "formula": "if(and(@strength < @size, @dexterity < @size), 7, if(and(@strength > @size, @dexterity > @size), 9, 8))",
-          "name": "moveRate",
-          "binding": "moveRate"
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "key": "buildSteps",
-      "label": "Build Steps",
-      "values": [
-        {
-          "step": "abilities",
-          "desc": "Assign your investigator's eight characteristics — either the standard point array, or roll for them (Strength/Constitution/Dexterity/Appearance/Power use 3D6×5; Size/Intelligence/Education use (2D6+6)×5).",
-          "methods": [
-            {
-              "name": "array",
-              "label": "Standard array",
-              "values": [
-                {
-                  "name": "40",
-                  "value": 40
-                },
-                {
-                  "name": "50",
-                  "value": 50
-                },
-                {
-                  "name": "50",
-                  "value": 50
-                },
-                {
-                  "name": "50",
-                  "value": 50
-                },
-                {
-                  "name": "60",
-                  "value": 60
-                },
-                {
-                  "name": "60",
-                  "value": 60
-                },
-                {
-                  "name": "70",
-                  "value": 70
-                },
-                {
-                  "name": "80",
-                  "value": 80
-                }
-              ]
-            },
-            {
-              "name": "roll",
-              "label": "Roll",
-              "formula": "3d6*5",
-              "formulas": {
-                "size": "(2d6+6)*5",
-                "intelligence": "(2d6+6)*5",
-                "education": "(2d6+6)*5"
-              }
-            }
-          ],
-          "name": "Characteristics"
-        },
-        {
-          "step": "class",
-          "desc": "Your Occupation grants a Credit Rating range and a skill-point budget you'll spend on its own list of occupation skills next.",
-          "name": "Occupation",
-          "libraryKind": "class"
-        },
-        {
-          "step": "occupationSkills",
-          "type": "pointAllocation",
-          "budgetSource": {
-            "from": "class",
-            "libraryField": "occupationSkillsFormula"
-          },
-          "scopeSource": {
-            "from": "class",
-            "libraryField": "occupationSkills"
-          },
-          "unitLabel": "points",
-          "desc": "Spend your Occupation's own skill-point budget across the skills it grants access to — including Credit Rating itself.",
-          "name": "Occupation Skills",
-          "sourceField": "skills"
-        },
-        {
-          "step": "personalInterest",
-          "type": "pointAllocation",
-          "budgetFormula": "@intelligence * 2",
-          "exclude": [
-            "skills.cthulhuMythos"
-          ],
-          "unitLabel": "points",
-          "desc": "Spend a budget equal to twice your Intelligence on any skills you like, reflecting interests outside your Occupation — Cthulhu Mythos excluded.",
-          "name": "Personal Interest",
-          "sourceField": "skills"
-        },
-        {
-          "step": "input",
-          "inputs": [
-            {
-              "label": "Player",
-              "placeholder": "Your own name",
-              "optional": true
-            },
-            {
-              "label": "Age",
-              "placeholder": "15-90"
-            },
-            {
-              "label": "Sex",
-              "placeholder": "Optional",
-              "optional": true
-            },
-            {
-              "label": "Residence",
-              "placeholder": "Where they live now"
-            },
-            {
-              "label": "Birthplace",
-              "placeholder": "Where they're from"
-            },
-            {
-              "label": "Personal Description",
-              "placeholder": "Age, build, distinguishing features"
-            },
-            {
-              "label": "Ideology or Beliefs",
-              "placeholder": "What they hold true"
-            },
-            {
-              "label": "Significant People",
-              "placeholder": "Who matters to them, and why"
-            },
-            {
-              "label": "Meaningful Locations",
-              "placeholder": "A place that matters"
-            },
-            {
-              "label": "Treasured Possessions",
-              "placeholder": "Something they'd hate to lose"
-            },
-            {
-              "label": "Traits",
-              "placeholder": "A defining habit or quirk"
-            },
-            {
-              "label": "Injuries & Scars",
-              "placeholder": "Optional",
-              "optional": true
-            },
-            {
-              "label": "Phobias & Manias",
-              "placeholder": "Optional",
-              "optional": true
-            },
-            {
-              "label": "Arcane Tomes, Spells & Artifacts",
-              "placeholder": "Optional",
-              "optional": true
-            },
-            {
-              "label": "Encounters with Strange Entities",
-              "placeholder": "Optional",
-              "optional": true
-            }
-          ],
-          "targetPaths": [
-            "player",
-            "age",
-            "sex",
-            "residence",
-            "birthplace",
-            "background.description",
-            "background.ideology",
-            "background.significantPeople",
-            "background.meaningfulLocations",
-            "background.treasuredPossessions",
-            "background.traits",
-            "background.injuriesScars",
-            "background.phobiasManias",
-            "background.arcaneTomes",
-            "background.encounters"
-          ],
-          "name": "Personal Details & Backstory"
-        },
-        {
-          "step": "details",
-          "name": "Details"
-        },
-        {
-          "step": "review",
-          "name": "Review"
+          "description": "A Mythos-adjacent race with its own agenda, not bound in service to a greater power.",
+          "shortName": "independent-race"
         }
       ]
     },
@@ -1398,34 +1443,40 @@
       "label": "Occupations",
       "values": [
         {
-          "name": "Antiquarian"
+          "name": "Private Investigator"
         },
         {
-          "name": "Artist"
+          "name": "Student"
         },
         {
-          "name": "Author"
-        },
-        {
-          "name": "Clergyman"
-        },
-        {
-          "name": "Criminal"
-        },
-        {
-          "name": "Dilettante"
-        },
-        {
-          "name": "Doctor of Medicine"
+          "name": "Professor"
         },
         {
           "name": "Drifter"
         },
         {
-          "name": "Engineer"
+          "name": "Doctor of Medicine"
+        },
+        {
+          "name": "Occultist"
+        },
+        {
+          "name": "Criminal"
+        },
+        {
+          "name": "Clergyman"
+        },
+        {
+          "name": "Artist"
         },
         {
           "name": "Entertainer"
+        },
+        {
+          "name": "Engineer"
+        },
+        {
+          "name": "Librarian"
         },
         {
           "name": "Journalist"
@@ -1434,37 +1485,31 @@
           "name": "Lawyer"
         },
         {
-          "name": "Librarian"
-        },
-        {
-          "name": "Occultist"
-        },
-        {
           "name": "Officer"
-        },
-        {
-          "name": "Parapsychologist"
         },
         {
           "name": "Photographer"
         },
         {
+          "name": "Author"
+        },
+        {
           "name": "Police Detective"
-        },
-        {
-          "name": "Private Investigator"
-        },
-        {
-          "name": "Professor"
-        },
-        {
-          "name": "Psychiatrist"
         },
         {
           "name": "Scientist"
         },
         {
-          "name": "Student"
+          "name": "Antiquarian"
+        },
+        {
+          "name": "Dilettante"
+        },
+        {
+          "name": "Psychiatrist"
+        },
+        {
+          "name": "Parapsychologist"
         }
       ]
     },
@@ -1474,99 +1519,52 @@
       "label": "Cash & Assets (by Credit Rating)",
       "values": [
         {
-          "name": "Penniless",
           "creditRatingMin": 0,
           "creditRatingMax": 0,
           "cashFormula": "0.5",
           "assetsFormula": "0",
-          "spendingLevel": 0.5
+          "spendingLevel": 0.5,
+          "name": "Penniless"
         },
         {
-          "name": "Poor",
           "creditRatingMin": 1,
           "creditRatingMax": 9,
           "cashFormula": "@characteristics.creditRating * 1",
           "assetsFormula": "@characteristics.creditRating * 10",
-          "spendingLevel": 2
+          "spendingLevel": 2,
+          "name": "Poor"
         },
         {
-          "name": "Average",
           "creditRatingMin": 10,
           "creditRatingMax": 49,
           "cashFormula": "@characteristics.creditRating * 2",
           "assetsFormula": "@characteristics.creditRating * 50",
-          "spendingLevel": 10
+          "spendingLevel": 10,
+          "name": "Average"
         },
         {
-          "name": "Wealthy",
           "creditRatingMin": 50,
           "creditRatingMax": 89,
           "cashFormula": "@characteristics.creditRating * 5",
           "assetsFormula": "@characteristics.creditRating * 500",
-          "spendingLevel": 50
+          "spendingLevel": 50,
+          "name": "Wealthy"
         },
         {
-          "name": "Rich",
           "creditRatingMin": 90,
           "creditRatingMax": 98,
           "cashFormula": "@characteristics.creditRating * 20",
           "assetsFormula": "@characteristics.creditRating * 2000",
-          "spendingLevel": 250
+          "spendingLevel": 250,
+          "name": "Rich"
         },
         {
-          "name": "Super Rich",
           "creditRatingMin": 99,
           "creditRatingMax": 99,
           "cashFormula": "50000",
           "assetsFormula": "5000000",
-          "spendingLevel": 5000
-        }
-      ]
-    },
-    {
-      "type": "array",
-      "key": "fieldRoles",
-      "label": "Field Roles",
-      "values": [
-        {
-          "name": "combatBindings → combatBindings",
-          "sourceField": "combatBindings",
-          "binding": "combatBindings"
-        },
-        {
-          "name": "characteristics → abilityScores",
-          "sourceField": "characteristics",
-          "binding": "abilityScores"
-        },
-        {
-          "name": "creatureTypes → creatureType",
-          "sourceField": "creatureTypes",
-          "binding": "creatureType"
-        },
-        {
-          "name": "combatScaling → combatScaling",
-          "sourceField": "combatScaling",
-          "binding": "combatScaling"
-        },
-        {
-          "name": "occupations → archetypeTable",
-          "sourceField": "occupations",
-          "binding": "archetypeTable"
-        },
-        {
-          "name": "environment → environment",
-          "sourceField": "environment",
-          "binding": "environment"
-        },
-        {
-          "name": "rarity → generatorProperty",
-          "sourceField": "rarity",
-          "binding": "generatorProperty"
-        },
-        {
-          "name": "rarity → budgetCeiling",
-          "sourceField": "rarity",
-          "binding": "budgetCeiling"
+          "spendingLevel": 5000,
+          "name": "Super Rich"
         }
       ]
     }

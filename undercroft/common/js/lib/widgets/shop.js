@@ -597,7 +597,7 @@ export function initShopWidget(
       disposeTooltips(sellItemsWrap);
       sellItemsWrap.innerHTML = "";
       setElementVisible(sellEmptyNotice, true);
-      sellEmptyNotice.textContent = isGm ? "Pick whose inventory to sell from." : "You don't have a character in this campaign.";
+      sellEmptyNotice.textContent = isGm ? "Pick whose inventory to sell from." : "You don't have a character in this group.";
       return;
     }
     const result = await dataManager.get("character", sellTargetCharacterId, { preferLocal: false }).catch(() => null);
@@ -843,7 +843,7 @@ export function initShopWidget(
         status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
       } else {
         // skipShare: true — "shop" isn't a real Library kind (nothing to
-        // grant access to; its live state is the campaign Group's own
+        // grant access to; its live state is the Group's own
         // property, already readable by every member), same as every
         // other INLINE_FOLLOW_KINDS widget's spotlightToGroup call.
         await dataManager.spotlightToGroup({ groupId, contentType: "shop", contentId: config.followId, skipShare: true });

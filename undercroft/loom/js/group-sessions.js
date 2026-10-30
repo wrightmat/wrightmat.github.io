@@ -1,5 +1,5 @@
 // Loom Groups tab — the Sessions subsection: scheduled real-world game
-// sessions for the selected Campaign Group. The center holds the list
+// sessions for the selected Player Group. The center holds the list
 // (Upcoming | History); selecting a row opens the Session Inspector in the
 // right pane, the same select-then-edit shape the group's Property Inspector
 // uses. Every time is UTC on the wire and local on screen. Starting values in
@@ -17,6 +17,7 @@ import { fetchKindEntrySummaries } from "../../common/js/lib/content-fetch.js";
 import { disposeTooltips, refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { parseTimestamp } from "../../common/js/lib/chat/format.js";
+import { renderAttendance } from "../../common/js/lib/sessions/attendance.js";
 import { formatCalendarDate } from "../../common/js/lib/widgets/calendar.js";
 import {
   localDateToUtc,
@@ -104,7 +105,7 @@ const minutesToHours = (minutes) => (minutes === null || minutes === undefined ?
 
 // `initial` is a serialized series (or null for a new one). Starting values are
 // plain attributes here; the form's read() returns every setting explicitly.
-function buildSeriesForm({ initial, threads, onChange, showRepeat = true }) {
+function buildSeriesForm({ initial, threads, campaigns, onChange, showRepeat = true }) {
   const root = el("div", "d-flex flex-column gap-2");
   const startUtc = initial?.startAt ? new Date(`${initial.startAt}Z`).toISOString() : "";
   const isPbp = initial?.kind === "pbp";
@@ -112,6 +113,11 @@ function buildSeriesForm({ initial, threads, onChange, showRepeat = true }) {
   const title = control("input", { type: "text", maxlength: 200, value: initial?.title || "" });
   const description = control("textarea", { rows: 3, value: initial?.description || "" });
   const kind = select([["live", "Live game"], ["pbp", "Play-by-post"]], initial?.kind || "live");
+  // A completed campaign stays selectable only for a series already in it.
+  const campaign = select(
+    [["", "None"], ...campaigns.filter((entry) => entry.status !== "completed" || entry.id === initial?.campaignId).map((entry) => [entry.id, entry.name])],
+    initial?.campaignId || "",
+  );
 
   const liveStart = control("input", { type: "datetime-local", value: initial && !isPbp ? utcToLocalInput(initial.startAt) : "" });
   const duration = control("input", { type: "number", min: 1, value: initial && !isPbp ? initial.durationMinutes : 180 });
@@ -265,6 +271,7 @@ function buildSeriesForm({ initial, threads, onChange, showRepeat = true }) {
     field("Description", description),
     heading("Type"),
     field("Kind", kind),
+    ...(showRepeat ? [field("Campaign", campaign)] : []),
     heading("Schedule"),
     zoneNote,
     liveRow,
@@ -329,6 +336,7 @@ function buildSeriesForm({ initial, threads, onChange, showRepeat = true }) {
         reminder_minutes: reminder.value === "" ? null : Math.round(Number(reminder.value) * 60),
         lock_posting: lock.box.checked,
         thread_ids: threadBoxes.filter((entry) => entry.box.checked).map((entry) => entry.id),
+        campaign_id: campaign.value || null,
       };
     },
   };
@@ -336,8 +344,9 @@ function buildSeriesForm({ initial, threads, onChange, showRepeat = true }) {
 
 // --- the module ---------------------------------------------------------------------------------
 
-export function initGroupSessions({ dataManager, getStatus, centerMount, inspectorMount }) {
+export function initGroupSessions({ dataManager, getStatus, centerMount, inspectorMount, onSelect }) {
   let group = null;
+  let campaigns = [];
   let data = { series: [], occurrences: [] };
   let view = "upcoming";
   let selection = null;
@@ -509,6 +518,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
 
   function select_(next) {
     selection = next;
+    if (next) onSelect?.();
     renderList();
     renderInspector();
   }
@@ -553,6 +563,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
       initial,
       showRepeat,
       threads: threads.filter((thread) => !thread.archived),
+      campaigns,
       onChange: async (settings) => {
         if (!settings) {
           form.previewNode.textContent = "";
@@ -833,6 +844,8 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
               panel.appendChild(el("p", "small text-body-secondary mb-0", "No players have an active character in this group."));
               return;
             }
+            const attendance = renderAttendance(detail, { dataManager, status: status(), onChange: reload });
+            if (attendance) panel.appendChild(attendance);
             detail.attendees.forEach((person) => {
               const row = el("div", "d-flex align-items-center justify-content-between gap-2");
               const name = el("div", "small");
@@ -948,6 +961,16 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
     // The right-pane toolbar's Add Session button.
     addSession() {
       if (group) select_({ kind: "new" });
+    },
+    setCampaigns(next) {
+      campaigns = next;
+    },
+    deselect() {
+      if (selection) {
+        selection = null;
+        renderList();
+        renderInspector();
+      }
     },
     clear() {
       group = null;

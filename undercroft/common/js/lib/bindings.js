@@ -1,5 +1,6 @@
 import { evaluateFormula } from "./formula-engine.js";
 import { resolveDottedPath, setAtDottedPath } from "./dotted-path.js";
+import { pendingLibraryKinds } from "./library-pending.js";
 
 const SIMPLE_BINDING_PATTERN = /^@[A-Za-z0-9_.]+$/;
 const FORMULA_HINT_PATTERN = /[+*/<>=!?&|()-]|\bif\s*\(/;
@@ -80,7 +81,8 @@ export function resolveBinding(binding, context, formulaOptions) {
     try {
       return evaluateFormula(trimmed, context ?? {}, formulaOptions);
     } catch (error) {
-      console.warn("bindings: unable to evaluate formula", error);
+      // Expected on the pass before a libraryEntries() kind has loaded; the re-render when it arrives retries.
+      if (!pendingLibraryKinds.size) console.warn("bindings: unable to evaluate formula", error);
       if (trimmed.startsWith("@")) {
         return resolvePath(trimmed);
       }

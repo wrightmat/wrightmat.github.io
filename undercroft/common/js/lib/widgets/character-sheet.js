@@ -87,7 +87,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   let conditionsVocabulary = null;
   let tempHpFallback; // only used when the System has no tempPath binding — ephemeral, not persisted
   let lastInitiativeRoll = null;
-  // The active campaign Group's own System (if any) wins over this
+  // The active Group's own System (if any) wins over this
   // character's own Assigned Systems for Initiative's dice. Empty until
   // loadActiveDice resolves — an empty array is exactly "no named dice."
   let activeDice = [];
@@ -205,13 +205,13 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   // there. Initiative isn't persistent character state.
   async function pushInitiativeToActiveEncounter(value) {
     if (!groupId && !shareToken) {
-      status?.show("No active campaign to send initiative to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to send initiative to.", { type: "warning", timeout: 2500 });
       return;
     }
     try {
       const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
       if (!encounterId) {
-        status?.show("No encounter is currently active for this campaign.", { type: "info", timeout: 2500 });
+        status?.show("No encounter is currently active for this group.", { type: "info", timeout: 2500 });
         return;
       }
       const result = await dataManager.get("encounter", encounterId, { preferLocal: false });
@@ -403,7 +403,7 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   }
 
   // Resolves which System's dice (if any) govern this character's
-  // Initiative roll — the active campaign Group's System first, then this
+  // Initiative roll — the active Group's System first, then this
   // character's Assigned Systems. A System's Rolls/Moves and any Tier-3
   // symbol dice are NOT surfaced here — that's the Dashboard's Dice Roller widget's job.
   async function loadActiveDice() {

@@ -43,10 +43,14 @@ import {
   describeFeaturePromotionOutcome,
 } from "../../common/js/lib/content-feature-matching.js";
 import { initShareModal } from "../../common/js/lib/share-modal.js";
+import { setElementVisible } from "../../common/js/lib/dom.js";
 import { initGroupSessions } from "./group-sessions.js";
+import { initGroupCommunity } from "./group-community.js";
+import { initCommunityAdmin } from "./community-admin.js";
+import { initInvitesAdmin } from "./invites-admin.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
 import { allowsDelete, confirmDelete } from "../../common/js/lib/ownership.js";
-import { roleRank } from "../../common/js/lib/data-manager.js";
+import { roleRank, sessionAuthHeaders } from "../../common/js/lib/data-manager.js";
 import { createSortable } from "../../common/js/lib/dnd.js";
 import { loadClipLibrary, getAllClips } from "../../common/js/lib/audio-clip-library.js";
 import { MACRO_ACTION_CATALOG } from "../../common/js/lib/widgets/macro-action-catalog.js";
@@ -54,7 +58,6 @@ import { listHaEntities } from "../../common/js/lib/widgets/home-assistant.js";
 import {
   fetchWledDevices,
   loadWledChoices,
-  ensureWledDeviceAlias,
   resolveWledDeviceByAlias,
 } from "../../common/js/lib/widgets/wled.js";
 import { fillChoiceSelect } from "../../common/js/lib/widgets/wled-look-fields.js";
@@ -74,6 +77,7 @@ import {
 import { resolveFieldRole, resolveFieldRoles } from "../../common/js/lib/field-roles.js";
 import { validateSystemFields, loadReservedKeysSchema, isReservedKeyName } from "../../common/js/lib/system-validation.js";
 import { fieldByKey } from "../../common/js/lib/bindings.js";
+import { apiUrl } from "../../common/js/lib/api.js";
 
 // SOURCES now imported from content-fetch.js (shared with Workbench's own
 // player-facing Import Character picker) — see that module's own comment.
@@ -267,7 +271,7 @@ document.querySelector("[data-feature-add-tier-mount]")?.appendChild(
 );
 
 // Group actions (right-pane toolbar, "Group Properties"): add a session or a
-// property, and the campaign's share link. Copy and Disable only exist while a
+// property, and the group's share link. Copy and Disable only exist while a
 // link does (loomUpdateGroupShareDisplay toggles them).
 const groupToolbarButton = (config) =>
   createIconButton({ variant: "outline-secondary", kind: "toolbar", tooltipPlacement: "top", ...config });
@@ -408,7 +412,7 @@ document.querySelector("[data-mappings-mount]")?.appendChild(mappingsSection.sec
   ["features", "loom.features"],
   ["library", "loom.libraryTable"],
   ["users", "loom.users"],
-  ["groups", "campaign.groups"],
+  ["groups", "group.about"],
 ].forEach(([tab, helpTopic]) => {
   const section = createCollapsibleSection({
     label: "Selections",
@@ -807,7 +811,7 @@ function resetSystemReservedChecks() {
 // Every fetch below is suite-wide (every owner, not just this admin's own
 // content) — `dataManager.listOwnedContent({scope:"all"})` (admin-only,
 // server-enforced) is the one aggregate request backing both the Content
-// Inventory and Campaign Groups sections; System Content Health additionally
+// Inventory and Player Groups sections; System Content Health additionally
 // fetches each System's own full payload (cheap — a couple dozen records)
 // to run the exact same validateSystemFields/fieldRoles checks the Systems
 // tab's own diagnostics use, just across every System at once instead of one.
@@ -816,6 +820,16 @@ const loomAdminState = {
   libraryItems: null, // listOwnedContent({scope:"all"}).items
   users: null, // listUsers().users
 };
+
+// A section opens the first time it has content, and again whenever the admin asks for a fresh
+// check; one the admin has since collapsed stays collapsed through ordinary reloads.
+const adminSectionsOpened = new Set();
+function expandAdminSection(key, setCollapsed, force) {
+  if (force || !adminSectionsOpened.has(key)) {
+    adminSectionsOpened.add(key);
+    setCollapsed(false);
+  }
+}
 
 async function fetchAdminSystemPayloads({ force = false } = {}) {
   if (!force && loomAdminState.systemPayloads) return loomAdminState.systemPayloads;
@@ -929,7 +943,9 @@ async function runAdminSystemHealth({ force = false, expand = true } = {}) {
     empty.className = "text-body-secondary small mb-0";
     empty.textContent = "No Systems found.";
     adminSystemHealthList.appendChild(empty);
-    if (expand) setAdminSystemHealthCollapsed(false);
+    adminSummary.health = { total: 0, flagged: 0 };
+    renderAdminSummary();
+    expandAdminSection("health", setAdminSystemHealthCollapsed, expand);
     return;
   }
   const checks = [
@@ -941,17 +957,23 @@ async function runAdminSystemHealth({ force = false, expand = true } = {}) {
     { label: "Vault-ready (generator property)", test: async (system) => resolveFieldRoles(system.payload, "generatorProperty").length > 0 },
     { label: "Sanctum-ready (Environment)", test: async (system) => Boolean(resolveFieldRole(system.payload, "environment")) },
   ];
+  const flaggedSystemIds = new Set();
   for (const check of checks) {
     const ok = [];
     const flagged = [];
     for (const system of payloads) {
       // eslint-disable-next-line no-await-in-loop
       if (await check.test(system)) ok.push(system);
-      else flagged.push(system);
+      else {
+        flagged.push(system);
+        flaggedSystemIds.add(system.id);
+      }
     }
     adminSystemHealthList.appendChild(buildAdminSummaryRow(check.label, ok.length, total, flagged, (system) => adminSystemHref(system.id)));
   }
-  if (expand) setAdminSystemHealthCollapsed(false);
+  adminSummary.health = { total, flagged: flaggedSystemIds.size };
+  renderAdminSummary();
+  expandAdminSection("health", setAdminSystemHealthCollapsed, expand);
 }
 
 // Only the 5 kinds that already declare `systemIds` in their own
@@ -1004,7 +1026,9 @@ async function runAdminContentInventory({ force = false, expand = true } = {}) {
     (item) => adminLibraryHref(item.bucket, item.id)
   );
   adminInventoryList.appendChild(orphanRow);
-  if (expand) setAdminInventoryCollapsed(false);
+  adminSummary.inventory = { records: items.length, kinds: counts.size, unassigned: orphaned.length };
+  renderAdminSummary();
+  expandAdminSection("inventory", setAdminInventoryCollapsed, expand);
 }
 
 async function runAdminUsersSummary({ force = false, expand = true } = {}) {
@@ -1049,7 +1073,9 @@ async function runAdminUsersSummary({ force = false, expand = true } = {}) {
     setLoomView("users");
   });
   adminUsersList.appendChild(link);
-  if (expand) setAdminUsersCollapsed(false);
+  adminSummary.users = { total: users.length, neverActive };
+  renderAdminSummary();
+  expandAdminSection("users", setAdminUsersCollapsed, expand);
 }
 
 async function runAdminGroupsSummary({ force = false, expand = true } = {}) {
@@ -1062,7 +1088,7 @@ async function runAdminGroupsSummary({ force = false, expand = true } = {}) {
   });
   const summary = document.createElement("p");
   summary.className = "small text-body-secondary mb-0";
-  summary.textContent = `${groups.length} Campaign Group${groups.length === 1 ? "" : "s"} across ${byOwner.size} owner${byOwner.size === 1 ? "" : "s"}.`;
+  summary.textContent = `${groups.length} Player Group${groups.length === 1 ? "" : "s"} across ${byOwner.size} owner${byOwner.size === 1 ? "" : "s"}.`;
   adminGroupsList.appendChild(summary);
   const multiOwnerCount = Array.from(byOwner.values()).filter((count) => count > 1).length;
   if (multiOwnerCount) {
@@ -1080,15 +1106,13 @@ async function runAdminGroupsSummary({ force = false, expand = true } = {}) {
     setLoomView("groups");
   });
   adminGroupsList.appendChild(link);
-  if (expand) setAdminGroupsCollapsed(false);
+  adminSummary.groups = { total: groups.length, owners: byOwner.size };
+  renderAdminSummary();
+  expandAdminSection("groups", setAdminGroupsCollapsed, expand);
 }
 
-// Called on every visit to the Admin tab. `force: false` (a bare tab click)
-// quietly (re)populates from cache, or fetches once if this is the first
-// visit — but never force-expands a section the admin already collapsed,
-// same as sections stay put across an ordinary re-render. `force: true`
-// (the "Check all" button, or one section's own "Check now") re-fetches
-// and expands, exactly like the Systems tab's two diagnostics above.
+// Runs every overview check. Nothing runs when the Admin tab is merely opened: Check all (or one
+// section's own Check now) fetches, and a section opens the first time it has content.
 async function loomLoadAdminOverview({ force = false } = {}) {
   if (!isLoomAdminSession()) return;
   const expand = force;
@@ -1097,6 +1121,7 @@ async function loomLoadAdminOverview({ force = false } = {}) {
     runAdminContentInventory({ force, expand }).catch(() => {}),
     runAdminUsersSummary({ force, expand }).catch(() => {}),
     runAdminGroupsSummary({ force, expand }).catch(() => {}),
+    runAdminServerLoad({ force, expand }).catch(() => {}),
   ]);
 }
 
@@ -1137,19 +1162,145 @@ const adminGroupsList = document.createElement("div");
 adminGroupsList.className = "d-flex flex-column gap-2 small";
 adminGroupsList.textContent = "Not checked yet.";
 const { section: adminGroupsSection, setCollapsed: setAdminGroupsCollapsed } = createCollapsibleSection({
-  label: "Campaign Groups",
+  label: "Player Groups",
   collapsed: true,
   actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminGroupsSummary({ force: true }) }],
   content: adminGroupsList,
 });
 document.querySelector("[data-admin-groups-mount]")?.appendChild(adminGroupsSection);
 
-const adminCheckAllButton = createIconButton({
-  icon: "tabler:refresh",
-  label: "Check all",
-  onClick: () => loomLoadAdminOverview({ force: true }),
+// Starting points for "look at this before launch"; tune them from real load-test results.
+const LOAD_P95_LIMIT_MS = 500;
+const LOAD_LOCK_SHARE_LIMIT = 0.2;
+const LOAD_CONNECTION_SHARE_LIMIT = 0.6;
+const LOAD_ERROR_SHARE_LIMIT = 0.005;
+
+const formatBytes = (bytes) => {
+  if (bytes === null || bytes === undefined) return "n/a";
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+};
+
+async function runAdminServerLoad({ expand = true } = {}) {
+  const load = await dataManager.getServerLoad(5);
+  const gauges = load.gauges || {};
+  const concerns = [];
+  if (load.p95Ms !== null && load.p95Ms > LOAD_P95_LIMIT_MS) concerns.push(`95th-percentile response time is ${load.p95Ms} ms`);
+  if (load.lockWaitShare !== null && load.lockWaitShare > LOAD_LOCK_SHARE_LIMIT) concerns.push(`requests spend ${(load.lockWaitShare * 100).toFixed(0)}% of their time waiting on the database lock`);
+  if (gauges.connection_cap && gauges.open_connections / gauges.connection_cap > LOAD_CONNECTION_SHARE_LIMIT) concerns.push(`${gauges.open_connections} of ${gauges.connection_cap} connections are open`);
+  if (load.requests && load.serverErrors / load.requests > LOAD_ERROR_SHARE_LIMIT) concerns.push(`${load.serverErrors} server errors in ${load.requests} requests`);
+  adminLoadList.innerHTML = "";
+  const verdict = document.createElement("p");
+  verdict.className = concerns.length ? "mb-0 text-danger" : "mb-0 text-success";
+  verdict.textContent = concerns.length ? `Needs attention: ${concerns.join("; ")}.` : "Nothing is over its limit.";
+  adminLoadList.appendChild(verdict);
+  const throttled = Object.entries(load.throttled || {}).map(([name, count]) => `${name} ${count}`).join(", ");
+  const seconds = load.uptimeSeconds;
+  const rows = [
+    [`Last ${load.windowMinutes} minutes`, `${load.requests} requests (${load.requestsPerMinute}/min), ${load.serverErrors} server errors`],
+    ["Response time", load.p50Ms === null ? "no traffic yet" : `median ${load.p50Ms} ms, 95th ${load.p95Ms} ms, 99th ${load.p99Ms} ms`],
+    ["Database lock wait", load.lockWaitShare === null ? "no traffic yet" : `${(load.lockWaitShare * 100).toFixed(1)}% of request time`],
+    ["Connections", gauges.connection_cap ? `${gauges.open_connections} open of ${gauges.connection_cap}, ${load.liveSubscribers} live streams` : "n/a"],
+    ["Process", `${gauges.threads ?? "n/a"} threads, ${formatBytes(gauges.process_resident_bytes)} memory, ${gauges.process_cpu_seconds === null || gauges.process_cpu_seconds === undefined ? "n/a" : gauges.process_cpu_seconds.toFixed(0)} s CPU`],
+    ["Database", `${formatBytes(gauges.database_bytes)} (log ${formatBytes(gauges.database_wal_bytes)})`],
+    ["Rate-limit hits since start", throttled || "none"],
+    ["Up for", seconds >= 3600 ? `${(seconds / 3600).toFixed(1)} hours` : `${Math.max(1, Math.round(seconds / 60))} minutes`],
+  ];
+  rows.forEach(([label, value]) => adminLoadList.appendChild(adminStatRow(label, value)));
+  adminSummary.load = { p95Ms: load.p95Ms, perMinute: load.requestsPerMinute, concerns: concerns.length };
+  renderAdminSummary();
+  expandAdminSection("load", setAdminLoadCollapsed, expand);
+}
+
+const adminLoadList = document.createElement("div");
+adminLoadList.className = "d-flex flex-column gap-2 small";
+adminLoadList.textContent = "Not checked yet.";
+const { section: adminLoadSection, setCollapsed: setAdminLoadCollapsed } = createCollapsibleSection({
+  label: "Server Load",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminServerLoad({ force: true }) }],
+  content: adminLoadList,
 });
-document.querySelector("[data-admin-check-all-mount]")?.appendChild(adminCheckAllButton);
+document.querySelector("[data-admin-load-mount]")?.appendChild(adminLoadSection);
+
+// Admin Overview: nothing is fetched until Check all is pressed; after that it summarizes the sections
+// below and Check all moves to the header.
+const adminSummary = {};
+let adminChecked = false;
+const adminOverviewPrompt = document.createElement("div");
+const adminCheckAllPrompt = document.createElement("button");
+adminCheckAllPrompt.type = "button";
+adminCheckAllPrompt.className = "btn btn-outline-primary d-inline-flex align-items-center gap-2";
+adminCheckAllPrompt.innerHTML = '<span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>Check all';
+adminOverviewPrompt.appendChild(adminCheckAllPrompt);
+const adminOverviewStats = document.createElement("div");
+adminOverviewStats.className = "d-flex flex-column gap-2 small";
+setElementVisible(adminOverviewStats, false, "flex");
+const adminOverviewBody = document.createElement("div");
+adminOverviewBody.append(adminOverviewPrompt, adminOverviewStats);
+const adminOverviewSection = createCollapsibleSection({
+  label: "Admin Overview",
+  helpTopic: "loom.admin",
+  collapsed: false,
+  actions: [{ icon: "tabler:refresh", label: "Check all", onClick: () => runAdminCheckAll() }],
+  content: adminOverviewBody,
+});
+const adminCheckAllHeaderButton = adminOverviewSection.actionButtons?.[0];
+if (adminCheckAllHeaderButton) setElementVisible(adminCheckAllHeaderButton, false, "inline-flex");
+document.querySelector("[data-admin-overview-mount]")?.appendChild(adminOverviewSection.section);
+
+function adminStatRow(label, value) {
+  const row = document.createElement("div");
+  row.className = "d-flex justify-content-between gap-2";
+  const name = document.createElement("span");
+  name.className = "text-body-secondary";
+  name.textContent = label;
+  const text = document.createElement("span");
+  text.className = "text-end";
+  text.textContent = value;
+  row.append(name, text);
+  return row;
+}
+
+const plural = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
+
+function renderAdminSummary() {
+  if (!adminChecked) return;
+  const rows = [];
+  const { health, inventory, users, groups, ddb, anthropic } = adminSummary;
+  if (health) rows.push(adminStatRow("Systems", health.flagged ? `${plural(health.total, "System")}, ${health.flagged} with issues` : `${plural(health.total, "System")}, no issues`));
+  if (inventory) rows.push(adminStatRow("Library", `${plural(inventory.records, "record")} across ${plural(inventory.kinds, "kind")}, ${inventory.unassigned} without a System`));
+  if (users) rows.push(adminStatRow("Users", `${plural(users.total, "user")}, ${users.neverActive} with no recorded activity`));
+  if (adminSummary.load) {
+    const { p95Ms, perMinute, concerns } = adminSummary.load;
+    rows.push(adminStatRow("Server load", concerns ? `${concerns} over its limit` : `${perMinute} requests/min${p95Ms === null ? "" : `, 95th ${p95Ms} ms`}`));
+  }
+  if (groups) rows.push(adminStatRow("Player Groups", `${plural(groups.total, "group")} across ${plural(groups.owners, "owner")}`));
+  if (adminSummary.authChecked) {
+    const ddbText = !ddb?.configured ? "not configured" : ddb.valid === true ? "valid" : ddb.valid === false ? "expired" : "not yet checked";
+    rows.push(adminStatRow("D&D Beyond session", ddbText));
+    rows.push(adminStatRow("Anthropic API key", anthropic?.configured ? "configured" : "not configured"));
+  }
+  adminOverviewStats.replaceChildren(...rows);
+}
+
+async function runAdminCheckAll() {
+  adminCheckAllPrompt.disabled = true;
+  if (adminCheckAllHeaderButton) adminCheckAllHeaderButton.disabled = true;
+  adminChecked = true;
+  try {
+    await Promise.all([loomLoadAdminOverview({ force: true }), loomRenderAuthStatus()]);
+  } finally {
+    adminCheckAllPrompt.disabled = false;
+    if (adminCheckAllHeaderButton) adminCheckAllHeaderButton.disabled = false;
+  }
+  setElementVisible(adminOverviewPrompt, false, "block");
+  setElementVisible(adminOverviewStats, true, "flex");
+  if (adminCheckAllHeaderButton) setElementVisible(adminCheckAllHeaderButton, true, "inline-flex");
+  renderAdminSummary();
+}
+adminCheckAllPrompt.addEventListener("click", () => runAdminCheckAll());
 
 // Macros tab — its own dedicated authoring UI (mirrors Systems: select +
 // New/Save/Delete), not bolted onto the generic Library JSON editor. The
@@ -2778,7 +2929,7 @@ if (recentSavesToggle && recentSavesPanel) {
 // active view's cards show, in the main pane AND the side panes (the
 // mapping toolbar/palette/sample-data and tree Inspector are Import-only;
 // Library/Systems carry their own pickers/toolbars inline).
-const LOOM_VIEWS = ["import", "library", "systems", "macros", "features", "users", "groups", "admin", "auth"];
+const LOOM_VIEWS = ["library", "import", "features", "groups", "macros", "systems", "users", "community", "admin"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
 function setLoomView(view) {
@@ -2806,10 +2957,8 @@ function setLoomView(view) {
     void populateMacroSelect();
   } else if (view === "features") {
     void populateFeatureSelect();
-  } else if (view === "admin") {
-    void loomLoadAdminOverview();
-  } else if (view === "auth") {
-    void loomRenderAuthStatus();
+  } else if (view === "community") {
+    void loomCommunityAdmin?.show();
   }
 }
 
@@ -2833,8 +2982,8 @@ mountField(
   createCompactField({ type: "select", id: "loomUsersTierFilter", label: "Tier", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select form-select-sm", dataAttr: "data-loom-users-tier-filter" })
 );
 mountField("users-select", createCompactField({ type: "select", id: "loomUsersSelect", label: "User", labelClass: "form-label fw-semibold mb-0", controlClass: "form-select", dataAttr: "data-loom-users-select" }));
-mountField("user-username", createCompactField({ type: "text", id: "loomUserUsername", label: "Username", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-username", disabled: true }));
-mountField("user-email", createCompactField({ type: "email", id: "loomUserEmail", label: "Email", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-email" }));
+mountField("user-username", createCompactField({ type: "text", id: "loomUserUsername", label: "Username", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-username", disabled: true, autocomplete: "off" }));
+mountField("user-email", createCompactField({ type: "email", id: "loomUserEmail", label: "Email", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-email", autocomplete: "off" }));
 mountField(
   "user-password",
   createCompactField({ type: "password", id: "loomUserPassword", label: "Password", labelClass: "form-label fw-semibold mb-0", dataAttr: "data-loom-user-password", autocomplete: "new-password" })
@@ -2865,6 +3014,9 @@ const loomGroupEmpty = document.querySelector("[data-loom-group-empty]");
 const loomGroupForm = document.querySelector("[data-loom-group-form]");
 // Built in init() once the DataManager exists.
 let loomGroupSessions = null;
+let loomGroupCommunity = null;
+let loomCommunityAdmin = null;
+let loomInvitesAdmin = null;
 const loomGroupNameInput = document.querySelector("[data-loom-group-name]");
 const loomGroupSystemSelect = document.querySelector("[data-loom-group-system]");
 const loomGroupSettingSelect = document.querySelector("[data-loom-group-setting]");
@@ -2937,6 +3089,7 @@ const loomUserTierSelect = document.querySelector("[data-loom-user-tier]");
 const loomUserStatusInput = document.querySelector("[data-loom-user-status]");
 const loomUserCreatedInput = document.querySelector("[data-loom-user-created]");
 const loomUserLastActivityInput = document.querySelector("[data-loom-user-last-activity]");
+const loomUserInviteInput = document.querySelector("[data-loom-user-invite]");
 const loomUserSaveButton = document.querySelector("[data-loom-user-save]");
 const loomUserDuplicateButton = document.querySelector("[data-loom-user-duplicate]");
 const loomUserDeleteButton = document.querySelector("[data-loom-user-delete]");
@@ -3129,6 +3282,7 @@ function loomRenderUserForm() {
   if (loomUserTierSelect) loomUserTierSelect.value = user.tier;
   if (loomUserStatusInput) loomUserStatusInput.value = user.is_active ? "1" : "0";
   if (loomUserCreatedInput) loomUserCreatedInput.textContent = loomFormatTimestamp(user.created_at, "Unknown");
+  if (loomUserInviteInput) loomUserInviteInput.textContent = user.invite_code ? user.invite_label || "An invite that has since been deleted" : "—";
   if (loomUserLastActivityInput) {
     loomUserLastActivityInput.textContent = loomFormatLastActivity(user.last_activity || user.last_login || user.created_at);
   }
@@ -3138,6 +3292,7 @@ function loomRenderUserForm() {
 
 async function loomLoadUsers({ force = false } = {}) {
   if (!isLoomAdminSession()) return;
+  void loomInvitesAdmin?.refresh();
   if (!force && loomUsersState.items.length) {
     loomPopulateUsersTierFilter();
     loomRenderUsersSelect();
@@ -3208,6 +3363,7 @@ if (loomUserNewButton) {
     if (loomUserStatusInput) loomUserStatusInput.value = "1";
     if (loomUserCreatedInput) loomUserCreatedInput.textContent = "—";
     if (loomUserLastActivityInput) loomUserLastActivityInput.textContent = "—";
+    if (loomUserInviteInput) loomUserInviteInput.textContent = "—";
     loomUpdateUserToolbarState();
     loomUserUsernameInput?.focus();
   });
@@ -3241,6 +3397,7 @@ if (loomUserDuplicateButton) {
     if (loomUserStatusInput) loomUserStatusInput.value = "1";
     if (loomUserCreatedInput) loomUserCreatedInput.textContent = "—";
     if (loomUserLastActivityInput) loomUserLastActivityInput.textContent = "—";
+    if (loomUserInviteInput) loomUserInviteInput.textContent = "—";
     loomUpdateUserToolbarState();
     status?.show(`New user prefilled with ${loomFormatTier(sourceUser.tier)} tier — enter a username, email, and password.`, {
       type: "info",
@@ -3437,7 +3594,7 @@ function loomRenderGroupsSelect() {
   sorted.forEach((group) => {
     const option = document.createElement("option");
     option.value = group.id;
-    option.textContent = group.name || "Campaign group";
+    option.textContent = group.name || "Player group";
     fragment.appendChild(option);
   });
   loomGroupsSelect.replaceChildren(fragment);
@@ -3500,7 +3657,9 @@ const groupPropertyCtx = {
     firstLine.insertBefore(publicButton, removeButton);
     refreshTooltips(row);
   },
+  commitDragSnapshot: () => loomUpdateGroupsToolbarState(),
 };
+initPropertySortable(loomGroupPropertyRows, groupPropertyCtx);
 
 // Same as collectFieldFromRow, plus merging this row's own "Public" toggle
 // back in — collectFieldFromRow has no idea that concept exists, so this
@@ -3626,7 +3785,7 @@ async function loomPopulateGroupTemplateSelect(systemId, currentTemplateId) {
     const entries = dataManager.collectListEntries(remote, ["owned", "shared", "public", "items"]);
     entries
       // Print templates (category: "print") have nothing to do with "which
-      // Workbench Template does this campaign's Party Data render" — same
+      // Workbench Template does this group's Party Data render" — same
       // exclusion populateLibraryTemplateSelect already applies.
       .filter((entry) => (entry.category || "character") === "character")
       .filter((entry) => !systemId || (entry.schema || entry.system) === systemId)
@@ -3728,6 +3887,7 @@ function loomRenderGroupDetail() {
     if (loomGroupPropertyRows) loomGroupPropertyRows.innerHTML = "";
     groupPropertyInspector.selectRow(null);
     loomGroupSessions?.clear();
+    loomGroupCommunity?.clear();
     loomUpdateGroupsToolbarState();
     return;
   }
@@ -3742,6 +3902,7 @@ function loomRenderGroupDetail() {
 
   loomRenderGroupMembersList(group);
   void loomGroupSessions?.showGroup(group);
+  void loomGroupCommunity?.showGroup(group);
 
   loomUpdateGroupShareDisplay(group);
   loomUpdateGroupsToolbarState();
@@ -3870,7 +4031,7 @@ if (loomGroupNewButton) {
       if (status) status.show("Sign in to manage groups.", { type: "warning", timeout: 1800 });
       return;
     }
-    const baseName = "Campaign group";
+    const baseName = "Player group";
     const existing = new Set(loomGroupsState.items.map((group) => (group.name || "").trim().toLowerCase()));
     let candidate = baseName;
     let index = 2;
@@ -3902,7 +4063,7 @@ if (loomGroupDuplicateButton) {
   loomGroupDuplicateButton.addEventListener("click", async () => {
     const group = loomFindGroup(loomGroupsState.selectedId);
     if (!group || !dataManager.isAuthenticated()) return;
-    const baseName = `${(loomGroupNameInput?.value || group.name || "Campaign group").trim()} Copy`;
+    const baseName = `${(loomGroupNameInput?.value || group.name || "Player group").trim()} Copy`;
     const existing = new Set(loomGroupsState.items.map((entry) => (entry.name || "").trim().toLowerCase()));
     let candidate = baseName;
     let index = 2;
@@ -4107,23 +4268,24 @@ if (loomGroupShareDisableButton) {
   });
 }
 
-// --- Auth tab ------------------------------------------------------------
+// --- Credentials (the bottom of the Admin tab) ----------------------------
 // Deployment-wide credentials (D&D Beyond session cookie, Anthropic API
 // key) — admin-only (server/integrations.py's deployment_secrets store,
 // server/ddb_auth_status.py for validity checks). No left-pane picker: two
-// fixed credentials, nothing to filter/select. Expanded by default only
-// when the cookie looks expired — re-derived every time fresh status comes
-// in (loomRenderAuthDdbStatus below), not set once at mount.
-const loomAuthDdbInstructionsSection = createCollapsibleSection({
-  label: "How to get a new session cookie",
-  collapsed: true,
-  content: document.querySelector("[data-loom-auth-ddb-instructions-panel]"),
-});
-document.querySelector("[data-loom-auth-ddb-instructions-mount]")?.appendChild(loomAuthDdbInstructionsSection.section);
+// fixed credentials, nothing to filter/select. Their section opens by itself only when a
+// saved cookie looks expired — re-derived every time fresh status comes in (loomRenderAuthDdbStatus
+// below), not set once at mount.
 const loomAuthDdbStatus = document.querySelector("[data-loom-auth-ddb-status]");
 const loomAuthDdbDetail = document.querySelector("[data-loom-auth-ddb-detail]");
-const loomAuthDdbCheckButton = document.querySelector("[data-loom-auth-ddb-check]");
 const loomAuthDdbSaveButton = document.querySelector("[data-loom-auth-ddb-save]");
+// The credential and user inputs sit in real forms (browsers expect that for password fields); Enter saves.
+document.querySelectorAll("[data-loom-cred-form]").forEach((form) => {
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    form.querySelector("button")?.click();
+  });
+});
+document.querySelector("[data-loom-users-form]")?.addEventListener("submit", (event) => event.preventDefault());
 const loomAuthDdbCookieInput = document.querySelector("[data-loom-auth-ddb-cookie]");
 const loomAuthAnthropicStatus = document.querySelector("[data-loom-auth-anthropic-status]");
 const loomAuthAnthropicSaveButton = document.querySelector("[data-loom-auth-anthropic-save]");
@@ -4136,8 +4298,58 @@ function loomFormatAuthCheckedAt(checkedAt) {
   return `checked ${date.toLocaleString()}`;
 }
 
+function loomFormatAuthSavedAt(updatedAt) {
+  const date = updatedAt ? new Date(`${updatedAt.replace(" ", "T")}Z`) : null;
+  return date && !Number.isNaN(date.getTime()) ? `saved ${date.toLocaleString()}` : "saved at an unknown time";
+}
+
+// One Auth section with a headed block per credential; its Check Now re-probes the D&D Beyond cookie.
+function loomAuthBlock(heading, helpTopic, content) {
+  const block = document.createElement("div");
+  block.className = "d-flex flex-column gap-3";
+  const head = document.createElement("div");
+  head.className = "d-flex align-items-center gap-2";
+  const title = document.createElement("h3");
+  title.className = "h6 text-uppercase fw-semibold text-body-secondary mb-0";
+  title.textContent = heading;
+  const help = document.createElement("span");
+  help.className = "align-middle";
+  help.dataset.helpTopic = helpTopic;
+  help.dataset.helpInsert = "replace";
+  head.append(title, help);
+  block.append(head, content);
+  return block;
+}
+const loomAuthContent = document.createElement("div");
+loomAuthContent.className = "d-flex flex-column gap-4";
+loomAuthContent.append(
+  loomAuthBlock("D&D Beyond Session Cookie", "loom.authDdbSession", document.querySelector("[data-loom-auth-ddb-content]")),
+  loomAuthBlock("Anthropic API Key", "loom.authAnthropicKey", document.querySelector("[data-loom-auth-anthropic-content]")),
+);
+async function loomCheckAuthNow() {
+  if (!isLoomAdminSession()) return;
+  try {
+    await dataManager.checkDdbAuthStatus();
+  } catch (error) {
+    if (status) status.show(error.message || "Unable to check D&D Beyond session", { type: "danger" });
+  }
+  await loomRenderAuthStatus();
+}
+const loomAuthSection = createCollapsibleSection({
+  label: "Authorizations",
+  collapsed: true,
+  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => loomCheckAuthNow() }],
+  content: loomAuthContent,
+});
+document.querySelector("[data-admin-auth-mount]")?.appendChild(loomAuthSection.section);
+void initHelpSystem({ root: loomAuthContent });
+
 function loomRenderAuthDdbStatus(ddb) {
-  loomAuthDdbInstructionsSection.setCollapsed(ddb?.valid !== false);
+  adminSummary.ddb = ddb;
+  adminSummary.authChecked = true;
+  renderAdminSummary();
+  // A saved session that has expired needs attention, so it opens the section.
+  if (ddb?.valid === false) loomAuthSection.setCollapsed(false);
   // The server distinguishes a genuinely-rejected cookie from a failed
   // probe from "not configured" in this text rather than one generic
   // "looks expired" (ddb_auth_status.py's _describe_outcome).
@@ -4160,8 +4372,10 @@ function loomRenderAuthDdbStatus(ddb) {
 }
 
 function loomRenderAuthAnthropicStatus(anthropic) {
+  adminSummary.anthropic = anthropic;
+  renderAdminSummary();
   if (!loomAuthAnthropicStatus) return;
-  loomAuthAnthropicStatus.textContent = anthropic?.configured ? "Configured" : "Not configured";
+  loomAuthAnthropicStatus.textContent = anthropic?.configured ? `Configured — ${loomFormatAuthSavedAt(anthropic.updatedAt)}` : "Not configured";
 }
 
 async function loomRenderAuthStatus() {
@@ -4175,20 +4389,6 @@ async function loomRenderAuthStatus() {
   } catch (error) {
     if (status) status.show(error.message || "Unable to load auth status", { type: "danger" });
   }
-}
-
-if (loomAuthDdbCheckButton) {
-  loomAuthDdbCheckButton.addEventListener("click", async () => {
-    loomAuthDdbCheckButton.disabled = true;
-    try {
-      const payload = await dataManager.checkDdbAuthStatus();
-      loomRenderAuthDdbStatus(payload?.ddb);
-    } catch (error) {
-      if (status) status.show(error.message || "Unable to check D&D Beyond session", { type: "danger" });
-    } finally {
-      loomAuthDdbCheckButton.disabled = false;
-    }
-  });
 }
 
 if (loomAuthDdbSaveButton) {
@@ -4231,19 +4431,19 @@ if (loomAuthAnthropicSaveButton) {
 // --- Tab-level tier gating ----------------------------------------------------
 // The whole tool is gated at GM tier and above (init()'s initTierGate), but
 // not every tab makes sense at every tier above that floor: GM sees Groups
-// and Macros (running a campaign — Macros is writeTier "gm", a GM's own
+// and Macros (running a group — Macros is writeTier "gm", a GM's own
 // table cues, not Creator-authored shareable content); Creator adds
-// Import/Library/Systems (author reusable content); Admin adds Users
+// Library/Import/Features/Systems (author reusable content); Admin adds Users
 // (suite-wide tier management) and Admin (the suite-wide content/ops
 // dashboard) on top of everything Creator sees.
-const LOOM_CREATOR_TABS = ["import", "library", "systems"];
+const LOOM_CREATOR_TABS = ["library", "import", "features", "systems"];
 
 function loomAvailableViews() {
   const meetsCreator = Boolean(dataManager?.meetsTier?.("creator"));
   const isAdmin = isLoomAdminSession();
   return LOOM_VIEWS.filter((view) => {
     if (LOOM_CREATOR_TABS.includes(view)) return meetsCreator;
-    if (view === "users" || view === "auth" || view === "admin") return isAdmin;
+    if (view === "users" || view === "admin" || view === "community") return isAdmin;
     return true; // groups/macros: available to every tier the whole tool already requires (gm+)
   });
 }
@@ -6000,9 +6200,9 @@ async function handleSuggestFeatureTags() {
     // Reads the LIVE, possibly-unsaved fields rather than
     // currentFeatureEntity's last-loaded values — an unsaved description
     // should still inform the suggestion.
-    const response = await fetch("/loom/suggest-feature-tags", {
+    const response = await fetch(apiUrl("/loom/suggest-feature-tags"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...sessionAuthHeaders() },
       body: JSON.stringify({
         features: [
           {
@@ -6230,42 +6430,21 @@ function loadMacroChoices(action) {
 const MACRO_LOOK_KEYS = ["fx", "pal", "col", "bri", "sx", "ix", "c1", "c2", "c3", "o1", "o2", "o3"];
 
 // Same options the Lighting widget's own device select shows (label, else
-// host), but the stored value is the device's alias — what keeps a shared
-// Macro working on anyone's own rig. A device with no alias yet gets one on
-// selection (see ensureWledDeviceAlias).
+// alias), and the stored value is the device's alias — what keeps a shared
+// Macro working on anyone's own rig.
 function renderMacroWledDeviceField(action, onChange) {
   const saved = action.target || "";
   const select = macroSelect([{ value: saved, label: saved || "Loading…" }], saved, () => {});
-  const NEEDS_ALIAS = "ip::";
   void loadMacroWledDevices()
     .then((devices) => {
       fillChoiceSelect(select, {
         blank: devices.length ? "Select a device…" : "No devices saved yet — add one in the Lighting widget",
-        options: devices.map((device) => ({
-          value: device.alias || `${NEEDS_ALIAS}${device.ip}`,
-          label: device.label || device.ip,
-        })),
+        options: devices.map((device) => ({ value: device.alias, label: device.label || device.alias })),
         current: saved,
       });
     })
     .catch(() => fillChoiceSelect(select, { blank: "Unable to load devices", options: [], current: saved }));
-  select.addEventListener("change", async () => {
-    if (!select.value.startsWith(NEEDS_ALIAS)) {
-      onChange(select.value);
-      return;
-    }
-    try {
-      // The full saved list (HA lights included) — saving writes the whole
-      // list back, so a WLED-only subset would delete the rest.
-      const devices = await fetchWledDevices(dataManager);
-      const result = await ensureWledDeviceAlias(dataManager, devices, select.value.slice(NEEDS_ALIAS.length));
-      if (!result) throw new Error("That device is no longer saved.");
-      void loadMacroWledDevices({ refresh: true });
-      onChange(result.alias);
-    } catch (error) {
-      status?.show(error?.message || "Unable to give that device an alias.", { type: "error", timeout: 3000 });
-    }
-  });
+  select.addEventListener("change", () => onChange(select.value));
   return select;
 }
 
@@ -7858,9 +8037,9 @@ if (mappingSelect) {
 }
 
 async function saveMapping(id) {
-  const response = await fetch(`/loom/mappings/${encodeURIComponent(id)}`, {
+  const response = await fetch(apiUrl(`/loom/mappings/${encodeURIComponent(id)}`), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...sessionAuthHeaders() },
     body: JSON.stringify({ definition: mappingDefinition }),
   });
   if (!response.ok) {
@@ -7935,9 +8114,9 @@ if (renameButton) {
     const newId = promptKey(`Rename "${currentMappingId}" to:`);
     if (!newId || newId === currentMappingId) return;
     try {
-      const response = await fetch(`/loom/mappings/${encodeURIComponent(currentMappingId)}/rename`, {
+      const response = await fetch(apiUrl(`/loom/mappings/${encodeURIComponent(currentMappingId)}/rename`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...sessionAuthHeaders() },
         body: JSON.stringify({ newId }),
       });
       if (!response.ok) {
@@ -7995,6 +8174,31 @@ async function init() {
     getStatus: () => status,
     centerMount: document.querySelector("[data-loom-group-sessions-mount]"),
     inspectorMount: document.querySelector("[data-loom-group-session-inspector-mount]"),
+    onSelect: () => loomGroupCommunity?.deselect(),
+  });
+  loomCommunityAdmin = initCommunityAdmin({
+    dataManager,
+    getStatus: () => status,
+    mount: document.querySelector("[data-loom-community-admin-mount]"),
+  });
+  loomInvitesAdmin = initInvitesAdmin({
+    dataManager,
+    getStatus: () => status,
+    mount: document.querySelector("[data-loom-invites-mount]"),
+  });
+  loomGroupCommunity = initGroupCommunity({
+    dataManager,
+    getStatus: () => status,
+    campaignsMount: document.querySelector("[data-loom-group-campaigns-mount]"),
+    playersMount: document.querySelector("[data-loom-group-players-mount]"),
+    recruitmentMount: document.querySelector("[data-loom-group-recruitment-mount]"),
+    inspectorMount: document.querySelector("[data-loom-group-listing-inspector-mount]"),
+    onInspect: () => loomGroupSessions?.deselect(),
+    onCampaignsChanged: (campaigns) => loomGroupSessions?.setCampaigns(campaigns),
+    onGroupChanged: () => {
+      loomGroupsState.stale = true;
+      void loomLoadGroups({ refresh: true });
+    },
   });
   shareModal = initShareModal({ dataManager, status });
 
@@ -8044,7 +8248,7 @@ async function init() {
       .getAuthCredentialsStatus()
       .then((payload) => {
         if (payload?.ddb?.configured && payload.ddb.valid === false) {
-          status.show("D&D Beyond session looks expired — see the Auth tab.", { type: "error" });
+          status.show("D&D Beyond session looks expired — see the Admin tab.", { type: "error" });
         }
       })
       .catch(() => {});

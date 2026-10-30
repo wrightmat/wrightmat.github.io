@@ -19,6 +19,9 @@ from .shares import (
 from .state import ServerState
 
 _GROUP_ID_PREFIX = "grp_"
+# The only kind of group: the people playing together. (A Campaign is a named run
+# of sessions inside one, never a group of its own.)
+PLAYER_GROUP_TYPE = "player-group"
 # A Group IS a Library kind now (undercroft/common/data/kind/group.json,
 # library_items row + undercroft/common/data/group/{id}.json flat file —
 # same generic model System/Character/Map already use; see
@@ -31,7 +34,7 @@ _GROUP_ID_PREFIX = "grp_"
 # imports of this module function-local for the same reason.
 #
 # GM tier, not Creator: Creator is about authoring reusable CONTENT (Systems,
-# Templates, ...) for others to use, while a Campaign Group is a GM's own
+# Templates, ...) for others to use, while a Player Group is a GM's own
 # session-running tool — setting one up is exactly what "being a GM" means,
 # not a content-authoring action. This is expressed as group.json's own
 # writeTier: "gm" (enforced generically by storage.save_item's
@@ -98,7 +101,38 @@ def _generate_group_id(state: ServerState) -> str:
 
 def _normalize_group_type(raw: Optional[str]) -> str:
     value = (raw or "").strip().lower()
-    return value or "campaign"
+    return value or PLAYER_GROUP_TYPE
+
+
+# A group's members are polymorphic rows in `group_members`: `character` (the
+# roster), `player` (content_id = user id; joined = added_at) and `campaign`
+# (content_id = campaign id; label = its name; status = active / on_hiatus /
+# completed). The queries below always name the content_type they mean.
+def _is_player(db, group_id: str, user_id: Optional[int]) -> bool:
+    if user_id is None:
+        return False
+    return (
+        db.execute(
+            "SELECT 1 FROM group_members WHERE group_id = ? AND content_type = 'player' AND content_id = ? LIMIT 1",
+            (group_id, str(user_id)),
+        ).fetchone()
+        is not None
+    )
+
+
+def ensure_player(state: ServerState, group_id: str, user_id: Optional[int]) -> None:
+    """Makes `user_id` a player of the group (a no-op for the GM). The caller commits."""
+    if user_id is None:
+        return
+    owner_row = state.db.execute(
+        "SELECT owner_id FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)
+    ).fetchone()
+    if not owner_row or owner_row["owner_id"] == user_id:
+        return
+    state.db.execute(
+        "INSERT OR IGNORE INTO group_members (group_id, content_type, content_id, added_at) VALUES (?, 'player', ?, ?)",
+        (group_id, str(user_id), datetime.utcnow().isoformat()),
+    )
 
 
 def _load_group_row(state: ServerState, group_id: str) -> Optional[Dict[str, Any]]:
@@ -132,19 +166,19 @@ def _load_group_row(state: ServerState, group_id: str) -> Optional[Dict[str, Any
         "id": group_id,
         "owner_id": meta_row["owner_id"],
         "name": payload.get("title") or group_id,
-        "type": payload.get("type") or "campaign",
+        "type": payload.get("type") or PLAYER_GROUP_TYPE,
         "system_id": payload.get("systemId"),
         "setting_id": payload.get("settingId"),
         "template_id": payload.get("templateId"),
-        # The campaign's own tracked "what date is it in the fiction"
+        # The group's own tracked "what date is it in the fiction"
         # state — same conceptual tier as system_id/setting_id above (a
         # GM advances it over time, every tool reads the same value via
         # this one Group). dayIndex mirrors the Calendar widget's own
         # existing day-count representation (0 = an arbitrary campaign-
         # start epoch, negative = before it); minutesOfDay is 0-1439.
         # Both None until a GM actually sets one — no forced default.
-        "campaign_day_index": payload.get("campaignDayIndex"),
-        "campaign_minutes_of_day": payload.get("campaignMinutesOfDay"),
+        "group_day_index": payload.get("groupDayIndex"),
+        "group_minutes_of_day": payload.get("groupMinutesOfDay"),
         "properties": payload.get("properties") or [],
         "property_values": payload.get("propertyValues") or {},
         "created_at": meta_row["created_at"],
@@ -200,7 +234,7 @@ def _fetch_group_members_batch(state: ServerState, group_ids: List[str]) -> Dict
         FROM group_members AS gm
         LEFT JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
         LEFT JOIN users AS u ON u.id = li.owner_id
-        WHERE gm.group_id IN ({group_placeholders})
+        WHERE gm.group_id IN ({group_placeholders}) AND gm.content_type = 'character'
         ORDER BY gm.group_id, COALESCE(li.title, gm.content_id) COLLATE NOCASE
         """,
         tuple(group_ids),
@@ -291,7 +325,35 @@ def _attach_member_status(members: Iterable[Dict[str, Any]], owner_id: Optional[
     return results
 
 
-def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def _group_extras(state: ServerState, group_ids: List[str]) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+    """The non-character `group_members` rows of each group: its players (with
+    usernames) and its campaigns."""
+    extras: Dict[str, Dict[str, List[Dict[str, Any]]]] = {gid: {"players": [], "campaigns": []} for gid in group_ids}
+    if not group_ids:
+        return extras
+    marks = ",".join("?" for _ in group_ids)
+    for row in state.db.execute(
+        f"""
+        SELECT gm.group_id, gm.content_type, gm.content_id, gm.added_at, gm.label, gm.status, u.username
+        FROM group_members AS gm
+        LEFT JOIN users AS u ON gm.content_type = 'player' AND u.id = CAST(gm.content_id AS INTEGER)
+        WHERE gm.group_id IN ({marks}) AND gm.content_type IN ('player', 'campaign')
+        ORDER BY gm.added_at, gm.content_id
+        """,
+        tuple(group_ids),
+    ):
+        if row["content_type"] == "player":
+            extras[row["group_id"]]["players"].append(
+                {"user_id": int(row["content_id"]), "username": row["username"] or "", "joined_at": row["added_at"]}
+            )
+        else:
+            extras[row["group_id"]]["campaigns"].append(
+                {"id": row["content_id"], "name": row["label"] or "", "status": row["status"], "created_at": row["added_at"]}
+            )
+    return extras
+
+
+def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Dict[str, Any]], extras: Optional[Dict[str, List[Dict[str, Any]]]] = None) -> Dict[str, Any]:
     # `row["system_id"]`/`row["setting_id"]` — verified actually present in
     # every caller's own SELECT (not assumed), per this project's own
     # established caution around _serialize_group previously shipping with a
@@ -309,14 +371,16 @@ def _serialize_group(row, members: List[Dict[str, Any]], share_link: Optional[Di
         "system_id": row["system_id"] if "system_id" in row.keys() else None,
         "setting_id": row["setting_id"] if "setting_id" in row.keys() else None,
         "template_id": row["template_id"] if "template_id" in row.keys() else None,
-        "campaign_day_index": row["campaign_day_index"] if "campaign_day_index" in row.keys() else None,
-        "campaign_minutes_of_day": row["campaign_minutes_of_day"] if "campaign_minutes_of_day" in row.keys() else None,
+        "group_day_index": row["group_day_index"] if "group_day_index" in row.keys() else None,
+        "group_minutes_of_day": row["group_minutes_of_day"] if "group_minutes_of_day" in row.keys() else None,
         "properties": row["properties"] if "properties" in row.keys() else [],
         "propertyValues": row["property_values"] if "property_values" in row.keys() else {},
         "created_at": row["created_at"],
         "modified_at": row["modified_at"],
         "share_link": share_link,
         "members": members,
+        "players": (extras or {}).get("players", []),
+        "campaigns": (extras or {}).get("campaigns", []),
     }
 
 
@@ -345,7 +409,7 @@ def _load_group_access_row(state: ServerState, group_id: str) -> Optional[Dict[s
         "id": group_id,
         "owner_id": row["owner_id"],
         "name": row["title"] or group_id,
-        "type": metadata.get("type") or "campaign",
+        "type": metadata.get("type") or PLAYER_GROUP_TYPE,
     }
 
 
@@ -373,27 +437,15 @@ def _resolve_group_access(
     row = _load_group_access_row(state, resolved_id)
     if not row:
         raise AuthError("Group not found")
-    if row["type"] and row["type"].lower() != "campaign":
-        raise AuthError("Game log is only available for campaign groups")
+    if row["type"] and row["type"].lower() != PLAYER_GROUP_TYPE:
+        raise AuthError("Group chat is only available for player groups")
     if share_mode:
         return row, True
     if not user:
         raise AuthError("Authentication required")
     if user.tier == "admin" or row["owner_id"] == user.id:
         return row, False
-    membership = state.db.execute(
-        """
-        SELECT 1
-        FROM group_members AS gm
-        JOIN library_items AS li
-          ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
-        WHERE gm.group_id = ?
-          AND li.owner_id = ?
-        LIMIT 1
-        """,
-        (resolved_id, user.id),
-    ).fetchone()
-    if membership:
+    if _is_player(state.db, resolved_id, user.id):
         return row, False
     raise AuthError("Access denied")
 
@@ -401,7 +453,7 @@ def _resolve_group_access(
 def user_can_access_group(state: ServerState, group_id: str, user: Optional[User]) -> bool:
     """Owner-or-member-via-character-ownership check — the same access rule
     _resolve_group_access enforces for the game log, extracted standalone
-    (no share-token handling, no campaign-type restriction, returns a bool
+    (no share-token handling, no player-group-type restriction, returns a bool
     instead of raising) so shares.py can reuse it to resolve "does this user
     have access via this group" for a share that targets the group itself.
     """
@@ -417,19 +469,7 @@ def user_can_access_group(state: ServerState, group_id: str, user: Optional[User
         return False
     if user.tier == "admin" or row["owner_id"] == user.id:
         return True
-    membership = state.read_db.execute(
-        """
-        SELECT 1
-        FROM group_members AS gm
-        JOIN library_items AS li
-          ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
-        WHERE gm.group_id = ?
-          AND li.owner_id = ?
-        LIMIT 1
-        """,
-        (group_id, user.id),
-    ).fetchone()
-    return bool(membership)
+    return _is_player(state.read_db, group_id, user.id)
 
 
 def _group_member_user_ids(state: ServerState, group_id: str, owner_id: Optional[int]) -> Set[int]:
@@ -441,24 +481,16 @@ def _group_member_user_ids(state: ServerState, group_id: str, owner_id: Optional
     user at a time, just widened to return the whole set at once) — an id
     that isn't in this set gets silently dropped from the recipient list
     rather than failing the whole post, since a stale roster on the client
-    (a player who's since left the campaign) shouldn't block sending the
+    (a player who's since left the group) shouldn't block sending the
     rest of a message.
     """
     ids: Set[int] = set()
     if owner_id is not None:
         ids.add(owner_id)
     for row in state.db.execute(
-        """
-        SELECT DISTINCT li.owner_id
-        FROM group_members AS gm
-        JOIN library_items AS li
-          ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
-        WHERE gm.group_id = ?
-        """,
-        (group_id,),
+        "SELECT content_id FROM group_members WHERE group_id = ? AND content_type = 'player'", (group_id,)
     ):
-        if row["owner_id"] is not None:
-            ids.add(row["owner_id"])
+        ids.add(int(row["content_id"]))
     return ids
 
 
@@ -481,14 +513,7 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
     member_of = [
         row["group_id"]
         for row in state.read_db.execute(
-            """
-            SELECT DISTINCT gm.group_id
-            FROM group_members AS gm
-            JOIN library_items AS li
-              ON gm.content_type = 'character' AND gm.content_id = li.id AND li.kind = 'character'
-            WHERE li.owner_id = ?
-            """,
-            (user.id,),
+            "SELECT group_id FROM group_members WHERE content_type = 'player' AND content_id = ?", (str(user.id),)
         )
     ]
     return list({*owned, *member_of})
@@ -498,7 +523,7 @@ def accessible_group_ids(state: ServerState, user: Optional[User]) -> List[str]:
 # never written to the chat tables/library_items at all (see
 # ServerState.pending_pings' own comment for why). Reuses the exact same
 # membership check chat posting does via _resolve_group_access —
-# only an actual member (or the owner/admin) of a real campaign group can
+# only an actual member (or the owner/admin) of a real player group can
 # post one, same as posting to the group's own log.
 def record_group_ping(
     state: ServerState,
@@ -692,7 +717,7 @@ def list_character_groups(state: ServerState, user: Optional[User], character_id
                 {
                     "id": row["id"],
                     "name": row["title"] or row["id"],
-                    "type": metadata.get("type") or "campaign",
+                    "type": metadata.get("type") or PLAYER_GROUP_TYPE,
                     "owner_id": row["owner_id"],
                 }
             )
@@ -721,7 +746,7 @@ def _access_row_to_group_fields(row) -> Dict[str, Any]:
         "id": row["id"],
         "owner_id": row["owner_id"],
         "name": row["title"] or row["id"],
-        "type": metadata.get("type") or "campaign",
+        "type": metadata.get("type") or PLAYER_GROUP_TYPE,
         "system_id": metadata.get("systemId"),
         "setting_id": metadata.get("settingId"),
         "template_id": metadata.get("templateId"),
@@ -730,8 +755,8 @@ def _access_row_to_group_fields(row) -> Dict[str, Any]:
         # same reason systemId/settingId above are readable without a full
         # JSON-file fetch. This is the path resolveGroupContext's own
         # listGroups() call actually reads.
-        "campaign_day_index": metadata.get("campaignDayIndex"),
-        "campaign_minutes_of_day": metadata.get("campaignMinutesOfDay"),
+        "group_day_index": metadata.get("groupDayIndex"),
+        "group_minutes_of_day": metadata.get("groupMinutesOfDay"),
         "created_at": row["created_at"],
         "modified_at": row["modified_at"],
     }
@@ -743,7 +768,7 @@ def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned")
     if scope == "member":
         # Owned groups PLUS any group where a character this user owns has
         # been added as a member — e.g. a GM added the user's own character
-        # to their campaign. This is the account menu's "pick your active
+        # to their group. This is the account menu's "pick your active
         # campaign" selector (auth-ui.js's own refreshUserMenu) — a
         # read-only listing, so surfacing a group here you don't own is
         # fine. Deliberately NOT the default scope: Loom's own group-
@@ -755,14 +780,16 @@ def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned")
         # comment on why there's no dedicated `groups` table any more.
         rows = state.db.execute(
             """
-            SELECT DISTINCT g.id, g.owner_id, g.title, g.metadata, g.created_at, g.modified_at
+            SELECT g.id, g.owner_id, g.title, g.metadata, g.created_at, g.modified_at
             FROM library_items AS g
-            LEFT JOIN group_members AS gm ON gm.group_id = g.id AND gm.content_type = 'character'
-            LEFT JOIN library_items AS li ON li.id = gm.content_id AND li.kind = 'character'
-            WHERE g.kind = 'group' AND (g.owner_id = ? OR li.owner_id = ?)
+            WHERE g.kind = 'group'
+              AND (g.owner_id = ? OR EXISTS (
+                SELECT 1 FROM group_members AS gp
+                WHERE gp.group_id = g.id AND gp.content_type = 'player' AND gp.content_id = ?
+              ))
             ORDER BY g.modified_at DESC
             """,
-            (owner.id, owner.id),
+            (owner.id, str(owner.id)),
         ).fetchall()
     else:
         rows = state.db.execute(
@@ -778,20 +805,21 @@ def list_groups(state: ServerState, owner: Optional[User], scope: str = "owned")
     group_ids = [fields["id"] for fields in group_fields]
     members_by_group = _fetch_group_members_batch(state, group_ids)
     share_links = get_share_links_batch(state, "group", group_ids)
+    extras_by_group = _group_extras(state, group_ids)
     groups: List[Dict[str, Any]] = []
     for fields in group_fields:
         members = _attach_member_status(members_by_group.get(fields["id"], []), fields["owner_id"])
         share_link = share_links.get(fields["id"])
-        groups.append(_serialize_group(fields, members, share_link))
+        groups.append(_serialize_group(fields, members, share_link, extras_by_group.get(fields["id"])))
     return {"groups": groups}
 
 
-# Party Inventory — every campaign's starting Group Property, seeded once
+# Party Inventory — every group's starting Group Property, seeded once
 # at create_group, upgraded once more in update_group the first time a
 # System actually gets assigned (see that function's own comment for why
 # create_group itself can never mirror a System — Loom's "New Group"
 # dialog only ever collects a name), and backfilled onto every
-# pre-existing campaign by storage.py's own migration. No hardcoded
+# pre-existing group by storage.py's own migration. No hardcoded
 # per-system item shape (see this project's own standing "avoid hardcoding
 # in Undercroft tools" convention) — mirrors whatever the associated
 # System's own top-level "inventory" field already looks like (the exact
@@ -899,13 +927,13 @@ def create_group(state: ServerState, owner: Optional[User], name: str, type_: Op
     # kind-wide creation gating is exactly what that shared mechanism
     # already does for every other kind, no bespoke duplicate needed.
     storage.save_item(state, "group", group_id, payload, owner)
-    if normalized_type == "campaign":
+    if normalized_type == PLAYER_GROUP_TYPE:
         from . import chat
 
         chat.ensure_default_chat(state, group_id, owner.id)
     row = _load_group_row(state, group_id)
     members: List[Dict[str, Any]] = []
-    return _serialize_group(row, _attach_member_status(members, owner.id), None)
+    return _serialize_group(row, _attach_member_status(members, owner.id), None, _group_extras(state, [group_id])[group_id])
 
 
 def update_group(
@@ -917,8 +945,8 @@ def update_group(
     setting_id: Optional[str] = None,
     template_id: Optional[str] = None,
     properties: Optional[List[Dict[str, Any]]] = None,
-    campaign_day_index: Optional[int] = None,
-    campaign_minutes_of_day: Optional[int] = None,
+    group_day_index: Optional[int] = None,
+    group_minutes_of_day: Optional[int] = None,
 ) -> Dict[str, Any]:
     from . import storage
 
@@ -932,7 +960,7 @@ def update_group(
         row["name"] = label
         updated = True
     if system_id is not None:
-        # Blank clears it (a campaign that stops declaring a System falls
+        # Blank clears it (a group that stops declaring a System falls
         # back to Section 2's next tier — the character's own systemIds,
         # then the standard 7) — matches this project's "optional fields
         # start absent, no forced backfill" convention.
@@ -943,7 +971,7 @@ def update_group(
         row["setting_id"] = setting_id.strip() or None
         updated = True
     if template_id is not None:
-        # Same "blank clears it" convention — the campaign's own "Party
+        # Same "blank clears it" convention — the group's own "Party
         # Data" template (Workbench's own no-character mode), independent
         # of a Character's own `metadata.template`.
         row["template_id"] = template_id.strip() or None
@@ -960,18 +988,18 @@ def update_group(
         row["properties"] = properties if isinstance(properties, list) else []
         updated = True
     # No "blank clears it" here — these are integers (0 is a real, valid
-    # day index: the campaign's own start epoch), not strings, so the only
+    # day index: the group's own start epoch), not strings, so the only
     # signal available is "was this argument passed at all" — same as
     # every other field above, just without a string to strip.
-    if campaign_day_index is not None:
-        row["campaign_day_index"] = campaign_day_index
+    if group_day_index is not None:
+        row["group_day_index"] = group_day_index
         updated = True
-    if campaign_minutes_of_day is not None:
-        row["campaign_minutes_of_day"] = campaign_minutes_of_day
+    if group_minutes_of_day is not None:
+        row["group_minutes_of_day"] = group_minutes_of_day
         updated = True
     # The Party Inventory property starts as a generic placeholder (no
     # System exists yet at create_group time) — the first time a GM
-    # actually assigns a System to this campaign, upgrade it to mirror
+    # actually assigns a System to this group, upgrade it to mirror
     # that System's own "inventory" field, but ONLY if it's still exactly
     # the untouched placeholder. Runs after both system_id and properties
     # may have already been applied above (a single combined Loom save
@@ -1003,8 +1031,8 @@ def update_group(
             "systemId": row["system_id"],
             "settingId": row["setting_id"],
             "templateId": row["template_id"],
-            "campaignDayIndex": row["campaign_day_index"],
-            "campaignMinutesOfDay": row["campaign_minutes_of_day"],
+            "groupDayIndex": row["group_day_index"],
+            "groupMinutesOfDay": row["group_minutes_of_day"],
             "properties": row["properties"],
             "propertyValues": row["property_values"],
         }
@@ -1012,7 +1040,7 @@ def update_group(
         row = _load_group_row(state, group_id)
     members = _attach_member_status(_fetch_group_members(state, group_id), row["owner_id"])
     share_link = get_share_link(state, "group", group_id)
-    return _serialize_group(row, members, share_link)
+    return _serialize_group(row, members, share_link, _group_extras(state, [group_id])[group_id])
 
 
 def delete_group(state: ServerState, owner: Optional[User], group_id: str) -> None:
@@ -1034,6 +1062,9 @@ def delete_group(state: ServerState, owner: Optional[User], group_id: str) -> No
     from . import sessions
 
     sessions.delete_group_sessions(state, group_id)
+    from . import listings
+
+    listings.delete_for_group(state, group_id)
     state.db.commit()
 
 
@@ -1135,7 +1166,7 @@ def set_member_active(
     sessions.on_roster_changed(state, group_id)
     refreshed = _load_group_row(state, group_id)
     members = _attach_member_status(_fetch_group_members(state, group_id), refreshed["owner_id"])
-    return _serialize_group(refreshed, members, get_share_link(state, "group", group_id))
+    return _serialize_group(refreshed, members, get_share_link(state, "group", group_id), _group_extras(state, [group_id])[group_id])
 
 
 def update_group_members(state: ServerState, owner: Optional[User], group_id: str, character_ids: Iterable[str]) -> Dict[str, Any]:
@@ -1159,7 +1190,7 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
         if missing:
             raise AuthError("One or more characters could not be found")
         # No longer requires character.owner_id == group.owner_id — a
-        # campaign group's whole point is to hold the PLAYERS' characters,
+        # player group's whole point is to hold the PLAYERS' characters,
         # which the GM (this group's owner) doesn't own. _require_owner
         # above already confirmed the caller is this group's owner (or an
         # admin); that's the actual authorization boundary for "who may
@@ -1196,6 +1227,7 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
             """,
             (group_id, character_id, timestamp, _default_active_for_new_member(state, group_id, character_id)),
         )
+        ensure_player(state, group_id, _owner_of_character(state, character_id))
     _ensure_one_active(state, group_id, removed_owner_ids)
     # Touches library_items.modified_at directly (not a full storage.save_item
     # call — nothing about the group's own JSON document changed here, just
@@ -1214,7 +1246,7 @@ def update_group_members(state: ServerState, owner: Optional[User], group_id: st
     refreshed = _load_group_row(state, group_id)
     members = _attach_member_status(_fetch_group_members(state, group_id), refreshed["owner_id"])
     share_link = get_share_link(state, "group", group_id)
-    return _serialize_group(refreshed, members, share_link)
+    return _serialize_group(refreshed, members, share_link, _group_extras(state, [group_id])[group_id])
 
 
 # Group Properties — a value write (e.g. a player adding a party inventory
@@ -1281,7 +1313,7 @@ def get_group_properties(state: ServerState, user: Optional[User], group_id: str
     """Read-side counterpart to update_group_property_value above, for a
     caller with no share token — the generic GET /content/group/{id} route
     (storage.get_item) only ever grants a non-owner reader via a share
-    token or Character-linked share, which a genuine campaign MEMBER
+    token or Character-linked share, which a genuine group MEMBER
     browsing their own character in Workbench simply doesn't have.
     Confirmed real gap this fixes: mountGroupPropertyContext
     (workbench-character-view.js) silently 401'd for every real player,
@@ -1289,7 +1321,7 @@ def get_group_properties(state: ServerState, user: Optional[User], group_id: str
     Wallet/Inventory schema+values a GM might have put on the group; a
     second caller (loadGroupPartyView, same file) hit the identical 401
     just to read templateId, surfaced there as a visible "Unable to load
-    this campaign" toast for a real member of a campaign they'd just
+    this group" toast for a real member of a group they'd just
     picked from their own Character Selection dropdown.
 
     Same owner-or-member gate update_group_property_value already
@@ -1305,7 +1337,7 @@ def get_group_properties(state: ServerState, user: Optional[User], group_id: str
 
     templateId/systemId/settingId ride along unconditionally, for EVERY
     caller regardless of owner/member — these are the same non-sensitive
-    "what kind of campaign is this" facts list_groups already hands any
+    "what kind of group is this" facts list_groups already hands any
     member with zero filtering (_access_row_to_group_fields), not Property
     data, so the public-only gate above never applied to them anyway.
     """
@@ -1352,24 +1384,19 @@ def get_group_share_details(state: ServerState, token: str) -> Dict[str, Any]:
             "system_id": row["system_id"],
             "setting_id": row["setting_id"],
             "template_id": row["template_id"],
-            "campaign_day_index": row["campaign_day_index"],
-            "campaign_minutes_of_day": row["campaign_minutes_of_day"],
+            "group_day_index": row["group_day_index"],
+            "group_minutes_of_day": row["group_minutes_of_day"],
         },
         "members": members,
         "available": available,
     }
 
 
-def claim_group_character(state: ServerState, token: str, character_id: str, user: Optional[User]) -> Dict[str, Any]:
-    if not user:
-        raise AuthError("Sign in to claim a character")
-    info = resolve_share_token(state, token)
-    if not info or info.get("content_type") != "group":
-        raise AuthError("Invalid or expired share link")
-    group_id = info["content_id"]
-    group_row = _load_group_access_row(state, group_id)
-    if not group_row:
-        raise AuthError("Group not found")
+def _claim_character(
+    state: ServerState, group_id: str, group_row: Dict[str, Any], character_id: str, user: User
+) -> Dict[str, Any]:
+    """Moves an unclaimed roster character (still owned by the GM) to `user` and
+    makes them a player. Shared by the share-link claim and the member claim."""
     membership = state.db.execute(
         """
         SELECT content_id
@@ -1407,6 +1434,7 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
         """,
         (user.id, timestamp, timestamp, character_id),
     )
+    ensure_player(state, group_id, user.id)
     # A player can have only one active character per group: the claimed one
     # starts active only if they have no other active one here.
     state.db.execute(
@@ -1417,7 +1445,6 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
     from . import sessions
 
     sessions.on_roster_changed(state, group_id)
-    touch_share_link(state, token)
     claimed_system_ids = metadata.get("systemIds") or ([metadata["system"]] if metadata.get("system") else [])
     return {
         "character": {
@@ -1431,6 +1458,112 @@ def claim_group_character(state: ServerState, token: str, character_id: str, use
             "name": group_row["name"],
         },
     }
+
+
+def claim_group_character(state: ServerState, token: str, character_id: str, user: Optional[User]) -> Dict[str, Any]:
+    if not user:
+        raise AuthError("Sign in to claim a character")
+    info = resolve_share_token(state, token)
+    if not info or info.get("content_type") != "group":
+        raise AuthError("Invalid or expired share link")
+    group_id = info["content_id"]
+    group_row = _load_group_access_row(state, group_id)
+    if not group_row:
+        raise AuthError("Group not found")
+    result = _claim_character(state, group_id, group_row, character_id, user)
+    touch_share_link(state, token)
+    return result
+
+
+def _require_player(state: ServerState, user: Optional[User], group_id: str) -> Dict[str, Any]:
+    if not user:
+        raise AuthError("Authentication required")
+    row = _load_group_access_row(state, group_id)
+    if not row:
+        raise AuthError("Group not found")
+    if row["owner_id"] == user.id or not _is_player(state.db, group_id, user.id):
+        raise AuthError("Only a player of this group can do that")
+    return row
+
+
+def claim_roster_character(state: ServerState, user: Optional[User], group_id: str, character_id: str) -> Dict[str, Any]:
+    """A player claims one of the GM's unclaimed characters without a share link."""
+    row = _require_player(state, user, group_id)
+    return _claim_character(state, group_id, row, character_id, user)
+
+
+def add_own_character(state: ServerState, user: Optional[User], group_id: str, character_id: str) -> Dict[str, Any]:
+    """A player puts a character they own on the roster (the 'create a new one'
+    half of joining)."""
+    _require_player(state, user, group_id)
+    owned = state.db.execute(
+        "SELECT 1 FROM library_items WHERE kind = 'character' AND id = ? AND owner_id = ?", (character_id, user.id)
+    ).fetchone()
+    if not owned:
+        raise AuthError("You can only add a character you own")
+    already = state.db.execute(
+        "SELECT 1 FROM group_members WHERE group_id = ? AND content_type = 'character' AND content_id = ?",
+        (group_id, character_id),
+    ).fetchone()
+    if not already:
+        state.db.execute(
+            """
+            INSERT INTO group_members (group_id, content_type, content_id, added_at, active)
+            VALUES (?, 'character', ?, ?, ?)
+            """,
+            (group_id, character_id, datetime.utcnow().isoformat(), _default_active_for_new_member(state, group_id, character_id)),
+        )
+        state.db.execute(
+            "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
+            (datetime.utcnow().isoformat(), group_id),
+        )
+    state.db.commit()
+    from . import sessions
+
+    sessions.on_roster_changed(state, group_id)
+    return {"ok": True}
+
+
+def _drop_player(state: ServerState, group_id: str, user_id: int) -> None:
+    """Removes the player row and takes that player's characters off the roster."""
+    state.db.execute(
+        """
+        DELETE FROM group_members
+        WHERE group_id = ? AND content_type = 'character' AND content_id IN (
+            SELECT li.id FROM library_items AS li WHERE li.kind = 'character' AND li.owner_id = ?
+        )
+        """,
+        (group_id, user_id),
+    )
+    state.db.execute(
+        "DELETE FROM group_members WHERE group_id = ? AND content_type = 'player' AND content_id = ?",
+        (group_id, str(user_id)),
+    )
+    state.db.execute(
+        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
+        (datetime.utcnow().isoformat(), group_id),
+    )
+
+
+def leave_group(state: ServerState, user: Optional[User], group_id: str) -> Dict[str, Any]:
+    """A player leaves on their own."""
+    _require_player(state, user, group_id)
+    from . import signals
+
+    signals.on_player_left(state, group_id, user.id, datetime.utcnow())
+    _drop_player(state, group_id, user.id)
+    state.db.commit()
+    return {"ok": True}
+
+
+def remove_player(state: ServerState, owner: Optional[User], group_id: str, user_id: int) -> Dict[str, Any]:
+    """The GM (or an admin) removes a player."""
+    _require_owner(state, group_id, owner)
+    if not _is_player(state.db, group_id, user_id):
+        raise AuthError("That person isn't a player of this group")
+    _drop_player(state, group_id, user_id)
+    state.db.commit()
+    return {"ok": True}
 
 
 def ensure_group_share_link(state: ServerState, owner: Optional[User], group_id: str) -> Dict[str, Any]:

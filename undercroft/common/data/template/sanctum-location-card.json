@@ -51,7 +51,7 @@
                 "node": {
                   "type": "field",
                   "component": "stat",
-                  "text": "=libraryEntries('location-type', 'id', @typeId)[0].entity.name",
+                  "text": "=libraryEntries('location-type', 'id', @typeId)[0]?.entity?.name",
                   "label": "Type"
                 }
               },
@@ -59,7 +59,7 @@
                 "node": {
                   "type": "field",
                   "component": "stat",
-                  "text": "=libraryEntries('location-purpose', 'id', @purposeId)[0].entity.name",
+                  "text": "=libraryEntries('location-purpose', 'id', @purposeId)[0]?.entity?.name",
                   "label": "Purpose"
                 }
               },
@@ -109,14 +109,14 @@
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "=libraryEntries('feature', 'id', @item)[0].entity.name",
+                    "text": "=libraryEntries('feature', 'id', @item)[0]?.entity?.name",
                     "className": "card-meta",
                     "textStyles": { "bold": true }
                   },
                   {
                     "type": "field",
                     "component": "text",
-                    "text": "=libraryEntries('feature', 'id', @item)[0].entity.description",
+                    "text": "=libraryEntries('feature', 'id', @item)[0]?.entity?.description",
                     "className": "card-body-text"
                   }
                 ]

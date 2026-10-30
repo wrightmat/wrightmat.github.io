@@ -6,7 +6,7 @@
 // encounter and sending the scenes.
 //
 // Settings live in the tracker widget's own contentRef under `lighting`:
-//   enabled, deviceIp (a saved WLED device), gmSegment,
+//   enabled, deviceAlias (the alias of a saved WLED device), gmSegment,
 //   assignments {characterId: segmentName}, looks {segmentName: look},
 //   onDeck {enabled, look}
 // Assignments are keyed by CHARACTER id, so seats are set once and survive
@@ -14,7 +14,7 @@
 import { el } from "../dom.js";
 import { createCollapseToggleButton, setElementCollapsed } from "../collapsible.js";
 import { createIconButton } from "../ui-components.js";
-import { fetchWledDevices, loadWledChoices } from "./wled.js";
+import { fetchWledDevices, loadWledChoices, resolveWledDeviceByAlias } from "./wled.js";
 import { createCheck, fillChoiceSelect } from "./wled-look-fields.js";
 import { createWledControl } from "./wled-control.js";
 
@@ -40,7 +40,7 @@ export function normalizeLighting(raw) {
   const onDeck = plainObject(source.onDeck);
   return {
     enabled: Boolean(source.enabled),
-    deviceIp: typeof source.deviceIp === "string" ? source.deviceIp : "",
+    deviceAlias: typeof source.deviceAlias === "string" ? source.deviceAlias : "",
     gmSegment: typeof source.gmSegment === "string" ? source.gmSegment : "",
     assignments,
     looks: plainObject(source.looks),
@@ -169,11 +169,11 @@ export function createTableLightingPanel({ lighting, roster = [], dataManager, o
   const devicesPromise = fetchWledDevices(dataManager)
     .then((devices) => devices.filter((device) => device.type !== "haLight"))
     .catch(() => []);
-  // The saved device entry (not just its IP) so the choices include its
+  // The saved device entry (not just its alias) so the choices include its
   // remembered segment layout, not only whatever the strip reports right now.
   const loadChoices = () =>
     devicesPromise.then((devices) => {
-      const device = devices.find((entry) => entry.ip === lighting.deviceIp);
+      const device = resolveWledDeviceByAlias(devices, lighting.deviceAlias);
       return device ? loadWledChoices(device) : {};
     });
 
@@ -189,7 +189,7 @@ export function createTableLightingPanel({ lighting, roster = [], dataManager, o
     createIconButton({
       icon: "tabler:bulb-off",
       label: "Turn the table segments off",
-      attrs: { disabled: !lighting.deviceIp },
+      attrs: { disabled: !lighting.deviceAlias },
       onClick: () => onClear?.(),
     })
   );
@@ -197,13 +197,13 @@ export function createTableLightingPanel({ lighting, roster = [], dataManager, o
   root.appendChild(head);
 
   const deviceSelect = makeSelect();
-  fillChoiceSelect(deviceSelect, { blank: "Select a device…", options: [], current: lighting.deviceIp });
-  deviceSelect.addEventListener("change", () => commit({ deviceIp: deviceSelect.value }));
+  fillChoiceSelect(deviceSelect, { blank: "Select a device…", options: [], current: lighting.deviceAlias });
+  deviceSelect.addEventListener("change", () => commit({ deviceAlias: deviceSelect.value }));
   void devicesPromise.then((devices) =>
     fillChoiceSelect(deviceSelect, {
       blank: devices.length ? "Select a device…" : "No devices saved yet — add one in the Lighting widget",
-      options: devices.map((device) => ({ value: device.ip, label: device.label || device.ip })),
-      current: lighting.deviceIp,
+      options: devices.map((device) => ({ value: device.alias, label: device.label || device.alias })),
+      current: lighting.deviceAlias,
     })
   );
   const deviceRow = el("div", "d-flex flex-column gap-1");
@@ -257,7 +257,7 @@ export function createTableLightingPanel({ lighting, roster = [], dataManager, o
       createIconButton({
         icon: "tabler:bulb",
         label: "Light this segment",
-        attrs: { disabled: !segmentName || !lighting.deviceIp },
+        attrs: { disabled: !segmentName || !lighting.deviceAlias },
         onClick: () => onTest?.(segmentName),
       })
     );
@@ -322,7 +322,7 @@ export function createTableLightingPanel({ lighting, roster = [], dataManager, o
       );
     });
   } else {
-    root.appendChild(el("span", "small text-body-secondary", "No party members yet — add the party to this campaign or encounter."));
+    root.appendChild(el("span", "small text-body-secondary", "No party members yet — add the party to this group or encounter."));
   }
 
   root.appendChild(

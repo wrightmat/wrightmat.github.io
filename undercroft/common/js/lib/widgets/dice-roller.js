@@ -63,7 +63,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   function renderTargetLine() {
     const target = describePostTarget(dataManager);
     targetLine.textContent =
-      mode === "private" ? "Not recorded — only you see the result." : target || "No active campaign — rolls aren't recorded.";
+      mode === "private" ? "Not recorded — only you see the result." : target || "No active group — rolls aren't recorded.";
   }
   function renderModeToggle() {
     renderTargetLine();
@@ -92,7 +92,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   preloadDiceOverlay(dataManager);
 
   // The Dashboard has no single "current character" (unlike Workbench), so
-  // only the active campaign Group's own System can override the standard 7.
+  // only the active Group's own System can override the standard 7.
   let activeDice = [];
   let activeSystemRolls = [];
   // A System whose dice are ALL symbol dice (Genesys) makes extractSystemDice
@@ -358,7 +358,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   rollButton.addEventListener("click", () => void commitRoll());
 
   renderModeToggle();
-  // The target changes when the campaign or the active thread does.
+  // The target changes when the group or the active thread does.
   window.addEventListener("undercroft:active-thread-changed", renderTargetLine);
   window.addEventListener("workbench:active-group-changed", renderTargetLine);
   wrap.append(modeToggleContainer, targetLine, standardSection, symbolSection, resultLine, tableDatalist);

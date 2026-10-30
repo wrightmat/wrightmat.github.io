@@ -3299,114 +3299,15 @@
       "label": "NPC Types",
       "values": [
         {
-          "name": "Archmage",
-          "strength": 10,
-          "dexterity": 14,
-          "constitution": 12,
-          "intelligence": 20,
-          "wisdom": 15,
-          "charisma": 16,
-          "armorClass": 12,
-          "hitPoints": 99
-        },
-        {
-          "name": "Cult Fanatic",
-          "strength": 11,
-          "dexterity": 14,
-          "constitution": 12,
-          "intelligence": 10,
-          "wisdom": 13,
-          "charisma": 14,
-          "armorClass": 13,
-          "hitPoints": 33
-        },
-        {
-          "name": "Berserker",
-          "strength": 16,
-          "dexterity": 13,
-          "constitution": 16,
-          "intelligence": 9,
-          "wisdom": 11,
-          "charisma": 9,
-          "armorClass": 13,
-          "hitPoints": 67
-        },
-        {
-          "name": "Gladiator",
-          "strength": 18,
-          "dexterity": 15,
-          "constitution": 16,
-          "intelligence": 10,
-          "wisdom": 12,
-          "charisma": 15,
-          "armorClass": 16,
-          "hitPoints": 112
-        },
-        {
-          "name": "Tribal Warrior",
-          "strength": 13,
-          "dexterity": 11,
-          "constitution": 12,
-          "intelligence": 8,
-          "wisdom": 11,
-          "charisma": 8,
-          "armorClass": 12,
-          "hitPoints": 11
-        },
-        {
-          "name": "Druid",
-          "strength": 11,
-          "dexterity": 12,
-          "constitution": 12,
-          "intelligence": 12,
-          "wisdom": 15,
-          "charisma": 11,
-          "armorClass": 11,
-          "hitPoints": 27
-        },
-        {
-          "name": "Knight",
-          "strength": 16,
-          "dexterity": 11,
-          "constitution": 14,
-          "intelligence": 9,
-          "wisdom": 11,
-          "charisma": 15,
-          "armorClass": 18,
-          "hitPoints": 52
-        },
-        {
-          "name": "Veteran",
-          "strength": 16,
-          "dexterity": 13,
-          "constitution": 14,
-          "intelligence": 10,
-          "wisdom": 11,
-          "charisma": 10,
-          "armorClass": 17,
-          "hitPoints": 58
-        },
-        {
-          "name": "Spy",
-          "strength": 10,
-          "dexterity": 15,
-          "constitution": 10,
-          "intelligence": 12,
-          "wisdom": 14,
-          "charisma": 16,
-          "armorClass": 12,
-          "hitPoints": 27
-        },
-        {
-          "name": "Priest",
+          "name": "Commoner",
           "strength": 10,
           "dexterity": 10,
           "constitution": 10,
-          "intelligence": 13,
-          "wisdom": 16,
-          "charisma": 13,
-          "armorClass": 13,
-          "hitPoints": 27
+          "intelligence": 10,
+          "wisdom": 10,
+          "charisma": 10,
+          "armorClass": 10,
+          "hitPoints": 4
         },
         {
           "name": "Noble",
@@ -3420,17 +3321,6 @@
           "hitPoints": 9
         },
         {
-          "name": "Commoner",
-          "strength": 10,
-          "dexterity": 10,
-          "constitution": 10,
-          "intelligence": 10,
-          "wisdom": 10,
-          "charisma": 10,
-          "armorClass": 10,
-          "hitPoints": 4
-        },
-        {
           "name": "Guard",
           "strength": 13,
           "dexterity": 12,
@@ -3440,6 +3330,17 @@
           "charisma": 10,
           "armorClass": 16,
           "hitPoints": 11
+        },
+        {
+          "name": "Priest",
+          "strength": 10,
+          "dexterity": 10,
+          "constitution": 10,
+          "intelligence": 13,
+          "wisdom": 16,
+          "charisma": 13,
+          "armorClass": 13,
+          "hitPoints": 27
         },
         {
           "name": "Bandit",
@@ -3453,6 +3354,17 @@
           "hitPoints": 11
         },
         {
+          "name": "Spy",
+          "strength": 10,
+          "dexterity": 15,
+          "constitution": 10,
+          "intelligence": 12,
+          "wisdom": 14,
+          "charisma": 16,
+          "armorClass": 12,
+          "hitPoints": 27
+        },
+        {
           "name": "Acolyte",
           "strength": 10,
           "dexterity": 10,
@@ -3462,6 +3374,17 @@
           "charisma": 11,
           "armorClass": 10,
           "hitPoints": 9
+        },
+        {
+          "name": "Veteran",
+          "strength": 16,
+          "dexterity": 13,
+          "constitution": 14,
+          "intelligence": 10,
+          "wisdom": 11,
+          "charisma": 10,
+          "armorClass": 17,
+          "hitPoints": 58
         },
         {
           "name": "Thug",
@@ -3475,6 +3398,17 @@
           "hitPoints": 32
         },
         {
+          "name": "Knight",
+          "strength": 16,
+          "dexterity": 11,
+          "constitution": 14,
+          "intelligence": 9,
+          "wisdom": 11,
+          "charisma": 15,
+          "armorClass": 18,
+          "hitPoints": 52
+        },
+        {
           "name": "Scout",
           "strength": 11,
           "dexterity": 14,
@@ -3484,6 +3418,17 @@
           "charisma": 11,
           "armorClass": 13,
           "hitPoints": 16
+        },
+        {
+          "name": "Druid",
+          "strength": 11,
+          "dexterity": 12,
+          "constitution": 12,
+          "intelligence": 12,
+          "wisdom": 15,
+          "charisma": 11,
+          "armorClass": 11,
+          "hitPoints": 27
         },
         {
           "name": "Cultist",
@@ -3497,6 +3442,17 @@
           "hitPoints": 9
         },
         {
+          "name": "Tribal Warrior",
+          "strength": 13,
+          "dexterity": 11,
+          "constitution": 12,
+          "intelligence": 8,
+          "wisdom": 11,
+          "charisma": 8,
+          "armorClass": 12,
+          "hitPoints": 11
+        },
+        {
           "name": "Mage",
           "strength": 9,
           "dexterity": 14,
@@ -3508,6 +3464,17 @@
           "hitPoints": 40
         },
         {
+          "name": "Gladiator",
+          "strength": 18,
+          "dexterity": 15,
+          "constitution": 16,
+          "intelligence": 10,
+          "wisdom": 12,
+          "charisma": 15,
+          "armorClass": 16,
+          "hitPoints": 112
+        },
+        {
           "name": "Bandit Captain",
           "strength": 15,
           "dexterity": 16,
@@ -3517,6 +3484,39 @@
           "charisma": 14,
           "armorClass": 15,
           "hitPoints": 65
+        },
+        {
+          "name": "Berserker",
+          "strength": 16,
+          "dexterity": 13,
+          "constitution": 16,
+          "intelligence": 9,
+          "wisdom": 11,
+          "charisma": 9,
+          "armorClass": 13,
+          "hitPoints": 67
+        },
+        {
+          "name": "Cult Fanatic",
+          "strength": 11,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 10,
+          "wisdom": 13,
+          "charisma": 14,
+          "armorClass": 13,
+          "hitPoints": 33
+        },
+        {
+          "name": "Archmage",
+          "strength": 10,
+          "dexterity": 14,
+          "constitution": 12,
+          "intelligence": 20,
+          "wisdom": 15,
+          "charisma": 16,
+          "armorClass": 12,
+          "hitPoints": 99
         }
       ]
     },

@@ -4,7 +4,7 @@
 // "Open in Workbench" header action for the rest (the full arbitrary-
 // template sheet engine lives there). The picked character is also
 // reported via onPin, since the Dashboard uses "which character is mine"
-// to resolve which campaign group's Game Log/Now Showing/Combat Tracker to show.
+// to resolve which player group's Game Log/Now Showing/Combat Tracker to show.
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { initCharacterVitals } from "./character-sheet.js";
 import { el } from "../dom.js";

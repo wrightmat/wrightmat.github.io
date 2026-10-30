@@ -230,7 +230,7 @@ export function createMarkerElement({
     // no separate boolean.
     contents,
     // Which pool a player claiming from this container's contents lands in
-    // — "character" (their own inventory) or "party" (the campaign Group's
+    // — "character" (their own inventory) or "party" (the Group's
     // shared Party Inventory). A per-container GM choice.
     claimTarget: claimTarget === "party" ? "party" : "character",
   };

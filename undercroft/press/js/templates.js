@@ -1,6 +1,7 @@
 import { renderLayout, normalizeLegacyLayoutNode } from "./template-renderer.js";
 import { getSampleData } from "./sample-data.js";
 import { resolveBinding } from "../../common/js/lib/bindings.js";
+import { apiUrl } from "../../common/js/lib/api.js";
 
 const MILLIMETERS_PER_INCH = 25.4;
 const pageSizes = {};
@@ -107,7 +108,7 @@ export async function loadCustomPageSizes() {
 }
 
 export async function saveCustomPageSize(size) {
-  const response = await fetch("/press/custom-sizes", {
+  const response = await fetch(apiUrl("/press/custom-sizes"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ size }),
@@ -556,7 +557,7 @@ function normalizeTemplate(raw) {
     description: raw.description ?? raw.summary ?? "",
     sides: raw.sides ?? Object.keys(raw.pages ?? { front: {}, back: {} }),
     formats: raw.formats ?? [],
-    supportedSources: raw.supportedSources ?? ["ddb", "srd", "json", "manual"],
+    supportedSources: raw.supportedSources ?? ["ddb", "srd", "library", "json", "manual"],
   };
 
   template.createPage = (side, { size, format, source, data, page, renderOptions, cardPageIndex, singleCardIndex } = {}) => {
@@ -686,5 +687,5 @@ export function getStandardFormats() {
 }
 
 export function getSupportedSources(template) {
-  return template?.supportedSources ?? ["ddb", "srd", "json", "manual"];
+  return template?.supportedSources ?? ["ddb", "srd", "library", "json", "manual"];
 }

@@ -497,7 +497,7 @@ async function findRunningOwnedEncounter(dataManager, excludeId) {
 // already-running one, per the modal's own choice.
 export async function startEncounter({ dataManager, status, title, creatures, groupId, currentSection, id }) {
   if (!groupId) {
-    status?.show("No active campaign to start this in.", { type: "warning" });
+    status?.show("No active group to start this in.", { type: "warning" });
     return;
   }
   if (!creatures || !creatures.length) return;

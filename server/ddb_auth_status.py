@@ -94,18 +94,19 @@ def _describe_outcome(html: str, reason: Optional[str]) -> str:
 def record_ddb_auth_check(state: ServerState, html: str, *, reason: Optional[str] = None) -> Dict[str, Any]:
     valid = is_signed_in_html(html)
     detail = _describe_outcome(html, reason)
-    state.db.execute(
-        """
-        INSERT INTO service_status (service, checked_at, valid, detail)
-        VALUES ('ddb-session', CURRENT_TIMESTAMP, ?, ?)
-        ON CONFLICT(service) DO UPDATE SET
-            checked_at = CURRENT_TIMESTAMP,
-            valid = excluded.valid,
-            detail = excluded.detail
-        """,
-        (1 if valid else 0, detail),
-    )
-    state.db.commit()
+    with state.lock:
+        state.db.execute(
+            """
+            INSERT INTO service_status (service, checked_at, valid, detail)
+            VALUES ('ddb-session', CURRENT_TIMESTAMP, ?, ?)
+            ON CONFLICT(service) DO UPDATE SET
+                checked_at = CURRENT_TIMESTAMP,
+                valid = excluded.valid,
+                detail = excluded.detail
+            """,
+            (1 if valid else 0, detail),
+        )
+        state.db.commit()
     return get_ddb_auth_status(state)
 
 

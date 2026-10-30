@@ -1536,84 +1536,12 @@
       "label": "NPC Types",
       "values": [
         {
-          "name": "Legendary Duelist",
-          "difficulty": 18,
-          "hp": 10,
-          "stress": 5,
-          "attackModifier": 6,
-          "feature": "Riposte: reacts to a missed attack against them with a free strike."
-        },
-        {
-          "name": "Arch-Cultist",
-          "difficulty": 16,
-          "hp": 8,
-          "stress": 5,
-          "attackModifier": 5,
-          "feature": "Dark Ritual: spends Stress to empower a nearby cultist's next roll."
-        },
-        {
-          "name": "Knight-Captain",
-          "difficulty": 15,
-          "hp": 9,
-          "stress": 4,
-          "attackModifier": 4,
-          "feature": "Rally: an ally within Close clears a Stress."
-        },
-        {
-          "name": "Battle Mage",
-          "difficulty": 14,
-          "hp": 7,
-          "stress": 5,
-          "attackModifier": 4,
-          "feature": "Arcane Bolt: a Far-range magic attack."
-        },
-        {
-          "name": "Bounty Hunter",
-          "difficulty": 13,
-          "hp": 7,
-          "stress": 4,
-          "attackModifier": 4,
-          "feature": "Snare: on a hit, the target is Restrained until they break free."
-        },
-        {
-          "name": "Cult Adept",
-          "difficulty": 12,
-          "hp": 6,
-          "stress": 4,
-          "attackModifier": 3,
-          "feature": "Dark Bolt: a Far-range magic attack."
-        },
-        {
-          "name": "Veteran Soldier",
-          "difficulty": 12,
-          "hp": 6,
-          "stress": 3,
-          "attackModifier": 3,
-          "feature": "Shield Wall: gains Armor Score +1 while standing with another Soldier."
-        },
-        {
-          "name": "Hedge Wizard",
-          "difficulty": 11,
-          "hp": 5,
-          "stress": 4,
-          "attackModifier": 2,
-          "feature": "Minor Ward: reduces the next instance of incoming magic damage by 1d4."
-        },
-        {
-          "name": "Highway Bandit",
-          "difficulty": 11,
-          "hp": 5,
-          "stress": 3,
-          "attackModifier": 2,
-          "feature": "Ambush: advantage on the first attack of a scene."
-        },
-        {
-          "name": "Mercenary",
-          "difficulty": 10,
-          "hp": 5,
-          "stress": 3,
-          "attackModifier": 2,
-          "feature": "Professional: rerolls one failed reaction roll per scene."
+          "name": "Farmer",
+          "difficulty": 7,
+          "hp": 3,
+          "stress": 2,
+          "attackModifier": 0,
+          "feature": "Harmless: deals no real damage on a hit, just a shove or a scare."
         },
         {
           "name": "Town Guard",
@@ -1624,20 +1552,20 @@
           "feature": "Call for Backup: summons another Guard once per scene."
         },
         {
-          "name": "Farmer",
-          "difficulty": 7,
-          "hp": 3,
-          "stress": 2,
-          "attackModifier": 0,
-          "feature": "Harmless: deals no real damage on a hit, just a shove or a scare."
-        },
-        {
           "name": "Tavern Keeper",
           "difficulty": 8,
           "hp": 3,
           "stress": 2,
           "attackModifier": 0,
           "feature": "Homebrew Courage: fights back only when cornered."
+        },
+        {
+          "name": "Mercenary",
+          "difficulty": 10,
+          "hp": 5,
+          "stress": 3,
+          "attackModifier": 2,
+          "feature": "Professional: rerolls one failed reaction roll per scene."
         },
         {
           "name": "Peddler",
@@ -1648,12 +1576,28 @@
           "feature": "Haggler: talks their way out of a fight if given the chance."
         },
         {
+          "name": "Highway Bandit",
+          "difficulty": 11,
+          "hp": 5,
+          "stress": 3,
+          "attackModifier": 2,
+          "feature": "Ambush: advantage on the first attack of a scene."
+        },
+        {
           "name": "Dockhand",
           "difficulty": 9,
           "hp": 4,
           "stress": 2,
           "attackModifier": 1,
           "feature": "Strong Back: advantage on rolls to shove or grapple."
+        },
+        {
+          "name": "Hedge Wizard",
+          "difficulty": 11,
+          "hp": 5,
+          "stress": 4,
+          "attackModifier": 2,
+          "feature": "Minor Ward: reduces the next instance of incoming magic damage by 1d4."
         },
         {
           "name": "Cutpurse",
@@ -1664,12 +1608,28 @@
           "feature": "Slippery: advantage on rolls to flee or hide."
         },
         {
+          "name": "Veteran Soldier",
+          "difficulty": 12,
+          "hp": 6,
+          "stress": 3,
+          "attackModifier": 3,
+          "feature": "Shield Wall: gains Armor Score +1 while standing with another Soldier."
+        },
+        {
           "name": "Scout",
           "difficulty": 10,
           "hp": 5,
           "stress": 3,
           "attackModifier": 2,
           "feature": "Keen Eyes: can't be caught unaware."
+        },
+        {
+          "name": "Cult Adept",
+          "difficulty": 12,
+          "hp": 6,
+          "stress": 4,
+          "attackModifier": 3,
+          "feature": "Dark Bolt: a Far-range magic attack."
         },
         {
           "name": "Smuggler",
@@ -1680,6 +1640,14 @@
           "feature": "Hidden Blade: advantage on the first attack if unnoticed."
         },
         {
+          "name": "Bounty Hunter",
+          "difficulty": 13,
+          "hp": 7,
+          "stress": 4,
+          "attackModifier": 4,
+          "feature": "Snare: on a hit, the target is Restrained until they break free."
+        },
+        {
           "name": "Bandit Captain",
           "difficulty": 12,
           "hp": 6,
@@ -1688,12 +1656,44 @@
           "feature": "Rally Cry: an ally within Close clears a Stress."
         },
         {
+          "name": "Battle Mage",
+          "difficulty": 14,
+          "hp": 7,
+          "stress": 5,
+          "attackModifier": 4,
+          "feature": "Arcane Bolt: a Far-range magic attack."
+        },
+        {
           "name": "Rogue Knight",
           "difficulty": 14,
           "hp": 8,
           "stress": 4,
           "attackModifier": 4,
           "feature": "Oathbreaker's Fury: deals +1d8 damage but marks a Stress."
+        },
+        {
+          "name": "Knight-Captain",
+          "difficulty": 15,
+          "hp": 9,
+          "stress": 4,
+          "attackModifier": 4,
+          "feature": "Rally: an ally within Close clears a Stress."
+        },
+        {
+          "name": "Arch-Cultist",
+          "difficulty": 16,
+          "hp": 8,
+          "stress": 5,
+          "attackModifier": 5,
+          "feature": "Dark Ritual: spends Stress to empower a nearby cultist's next roll."
+        },
+        {
+          "name": "Legendary Duelist",
+          "difficulty": 18,
+          "hp": 10,
+          "stress": 5,
+          "attackModifier": 6,
+          "feature": "Riposte: reacts to a missed attack against them with a free strike."
         }
       ]
     },

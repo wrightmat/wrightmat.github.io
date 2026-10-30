@@ -58,14 +58,14 @@
       "weight": 1
     }
   ],
-  "archetypeOverrides": {
-    "22": {
+  "archetypes": [
+    {
       "name": "City Watch Officer"
     },
-    "23": {
+    {
       "name": "Zhentarim Agent"
     }
-  },
+  ],
   "genericNameFallback": [
     "Aris",
     "Bren",

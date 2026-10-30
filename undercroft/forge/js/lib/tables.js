@@ -10,6 +10,7 @@ export { loadAbilityFieldDefs };
 import { setAtBinding, findBindingByRole, findBindingsByRole } from "../../../common/js/lib/bindings.js";
 import { setAtDottedPath } from "../../../common/js/lib/dotted-path.js";
 import { resolveFieldRole } from "../../../common/js/lib/field-roles.js";
+import { loadSystemArchetypeValues, normalizeLocationArchetypes } from "../../../common/js/lib/archetype-entries.js";
 
 // Re-exported so forge/js/app.js's own import (from this file) keeps
 // working unchanged — the implementation moved to content-fetch.js since
@@ -228,38 +229,20 @@ export async function loadSkillGenerationConfig(dataManager, systemId) {
 }
 
 // Archetype — one System-defined array field ("NPC Types") carries
-// everything: each value's `name` (the roll table) AND whatever other keys
-// that entry has (Stats). One field, not two — a name and its stat block
-// are one concept. Which field supplies it is the System's own explicit
-// `fieldRoles` declaration (role "archetypeTable") — see field-roles.js.
-// Values are zipped to rolls 2-21; a value with no name is skipped rather
-// than producing a blank entry. Rolls 22/23 (location override) and 24
-// (Wildcard) are a fixed Forge convention layered on top of every System's
-// own table, not per-system data.
+// everything: each value's `name` AND whatever other keys that entry has
+// (Stats). One field, not two — a name and its stat block are one concept.
+// Which field supplies it is the System's own explicit `fieldRoles`
+// declaration (role "archetypeTable"). The System lists them most common
+// first; see getArchetypeOptions for how that order becomes odds.
 //
-// Returns `{ entries, statsByName }`: `entries` is the roll table, and
-// `statsByName` is every value keyed by its own name, unfiltered — which
-// keys actually become a generated NPC's Stats is a separate Forge tool
-// preference, since a System might carry extra metadata not meant as a Stat.
+// Returns `{ entries, statsByName }`: `entries` is every named value in
+// order, and `statsByName` is every value keyed by its own name, unfiltered
+// — which keys actually become a generated NPC's Stats is a separate Forge
+// tool preference, since a System might carry extra metadata not meant as a
+// Stat.
 export async function loadArchetypeTable(dataManager, systemId) {
-  const rawValues = [];
-  if (dataManager && systemId) {
-    try {
-      const result = await dataManager.get("systems", systemId, { preferLocal: false });
-      const field = resolveFieldRole(result?.payload, "archetypeTable")?.fieldDef;
-      (field?.values || []).slice(0, 20).forEach((value) => {
-        if (value?.name) rawValues.push(value);
-      });
-    } catch (error) {
-      // No System record, or a transient fetch failure — fall through with
-      // whatever entries were already resolved plus the fixed 22/23/24
-      // entries below.
-    }
-  }
-  const entries = rawValues.map((value, index) => ({ roll: index + 2, name: value.name }));
-  entries.push({ roll: 22, name: null, overridable: true });
-  entries.push({ roll: 23, name: null, overridable: true });
-  entries.push({ roll: 24, name: "Wildcard" });
+  const rawValues = await loadSystemArchetypeValues(dataManager, systemId);
+  const entries = rawValues.map((value) => ({ name: value.name }));
   const statsByName = {};
   rawValues.forEach((value) => {
     statsByName[value.name] = value;
@@ -325,7 +308,7 @@ export async function listNpcsForSetting(dataManager, settingId) {
 // this is the common case, not an edge case.
 export async function loadLocation(dataManager, id) {
   const result = await dataManager.get("location", id, { preferLocal: false });
-  return { id, ...(result?.payload || {}) };
+  return normalizeLocationArchetypes({ id, ...(result?.payload || {}) });
 }
 
 // Goes through dataManager (authenticated) — NOT fetchLibraryEntry's
@@ -583,34 +566,59 @@ export function getStatsForArchetype(statsMap, archetypeName, abilityKeys, abili
   return scratch.stats || {};
 }
 
-// Resolves every archetype entry to its final display name for a given
-// location (overridable rolls 22/23 substituted, or "Setting Specific")
-// — shared by the roll itself, the manual-override <select>, and the Press
-// template export, so all three can never disagree.
+// Every archetype a Location can roll, most common first: the Location's
+// own archetypes, then the System's (a Location's entry replaces a System
+// one of the same name). An entry's chance is rank-based — of N entries the
+// first has weight N, the next N-1, down to 1 — so adding an entry anywhere
+// needs no re-weighting. Shared by the roll itself, the manual-override
+// <select>, the Inspector and the Press template export, so they never
+// disagree.
 export function getArchetypeOptions(archetypeTable, location) {
-  return (archetypeTable?.entries || []).map((entry) => {
-    if (entry.overridable) {
-      const override = location?.archetypeOverrides?.[String(entry.roll)];
-      return { roll: entry.roll, name: override?.name || entry.name || "Setting Specific" };
-    }
-    return { roll: entry.roll, name: entry.name };
+  const own = [];
+  const ownNames = new Set();
+  (location?.archetypes || []).forEach((entry) => {
+    if (!entry?.name || ownNames.has(entry.name)) return;
+    ownNames.add(entry.name);
+    const { name, ...properties } = entry;
+    own.push(Object.keys(properties).length ? { name, properties } : { name });
   });
+  const combined = [...own, ...(archetypeTable?.entries || []).filter((entry) => !ownNames.has(entry.name)).map((entry) => ({ name: entry.name }))];
+  const total = (combined.length * (combined.length + 1)) / 2;
+  return combined.map((entry, index) => ({
+    ...entry,
+    chance: Math.round(((combined.length - index) / total) * 1000) / 10,
+  }));
 }
 
-// Archetype is a real 2d12 sum — the bell-curve weighting CLAUDE.md wants
-// falls out of the dice math itself, no artificial weighting needed.
+// A Location archetype's own properties filtered to the keys Forge turns
+// into Stats (`tables.statsKeys`), or null when it has none — a System entry
+// of the same name then supplies the Stats.
+export function getLocationArchetypeStats(tables, location, archetypeName) {
+  const entry = (location?.archetypes || []).find((candidate) => candidate?.name === archetypeName);
+  if (!entry) return null;
+  const { name, ...properties } = entry;
+  const filtered = {};
+  (tables.statsKeys || []).forEach((key) => {
+    if (properties[key] !== undefined) filtered[key] = properties[key];
+  });
+  return Object.keys(filtered).length ? filtered : null;
+}
+
 // `override` (a GM-picked archetype name) skips the roll entirely.
 export function rollArchetype(archetypeTable, location, { random = Math.random, override = "" } = {}) {
   if (override) {
-    return { name: override, roll: null, manual: true };
+    return { name: override, manual: true };
   }
-  const result = rollDiceExpression("2d12", { random });
-  const roll = result.total;
-  const resolved = getArchetypeOptions(archetypeTable, location).find((item) => item.roll === roll);
-  if (!resolved) {
-    return { name: "Unknown", roll, notation: result.notation };
+  const options = getArchetypeOptions(archetypeTable, location);
+  if (!options.length) return { name: "" };
+  const total = (options.length * (options.length + 1)) / 2;
+  let remaining = random() * total;
+  for (let index = 0; index < options.length; index += 1) {
+    remaining -= options.length - index;
+    if (remaining < 0) return { name: options[index].name, chance: options[index].chance };
   }
-  return { name: resolved.name, roll, notation: result.notation };
+  const last = options[options.length - 1];
+  return { name: last.name, chance: last.chance };
 }
 
 export function rollFourDTable(tableEntries, { random = Math.random } = {}) {

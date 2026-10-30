@@ -1286,7 +1286,7 @@ export function snapMarkerPositionToGrid(baseMapManager, map, position, markerLa
 //
 // Only builds POLICY — what's draggable, what's wall-blocked, grid-snapping
 // on drop, the locked-door check — never persistence. The two callers
-// differ there (the widget relays through a campaign groupId's live-sync;
+// differ there (the widget relays through a player groupId's live-sync;
 // Orrery's view doesn't), so `onMarkerMoved`/`onDoorToggled` only fire once
 // this policy approves the action; the caller's own job is to persist it
 // (both already use map-live-sync.js's persistMarkerMove/persistElementUpdate)
@@ -1330,7 +1330,7 @@ export function buildRestrictedMapOptions({
   // (map.js's own isMapOwnerOrAdmin, which already backs canManageDrawing
   // for player-authored shapes — see that function's own comment for why
   // this is deliberately ownership-only, not allowsDelete()'s broader
-  // "or an edit-permission share" rule, given every campaign member already
+  // "or an edit-permission share" rule, given every group member already
   // holds an edit share on a spotlighted map). Extends full drag/click-to-
   // edit parity to every OTHER reference kind (monster, npc, ...) for that
   // one viewer — a plain player has no ownership concept over GM-authored

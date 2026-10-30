@@ -2,7 +2,7 @@
 // already been written, scanning every journal page for the wikilinks and
 // code-block references already present and assembling a generic
 // {nodes, edges} shape for common/js/lib/graph-view.js. It answers "what
-// connects to what in a campaign that already exists"; it requires no
+// connects to what in a group that already exists"; it requires no
 // separate data of its own, and deliberately does NOT ingest a
 // [!story-board] callout's internal planning structure (see
 // journal-story-board.js's own header comment for that two-mode split).

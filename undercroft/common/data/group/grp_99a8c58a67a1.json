@@ -1,11 +1,11 @@
 {
   "title": "Test Daggerheart Campaign",
-  "type": "campaign",
+  "type": "player-group",
   "systemId": "sys.daggerheart",
   "settingId": null,
   "templateId": null,
-  "campaignDayIndex": null,
-  "campaignMinutesOfDay": null,
+  "groupDayIndex": null,
+  "groupMinutesOfDay": null,
   "properties": [
     {
       "type": "array",

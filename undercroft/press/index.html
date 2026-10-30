@@ -30,12 +30,12 @@
                    this collapses and Palette expands instead. -->
               <div data-selection-mount></div>
               <div class="d-flex flex-column gap-3" data-selection-panel>
+                  <div data-inspector-mount="template-select"></div>
                   <div class="d-flex flex-column gap-2">
                     <div data-inspector-mount="source-select"></div>
                     <div id="sourceInputContainer" class="d-flex flex-column gap-2"></div>
                   </div>
                   <div class="d-flex flex-column gap-2" id="press-templates">
-                    <div data-inspector-mount="template-select"></div>
                     <div data-inspector-mount="format-select"></div>
                     <div data-inspector-mount="orientation-select"></div>
                   </div>
@@ -499,8 +499,8 @@
          hadn't finished loading yet at that single call, drag-and-drop
          would silently stay broken for the rest of the session. See
          undercroft/index.html for why other pages ARE reordered. -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js" integrity="sha384-Ok2uDHnWhbSMsjjXrs20mYHBe3BLztRYQuPMBhyLnjPNH7OqWdv/c8Bmv54yhfKR" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha384-eeLEhtwdMwD3X9y+8P3Cn7Idl/M+w8H4uZqkgD/2eJVkWIN1yKzEj6XegJ9dL3q0" crossorigin="anonymous"></script>
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

@@ -26,8 +26,8 @@ export function describeMarkerContentEntry(entry) {
 // server/groups.py's _find_system_inventory_field/_GENERIC_INVENTORY_PROPERTY).
 const PARTY_INVENTORY_KEY = "inventory";
 
-// The Group Property key a Party Wallet lives under, when a campaign has
-// one. Opt-in per campaign — its mere presence in the group's `properties`
+// The Group Property key a Party Wallet lives under, when a group has
+// one. Opt-in per group — its mere presence in the group's `properties`
 // schema is what "opts in"; when absent, currency lands on the claiming
 // player's own Character. Value shape mirrors a Character's `currencies`
 // object exactly ({shortName: amount}) so the increment logic is identical
@@ -44,9 +44,9 @@ const PARTY_CURRENCY_KEY = "currencies";
 // ("group", groupId)` fetch — that raw route returns the group's stored
 // file as-is, which has no `members` field at all (members is computed
 // server-side only for the dedicated /groups/* routes). resolveGroupContext
-// resolves "whichever campaign is currently active", not a targeted lookup
+// resolves "whichever group is currently active", not a targeted lookup
 // by id — trustworthy here because every real caller's groupId is already
-// sourced from that same active-campaign signal, so the equality check
+// sourced from that same active-group signal, so the equality check
 // below is a cheap self-correcting guard against the rare case they've
 // diverged. Returns { id, label } or null.
 export async function resolveOwnCharacter(dataManager, groupId, shareToken = "") {
@@ -63,7 +63,7 @@ export async function resolveOwnCharacter(dataManager, groupId, shareToken = "")
   return owned ? { id: owned.content_id, label: owned.label || owned.content_id } : null;
 }
 
-// The full "who could this go to" roster for the active campaign — every
+// The full "who could this go to" roster for the active group — every
 // member's Character, keyed for a "Give to" picker. Shared by every GM
 // override UI in the suite so the roster-building logic only lives once.
 // Deliberately NOT tier-gated here, same convention resolveOwnCharacter
@@ -118,8 +118,8 @@ async function fetchGroupProperties(dataManager, groupId, shareToken) {
 // the container's own `claimTarget` names, and posts a Game Log entry.
 //
 // Character resolution happens BEFORE anything is removed from the map —
-// a player with no owned Character in this campaign, or no active
-// campaign at all, gets a clear error and the item stays right where it
+// a player with no owned Character in this group, or no active
+// group at all, gets a clear error and the item stays right where it
 // was, still claimable once that's no longer true. The map-side removal
 // itself re-reads the element fresh (persistElementUpdate's own contract)
 // and is a safe no-op if another player already claimed the same entry in
@@ -147,7 +147,7 @@ export async function claimMarkerContentEntry({
     return null; // already claimed by someone else, or the container's own contents changed
   }
   // Currency's destination is independent of this container's claimTarget
-  // (which only governs items/Wonders): it goes to the campaign's Party
+  // (which only governs items/Wonders): it goes to the group's Party
   // Wallet if one exists, otherwise falls back to the claiming player's own
   // Character. A GM's explicit `recipient` always wins over both defaults.
   const isCurrency = entry.kind === "currency";
@@ -159,7 +159,7 @@ export async function claimMarkerContentEntry({
   let currencyDestination = null; // "party" | "character" — only meaningful when isCurrency
   if (isCurrency) {
     if (!groupId) {
-      throw new Error("No active campaign to claim this into.");
+      throw new Error("No active group to claim this into.");
     }
     if (recipient?.type === "party") {
       currencyDestination = "party";
@@ -178,20 +178,20 @@ export async function claimMarkerContentEntry({
         currencyDestination = "character";
         character = await resolveOwnCharacter(dataManager, groupId, shareToken);
         if (!character) {
-          throw new Error("You don't have a character in this campaign to claim currency with.");
+          throw new Error("You don't have a character in this group to claim currency with.");
         }
       }
     }
   } else if (claimTarget === "character") {
     if (!groupId) {
-      throw new Error("No active campaign to claim this into.");
+      throw new Error("No active group to claim this into.");
     }
     character = await resolveClaimCharacter(dataManager, groupId, shareToken, recipient);
     if (!character) {
-      throw new Error("You don't have a character in this campaign to claim items with.");
+      throw new Error("You don't have a character in this group to claim items with.");
     }
   } else if (!groupId) {
-    throw new Error("No active campaign to claim this into.");
+    throw new Error("No active group to claim this into.");
   }
 
   // Only now does anything actually get removed from the map — everything
@@ -217,7 +217,7 @@ export async function claimMarkerContentEntry({
   if (isCurrency) {
     // No System-shape assumption made here beyond "an object keyed by
     // denomination shortName" — the denomination was already resolved
-    // against the active campaign's System at author time, so claiming
+    // against the active group's System at author time, so claiming
     // just applies whatever shortName got stamped.
     const denomination = entry.denomination || "";
     claimedLabel = describeMarkerContentEntry(entry);

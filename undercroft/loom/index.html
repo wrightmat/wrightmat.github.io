@@ -146,31 +146,31 @@
         <main class="workbench-main flex-grow-1 p-3 overflow-auto">
           <ul class="nav nav-tabs mb-3" role="tablist" data-loom-view-tabs>
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" type="button" role="tab" data-loom-view-tab="import" aria-selected="true">Import</button>
+              <button class="nav-link active" type="button" role="tab" data-loom-view-tab="library" aria-selected="true">Library</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="library" aria-selected="false">Library</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="systems" aria-selected="false">Systems</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="macros" aria-selected="false">Macros</button>
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="import" aria-selected="false">Import</button>
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="features" aria-selected="false">Features</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="users" aria-selected="false">Users</button>
-            </li>
-            <li class="nav-item" role="presentation">
               <button class="nav-link" type="button" role="tab" data-loom-view-tab="groups" aria-selected="false">Groups</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="admin" aria-selected="false">Admin</button>
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="macros" aria-selected="false">Macros</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" type="button" role="tab" data-loom-view-tab="auth" aria-selected="false">Auth</button>
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="systems" aria-selected="false">Systems</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="users" aria-selected="false">Users</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="community" aria-selected="false">Community</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" type="button" role="tab" data-loom-view-tab="admin" aria-selected="false">Admin</button>
             </li>
           </ul>
           <div class="d-flex flex-column gap-4" data-loom-view-panel="import">
@@ -487,7 +487,7 @@
                 <section class="d-flex flex-column gap-3" data-loom-groups-section>
                   <div class="d-flex align-items-center gap-2">
                     <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Group</h2>
-                    <span class="align-middle" data-help-topic="campaign.groups" data-help-insert="replace"></span>
+                    <span class="align-middle" data-help-topic="group.about" data-help-insert="replace"></span>
                   </div>
                   <p class="text-body-secondary mb-0" data-loom-group-empty>
                     Select a group from the left pane, or create a new one.
@@ -499,8 +499,11 @@
                       <div class="col-3" data-field-mount="group-setting"></div>
                       <div class="col-3" data-field-mount="group-template"></div>
                     </div>
+                    <div data-loom-group-players-mount></div>
                     <div data-loom-group-characters-mount></div>
+                    <div data-loom-group-campaigns-mount></div>
                     <div data-loom-group-sessions-mount></div>
+                    <div data-loom-group-recruitment-mount></div>
                     <div data-loom-group-properties-mount></div>
                     <div class="d-none">
                       <div class="d-flex flex-column gap-1" data-loom-group-characters-content>
@@ -530,7 +533,7 @@
                   <p class="text-body-secondary mb-0" data-loom-users-empty>
                     Select a user from the left pane to view or edit their account.
                   </p>
-                  <div class="d-flex flex-column gap-3 d-none" data-loom-users-form>
+                  <form class="d-flex flex-column gap-3 d-none" data-loom-users-form novalidate>
                     <div class="row g-3">
                       <div class="col-12 col-md-6" data-field-mount="user-username"></div>
                       <div class="col-12 col-md-6" data-field-mount="user-email"></div>
@@ -551,11 +554,16 @@
                         <span class="text-body-secondary small">Last activity</span>
                         <span data-loom-user-last-activity></span>
                       </div>
+                      <div class="col-12 col-md-6 d-flex flex-column gap-1">
+                        <span class="text-body-secondary small">Joined via invite</span>
+                        <span data-loom-user-invite></span>
+                      </div>
                     </div>
-                  </div>
+                  </form>
                 </section>
               </div>
             </div>
+            <div data-loom-invites-mount></div>
           </div>
 
           <!-- Suite-wide content/ops dashboard — no left-pane picker needed
@@ -565,79 +573,59 @@
                the Library table, Users, Groups) — see loom/js/app.js's
                "Admin tab" comment block for why this never duplicates
                those views instead of just linking to them. -->
-          <div class="d-flex flex-column gap-4" data-loom-view-panel="admin" hidden>
-            <div class="d-flex align-items-center justify-content-between gap-2">
-              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-0 d-flex align-items-center gap-2">
-                <span>Admin Overview</span>
-                <span class="align-middle" data-help-topic="loom.admin" data-help-insert="replace"></span>
-              </h2>
-              <div data-admin-check-all-mount></div>
-            </div>
-            <div data-admin-system-health-mount></div>
-            <div data-admin-inventory-mount></div>
-            <div data-admin-users-mount></div>
-            <div data-admin-groups-mount></div>
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="community" hidden>
+            <div data-loom-community-admin-mount></div>
           </div>
 
-          <!-- Deployment-wide credentials — no left-pane picker needed
-               (nothing to filter/select, always the same two credentials)
-               — see server/integrations.py's own deployment_secrets store
-               and server/ddb_auth_status.py for the full storage/check
-               story. -->
-          <div class="d-flex flex-column gap-4" data-loom-view-panel="auth" hidden>
+          <div class="d-flex flex-column gap-4" data-loom-view-panel="admin" hidden>
             <div class="card shadow-theme">
-              <div class="card-body">
-                <section class="d-flex flex-column gap-3" data-loom-auth-ddb-section>
-                  <div class="d-flex align-items-center gap-2">
-                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">D&amp;D Beyond Session</h2>
-                    <span class="align-middle" data-help-topic="loom.authDdbSession" data-help-insert="replace"></span>
-                  </div>
+              <div class="card-body" data-admin-overview-mount></div>
+            </div>
+            <div class="card shadow-theme">
+              <div class="card-body" data-admin-system-health-mount></div>
+            </div>
+            <div class="card shadow-theme">
+              <div class="card-body" data-admin-inventory-mount></div>
+            </div>
+            <div class="card shadow-theme">
+              <div class="card-body" data-admin-users-mount></div>
+            </div>
+            <div class="card shadow-theme">
+              <div class="card-body" data-admin-groups-mount></div>
+            </div>
+            <div class="card shadow-theme">
+              <div class="card-body" data-admin-load-mount></div>
+            </div>
+
+            <!-- Deployment-wide credentials: see server/integrations.py's deployment_secrets store and
+                 server/ddb_auth_status.py. Their bodies sit in the hidden holder below until app.js adopts
+                 them into collapsible sections. -->
+            <div class="card shadow-theme">
+              <div class="card-body" data-admin-auth-mount></div>
+            </div>
+            <div class="d-none">
+              <div class="d-flex flex-column gap-3" data-loom-auth-ddb-content>
                   <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="text-body-secondary" data-loom-auth-ddb-status>Checking…</span>
-                    <button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" type="button" data-loom-auth-ddb-check>
-                      <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
-                      Check Now
-                    </button>
+                    <span class="text-body-secondary" data-loom-auth-ddb-status>Not checked yet</span>
                   </div>
                   <div class="small text-body-secondary" data-loom-auth-ddb-detail hidden></div>
-                  <div class="d-flex align-items-end gap-2 flex-wrap">
+                  <form class="d-flex align-items-end gap-2 flex-wrap" data-loom-cred-form novalidate>
                     <div class="flex-grow-1" style="max-width: 32rem" data-field-mount="auth-ddb-cookie"></div>
                     <button class="btn btn-outline-primary btn-sm" type="button" data-loom-auth-ddb-save>Save</button>
-                  </div>
-                  <div data-loom-auth-ddb-instructions-mount></div>
-                  <div class="d-flex flex-column gap-2 small" data-loom-auth-ddb-instructions-panel>
-                    <ol class="d-flex flex-column gap-1 mb-0 ps-3">
-                      <li>Go to <a href="https://www.dndbeyond.com" target="_blank" rel="noopener noreferrer">dndbeyond.com</a> and make sure you're signed in.</li>
-                      <li>Open your browser's DevTools (<kbd>F12</kbd>, or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> / <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>I</kbd> on Mac).</li>
-                      <li>Open the <strong>Application</strong> tab (Chrome/Edge) or <strong>Storage</strong> tab (Firefox).</li>
-                      <li>In the left sidebar, expand <strong>Cookies</strong> and select <code>https://www.dndbeyond.com</code>.</li>
-                      <li>Find the row named <code>CobaltSession</code>. Double-click directly into its <strong>Value</strong> cell to select just that text (clicking the row and copying grabs every column at once — name, value, domain, etc. — as one tab-separated mess, which silently fails).</li>
-                      <li>Paste just that value into the field above and click Save (the <code>CobaltSession=</code> prefix is added automatically, so the bare value is fine).</li>
-                    </ol>
-                    <p class="text-body-secondary mb-0">Treat this value like a password — anyone with it can act as this D&amp;D Beyond account. It expires periodically; re-check here if an import comes back looking truncated or empty.</p>
-                  </div>
-                </section>
+                  </form>
               </div>
-            </div>
-
-            <div class="card shadow-theme">
-              <div class="card-body">
-                <section class="d-flex flex-column gap-3" data-loom-auth-anthropic-section>
-                  <div class="d-flex align-items-center gap-2">
-                    <h2 class="h6 text-uppercase fw-semibold text-body-secondary mb-0">Anthropic API Key</h2>
-                    <span class="align-middle" data-help-topic="loom.authAnthropicKey" data-help-insert="replace"></span>
-                  </div>
+              <div class="d-flex flex-column gap-3" data-loom-auth-anthropic-content>
                   <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="text-body-secondary" data-loom-auth-anthropic-status>Checking…</span>
+                    <span class="text-body-secondary" data-loom-auth-anthropic-status>Not checked yet</span>
                   </div>
-                  <div class="d-flex align-items-end gap-2 flex-wrap">
+                  <form class="d-flex align-items-end gap-2 flex-wrap" data-loom-cred-form novalidate>
                     <div class="flex-grow-1" style="max-width: 32rem" data-field-mount="auth-anthropic-key"></div>
                     <button class="btn btn-outline-primary btn-sm" type="button" data-loom-auth-anthropic-save>Save</button>
-                  </div>
-                </section>
+                  </form>
               </div>
             </div>
           </div>
+
         </main>
 
         <div data-pane-content="right">
@@ -731,6 +719,7 @@
           <div class="d-flex flex-column gap-3" data-loom-view-panel="groups" hidden>
             <div data-loom-group-inspector-mount></div>
             <div data-loom-group-session-inspector-mount></div>
+            <div data-loom-group-listing-inspector-mount></div>
             <div data-loom-group-share-mount></div>
             <div class="d-none">
               <div class="d-flex flex-column gap-3" data-loom-group-inspector-content>
@@ -774,9 +763,8 @@
          ordering keeps the page's own JS from waiting on the CDN scripts
          to finish loading before it can run. See undercroft/index.html for
          the full explanation. -->
-    <script type="module" src="js/app.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js" integrity="sha384-Ok2uDHnWhbSMsjjXrs20mYHBe3BLztRYQuPMBhyLnjPNH7OqWdv/c8Bmv54yhfKR" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha384-eeLEhtwdMwD3X9y+8P3Cn7Idl/M+w8H4uZqkgD/2eJVkWIN1yKzEj6XegJ9dL3q0" crossorigin="anonymous"></script>
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -784,5 +772,6 @@
       crossorigin="anonymous"
     ></script>
     <script defer src="../common/ddb-content-parser.js"></script>
+    <script type="module" src="js/app.js"></script>
   </body>
 </html>

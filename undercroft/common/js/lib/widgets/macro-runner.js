@@ -30,7 +30,7 @@ const MACRO_SPOTLIGHT_ID = "macro";
 async function runBrowserMacroAction(action, { dataManager, groupContext }) {
   const groupId = groupContext?.groupId;
   if (!groupId) {
-    throw new Error("No active campaign to show/hide this to.");
+    throw new Error("No active group to show/hide this to.");
   }
   if (action?.action === "show") {
     const url = String(action?.params?.url || "").trim();
@@ -58,7 +58,7 @@ async function runGamelogMacroAction(action, { dataManager, groupContext }) {
   const message = String(action?.params?.message || "").trim();
   if (!message) throw new Error("No message given.");
   const groupId = groupContext?.groupId;
-  if (!groupId) throw new Error("No active campaign to post to.");
+  if (!groupId) throw new Error("No active group to post to.");
   await postToActiveThread(dataManager, { groupId, body: message });
 }
 
@@ -68,7 +68,7 @@ async function runGamelogMacroAction(action, { dataManager, groupContext }) {
 function makeContentRefMacroAction(defaultKind) {
   return async function runContentRefMacroAction(action, { dataManager, groupContext }) {
     const groupId = groupContext?.groupId;
-    if (!groupId) throw new Error("No active campaign to show/hide this to.");
+    if (!groupId) throw new Error("No active group to show/hide this to.");
     const contentRef = action?.params?.contentRef;
     const kind = contentRef?.kind || defaultKind;
     const id = contentRef?.id;

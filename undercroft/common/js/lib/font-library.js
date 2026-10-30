@@ -1,3 +1,4 @@
+import { apiUrl } from "./api.js";
 // Shared font library — used by both Press and Workbench, so both tools'
 // Font pickers read/write the exact same server-persisted list.
 
@@ -109,7 +110,7 @@ function authHeaders(authToken) {
 }
 
 export async function saveCustomFont(font, authToken) {
-  const response = await fetch("/custom-fonts", {
+  const response = await fetch(apiUrl("/custom-fonts"), {
     method: "POST",
     headers: authHeaders(authToken),
     body: JSON.stringify({ font }),
@@ -124,7 +125,7 @@ export async function saveCustomFont(font, authToken) {
 // No true HTTP DELETE anywhere in this server — every deletion is
 // POST .../delete instead.
 export async function saveCustomFontDeletion(id, authToken) {
-  const response = await fetch("/custom-fonts/delete", {
+  const response = await fetch(apiUrl("/custom-fonts/delete"), {
     method: "POST",
     headers: authHeaders(authToken),
     body: JSON.stringify({ id }),
@@ -180,7 +181,7 @@ let googleFontsMetadataPromise = null;
 function loadGoogleFontsMetadata() {
   if (!googleFontsMetadataPromise) {
     const xssiPrefix = ")]}'";
-    googleFontsMetadataPromise = fetch(GOOGLE_FONTS_METADATA_URL)
+    googleFontsMetadataPromise = fetch(apiUrl(GOOGLE_FONTS_METADATA_URL))
       .then((response) => (response.ok ? response.text() : Promise.reject(new Error("metadata unavailable"))))
       // Response body is prefixed with a fixed XSSI-protection string ahead
       // of the actual JSON — stripped by plain prefix check, not regex.
