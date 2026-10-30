@@ -102,7 +102,8 @@ export function resolveToolContextPath(pathname = typeof window === "undefined" 
   if (typeof window === "undefined") {
     return "workbench";
   }
-  const segments = pathname.split("/").filter(Boolean);
+  // A folder URL ("/undercroft/", "/undercroft/loom/") is that folder's index page.
+  const segments = (pathname.endsWith("/") ? `${pathname}index.html` : pathname).split("/").filter(Boolean);
   if (segments.length < 2) {
     return "workbench";
   }
