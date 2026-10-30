@@ -21,6 +21,7 @@ import { buildKindToolUrl, kindToolLabel } from "../../../common/js/lib/kind-too
 import { resolveImageDimension } from "./base-maps.js";
 import { getDefaultView as getTypeDefaultView, createMarkerOverlayIcon } from "./map-model.js";
 import { getPresetById } from "../../../common/js/lib/shape-effect-library.js";
+import { OWNER_COLOR_OUTLINE, peekOwnerColor } from "../../../common/js/lib/owner-colors.js";
 
 // A referenced marker's own "open the real thing" link — shared by both
 // restricted-viewer consumers (the Dashboard widget, Orrery's view-mode
@@ -314,7 +315,8 @@ export function createMarkerDot(baseMapManager, map, layer, markerElement, optio
     // Reproduce that ring's value inline when selected instead.
     dot.style.boxShadow = options.selected ? "0 0 0 3px rgba(14, 165, 233, 0.9)" : "none";
   } else {
-    dot.style.borderColor = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
+    const own = markerElement.outlineColor === OWNER_COLOR_OUTLINE ? peekOwnerColor(markerElement.refKind, markerElement.refId) : markerElement.outlineColor;
+    dot.style.borderColor = own || layer.settings?.outlineColor || "#0f172a";
     dot.style.borderWidth = `${Number.isFinite(layer.settings?.outlineWidth) ? layer.settings.outlineWidth : 2}px`;
   }
   // Per-marker only, no layer-wide equivalent — falls back to 1 only for a

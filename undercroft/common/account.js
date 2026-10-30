@@ -2,6 +2,8 @@ import { initAppShell } from "./js/lib/app-shell.js";
 import { DataManager, ROLE_ORDER, WRITE_ROLE_REQUIREMENTS, roleRank } from "./js/lib/data-manager.js";
 import { resolveApiBase } from "./js/lib/api.js";
 import { initAuthControls } from "./js/lib/auth-ui.js";
+import { createPlayerColorControl } from "./js/lib/player-color.js";
+import { loadSiteInfo } from "./js/lib/site-info.js";
 import { initHelpSystem, loadHelpTopics } from "./js/lib/help.js";
 import { initFavoriteDocsPane } from "./js/lib/doc-favorites-pane.js";
 import { mountInbox } from "./js/lib/chat/inbox.js";
@@ -59,9 +61,7 @@ const elements = {
   revokeSessionsButton: document.querySelector("[data-admin-revoke-sessions]"),
   passwordError: document.querySelector("[data-admin-password-error]"),
   passwordConfirm: document.getElementById("admin-settings-password-confirm"),
-  favoriteColorControl: document.querySelector("[data-favorite-color-control]"),
-  favoriteColorInput: document.getElementById("admin-settings-favorite-color"),
-  favoriteColorClear: document.querySelector("[data-favorite-color-clear]"),
+  playerColorMount: document.querySelector("[data-player-color-mount]"),
   diceThemeSelect: document.querySelector("[data-dice-theme-select]"),
   diceColorControl: document.querySelector("[data-dice-color-control]"),
   diceColorInput: document.getElementById("admin-settings-dice-color"),
@@ -70,6 +70,19 @@ const elements = {
   upgradeCurrent: document.querySelector("[data-upgrade-current]"),
   upgradeCards: document.querySelector("[data-upgrade-cards]"),
 };
+
+// The feedback link only exists once the server is told where feedback goes.
+void loadSiteInfo().then((info) => {
+  const link = document.querySelector("[data-feedback-link]");
+  if (!link || !info.feedbackUrl) return;
+  link.href = info.feedbackUrl;
+  link.hidden = false;
+});
+
+const playerColorControl = elements.playerColorMount
+  ? createPlayerColorControl({ dataManager, status, id: "admin-settings-player-color" })
+  : null;
+if (playerColorControl) elements.playerColorMount.appendChild(playerColorControl.element);
 
 const TIER_OPTIONS = [
   { value: "free", label: "Free" },
@@ -367,8 +380,8 @@ function populateSettings({ force = false } = {}) {
       passwordField.value = "";
     }
   }
-  if (elements.favoriteColorInput && (force || document.activeElement !== elements.favoriteColorInput)) {
-    void loadFavoriteColor();
+  if (playerColorControl && force) {
+    void playerColorControl.refresh();
   }
   if (elements.diceThemeSelect && (force || document.activeElement !== elements.diceColorInput)) {
     void loadDiceSettings();
@@ -394,7 +407,7 @@ function populateDiceThemeOptions() {
 
 // Hides the whole color control for a theme getThemeColorSupport says
 // can't be tinted at all — no point showing a control that would visibly
-// do nothing. Unlike Favorite color below, there's no "unset" state here: a
+// do nothing. Unlike Player color, there's no "unset" state here: a
 // colorable theme's swatch always shows a real, already-meaningful value
 // (the saved one, or getThemeDefaultColor), never a blank left for
 // something else to invent silently later.
@@ -439,37 +452,6 @@ async function saveDiceSettings() {
   } catch (error) {
     status?.show(error.message || "Unable to save your dice appearance.", { type: "error" });
   }
-}
-
-// No default — deliberately NOT auto-saved or shown as "already chosen."
-// .template-color-control--unset (the same checkerboard-X treatment
-// color-picker.js uses for "nothing set") is the ONLY thing that stands in
-// for a value here; the user has to actually pick a color for one to exist.
-// Any tool can read it back via dataManager.getUserSettings() →
-// .favoriteColor — no dedicated endpoint, just another key in the same
-// general-purpose settings blob dashboardLayout/dashboardBackground share.
-function setFavoriteColorUnset(isUnset) {
-  elements.favoriteColorControl?.classList.toggle("template-color-control--unset", isUnset);
-  if (elements.favoriteColorClear) {
-    elements.favoriteColorClear.disabled = isUnset;
-  }
-}
-
-async function loadFavoriteColor() {
-  if (!elements.favoriteColorInput || !dataManager.isAuthenticated()) {
-    return;
-  }
-  try {
-    const settings = await dataManager.getUserSettings();
-    if (typeof settings?.favoriteColor === "string" && settings.favoriteColor) {
-      elements.favoriteColorInput.value = settings.favoriteColor;
-      setFavoriteColorUnset(false);
-      return;
-    }
-  } catch (error) {
-    // Falls through to the unset state below either way.
-  }
-  setFavoriteColorUnset(true);
 }
 
 function formatTier(tier) {
@@ -1098,40 +1080,6 @@ if (Array.isArray(elements.ownedSortHeaders)) {
 }
 
 updateOwnedSortIndicators();
-
-if (elements.favoriteColorInput) {
-  elements.favoriteColorInput.addEventListener("change", async () => {
-    if (!dataManager.isAuthenticated()) {
-      return;
-    }
-    setFavoriteColorUnset(false);
-    try {
-      await dataManager.saveUserSettings({ favoriteColor: elements.favoriteColorInput.value });
-      status?.show("Favorite color saved", { type: "success", timeout: 1500 });
-    } catch (error) {
-      status?.show(error.message || "Unable to save your favorite color.", { type: "error" });
-    }
-  });
-}
-
-if (elements.favoriteColorClear) {
-  elements.favoriteColorClear.addEventListener("click", async () => {
-    if (!dataManager.isAuthenticated()) {
-      return;
-    }
-    setFavoriteColorUnset(true);
-    try {
-      // "" (not deleting the key) — saveUserSettings is a merge-patch, and
-      // the read side above already treats a falsy favoriteColor exactly
-      // like a missing one, so this is an explicit "user chose to clear
-      // this," not silent data loss.
-      await dataManager.saveUserSettings({ favoriteColor: "" });
-      status?.show("Favorite color cleared", { type: "info", timeout: 1500 });
-    } catch (error) {
-      status?.show(error.message || "Unable to clear your favorite color.", { type: "error" });
-    }
-  });
-}
 
 populateDiceThemeOptions();
 

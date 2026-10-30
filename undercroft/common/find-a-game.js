@@ -127,7 +127,7 @@ import { describeDuration, describeRecurrence, formatSessionRange } from "./js/l
       value: state.mode,
       options: [
         { value: "listings", label: "Listings", icon: "tabler:list-search" },
-        { value: "people", label: "People", icon: "tabler:users", disabled: !signedIn(), tooltip: signedIn() ? undefined : "Sign in to browse people." },
+        { value: "people", label: "People", icon: "tabler:users", disabled: !signedIn(), tooltip: signedIn() ? undefined : "Profiles are only shown to signed-in users. Sign in to browse people." },
       ],
       onChange: (value) => {
         state.mode = value;

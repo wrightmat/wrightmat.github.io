@@ -176,9 +176,8 @@ export function createMarkerElement({
     // renderMarkerElementSelectionEditor), staying user-editable after.
     image,
     // Supersedes the marker LAYER's own outline color for THIS marker only;
-    // blank means "use the layer's own outline," not "no outline." Auto-
-    // copied once from the signed-in user's Favorite Color the moment a
-    // Library entity is linked, not re-applied on every render.
+    // blank means "use the layer's own outline," not "no outline." The
+    // value "player" follows the linked record's owner's Player color.
     outlineColor,
     // `true` (shown) so every marker created before this field existed keeps
     // rendering as it always has. Turned off for a token needing a clean,

@@ -12,6 +12,7 @@
     "require_email_verification": true,
     "require_invite": false,
     "environment_label": "UAT",
+    "feedback_url": "",
     "debug_verification_codes": false,
     "seed_dev_accounts": false,
     "local_file_access": false,

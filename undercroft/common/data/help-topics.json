@@ -787,6 +787,21 @@
       "href": "../loom/index.html?view=users"
     },
     {
+      "id": "loom.systemNames",
+      "title": "Systems People Name",
+      "summary": "The game systems people typed by hand, so you can see which ones are worth adding to the Library.",
+      "details": [
+        "Players can type a system on their profile, and a Recruitment listing can name one. A name that matches a Library System is added as that System; any other name shows up here with how many people used it, never who.",
+        "A person counts once per name, however many profiles and listings they used it on. Spellings that differ only in capitals or punctuation are grouped as one name.",
+        "This never creates a System. To cover a name that keeps coming up, create the System in the Systems tab first. Its row then shows In the Library, and its button reads Convert: pressing it moves everyone's entries onto that System and the row goes away.",
+        "To tidy up before then, change the name in a row and press Rename. If the new name is one already listed, the button reads Merge and the two become one.",
+        "The Another system boxes suggest a name once two or more people have used it, so spellings settle on one over time."
+      ],
+      "category": "Loom",
+      "section": "Community",
+      "href": "../loom/index.html?view=community"
+    },
+    {
       "id": "loom.admin",
       "title": "Admin Overview",
       "summary": "An administrator's dashboard for the health of the whole server's content, with the server's saved credentials at the bottom.",
@@ -900,9 +915,9 @@
     {
       "id": "dashboard.deck",
       "title": "Deck Widget",
-      "summary": "Draw from your System's card decks, such as a tarot or harrow deck.",
+      "summary": "Draw from a standard playing deck, a tarot deck, or any deck your System adds.",
       "details": [
-        "The decks come from the System's own list of decks. A System with none has nothing to draw.",
+        "Standard playing cards and a tarot deck are always available. A System can add its own decks, such as a harrow deck, and they are listed first. A System that defines a deck with the same name as a standard one replaces it.",
         "Like dice, a draw can be posted to the open thread, broadcast to the table, or kept private.",
         "Cards can carry their own details, such as a suit and rank, as the System defines them."
       ],
@@ -1295,6 +1310,7 @@
       "details": [
         "Select a marker layer, then click empty space on the map to drop a pin. Click an existing pin to select and edit it, and drag a selected pin to move it.",
         "In the pin's inspector, choose what kind of record it refers to and which one.",
+        "A pin linked to a record is outlined in the record owner's Player color, so changing that color recolors the pin everywhere. Turn off Use player color in the inspector to pick an outline for that pin yourself.",
         "On a real-world map, pins are tied to actual coordinates, so they stay in the right place as you pan and zoom."
       ],
       "category": "Orrery",
@@ -2260,7 +2276,7 @@
       "summary": "Change your email address and password, and set personal preferences.",
       "details": [
         "Changing your email or password asks for your current password.",
-        "Favorite color is used by other tools as a starting color. Orrery, for one, uses it as the default outline for a new marker when you link a character you own.",
+        "Player color is one color used in several places: your Dashboard background, and the outline of map tokens linked to your characters. You can set it here or in the Dashboard settings and the two always match. Until you pick one, the Dashboard uses the theme's own background and Clear takes you back to that.",
         "Dice appearance sets how your 3D dice look, with a color for themes that allow one. Preview roll shows it."
       ],
       "category": "Accounts & Sharing",
@@ -2312,6 +2328,7 @@
       "details": [
         "Open Account Settings and choose the Profile tab. A profile holds a bio, your role, experience, systems you know, other accounts, time zone, typical availability, preferred session length, safety tools, an open-to status and your preferences.",
         "Other accounts lists your usernames on play services and social sites. Choose a service, type your username there and add it; each shows on your profile as a badge, linked to your page on that service where the service has one. Usernames aren't checked, so type them as they appear on the service.",
+        "Systems you type yourself, rather than pick from the list, are counted anonymously (a number only, never your name) to help decide which systems to add.",
         "Profiles are private until you make yours public. A public profile also makes your history (see Signals) visible to other signed-in users.",
         "“See how others see my profile” previews exactly what a visitor would see.",
         "Choosing “Looking for a game” or “Recruiting” lists your public profile in the People view of Find a Game."

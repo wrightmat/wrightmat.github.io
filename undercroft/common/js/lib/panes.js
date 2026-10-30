@@ -30,13 +30,7 @@ function updateToggleAppearance(button, expanded) {
   if (!button.classList.contains("btn")) {
     return;
   }
-  if (expanded) {
-    button.classList.add("btn-secondary");
-    button.classList.remove("btn-outline-secondary");
-  } else {
-    button.classList.add("btn-outline-secondary");
-    button.classList.remove("btn-secondary");
-  }
+  button.classList.toggle("active", expanded);
 }
 
 export function initPaneToggles(root = document, { onChange } = {}) {
@@ -80,10 +74,7 @@ export function expandPane(paneElement, toggleElement) {
   if (toggleElement) {
     toggleElement.setAttribute("aria-expanded", "true");
     toggleElement.dataset.active = "true";
-    if (toggleElement.classList.contains("btn")) {
-      toggleElement.classList.add("btn-secondary");
-      toggleElement.classList.remove("btn-outline-secondary");
-    }
+    if (toggleElement.classList.contains("btn")) toggleElement.classList.add("active");
   }
 }
 
@@ -99,9 +90,6 @@ export function collapsePane(paneElement, toggleElement) {
   if (toggleElement) {
     toggleElement.setAttribute("aria-expanded", "false");
     toggleElement.dataset.active = "false";
-    if (toggleElement.classList.contains("btn")) {
-      toggleElement.classList.add("btn-outline-secondary");
-      toggleElement.classList.remove("btn-secondary");
-    }
+    if (toggleElement.classList.contains("btn")) toggleElement.classList.remove("active");
   }
 }

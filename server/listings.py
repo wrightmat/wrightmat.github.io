@@ -9,6 +9,7 @@ from .auth import AuthError, User
 from .shared_lists import rename_stored_tag, stored_tags
 from .groups import _is_player, _require_owner
 from .state import ServerState
+from .system_names import library_match
 
 # A recruitment listing advertises one session or a whole campaign of a group.
 # Browsing is open to everyone; who can see the GM's and members' trust
@@ -94,6 +95,9 @@ def _clean(state: ServerState, group_id: str, data: Dict[str, Any]) -> Dict[str,
     system_name = str(data.get("systemName") or "").strip()[:120] or None
     if not (system_id or system_name):
         raise AuthError("Name the game system")
+    match = None if system_id else library_match(state.read_db, system_name)
+    if match:
+        system_id, system_name = match["id"], None
     scales_file = _community_file(state, "scales")
     scale_ids = {scale["id"] for scale in scales_file.get("scales", [])}
     points = scales_file.get("points", 5)

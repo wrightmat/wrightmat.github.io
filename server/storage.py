@@ -1428,6 +1428,55 @@ def ensure_read_role(state: ServerState, kind: str, user: Optional[User]) -> Non
         raise AuthError("Insufficient role")
 
 
+def _can_read_item(state: ServerState, kind: str, id_: str, user: Optional[User]) -> bool:
+    base_id = id_.replace(".json", "")
+    return bool(
+        is_owner(state, kind, id_, user)
+        or is_shared(state, kind, id_, user)
+        or is_public(state, kind, id_)
+        or (kind == "character" and _character_visible_via_group_roster(state, base_id, user))
+        or (kind == "template" and _template_visible_via_group(state, base_id, user))
+    )
+
+
+PLAYER_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def owner_player_colors(state: ServerState, user: Optional[User], refs: List[Dict[str, Any]]) -> Dict[str, str]:
+    """The owner's Player color for each readable record, keyed "kind:id"; anything unreadable or unset is left out."""
+    colors: Dict[str, str] = {}
+    if not user:
+        return colors
+    owner_color: Dict[int, str] = {}
+    for ref in refs[:200]:
+        if not isinstance(ref, dict):
+            continue
+        kind = normalize_kind(str(ref.get("kind") or ""))
+        id_ = str(ref.get("id") or "").replace(".json", "")
+        if not kind or not id_:
+            continue
+        try:
+            ensure_read_role(state, kind, user)
+        except AuthError:
+            continue
+        if not _can_read_item(state, kind, id_, user):
+            continue
+        row = state.read_db.execute("SELECT owner_id FROM library_items WHERE kind = ? AND id = ?", (kind, id_)).fetchone()
+        owner_id = row["owner_id"] if row else None
+        if owner_id is None:
+            continue
+        if owner_id not in owner_color:
+            owner_row = state.read_db.execute("SELECT settings FROM users WHERE id = ?", (owner_id,)).fetchone()
+            try:
+                value = (json.loads(owner_row["settings"]) if owner_row and owner_row["settings"] else {}).get("playerColor")
+            except (TypeError, ValueError):
+                value = None
+            owner_color[owner_id] = value if isinstance(value, str) and PLAYER_COLOR.match(value) else ""
+        if owner_color[owner_id]:
+            colors[f"{kind}:{id_}"] = owner_color[owner_id]
+    return colors
+
+
 def get_item(
     state: ServerState,
     kind: str,
@@ -1496,14 +1545,7 @@ def get_item(
                     share_granted = True
                     touch_share_link(state, token_info.get("token", ""))
                     break
-    if not (
-        share_granted
-        or is_owner(state, kind, id_, user)
-        or is_shared(state, kind, id_, user)
-        or is_public(state, kind, id_)
-        or (kind == "character" and _character_visible_via_group_roster(state, base_id, user))
-        or (kind == "template" and _template_visible_via_group(state, base_id, user))
-    ):
+    if not (share_granted or _can_read_item(state, kind, id_, user)):
         raise AuthError("Access denied")
     payload = load_json(_record_path(state, kind, id_))
     # Recorded in memory, not written here — every read used to do a

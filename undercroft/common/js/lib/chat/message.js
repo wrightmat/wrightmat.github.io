@@ -13,6 +13,9 @@ const SYSTEM_ICONS = {
   shop: "tabler:building-store",
   loot: "tabler:backpack",
 };
+// What each leading icon stands for, shown as its tooltip.
+const VOICE_LABELS = { user: "Posted by a person", character: "Speaking as a character", npc: "Speaking as an NPC", monster: "Speaking as a monster" };
+const SYSTEM_LABELS = { roll: "Dice roll", card: "Deck widget", shop: "Shop widget", loot: "Map marker loot" };
 
 function iconSpan(icon, className = "") {
   const span = el("span", `iconify ${className}`.trim());
@@ -83,6 +86,11 @@ export function renderMessage(message, ctx) {
   iconWrap.appendChild(
     iconSpan(system ? SYSTEM_ICONS[system] || "tabler:sparkles" : VOICE_ICONS[voice.type] || "tabler:user")
   );
+  const iconLabel = system ? SYSTEM_LABELS[system] || "System message" : VOICE_LABELS[voice.type] || VOICE_LABELS.user;
+  iconWrap.setAttribute("role", "img");
+  iconWrap.setAttribute("aria-label", iconLabel);
+  iconWrap.setAttribute("data-bs-toggle", "tooltip");
+  iconWrap.setAttribute("data-bs-title", iconLabel);
   row.appendChild(iconWrap);
 
   const column = el("div", "flex-grow-1 chat-message-body");

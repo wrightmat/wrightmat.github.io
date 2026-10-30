@@ -77,7 +77,7 @@ let diceSettingsPromise = null;
 // Reads the user's chosen theme/color from their account preferences
 // (account.html's "Dice appearance" control) and falls back to the plain
 // default look for anonymous sessions or a settings-fetch failure. Cached
-// for this page's lifetime, same as favoriteColor's own "fetch when needed, fine if a beat stale" treatment.
+// for this page's lifetime ("fetch when needed, fine if a beat stale").
 //
 // A colorable theme with no saved color resolves to getThemeDefaultColor —
 // the SAME value account.js's swatch starts at, not an independently-guessed roll-side-only fallback.

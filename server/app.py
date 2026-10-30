@@ -91,6 +91,7 @@ from .state import ServerState, configure_logging
 from .static import serve_from_root, serve_local_file
 from .metrics import METRICS, file_size, process_memory_bytes, route_label
 from . import invites as invite_store
+from . import system_names
 from .data_dir import prepare_secrets_dir, seed_data_dir, sync_defaults
 from .throttle import Throttle
 from .tickets import issue_ticket, redeem_ticket
@@ -100,6 +101,7 @@ from .storage import (
     delete_item,
     flush_pending_touches,
     get_item,
+    owner_player_colors,
     get_items_bulk,
     init_storage_db,
     is_owner,
@@ -810,11 +812,28 @@ def register_routes():
 
     router.add("GET", r"^/healthz$", handle_healthz)
 
-    # GET /environment
-    def handle_environment(request: Request) -> Response:
-        return json_response({"label": request.state.config.options.environment_label})
+    # GET /site
+    def handle_site(request: Request) -> Response:
+        options = request.state.config.options
+        return json_response({"environmentLabel": options.environment_label, "feedbackUrl": options.feedback_url})
 
-    router.add("GET", r"^/environment$", handle_environment)
+    router.add("GET", r"^/site$", handle_site)
+
+    # GET /admin/system-names, POST /admin/system-names/rename, GET /community/system-names
+    def handle_system_name_report(request: Request) -> Response:
+        return json_response(system_names.system_name_report(request.state, require_user(request)))
+
+    def handle_system_name_rename(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(system_names.rewrite_system_name(request.state, user, data.get("from"), data.get("to")))
+
+    def handle_system_name_suggestions(request: Request) -> Response:
+        return json_response(system_names.system_name_suggestions(request.state, require_user(request)))
+
+    router.add("GET", r"^/admin/system-names$", handle_system_name_report, unlocked=True)
+    router.add("POST", r"^/admin/system-names/rename$", handle_system_name_rename, unlocked=True)
+    router.add("GET", r"^/community/system-names$", handle_system_name_suggestions, unlocked=True)
 
     # GET /list/{bucket}
     def handle_list(request: Request) -> Response:
@@ -829,6 +848,14 @@ def register_routes():
     # is_public, accessible_group_ids, _sync_library_kind_directory) has been
     # audited to read via state.read_db and write via state.lock/db itself.
     router.add("GET", r"^/list/(?P<bucket>[^/]+)$", handle_list, unlocked=True)
+
+    # POST /content/owner-colors
+    def handle_owner_colors(request: Request) -> Response:
+        data = require_json(request)
+        refs = data.get("refs") if isinstance(data.get("refs"), list) else []
+        return json_response({"colors": owner_player_colors(request.state, request.handler.current_user(), refs)})
+
+    router.add("POST", r"^/content/owner-colors$", handle_owner_colors, unlocked=True)
 
     # GET /content/{bucket}/{id}
     def handle_get_content(request: Request) -> Response:

@@ -45,6 +45,8 @@ import { getPresetById, getPresetsByCategory, getPresetDefaultValues } from "../
 import { resolveToolHref, resolveToolContextPath } from "../app-shell.js";
 import { resolveIsSpotlighted, resolveActiveSpotlightId } from "../spotlight.js";
 import { createCharacterOwnershipPrimer, matchesOwner, refreshOwnershipCatalog } from "../ownership.js";
+import { markerOwnerColorRefs, primeOwnerColors, resetOwnerColors } from "../owner-colors.js";
+import { PLAYER_COLOR_EVENT } from "../player-color.js";
 import { el } from "../dom.js";
 import { getIconTokens } from "../icon-picker.js";
 import { findBindingsByRole } from "../bindings.js";
@@ -1128,6 +1130,16 @@ export function initMapWidget(
   // see that shared helper's own comment for the infinite-loop bug this
   // replaced).
   const characterOwnershipPrimer = createCharacterOwnershipPrimer(dataManager);
+  function primeOwnerColorCache() {
+    primeOwnerColors(dataManager, markerOwnerColorRefs(map), () => renderLayers());
+  }
+
+  const onPlayerColorChanged = () => {
+    resetOwnerColors();
+    renderLayers();
+  };
+  window.addEventListener(PLAYER_COLOR_EVENT, onPlayerColorChanged);
+
   function primeCharacterOwnershipCatalog() {
     const ids = new Set();
     (map?.layers || []).forEach((layer) => {
@@ -1583,6 +1595,7 @@ export function initMapWidget(
     primeConditionIconCache();
     primeResourceBarCache();
     primeCharacterOwnershipCatalog();
+    primeOwnerColorCache();
     renderMapLayers(overlay, baseMapManager, map, {
       viewerTier,
       // Every vector layer opts into click/drag for a restricted viewer —
@@ -1852,6 +1865,7 @@ export function initMapWidget(
     // nothing new was posted for players to be notified about.
     async destroy(removed) {
       destroyed = true;
+      window.removeEventListener(PLAYER_COLOR_EVENT, onPlayerColorChanged);
       watcher.stop();
       conditionLiveStream?.close();
       resizeObserver?.disconnect();

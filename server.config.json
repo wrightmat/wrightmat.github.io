@@ -11,6 +11,7 @@
     "seed_dev_accounts": false,
     "require_invite": false,
     "environment_label": "",
+    "feedback_url": "",
     "local_file_access": false,
     "trusted_proxies": [],
     "static_roots": [

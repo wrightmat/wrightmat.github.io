@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from .auth import AuthError, User, get_user_settings
 from .state import ServerState
+from .system_names import library_match
 
 # A user's community profile lives in `users.settings.profile`. It is written
 # only through save_profile (the generic settings patch refuses the key), so
@@ -126,10 +127,16 @@ def clean_profile(state: ServerState, data: Any) -> Dict[str, Any]:
     for entry in systems:
         if not isinstance(entry, dict):
             raise AuthError("Each system must be an object")
-        name = _text(entry.get("name", ""), "System name", 120)
-        system_id = _text(entry.get("systemId", ""), "System", 120)
+        name = _text(entry.get("name") or "", "System name", 120)
+        system_id = _text(entry.get("systemId") or "", "System", 120)
         if not (name or system_id):
             raise AuthError("A system needs a name")
+        # A typed name that is really a Library System is that System, not a free-text one.
+        match = None if system_id else library_match(state.read_db, name)
+        if match:
+            system_id, name = match["id"], match["title"]
+        if system_id and any(known["systemId"] == system_id for known in profile["systems"]):
+            continue
         profile["systems"].append({"systemId": system_id or None, "name": name})
     accounts = data.get("externalAccounts") or []
     if not isinstance(accounts, list) or len(accounts) > 30:

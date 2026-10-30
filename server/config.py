@@ -52,6 +52,8 @@ class ServerOptions:
     require_invite: bool = False
     # Shown after every page title (for example DEV or UAT); empty on production.
     environment_label: str = ""
+    # Where people send feedback and feature requests; the link is hidden while this is empty.
+    feedback_url: str = ""
     # Lets a GM embed files from this machine's disk (Browser widget). Local single-user setups only.
     local_file_access: bool = False
     # Addresses of reverse proxies whose X-Forwarded-For header may be believed.
@@ -136,6 +138,7 @@ class ConfigLoader:
             seed_dev_accounts=bool(server_opts.get("seed_dev_accounts", False)),
             require_invite=bool(server_opts.get("require_invite", False)),
             environment_label=str(server_opts.get("environment_label", "") or "").strip()[:20],
+            feedback_url=(lambda url: url if url.lower().startswith(("http://", "https://")) else "")(str(server_opts.get("feedback_url", "") or "").strip()[:300]),
             local_file_access=bool(server_opts.get("local_file_access", False)),
             trusted_proxies=[str(item) for item in server_opts.get("trusted_proxies", [])],
             static_roots=[str(item).strip("/") for item in server_opts.get("static_roots", [])],

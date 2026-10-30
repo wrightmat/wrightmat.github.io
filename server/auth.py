@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import logging
 import hmac
 import secrets
@@ -191,6 +192,9 @@ def update_user_settings(state: ServerState, user: User, patch: Dict[str, Any]) 
         raise AuthError("Settings patch must be an object")
     if "profile" in patch:
         raise AuthError("The community profile is saved from the Profile page")
+    color = patch.get("playerColor")
+    if "playerColor" in patch and not (color == "" or (isinstance(color, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", color))):
+        raise AuthError("Player color must be a color such as #3366cc")
     current = get_user_settings(state, user)
     current.update(patch)
     state.db.execute(

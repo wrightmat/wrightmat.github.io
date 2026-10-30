@@ -2,7 +2,7 @@ import { openInbox, watchInboxCount } from "./chat/inbox.js";
 import { DataManager } from "./data-manager.js";
 import { resolveApiBase } from "./api.js";
 import { resolveAccountHref, resolveFindGameHref, resolveToolContextPath } from "./app-shell.js";
-import { disableForm, attachHoverDropdown, escapeHtml } from "./dom.js";
+import { disableForm, escapeHtml } from "./dom.js";
 import { disposeTooltips } from "./tooltips.js";
 
 const MODAL_ID = "undercroft-auth-modal";
@@ -131,7 +131,7 @@ export function initAuthControls({
   // Resolved fresh on every call, not cached — initAuthControls runs before
   // Bootstrap's deferred CDN <script> necessarily finishes, so caching a
   // one-time result risks permanently capturing `null` on a cold load. Same
-  // fix dom.js's attachHoverDropdown uses for the identical race.
+  // fix the other deferred-Bootstrap lookups here use for the identical race.
   function getModal() {
     return window.bootstrap && typeof window.bootstrap.Modal === "function"
       ? window.bootstrap.Modal.getOrCreateInstance(modalElement)
@@ -403,10 +403,6 @@ export function initAuthControls({
           notifyAuthChange();
         }
       });
-    }
-    const toggle = dropdown.querySelector("[data-auth-menu-toggle]");
-    if (toggle) {
-      attachHoverDropdown(dropdown, toggle);
     }
   }
 

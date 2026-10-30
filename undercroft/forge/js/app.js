@@ -107,7 +107,7 @@ document.querySelector("[data-export-location-template-mount]")?.appendChild(
 );
 document.querySelector("[data-npc-empty-state]")?.appendChild(
   createEmptyStateCard({
-    message: "Nothing selected yet. Pick an existing NPC above, or fill in the fields and click Generate NPC.",
+    message: "Nothing selected yet. Pick an existing NPC, or fill in the fields and click Generate NPC.",
     variant: "inline",
   })
 );

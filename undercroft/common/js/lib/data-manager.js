@@ -1124,6 +1124,10 @@ export class DataManager {
     });
   }
 
+  async getOwnerColors(refs) {
+    return this._request("/content/owner-colors", { method: "POST", body: { refs }, auth: true });
+  }
+
   // Home Assistant connection — {configured, baseUrl} only; the server
   // never returns the token itself after the save that set it (see
   // server/integrations.py's own header comment on why).
@@ -1875,6 +1879,18 @@ export class DataManager {
 
   async saveCommunityProfile(profile) {
     return this._request("/community/profile", { method: "POST", body: profile, auth: true });
+  }
+
+  async getSystemNameSuggestions() {
+    return (await this._request("/community/system-names", { method: "GET", auth: true })).names;
+  }
+
+  async getAdminSystemNames() {
+    return this._request("/admin/system-names", { method: "GET", auth: true });
+  }
+
+  async renameSystemName(from, to) {
+    return this._request("/admin/system-names/rename", { method: "POST", body: { from, to }, auth: true });
   }
 
   async getCommunityPerson(userId) {

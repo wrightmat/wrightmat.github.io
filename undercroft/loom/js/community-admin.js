@@ -9,6 +9,7 @@ import { initHelpSystem } from "../../common/js/lib/help.js";
 import { initPropertySortable } from "../../common/js/lib/property-schema-editor.js";
 import { invalidateCommunityReference, loadCommunityReference, loadSharedList } from "../../common/js/lib/community/reference.js";
 import { renderServiceIcon } from "../../common/js/lib/community/service-badge.js";
+import { createSystemNamesList } from "./system-names-admin.js";
 
 const PHASES = [
   ["before", "Before play"],
@@ -376,12 +377,25 @@ export function initCommunityAdmin({ dataManager, getStatus, mount }) {
     return card("Listing tags", "community.tags", host, [{ icon: "tabler:plus", label: "Add", onClick: addRow }], false);
   }
 
+  // Systems people typed by hand: counted as people, then renamed, merged, or converted to a Library System.
+  async function systemNamesCard() {
+    const names = createSystemNamesList({ dataManager, say });
+    await names.refresh();
+    return card(
+      "Systems people name",
+      "loom.systemNames",
+      names.element,
+      [{ icon: "tabler:refresh", label: "Refresh", onClick: () => guard(() => names.refresh(), null, "Unable to load the system names.") }],
+      false,
+    );
+  }
+
   return {
     async show() {
       root.replaceChildren(el("p", "text-body-secondary mb-0", "Loading…"));
       try {
         const [first, second, ...rest] = lists.map(listCard);
-        root.replaceChildren(first, second, await tagsCard(), ...rest);
+        root.replaceChildren(first, second, await tagsCard(), await systemNamesCard(), ...rest);
         void initHelpSystem({ root });
         refreshTooltips(root);
       } catch (error) {

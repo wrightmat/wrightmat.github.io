@@ -196,7 +196,7 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-feature-inspector-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-wonder-empty-state]")?.appendChild(
   createEmptyStateCard({
-    message: "Nothing selected yet. Pick an existing Wonder above, or fill in the fields and click Generate Wonder.",
+    message: "Nothing selected yet. Pick an existing Wonder, or fill in the fields and click Generate Wonder.",
     variant: "inline",
   })
 );

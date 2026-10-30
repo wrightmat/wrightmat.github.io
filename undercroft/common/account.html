@@ -13,11 +13,13 @@
       <div class="d-flex flex-grow-1 overflow-hidden">
         <div data-pane-content="left">
           <div class="d-flex flex-column gap-3" style="min-height: 0;">
+            <div class="d-flex flex-column gap-1">
+              <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-1">Links</h2>
+              <a class="small" href="docs.html" target="_blank" rel="noopener noreferrer">Documentation &#8599;</a>
+              <a class="small" href="#" target="_blank" rel="noopener noreferrer" data-feedback-link hidden>Send feedback &#8599;</a>
+            </div>
             <div>
               <h2 class="text-uppercase fs-6 fw-semibold text-body-secondary mb-1">Favorite Documentation</h2>
-              <a class="small" href="docs.html" target="_blank" rel="noopener noreferrer">
-                Open the full documentation page &#8599;
-              </a>
             </div>
             <div class="d-flex flex-column gap-1 overflow-auto flex-grow-1 pane-scroll" style="min-height: 0;" data-doc-favorites>
               <p class="text-body-secondary small mb-0">Loading…</p>
@@ -186,20 +188,11 @@
                               <span class="align-middle" data-help-topic="accounts.settings" data-help-insert="replace"></span>
                             </h3>
                             <p class="text-body-secondary mb-0">
-                              Personal touches other tools can pick up automatically — Orrery, for one, uses this as a
-                              new marker's default outline color when you link a character you own.
+                              Personal touches other tools pick up automatically. Your Player color is also your
+                              Dashboard background and the outline of map tokens for your characters.
                             </p>
                           </div>
-                          <div class="template-color-control template-color-control--unset" data-favorite-color-control>
-                            <label class="form-label" for="admin-settings-favorite-color">Favorite color</label>
-                            <div class="d-flex align-items-center gap-2">
-                              <div class="template-color-swatch position-relative">
-                                <input class="form-control-color" id="admin-settings-favorite-color" type="color" value="#000000" />
-                                <span class="iconify template-color-unset-icon" data-icon="tabler:x" aria-hidden="true"></span>
-                              </div>
-                              <button class="btn btn-outline-secondary btn-sm" type="button" data-favorite-color-clear disabled>Clear</button>
-                            </div>
-                          </div>
+                          <div data-player-color-mount></div>
                           <div>
                             <label class="form-label" for="admin-settings-dice-theme">Dice appearance</label>
                             <div class="d-flex align-items-center gap-2 flex-wrap">

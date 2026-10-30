@@ -39,7 +39,7 @@ import {
   createCycleToggleButton,
 } from "../../common/js/lib/ui-components.js";
 import { initToolSettings } from "../../common/js/lib/tool-settings.js";
-import { el, attachHoverDropdown, setElementVisible } from "../../common/js/lib/dom.js";
+import { el, setElementVisible } from "../../common/js/lib/dom.js";
 import { parseImageAltText, buildImageAltText } from "./lib/journal-image-adjustments.js";
 
 const KIND = "journal";
@@ -2545,9 +2545,8 @@ if (bodyTextarea) {
     },
   ].forEach((config) => styleGroup?.appendChild(buildFormatButton(config)));
 
-  // Condensed into one hover-dropdown (six buttons would push the toolbar
-  // onto its own row, and only one level is ever active at once) — same
-  // hover-opens mechanism the header's tool switcher uses (attachHoverDropdown).
+  // Condensed into one dropdown (six buttons would push the toolbar
+  // onto its own row, and only one level is ever active at once).
   // The toggle icon mirrors the active level's H1-H6 glyph, or the generic
   // "heading" glyph when none is (updateHeadingPickerState).
   const headingDropdown = el("div", "dropdown");
@@ -2580,7 +2579,6 @@ if (bodyTextarea) {
   }
   headingDropdown.append(headingToggle, headingMenu);
   headingGroup?.appendChild(headingDropdown);
-  attachHoverDropdown(headingDropdown, headingToggle);
   function updateHeadingPickerState() {
     const level = currentHeadingLevel(bodyTextarea);
     const icon = headingToggle.querySelector(".iconify");

@@ -45,6 +45,14 @@ function timeZones() {
   }
 }
 
+// Whichever profile editor is mounted answers this; a single listener covers re-mounts.
+let hasUnsavedProfile = () => false;
+window.addEventListener("beforeunload", (event) => {
+  if (!hasUnsavedProfile()) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
+
 export async function mountProfileEditor(container, { dataManager, status } = {}) {
   container.replaceChildren(el("div", "text-body-secondary small", "Loading…"));
   const [reference, systems, saved] = await Promise.all([
@@ -96,6 +104,14 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
   const systemSelect = el("select", "form-select form-select-sm");
   const systemText = el("input", "form-control form-control-sm");
   systemText.placeholder = "Another system";
+  // Names other people have used, so the same system gets the same spelling.
+  const systemSuggestions = el("datalist");
+  systemSuggestions.id = "profile-system-suggestions";
+  systemText.setAttribute("list", systemSuggestions.id);
+  void dataManager
+    .getSystemNameSuggestions()
+    .then((names) => systemSuggestions.replaceChildren(...names.map((name) => new Option(name))))
+    .catch(() => {});
   function renderSystems() {
     systemList.replaceChildren(
       ...profile.systems.map((entry, index) => {
@@ -121,10 +137,18 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
     }
     renderSystems();
   });
+  const systemKey = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, "");
   systemText.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || !systemText.value.trim()) return;
     event.preventDefault();
-    profile.systems.push({ systemId: null, name: systemText.value.trim() });
+    const typed = systemText.value.trim();
+    // A name that is really a Library System is added as that System, not as a free-text one.
+    const known = systems.find((entry) => systemKey(entry.title) === systemKey(typed) || systemKey(entry.id) === systemKey(typed));
+    if (known) {
+      if (!profile.systems.some((entry) => entry.systemId === known.id)) profile.systems.push({ systemId: known.id, name: known.title });
+    } else if (!profile.systems.some((entry) => !entry.systemId && systemKey(entry.name) === systemKey(typed))) {
+      profile.systems.push({ systemId: null, name: typed });
+    }
     systemText.value = "";
     renderSystems();
   });
@@ -261,6 +285,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
     saveButton.disabled = JSON.stringify(payload()) === savedSnapshot;
   };
   syncSaveState();
+  hasUnsavedProfile = () => container.isConnected && !saveButton.disabled;
   saveButton.addEventListener("click", async () => {
     saveButton.disabled = true;
     try {
@@ -297,7 +322,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
       field("Open to", selects.openTo),
       field("Role", selects.role),
       field("Experience", selects.experience),
-      field("Systems known", col(systemList, systemSelect, systemText)),
+      field("Systems known", col(systemList, systemSelect, systemText, systemSuggestions)),
       field("Other accounts", col(accountList, accountControls), undefined, "community.profile"),
       field("Preferred session length", selects.sessionLength),
       field("In-person or online", selects.playMode),

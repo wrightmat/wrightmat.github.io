@@ -33,6 +33,7 @@ import { createSpotlightPanel } from "./common/js/lib/widgets/spotlight-panel.js
 import { resolveActiveSpotlightId, resolveIsSpotlighted, createSpotlightTitleCache, SPOTLIGHT_KIND_LABELS } from "./common/js/lib/spotlight.js";
 import { createReliableInterval } from "./common/js/lib/reliable-interval.js";
 import { el } from "./common/js/lib/dom.js";
+import { createPlayerColorControl, onPlayerColorChange, readPlayerColor } from "./common/js/lib/player-color.js";
 import { listenForDashboardRequests, flashTabTitle } from "./common/js/lib/dashboard-channel.js";
 
 // Every per-browser local copy of a Dashboard setting lives under this same
@@ -764,7 +765,7 @@ async function computeDefaultWidgets() {
 
 // One settings fetch (when signed in) backs layout, background, and header
 // title alike, instead of three separate round trips for the same blob —
-// loadLayout/loadBackground/loadHeaderTitle below each take this as a
+// loadLayout/loadHeaderTitle below each take this as a
 // parameter rather than fetching their own.
 async function loadServerSettings() {
   if (!dataManager.isAuthenticated()) return null;
@@ -793,18 +794,6 @@ async function loadLayout(serverSettings) {
 
 function persistLayout() {
   persistSetting("layout", "dashboardLayout", layout);
-}
-
-// "" means no override — computeDefaultBackground()'s CSS default applies.
-function loadBackground(serverSettings) {
-  if (typeof serverSettings?.dashboardBackground === "string") return serverSettings.dashboardBackground;
-  const local = loadLocalSetting("background");
-  return typeof local === "string" ? local : "";
-}
-
-function persistBackground(color) {
-  background = color;
-  persistSetting("background", "dashboardBackground", color);
 }
 
 function applyBackground(color) {
@@ -1208,7 +1197,6 @@ if (params.get("flash") === "1") {
 
 let layout = null;
 let groupContext = null;
-let background = "";
 let headerTitleOverride = "";
 // Known WLED devices ({ip,label}) — account-wide via persistSetting, same
 // local+server merge-patch sync every other setting on this page uses.
@@ -1993,7 +1981,7 @@ function renderWelcomeScreen() {
         Undercroft is a suite of connected tools for running and playing tabletop games —
         build character sheets and rules systems, manage your whole game library, draw and
         run interactive maps, write your world's lore, print sheets and cards, and more, all
-        designed to work together instead of as separate apps.
+        designed to work together seamlessly.
       </p>
     </div>
     <div class="row row-cols-1 row-cols-md-3 g-3" style="max-width: 64rem;">
@@ -2005,7 +1993,9 @@ function renderWelcomeScreen() {
             <p class="small text-body-secondary mb-0">
               Workbench for character sheets, Loom for your game library, Orrery for maps,
               Repository for journals, Press for printing — content made in one tool is
-              immediately usable in the others.
+              immediately usable in the others. To explore them, open the Undercroft menu
+              <span class="iconify align-text-bottom" data-icon="tabler:building-arch" aria-hidden="true"></span>
+              in the header at the top of the page.
             </p>
           </div>
         </div>
@@ -2014,10 +2004,11 @@ function renderWelcomeScreen() {
         <div class="card h-100 shadow-theme">
           <div class="card-body d-flex flex-column gap-2">
             <span class="iconify fs-2 text-success" data-icon="tabler:lock-open" aria-hidden="true"></span>
-            <h3 class="h6 mb-0">Free to use, no account needed</h3>
+            <h3 class="h6 mb-0">Free to use, and more if you register</h3>
             <p class="small text-body-secondary mb-0">
-              Most tools work right now, right here — your work saves locally in this browser.
-              Registering is entirely optional, not a requirement to get started.
+              Most tools work right here with no account, saving in this browser. Register for
+              free to sync your work across devices, and move up to a Player account for unlimited
+              saves of your characters and content.
             </p>
           </div>
         </div>
@@ -2026,19 +2017,22 @@ function renderWelcomeScreen() {
         <div class="card h-100 shadow-theme">
           <div class="card-body d-flex flex-column gap-2">
             <span class="iconify fs-2 text-info" data-icon="tabler:users-group" aria-hidden="true"></span>
-            <h3 class="h6 mb-0">Why register anyway?</h3>
+            <h3 class="h6 mb-0">Players and GMs, together</h3>
             <p class="small text-body-secondary mb-0">
-              An account syncs your work across devices, lets you share your table's group
-              (game log, spotlighted content, live maps) with your players, and unlocks GM-tier
-              tools like the Combat Tracker and groups.
+              Find a game or the players for yours, then keep the whole table connected with group
+              chat and session scheduling. GMs can prep and run much of a session without leaving
+              the suite: maps, monsters, NPCs, handouts, combat and lighting, shown live to the table.
             </p>
           </div>
         </div>
       </div>
     </div>
-    <button type="button" class="btn btn-primary align-self-start" data-dashboard-welcome-auth>
-      Login / Register
-    </button>
+    <div class="d-flex flex-wrap gap-2">
+      <button type="button" class="btn btn-primary" data-dashboard-welcome-auth>
+        Login / Register
+      </button>
+      <a class="btn btn-success" href="common/find-a-game.html">Find a Game</a>
+    </div>
   `;
   const ctaButton = welcomeEl.querySelector("[data-dashboard-welcome-auth]");
   if (ctaButton) {
@@ -2873,28 +2867,7 @@ function renderLayoutSettingsSection() {
     rowsInput.value = String(applyRowCount(rowsInput.value));
   });
 
-  const backgroundRow = el("div", "d-flex flex-column gap-1");
-  backgroundRow.append(el("label", "form-label fw-semibold mb-0", "Background color"));
-  const backgroundGroup = el("div", "d-flex gap-2 align-items-center");
-  const colorInput = document.createElement("input");
-  colorInput.type = "color";
-  colorInput.className = "form-control form-control-color";
-  colorInput.value = background || "#ffffff";
-  const resetButton = el("button", "btn btn-outline-secondary btn-sm", "Reset");
-  resetButton.type = "button";
-  backgroundGroup.append(colorInput, resetButton);
-  backgroundRow.appendChild(backgroundGroup);
-  section.appendChild(backgroundRow);
-
-  colorInput.addEventListener("input", () => {
-    applyBackground(colorInput.value);
-    persistBackground(colorInput.value);
-  });
-  resetButton.addEventListener("click", () => {
-    applyBackground("");
-    persistBackground("");
-    colorInput.value = "#ffffff";
-  });
+  section.appendChild(createPlayerColorControl({ dataManager, status, id: "dashboard-player-color" }).element);
 
   return section;
 }
@@ -3063,10 +3036,10 @@ async function boot() {
     renderScreenView();
     return;
   }
-  background = loadBackground(serverSettings);
   headerTitleOverride = loadHeaderTitle(serverSettings);
   wledDevices = loadWledDevices(serverSettings);
-  applyBackground(background);
+  applyBackground(await readPlayerColor(dataManager, serverSettings));
+  onPlayerColorChange(applyBackground);
   initFavoriteDocsPane({
     list: document.querySelector("[data-doc-favorites]"),
     dataManager,

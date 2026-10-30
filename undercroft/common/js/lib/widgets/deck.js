@@ -16,7 +16,7 @@ import { playCardReveal } from "./card-overlay.js";
 import { createModeToggleGroup } from "../ui-components.js";
 import { refreshTooltips, disposeTooltips } from "../tooltips.js";
 import { el, setElementVisible } from "../dom.js";
-import { describePostTarget, postSystemMessage } from "../chat/target.js";
+import { describePostTarget, postSystemMessage, visibilityOptions } from "../chat/target.js";
 
 function randomId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -25,11 +25,8 @@ function randomId() {
   return `${Math.random().toString(16).slice(2)}-${Date.now()}`;
 }
 
-export function extractSystemDecks(systemDefinition) {
-  const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
-  const decksField = fields.find((field) => field?.type === "array" && field.key === "decks");
-  const values = Array.isArray(decksField?.values) ? decksField.values : [];
-  return values
+function normalizeDecks(values) {
+  return (Array.isArray(values) ? values : [])
     .filter((value) => value && typeof value.name === "string" && value.name && Array.isArray(value.cards) && value.cards.length)
     .map((value) => ({
       id: value.name,
@@ -46,6 +43,37 @@ export function extractSystemDecks(systemDefinition) {
         })),
     }))
     .filter((deck) => deck.cards.length);
+}
+
+export function extractSystemDecks(systemDefinition) {
+  const fields = Array.isArray(systemDefinition?.fields) ? systemDefinition.fields : [];
+  const decksField = fields.find((field) => field?.type === "array" && field.key === "decks");
+  return normalizeDecks(decksField?.values);
+}
+
+// The decks every table has, with or without a System (playing cards and tarot), the way the dice roller always has
+// its standard seven.
+let standardDecksPromise = null;
+function loadStandardDecks() {
+  if (!standardDecksPromise) {
+    standardDecksPromise = fetch(new URL("../../../data/standard-decks.json", import.meta.url), { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : { decks: [] }))
+      .then((data) => normalizeDecks(data?.decks))
+      .catch(() => {
+        standardDecksPromise = null;
+        return [];
+      });
+  }
+  return standardDecksPromise;
+}
+
+// A System's own decks come first, so they are the prominent ones; a standard deck a System redefines by name is
+// replaced by the System's version.
+export async function resolveDecks(systemDefinition) {
+  const own = extractSystemDecks(systemDefinition);
+  const taken = new Set(own.map((deck) => deck.id));
+  const standard = (await loadStandardDecks()).filter((deck) => !taken.has(deck.id));
+  return [...own, ...standard];
 }
 
 // Deck instance state — the one place cards aren't simply "dice with
@@ -175,6 +203,14 @@ export async function shuffleDeck({ dataManager, groupId, groupPayload, deck, wa
   return instances;
 }
 
+// The same draw without a group: nothing is saved anywhere, the caller keeps the returned instances.
+export function drawCardsLocally(instances, deck, count = 1) {
+  const { instances: next, cardIds } = drawCardsFromInstances(instances, deck, count);
+  if (!cardIds.length) return null;
+  const cards = cardIds.map((cardId) => deck.cards.find((entry) => entry.id === cardId) || { id: cardId, label: cardId });
+  return { cards, instances: next };
+}
+
 // Returns null if the deck's remaining pile was already empty — otherwise
 // up to `count` drawn cards' full records plus the updated instances. A
 // single draw is just `count: 1` — everything downstream reads the same `cards` array either way.
@@ -198,11 +234,11 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
     return { destroy() {} };
   }
 
-  // Same three modes as dice-roller.js: "Post to thread" records the draw in
-  // the active thread, "Private" records nothing, "Broadcast" (GM-only) posts
-  // and deals the card face-up on everyone's screen.
+  // Post to thread and Broadcast are offered only to someone who can use them (see visibilityOptions); everyone else
+  // just draws privately, with no toggle at all.
   let mode = "default";
   const isGm = groupContext?.access === "owner";
+  const sharesState = () => Boolean(dataManager?.isAuthenticated?.() && groupContext?.groupId);
 
   function resolveVisibility() {
     return { post: mode !== "private", broadcastReveal: mode === "broadcast" && isGm };
@@ -211,27 +247,26 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   const modeToggleContainer = el("div");
   const targetLine = el("div", "text-body-secondary small");
   function renderTargetLine() {
-    const target = describePostTarget(dataManager);
-    targetLine.textContent =
-      mode === "private" ? "Not recorded — only you see the draw." : target || "No active group — draws aren't recorded.";
+    targetLine.textContent = mode === "private" ? "Not recorded — only you see the draw." : describePostTarget(dataManager);
   }
   function renderModeToggle() {
+    const options = visibilityOptions(dataManager, groupContext, {
+      defaultIcon: "tabler:cards",
+      recordTooltip: "Record this draw in the active thread",
+      broadcastTooltip: "Deal this card face-up on everyone's screen",
+      privateTooltip: "Only you see this draw — nothing is recorded",
+    });
+    if (!options.some((option) => option.value === mode)) mode = options[0].value;
+    const choosable = options.length > 1;
+    setElementVisible(modeToggleContainer, choosable, "block");
+    setElementVisible(targetLine, choosable, "block");
     renderTargetLine();
+    if (!choosable) return;
     createModeToggleGroup({
       container: modeToggleContainer,
       ariaLabel: "Draw visibility",
       value: mode,
-      options: [
-        { value: "default", label: "Post to thread", icon: "tabler:cards", tooltip: "Record this draw in the active thread" },
-        {
-          value: "broadcast",
-          label: "Broadcast",
-          icon: "tabler:broadcast",
-          disabled: !isGm,
-          tooltip: isGm ? "Deal this card face-up on everyone's screen" : "GM only",
-        },
-        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this draw — nothing is recorded" },
-      ],
+      options,
       onChange: (next) => {
         mode = next;
         renderModeToggle();
@@ -242,11 +277,13 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   let systemDecks = [];
   let selectedDeckId = "";
   let groupPayload = null;
+  // A table's deck state is shared through the group; with no group (or no sign-in) the deck lives in this widget.
+  let localInstances = [];
   let watcher = null;
 
   container.innerHTML = "";
   const wrap = el("div", "d-flex flex-column gap-2");
-  const emptyMessage = el("p", "text-body-secondary small mb-0", "This System has no decks defined yet.");
+  const emptyMessage = el("p", "text-body-secondary small mb-0", "No decks are available.");
 
   const deckSelect = document.createElement("select");
   deckSelect.className = "form-select form-select-sm";
@@ -282,7 +319,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
       countsLine.textContent = "";
       return;
     }
-    const instance = getActiveDeckInstances(groupPayload || {}).find((entry) => entry.deckName === deck.id);
+    const instance = (sharesState() ? getActiveDeckInstances(groupPayload || {}) : localInstances).find((entry) => entry.deckName === deck.id);
     const remaining = instance ? instance.remainingCardIds.length : deck.cards.length;
     const discarded = instance ? instance.discardCardIds.length : 0;
     countsLine.textContent = `${remaining} remaining · ${discarded} discarded`;
@@ -310,7 +347,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
   });
 
   async function ensureGroupWatcher() {
-    if (!dataManager || !groupContext?.groupId) return;
+    if (!sharesState()) return;
     watcher?.stop();
     watcher = watchGroupForChanges({
       dataManager,
@@ -341,7 +378,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
 
   async function loadSystemDecks() {
     const systemDefinition = await resolveActiveDice({ dataManager, groupContext }).catch(() => null);
-    systemDecks = extractSystemDecks(systemDefinition);
+    systemDecks = await resolveDecks(systemDefinition);
     renderDeckSelect();
     setElementVisible(wrap, systemDecks.length > 0, "flex");
     setElementVisible(emptyMessage, systemDecks.length === 0, "block");
@@ -351,16 +388,21 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
 
   async function handleDraw() {
     const deck = currentDeck();
-    if (!deck || !dataManager || !groupContext?.groupId) return;
+    if (!deck) return;
     const count = Math.max(1, Math.floor(Number(countInput.value)) || 1);
-    const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, isGm).catch(() => null);
-    if (fresh) groupPayload = fresh;
     let drawn;
-    try {
-      drawn = await drawCards({ dataManager, groupId: groupContext.groupId, groupPayload, deck, count, watcher });
-    } catch (error) {
-      status?.show(error.message || "Unable to draw a card.", { type: "danger" });
-      return;
+    if (sharesState()) {
+      const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, isGm).catch(() => null);
+      if (fresh) groupPayload = fresh;
+      try {
+        drawn = await drawCards({ dataManager, groupId: groupContext.groupId, groupPayload, deck, count, watcher });
+      } catch (error) {
+        status?.show(error.message || "Unable to draw a card.", { type: "danger" });
+        return;
+      }
+    } else {
+      drawn = drawCardsLocally(localInstances, deck, count);
+      if (drawn) localInstances = drawn.instances;
     }
     if (!drawn) {
       status?.show(`${deck.label} is empty — shuffle to reset it.`, { type: "info", timeout: 2500 });
@@ -372,10 +414,12 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
         timeout: 2500,
       });
     }
-    groupPayload = {
-      ...groupPayload,
-      propertyValues: { ...groupPayload.propertyValues, [ACTIVE_DECKS_PROPERTY_KEY]: drawn.instances },
-    };
+    if (sharesState()) {
+      groupPayload = {
+        ...groupPayload,
+        propertyValues: { ...groupPayload.propertyValues, [ACTIVE_DECKS_PROPERTY_KEY]: drawn.instances },
+      };
+    }
     renderCounts();
     resultLine.textContent = drawn.cards.map((card) => card.label).join(", ");
     const { post, broadcastReveal } = resolveVisibility();
@@ -386,17 +430,17 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
     // dice-roll.js's tryOverlayRoll, which always plays the local animation
     // regardless of Default/Broadcast/Private; the mode only ever gates whether OTHER people see it.
     playCardReveal({ cards: revealCards, backImage: deck.backImage || "" });
-    if (post) {
+    if (post && sharesState()) {
       void postSystemMessage(dataManager, {
         groupId: groupContext.groupId,
         kind: "card",
-        summary: `${deck.label}: ${cardsPayload.map((card) => card.label).join(", ")}`,
+        summary: `${cardsPayload.map((card) => card.label).join(", ")} (${deck.label})`,
         details: { deckId: deck.id, deckLabel: deck.label, cards: cardsPayload, backImage: deck.backImage || undefined },
       }).catch(() => {
         // Best-effort — the draw already succeeded and was reported locally; a failed post just means nobody else sees it.
       });
     }
-    if (broadcastReveal) {
+    if (broadcastReveal && sharesState()) {
       // Delivered via the same ephemeral, never-persisted channel broadcast
       // dice rolls use — NOT the spotlight mechanism: spotlight is
       // persistent "currently shown to the table" state, so a draw would
@@ -410,7 +454,14 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
 
   async function handleShuffle() {
     const deck = currentDeck();
-    if (!deck || !dataManager || !groupContext?.groupId) return;
+    if (!deck) return;
+    if (!sharesState()) {
+      localInstances = shuffleDeckInstances(localInstances, deck);
+      renderCounts();
+      resultLine.textContent = "";
+      status?.show(`${deck.label} shuffled.`, { type: "success", timeout: 1800 });
+      return;
+    }
     const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, isGm).catch(() => null);
     if (fresh) groupPayload = fresh;
     try {
@@ -427,7 +478,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
 
   renderModeToggle();
   window.addEventListener("undercroft:active-thread-changed", renderTargetLine);
-  window.addEventListener("workbench:active-group-changed", renderTargetLine);
+  window.addEventListener("workbench:active-group-changed", renderModeToggle);
   wrap.append(modeToggleContainer, targetLine, deckSelect, buttonRow, countsLine, resultLine);
   container.append(wrap, emptyMessage);
   setElementVisible(emptyMessage, false, "block");
@@ -464,7 +515,7 @@ export async function runDeckMacroAction(action, { dataManager, groupContext, st
     throw new Error("No active group.");
   }
   const systemDefinition = await resolveActiveDice({ dataManager, groupContext }).catch(() => null);
-  const deck = extractSystemDecks(systemDefinition).find((entry) => entry.id === deckId);
+  const deck = (await resolveDecks(systemDefinition)).find((entry) => entry.id === deckId);
   if (!deck) {
     throw new Error(`Unknown deck "${deckId}".`);
   }
@@ -475,12 +526,12 @@ export async function runDeckMacroAction(action, { dataManager, groupContext, st
     throw new Error(`${deck.label} is empty.`);
   }
   const labels = drawn.cards.map((card) => card.label).join(", ");
-  status?.show(`${deck.label}: ${labels}`, { type: "success", timeout: 2600 });
+  status?.show(`${labels} (${deck.label})`, { type: "success", timeout: 2600 });
   if (params.announce) {
     await postSystemMessage(dataManager, {
       groupId: groupContext.groupId,
       kind: "card",
-      summary: `${deck.label}: ${labels}`,
+      summary: `${labels} (${deck.label})`,
       details: {
         deckId: deck.id,
         deckLabel: deck.label,

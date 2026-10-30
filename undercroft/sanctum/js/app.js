@@ -175,7 +175,7 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-location-undo-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-location-empty-state]")?.appendChild(
   createEmptyStateCard({
-    message: "Nothing selected yet. Pick an existing Location above, or fill in the fields and click Generate.",
+    message: "Nothing selected yet. Pick an existing Location, or fill in the fields and click Generate.",
     variant: "inline",
   })
 );

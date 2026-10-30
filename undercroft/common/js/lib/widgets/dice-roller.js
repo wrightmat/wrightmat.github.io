@@ -25,7 +25,7 @@ import { preloadDiceOverlay } from "./dice-overlay.js";
 import { createIconButton, createModeToggleGroup } from "../ui-components.js";
 import { refreshTooltips, disposeTooltips } from "../tooltips.js";
 import { el, setElementVisible } from "../dom.js";
-import { describePostTarget } from "../chat/target.js";
+import { describePostTarget, visibilityOptions } from "../chat/target.js";
 
 export function initDiceRollerWidget(container, { status, dataManager, groupContext = null } = {}) {
   if (!container) {
@@ -35,8 +35,8 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   // "Post to thread" (the default) records every roll in the active chat
   // thread. "Private" records nothing — the result is only shown here.
   // "Broadcast" posts too and additionally animates the roll on everyone's
-  // screen; it's GM-only (`access === "owner"`, same convention as Map's
-  // visibility toggle).
+  // screen. Each is offered only to someone who can use it (see
+  // visibilityOptions); everyone else just rolls privately, with no toggle.
   let mode = "default";
   const isGm = groupContext?.access === "owner";
 
@@ -61,27 +61,26 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   const modeToggleContainer = el("div");
   const targetLine = el("div", "text-body-secondary small");
   function renderTargetLine() {
-    const target = describePostTarget(dataManager);
-    targetLine.textContent =
-      mode === "private" ? "Not recorded — only you see the result." : target || "No active group — rolls aren't recorded.";
+    targetLine.textContent = mode === "private" ? "Not recorded — only you see the result." : describePostTarget(dataManager);
   }
   function renderModeToggle() {
+    const options = visibilityOptions(dataManager, groupContext, {
+      defaultIcon: "tabler:dice-5",
+      recordTooltip: "Record this roll in the active thread",
+      broadcastTooltip: "Show this roll animating on everyone's screen",
+      privateTooltip: "Only you see this roll — nothing is recorded",
+    });
+    if (!options.some((option) => option.value === mode)) mode = options[0].value;
+    const choosable = options.length > 1;
+    setElementVisible(modeToggleContainer, choosable, "block");
+    setElementVisible(targetLine, choosable, "block");
     renderTargetLine();
+    if (!choosable) return;
     createModeToggleGroup({
       container: modeToggleContainer,
       ariaLabel: "Roll visibility",
       value: mode,
-      options: [
-        { value: "default", label: "Post to thread", icon: "tabler:dice-5", tooltip: "Record this roll in the active thread" },
-        {
-          value: "broadcast",
-          label: "Broadcast",
-          icon: "tabler:broadcast",
-          disabled: !isGm,
-          tooltip: isGm ? "Show this roll animating on everyone's screen" : "GM only",
-        },
-        { value: "private", label: "Private", icon: "tabler:eye-off", tooltip: "Only you see this roll — nothing is recorded" },
-      ],
+      options,
       onChange: (next) => {
         mode = next;
         renderModeToggle();
@@ -360,7 +359,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   renderModeToggle();
   // The target changes when the group or the active thread does.
   window.addEventListener("undercroft:active-thread-changed", renderTargetLine);
-  window.addEventListener("workbench:active-group-changed", renderTargetLine);
+  window.addEventListener("workbench:active-group-changed", renderModeToggle);
   wrap.append(modeToggleContainer, targetLine, standardSection, symbolSection, resultLine, tableDatalist);
   container.appendChild(wrap);
   refreshTooltips(container);
@@ -368,7 +367,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   return {
     destroy() {
       window.removeEventListener("undercroft:active-thread-changed", renderTargetLine);
-      window.removeEventListener("workbench:active-group-changed", renderTargetLine);
+      window.removeEventListener("workbench:active-group-changed", renderModeToggle);
       disposeTooltips(container);
       container.innerHTML = "";
     },

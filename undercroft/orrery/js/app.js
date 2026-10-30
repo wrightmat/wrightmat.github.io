@@ -45,6 +45,8 @@ import { extractQuests } from "../../repository/js/lib/journal-quests.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { getIconTokens } from "../../common/js/lib/icon-picker.js";
 import { refreshOwnershipCatalog, createCharacterOwnershipPrimer, confirmDelete, matchesOwner } from "../../common/js/lib/ownership.js";
+import { OWNER_COLOR_OUTLINE, markerOwnerColorRefs, peekOwnerColor, primeOwnerColors, resetOwnerColors } from "../../common/js/lib/owner-colors.js";
+import { PLAYER_COLOR_EVENT } from "../../common/js/lib/player-color.js";
 import { collectSystemFields } from "../../common/js/lib/system-schema.js";
 import { createBindingFormulaInput } from "../../common/js/lib/binding-field.js";
 import { findBindingsByRole } from "../../common/js/lib/bindings.js";
@@ -3409,6 +3411,16 @@ function primeResourceBarCache() {
 // all, which is an Orrery-specific concern the Dashboard's own map.js
 // (always the restricted view) has no equivalent of.
 const characterOwnershipPrimer = createCharacterOwnershipPrimer(dataManager);
+// Tokens that follow their owner's Player color need those colors before they can draw.
+function primeOwnerColorCache() {
+  primeOwnerColors(dataManager, markerOwnerColorRefs(state.map), () => renderLayerOverlays());
+}
+
+window.addEventListener(PLAYER_COLOR_EVENT, () => {
+  resetOwnerColors();
+  renderLayerOverlays();
+});
+
 function primeCharacterOwnershipCatalog() {
   if (currentUserHasFullMapAccess()) return;
   const ids = new Set();
@@ -3533,6 +3545,7 @@ function renderLayerOverlays() {
   primeMonsterConditionCache();
   primeResourceBarCache();
   primeCharacterOwnershipCatalog();
+  primeOwnerColorCache();
   syncOverlayInteractivity();
   const activeGroup =
     state.selection.kind === "group" ? state.map.groups.find((group) => group.id === state.selection.id) : null;
@@ -3876,6 +3889,7 @@ function renderRestrictedLayerOverlays(overlay) {
   primeMonsterConditionCache();
   primeResourceBarCache();
   primeCharacterOwnershipCatalog();
+  primeOwnerColorCache();
   renderMapLayers(overlay, baseMapManager, state.map, {
     viewerTier: getEffectiveViewerTier(),
     ...buildRestrictedMapOptions({
@@ -5402,10 +5416,27 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
     label: "Outline color",
     controlClass: "form-control form-control-color",
   });
-  outlineColorField.querySelector("input").value = markerElement.outlineColor || layer.settings?.outlineColor || "#0f172a";
-  outlineColorField.querySelector("input").addEventListener("change", (event) => {
+  const outlineColorInput = outlineColorField.querySelector("input");
+  const followsOwner = markerElement.outlineColor === OWNER_COLOR_OUTLINE;
+  outlineColorInput.value =
+    (followsOwner ? peekOwnerColor(markerElement.refKind, markerElement.refId) : markerElement.outlineColor) || layer.settings?.outlineColor || "#0f172a";
+  outlineColorInput.disabled = followsOwner;
+  if (followsOwner) outlineColorInput.title = "Following the owner's Player color";
+  outlineColorInput.addEventListener("change", (event) => {
     applyMarkerElementChange("marker outline color", () => {
       markerElement.outlineColor = event.target.value;
+    });
+  });
+  const usePlayerColorField = createCheckField({
+    id: `marker-use-player-color-${markerElement.id}`,
+    label: "Use player color",
+    switchStyle: true,
+  });
+  const usePlayerColorInput = usePlayerColorField.querySelector("input");
+  usePlayerColorInput.checked = followsOwner;
+  usePlayerColorInput.addEventListener("change", () => {
+    applyMarkerElementChange("marker outline color", () => {
+      markerElement.outlineColor = usePlayerColorInput.checked ? OWNER_COLOR_OUTLINE : outlineColorInput.value;
     });
   });
 
@@ -5424,6 +5455,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
   });
 
   container.appendChild(createFieldRow([outlineColorField, opacityField], { columns: 2 }));
+  container.appendChild(createFieldRow([usePlayerColorField], { columns: 1 }));
 
   const referencesField = createFormFloatingField({ type: "select", label: "References" });
   const kindSelect = referencesField.querySelector("select");
@@ -5569,15 +5601,12 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
           markerElement.image = result.payload.image;
         });
       }
-      // Same "every panel open re-checks" reasoning as image, for Favorite
-      // Color — a marker linked before it existed never got a first chance.
-      if (!markerElement.outlineColor && dataManager.isAuthenticated?.()) {
-        const settings = await dataManager.getUserSettings();
-        if (typeof settings?.favoriteColor === "string" && settings.favoriteColor) {
-          applyMarkerElementChange("marker outline color", () => {
-            markerElement.outlineColor = settings.favoriteColor;
-          });
-        }
+      // Same "every panel open re-checks" reasoning as image: a linked marker with no outline of its own follows its
+      // owner's Player color.
+      if (!markerElement.outlineColor) {
+        applyMarkerElementChange("marker outline color", () => {
+          markerElement.outlineColor = OWNER_COLOR_OUTLINE;
+        });
       }
     } catch (error) {
       // A failed fetch just means this pass skips the inheritance checks above.
@@ -5703,7 +5732,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       // correct within the same kind, but without resetting them here a
       // switched reference kind (Character -> Journal Page) left a stale
       // portrait/name permanently attached. outlineColor is NOT reset — it's
-      // inherited from the user's Favorite Color, not the referenced entity.
+      // the owner's Player color, not the referenced entity.
       markerElement.label = "";
       markerElement.image = "";
     });
@@ -5744,18 +5773,6 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       if (kind === "monster" && payload) {
         inheritedSizeCells = await resolveMonsterSizeCells(payload);
       }
-      // Doesn't verify this record belongs to the signed-in user (needs a
-      // dedicated ownership lookup) — simplified to "whoever's linking,
-      // while signed in, hasn't set an outline yet."
-      let inheritedOutlineColor = "";
-      if (!markerElement.outlineColor && refId && dataManager?.isAuthenticated?.()) {
-        try {
-          const settings = await dataManager.getUserSettings();
-          inheritedOutlineColor = typeof settings?.favoriteColor === "string" ? settings.favoriteColor : "";
-        } catch (error) {
-          inheritedOutlineColor = "";
-        }
-      }
       applyMarkerElementChange("marker reference entity", () => {
         markerElement.refId = refId;
         // A different entity has its own headings/quests — whatever anchor
@@ -5772,8 +5789,8 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
         if (imageLooksAutoInherited && inheritedImage) {
           markerElement.image = inheritedImage;
         }
-        if (!markerElement.outlineColor && inheritedOutlineColor) {
-          markerElement.outlineColor = inheritedOutlineColor;
+        if (!markerElement.outlineColor && refId) {
+          markerElement.outlineColor = OWNER_COLOR_OUTLINE;
         }
         if (inheritedSizeCells !== null) {
           markerElement.sizeCells = Math.max(1, Math.round(inheritedSizeCells));

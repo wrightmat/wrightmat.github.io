@@ -3,7 +3,6 @@ import { initPaneToggles, collapsePane, expandPane } from "./panes.js";
 import { StatusManager } from "./status.js";
 import { UndoRedoStack } from "./undo-stack.js";
 import { KeyboardShortcuts } from "./keyboard.js";
-import { attachHoverDropdown } from "./dom.js";
 import { initSuiteSearch } from "./suite-search.js";
 import { initTooltip, installTooltipAutoInit } from "./tooltips.js";
 import { DEFAULT_SESSION_KEY, roleRank } from "./data-manager.js";
@@ -309,11 +308,11 @@ function initToolNavigation(root = document) {
   }
 
   dropdown.append(toggle, menu);
-  primaryNav.appendChild(dropdown);
 
   // Always-present way back to the Dashboard, since it has no card of its
   // own in the dropdown. Omitted on the Dashboard itself, same reasoning
-  // buildToolCard uses for the current-tool inert span.
+  // buildToolCard uses for the current-tool inert span. Sits before the
+  // tool switcher.
   if (currentSection !== "home") {
     const homeLink = document.createElement("a");
     homeLink.className = "btn btn-outline-secondary d-flex align-items-center justify-content-center undercroft-header-icon-btn";
@@ -327,8 +326,8 @@ function initToolNavigation(root = document) {
     primaryNav.appendChild(homeLink);
     initTooltip(homeLink, { title: "Home" });
   }
+  primaryNav.appendChild(dropdown);
 
-  attachHoverDropdown(dropdown, toggle);
 }
 
 // One pane-toggle button — a header-only shape distinct from
@@ -448,7 +447,6 @@ function buildThemeSwitcherDropdown() {
     wireThemePackOptions(buttons);
   });
 
-  attachHoverDropdown(dropdown, toggle);
   return dropdown;
 }
 
@@ -469,26 +467,21 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   header.className = "workbench-header border-bottom bg-body-tertiary";
 
   const grid = document.createElement("div");
-  grid.className = "workbench-header-grid pe-2 py-3";
-  // The header's first grid cell is a plain spacer on most tools; Vault/
-  // Crucible/Repository mount a Settings-gear button here instead
-  // (tool-settings.js, wired by each tool's own app.js) — this only
-  // reserves the slot.
-  if (settingsSlotAttr) {
-    const settingsSlot = document.createElement("div");
-    settingsSlot.className = "d-flex align-items-center justify-content-end ps-2";
-    settingsSlot.setAttribute(settingsSlotAttr, "");
-    grid.appendChild(settingsSlot);
-  } else {
-    grid.appendChild(document.createElement("div"));
-  }
-
+  grid.className = "workbench-header-grid py-3";
   const middle = document.createElement("div");
   middle.className = "workbench-header-middle d-flex align-items-center gap-3 w-100";
 
   const leftGroup = document.createElement("div");
   leftGroup.className = "d-flex align-items-center gap-3";
   leftGroup.appendChild(buildPaneToggleButton("left", leftPaneLabel));
+  // Tools with a Settings gear (tool-settings.js, wired by each tool's own app.js) mount it here, right after the
+  // left pane toggle; this only reserves the slot.
+  if (settingsSlotAttr) {
+    const settingsSlot = document.createElement("div");
+    settingsSlot.className = "d-flex align-items-center";
+    settingsSlot.setAttribute(settingsSlotAttr, "");
+    leftGroup.appendChild(settingsSlot);
+  }
   const h1 = document.createElement("h1");
   h1.className = "h5 mb-0 d-flex align-items-center gap-2";
   const nav = document.createElement("nav");
@@ -523,7 +516,7 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   }
 
   middle.append(leftGroup, searchMount, rightGroup);
-  grid.append(middle, document.createElement("div"));
+  grid.appendChild(middle);
   header.appendChild(grid);
 
   mount.replaceWith(header);
@@ -573,21 +566,6 @@ function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" 
   aside.appendChild(content);
   mountEl.replaceWith(aside);
   return { aside, size, effectiveInitial };
-}
-
-// Keeps the header's left/right spacer-grid columns in sync with whether
-// that pane is ACTUALLY expanded or collapsed, not just a viewport
-// breakpoint. A collapsed pane's spacer is `auto` (not 0 — a settings-slot
-// button still needs to size to its content). Called on initial build and
-// again from initPaneToggles's onChange on every toggle, at any viewport
-// width — fixes header squeezing that previously reserved a full 18-20rem
-// for a collapsed pane regardless of viewport.
-function syncHeaderPaneSpacerWidth(headerEl, side, expanded, size) {
-  if (!headerEl) {
-    return;
-  }
-  const configuredWidth = size === "lg" ? "20rem" : "18rem";
-  headerEl.style.setProperty(`--undercroft-pane-${side}-width`, expanded ? configuredWidth : "auto");
 }
 
 function showFeedback(status, feedback, fallbackMessage) {
@@ -645,18 +623,8 @@ export function initAppShell({
   installTooltipAutoInit();
   initEnvironmentTitle();
   const headerEl = buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
-  if (leftPane) {
-    const built = buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });
-    if (built) {
-      syncHeaderPaneSpacerWidth(headerEl, "left", built.effectiveInitial !== "collapsed", built.size);
-    }
-  }
-  if (rightPane) {
-    const built = buildPaneShell(root.querySelector('[data-pane-content="right"]'), { side: "right", ...rightPane });
-    if (built) {
-      syncHeaderPaneSpacerWidth(headerEl, "right", built.effectiveInitial !== "collapsed", built.size);
-    }
-  }
+  if (leftPane) buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });
+  if (rightPane) buildPaneShell(root.querySelector('[data-pane-content="right"]'), { side: "right", ...rightPane });
   const statusRoot = root.querySelector("[data-status-root]") || document.createElement("div");
   const status = new StatusManager(statusRoot);
   if (!statusRoot.parentElement) {
@@ -665,30 +633,31 @@ export function initAppShell({
 
   initThemeControls(root);
 
-  // Below this width, .workbench-header-middle can't fit both panes' spacer
-  // columns plus its own content — a fixed viewport breakpoint can't
-  // coordinate with that, and CSS alone can't fix it either (panes are
-  // page-level siblings of middle, outside any @container it could query).
-  //
-  // Rule below the threshold: at most ONE pane may be expanded at a time.
-  // A manual click always wins, immediately closing the sibling pane
-  // (below, in initPaneToggles's onChange) rather than being fought by
-  // width logic afterward — an earlier bidirectional auto-collapse/expand
-  // version fought the user's own clicks this way. The ResizeObserver
-  // further down only handles the case a click can't cover: both panes
-  // already expanded, window narrows past the threshold with no click.
-  // Measured empirically: fully-compact header content exactly fills
-  // middle at 448px/28rem.
-  const DUAL_PANE_MIN_WIDTH_REM = 29.6875;
+  // Below md a pane is a drawer over the page (shell.css): the header's height is published for its top edge, only
+  // one drawer is open at a time, and a tap outside closes it. Wider, panes sit beside the content and are closed
+  // when they would squeeze it below a usable width.
+  const MIN_MAIN_WIDTH_REM = 28;
+  const drawerQuery = window.matchMedia("(max-width: 767.98px)");
+
+  function publishHeaderHeight() {
+    document.documentElement.style.setProperty("--undercroft-header-height", `${headerEl.getBoundingClientRect().height}px`);
+  }
+  publishHeaderHeight();
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(publishHeaderHeight).observe(headerEl);
 
   function remToPx(remValue) {
     const rootFontSizePx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
     return remValue * rootFontSizePx;
   }
 
-  function middleWidth() {
-    return root.querySelector(".workbench-header-middle")?.getBoundingClientRect().width ?? Infinity;
+  function mainWidth() {
+    return root.querySelector(".workbench-main")?.getBoundingClientRect().width ?? Infinity;
   }
+
+  const isExpanded = (side) => {
+    const paneEl = root.querySelector(`[data-pane="${side}"]`);
+    return Boolean(paneEl) && paneEl.dataset.state === "expanded";
+  };
 
   function setPane(side, expand) {
     const paneEl = root.querySelector(`[data-pane="${side}"]`);
@@ -699,50 +668,36 @@ export function initAppShell({
     } else {
       collapsePane(paneEl, toggleEl);
     }
-    const pane = side === "left" ? leftPane : rightPane;
-    syncHeaderPaneSpacerWidth(headerEl, side, expand, pane?.size);
   }
+
+  const tooCrowded = () => drawerQuery.matches || mainWidth() < remToPx(MIN_MAIN_WIDTH_REM);
 
   initPaneToggles(root, {
     onChange: ({ key, state }) => {
-      const size = key === "left" ? leftPane?.size : rightPane?.size;
-      syncHeaderPaneSpacerWidth(headerEl, key, state === "expanded", size);
-      // syncHeaderPaneSpacerWidth above already ran synchronously, so
-      // middleWidth() here reflects the click's own new width.
-      if (state !== "expanded" || middleWidth() >= remToPx(DUAL_PANE_MIN_WIDTH_REM)) {
-        return;
-      }
+      if (state !== "expanded") return;
       const otherSide = key === "left" ? "right" : "left";
-      const otherPaneEl = root.querySelector(`[data-pane="${otherSide}"]`);
-      if (otherPaneEl && otherPaneEl.dataset.state !== "collapsed") {
-        setPane(otherSide, false);
-      }
+      // A click always wins: the other pane gives way, never the one just opened.
+      if (isExpanded(otherSide) && tooCrowded()) setPane(otherSide, false);
     },
   });
   initToolNavigation(root);
 
-  // Fallback for both panes expanded + window narrows with no click
-  // involved — onChange above only fires on a click. No re-expand-on-widen
-  // here: a pane this closes only reopens via an actual user click.
+  document.addEventListener("pointerdown", (event) => {
+    if (!drawerQuery.matches || !(event.target instanceof Element)) return;
+    if (event.target.closest("[data-pane], [data-pane-toggle], .modal, .dropdown-menu, .tooltip, .popover")) return;
+    ["left", "right"].forEach((side) => {
+      if (isExpanded(side)) setPane(side, false);
+    });
+  });
+
+  // Both open and the room runs out with no click involved (a window narrowed, a phone turned): the right one closes.
+  function closeCrowdedPane() {
+    if (isExpanded("left") && isExpanded("right") && tooCrowded()) setPane("right", false);
+  }
+  drawerQuery.addEventListener?.("change", closeCrowdedPane);
   if (typeof ResizeObserver !== "undefined") {
-    const middle = root.querySelector(".workbench-header-middle");
-    if (middle) {
-      new ResizeObserver(() => {
-        if (middleWidth() >= remToPx(DUAL_PANE_MIN_WIDTH_REM)) {
-          return;
-        }
-        const rightPaneEl = root.querySelector('[data-pane="right"]');
-        const leftPaneEl = root.querySelector('[data-pane="left"]');
-        if (rightPaneEl?.dataset.state !== "collapsed" && leftPaneEl?.dataset.state !== "collapsed") {
-          // Both open: collapse right first — shrinking its spacer column
-          // re-triggers this observer, so the branch below picks up.
-          setPane("right", false);
-        } else if (rightPaneEl?.dataset.state === "collapsed" && leftPaneEl?.dataset.state !== "collapsed") {
-          // Right alone wasn't enough — collapse left too (same threshold).
-          setPane("left", false);
-        }
-      }).observe(middle);
-    }
+    const main = root.querySelector(".workbench-main");
+    if (main) new ResizeObserver(closeCrowdedPane).observe(main);
   }
 
   const undoStack = new UndoRedoStack({

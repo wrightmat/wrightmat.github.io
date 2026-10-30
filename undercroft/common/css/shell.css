@@ -7,22 +7,10 @@
   color-scheme: light dark;
 }
 
-/* Can't stop the OS window itself from being dragged narrower — that's
-   outside any page's control — but the page's own CONTENT can refuse to
-   shrink past a floor instead: below this width, the browser shows a
-   horizontal scrollbar for the whole page rather than continuing to
-   compress content. Not exactly .workbench-header-middle's own 29.6875rem
-   (475px) floor (see app-shell.js's DUAL_PANE_MIN_WIDTH_REM, the point
-   past which both panes are already collapsed and middle's content can't
-   compact any further) — body needs more than middle alone, to also cover
-   the header's own flanking spacer-column/grid-gap/padding overhead around
-   it (more on Vault/Crucible/Repository's settings-slot pages, whose left
-   spacer column always holds a gear button even with the pane collapsed).
-   31.25rem was the first pass at that overhead and still let the header
-   wrap before this kicked in — bumped up meaningfully; still an estimate,
-   not a measured value the way the header's own thresholds are. */
+/* The narrowest phones are about 320px wide; the page's content refuses to shrink past that and scrolls sideways
+   instead. A larger floor would force a phone to zoom the whole page out to fit it. */
 body {
-  min-width: 37.5rem;
+  min-width: 20rem;
 }
 
 /* Iconify replaces `<span class="iconify">` placeholders with an `<svg
@@ -430,8 +418,6 @@ body[data-theme="dark"] .hover-lift:hover {
   position: sticky;
   top: 0;
   z-index: 1200;
-  --undercroft-pane-left-width: 18rem;
-  --undercroft-pane-right-width: 20rem;
   /* One shared height for every trigger control in the header row (pane
      toggles, tool-switcher, home link, theme dropdown, search — trigger
      AND input alike) so they read as one consistent row instead of each
@@ -446,26 +432,22 @@ body[data-theme="dark"] .hover-lift:hover {
 
 .workbench-header-grid {
   display: grid;
-  grid-template-columns: var(--undercroft-pane-left-width) minmax(0, 1fr) var(--undercroft-pane-right-width);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 0.5rem;
+  /* Breathing room at both ends when the window is wide; it is the first thing to give way, so the controls keep
+     their full form (below) until the room is gone. 72rem is the width the first collapsing stage needs. */
+  padding-inline: clamp(0.5rem, calc((100vw - 72rem) / 2), 2.5rem);
 }
 
-/* The header's flanking spacer columns (--undercroft-pane-left/right-width)
-   are kept in sync with each pane's actual collapsed/expanded state by JS
-   (app-shell.js's syncHeaderPaneSpacerWidth, called from buildPaneShell at
-   load and from initPaneToggles's onChange on every toggle afterward) —
-   collapsed resolves the variable to "auto" so a collapsed pane's spacer
-   shrinks to content size instead of reserving a full 18-20rem of dead
-   header space. That fix applies at any viewport width, not just mobile. */
+/* The header does not follow the panes, so the left and right buttons stay where they are whether a pane is open or
+   not. */
 
 /* flex-wrap is a true last-resort net, not the normal answer to tight
    space — the @container stepwise-reveal rules below are what actually
    keep this to one line in practice; per explicit direction the header
    must never wrap if there's any other way to avoid it. This only still
-   matters for whatever's left once both panes are already collapsed (see
-   the live matchMedia listener in initAppShell, below md) and the fully
-   compact controls still don't fit — better to wrap in that edge case than
+   matters once the fully compact controls still don't fit — better to wrap in that edge case than
    to have content actually clipped or spilling into neighboring header
    cells (CSS grid/flex don't clip overflow by default), which is what an
    unset flex-wrap would do here. */
@@ -474,11 +456,9 @@ body[data-theme="dark"] .hover-lift:hover {
   row-gap: 0.5rem;
   /* Query container for the stepwise reveal rules below — on THIS element
      deliberately, not the viewport: middle sits in the header grid's own
-     minmax(0, 1fr) track, so its rendered inline-size already reflects how
-     much of the viewport the left/right pane spacer columns are currently
-     eating (see the --undercroft-pane-*-width comment above). A viewport
-     media query can't see that — an expanded pane leaves less room for
-     middle at the exact same viewport width as a collapsed one. */
+     minmax(0, 1fr) track, so its rendered inline-size is what is really
+     left for the controls once the grid's outer cells (a tool's Settings
+     gear) have taken theirs. */
   container-type: inline-size;
   container-name: undercroft-header;
 }
@@ -521,7 +501,7 @@ body[data-theme="dark"] .hover-lift:hover {
    at with the auth panel full-size (was 880px/55rem, too low: search was
    already compact well before the auth panel's own overflow was actually
    the thing forcing the wrap). */
-@container undercroft-header (min-width: 61.4375rem) {
+@container undercroft-header (min-width: 72rem) {
   .suite-search-input-wrap {
     display: flex;
   }
@@ -532,7 +512,7 @@ body[data-theme="dark"] .hover-lift:hover {
 
 /* Measured: 828px ÷ 16 — same story one stage down (was 810px/50.625rem,
    still slightly too low). */
-@container undercroft-header (min-width: 51.75rem) {
+@container undercroft-header (min-width: 62.5rem) {
   .undercroft-auth-text {
     display: flex;
   }
@@ -544,13 +524,64 @@ body[data-theme="dark"] .hover-lift:hover {
 /* Measured: 638px ÷ 16 (was 560px/35rem, too low — the auth panel above
    was breaking to a second line at 638px because the nav label hadn't
    gone compact yet to free up the room). */
-@container undercroft-header (min-width: 39.875rem) {
+.workbench-header-middle > div:first-child,
+.workbench-header-middle h1,
+[data-undercroft-tool-nav] {
+  min-width: 0;
+}
+
+@container undercroft-header (min-width: 52.75rem) {
   .undercroft-tool-trigger-label {
     display: inline;
   }
+
+  /* A set width, like the search bar's, so the control does not change size from one tool to the next; it still
+     shrinks (its label ellipsizes) before the compact icon form takes over at the threshold above. */
+  .undercroft-tool-switcher {
+    flex: 0 1 22rem;
+    width: 22rem;
+    min-width: 0;
+  }
+
+  .undercroft-tool-trigger {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .undercroft-tool-trigger-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .undercroft-tool-trigger::after {
+    margin-left: auto;
+  }
 }
 
+/* Below md a pane is a drawer over the page, under the header, not a column beside the content: a phone has no room
+   to push the content aside. app-shell.js keeps --undercroft-header-height current and lets one drawer be open at a
+   time. */
 @media (max-width: 767.98px) {
+  .workbench-pane {
+    position: fixed;
+    top: var(--undercroft-header-height, 4.5rem);
+    bottom: 0;
+    z-index: 1150;
+    overflow-y: auto;
+  }
+
+  .workbench-pane[data-pane="left"] {
+    left: 0;
+  }
+
+  .workbench-pane[data-pane="right"] {
+    right: 0;
+  }
+
   .workbench-sidebar,
   .workbench-sidebar-lg {
     width: min(20rem, 85vw);
@@ -567,6 +598,28 @@ body[data-theme="dark"] .hover-lift:hover {
    common/js/lib/collapsible.js's own comment on this exact pattern):
    nothing should be able to win over "this is definitely a phone." */
 @media (max-width: 575.98px) {
+  .workbench-header-grid {
+    gap: 0.25rem;
+    padding-inline: 0.25rem;
+  }
+
+  .workbench-header-middle {
+    column-gap: 0.25rem !important;
+  }
+
+  .workbench-header-middle > div {
+    gap: 0.25rem !important;
+  }
+
+  .workbench-header-middle > [data-suite-search-mount] {
+    flex-grow: 0 !important;
+    margin-inline: 0 !important;
+  }
+
+  .workbench-header .btn {
+    padding-inline: 0.375rem;
+  }
+
   .suite-search-input-wrap,
   .undercroft-auth-text,
   .undercroft-auth-login-label,
@@ -576,6 +629,18 @@ body[data-theme="dark"] .hover-lift:hover {
   .suite-search-trigger {
     display: inline-block !important;
   }
+}
+
+/* The selected state of an outline-secondary button (a pane toggle that is open, a checked mode or radio button, an
+   open menu trigger) is a quiet fill in the theme's own secondary tone, darker in the dark theme and lighter in the
+   light one, rather than Bootstrap's solid grey: selection reads as a state, not as a primary action. */
+.btn-outline-secondary {
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--bs-secondary-bg);
+  --bs-btn-active-border-color: var(--bs-secondary-border-subtle);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
+  --bs-btn-hover-border-color: var(--bs-secondary-border-subtle);
 }
 
 .undercroft-tool-switcher {
@@ -798,8 +863,10 @@ body[data-theme="dark"] .hover-lift:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid var(--bs-border-color);
-  background-color: var(--bs-body-bg);
+  /* The suite's branding: the tool's own accent colors the border and tints the fill so it reads as the anchor of
+     the header, not one more button. */
+  border: 1px solid color-mix(in srgb, var(--undercroft-tool-accent, var(--bs-secondary)) 60%, var(--bs-border-color));
+  background-color: color-mix(in srgb, var(--undercroft-tool-accent, var(--bs-secondary)) 9%, var(--bs-body-bg));
   color: var(--undercroft-tool-accent, var(--bs-body-color));
   font-weight: 600;
   padding: 0.4rem 0.9rem;
@@ -885,13 +952,22 @@ body[data-theme="dark"] .hover-lift:hover {
    (an SVG/icon glyph, not text); the label shares the same
    --undercroft-text-shadow-dark value as .text-shadow-dark below. */
 .undercroft-tool-trigger .iconify {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
 }
 
 .undercroft-tool-trigger-label {
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   text-shadow: var(--undercroft-text-shadow-dark);
+}
+
+/* The dark halo behind the label and icon is for the dark theme; on a light page it only smears them. */
+html[data-bs-theme="light"] .undercroft-tool-trigger .iconify {
+  filter: none;
+}
+
+html[data-bs-theme="light"] .undercroft-tool-trigger-label {
+  text-shadow: none;
 }
 
 .undercroft-tool-dropdown {
@@ -1006,44 +1082,78 @@ a.undercroft-tool-card:focus-visible {
   background-color: var(--bs-tertiary-bg);
 }
 
+/* One fixed hue per tool, nine in all (red, orange, yellow, green, cyan, blue, indigo, violet, magenta), so no two
+   tools share a color. They are our own values, not Bootstrap's: the theme packs redefine Bootstrap's named colors
+   (Bootstrap's yellow and warning are the same amber), and a tool's identity should not change with the theme. Each
+   hue has a lighter form for the dark theme and a deeper one for the light theme so the label stays legible. */
+:root,
+html[data-bs-theme="dark"] {
+  --undercroft-hue-red: #ef5b5b;
+  --undercroft-hue-orange: #ff922b;
+  --undercroft-hue-yellow: #e9c46a;
+  --undercroft-hue-green: #4cc38a;
+  --undercroft-hue-cyan: #2bd4e0;
+  --undercroft-hue-blue: #4a9dff;
+  --undercroft-hue-indigo: #7479f5;
+  --undercroft-hue-violet: #b07cf5;
+  --undercroft-hue-magenta: #f063b8;
+}
+
+html[data-bs-theme="light"] {
+  --undercroft-hue-red: #c62828;
+  --undercroft-hue-orange: #d9680b;
+  --undercroft-hue-yellow: #b58900;
+  --undercroft-hue-green: #1e8a4c;
+  --undercroft-hue-cyan: #0b8aa6;
+  --undercroft-hue-blue: #0d5ed7;
+  --undercroft-hue-indigo: #4338ca;
+  --undercroft-hue-violet: #7c3aed;
+  --undercroft-hue-magenta: #c0268f;
+}
+
 .undercroft-tool-trigger.tool-workbench,
 .undercroft-tool-card.tool-workbench .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-indigo);
+  --undercroft-tool-accent: var(--undercroft-hue-blue);
 }
 
 .undercroft-tool-trigger.tool-press,
 .undercroft-tool-card.tool-press .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-danger);
+  --undercroft-tool-accent: var(--undercroft-hue-red);
 }
 
 .undercroft-tool-trigger.tool-orrery,
 .undercroft-tool-card.tool-orrery .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-info);
+  --undercroft-tool-accent: var(--undercroft-hue-cyan);
 }
 
 .undercroft-tool-trigger.tool-loom,
 .undercroft-tool-card.tool-loom .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-yellow);
+  --undercroft-tool-accent: var(--undercroft-hue-yellow);
 }
 
 .undercroft-tool-trigger.tool-forge,
 .undercroft-tool-card.tool-forge .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-warning);
+  --undercroft-tool-accent: var(--undercroft-hue-orange);
 }
 
 .undercroft-tool-trigger.tool-crucible,
 .undercroft-tool-card.tool-crucible .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-pink);
+  --undercroft-tool-accent: var(--undercroft-hue-magenta);
 }
 
 .undercroft-tool-trigger.tool-vault,
 .undercroft-tool-card.tool-vault .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-purple);
+  --undercroft-tool-accent: var(--undercroft-hue-violet);
 }
 
 .undercroft-tool-trigger.tool-sanctum,
 .undercroft-tool-card.tool-sanctum .undercroft-tool-card-icon {
-  --undercroft-tool-accent: var(--bs-success);
+  --undercroft-tool-accent: var(--undercroft-hue-green);
+}
+
+.undercroft-tool-trigger.tool-repository,
+.undercroft-tool-card.tool-repository .undercroft-tool-card-icon {
+  --undercroft-tool-accent: var(--undercroft-hue-indigo);
 }
 
 .tooltip {
@@ -2530,6 +2640,14 @@ a.undercroft-tool-card:focus-visible {
   opacity: 1;
 }
 
+/* A disabled option's label must still receive hover or its tooltip, the reason it is disabled, never shows; the
+   disabled input keeps a click on it inert, and the cursor stays an arrow. */
+.btn-check:disabled + .btn[data-bs-toggle="tooltip"],
+.btn.disabled[data-bs-toggle="tooltip"] {
+  pointer-events: auto;
+  cursor: default;
+}
+
 /* The suite-wide Mode toggle group (common/js/lib/ui-components.js's own
    createModeToggleGroup) — icon LEFT, text RIGHT, sized to match its own
    companion View control (createCycleToggleButton, a plain .btn-sm icon
@@ -2580,4 +2698,10 @@ a.undercroft-tool-card:focus-visible {
    it is wider than a one-line tooltip. */
 .doc-preview-tooltip {
   --bs-tooltip-max-width: 26rem;
+}
+
+/* A tooltip is never something to click. Without this, one left showing beside a header button (every tap on a phone
+   leaves one) swallows the first click on the button next to it. */
+.tooltip {
+  pointer-events: none;
 }

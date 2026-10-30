@@ -390,7 +390,13 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
     const campaignSelect = select(openCampaigns.map((campaign) => [campaign.id, campaign.name]), initial?.campaignId || openCampaigns[0]?.id || "");
     const sessionSelect = select(openSeries.map((series) => [series.id, series.title]), initial?.sessionId || openSeries[0]?.id || "");
     const systemSelect = select([["", "Another system (type below)"], ...systems.map((system) => [system.id, system.title])], initial ? initial.systemId || "" : group.system_id || "");
-    const systemName = control("input", { type: "text", maxlength: 120, value: initial?.systemName || "", placeholder: "System name" });
+    const systemName = control("input", { type: "text", maxlength: 120, value: initial?.systemName || "", placeholder: "System name", list: "listing-system-suggestions" });
+    const systemSuggestions = el("datalist");
+    systemSuggestions.id = "listing-system-suggestions";
+    void dataManager
+      .getSystemNameSuggestions()
+      .then((names) => systemSuggestions.replaceChildren(...names.map((name) => new Option(name))))
+      .catch(() => {});
     const seats = control("input", { type: "number", min: 1, value: initial?.seatsOffered ?? 1 });
     const decline = control("input", { type: "number", min: 1, value: initial?.autoDeclineDays ?? 7 });
     const sessionLength = select([["", "Not stated"], ...reference.options.sessionLength.map((o) => [o.id, o.label])], initial?.sessionLength || "");
@@ -467,7 +473,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
       seatRow.appendChild(col);
     });
     const systemBox = el("div", "d-flex flex-column gap-1");
-    systemBox.append(systemSelect, systemName);
+    systemBox.append(systemSelect, systemName, systemSuggestions);
     root.append(
       heading("Target"),
       targetRow,

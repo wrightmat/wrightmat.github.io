@@ -203,7 +203,7 @@ createToolbarButtonGroup([
 ]).forEach((button) => document.querySelector("[data-feature-inspector-toolbar-mount]")?.appendChild(button));
 document.querySelector("[data-monster-empty-state]")?.appendChild(
   createEmptyStateCard({
-    message: "Nothing selected yet. Pick an existing Monster above, or fill in the fields and click Generate Monster.",
+    message: "Nothing selected yet. Pick an existing Monster, or fill in the fields and click Generate Monster.",
     variant: "inline",
   })
 );

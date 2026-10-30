@@ -14,6 +14,20 @@ export function findThread(overview, threadId) {
   return null;
 }
 
+// The visibility choices a dice or deck widget offers: Private is always there; posting to the thread needs a signed-in
+// member of an active group, and Broadcast needs the GM of it.
+export function visibilityOptions(dataManager, groupContext, { defaultIcon, recordTooltip, broadcastTooltip, privateTooltip }) {
+  const options = [];
+  if (dataManager?.isAuthenticated?.() && groupContext?.groupId) {
+    options.push({ value: "default", label: "Post to thread", icon: defaultIcon, tooltip: recordTooltip });
+    if (groupContext.access === "owner") {
+      options.push({ value: "broadcast", label: "Broadcast", icon: "tabler:broadcast", tooltip: broadcastTooltip });
+    }
+  }
+  options.push({ value: "private", label: "Private", icon: "tabler:eye-off", tooltip: privateTooltip });
+  return options;
+}
+
 // Synchronous wording for a dice/deck interface's "where will this go" line.
 // Empty when there is no active group (nothing can be posted anywhere).
 export function describePostTarget(dataManager) {

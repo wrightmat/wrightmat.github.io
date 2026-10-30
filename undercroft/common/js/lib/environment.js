@@ -1,6 +1,6 @@
 // Puts the server's environment label (DEV, UAT, ...) after the page title so tabs for different
 // servers can be told apart. The last label is remembered for the tab so the title is right before the fetch returns.
-import { apiUrl } from "./api.js";
+import { loadSiteInfo } from "./site-info.js";
 
 const CACHE_KEY = "undercroft.environment";
 
@@ -24,11 +24,10 @@ export function initEnvironmentTitle() {
   // Pages that change their own title (a flashing alert, a second screen) keep the label.
   new MutationObserver(apply).observe(title, { childList: true });
   apply();
-  fetch(apiUrl("/environment"))
-    .then((response) => (response.ok ? response.json() : null))
-    .then((data) => {
-      if (!data || typeof data.label !== "string") return;
-      label = data.label;
+  loadSiteInfo()
+    .then((info) => {
+      if (info.environmentLabel === null) return;
+      label = info.environmentLabel;
       try {
         window.sessionStorage.setItem(CACHE_KEY, label);
       } catch (error) {
