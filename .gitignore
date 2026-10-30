@@ -6,3 +6,9 @@ undercroft/workbench/data/database.sqlite
 server/ddb-session.local.json
 server/anthropic.local.json
 server/secret.local.json
+
+# Live databases and their write-ahead files are never committed
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite.bak*
