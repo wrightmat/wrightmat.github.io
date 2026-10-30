@@ -1302,9 +1302,18 @@ html[data-bs-theme="light"] {
   height: 100%;
 }
 
+/* On a phone the widgets stack, one full-width widget under another in reading order, each keeping its own height.
+   Their saved column and row (set inline) are ignored here; the layout itself is untouched, so a wider screen shows
+   the arrangement as built. Layout editing is hidden on a phone for the same reason. */
 @media (max-width: 767.98px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid > * {
+    grid-column: 1 / -1 !important;
+    grid-row: span var(--widget-row-span, 4) !important;
+    order: var(--widget-order, 0);
   }
 }
 

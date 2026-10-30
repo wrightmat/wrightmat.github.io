@@ -1545,8 +1545,7 @@ function mountWidget(instance, { screenMode: isScreenCard = false } = {}) {
     const applyGridSpan = () => {
       const anchor = card.parentElement;
       if (!anchor) return;
-      anchor.style.gridColumn = `${instance.col + 1} / span ${instance.colSpan}`;
-      anchor.style.gridRow = `${instance.row + 1} / span ${instance.rowSpan}`;
+      placeAnchor(anchor, instance);
     };
     // Drag-to-resize — grab the handle, move the pointer, release. Reads
     // the grid's actual computed cell size (not a hardcoded guess) so it
@@ -2044,6 +2043,15 @@ function renderWelcomeScreen() {
   }
 }
 
+// Where a widget sits on the grid. On a phone the grid stacks, and shell.css uses the row span and the reading order
+// (rows first, then columns) these carry in place of the column and row.
+function placeAnchor(anchor, instance) {
+  anchor.style.gridColumn = `${instance.col + 1} / span ${instance.colSpan}`;
+  anchor.style.gridRow = `${instance.row + 1} / span ${instance.rowSpan}`;
+  anchor.style.setProperty("--widget-row-span", String(instance.rowSpan));
+  anchor.style.setProperty("--widget-order", String(instance.row * 1000 + instance.col));
+}
+
 // Called after every mount, add, remove, resize-release, and editing
 // toggle — always a full rebuild of the zone/anchor structure, but NEVER
 // re-mounts a widget's card (the same DOM node just moves to a new
@@ -2085,8 +2093,7 @@ function renderWidgetGrid() {
     anchor.dataset.gridZone = "";
     anchor.dataset.col = String(instance.col);
     anchor.dataset.row = String(instance.row);
-    anchor.style.gridColumn = `${instance.col + 1} / span ${instance.colSpan}`;
-    anchor.style.gridRow = `${instance.row + 1} / span ${instance.rowSpan}`;
+    placeAnchor(anchor, instance);
     anchor.appendChild(card);
     gridEl.appendChild(anchor);
   });
@@ -3023,8 +3030,22 @@ titleInput?.addEventListener("keydown", (event) => {
   }
 });
 
+// A layout or title saved in this browser before the account had one on the server moves up to it, so every device
+// signed in to the account shows the same dashboard. A failed settings fetch (null) uploads nothing.
+function uploadLocalOnlySettings(serverSettings) {
+  if (!serverSettings || !dataManager.isAuthenticated()) return;
+  const pending = {};
+  [["layout", "dashboardLayout"], ["headerTitle", "dashboardHeaderTitle"]].forEach(([localKey, serverKey]) => {
+    if (serverSettings[serverKey] !== undefined) return;
+    const local = loadLocalSetting(localKey);
+    if (local !== null && local !== "") pending[serverKey] = local;
+  });
+  if (Object.keys(pending).length) dataManager.saveUserSettings(pending).catch(() => {});
+}
+
 async function boot() {
   const serverSettings = await loadServerSettings();
+  uploadLocalOnlySettings(serverSettings);
   layout = await loadLayout(serverSettings);
   if (screenMode) {
     // The second-screen mirror, alone, no dashboard chrome — none of the
