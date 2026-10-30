@@ -10,6 +10,7 @@
     "debug_verification_codes": false,
     "seed_dev_accounts": false,
     "require_invite": false,
+    "environment_label": "",
     "local_file_access": false,
     "trusted_proxies": [],
     "static_roots": [

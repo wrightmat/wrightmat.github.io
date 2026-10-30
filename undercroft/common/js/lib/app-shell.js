@@ -7,6 +7,7 @@ import { attachHoverDropdown } from "./dom.js";
 import { initSuiteSearch } from "./suite-search.js";
 import { initTooltip, installTooltipAutoInit } from "./tooltips.js";
 import { DEFAULT_SESSION_KEY, roleRank } from "./data-manager.js";
+import { initEnvironmentTitle } from "./environment.js";
 
 // `icon` is an Iconify `tabler:*` id, same convention used suite-wide.
 // `built` distinguishes real tools from roadmap-only entries — kept
@@ -642,6 +643,7 @@ export function initAppShell({
   rightPane = { size: "default", initial: "expanded" },
 } = {}) {
   installTooltipAutoInit();
+  initEnvironmentTitle();
   const headerEl = buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
   if (leftPane) {
     const built = buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });

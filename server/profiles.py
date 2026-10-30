@@ -131,6 +131,24 @@ def clean_profile(state: ServerState, data: Any) -> Dict[str, Any]:
         if not (name or system_id):
             raise AuthError("A system needs a name")
         profile["systems"].append({"systemId": system_id or None, "name": name})
+    accounts = data.get("externalAccounts") or []
+    if not isinstance(accounts, list) or len(accounts) > 30:
+        raise AuthError("Other accounts must be a list of at most 30")
+    services = _ids((_load(state, "community-services.json") or {}).get("items"))
+    profile["externalAccounts"] = []
+    seen_services = set()
+    for entry in accounts:
+        if not isinstance(entry, dict):
+            raise AuthError("Each account must be an object")
+        service_id = str(entry.get("serviceId") or "")
+        # A service an admin has since removed is dropped rather than blocking the save.
+        if service_id not in services or service_id in seen_services:
+            continue
+        username = _text(entry.get("username", ""), "Username", 100)
+        if not username or any(ord(ch) < 32 for ch in username):
+            raise AuthError("Each account needs a username")
+        seen_services.add(service_id)
+        profile["externalAccounts"].append({"serviceId": service_id, "username": username})
     day_parts, weekdays = _ids(options.get("dayParts")), _ids(options.get("weekdays"))
     availability = data.get("availability") or {}
     if not isinstance(availability, dict):

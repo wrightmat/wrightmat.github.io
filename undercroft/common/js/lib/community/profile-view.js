@@ -2,6 +2,7 @@
 import { el } from "../dom.js";
 import { optionLabel, systemTitle } from "./reference.js";
 import { renderScaleComparison } from "./scale-control.js";
+import { renderAccountBadge } from "./service-badge.js";
 
 function line(label, value) {
   if (!value) return null;
@@ -24,7 +25,10 @@ function availabilityText(availability, reference) {
 export function renderProfileView(person, { reference, systems = [], mineScales = null } = {}) {
   const root = el("div", "d-flex flex-column gap-3");
   const profile = person.profile;
-  root.appendChild(el("div", "fw-semibold", person.username));
+  // The username on the left, the person's other accounts floated to the right.
+  const header = el("div", "d-flex flex-wrap align-items-center justify-content-between gap-2");
+  header.appendChild(el("div", "fw-semibold", person.username));
+  root.appendChild(header);
   if (!profile) {
     root.appendChild(el("div", "text-body-secondary small", "This person hasn't shared a profile."));
     return root;
@@ -49,7 +53,13 @@ export function renderProfileView(person, { reference, systems = [], mineScales 
     .filter(Boolean)
     .forEach((row) => facts.appendChild(row));
   root.appendChild(facts);
+  const badges = (profile.externalAccounts || []).map((account) => renderAccountBadge(account, reference.services || [])).filter(Boolean);
+  if (badges.length) {
+    const accounts = el("div", "d-flex flex-wrap justify-content-end gap-1 ms-auto");
+    accounts.append(...badges);
+    header.appendChild(accounts);
+  }
   root.appendChild(el("div", "text-uppercase fs-6 fw-semibold text-body-secondary", "Preferences"));
-  root.appendChild(renderScaleComparison(reference.scales, profile.scales, mineScales, { points: reference.points, theirsLabel: person.username }));
+  root.appendChild(renderScaleComparison(reference.scales, profile.scales, mineScales, { points: reference.points, theirsLabel: person.username, listUnset: true }));
   return root;
 }

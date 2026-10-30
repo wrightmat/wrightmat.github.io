@@ -5,6 +5,7 @@ import { createLocationPicker } from "./location-picker.js";
 import { loadCommunityReference, loadSystemChoices } from "./reference.js";
 import { createScaleControl } from "./scale-control.js";
 import { renderProfileView } from "./profile-view.js";
+import { renderAccountBadge } from "./service-badge.js";
 import { initHelpSystem } from "../help.js";
 import { helpBadge } from "./help-badge.js";
 
@@ -53,7 +54,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
   ]);
   const profile = {
     public: false, bio: "", role: "", experience: "", openTo: "", playMode: "", sessionLength: "", timezone: "",
-    systems: [], availability: {}, safetyTools: [], scales: {}, location: { precision: "hidden" }, ...(saved.profile || {}),
+    systems: [], externalAccounts: [], availability: {}, safetyTools: [], scales: {}, location: { precision: "hidden" }, ...(saved.profile || {}),
   };
   profile.timezone = profile.timezone || "";
   profile.role = profile.role || "";
@@ -128,6 +129,63 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
     renderSystems();
   });
   renderSystems();
+
+  // Other accounts: pick a service and give a username. One per service; adding it again replaces the username.
+  const services = reference.services || [];
+  const accountList = el("div", "d-flex flex-wrap gap-2");
+  const serviceSelect = el("select", "form-select form-select-sm");
+  const accountName = el("input", "form-control form-control-sm");
+  accountName.placeholder = "Username";
+  accountName.maxLength = 100;
+  const accountAdd = el("button", "btn btn-outline-primary btn-sm flex-shrink-0", "Add");
+  accountAdd.type = "button";
+  [["play", "Play services"], ["social", "Social media"]].forEach(([category, title]) => {
+    const group = document.createElement("optgroup");
+    group.label = title;
+    services.filter((service) => service.category === category).forEach((service) => group.appendChild(new Option(service.name, service.id)));
+    if (group.children.length) serviceSelect.appendChild(group);
+  });
+  serviceSelect.insertBefore(new Option("Service…", ""), serviceSelect.firstChild);
+  serviceSelect.value = "";
+  function renderAccounts() {
+    accountList.replaceChildren(
+      ...profile.externalAccounts
+        .map((account, index) =>
+          renderAccountBadge(account, services, {
+            onRemove: () => {
+              profile.externalAccounts.splice(index, 1);
+              renderAccounts();
+            },
+          }),
+        )
+        .filter(Boolean),
+    );
+  }
+  function addAccount() {
+    const username = accountName.value.trim();
+    if (!serviceSelect.value || !username) {
+      status?.show("Choose a service and enter your username there.", { type: "warning", timeout: 2500 });
+      return;
+    }
+    profile.externalAccounts = profile.externalAccounts.filter((account) => account.serviceId !== serviceSelect.value);
+    profile.externalAccounts.push({ serviceId: serviceSelect.value, username });
+    accountName.value = "";
+    serviceSelect.value = "";
+    renderAccounts();
+  }
+  accountAdd.addEventListener("click", addAccount);
+  accountName.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    addAccount();
+  });
+  renderAccounts();
+  // One inline row; the service gets a fixed width and the username takes the rest.
+  serviceSelect.classList.add("flex-shrink-0");
+  serviceSelect.style.width = "8.5rem";
+  accountName.style.minWidth = "0";
+  const accountControls = el("div", "d-flex flex-nowrap gap-2");
+  accountControls.append(serviceSelect, accountName, accountAdd);
 
   // Availability: a day × time-of-day grid in the profile's own time zone.
   const grid = el("table", "table table-sm table-bordered text-center align-middle mb-0 small");
@@ -240,6 +298,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
       field("Role", selects.role),
       field("Experience", selects.experience),
       field("Systems known", col(systemList, systemSelect, systemText)),
+      field("Other accounts", col(accountList, accountControls), undefined, "community.profile"),
       field("Preferred session length", selects.sessionLength),
       field("In-person or online", selects.playMode),
       field("Time zone", col(timezone, zoneList)),

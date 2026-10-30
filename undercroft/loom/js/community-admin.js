@@ -8,11 +8,16 @@ import { refreshTooltips } from "../../common/js/lib/tooltips.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { initPropertySortable } from "../../common/js/lib/property-schema-editor.js";
 import { invalidateCommunityReference, loadCommunityReference, loadSharedList } from "../../common/js/lib/community/reference.js";
+import { renderServiceIcon } from "../../common/js/lib/community/service-badge.js";
 
 const PHASES = [
   ["before", "Before play"],
   ["during", "During play"],
   ["after", "After play"],
+];
+const SERVICE_CATEGORIES = [
+  ["play", "Play service"],
+  ["social", "Social media"],
 ];
 const APPLIES_TO = [
   ["gm", "GMs"],
@@ -202,6 +207,23 @@ export function initCommunityAdmin({ dataManager, getStatus, mount }) {
         const name = wide(input({ type: "text", maxlength: 80, value: entry?.name || "", placeholder: "Tag" }));
         return itemRow({ entry, listName: "endorsements", qualifier: applies, fields: [name], onSaved,
           read: () => ({ name: name.value, appliesTo: applies.value }) });
+      },
+    },
+    {
+      title: "External services", helpTopic: "community.services", listName: "services", collapsed: false,
+      load: community((r) => r.services),
+      makeRow: (entry, onSaved) => {
+        const category = select(SERVICE_CATEGORIES, entry?.category || "play");
+        const name = sized(input({ type: "text", maxlength: 60, value: entry?.name || "", placeholder: "Name" }), NAME_STYLE);
+        const icon = sized(input({ type: "text", maxlength: 300, value: entry?.icon || "", placeholder: "tabler:brand-discord or https://…" }), NAME_STYLE);
+        const preview = el("span", "flex-shrink-0 d-inline-flex align-items-center");
+        preview.style.cssText = "width: 1.25rem;";
+        const drawPreview = () => preview.replaceChildren(renderServiceIcon(icon.value.trim()));
+        icon.addEventListener("input", drawPreview);
+        drawPreview();
+        const link = wide(input({ type: "text", maxlength: 300, value: entry?.linkPattern || "", placeholder: "Profile link, e.g. https://example.com/{username} (optional)" }));
+        return itemRow({ entry, listName: "services", qualifier: category, fields: [name, preview, icon, link], onSaved,
+          read: () => ({ name: name.value, category: category.value, icon: icon.value, linkPattern: link.value }) });
       },
     },
     {

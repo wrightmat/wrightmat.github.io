@@ -80,7 +80,7 @@ export function closenessText(mine, theirs) {
 
 // Read-only rows for each scale the other side set: a five-point track with their
 // marker and, when given, yours.
-export function renderScaleComparison(scales, theirs, mine, { points = 5, theirsLabel = "Them", mineLabel = "You" } = {}) {
+export function renderScaleComparison(scales, theirs, mine, { points = 5, theirsLabel = "Them", mineLabel = "You", listUnset = false } = {}) {
   const wrap = el("div", "d-flex flex-column gap-2");
   const rows = scales.filter((scale) => theirs?.[scale.id] != null);
   if (!rows.length) {
@@ -116,6 +116,13 @@ export function renderScaleComparison(scales, theirs, mine, { points = 5, theirs
   });
   if (mine && Object.keys(mine).length) {
     wrap.appendChild(el("span", "text-body-secondary small", `● ${theirsLabel}   ○ ${mineLabel}`));
+  }
+  // A scale left at "Don't care" is still part of the profile, so it is named after the ones that were set.
+  const unset = scales.filter((scale) => theirs?.[scale.id] == null);
+  if (listUnset && unset.length) {
+    const line = el("div", "small");
+    line.append(el("span", "fw-semibold", "Don't care: "), el("span", "text-body-secondary", unset.map((scale) => scale.label).join(", ")));
+    wrap.appendChild(line);
   }
   return wrap;
 }

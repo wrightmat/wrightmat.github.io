@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "id": "service-discord",
+      "name": "Discord",
+      "category": "play",
+      "icon": "tabler:brand-discord"
+    },
+    {
+      "id": "service-roll20",
+      "name": "Roll20",
+      "category": "play",
+      "icon": "https://app.roll20.net/favicon.ico"
+    },
+    {
+      "id": "service-dndbeyond",
+      "name": "D&D Beyond",
+      "category": "play",
+      "icon": "https://media.dndbeyond.com/images/web/favicon.png",
+      "linkPattern": "https://www.dndbeyond.com/members/{username}"
+    },
+    {
+      "id": "service-steam",
+      "name": "Steam",
+      "category": "play",
+      "icon": "tabler:brand-steam",
+      "linkPattern": "https://steamcommunity.com/id/{username}"
+    },
+    {
+      "id": "service-itch",
+      "name": "itch.io",
+      "category": "social",
+      "icon": "tabler:brand-itch",
+      "linkPattern": "https://{username}.itch.io"
+    },
+    {
+      "id": "service-reddit",
+      "name": "Reddit",
+      "category": "social",
+      "icon": "tabler:brand-reddit",
+      "linkPattern": "https://www.reddit.com/user/{username}"
+    },
+    {
+      "id": "service-bluesky",
+      "name": "Bluesky",
+      "category": "social",
+      "icon": "tabler:brand-bluesky",
+      "linkPattern": "https://bsky.app/profile/{username}"
+    },
+    {
+      "id": "service-mastodon",
+      "name": "Mastodon",
+      "category": "social",
+      "icon": "tabler:brand-mastodon"
+    },
+    {
+      "id": "service-x",
+      "name": "X",
+      "category": "social",
+      "icon": "tabler:brand-x",
+      "linkPattern": "https://x.com/{username}"
+    },
+    {
+      "id": "service-instagram",
+      "name": "Instagram",
+      "category": "social",
+      "icon": "tabler:brand-instagram",
+      "linkPattern": "https://www.instagram.com/{username}"
+    },
+    {
+      "id": "service-youtube",
+      "name": "YouTube",
+      "category": "social",
+      "icon": "tabler:brand-youtube",
+      "linkPattern": "https://www.youtube.com/@{username}"
+    },
+    {
+      "id": "service-twitch",
+      "name": "Twitch",
+      "category": "social",
+      "icon": "tabler:brand-twitch",
+      "linkPattern": "https://www.twitch.tv/{username}"
+    },
+    {
+      "id": "service-github",
+      "name": "GitHub",
+      "category": "social",
+      "icon": "tabler:brand-github",
+      "linkPattern": "https://github.com/{username}"
+    }
+  ]
+}

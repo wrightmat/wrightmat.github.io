@@ -26,7 +26,7 @@ export function invalidateCommunityReference() {
   referencePromise = null;
 }
 
-// { scales, points, options, safetyTools, endorsements }
+// { scales, points, options, safetyTools, endorsements, services }
 export function loadCommunityReference() {
   if (!referencePromise) {
     referencePromise = Promise.all([
@@ -34,12 +34,14 @@ export function loadCommunityReference() {
       fetchJson("community-options.json"),
       fetchJson("community-safety-tools.json"),
       fetchJson("community-endorsements.json"),
-    ]).then(([scales, options, safetyTools, endorsements]) => ({
+      fetchJson("community-services.json"),
+    ]).then(([scales, options, safetyTools, endorsements, services]) => ({
       scales: scales.scales,
       points: scales.points,
       options,
       safetyTools: safetyTools.items || [],
       endorsements: endorsements.items || [],
+      services: services.items || [],
     }));
     referencePromise.catch(() => {
       referencePromise = null;

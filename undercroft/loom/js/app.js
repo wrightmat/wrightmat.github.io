@@ -1413,10 +1413,13 @@ function canRenameMapping() {
   return Boolean(currentMappingId);
 }
 
+// Owner and Public in the Library Item inspector are staged edits applied by Save, like the JSON beside them.
+let loomLibraryMetaChanges = null;
+
 function canSaveLibrary() {
   const kind = loomLibraryTableState.activeKind;
   const id = (libraryIdInput?.value || "").trim();
-  return Boolean(kind && id && currentLibraryEntity()) && isDirty("library");
+  return Boolean(kind && id && currentLibraryEntity()) && (isDirty("library") || Boolean(loomLibraryMetaChanges));
 }
 
 function canDeleteLibrary() {
@@ -4818,6 +4821,7 @@ function loomRenderLibraryTypeInspector() {
 // Same false→true edge tracking as loomLibraryTypeWasSelected above.
 let loomLibraryItemWasSelected = false;
 function loomRenderLibraryInspector() {
+  loomLibraryMetaChanges = null;
   loomRenderLibraryTypeInspector();
   const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
   const hasItem = Boolean(item);
@@ -4869,37 +4873,35 @@ function loomRenderLibraryInspector() {
   void loomRenderLibraryShareSummary(item);
 }
 
-if (loomLibraryInspectorOwner) {
-  loomLibraryInspectorOwner.addEventListener("change", async () => {
-    const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
-    if (!item) return;
-    const previousUsername = item.owner_username || "";
-    const selected = loomLibraryInspectorOwner.value;
-    if (!selected || selected === previousUsername) {
-      loomLibraryInspectorOwner.value = previousUsername;
-      return;
-    }
-    // Same window.confirm pattern as every other hard-to-undo action in
-    // Loom — changing an owner isn't destructive, but it does immediately
-    // hand this item's edit/delete rights to someone else.
-    const itemLabel = item.label || item.id;
-    if (!window.confirm(`Change the owner of "${itemLabel}" from ${previousUsername || "Unassigned"} to ${selected}?`)) {
-      loomLibraryInspectorOwner.value = previousUsername;
-      return;
-    }
-    loomLibraryInspectorOwner.disabled = true;
-    try {
-      await dataManager.updateContentOwner(item.bucket, item.id, selected);
-      if (status) status.show(`Owner changed to ${selected}.`, { type: "success", timeout: 2000 });
-      await loomLoadLibraryTable({ refresh: true });
-    } catch (error) {
-      loomLibraryInspectorOwner.value = previousUsername;
-      if (status) status.show(error.message || "Unable to change owner", { type: "danger" });
-    } finally {
-      loomLibraryInspectorOwner.disabled = !isLoomAdminSession();
-    }
-  });
+// Compares the controls with the stored item; Save applies the difference (loomApplyLibraryMetaChanges).
+function loomRefreshLibraryMetaChanges() {
+  const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
+  const changes = {};
+  if (item && loomLibraryInspectorOwner && !loomLibraryInspectorOwner.disabled) {
+    const owner = loomLibraryInspectorOwner.value;
+    if (owner && owner !== (item.owner_username || "")) changes.owner = owner;
+  }
+  if (item && loomLibraryInspectorPublic && !loomLibraryInspectorPublic.disabled) {
+    if (loomLibraryInspectorPublic.checked !== Boolean(item.is_public)) changes.isPublic = loomLibraryInspectorPublic.checked;
+  }
+  loomLibraryMetaChanges = Object.keys(changes).length ? { item, ...changes } : null;
+  updateToolbarState();
 }
+
+async function loomApplyLibraryMetaChanges() {
+  const changes = loomLibraryMetaChanges;
+  if (!changes) return;
+  const { item } = changes;
+  if (changes.owner) await dataManager.updateContentOwner(item.bucket, item.id, changes.owner);
+  if (changes.isPublic !== undefined) {
+    const target = { contentType: item.bucket, contentId: item.id, username: LOOM_ALL_USERS_USERNAME };
+    if (changes.isPublic) await dataManager.shareWithUser({ ...target, permissions: "view" });
+    else await dataManager.revokeShare(target);
+  }
+  loomLibraryMetaChanges = null;
+}
+
+if (loomLibraryInspectorOwner) loomLibraryInspectorOwner.addEventListener("change", loomRefreshLibraryMetaChanges);
 
 // A shortcut for the SAME mechanism the Share modal's own "All Users" share
 // target uses (sharing/revoking with this exact username is what flips
@@ -4908,31 +4910,7 @@ if (loomLibraryInspectorOwner) {
 // shareWithUser/revokeShare methods the modal's "All Users" row does.
 const LOOM_ALL_USERS_USERNAME = "All Users";
 
-if (loomLibraryInspectorPublic) {
-  loomLibraryInspectorPublic.addEventListener("change", async () => {
-    const item = loomFindLibraryItem(loomLibraryTableState.selectedKey);
-    if (!item || !dataManager) return;
-    const makePublic = loomLibraryInspectorPublic.checked;
-    loomLibraryInspectorPublic.disabled = true;
-    try {
-      if (makePublic) {
-        await dataManager.shareWithUser({ contentType: item.bucket, contentId: item.id, username: LOOM_ALL_USERS_USERNAME, permissions: "view" });
-      } else {
-        await dataManager.revokeShare({ contentType: item.bucket, contentId: item.id, username: LOOM_ALL_USERS_USERNAME });
-      }
-      // Kept in sync locally so the share summary line below reads
-      // item.is_public immediately, rather than waiting on a refetch.
-      item.is_public = makePublic;
-      if (status) status.show(makePublic ? "Marked public." : "Marked private.", { type: "success", timeout: 2000 });
-      void loomRenderLibraryShareSummary(item);
-    } catch (error) {
-      loomLibraryInspectorPublic.checked = !makePublic;
-      if (status) status.show(error.message || "Unable to change visibility", { type: "danger" });
-    } finally {
-      loomLibraryInspectorPublic.disabled = !libraryEntryAllowsDelete(item.bucket, item.id);
-    }
-  });
-}
+if (loomLibraryInspectorPublic) loomLibraryInspectorPublic.addEventListener("change", loomRefreshLibraryMetaChanges);
 
 // Two-step: a dry-run scan builds a confirmation prompt listing exactly
 // what will change (rename_item's own {touched} summary), then — only once
@@ -7443,6 +7421,17 @@ if (librarySaveButton) {
       status?.show("Enter an id to save as.", { type: "warning", timeout: 2000 });
       return;
     }
+    if (!isDirty("library") && loomLibraryMetaChanges) {
+      try {
+        await loomApplyLibraryMetaChanges();
+        status?.show(`Saved ${kind}/${id}.json.`, { type: "success", timeout: 2000 });
+        await loomLoadLibraryTable({ refresh: true });
+        updateToolbarState();
+      } catch (error) {
+        status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+      }
+      return;
+    }
     const entity = currentLibraryEntity();
     if (!entity) {
       status?.show("Entity JSON isn't valid — fix it before saving.", { type: "error", timeout: 3000 });
@@ -7466,6 +7455,9 @@ if (librarySaveButton) {
     try {
       if (!dataManager) throw new Error("Not signed in");
       await dataManager.save(kind, id, entity);
+      // Staged Owner / Public edits belong to the record they were made on, not to a Save-as copy.
+      const stagedItem = loomLibraryMetaChanges?.item;
+      if (stagedItem && stagedItem.bucket === kind && stagedItem.id === id) await loomApplyLibraryMetaChanges();
       status?.show(`Saved ${kind}/${id}.json.`, { type: "success", timeout: 2000 });
       await autoLinkEntityToSystems(kind, id, entity);
       await refreshLibraryEntryCatalog(kind);
@@ -8232,6 +8224,7 @@ async function init() {
     dataManager,
     getStatus: () => status,
     mount: document.querySelector("[data-loom-invites-mount]"),
+    inspectorMount: document.querySelector("[data-loom-invites-inspector-mount]"),
   });
   loomGroupCommunity = initGroupCommunity({
     dataManager,

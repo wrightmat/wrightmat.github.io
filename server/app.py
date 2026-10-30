@@ -810,6 +810,12 @@ def register_routes():
 
     router.add("GET", r"^/healthz$", handle_healthz)
 
+    # GET /environment
+    def handle_environment(request: Request) -> Response:
+        return json_response({"label": request.state.config.options.environment_label})
+
+    router.add("GET", r"^/environment$", handle_environment)
+
     # GET /list/{bucket}
     def handle_list(request: Request) -> Response:
         params = getattr(request, "params")

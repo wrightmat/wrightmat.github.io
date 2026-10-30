@@ -11,6 +11,7 @@
     "log_level": "info",
     "require_email_verification": true,
     "require_invite": false,
+    "environment_label": "UAT",
     "debug_verification_codes": false,
     "seed_dev_accounts": false,
     "local_file_access": false,

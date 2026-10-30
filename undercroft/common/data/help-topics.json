@@ -776,7 +776,7 @@
       "title": "Invites",
       "summary": "A shareable sign-up link that can start new accounts at a chosen tier and shows where each sign-up came from.",
       "details": [
-        "Create an invite with a label (for example where you'll post the link), the tier an account starts at, an optional limit on how many accounts can use it, and an optional expiry. Copy its link and share it. Opening the link brings up the sign-up form with the code filled in.",
+        "Use + to create an invite, or select one in the list to edit it in the right pane. An invite has a label (for example where you'll post the link), the tier an account starts at, an optional limit on how many accounts can use it, and an optional expiry. Copy its link and share it. Opening the link brings up the sign-up form with the code filled in.",
         "The starting tier applies only to accounts created through that invite, and an invite can never create an administrator. A high-tier invite is powerful, so keep its limit low or its expiry short.",
         "Each invite lists how many accounts have used it and who they are. A sign-up that is still waiting for its email code counts toward the limit.",
         "Switch an invite off to stop it working without deleting it, or delete it to remove it. Accounts that already joined keep working either way, and changing an invite's tier doesn't change them.",
@@ -2310,7 +2310,8 @@
       "title": "Your Profile",
       "summary": "A profile tells GMs and players what you like and how you play. Everything on it is optional.",
       "details": [
-        "Open Account Settings and choose the Profile tab. A profile holds a bio, your role, experience, systems you know, time zone, typical availability, preferred session length, safety tools, an open-to status and your preferences.",
+        "Open Account Settings and choose the Profile tab. A profile holds a bio, your role, experience, systems you know, other accounts, time zone, typical availability, preferred session length, safety tools, an open-to status and your preferences.",
+        "Other accounts lists your usernames on play services and social sites. Choose a service, type your username there and add it; each shows on your profile as a badge, linked to your page on that service where the service has one. Usernames aren't checked, so type them as they appear on the service.",
         "Profiles are private until you make yours public. A public profile also makes your history (see Signals) visible to other signed-in users.",
         "“See how others see my profile” previews exactly what a visitor would see.",
         "Choosing “Looking for a game” or “Recruiting” lists your public profile in the People view of Find a Game."
@@ -2538,6 +2539,20 @@
         "An admin curates the list in Loom's Community tab: add a tag, rename it, drag to reorder, or remove it. The list starts with a set of common genres.",
         "When a GM adds a tag to a listing the curated tags are suggested, so similar listings use the same words. A GM can still type one that isn't on the list.",
         "Renaming a tag, or renaming it to match another, updates every listing that carries it. Removing a tag takes it off every listing."
+      ],
+      "category": "Community",
+      "section": "Shared Lists",
+      "href": "../loom/index.html?view=community"
+    },
+    {
+      "id": "community.services",
+      "title": "External Services",
+      "summary": "The play services and social sites people can list their usernames on.",
+      "details": [
+        "Admins curate the list in Loom's Community tab: add, change, remove or reorder services. Each has a name, whether it is a play service or social media, and an icon.",
+        "The icon is either an icon name such as tabler:brand-discord or the web address of an image, such as the service's favicon. A preview appears beside it.",
+        "A service can have a profile link, with {username} standing in for the person's username (for example https://github.com/{username}). Badges for that service then link to the person's page; leave it empty for services whose usernames don't map to a page.",
+        "Removing a service takes its badges off profiles. The usernames people typed aren't verified by the service."
       ],
       "category": "Community",
       "section": "Shared Lists",

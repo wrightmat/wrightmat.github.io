@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import secrets
 from dataclasses import dataclass
 from pathlib import Path
@@ -54,6 +55,25 @@ def _clean_endorsement(entry: Dict[str, Any]) -> Dict[str, Any]:
     if entry.get("appliesTo") not in APPLIES_TO:
         raise AuthError("An endorsement applies to GMs, players or both")
     return {"name": _text(entry.get("name"), "Name", 80), "appliesTo": entry["appliesTo"]}
+
+
+SERVICE_CATEGORIES = ("play", "social")
+ICON_ID = re.compile(r"^[a-z0-9][a-z0-9-]*:[a-z0-9][a-z0-9-]*$")
+
+
+def _clean_service(entry: Dict[str, Any]) -> Dict[str, Any]:
+    if entry.get("category") not in SERVICE_CATEGORIES:
+        raise AuthError("A service is for play or for social media")
+    icon = _text(entry.get("icon"), "Icon", 300)
+    if not (ICON_ID.match(icon) or (icon.startswith("https://") and not re.search(r"\s", icon))):
+        raise AuthError("The icon must be an icon name such as tabler:brand-discord, or an https:// image address")
+    cleaned = {"name": _text(entry.get("name"), "Name", 60), "category": entry["category"], "icon": icon}
+    pattern = _text(entry.get("linkPattern"), "Link pattern", 300, required=False)
+    if pattern:
+        if not pattern.startswith("https://") or re.search(r"\s", pattern) or pattern.count("{username}") != 1:
+            raise AuthError("The link pattern must start with https:// and contain {username} once")
+        cleaned["linkPattern"] = pattern
+    return cleaned
 
 
 def _clean_tag(entry: Dict[str, Any]) -> Dict[str, Any]:
@@ -110,6 +130,7 @@ _COMMUNITY = ("common", "data")
 LISTS: Dict[str, ListSpec] = {
     "safety-tools": ListSpec("/community/lists/safety-tools", _COMMUNITY + ("community-safety-tools.json",), "items", "item", _clean_safety_tool, "admin"),
     "endorsements": ListSpec("/community/lists/endorsements", _COMMUNITY + ("community-endorsements.json",), "items", "item", _clean_endorsement, "admin"),
+    "services": ListSpec("/community/lists/services", _COMMUNITY + ("community-services.json",), "items", "item", _clean_service, "admin"),
     "tags": ListSpec("/community/lists/tags", _COMMUNITY + ("community-tags.json",), "items", "item", _clean_tag, "admin"),
     "reactions": ListSpec("/community/lists/reactions", _COMMUNITY + ("chat-reactions.json",), "emoji", "item", _clean_reaction, "admin"),
     "fonts": ListSpec("/custom-fonts", _COMMUNITY + ("custom-fonts.json",), "fonts", "font", _clean_font, "creator"),
