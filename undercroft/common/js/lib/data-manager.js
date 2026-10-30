@@ -1797,6 +1797,18 @@ export class DataManager {
     return this._request(this._groupPath(groupId, "/leave"), { method: "POST", body: {}, auth: true });
   }
 
+  async addGroupPlayer(groupId, username) {
+    return this._request(this._groupPath(groupId, "/players"), { method: "POST", body: { username }, auth: true });
+  }
+
+  async getAddableGroupPlayers(groupId) {
+    return this._request(this._groupPath(groupId, "/addable-players"), { auth: true });
+  }
+
+  async getAddableGroupCharacters(groupId) {
+    return this._request(this._groupPath(groupId, "/addable-characters"), { auth: true });
+  }
+
   async removeGroupPlayer(groupId, userId) {
     return this._request(this._groupPath(groupId, `/players/${encodeURIComponent(userId)}/remove`), {
       method: "POST",

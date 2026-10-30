@@ -198,11 +198,62 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
     label: "Players",
     collapsed: false,
     helpTopic: "community.players",
+    actions: [{ icon: "tabler:plus", label: "Add player", onClick: () => openAddPlayer() }],
     content: playerContent,
     className: "d-flex flex-column gap-2",
     panelClassName: "d-flex flex-column gap-2",
   });
   playersMount.appendChild(playerSection.section);
+
+  async function openAddPlayer() {
+    if (!group || playerContent.querySelector("[data-add-player]")) return;
+    let usernames;
+    try {
+      usernames = (await dataManager.getAddableGroupPlayers(group.id)).players;
+    } catch (error) {
+      say(error.message || "Unable to load accounts.", "danger");
+      return;
+    }
+    const row = el("div", "d-flex flex-nowrap align-items-center gap-2");
+    row.dataset.addPlayer = "";
+    // Typing filters the suggestions; the server still checks the name is a real account.
+    const suggestions = el("datalist");
+    suggestions.id = `add-player-options-${group.id}`;
+    usernames.forEach((username) => suggestions.appendChild(new Option(username)));
+    const name = control("input", {
+      type: "text",
+      maxlength: 80,
+      list: suggestions.id,
+      placeholder: usernames.length ? "Choose or type a username" : "No other accounts to add",
+      "aria-label": "Player to add",
+      autocomplete: "off",
+    });
+    name.disabled = !usernames.length;
+    if (!usernames.length) name.title = "Every active account is already in this group.";
+    name.classList.add("flex-grow-1");
+    name.style.minWidth = "0";
+    const submit = async () => {
+      try {
+        const added = await dataManager.addGroupPlayer(group.id, name.value);
+        say(`${added.player.username} added to the group.`);
+        onGroupChanged?.();
+      } catch (error) {
+        say(error.message || "Unable to add the player.", "danger");
+      }
+    };
+    name.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") void submit();
+    });
+    row.append(
+      name,
+      suggestions,
+      createIconButton({ icon: "tabler:user-plus", label: "Add player", variant: "outline-primary", onClick: submit }),
+      createIconButton({ icon: "tabler:x", label: "Cancel", variant: "outline-secondary", onClick: () => row.remove() }),
+    );
+    playerContent.prepend(row);
+    refreshTooltips(row);
+    name.focus();
+  }
 
   function renderPlayers() {
     disposeTooltips(playerList);

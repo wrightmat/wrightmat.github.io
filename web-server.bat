@@ -1,1 +1,1 @@
-python web-server.py
+python web-server.py --config server.config.dev.json

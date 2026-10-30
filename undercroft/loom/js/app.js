@@ -3066,6 +3066,7 @@ document.querySelector("[data-loom-group-characters-mount]")?.appendChild(
     label: "Characters",
     helpTopic: "loom.groupMembers",
     collapsed: false,
+    actions: [{ icon: "tabler:plus", label: "Add character", onClick: () => loomOpenAddGroupCharacter() }],
     content: document.querySelector("[data-loom-group-characters-content]"),
   }).section
 );
@@ -3871,6 +3872,52 @@ function loomRenderGroupMembersList(group) {
     loomGroupMembersList.appendChild(wrapper);
   });
   void initHelpSystem({ root: loomGroupMembersList.parentElement });
+}
+
+// Offers the characters of the GM and of players already in the group that aren't on the roster yet.
+async function loomOpenAddGroupCharacter() {
+  const group = loomFindGroup(loomGroupsState.selectedId);
+  const host = document.querySelector("[data-loom-group-characters-content]");
+  if (!group || !host || host.querySelector("[data-add-group-character]")) return;
+  let characters;
+  try {
+    characters = (await dataManager.getAddableGroupCharacters(group.id)).characters;
+  } catch (error) {
+    if (status) status.show(error.message || "Unable to load characters", { type: "danger" });
+    return;
+  }
+  const systemId = loomGroupSystemSelect?.value || "";
+  const offered = characters.filter((character) => !systemId || !character.systemIds.length || character.systemIds.includes(systemId));
+  const row = document.createElement("div");
+  row.className = "d-flex flex-nowrap align-items-center gap-2";
+  row.dataset.addGroupCharacter = "";
+  if (!offered.length) {
+    row.innerHTML = '<span class="small text-body-secondary flex-grow-1">No other characters to add. Add the player who owns the character first.</span>';
+  } else {
+    const picker = document.createElement("select");
+    picker.className = "form-select form-select-sm flex-grow-1";
+    picker.setAttribute("aria-label", "Character to add");
+    offered.forEach((character) => picker.appendChild(new Option(`${character.title}${character.owner ? ` (${character.owner})` : ""}`, character.id)));
+    const addButton = createIconButton({
+      icon: "tabler:user-plus",
+      label: "Add character",
+      variant: "outline-primary",
+      onClick: async () => {
+        const current = Array.from(loomGroupMembersList.querySelectorAll("[data-loom-group-member-checkbox]:checked")).map((input) => input.value);
+        try {
+          await dataManager.updateGroupMembers({ id: group.id, characterIds: [...current, picker.value] });
+          if (status) status.show("Character added.", { type: "success", timeout: 1400 });
+          await loomLoadGroups({ refresh: true });
+        } catch (error) {
+          if (status) status.show(error.message || "Unable to add the character", { type: "danger" });
+        }
+      },
+    });
+    row.append(picker, addButton);
+  }
+  row.appendChild(createIconButton({ icon: "tabler:x", label: "Cancel", variant: "outline-secondary", onClick: () => row.remove() }));
+  host.prepend(row);
+  refreshTooltips(row);
 }
 
 function loomRenderGroupDetail() {

@@ -1556,6 +1556,104 @@ def leave_group(state: ServerState, user: Optional[User], group_id: str) -> Dict
     return {"ok": True}
 
 
+def add_player(state: ServerState, owner: Optional[User], group_id: str, username: str) -> Dict[str, Any]:
+    """The GM (or an admin) adds a player by username. The player is told in their Inbox and can leave."""
+    row = _require_owner(state, group_id, owner)
+    target = state.db.execute(
+        "SELECT id, username FROM users WHERE username = ? AND is_active = 1", (str(username or "").strip(),)
+    ).fetchone()
+    if not target:
+        raise AuthError("No account has that username")
+    if target["id"] == row["owner_id"]:
+        raise AuthError("That person is the GM of this group")
+    if _is_player(state.db, group_id, target["id"]):
+        raise AuthError(f"{target['username']} is already a player of this group")
+    ensure_player(state, group_id, target["id"])
+    state.db.execute(
+        "UPDATE library_items SET modified_at = ? WHERE kind = 'group' AND id = ?",
+        (datetime.utcnow().isoformat(), group_id),
+    )
+    state.db.commit()
+    # Local import: chat.py imports this module.
+    from . import chat
+
+    try:
+        chat.send_direct_message(
+            state,
+            group_id,
+            owner,
+            recipient_ids=[target["id"]],
+            body=(
+                f'You were added to "{row["name"]}" by {owner.username}. '
+                "You can leave the group any time from Account Settings, under Groups I play in."
+            ),
+        )
+    except AuthError:
+        pass  # the player is added either way; the notice is a courtesy
+    return {"ok": True, "player": {"user_id": target["id"], "username": target["username"]}}
+
+
+def addable_players(state: ServerState, owner: Optional[User], group_id: str) -> Dict[str, Any]:
+    """Active accounts that are neither the GM nor already players, for the Add player picker."""
+    row = _require_owner(state, group_id, owner)
+    rows = state.db.execute(
+        """
+        SELECT username FROM users
+        WHERE is_active = 1 AND id IS NOT ?
+          AND CAST(id AS TEXT) NOT IN (
+              SELECT content_id FROM group_members WHERE group_id = ? AND content_type = 'player'
+          )
+        ORDER BY username COLLATE NOCASE
+        """,
+        (row["owner_id"], group_id),
+    ).fetchall()
+    return {"players": [item["username"] for item in rows]}
+
+
+def addable_characters(state: ServerState, owner: Optional[User], group_id: str) -> Dict[str, Any]:
+    """Characters that belong to the GM or to a player already in the group and are not on the roster yet."""
+    row = _require_owner(state, group_id, owner)
+    owner_ids = {row["owner_id"]} if row["owner_id"] is not None else set()
+    for member in state.db.execute(
+        "SELECT content_id FROM group_members WHERE group_id = ? AND content_type = 'player'", (group_id,)
+    ):
+        owner_ids.add(int(member["content_id"]))
+    if not owner_ids:
+        return {"characters": []}
+    marks = ",".join("?" for _ in owner_ids)
+    rows = state.db.execute(
+        f"""
+        SELECT li.id, li.title, li.owner_id, li.metadata, u.username
+        FROM library_items AS li LEFT JOIN users AS u ON u.id = li.owner_id
+        WHERE li.kind = 'character' AND li.owner_id IN ({marks})
+          AND li.id NOT IN (
+              SELECT content_id FROM group_members WHERE group_id = ? AND content_type = 'character'
+          )
+        ORDER BY u.username COLLATE NOCASE, li.title COLLATE NOCASE
+        """,
+        [*owner_ids, group_id],
+    ).fetchall()
+    characters = []
+    for item in rows:
+        try:
+            metadata = json.loads(item["metadata"]) if item["metadata"] else {}
+        except (TypeError, ValueError):
+            metadata = {}
+        system_ids = metadata.get("systemIds") if isinstance(metadata.get("systemIds"), list) else []
+        if not system_ids and metadata.get("system"):
+            system_ids = [metadata["system"]]
+        characters.append(
+            {
+                "id": item["id"],
+                "title": item["title"] or item["id"],
+                "ownerId": item["owner_id"],
+                "owner": item["username"] or "",
+                "systemIds": system_ids,
+            }
+        )
+    return {"characters": characters}
+
+
 def remove_player(state: ServerState, owner: Optional[User], group_id: str, user_id: int) -> Dict[str, Any]:
     """The GM (or an admin) removes a player."""
     _require_owner(state, group_id, owner)

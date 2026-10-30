@@ -1,0 +1,1 @@
+python web-server.py --config server.config.rehearsal.json %*

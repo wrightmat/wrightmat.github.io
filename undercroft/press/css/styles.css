@@ -1,11 +1,31 @@
 /* Press-specific styling builds on the shared Workbench shell. */
 
+/* The print surface fills the center pane's full height; the stage inside it scrolls a zoomed-in page
+   instead of growing the page around it ("two scrollbars"). */
+.press-surface-card {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.press-surface-card > .card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The panel's own display is set by the view switcher, so the stage takes the panel's height with a
+   percentage rather than relying on the panel being a flex container. */
+.press-surface-card [data-view-panel="preview"] {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .preview-stage {
-  /* max-height (not just min-height) forces overflow:auto to actually
-     scroll a zoomed-in page instead of growing the whole surrounding page
-     ("two scrollbars"). */
-  min-height: 70vh;
-  max-height: 70vh;
+  height: 100%;
+  min-height: 20rem;
   display: flex;
   /* "safe center": centers when the page fits, falls back to start-align
      once zoomed content overflows (plain "center" would leave the leading

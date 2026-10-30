@@ -12,3 +12,9 @@ server/secret.local.json
 *.sqlite-wal
 *.sqlite-shm
 *.sqlite.bak*
+
+# Local-only configuration, secrets and the UAT rehearsal scratch folder
+secrets/
+server.config.dev.json
+server.config.rehearsal.json
+data-uat-rehearsal/

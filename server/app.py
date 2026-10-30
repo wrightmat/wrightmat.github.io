@@ -2395,6 +2395,28 @@ def register_routes():
 
     router.add("POST", r"^/groups/(?P<group_id>[^/]+)/leave$", handle_leave_group)
 
+    def handle_add_player(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            group_store.add_player(request.state, user, getattr(request, "params")["group_id"], str(data.get("username") or "")),
+            status=HTTPStatus.CREATED,
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/players$", handle_add_player)
+
+    def handle_addable_players(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(group_store.addable_players(request.state, user, getattr(request, "params")["group_id"]))
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/addable-players$", handle_addable_players)
+
+    def handle_addable_characters(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(group_store.addable_characters(request.state, user, getattr(request, "params")["group_id"]))
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/addable-characters$", handle_addable_characters)
+
     def handle_remove_player(request: Request) -> Response:
         user = require_user(request)
         params = getattr(request, "params")

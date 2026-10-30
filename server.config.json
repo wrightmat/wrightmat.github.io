@@ -2,18 +2,25 @@
   "server": {
     "host": "127.0.0.1",
     "port": 8000,
-    "cors_origin": "*",
+    "cors_origin": "",
     "session_ttl_days": 7,
     "config_watch": false,
     "log_level": "info",
     "require_email_verification": true,
     "debug_verification_codes": false,
-    "seed_dev_accounts": true,
+    "seed_dev_accounts": false,
     "require_invite": false,
-    "local_file_access": true,
+    "local_file_access": false,
     "trusted_proxies": [],
-    "static_roots": ["undercroft", "beer", "codex", "controlpanel", "dnd", "mapping", "sheets"],
-    "ddb_proxy_allowed_hosts": ["www.dndbeyond.com", "dndbeyond.com", "monster-service.dndbeyond.com", "character-service.dndbeyond.com"]
+    "static_roots": [
+      "undercroft"
+    ],
+    "ddb_proxy_allowed_hosts": [
+      "www.dndbeyond.com",
+      "dndbeyond.com",
+      "monster-service.dndbeyond.com",
+      "character-service.dndbeyond.com"
+    ]
   },
   "database": {
     "path": "data/database.sqlite"
@@ -31,30 +38,13 @@
   },
   "mounts": [
     {
-      "name": "sheets",
-      "type": "static",
-      "root": "sheets",
-      "directory_listing": false
-    },
-    {
-      "name": "codex",
-      "type": "static",
-      "root": "codex",
-      "directory_listing": false
-    },
-    {
-      "name": "codex-templates",
-      "type": "static",
-      "root": "codex/templates",
-      "directory_listing": true,
-      "directory_extensions": [".htm", ".html"]
-    },
-    {
       "name": "loom-mappings",
       "type": "static",
       "root": "undercroft/loom/mappings",
       "directory_listing": true,
-      "directory_extensions": [".json"]
+      "directory_extensions": [
+        ".json"
+      ]
     }
   ]
 }
