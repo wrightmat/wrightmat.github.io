@@ -7295,6 +7295,33 @@ function wireEvents() {
       { passive: false }
     );
   }
+  // Two-finger pinch over the preview or Grid View zooms the same way the buttons do.
+  const pinchSurface = document.querySelector(".press-surface-card > .card-body");
+  if (pinchSurface) {
+    const spread = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+    let pinchStartSpread = 0;
+    let pinchStartZoom = 1;
+    let pinchFrame = 0;
+    pinchSurface.addEventListener("touchstart", (event) => {
+      if (event.touches.length !== 2) return;
+      pinchStartSpread = spread(event.touches);
+      pinchStartZoom = zoomLevel;
+    }, { passive: true });
+    pinchSurface.addEventListener(
+      "touchmove",
+      (event) => {
+        if (event.touches.length !== 2 || !pinchStartSpread) return;
+        event.preventDefault();
+        const ratio = spread(event.touches) / pinchStartSpread;
+        cancelAnimationFrame(pinchFrame);
+        pinchFrame = requestAnimationFrame(() => setCanvasZoom(pinchStartZoom * ratio));
+      },
+      { passive: false }
+    );
+    pinchSurface.addEventListener("touchend", (event) => {
+      if (event.touches.length < 2) pinchStartSpread = 0;
+    });
+  }
   if (generateButton) {
     generateButton.addEventListener("click", handleGeneratePrint);
     generateButton.addEventListener("click", collapseLeftPaneOnPhone);

@@ -11,6 +11,8 @@
 
 .press-surface-card > .card-body {
   position: relative;
+  /* Panning stays native; the two-finger pinch is handled by the page (zoom), not the browser. */
+  touch-action: pan-x pan-y;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -583,6 +585,20 @@ body[data-theme="dark"] .preview-stage {
 }
 
 
+/* Below lg the page scrolls as a whole instead of the center pane, so the surface is sized to the visible screen
+   (less the header and the pane's padding) and the stage scrolls a zoomed page inside it. */
+@media (max-width: 991.98px) {
+  .press-surface-card {
+    height: calc(100vh - var(--undercroft-header-height, 4.5rem) - 2rem);
+  }
+
+  @supports (height: 100dvh) {
+    .press-surface-card {
+      height: calc(100dvh - var(--undercroft-header-height, 4.5rem) - 2rem);
+    }
+  }
+}
+
 /* On a phone the view toggle keeps only its icons (the text stays for screen readers) so the banner holds Print,
    Front/Back and the toggle on one row. */
 @media (max-width: 575.98px) {
@@ -593,13 +609,6 @@ body[data-theme="dark"] .preview-stage {
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .preview-stage {
-    min-height: 50vh;
-    max-height: 50vh;
   }
 }
 
