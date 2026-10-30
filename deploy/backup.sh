@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Back up Undercroft: a consistent copy of the database plus the data folder, and (separately) the secrets.
 #
-#   sudo deploy/backup.sh [destination] [keep]      defaults: /srv/backups/undercroft, keep 14
+#   sudo bash deploy/backup.sh [destination] [keep]    defaults: /srv/backups/undercroft, keep 14
 #
 # The secrets archive holds the key that decrypts stored credentials; keep it somewhere other than
 # where the data archives go (a different disk or machine), or a leaked data backup can be read.

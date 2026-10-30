@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Update a running Undercroft: back up, pull the new code, restart, and check it came back healthy.
 #
-#   sudo deploy/deploy.sh [git-ref]        default: the tracked branch's newest commit
+#   sudo bash deploy/deploy.sh [git-ref]      default: the tracked branch's newest commit
 #
 # The code lives in /srv/containers/undercroft/app (a git checkout mounted read-only into the
 # container). Rebuild the image separately only for base-image patches or dependency changes:
@@ -14,7 +14,7 @@ REF=${1:-}
 
 cd "$APP"
 PREVIOUS=$(git rev-parse HEAD)
-"$APP/deploy/backup.sh"
+bash "$APP/deploy/backup.sh"
 
 git fetch --quiet
 if [ -n "$REF" ]; then git checkout --quiet "$REF"; else git pull --quiet --ff-only; fi
