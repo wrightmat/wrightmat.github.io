@@ -530,15 +530,17 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
 // gap/padding/shadow are hardcoded to one canonical value so a new tool has
 // no knob to drift on. `mountEl`'s CHILDREN (not the marker div itself) move
 // wholesale into the new wrapper, preserving whatever structure was inside.
-function buildPaneShell(mountEl, { side, size = "default", initial = "expanded" }) {
+function buildPaneShell(mountEl, { side, size = "default", initial = "expanded", phoneInitial = "collapsed" }) {
   if (!mountEl) {
     return null;
   }
-  // Below md, both panes start collapsed regardless of what was requested —
-  // a phone viewport has no room for an 18-20rem pane. Only overrides the
-  // INITIAL state; the pane-toggle buttons still open/close normally after.
+  // Below md a pane is a drawer, so it starts collapsed unless the tool asks for it open (`phoneInitial`: a tool
+  // whose first act is picking something) — and even then not when the page was opened with a query string, which
+  // means a resource was passed in and there is nothing to pick. Only the INITIAL state; the toggles work as usual.
   const isNarrowViewport = window.matchMedia("(max-width: 767.98px)").matches;
-  const effectiveInitial = isNarrowViewport ? "collapsed" : initial;
+  const resourcePassed = [...new URLSearchParams(window.location.search).keys()].some((key) => key !== "invite");
+  const phoneOpen = phoneInitial === "expanded" && !resourcePassed;
+  const effectiveInitial = isNarrowViewport ? (phoneOpen ? "expanded" : "collapsed") : initial;
   const aside = document.createElement("aside");
   aside.dataset.pane = side;
   aside.setAttribute("data-pane-collapsed-class", "d-none");
@@ -595,6 +597,15 @@ function showFeedback(status, feedback, fallbackMessage) {
 // Any code reading a header-internal element must query it AFTER this call
 // — a module-top-level `const` capturing it too early has caused real bugs.
 // Prefer a live `document.querySelector` at point of use.
+// A generator's result is what the user came to read, so on a phone the left-pane drawer closes once Generate is
+// pressed.
+export function collapseLeftPaneOnPhone() {
+  if (!window.matchMedia("(max-width: 767.98px)").matches) return;
+  const pane = document.querySelector('[data-pane="left"]');
+  const toggle = document.querySelector('[data-pane-toggle="left"]');
+  if (pane && toggle && pane.dataset.state === "expanded") collapsePane(pane, toggle);
+}
+
 export function initAppShell({
   root = document,
   namespace = "default",
@@ -612,10 +623,11 @@ export function initAppShell({
   // attribute name only — each tool's own app.js still builds/wires the
   // button via tool-settings.js.
   settingsSlotAttr = null,
-  // { size: "default"|"lg", initial: "expanded"|"collapsed" } — every tool
-  // has a left pane, so this always builds one. Pass leftPane: null only if
-  // a page genuinely has none (none currently do).
-  leftPane = { size: "default", initial: "expanded" },
+  // { size: "default"|"lg", initial: "expanded"|"collapsed", phoneInitial } — every tool has a left pane, so this
+  // always builds one (pass leftPane: null only if a page genuinely has none; none currently do). Most tools open
+  // by picking something in it, so by default it starts open on a phone too; a tool where the pane is not the
+  // first stop (Loom's tabs, the Dashboard) passes phoneInitial: "collapsed".
+  leftPane = { size: "default", initial: "expanded", phoneInitial: "expanded" },
   // Same shape, but pass rightPane: null for a page with no right pane at
   // all (docs.html is the one page in the suite like this).
   rightPane = { size: "default", initial: "expanded" },

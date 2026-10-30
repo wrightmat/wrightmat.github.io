@@ -14,7 +14,7 @@ import {
   attachClassNameAutocomplete,
 } from "../../common/js/lib/class-name-picker.js";
 import { TEXT_SIZE_PX, pxToPt, ptToPx } from "../../common/js/lib/text-size.js";
-import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { initAppShell, collapseLeftPaneOnPhone } from "../../common/js/lib/app-shell.js";
 import { DataManager } from "../../common/js/lib/data-manager.js";
 import { resolveApiBase } from "../../common/js/lib/api.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
@@ -65,6 +65,7 @@ import { loadSampleData, setSampleDataText, getSampleDataText, getSampleData, su
 import { resolveBinding } from "../../common/js/lib/bindings.js";
 import { createFormulaFunctions } from "../../common/js/lib/formula-functions.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
+import { initFloatingDock } from "../../common/js/lib/floating-dock.js";
 import { refreshTooltips, disposeTooltips, updateTooltipContent, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { attachFormulaAutocomplete } from "../../common/js/lib/formula-autocomplete.js";
 import { listFormulaFunctionMetadata } from "../../common/js/lib/formula-metadata.js";
@@ -4950,7 +4951,8 @@ function updateSideButton() {
   const viewingFront = currentSide === "front";
   const currentLabel = viewingFront ? "Front" : "Back";
   const nextLabel = viewingFront ? "Back" : "Front";
-  swapSideButton.textContent = `Showing ${currentLabel} (switch to ${nextLabel})`;
+  swapSideButton.querySelector("[data-side-label]").textContent = currentLabel;
+  updateTooltipContent(swapSideButton, `Showing the ${currentLabel.toLowerCase()} (switch to the ${nextLabel.toLowerCase()})`);
   swapSideButton.setAttribute("aria-pressed", viewingFront ? "false" : "true");
 }
 
@@ -5744,7 +5746,9 @@ function setInspectorMode(mode) {
   // captured null permanently.
   const rightPaneToggle = document.querySelector('[data-pane-toggle="right"]');
   const rightPane = queryRightPane();
-  if (rightPane && rightPaneToggle) {
+  // Picking a template on a phone leaves the drawer closed so the preview can be seen; editing a component opens it.
+  const keepClosedOnPhone = mode === "template" && window.matchMedia("(max-width: 767.98px)").matches;
+  if (rightPane && rightPaneToggle && !keepClosedOnPhone) {
     expandPane(rightPane, rightPaneToggle);
   }
   if (mode === "template") {
@@ -7232,6 +7236,7 @@ function wireEvents() {
     renderPreview();
   });
   swapSideButton.addEventListener("click", toggleSide);
+  initFloatingDock(document.querySelector("[data-canvas-dock]"), document.querySelector(".press-surface-card > .card-body"));
   if (cardPagePrevButton) {
     cardPagePrevButton.addEventListener("click", () => {
       if (cardPageIndex <= 0) return;
@@ -7292,6 +7297,7 @@ function wireEvents() {
   }
   if (generateButton) {
     generateButton.addEventListener("click", handleGeneratePrint);
+    generateButton.addEventListener("click", collapseLeftPaneOnPhone);
   }
   printButton.addEventListener("click", () => {
     window.bootstrap?.Tooltip?.getInstance(printButton)?.hide();

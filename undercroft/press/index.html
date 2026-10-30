@@ -65,45 +65,26 @@
                  every other tool's own Mode/View header. -->
             <div class="card shadow-theme press-surface-card">
               <div class="card-header bg-body-tertiary d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-3 flex-wrap">
-                  <button
-                    class="btn btn-primary btn-sm"
-                    type="button"
-                    id="printButton"
-                  >
-                    <span class="iconify" data-icon="tabler:printer" aria-hidden="true"></span>
-                    Print
-                  </button>
-                  <div class="press-guide-legend" data-canvas-guide-legend hidden></div>
-                </div>
-                <div class="btn-group btn-group-sm" role="group" aria-label="Canvas zoom">
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    data-canvas-zoom-out
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Zoom out"
-                  >−</button>
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    data-canvas-zoom-reset
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Reset to 100%"
-                  ><span data-canvas-zoom-level>100%</span></button>
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    data-canvas-zoom-in
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-title="Zoom in"
-                  >+</button>
-                </div>
+                <button
+                  class="btn btn-primary btn-sm"
+                  type="button"
+                  id="printButton"
+                >
+                  <span class="iconify" data-icon="tabler:printer" aria-hidden="true"></span>
+                  Print
+                </button>
                 <div class="d-flex align-items-center gap-2" data-view-controls="preview">
-                  <button class="btn btn-outline-secondary btn-sm" id="swapSide">Show Back Side</button>
+                  <button
+                    class="btn btn-outline-secondary btn-sm"
+                    type="button"
+                    id="swapSide"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-title="Showing the front (switch to the back)"
+                  >
+                    <span class="iconify" data-icon="tabler:flip-horizontal" aria-hidden="true"></span>
+                    <span data-side-label>Front</span>
+                  </button>
                   <div class="btn-group btn-group-sm" role="group" aria-label="Card page" data-card-page-nav hidden>
                     <button
                       class="btn btn-outline-secondary"
@@ -151,7 +132,32 @@
                 </div>
                 <div class="d-flex align-items-center gap-2 ms-auto" data-press-mode-toggle-mount></div>
               </div>
-              <div class="card-body bg-body-secondary">
+              <div class="card-body bg-body-secondary position-relative">
+                <div class="press-key" data-canvas-guide-legend hidden></div>
+                <div class="press-dock floating-dock shadow-theme" data-canvas-dock>
+                  <div class="floating-dock-grip text-body-secondary" aria-hidden="true">
+                    <span class="iconify" data-icon="tabler:grip-horizontal"></span>
+                  </div>
+                  <div class="floating-dock-body">
+                    <div class="btn-group-vertical btn-group-sm" role="group" aria-label="Canvas zoom">
+                      <button class="btn btn-outline-secondary" type="button" data-canvas-zoom-in data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Zoom in">
+                        <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
+                        <span class="visually-hidden">Zoom in</span>
+                      </button>
+                      <button class="btn btn-outline-secondary floating-dock-amount disabled" type="button" tabindex="-1" aria-live="polite">
+                        <span data-canvas-zoom-level>100%</span>
+                      </button>
+                      <button class="btn btn-outline-secondary" type="button" data-canvas-zoom-out data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Zoom out">
+                        <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
+                        <span class="visually-hidden">Zoom out</span>
+                      </button>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" type="button" data-canvas-zoom-reset data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Reset to 100%">
+                      <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                      <span class="visually-hidden">Reset zoom</span>
+                    </button>
+                  </div>
+                </div>
                 <div data-view-panel="preview">
                   <div class="preview-stage" id="previewStage" aria-live="polite"></div>
                 </div>

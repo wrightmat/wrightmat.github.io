@@ -8177,6 +8177,7 @@ async function init() {
   const shell = initAppShell({
     namespace: "loom-mapping",
     storagePrefix: "undercroft.loom.undo",
+    leftPane: { size: "default", initial: "expanded", phoneInitial: "collapsed" },
     leftPaneLabel: "Toggle palette pane",
     rightPaneLabel: "Toggle inspector pane",
     onUndo: (entry) => {

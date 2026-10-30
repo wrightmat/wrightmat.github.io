@@ -444,12 +444,37 @@
   z-index: 1035;
 }
 
-.orrery-view-handle {
-  cursor: grab;
+/* The control panel is one narrow vertical dock at every screen size: zoom, reset and one Tools button that opens a
+   column of tools, with the active tool's extras (colour, snap, readout) stacked underneath. */
+.orrery-floating-panel {
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.375rem;
 }
 
-.orrery-floating-panel.is-dragging .orrery-view-handle {
-  cursor: grabbing;
+.orrery-tools {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.orrery-tools.is-open {
+  display: flex;
+}
+
+/* The view details sit in a card beside the dock, opened from the zoom amount. */
+.orrery-view-details {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  margin-right: 0.5rem;
+  min-width: 14rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--bs-box-shadow);
 }
 
 .orrery-pane-list {

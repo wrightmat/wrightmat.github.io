@@ -68,6 +68,14 @@ export function expandPane(paneElement, toggleElement) {
   }
   const collapsedClass = paneElement.getAttribute("data-pane-collapsed-class") || DEFAULT_COLLAPSED_CLASS;
   const expandedClass = paneElement.getAttribute("data-pane-expanded-class") || DEFAULT_EXPANDED_CLASS;
+  // Below md a pane is a drawer over the page, and only one is open at a time.
+  if (window.matchMedia("(max-width: 767.98px)").matches) {
+    const otherSide = paneElement.dataset.pane === "left" ? "right" : "left";
+    const other = document.querySelector(`[data-pane="${otherSide}"]`);
+    if (other && other.dataset.state === "expanded") {
+      collapsePane(other, document.querySelector(`[data-pane-toggle="${otherSide}"]`));
+    }
+  }
   paneElement.dataset.state = "expanded";
   paneElement.classList.remove(collapsedClass);
   paneElement.classList.add(expandedClass);

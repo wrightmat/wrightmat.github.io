@@ -1,4 +1,4 @@
-import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { initAppShell, collapseLeftPaneOnPhone } from "../../common/js/lib/app-shell.js";
 import { bindNoteButton } from "../../common/js/lib/note-button.js";
 import { initAuthControls, escapeHtml } from "../../common/js/lib/auth-ui.js";
 import { expandPane } from "../../common/js/lib/panes.js";
@@ -1724,6 +1724,7 @@ function getFieldTableData(key) {
 
 // --- Event wiring ------------------------------------------------------
 
+generateButton.addEventListener("click", collapseLeftPaneOnPhone);
 generateButton.addEventListener("click", () => {
   // No Setting-selected guard needed — setGenerateButtonReadiness gives the
   // button a real `disabled` attribute whenever none is picked, and a

@@ -74,25 +74,52 @@
         </div>
 
         <main class="flex-grow-1 position-relative workbench-main" data-map-main>
-          <div class="orrery-floating-panel shadow-theme" data-view-panel>
-            <div class="d-flex flex-column gap-1 orrery-view-handle" data-view-handle>
-              <div class="d-flex align-items-center gap-2 flex-wrap">
-                <div class="btn-group btn-group-sm" role="group" aria-label="Map zoom controls">
-                  <button class="btn btn-outline-secondary" type="button" data-zoom-out data-bs-toggle="tooltip" data-bs-title="Zoom out">
-                    <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
-                    <span class="visually-hidden">Zoom out</span>
-                  </button>
-                  <button class="btn btn-outline-secondary" type="button" data-zoom-reset>Reset</button>
-                  <button class="btn btn-outline-secondary" type="button" data-zoom-in data-bs-toggle="tooltip" data-bs-title="Zoom in">
+          <!-- The dock's tooltips do not fade: its tools come and go with the Tools button, and a fading tooltip on a button that
+               has just been hidden makes Bootstrap throw. -->
+          <div class="orrery-floating-panel floating-dock shadow-theme" data-view-panel>
+            <div class="floating-dock-grip text-body-secondary" data-view-handle aria-hidden="true">
+              <span class="iconify" data-icon="tabler:grip-horizontal"></span>
+            </div>
+            <div class="floating-dock-body">
+              <div class="d-flex">
+                <div class="btn-group-vertical btn-group-sm orrery-zoom-group" role="group" aria-label="Map zoom controls">
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-in data-bs-toggle="tooltip" data-bs-animation="false" data-bs-title="Zoom in">
                     <span class="iconify" data-icon="tabler:zoom-in" aria-hidden="true"></span>
                     <span class="visually-hidden">Zoom in</span>
                   </button>
+                  <button class="btn btn-outline-secondary floating-dock-amount" type="button" data-zoom-amount aria-expanded="false" data-bs-toggle="tooltip" data-bs-animation="false" data-bs-title="Zoom level — click for view details">100%</button>
+                  <button class="btn btn-outline-secondary" type="button" data-zoom-out data-bs-toggle="tooltip" data-bs-animation="false" data-bs-title="Zoom out">
+                    <span class="iconify" data-icon="tabler:zoom-out" aria-hidden="true"></span>
+                    <span class="visually-hidden">Zoom out</span>
+                  </button>
                 </div>
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-zoom-reset data-bs-toggle="tooltip" data-bs-animation="false" data-bs-title="Reset view">
+                  <span class="iconify" data-icon="tabler:refresh" aria-hidden="true"></span>
+                  <span class="visually-hidden">Reset view</span>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-tools-toggle aria-expanded="false" data-bs-toggle="tooltip" data-bs-animation="false" data-bs-title="Map tools">
+                  <span class="iconify" data-icon="tabler:hand-move" aria-hidden="true"></span>
+                  <span class="visually-hidden">Map tools</span>
+                </button>
+                <div class="orrery-tools" data-tools>
+                <span
+                  class="d-inline-block"
+                  tabindex="0"
+                  data-pan-toggle-wrap
+                  data-bs-toggle="tooltip" data-bs-animation="false"
+                  data-bs-placement="top"
+                  data-bs-title="Pan the map (no tool)"
+                >
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-pan-toggle aria-pressed="true">
+                    <span class="iconify" data-icon="tabler:hand-move" aria-hidden="true"></span>
+                    <span class="visually-hidden">Pan</span>
+                  </button>
+                </span>
                 <span
                   class="d-inline-block"
                   tabindex="0"
                   data-ping-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Click the map to ping"
                 >
@@ -105,7 +132,7 @@
                   class="d-inline-block"
                   tabindex="0"
                   data-measure-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Measure distance"
                 >
@@ -118,7 +145,7 @@
                   class="d-inline-block"
                   tabindex="0"
                   data-draw-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Draw on the map"
                 >
@@ -131,7 +158,7 @@
                   class="d-inline-block"
                   tabindex="0"
                   data-shape-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Draw a Shape/Effect"
                 >
@@ -144,7 +171,7 @@
                   class="d-inline-block"
                   tabindex="0"
                   data-wall-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Draw a wall or door"
                 >
@@ -157,7 +184,7 @@
                   class="d-inline-block"
                   tabindex="0"
                   data-light-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Place a dynamic light"
                 >
@@ -166,17 +193,14 @@
                     <span class="visually-hidden">Dynamic light</span>
                   </button>
                 </span>
-                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-view-toggle aria-expanded="false" data-bs-toggle="tooltip" data-bs-title="Expand view details">
-                  <span class="iconify" data-icon="tabler:chevron-left" aria-hidden="true"></span>
-                  <span class="visually-hidden">Expand view details</span>
-                </button>
+                </div>
               </div>
               <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span
                   class="d-inline-block d-none"
                   tabindex="0"
                   data-draw-color-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Drawing color"
                 >
@@ -192,7 +216,7 @@
                   class="d-inline-block d-none"
                   tabindex="0"
                   data-wall-snap-toggle-wrap
-                  data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip" data-bs-animation="false"
                   data-bs-placement="top"
                   data-bs-title="Snap wall vertices to the grid"
                 >
@@ -206,7 +230,7 @@
                 <span class="small text-body-secondary d-none" data-measure-readout></span>
               </div>
             </div>
-            <div class="orrery-view-details mt-2 d-none" data-view-details>
+            <div class="orrery-view-details d-none" data-dock-no-drag data-view-details>
               <dl class="mb-0 small">
                 <div class="d-flex justify-content-between">
                   <dt>Mode</dt>

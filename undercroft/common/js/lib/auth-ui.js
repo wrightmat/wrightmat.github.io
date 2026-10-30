@@ -375,6 +375,7 @@ export function initAuthControls({
         const groupId = button.getAttribute("data-group-select");
         const group = groups.find((entry) => entry.id === groupId);
         manager.setActiveGroup(groupId, group ? group.name : "");
+        rememberActiveGroup(groupId, group ? group.name : "");
         renderUserMenu(user, groups);
       });
     });
@@ -383,6 +384,7 @@ export function initAuthControls({
         event.stopPropagation();
         disposeTooltips(dropdown);
         manager.setActiveGroup(null);
+        rememberActiveGroup(null);
         renderUserMenu(user, groups);
       });
     });
@@ -434,6 +436,24 @@ export function initAuthControls({
     }
   }
 
+  // The table someone picked follows the account to a device that has not picked one yet, so a phone opens on the same
+  // group (and System) as the laptop. Only a deliberate pick or "none" is remembered, never a sign-out or a group that
+  // has gone away.
+  async function adoptAccountActiveGroup(groups) {
+    if (manager.getActiveGroup()?.groupId) return;
+    try {
+      const saved = (await manager.getUserSettings())?.activeGroup;
+      const live = saved?.groupId ? groups.find((group) => group.id === saved.groupId) : null;
+      if (live) manager.setActiveGroup(live.id, live.name || "");
+    } catch (error) {
+      // Nothing saved, or the settings could not be read: this device simply has no table yet.
+    }
+  }
+
+  function rememberActiveGroup(groupId, name) {
+    manager.saveUserSettings({ activeGroup: groupId ? { groupId, name } : null }).catch(() => {});
+  }
+
   // getActiveGroup() returns whatever was cached at selection time and
   // never re-checks the server, so a renamed/deleted group can go stale
   // indefinitely. This is the one place that fetches the live list, so it
@@ -460,6 +480,7 @@ export function initAuthControls({
     } catch (error) {
       console.warn("Unable to load groups", error);
     }
+    await adoptAccountActiveGroup(groups);
     resyncActiveGroup(groups);
     const contextLabels = await resolveGroupContextLabels(groups).catch(() => ({
       systemTitles: new Map(),

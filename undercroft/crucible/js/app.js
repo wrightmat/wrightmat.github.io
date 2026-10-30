@@ -1,4 +1,4 @@
-import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { initAppShell, collapseLeftPaneOnPhone } from "../../common/js/lib/app-shell.js";
 import { bindNoteButton } from "../../common/js/lib/note-button.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
@@ -2384,6 +2384,7 @@ async function init() {
   });
 
   elements.generateButton?.addEventListener("click", handleGenerate);
+  elements.generateButton?.addEventListener("click", collapseLeftPaneOnPhone);
   elements.saveButton?.addEventListener("click", handleSave);
   elements.deleteButton?.addEventListener("click", handleDelete);
   elements.duplicateButton?.addEventListener("click", handleDuplicate);

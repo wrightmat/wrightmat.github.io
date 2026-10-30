@@ -36,7 +36,8 @@ import { showConfirmModal } from "../../common/js/lib/confirm-modal.js";
 // cross-link prompt, never to derive one from the other.
 import { resolveMarkerCombatants, persistCombatantHidden } from "../../common/js/lib/combat-map-link.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
-import { refreshTooltips, disposeTooltips, initTooltip, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
+import { initFloatingDock } from "../../common/js/lib/floating-dock.js";
+import { refreshTooltip, refreshTooltips, disposeTooltips, initTooltip, setDisabledTooltip } from "../../common/js/lib/tooltips.js";
 import { createColorPickerField } from "../../common/js/lib/color-picker.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
 import { fetchKindEntriesWithIds } from "../../common/js/lib/content-fetch.js";
@@ -692,11 +693,12 @@ const elements = {
   lightToggleWrap: document.querySelector("[data-light-toggle-wrap]"),
   pingToggle: document.querySelector("[data-ping-toggle]"),
   pingToggleWrap: document.querySelector("[data-ping-toggle-wrap]"),
-  viewToggle: document.querySelector("[data-view-toggle]"),
+  zoomAmount: document.querySelector("[data-zoom-amount]"),
+  toolsToggle: document.querySelector("[data-tools-toggle]"),
+  tools: document.querySelector("[data-tools]"),
   viewDetails: document.querySelector("[data-view-details]"),
   viewPanel: document.querySelector("[data-view-panel]"),
   mapEmptyState: document.querySelector("[data-map-empty-state]"),
-  viewHandle: document.querySelector("[data-view-handle]"),
   viewMode: document.querySelector("[data-view-mode]"),
   viewZoom: document.querySelector("[data-view-zoom]"),
   viewCenter: document.querySelector("[data-view-center]"),
@@ -6922,6 +6924,10 @@ function renderView() {
   const view = state.map.view;
   elements.viewMode.textContent = view.mode;
   elements.viewZoom.textContent = view.zoom.toFixed(2);
+  // A tile map's zoom is a level, not a scale, so a percentage would mean nothing there.
+  if (elements.zoomAmount) {
+    elements.zoomAmount.textContent = view.mode === "geo" ? `${view.zoom.toFixed(1)}x` : `${Math.round(view.zoom * 100)}%`;
+  }
   elements.viewCenter.textContent = `${view.center.lat.toFixed(2)}, ${view.center.lng.toFixed(2)}`;
   elements.viewPan.textContent = `${Math.round(view.pan.x)}, ${Math.round(view.pan.y)}`;
 }
@@ -7354,7 +7360,7 @@ function updateWallAvailability() {
   elements.wallToggle.disabled = false;
   const tooltipTarget = elements.wallToggleWrap || elements.wallToggle;
   tooltipTarget.setAttribute("data-bs-title", "Draw a wall or door");
-  refreshTooltips(tooltipTarget.parentElement || document);
+  refreshTooltip(tooltipTarget);
 }
 
 // Same reasoning as setDrawModeActive/setShapeModeActive — plus, like Shape/
@@ -7655,7 +7661,7 @@ function updateShapeAvailability() {
     "data-bs-title",
     available ? "Draw a Shape/Effect" : "Add a grid layer to enable Shapes/Effects"
   );
-  refreshTooltips(tooltipTarget.parentElement || document);
+  refreshTooltip(tooltipTarget);
   if (!available && shapeModeActive) {
     setShapeModeActive(false);
   }
@@ -8378,7 +8384,7 @@ function updateLightAvailability() {
     "data-bs-title",
     available ? "Place a dynamic light" : "Add a grid layer to enable dynamic lights"
   );
-  refreshTooltips(tooltipTarget.parentElement || document);
+  refreshTooltip(tooltipTarget);
   if (!available && lightModeActive) {
     setLightModeActive(false);
   }
@@ -8534,7 +8540,7 @@ function setupPingTool() {
       "data-bs-title",
       hasGroup ? "Click the map to ping" : "Select a group from the account menu (top right) to enable pinging"
     );
-    refreshTooltips(tooltipTarget.parentElement || document);
+    refreshTooltip(tooltipTarget);
     if (!hasGroup && active) {
       active = false;
       elements.pingToggle.classList.remove("active");
@@ -8592,7 +8598,7 @@ function updateMeasureAvailability() {
     "data-bs-title",
     configured ? "Measure distance" : "Set Scale per cell and Scale unit (bottom of Map Properties) to enable measuring"
   );
-  refreshTooltips(tooltipTarget.parentElement || document);
+  refreshTooltip(tooltipTarget);
   if (!configured) {
     elements.measureToggle.classList.remove("active");
     elements.measureToggle.setAttribute("aria-pressed", "false");
@@ -9041,87 +9047,86 @@ async function loadMapFromUrlParam() {
   await loadMapById(id, params.get("share") || "");
 }
 
+// The zoom amount opens a small card with the view's mode, zoom, center and pan; an outside press closes it.
 function setupViewPanelToggle() {
-  if (!elements.viewToggle || !elements.viewDetails) {
+  if (!elements.zoomAmount || !elements.viewDetails) {
     return;
   }
-  elements.viewToggle.addEventListener("click", () => {
-    const isExpanded = !elements.viewDetails.classList.contains("d-none");
-    elements.viewDetails.classList.toggle("d-none", isExpanded);
-    elements.viewToggle.setAttribute("aria-expanded", isExpanded ? "false" : "true");
-    const icon = elements.viewToggle.querySelector(".iconify");
-    if (icon) {
-      icon.dataset.icon = isExpanded ? "tabler:chevron-left" : "tabler:chevron-down";
-    }
+  const setOpen = (open) => {
+    elements.viewDetails.classList.toggle("d-none", !open);
+    elements.zoomAmount.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+  elements.zoomAmount.addEventListener("click", () => setOpen(elements.viewDetails.classList.contains("d-none")));
+  document.addEventListener("pointerdown", (event) => {
+    if (elements.viewDetails.classList.contains("d-none")) return;
+    if (event.target.closest("[data-view-details], [data-zoom-amount]")) return;
+    setOpen(false);
   });
 }
 
-function setupViewPanelDrag() {
-  const panel = elements.viewPanel;
-  const handle = elements.viewHandle;
-  const container = elements.mapMain;
-  if (!panel || !handle || !container) {
+// The tools nest behind one button that shows the current mode. Pan (no tool) is the mode the map opens in and the way
+// back from any tool; choosing a tool closes the column.
+function setupToolsToggle() {
+  const { toolsToggle, tools } = elements;
+  const panButton = tools?.querySelector("[data-pan-toggle]");
+  if (!toolsToggle || !tools || !panButton) {
     return;
   }
-
-  let startX = 0;
-  let startY = 0;
-  let originLeft = 0;
-  let originTop = 0;
-  let dragging = false;
-
-  const onMove = (event) => {
-    if (!dragging) {
-      return;
-    }
-    const deltaX = event.clientX - startX;
-    const deltaY = event.clientY - startY;
-    const containerRect = container.getBoundingClientRect();
-    const panelRect = panel.getBoundingClientRect();
-    const nextLeft = originLeft + deltaX;
-    const nextTop = originTop + deltaY;
-    const maxLeft = containerRect.width - panelRect.width;
-    const maxTop = containerRect.height - panelRect.height;
-    const clampedLeft = Math.min(Math.max(nextLeft, 0), Math.max(maxLeft, 0));
-    const clampedTop = Math.min(Math.max(nextTop, 0), Math.max(maxTop, 0));
-    panel.style.left = `${clampedLeft}px`;
-    panel.style.top = `${clampedTop}px`;
-    panel.style.right = "auto";
+  const activeTools = () => Array.from(tools.querySelectorAll('button[aria-pressed="true"]:not([data-pan-toggle])'));
+  const setOpen = (open) => {
+    tools.classList.toggle("is-open", open);
+    toolsToggle.setAttribute("aria-expanded", open ? "true" : "false");
   };
-
-  const onEnd = () => {
-    if (!dragging) {
-      return;
-    }
-    dragging = false;
-    panel.classList.remove("is-dragging");
-    window.removeEventListener("pointermove", onMove);
-    window.removeEventListener("pointerup", onEnd);
+  const syncMode = () => {
+    const active = activeTools();
+    const panning = active.length === 0;
+    if (panButton.getAttribute("aria-pressed") !== String(panning)) panButton.setAttribute("aria-pressed", String(panning));
+    const icon = toolsToggle.querySelector(".iconify");
+    const shown = (active[0] || panButton).querySelector(".iconify")?.dataset.icon;
+    if (icon && shown) icon.dataset.icon = shown;
+    toolsToggle.classList.toggle("active", !panning);
   };
-
-  handle.addEventListener("pointerdown", (event) => {
-    // Same "don't hijack an actual control" guard as the left-pane
-    // click-off handler — this bar also holds zoom buttons, Measure/Draw/
-    // Shape toggles, and the Shape Type <select>. Buttons tolerate the
-    // preventDefault() below, but a native <select>'s dropdown-opening is
-    // tied to that same default action — without this guard, every
-    // pointerdown on Shape Type got preventDefault()'d before the browser
-    // could show its options.
-    if (event.target.closest("button, select, input, textarea, a")) {
+  toolsToggle.addEventListener("click", () => setOpen(!tools.classList.contains("is-open")));
+  panButton.addEventListener("click", () => activeTools().forEach((button) => button.click()));
+  // One mode at a time: switching on a tool first switches off whichever is on. Capturing runs this before the tool's
+  // own handler, and the flag keeps the clicks it sends from coming back through here.
+  let switching = false;
+  tools.addEventListener(
+    "click",
+    (event) => {
+      const button = event.target.closest("button");
+      if (switching || !button || button === panButton || button.getAttribute("aria-pressed") === "true") return;
+      switching = true;
+      activeTools().forEach((other) => other.click());
+      switching = false;
+    },
+    true
+  );
+  // The column closes only once any tooltip on its buttons has finished hiding; hiding the buttons under a tooltip that
+  // is still fading makes Bootstrap throw inside its own transition callback.
+  const closeWhenTooltipsHidden = () => {
+    const shown = Array.from(tools.querySelectorAll("[aria-describedby]"));
+    const bootstrapTooltip = window.bootstrap?.Tooltip;
+    if (!shown.length || !bootstrapTooltip) {
+      setOpen(false);
       return;
     }
-    event.preventDefault();
-    const panelRect = panel.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    dragging = true;
-    startX = event.clientX;
-    startY = event.clientY;
-    originLeft = panelRect.left - containerRect.left;
-    originTop = panelRect.top - containerRect.top;
-    panel.classList.add("is-dragging");
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onEnd);
+    let waiting = shown.length;
+    const done = () => {
+      waiting -= 1;
+      if (waiting === 0) setOpen(false);
+    };
+    shown.forEach((button) => {
+      button.addEventListener("hidden.bs.tooltip", done, { once: true });
+      bootstrapTooltip.getInstance(button)?.hide();
+    });
+    window.setTimeout(() => setOpen(false), 600);
+  };
+  tools.addEventListener("click", (event) => {
+    if (event.target.closest("button")) closeWhenTooltipsHidden();
   });
+  new MutationObserver(syncMode).observe(tools, { attributes: true, attributeFilter: ["aria-pressed"], subtree: true });
+  syncMode();
 }
 
 // Does NOT mount state.map's base map or call renderAll() here —
@@ -9139,7 +9144,8 @@ setupViewEvents();
 setupActionEvents();
 setupMapEvents();
 setupViewPanelToggle();
-setupViewPanelDrag();
+setupToolsToggle();
+initFloatingDock(elements.viewPanel, elements.mapMain);
 refreshTooltips();
 initHelpSystem({ root: document });
 // The freshly created, never-edited map at page load has nothing to save

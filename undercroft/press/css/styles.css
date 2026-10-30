@@ -10,6 +10,7 @@
 }
 
 .press-surface-card > .card-body {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -219,15 +220,33 @@ body[data-theme="dark"] .preview-stage {
   border-radius: 50%;
 }
 
-/* Trim/bleed/safe-area color key, in the Live Preview header rather than
-   over the card so it's unaffected by zoom/scroll. Swatch colors are
-   duplicated from .guide-trim-box/.guide-bleed-box/.guide-safe-box (not a
-   shared variable) so each guide's color stays next to its own rule. */
-.press-guide-legend {
+/* The trim/bleed/safe-area key floats upper-left of the print surface and the zoom dock upper-right, so neither is
+   affected by zoom or scroll and the header keeps only Print, Front/Back and the view toggle. Swatch colors are
+   duplicated from .guide-trim-box/.guide-bleed-box/.guide-safe-box (not a shared variable) so each guide's color
+   stays next to its own rule. */
+.press-key,
+.press-dock {
+  position: absolute;
+  z-index: 5;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+.press-dock {
+  top: 0.75rem;
+  right: 1.25rem;
+  padding: 0.375rem;
+}
+
+.press-key {
+  top: 0.75rem;
+  left: 0.75rem;
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.15rem 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.375rem 0.5rem;
   font-size: 0.7rem;
   color: var(--bs-secondary-color, #6c757d);
 }
@@ -563,6 +582,19 @@ body[data-theme="dark"] .preview-stage {
   gap: 0.35rem;
 }
 
+
+/* On a phone the view toggle keeps only its icons (the text stays for screen readers) so the banner holds Print,
+   Front/Back and the toggle on one row. */
+@media (max-width: 575.98px) {
+  .press-surface-card > .card-header .mode-toggle-group .template-radio-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 
 @media (max-width: 991.98px) {
   .preview-stage {

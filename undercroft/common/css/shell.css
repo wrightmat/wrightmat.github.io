@@ -2714,3 +2714,36 @@ html[data-bs-theme="light"] {
 .tooltip {
   pointer-events: none;
 }
+
+/* Floating control dock (Orrery, Press): a narrow vertical panel over a canvas, draggable by any part that isn't a
+   control (floating-dock.js). Each tool places it and sizes its own contents. */
+.floating-dock {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.floating-dock.is-dragging {
+  cursor: grabbing;
+}
+
+.floating-dock-grip {
+  display: flex;
+  justify-content: center;
+  line-height: 1;
+}
+
+.floating-dock-body,
+.floating-dock-body > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.375rem;
+}
+
+.floating-dock-amount {
+  min-width: 0;
+  padding-inline: 0.25rem;
+  font-size: 0.7rem;
+}

@@ -14,7 +14,7 @@ import { createFavoriteStar, loadDocFavorites } from "./js/lib/doc-favorites.js"
 const { status } = initAppShell({
   namespace: "docs",
   leftPaneLabel: "Toggle topics pane",
-  leftPane: { size: "lg", initial: "expanded" },
+  leftPane: { size: "lg", initial: "expanded", phoneInitial: "expanded" },
   // docs.html is the one page in the suite with no right pane at all.
   rightPaneLabel: null,
   rightPane: null,
