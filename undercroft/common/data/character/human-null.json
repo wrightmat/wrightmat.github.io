@@ -6,10 +6,28 @@
   "data": {},
   "name": "Human Null (Pregen)",
   "level": 1,
-  "ancestry": "Human",
-  "career": "Farmer",
-  "class": "Null",
-  "subclass": "Metakinetic",
+  "ancestry": {
+    "name": "Human",
+    "refKind": "species",
+    "refId": "ds-human"
+  },
+  "career": {
+    "name": "Farmer",
+    "refKind": "background",
+    "refId": "ds-farmer"
+  },
+  "class": {
+    "name": "Null",
+    "refKind": "class",
+    "refId": "ds-null"
+  },
+  "subclasses": [
+    {
+      "name": "Metakinetic",
+      "refKind": "variant",
+      "refId": "ds-null-metakinetic"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -46,13 +64,19 @@
   },
   "culture": [
     {
-      "name": "Secluded"
+      "name": "Secluded",
+      "refKind": "background",
+      "refId": "ds-secluded"
     },
     {
-      "name": "Communal"
+      "name": "Communal",
+      "refKind": "background",
+      "refId": "ds-communal"
     },
     {
-      "name": "Labor"
+      "name": "Labor",
+      "refKind": "background",
+      "refId": "ds-labor"
     }
   ],
   "languages": [

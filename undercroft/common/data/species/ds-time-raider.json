@@ -1,0 +1,47 @@
+{
+  "name": "Time Raider",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Ancestries/",
+  "source": "mcdm.heroes.v1",
+  "description": "## Time Raider\n\nThe original servitor species of the synliroi—evil psions with near godlike power—the kuran'zoi liberated themselves during the First Psychic War. In the centuries since, they built their own culture and civilization as nomads of the timescape. The exonym \"time raiders\" was given to them by denizens of the lower worlds who, seeing the advanced technology the kuran'zoi wield, concluded they must be from the future.\n\nExtraordinarily rare in Orden, time raiders thrive on the Sea of Stars, the Sea Between Worlds, where the winds of limbo roar.\n\nIn place of eyes, kuran'zoi possess crystalline ocular sensors that grant them high-spectral vision and which are hardened against the extreme radiations encountered in the Sea of Stars, permitting them to operate freely outside their vessels with only their portable rebreathers. Time raiders also have two sets of arms, allowing them to wield melee weapons at the same time as ranged weapons. A single well-trained kuran'zoi is like a squad unto themself.\n\n### Time Raider Traits\n\nTime raider heroes have access to the following traits.\n\n#### Signature Trait: Psychic Scar\n\nYour mind is a formidable layer of defense. You have psychic immunity equal to your level.\n\n#### Purchased Time Raider Traits\n\nYou have 3 ancestry points to spend on the following traits. (*Quick Build:* Beyondsight, Psionic Gift with Psionic Bolt.)\n\n##### Beyondsight (1 Point)\n\nAs a maneuver, you can adjust your vision to allow you to see through mundane obstructions that are 1 square thick or less. While your vision is adjusted this way, you can't see the area within 1 square of you and you don't have line of effect to any creature or object in that area. You can restore your usual vision as a maneuver.\n\n##### Foresight (1 Point)\n\nYour senses extend past mundane obscuration and the veil of the future alike. You automatically know the location of any creature with concealment who isn't hidden from you within 20, and you negate the usual bane on strikes against such creatures. Additionally, whenever you are targeted by a strike, you can use a triggered action to impose a bane on the power roll.\n\n##### Four-Armed Athletics (1 Point)\n\nYour unique physiology enhances your movement. You gain an edge on tests that use the Climb, Gymnastics, or Swim skills when you can use all your arms in the attempt.\n\n##### Four-Armed Martial Arts (2 Points)\n\nYour multiple arms let you take on multiple tasks at the same time. Whenever you use the Grab or Knockback maneuver against an adjacent creature, you can target one additional adjacent creature, using the same power roll for both targets. Additionally, you can have up to two creatures grabbed at a time.\n\n##### Psionic Gift (2 Points)\n\nChoose one signature ability from the following options. Signature abilities can be used at will.\n\n###### Concussive Slam\n\n*You slam an invisible force down upon the target.*\n\n| **Psionic, Ranged, Strike** | Main action                   |\n| --------------------------- | ----------------------------- |\n| **📏 Ranged 10**            | **🎯 One creature or object** |\n\n**Power Roll + Reason, Intuition, or Presence:**\n\n- **≤11:** 2 + R, I, or P damage;\n- **12-16:** 5 + R, I, or P damage; push 1\n- **17+:** 7 + R, I, or P damage; push 2; M < STRONG, prone\n\n###### Psionic Bolt\n\n*You shoot forth a purple beam of psychic force that moves your target.*\n\n| **Psionic, Ranged, Strike** | Main action                   |\n| --------------------------- | ----------------------------- |\n| **📏 Ranged 10**            | **🎯 One creature or object** |\n\n**Power Roll + Reason, Intuition, or Presence:**\n\n- **≤11:** 2 + R, I, or P psychic damage; slide 1\n- **12-16:** 5 + R, I, or P psychic damage; slide 2\n- **17+:** 7 + R, I, or P psychic damage; slide 3\n\n###### Minor Acceleration\n\n*You fill yourself or an ally with a burst of speed.*\n\n| **Psionic, Melee** | Maneuver                |\n| ------------------ | ----------------------- |\n| **📏 Melee 1**     | **🎯 Self or one ally** |\n\n**Effect:** The target gains a bonus to speed equal to your Reason, Intuition, or Presence score (your choice) until the start of your next turn.\n\n##### Unstoppable Mind (2 Points)\n\nYour mind allows you to maintain your focus in any situation. You can't be made dazed.\n",
+  "ancestryPoints": 3,
+  "traits": [
+    {
+      "name": "Psychic Scar",
+      "signature": true,
+      "description": "Your mind is a formidable layer of defense. You have psychic immunity equal to your level."
+    },
+    {
+      "name": "Beyondsight",
+      "cost": 1,
+      "description": "As a maneuver, you can adjust your vision to allow you to see through mundane obstructions that are 1 square thick or less. While your vision is adjusted this way, you can't see the area within 1 square of you and you don't have line of effect to any creature or object in that area. You can restore your usual vision as a maneuver."
+    },
+    {
+      "name": "Foresight",
+      "cost": 1,
+      "description": "Your senses extend past mundane obscuration and the veil of the future alike. You automatically know the location of any creature with concealment who isn't hidden from you within 20, and you negate the usual bane on strikes against such creatures. Additionally, whenever you are targeted by a strike, you can use a triggered action to impose a bane on the power roll."
+    },
+    {
+      "name": "Four-Armed Athletics",
+      "cost": 1,
+      "description": "Your unique physiology enhances your movement. You gain an edge on tests that use the Climb, Gymnastics, or Swim skills when you can use all your arms in the attempt."
+    },
+    {
+      "name": "Four-Armed Martial Arts",
+      "cost": 2,
+      "description": "Your multiple arms let you take on multiple tasks at the same time. Whenever you use the Grab or Knockback maneuver against an adjacent creature, you can target one additional adjacent creature, using the same power roll for both targets. Additionally, you can have up to two creatures grabbed at a time."
+    },
+    {
+      "name": "Psionic Gift",
+      "cost": 2,
+      "description": "Choose one signature ability from the following options. Signature abilities can be used at will.\n\n###### Concussive Slam\n\n*You slam an invisible force down upon the target.*\n\n| **Psionic, Ranged, Strike** | Main action                   |\n| --------------------------- | ----------------------------- |\n| **📏 Ranged 10**            | **🎯 One creature or object** |\n\n**Power Roll + Reason, Intuition, or Presence:**\n\n- **≤11:** 2 + R, I, or P damage;\n- **12-16:** 5 + R, I, or P damage; push 1\n- **17+:** 7 + R, I, or P damage; push 2; M < STRONG, prone\n\n###### Psionic Bolt\n\n*You shoot forth a purple beam of psychic force that moves your target.*\n\n| **Psionic, Ranged, Strike** | Main action                   |\n| --------------------------- | ----------------------------- |\n| **📏 Ranged 10**            | **🎯 One creature or object** |\n\n**Power Roll + Reason, Intuition, or Presence:**\n\n- **≤11:** 2 + R, I, or P psychic damage; slide 1\n- **12-16:** 5 + R, I, or P psychic damage; slide 2\n- **17+:** 7 + R, I, or P psychic damage; slide 3\n\n###### Minor Acceleration\n\n*You fill yourself or an ally with a burst of speed.*\n\n| **Psionic, Melee** | Maneuver                |\n| ------------------ | ----------------------- |\n| **📏 Melee 1**     | **🎯 Self or one ally** |\n\n**Effect:** The target gains a bonus to speed equal to your Reason, Intuition, or Presence score (your choice) until the start of your next turn."
+    },
+    {
+      "name": "Unstoppable Mind",
+      "cost": 2,
+      "description": "Your mind allows you to maintain your focus in any situation. You can't be made dazed."
+    }
+  ]
+}

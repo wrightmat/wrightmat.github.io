@@ -1,0 +1,11 @@
+{
+  "name": "Labor",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Background/",
+  "source": "mcdm.heroes.v1",
+  "description": "##### Labor\n\nYour hero came of age in a culture where people labored for a living. They might have been cultivators, typically raising crops or livestock on a farm. They might have harvested natural resources, whether by hunting, trapping, logging, or mining. Or they might have excelled at manual labor tied to settlement and trade, such as construction, carting, loading cargo, and so forth. People with a labor upbringing know the value of hard work.\n\n**Skill Options:** The Blacksmithing skill (from the crafting skill group), the Handle Animals skill (from the interpersonal group), or a skill from the exploration group. (*Quick Build:* Lift.)\n",
+  "category": "Upbringing",
+  "skills": "The Blacksmithing skill (from the crafting skill group), the Handle Animals skill (from the interpersonal group), or a skill from the exploration group. (*Quick Build:* Lift.)"
+}

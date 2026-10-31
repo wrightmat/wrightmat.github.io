@@ -52,7 +52,7 @@ import {
 } from "../../../common/js/lib/level-up-bindings.js";
 import { rollDiceExpression } from "../lib/dice.js";
 import { rollExpression, resolveQuickDice, parseQuickDiceCounts, incrementDieInExpression, extractSystemRolls, extractSystemSymbolDice, rollSymbolPoolExpression } from "../../../common/js/lib/widgets/dice-roll.js";
-import { fetchKindEntriesWithIds } from "../../../common/js/lib/content-fetch.js";
+import { fetchKindEntriesWithIds, fetchKindEntrySummaries } from "../../../common/js/lib/content-fetch.js";
 import {
   promoteEmbeddedFeatures,
   hasEmbeddedFeatures,
@@ -5696,12 +5696,45 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return isReferenceValue(parentValue) ? parentValue : null;
   }
 
+  // Changing the name of a linked record ("@class.name") must not leave the old record's id behind, or the chip
+  // would show the new name but open the old record: look the new name up in the same Library kind and re-point
+  // the link, or drop it when nothing matches.
+  async function relinkReferenceName(binding, name) {
+    if (typeof binding !== "string" || !binding.endsWith(".name")) return;
+    const parentPath = resolveBindingPath(binding.slice(0, -".name".length));
+    const parent = parentPath ? getValueAtPath(parentPath) : null;
+    if (!parent || typeof parent !== "object" || !parent.refKind) return;
+    let match = null;
+    try {
+      const entries = await fetchKindEntrySummaries(dataManager, parent.refKind);
+      const wanted = String(name || "").trim().toLowerCase();
+      const candidates = entries.filter((entry) => String(entry.name || "").trim().toLowerCase() === wanted);
+      match = candidates[0] || null;
+      // Different Systems can each have a record with the same name (D&D's Orc, Draw Steel's Orc): take the one
+      // that belongs to this character's System.
+      if (candidates.length > 1) {
+        const systemId = state.draft?.systemIds?.[0];
+        for (const candidate of candidates) {
+          const result = await dataManager.get(parent.refKind, candidate.id, { preferLocal: false }).catch(() => null);
+          if (Array.isArray(result?.payload?.systemIds) && result.payload.systemIds.includes(systemId)) {
+            match = candidate;
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      match = null;
+    }
+    updateBinding(`${binding.slice(0, -".name".length)}.refId`, match ? match.id : "");
+  }
+
   function renderInputComponent(component, itemContext = null) {
     const writeValue = (comp, value) => {
       if (itemContext) {
         setItemContextValue(itemContext, comp.binding, value);
       } else {
         updateBinding(comp.binding, value);
+        void relinkReferenceName(comp.binding, value);
       }
     };
     return renderInputContent(component, {

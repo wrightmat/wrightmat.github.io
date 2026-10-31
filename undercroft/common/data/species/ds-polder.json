@@ -1,0 +1,47 @@
+{
+  "name": "Polder",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Ancestries/",
+  "source": "mcdm.heroes.v1",
+  "description": "## Polder\n\nAfter humans, polders are the most numerous and diverse ancestry in Orden. They are not humans, but they live in and among humans and share their gods and culture. Almost every human culture in Orden has a polder saint or a human saint venerated by polder.\n\nShort, averaging 31/2 feet tall, the polders' origins are obscure. They are a young species who, like humans, have no single patron god. Their ability to *shadowmeld* means they enjoy a reputation as excellent spies and thieves. Many polders consider this a base slander and point out they're also famed as chefs, though polders can be found in every profession, especially in cities.\n\n### Polder Traits\n\nPolder heroes have access to the following traits.\n\n### Signature Trait: Shadowmeld\n\nYou have the following ability.\n\n###### Shadowmeld\n\n*You become an actual shadow.*\n\n| **Magic**   | **Maneuver** |\n| ----------- | -----------: |\n| **📏 Self** |  **🎯 Self** |\n\n**Effect:** You flatten yourself into a shadow against a wall or floor you are touching, and become hidden from any creature you have cover or concealment from or who isn't observing you. While in shadow form, you have full awareness of your surroundings, and strikes made against you and tests made to search for you take a bane. You can't move or be force moved, and you can't take main actions or maneuvers except to exit this form or to direct creatures under your control, such as one you summon using an ability. Any ability or effect that targets more than 1 square affects you in this form only if it explicitly affects the surface you are flattened against. You can exit this form as a maneuver.\n\nIf the surface you are flattened against is destroyed, this ability ends and you take 1d6 damage that can't be reduced in any way.\n\n#### Signature Trait: Small!\n\nYour diminutive stature lets you easily get out of—or into—trouble. Your size is 1S.\n\n#### Purchased Polder Traits\n\nYou have 4 ancestry points to spend on the following traits. (*Quick Build:* Corruption Immunity, Fearless, Graceful Retreat.)\n\n##### Corruption Immunity (1 Point)\n\nYour innate shadow magic grants you resilience against the unnatural. You have corruption immunity equal to your level + 2.\n\n##### Fearless (2 Points)\n\nCourage is all you know. You can't be made frightened.\n\n##### Graceful Retreat (1 Point)\n\nYour small size makes it easier for you to slip away from the fray. You gain a +1 bonus to the distance you can shift when you take the Disengage move action.\n\n##### Nimblestep (2 Points)\n\nA light step serves you well when speed is of the essence. You ignore the effects of difficult terrain and can move at full speed while sneaking.\n\n##### Polder Geist (1 Point)\n\nEvading others' notice gives you freedom to move. At the start of each of your turns during combat, if no enemy has line of effect to you or if you are hidden from or have concealment from any enemy with line of effect to you, you gain a +3 bonus to speed until the end of your turn.\n\n##### Reactive Tumble (1 Point)\n\nStaying light on your feet lets you quickly get back into position. Whenever you are force moved, you can use a free triggered action to shift 1 square after the forced movement is resolved.\n",
+  "ancestryPoints": 4,
+  "traits": [
+    {
+      "name": "Small!",
+      "signature": true,
+      "description": "Your diminutive stature lets you easily get out of—or into—trouble. Your size is 1S."
+    },
+    {
+      "name": "Corruption Immunity",
+      "cost": 1,
+      "description": "Your innate shadow magic grants you resilience against the unnatural. You have corruption immunity equal to your level + 2."
+    },
+    {
+      "name": "Fearless",
+      "cost": 2,
+      "description": "Courage is all you know. You can't be made frightened."
+    },
+    {
+      "name": "Graceful Retreat",
+      "cost": 1,
+      "description": "Your small size makes it easier for you to slip away from the fray. You gain a +1 bonus to the distance you can shift when you take the Disengage move action."
+    },
+    {
+      "name": "Nimblestep",
+      "cost": 2,
+      "description": "A light step serves you well when speed is of the essence. You ignore the effects of difficult terrain and can move at full speed while sneaking."
+    },
+    {
+      "name": "Polder Geist",
+      "cost": 1,
+      "description": "Evading others' notice gives you freedom to move. At the start of each of your turns during combat, if no enemy has line of effect to you or if you are hidden from or have concealment from any enemy with line of effect to you, you gain a +3 bonus to speed until the end of your turn."
+    },
+    {
+      "name": "Reactive Tumble",
+      "cost": 1,
+      "description": "Staying light on your feet lets you quickly get back into position. Whenever you are force moved, you can use a free triggered action to shift 1 square after the forced movement is resolved."
+    }
+  ]
+}

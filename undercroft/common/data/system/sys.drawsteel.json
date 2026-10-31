@@ -31,9 +31,17 @@
       "label": "Class"
     },
     {
-      "type": "string",
-      "key": "subclass",
-      "label": "Subclass"
+      "type": "array",
+      "key": "subclasses",
+      "label": "Subclasses",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Subclass"
+        }
+      ]
     },
     {
       "type": "number",
@@ -343,19 +351,46 @@
           "name": "Agent"
         },
         {
+          "name": "Aristocrat"
+        },
+        {
+          "name": "Artisan"
+        },
+        {
+          "name": "Beggar"
+        },
+        {
           "name": "Criminal"
         },
         {
           "name": "Disciple"
         },
         {
+          "name": "Explorer"
+        },
+        {
           "name": "Farmer"
+        },
+        {
+          "name": "Gladiator"
+        },
+        {
+          "name": "Laborer"
         },
         {
           "name": "Mage's Apprentice"
         },
         {
           "name": "Performer"
+        },
+        {
+          "name": "Politician"
+        },
+        {
+          "name": "Sage"
+        },
+        {
+          "name": "Sailor"
         },
         {
           "name": "Soldier"

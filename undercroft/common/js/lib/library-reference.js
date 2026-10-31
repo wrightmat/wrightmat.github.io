@@ -1,5 +1,5 @@
 // Shared "reference a Library record inline, see its full details on
-// hover/click" primitive — extracted from journal-kind-reference.js once
+// click" primitive — extracted from journal-kind-reference.js once
 // other consumers (board.js, handout.js via markdown.js) needed the same
 // thing without reaching across into Repository's own tree. Only what's
 // genuinely markdown-specific (the code-span regex/scanning) stayed there.
@@ -10,6 +10,7 @@
 import { fetchChatBacklinks, renderChatBacklinkList } from "./chat/backlinks.js";
 import { fetchKindEntrySummaries } from "./content-fetch.js";
 import { el } from "./dom.js";
+import { initTooltip } from "./tooltips.js";
 
 // Kinds that never make sense as a generic Library reference: encounter/macro
 // already get richer special-cased chips in Repository's markdown pipeline,
@@ -60,23 +61,16 @@ export function createReferenceChip({ kind, id, name, dataManager, interactive, 
   styleAsChip(button);
   button.append(el("span", null, name || id));
   button.setAttribute("aria-label", `${name || id} (${kindLabel || kind})`);
-  if (interactive) {
-    button.style.cursor = "pointer";
-    button.addEventListener("click", () => onOpen?.(kind, id || name));
-  }
-  // Hover/focus preview works regardless of `interactive` — a read-only
-  // render still benefits from "what IS this" on hover; navigating away is
-  // the separate capability `interactive` gates. No dataManager, no preview.
-  attachReferencePreview(button, { kind, id, name, dataManager, kindLabel: kindLabel || kind });
+  button.addEventListener("click", () => {
+    if (interactive && onOpen) {
+      onOpen(kind, id || name);
+    } else {
+      void openReferenceModal({ kind, id, name, dataManager, kindLabel: kindLabel || kind });
+    }
+  });
+  if (dataManager) initTooltip(button, { title: "Click to view details" });
   return button;
 }
-
-// --- Hover preview popover ---------------------------------------------
-// A single shared floating panel (not one per chip), showing "what IS this"
-// on hover: icon/Form summary up top, Notes text below. Deliberately NOT a
-// per-kind grab-bag of identity fields — those already read as part of each
-// kind's own Notes/prose in practice, so this stays to two things: what
-// kind of thing this is, and (Wonder only) its Form/sub-category.
 
 // One cached {systemId -> fields[]} lookup for the page's lifetime, so a
 // hovered chip's System record isn't re-fetched on every hover.
@@ -158,117 +152,6 @@ export function resolveNotes(record) {
   return Array.isArray(raw) ? raw.filter(Boolean).join("\n\n") : raw;
 }
 
-let previewPopoverEl = null;
-function ensurePreviewPopover() {
-  if (previewPopoverEl) return previewPopoverEl;
-  const popover = document.createElement("div");
-  popover.style.position = "fixed";
-  popover.style.zIndex = "1200";
-  // Wide enough to read a full notes entry at a glance. No maxHeight/overflow
-  // — the popover is pointer-events: none, so a scrollbar would be unusable;
-  // NOTES_PREVIEW_MAX_CHARS below is the real safety valve instead.
-  popover.style.width = "min(28rem, calc(100vw - 2rem))";
-  popover.style.padding = "0.6rem 0.75rem";
-  popover.style.borderRadius = "0.5rem";
-  popover.style.border = "1px solid var(--bs-border-color, #dee2e6)";
-  popover.style.background = "var(--bs-body-bg, #fff)";
-  popover.style.color = "var(--bs-body-color, #212529)";
-  popover.style.boxShadow = "var(--bs-box-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.15))";
-  popover.style.fontSize = "0.8rem";
-  popover.style.lineHeight = "1.4";
-  popover.style.display = "none";
-  // Purely informational — never intercepts its own hover/click, so it
-  // can't ever fight the chip that opened it for pointer events.
-  popover.style.pointerEvents = "none";
-  document.body.appendChild(popover);
-  previewPopoverEl = popover;
-  return popover;
-}
-
-function hidePreviewPopover() {
-  if (previewPopoverEl) previewPopoverEl.style.display = "none";
-}
-
-// Measured AFTER `display: block` (so offsetWidth/Height are real), flipped
-// above the chip when below would overflow the viewport, clamped to the
-// left/right edges too.
-function positionPopover(popover, anchorRect) {
-  const margin = 8;
-  popover.style.left = "0px";
-  popover.style.top = "0px";
-  popover.style.display = "block";
-  const popRect = popover.getBoundingClientRect();
-  let left = anchorRect.left;
-  let top = anchorRect.bottom + margin;
-  if (top + popRect.height > window.innerHeight - margin) {
-    top = anchorRect.top - popRect.height - margin;
-  }
-  if (left + popRect.width > window.innerWidth - margin) {
-    left = window.innerWidth - popRect.width - margin;
-  }
-  left = Math.max(margin, left);
-  top = Math.max(margin, top);
-  popover.style.left = `${left}px`;
-  popover.style.top = `${top}px`;
-}
-
-function renderPreviewLoading(popover, { name, kind, kindLabel }) {
-  popover.innerHTML = "";
-  popover.appendChild(buildPreviewHeader(name, kind, kindLabel));
-  const loading = el("div", null, "Loading…");
-  loading.style.color = "var(--bs-secondary-color, #6c757d)";
-  popover.appendChild(loading);
-}
-
-function renderPreviewMissing(popover, { name, kind, kindLabel }) {
-  popover.innerHTML = "";
-  popover.appendChild(buildPreviewHeader(name, kind, kindLabel));
-  const missing = el("div", null, "No saved record found.");
-  missing.style.color = "var(--bs-secondary-color, #6c757d)";
-  popover.appendChild(missing);
-}
-
-// Name on the left; Form/sub-category (Wonder only) and the kind icon on
-// the right. The icon (aria-label, not visible text) is the one place "what
-// kind of thing is this" is conveyed, since the chip itself doesn't show one.
-function buildPreviewHeader(name, kind, kindLabel, formSummary = "") {
-  const row = el("div", null);
-  row.style.display = "flex";
-  row.style.alignItems = "flex-start";
-  row.style.justifyContent = "space-between";
-  row.style.gap = "0.5rem";
-  row.style.marginBottom = "0.35rem";
-  const title = el("div", null, name);
-  title.style.fontWeight = "600";
-  row.appendChild(title);
-  const meta = el("div", null);
-  meta.style.display = "inline-flex";
-  meta.style.alignItems = "center";
-  meta.style.gap = "0.3rem";
-  meta.style.flexShrink = "0";
-  if (formSummary) {
-    const form = el("span", null, formSummary);
-    form.style.fontSize = "0.7rem";
-    form.style.textTransform = "uppercase";
-    form.style.letterSpacing = "0.03em";
-    form.style.color = "var(--bs-secondary-color, #6c757d)";
-    meta.appendChild(form);
-  }
-  const icon = el("span", "iconify");
-  icon.dataset.icon = iconFor(kind);
-  icon.setAttribute("aria-label", kindLabel || kind);
-  icon.style.color = "var(--bs-secondary-color, #6c757d)";
-  icon.style.fontSize = "0.9rem";
-  meta.appendChild(icon);
-  row.appendChild(meta);
-  return row;
-}
-
-// A high, effectively-never-hit safety cap — the point of this preview is
-// reading the full text without opening the real record, so it should show
-// everything short of something pathological.
-const NOTES_PREVIEW_MAX_CHARS = 6000;
-
 // A minimal, Journal-extension-free markdown render for the preview's notes
 // text, since resolveNotes' source may carry real CommonMark
 // (**bold**/*italic*/tables). Deliberately NOT markdown.js's renderMarkdown
@@ -292,23 +175,52 @@ function renderNotesPreview(text) {
   return container;
 }
 
-function renderPreviewContent(popover, { name, kind, kindLabel, formSummary, notes, mentions = [] }) {
-  popover.innerHTML = "";
-  popover.appendChild(buildPreviewHeader(name, kind, kindLabel, formSummary));
-  if (notes) {
-    const notesEl = renderNotesPreview(notes.length > NOTES_PREVIEW_MAX_CHARS ? `${notes.slice(0, NOTES_PREVIEW_MAX_CHARS).trim()}…` : notes);
-    notesEl.style.color = "var(--bs-secondary-color, #6c757d)";
-    popover.appendChild(notesEl);
-  } else {
-    const empty = el("div", null, "No additional details.");
-    empty.style.color = "var(--bs-secondary-color, #6c757d)";
-    popover.appendChild(empty);
+// The whole record in a scrollable modal, opened by clicking a reference chip. Built and torn down per call (like
+// image-modal.js), and rendered with a lightweight Markdown pass.
+export async function openReferenceModal({ kind, id, name, dataManager, kindLabel } = {}) {
+  if (!dataManager || !window.bootstrap || typeof window.bootstrap.Modal !== "function") return;
+  const overlay = document.createElement("div");
+  overlay.className = "modal fade";
+  overlay.tabIndex = -1;
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.innerHTML = `
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content" style="max-height: 80vh;">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5"></h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body"></div>
+      </div>
+    </div>
+  `;
+  overlay.querySelector(".modal-title").textContent = name || id || "";
+  const body = overlay.querySelector(".modal-body");
+  body.textContent = "Loading…";
+  document.body.appendChild(overlay);
+  const instance = window.bootstrap.Modal.getOrCreateInstance(overlay);
+  overlay.addEventListener("hidden.bs.modal", () => {
+    instance.dispose();
+    overlay.remove();
+  });
+  instance.show();
+  const record = await loadPreviewRecord(dataManager, kind, id, name);
+  if (!record) {
+    body.textContent = "No saved record found.";
+    return;
   }
+  overlay.querySelector(".modal-title").textContent = record.name || name || id || "";
+  const formSummary = await resolveFormSummary(dataManager, record.payload);
+  body.textContent = "";
+  if (formSummary) {
+    const form = el("div", "text-body-secondary small text-uppercase mb-2", formSummary);
+    body.appendChild(form);
+  }
+  const notes = resolveNotes(record.payload);
+  body.appendChild(notes ? renderNotesPreview(notes) : el("div", "text-body-secondary", "No additional details."));
+  const mentions = await fetchChatBacklinks(dataManager, kind, record.id || id).catch(() => []);
   if (mentions.length) {
-    const heading = el("div", null, "Mentioned in chat");
-    heading.style.fontWeight = "600";
-    heading.style.marginTop = "0.5rem";
-    popover.append(heading, renderChatBacklinkList(mentions, { limit: 3, interactive: false }));
+    body.append(el("div", "fw-semibold mt-3", "Mentioned in chat"), renderChatBacklinkList(mentions, { limit: 10, interactive: false }));
   }
 }
 
@@ -368,7 +280,7 @@ export async function findKindReferenceRecordById(dataManager, kindId, id) {
 }
 
 // One cached lookup per (kind, id-or-name) for the page's lifetime —
-// hovering the same chip twice, or two chips referencing the same record,
+// opening the same chip twice, or two chips referencing the same record,
 // never re-fetches.
 const previewRecordCache = new Map();
 function loadPreviewRecord(dataManager, kindId, id, name) {
@@ -382,54 +294,3 @@ function loadPreviewRecord(dataManager, kindId, id, name) {
   return previewRecordCache.get(key);
 }
 
-// A short delay before showing (avoids a flash on a quick pointer pass) and
-// before hiding (avoids flicker if the pointer briefly leaves and re-enters).
-export function attachReferencePreview(button, { kind, id, name, dataManager, kindLabel }) {
-  if (!dataManager) return;
-  let showTimer = 0;
-  let hideTimer = 0;
-  let requestToken = 0;
-
-  async function show() {
-    const token = (requestToken += 1);
-    const popover = ensurePreviewPopover();
-    renderPreviewLoading(popover, { name: name || id, kind, kindLabel });
-    positionPopover(popover, button.getBoundingClientRect());
-    const record = await loadPreviewRecord(dataManager, kind, id, name);
-    if (token !== requestToken || popover.style.display === "none") return; // superseded or already dismissed
-    if (!record) {
-      renderPreviewMissing(popover, { name: name || id, kind, kindLabel });
-      positionPopover(popover, button.getBoundingClientRect());
-      return;
-    }
-    // A second await, only incurred for a Wonder with a `properties.form`
-    // at all — empty string, no fetch, for every other kind.
-    const formSummary = await resolveFormSummary(dataManager, record.payload);
-    const mentions = await fetchChatBacklinks(dataManager, kind, record.id || id);
-    if (token !== requestToken || popover.style.display === "none") return; // superseded or dismissed mid-fetch
-    renderPreviewContent(popover, {
-      name: record.name || name || id,
-      kind,
-      kindLabel,
-      formSummary,
-      notes: resolveNotes(record.payload),
-      mentions,
-    });
-    positionPopover(popover, button.getBoundingClientRect());
-  }
-
-  function scheduleShow() {
-    window.clearTimeout(hideTimer);
-    showTimer = window.setTimeout(() => void show(), 250);
-  }
-  function scheduleHide() {
-    window.clearTimeout(showTimer);
-    requestToken += 1; // invalidate any in-flight fetch's own late render
-    hideTimer = window.setTimeout(hidePreviewPopover, 100);
-  }
-
-  button.addEventListener("mouseenter", scheduleShow);
-  button.addEventListener("mouseleave", scheduleHide);
-  button.addEventListener("focus", scheduleShow);
-  button.addEventListener("blur", scheduleHide);
-}

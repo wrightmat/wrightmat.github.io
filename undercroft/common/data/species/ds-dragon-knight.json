@@ -1,0 +1,47 @@
+{
+  "name": "Dragon Knight",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Ancestries/",
+  "source": "mcdm.heroes.v1",
+  "description": "## Dragon Knight\n\nThe ritual of Dracogenesis that grants the power to create a generation of dragon knights—also known as draconians or wyrmwights—is obscure and supremely difficult for even an experienced sorcerer to master. Small populations of draconians in Khemhara, Higara, and Khoursir attest to this. Descendants of original generations created millennia ago by powerful wizards, they have never been numerous. A typical clutch yields only a single egg. After only a few generations, these draconians begin to show new adaptations like feathers or frilled ridges.\n\nThe largest extant population of draconians is the remnants of the Dragon Phalanx in Vasloria. Created by Good King Omund's wizard Vitae, the Dragon Phalanx once numbered several thousand of the king's greatest knights, ensuring the rule of law across the land.\n\nKnighthood was a title carried by every member of that first generation of dragon knights. Within the Dragon Phalanx were shadows, censors, tacticians, and elementalists. Members of virtually every heroic vocation could be found in one of the eight dragonflights that made up the phalanx. For over 30 years, these heroes were symbols of justice, protecting the weak from the strong, and standing between the common folk and those who sought power over others. Those who grew up in that place and time could not imagine any other way of life.\n\nThen Ajax came.\n\n### Dragon Knight Traits\n\nDragon knight heroes have access to the following traits.\n\n#### Signature Trait: Wyrmplate\n\nYour hardened scales grant you damage immunity equal to your level to one of the following damage types: acid, cold, corruption, fire, lightning, or poison. You can change your damage immunity type when you finish a respite.\n\n#### Purchased Dragon Knight Traits\n\nYou have 3 ancestry points to spend on the following traits. (*Quick Build:* Dragon Breath, Prismatic Scales.)\n\n##### Draconian Guard (1 Point)\n\nWhenever you or an adjacent creature takes damage from a strike, you can use a triggered action to guard against the blow. You reduce any damage from the strike by an amount equal to your level.\n\n##### Draconian Pride (2 Points)\n\nYou have the following signature ability.\n\n###### Draconian Pride\n\n*You let loose a mighty roar to shake your foes' spirits.*\n\n| **Area, Magic** |               **Main action** |\n| --------------- | ----------------------------: |\n| **📏 1 burst**  | **🎯 Each enemy in the area** |\n\n**Power Roll + Might or Presence:**\n\n- **≤11:** 2 damage\n- **12-16:** 5 damage; push 1\n- **17+:** 7 damage; push 2\n\n##### Dragon Breath (2 Points)\n\nYou have the following signature ability.\n\n###### Dragon Breath\n\n*A furious exhalation of energy washes over your foes.*\n\n| **Area, Magic**        |               **Main action** |\n| ---------------------- | ----------------------------: |\n| **📏 3 cube within 1** | **🎯 Each enemy in the area** |\n\n**Power Roll + Might or Presence:**\n\n- **≤11:** 2 damage\n- **12-16:** 4 damage\n- **17+:** 6 damage\n\n**Effect:** You choose the ability's damage type from acid, cold, corruption, fire, lightning, or poison.\n\n##### Prismatic Scales (1 Point)\n\nSelect one damage immunity granted by your Wyrmplate trait. You always have this immunity, in addition to the immunity granted by Wyrmplate.\n\n##### Remember Your Oath (1 Point)\n\nAs a maneuver, you can recite the following oath. Until the start of your next turn, whenever you make a saving throw, you succeed on a 4 or higher.\n\n*Even should the sun stop in the sky Even should the night last a thousand years I will stand forever I shall not yield Those who suffer and yearn for justice I am your sword and shield I will yield no ground I will speak no lies I will stand against all tyrants Until the last villain dies*\n\n##### Wings (2 Points)\n\nYou possess wings powerful enough to take you airborne. While using your wings to fly, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While using your wings to fly at 3rd level or lower, you have damage weakness 5.\n",
+  "ancestryPoints": 3,
+  "traits": [
+    {
+      "name": "Wyrmplate",
+      "signature": true,
+      "description": "Your hardened scales grant you damage immunity equal to your level to one of the following damage types: acid, cold, corruption, fire, lightning, or poison. You can change your damage immunity type when you finish a respite."
+    },
+    {
+      "name": "Draconian Guard",
+      "cost": 1,
+      "description": "Whenever you or an adjacent creature takes damage from a strike, you can use a triggered action to guard against the blow. You reduce any damage from the strike by an amount equal to your level."
+    },
+    {
+      "name": "Draconian Pride",
+      "cost": 2,
+      "description": "You have the following signature ability.\n\n###### Draconian Pride\n\n*You let loose a mighty roar to shake your foes' spirits.*\n\n| **Area, Magic** |               **Main action** |\n| --------------- | ----------------------------: |\n| **📏 1 burst**  | **🎯 Each enemy in the area** |\n\n**Power Roll + Might or Presence:**\n\n- **≤11:** 2 damage\n- **12-16:** 5 damage; push 1\n- **17+:** 7 damage; push 2"
+    },
+    {
+      "name": "Dragon Breath",
+      "cost": 2,
+      "description": "You have the following signature ability.\n\n###### Dragon Breath\n\n*A furious exhalation of energy washes over your foes.*\n\n| **Area, Magic**        |               **Main action** |\n| ---------------------- | ----------------------------: |\n| **📏 3 cube within 1** | **🎯 Each enemy in the area** |\n\n**Power Roll + Might or Presence:**\n\n- **≤11:** 2 damage\n- **12-16:** 4 damage\n- **17+:** 6 damage\n\n**Effect:** You choose the ability's damage type from acid, cold, corruption, fire, lightning, or poison."
+    },
+    {
+      "name": "Prismatic Scales",
+      "cost": 1,
+      "description": "Select one damage immunity granted by your Wyrmplate trait. You always have this immunity, in addition to the immunity granted by Wyrmplate."
+    },
+    {
+      "name": "Remember Your Oath",
+      "cost": 1,
+      "description": "As a maneuver, you can recite the following oath. Until the start of your next turn, whenever you make a saving throw, you succeed on a 4 or higher.\n\n*Even should the sun stop in the sky Even should the night last a thousand years I will stand forever I shall not yield Those who suffer and yearn for justice I am your sword and shield I will yield no ground I will speak no lies I will stand against all tyrants Until the last villain dies*"
+    },
+    {
+      "name": "Wings",
+      "cost": 2,
+      "description": "You possess wings powerful enough to take you airborne. While using your wings to fly, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While using your wings to fly at 3rd level or lower, you have damage weakness 5."
+    }
+  ]
+}

@@ -6,10 +6,33 @@
   "data": {},
   "name": "Orc Conduit (Pregen)",
   "level": 1,
-  "ancestry": "Orc",
-  "career": "Disciple",
-  "class": "Conduit",
-  "subclass": "Life and Sun Domains",
+  "ancestry": {
+    "name": "Orc",
+    "refKind": "species",
+    "refId": "ds-orc"
+  },
+  "career": {
+    "name": "Disciple",
+    "refKind": "background",
+    "refId": "ds-disciple"
+  },
+  "class": {
+    "name": "Conduit",
+    "refKind": "class",
+    "refId": "ds-conduit"
+  },
+  "subclasses": [
+    {
+      "name": "Life Domain",
+      "refKind": "variant",
+      "refId": "ds-conduit-life"
+    },
+    {
+      "name": "Sun Domain",
+      "refKind": "variant",
+      "refId": "ds-conduit-sun"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -46,13 +69,19 @@
   },
   "culture": [
     {
-      "name": "Wilderness"
+      "name": "Wilderness",
+      "refKind": "background",
+      "refId": "ds-wilderness"
     },
     {
-      "name": "Communal"
+      "name": "Communal",
+      "refKind": "background",
+      "refId": "ds-communal"
     },
     {
-      "name": "Creative"
+      "name": "Creative",
+      "refKind": "background",
+      "refId": "ds-creative"
     }
   ],
   "languages": [

@@ -1,0 +1,34 @@
+{
+  "name": "Paragon",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "parentKind": "class",
+  "parentId": "ds-censor",
+  "summary": "Without a strong example and a firm hand, the weak will be corrupted. You specialize in setting an example for your order. You have the Lead skill.",
+  "description": "Without a strong example and a firm hand, the weak will be corrupted. You specialize in setting an example for your order. You have the Lead skill.\n\n### 2nd-Level Features\n\n##### Lead by Example\n\nYour devotion to your deity allows you to take command of the battlefield, letting your allies benefit from your wisdom. While you are adjacent to a creature, your allies gain the benefits of flanking against that creature. Additionally, your allies gain an edge on tests made to aid other creatures with their tests.\n\n##### Stalwart Icon\n\nYou exhibit a small spark of your deity's power, causing creatures to trust or fear you, depending on what you need. You gain an edge on tests made to intimidate or persuade others.\n\n##### 2nd-Level Paragon Ability\n\nChoose one of the following abilities.\n\n> ###### Blessing of the Faithful (5 Wrath)\n>\n> *The gods reward your faith.*\n>\n> | **Area, Magic** |                          **Maneuver** |\n> | --------------- | ------------------------------------: |\n> | **📏 3 aura**   | **🎯 Self and each ally in the area** |\n>\n> **Effect:** Until the end of the encounter or until you are dying, each target gains 1 surge at the end of each of your turns.\n\n> ###### Sentenced (5 Wrath)\n>\n> *The shock of your condemnation freezes your enemy in their boots.*\n>\n> | **Magic, Melee, Strike, Weapon** |     **Main action** |\n> | -------------------------------- | ------------------: |\n> | **📏 Melee 1**                   | **🎯 One creature** |\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** 5 + P damage; P < WEAK, restrained (save ends)\n> - **12-16:** 9 + P damage; P < AVERAGE, restrained (save ends)\n> - **17+:** 12 + P damage; P < STRONG, restrained (save ends)\n>\n> **Effect:** While the target is restrained this way, your abilities that impose forced movement can still move them.\n\n### 5th-Level Features\n\n##### Stand Fast!\n\nYour divine spark grows in power, allowing you and your allies to focus and endure. At the start of each of your turns, you can spend 1d6 Stamina to end one effect on you that is ended by a saving throw or that ends at the end of your turn. Any ally who starts their turn within 5 squares of you can also spend Stamina to gain this benefit.\n\n### 6th-Level Features\n\n##### 6th-Level Paragon Abilities\n\nChoose one of the following abilities.\n\n> ###### Congregation (9 Wrath)\n>\n> *You focus your allies' wrath on a chosen foe.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 8 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability against the target\n> - **12-16:** 12 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability that gains an edge against the target\n> - **17+:** 16 + M damage; as a free triggered action, two allies within 10 squares of the target can each use a strike signature ability that gains an edge against the target\n>\n> **Effect:** Each ally can shift up to 2 squares and gains 2 surges before making the strike.\n\n> ###### Intercede (9 Wrath)\n>\n> *You take your ally's place.*\n>\n> | **Magic, Ranged** | **Free triggered** |\n> | ----------------- | -----------------: |\n> | **📏 Ranged 10**  |    **🎯 One ally** |\n>\n> **Trigger:** A creature makes a strike against the target.\n>\n> **Effect:** The target is unaffected by the strike and you become the target instead, even if you aren't a valid target for it. You take half the damage from the strike, and the target gains 3 surges.\n\n### 8th-Level Features\n\n##### Vow\n\nYour words take on the power of your deity, with all the authority that entails. If you convince a creature to take an oath, they can't break it for 7 days. If you take an oath, you can't break it for 7 days.\n\n### 9th-Level Features\n\n##### 9th-Level Paragon Abilities\n\nChoose one of the following abilities.\n\n> ###### Apostate (11 Wrath)\n>\n> *You channel holy energy to seal an enemy's fate.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 13 + M holy damage\n> - **12-16:** 19 + M holy damage\n> - **17+:** 26 + M holy damage\n>\n> **Effect:** Until the end of the encounter or until you are dying, the target has damage weakness 10.\n\n> ###### Edict of Unyielding Resolve (11 Wrath)\n>\n> *You and your allies are clad in shimmering armor.*\n>\n> | **Area, Magic** |                          **Maneuver** |\n> | --------------- | ------------------------------------: |\n> | **📏 2 aura**   | **🎯 Self and each ally in the area** |\n>\n> **Effect:** Until the end of the encounter or until you are dying, each target who starts their turn in the area gains 10 temporary Stamina.\n",
+  "features": [
+    {
+      "name": "Lead by Example",
+      "level": 2,
+      "description": "Your devotion to your deity allows you to take command of the battlefield, letting your allies benefit from your wisdom. While you are adjacent to a creature, your allies gain the benefits of flanking against that creature. Additionally, your allies gain an edge on tests made to aid other creatures with their tests."
+    },
+    {
+      "name": "Stalwart Icon",
+      "level": 2,
+      "description": "You exhibit a small spark of your deity's power, causing creatures to trust or fear you, depending on what you need. You gain an edge on tests made to intimidate or persuade others."
+    },
+    {
+      "name": "Stand Fast!",
+      "level": 5,
+      "description": "Your divine spark grows in power, allowing you and your allies to focus and endure. At the start of each of your turns, you can spend 1d6 Stamina to end one effect on you that is ended by a saving throw or that ends at the end of your turn. Any ally who starts their turn within 5 squares of you can also spend Stamina to gain this benefit."
+    },
+    {
+      "name": "Vow",
+      "level": 8,
+      "description": "Your words take on the power of your deity, with all the authority that entails. If you convince a creature to take an oath, they can't break it for 7 days. If you take an oath, you can't break it for 7 days."
+    }
+  ]
+}

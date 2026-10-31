@@ -1,0 +1,52 @@
+{
+  "name": "Devil",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Ancestries/",
+  "source": "mcdm.heroes.v1",
+  "description": "## Devil\n\nThe native ancestry of the Seven Cities of Hell, devils are humanoids with red or blue skin expressed in a wide variety of hues, from bright crimson to deep purple. Each devil is born with some *hellmark*-horns, a tail, cloven hooves, a forked tongue, fanged incisors, or even wings.\n\nHell is dominated by the Seven Cities of Hell, each ruled by a different archdevil who constantly plots and schemes against the others in the hope of ascending to the Throne of Hell.\n\nThose devils who join \"the trade,\" as their civil service is called, spend their days in bureaucratic service hoping or scheming for promotion. Devils looking for a quick path up the bureaucratic ladder sign up for the Exchange, whereby mortals in the mundane world who perform the right rituals can summon a devil, who bargains with the supplicant on behalf of their archdevil. Archdevils can grant temporary worldly power in exchange for a supplicant's soul, with the summoned devil acting as the broker.\n\nOn rare occasions, though, the summoning goes wrong and the supplicant dies before the deal can be struck, stranding the summoned devil on Orden permanently. Some stranded devils seek to return to Hell, but most prefer life in Orden, where the phrase \"stabbed in the back by a colleague\" is usually a metaphor.\n\nThe majority of devils in Orden are not from, nor have ever been to, the Seven Cities. They are descendants of devils who were stranded in the mundane world decades, centuries, even millennia ago.\n\n### Devil Traits\n\nDevil heroes have access to the following traits.\n\n#### Signature Trait: Silver Tongue\n\nYour innate magic allows you to twist how your words are perceived to get a better read on people and convince them to see things your way. You have one skill of your choice from the interpersonal skill group (see [Skills](#page-268-0) in Chapter 9: Tests), and you gain an edge on tests when attempting to discover an NPC's motivations and pitfalls during a negotiation (see [Chapter 11: Negotiation](#page-297-0)).\n\n#### Purchased Devil Traits\n\nYou have 3 ancestry points to spend on the following traits. (*Quick Build:* Beast Legs, Impressive Horns.)\n\n##### Barbed Tail (1 Point)\n\nYour pointy tail allows you to punctuate all your actions. Once per round when you make a melee strike, you can deal extra damage with the strike equal to your highest characteristic score.\n\n##### Beast Legs (1 Point)\n\nYour powerful legs make you faster. You have speed 6.\n\n##### Glowing Eyes (1 Point)\n\nYour eyes are a solid, vibrant color that flares to show your excitement or rage. Whenever you take damage from a creature, you can use a triggered action to deal that creature psychic damage equal to 1d10 + your level.\n\n##### Hellsight (1 Point)\n\nYour eyes let you see through darkness, fog, and other obscuring effects. You don't take a bane on strikes made against creatures with concealment.\n\n##### Impressive Horns (2 Points)\n\nYour cherished horns are larger than the average devil's, and a hardened representation of your force of will. Whenever you make a saving throw, you succeed on a roll of 5 or higher.\n\n##### Prehensile Tail (2 Points)\n\nYour prehensile tail allows you to challenge foes on all sides. You can't be flanked.\n\n##### Wings (2 Points)\n\nYou possess wings powerful enough to take you airborne. While using your wings to fly, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While using your wings to fly at 3rd level or lower, you have damage weakness 5.\n",
+  "ancestryPoints": 3,
+  "traits": [
+    {
+      "name": "Silver Tongue",
+      "signature": true,
+      "description": "Your innate magic allows you to twist how your words are perceived to get a better read on people and convince them to see things your way. You have one skill of your choice from the interpersonal skill group (see [Skills](#page-268-0) in Chapter 9: Tests), and you gain an edge on tests when attempting to discover an NPC's motivations and pitfalls during a negotiation (see [Chapter 11: Negotiation](#page-297-0))."
+    },
+    {
+      "name": "Barbed Tail",
+      "cost": 1,
+      "description": "Your pointy tail allows you to punctuate all your actions. Once per round when you make a melee strike, you can deal extra damage with the strike equal to your highest characteristic score."
+    },
+    {
+      "name": "Beast Legs",
+      "cost": 1,
+      "description": "Your powerful legs make you faster. You have speed 6."
+    },
+    {
+      "name": "Glowing Eyes",
+      "cost": 1,
+      "description": "Your eyes are a solid, vibrant color that flares to show your excitement or rage. Whenever you take damage from a creature, you can use a triggered action to deal that creature psychic damage equal to 1d10 + your level."
+    },
+    {
+      "name": "Hellsight",
+      "cost": 1,
+      "description": "Your eyes let you see through darkness, fog, and other obscuring effects. You don't take a bane on strikes made against creatures with concealment."
+    },
+    {
+      "name": "Impressive Horns",
+      "cost": 2,
+      "description": "Your cherished horns are larger than the average devil's, and a hardened representation of your force of will. Whenever you make a saving throw, you succeed on a roll of 5 or higher."
+    },
+    {
+      "name": "Prehensile Tail",
+      "cost": 2,
+      "description": "Your prehensile tail allows you to challenge foes on all sides. You can't be flanked."
+    },
+    {
+      "name": "Wings",
+      "cost": 2,
+      "description": "You possess wings powerful enough to take you airborne. While using your wings to fly, you can stay aloft for a number of rounds equal to your Might score (minimum 1 round) before you fall. While using your wings to fly at 3rd level or lower, you have damage weakness 5."
+    }
+  ]
+}

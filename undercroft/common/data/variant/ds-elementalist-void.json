@@ -1,0 +1,49 @@
+{
+  "name": "Void Specialization",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "parentKind": "class",
+  "parentId": "ds-elementalist",
+  "summary": "Void is the element of the mystery. Void abilities warp space and reality, allowing you to teleport, create illusions, and make things incorporeal.",
+  "description": "Void is the element of the mystery. Void abilities warp space and reality, allowing you to teleport, create illusions, and make things incorporeal.\n\n### 1st-Level Features\n\n##### Void: Acolyte of the Mystery\n\nYou use your immersion in the mystery of void magic to expand the reach of that magic better than other mages. The distance of all your abilities that have the Magic, Ranged, and Void keywords increases by 2 squares.\n\n##### A Beyonding of Vision\n\nYou instantly recognize illusions for what they are, you can see invisible creatures, and supernatural effects can't conceal creatures and objects from you. Additionally, you always know if an area or object you observe is magical or affected by magic, and you know the specifics of what that magic can do.\n\nYou also gain the following ability.\n\n> ###### Shared Void Sense\n>\n> *You grant allies a taste of your unearthly vision.*\n>\n> | **Magic, Ranged, Void** |   **Maneuver** |\n> | ----------------------- | -------------: |\n> | **📏 Ranged 10**        | **🎯 Special** |\n>\n> **Effect:** For each Victory you have, you can target one creature. Each target gains the benefit of your A Beyonding of Vision feature until the end of your next turn, but doesn't gain the use of the Shared Void Sense ability.\n\n### 2nd-Level Features\n\n##### There Is No Space Between\n\nYou have the following ability.\n\n> ###### There Is No Space Between\n>\n> *Knowledge of the mystery reveals that two spaces are the same space.*\n>\n> | **Magic, Ranged, Void** |   **Maneuver** |\n> | ----------------------- | -------------: |\n> | **📏 Ranged 10**        | **🎯 Special** |\n>\n> **Effect:** You open two size 1 portals in unoccupied spaces within distance, which last until you move beyond distance from any portal, end the effect as a maneuver, or are dying. Each portal must be placed at a height of no more than 1 square above the ground. When you or any ally touch a portal, that creature can choose to be instantly teleported to an unoccupied space of their choice adjacent to the other portal. If an enemy is force moved into a portal, their forced movement ends and they emerge from the other portal in an unoccupied space chosen by the creature who force moved them.\n>\n> At the start of each of your turns while the portals are active, you can open a new portal connected to the others. If three or more portals are present, you and your allies choose which portal to emerge from when entering a portal, and a creature who force moves an enemy into a portal chooses that enemy's destination portal.\n\n### 3rd-Level Features\n\n##### Distance Is Only Memory\n\nEach time you finish a respite, you can open a two-way portal that leads to any place you have previously been. You and your allies can pass through the portal, which remains open for 1 hour or until you dismiss it as a main action.\n\n### 4th-Level Features\n\n##### Veiling Bed\n\nThe area provides concealment for you and your allies.\n\n### 5th-Level Features\n\n##### Pierce the Veil of Substance\n\nSolidity is merely a suggestion to you. Mundane barriers that are 1 square thick or less do not block your senses or line of effect. You can only sense or have line of effect past one such barrier at a time.\n\nAdditionally, whenever you use a void ability, you or one ally within distance of the ability can teleport a number of squares equal to your Reason score.\n\n### 8th-Level Features\n\n##### Black Hole Star\n\nYou warp gravity around your heavenly body and can pull even the sturdiest titans toward your core. At the end of each of your turns, you target one creature or object within distance of your Hurl Element ability and vertical pull that target up to 5 squares. If their stability reduces this forced movement, they are pulled a minimum of 2 squares. This forced movement ignores stability for your allies.\n\nAdditionally, your Mantle of Essence improves. While in the area of the aura, enemies and objects have their stability reduced by an amount equal to your level.\n\n### 10th-Level Features\n\n##### Master of Void\n\nWhenever you willingly move, you can teleport.\n\nAdditionally, your mind is connected to the mystery and helps you find the answers you seek. You no longer require project sources for research projects. Whenever you use a respite activity to make a project roll for a research project, you automatically complete the project.\n",
+  "features": [
+    {
+      "name": "A Beyonding of Vision",
+      "level": 1,
+      "description": "You instantly recognize illusions for what they are, you can see invisible creatures, and supernatural effects can't conceal creatures and objects from you. Additionally, you always know if an area or object you observe is magical or affected by magic, and you know the specifics of what that magic can do.\n\nYou also gain the following ability.\n\n> ###### Shared Void Sense\n>\n> *You grant allies a taste of your unearthly vision.*\n>\n> | **Magic, Ranged, Void** |   **Maneuver** |\n> | ----------------------- | -------------: |\n> | **📏 Ranged 10**        | **🎯 Special** |\n>\n> **Effect:** For each Victory you have, you can target one creature. Each target gains the benefit of your A Beyonding of Vision feature until the end of your next turn, but doesn't gain the use of the Shared Void Sense ability."
+    },
+    {
+      "name": "There Is No Space Between",
+      "level": 2,
+      "description": "You have the following ability.\n\n> ###### There Is No Space Between\n>\n> *Knowledge of the mystery reveals that two spaces are the same space.*\n>\n> | **Magic, Ranged, Void** |   **Maneuver** |\n> | ----------------------- | -------------: |\n> | **📏 Ranged 10**        | **🎯 Special** |\n>\n> **Effect:** You open two size 1 portals in unoccupied spaces within distance, which last until you move beyond distance from any portal, end the effect as a maneuver, or are dying. Each portal must be placed at a height of no more than 1 square above the ground. When you or any ally touch a portal, that creature can choose to be instantly teleported to an unoccupied space of their choice adjacent to the other portal. If an enemy is force moved into a portal, their forced movement ends and they emerge from the other portal in an unoccupied space chosen by the creature who force moved them.\n>\n> At the start of each of your turns while the portals are active, you can open a new portal connected to the others. If three or more portals are present, you and your allies choose which portal to emerge from when entering a portal, and a creature who force moves an enemy into a portal chooses that enemy's destination portal."
+    },
+    {
+      "name": "Distance Is Only Memory",
+      "level": 3,
+      "description": "Each time you finish a respite, you can open a two-way portal that leads to any place you have previously been. You and your allies can pass through the portal, which remains open for 1 hour or until you dismiss it as a main action."
+    },
+    {
+      "name": "Veiling Bed",
+      "level": 4,
+      "description": "The area provides concealment for you and your allies."
+    },
+    {
+      "name": "Pierce the Veil of Substance",
+      "level": 5,
+      "description": "Solidity is merely a suggestion to you. Mundane barriers that are 1 square thick or less do not block your senses or line of effect. You can only sense or have line of effect past one such barrier at a time.\n\nAdditionally, whenever you use a void ability, you or one ally within distance of the ability can teleport a number of squares equal to your Reason score."
+    },
+    {
+      "name": "Black Hole Star",
+      "level": 8,
+      "description": "You warp gravity around your heavenly body and can pull even the sturdiest titans toward your core. At the end of each of your turns, you target one creature or object within distance of your Hurl Element ability and vertical pull that target up to 5 squares. If their stability reduces this forced movement, they are pulled a minimum of 2 squares. This forced movement ignores stability for your allies.\n\nAdditionally, your Mantle of Essence improves. While in the area of the aura, enemies and objects have their stability reduced by an amount equal to your level."
+    },
+    {
+      "name": "Master of Void",
+      "level": 10,
+      "description": "Whenever you willingly move, you can teleport.\n\nAdditionally, your mind is connected to the mystery and helps you find the answers you seek. You no longer require project sources for research projects. Whenever you use a respite activity to make a project roll for a research project, you automatically complete the project."
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "War Domain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "parentKind": "class",
+  "parentId": "ds-conduit",
+  "summary": "",
+  "description": "### 1st-Level Features\n\n###### War Domain Piety and Effect\n\n- **Piety:** You gain 2 piety the first time in an encounter that you or a creature within 10 squares takes damage greater than 10 + your level in a single turn.\n- **Prayer Effect:** Choose up to three allies within 10 squares of you, or choose yourself instead of one ally. Each target gains 2 surges.\n\n##### Sanctified Weapon\n\nAs a respite activity, you can bless a weapon. Any creature who wields the weapon gains a +1 bonus to rolled damage with abilities that use the weapon. This benefit lasts until you finish another respite.\n\n### 4th-Level Features\n\n###### Improved Sanctified Weapon\n\nThe weapon improved by your Sanctified Weapon feature grants a +3 bonus to rolled damage instead of +1.\n\n### 7th-Level Features\n\n##### Your Triumphs Are Remembered\n\nThe gods allow you and your companions to bask in the glory of past successes. Whenever you finish a respite, you and any other heroes who rested with you regain 1 Victory after your Victories are converted to XP. This Victory isn't converted into XP at the end of a subsequent respite.\n",
+  "features": [
+    {
+      "name": "Sanctified Weapon",
+      "level": 1,
+      "description": "As a respite activity, you can bless a weapon. Any creature who wields the weapon gains a +1 bonus to rolled damage with abilities that use the weapon. This benefit lasts until you finish another respite."
+    },
+    {
+      "name": "Improved Sanctified Weapon",
+      "level": 4,
+      "description": "The weapon improved by your Sanctified Weapon feature grants a +3 bonus to rolled damage instead of +1."
+    },
+    {
+      "name": "Your Triumphs Are Remembered",
+      "level": 7,
+      "description": "The gods allow you and your companions to bask in the glory of past successes. Whenever you finish a respite, you and any other heroes who rested with you regain 1 Victory after your Victories are converted to XP. This Victory isn't converted into XP at the end of a subsequent respite."
+    }
+  ]
+}

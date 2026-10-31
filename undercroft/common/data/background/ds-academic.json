@@ -1,0 +1,11 @@
+{
+  "name": "Academic",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Background/",
+  "source": "mcdm.heroes.v1",
+  "description": "##### Academic\n\nYour hero was raised by people who collect, study, and share books and other records. Some academics focus on one area of study, such as a college for wizards dedicated to the study of magic, or a church that teaches the word of one deity. People in an academic culture learn how to wield the power that is knowledge.\n\n**Skill Options:** One skill from the lore skill group. (*Quick Build:* History.)\n",
+  "category": "Upbringing",
+  "skills": "One skill from the lore skill group. (*Quick Build:* History.)"
+}

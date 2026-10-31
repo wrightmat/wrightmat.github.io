@@ -1,0 +1,42 @@
+{
+  "name": "Human",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Ancestries/",
+  "source": "mcdm.heroes.v1",
+  "description": "## Human\n\nHumans belong to the world in a way the other speaking peoples do not. You can sense the presence of the supernatural—that... oily smell in the air, as I've heard it described. And the presence of deathless causes the hairs on the back of your neck to stand up. Or why do you think graveyards affect you so? Whatever magic is, its grip on you is light. Whatever drives the deathless, your nature rebels against it.\n\n\"No one knows why this should be. We elves have no such senses. Nor do the elementals or the kanin... the dwarves and the orcs as you say. What is it that sets humans apart? I am an historian, not a physician. I cannot say. Perhaps some of you will one day find out and teach us all the reason.\"\n\n### Human Traits\n\nHuman heroes have access to the following traits.\n\n#### Signature Trait: Detect the Supernatural\n\nAs a maneuver, you can open your awareness to detect supernatural creatures and phenomena. Until the end of your next turn, you know the location of any supernatural object, or any undead, construct, or creature from another world within 5 squares, even if you don't have line of effect to that object or creature. You know if you're detecting an item or a creature, and you know the nature of any creature you detect.\n\n#### Purchased Human Traits\n\nYou have 3 ancestry points to spend on the following traits. (*Quick Build:* Perseverance, Staying Power.)\n\n##### Can't Take Hold (1 Point)\n\nYour connection to the natural world allows you to resist certain supernatural effects. You ignore temporary difficult terrain created by magic and psionic abilities. Additionally, when you are force moved by a magic or psionic ability, you can reduce the forced movement distance by 1.\n\n##### Determination (2 Points)\n\nA tolerance for pain and distress allows you to push through difficult situations. If you are frightened, slowed, or weakened, you can use a maneuver to immediately end one of those conditions.\n\n##### Perseverance (1 Point)\n\nGiving up is for other people. You gain an edge on tests made using the Endurance skill. Additionally, when you are slowed, your speed is reduced to 3 instead of 2.\n\n##### Resist the Unnatural (1 Point)\n\nYour instinctive resilience protects you from injuries beyond the routine. Whenever you take damage that isn't untyped, you can use a triggered action to take half the damage.\n\n##### Staying Power (2 Points)\n\nYour human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2.\n",
+  "ancestryPoints": 3,
+  "traits": [
+    {
+      "name": "Detect the Supernatural",
+      "signature": true,
+      "description": "As a maneuver, you can open your awareness to detect supernatural creatures and phenomena. Until the end of your next turn, you know the location of any supernatural object, or any undead, construct, or creature from another world within 5 squares, even if you don't have line of effect to that object or creature. You know if you're detecting an item or a creature, and you know the nature of any creature you detect."
+    },
+    {
+      "name": "Can't Take Hold",
+      "cost": 1,
+      "description": "Your connection to the natural world allows you to resist certain supernatural effects. You ignore temporary difficult terrain created by magic and psionic abilities. Additionally, when you are force moved by a magic or psionic ability, you can reduce the forced movement distance by 1."
+    },
+    {
+      "name": "Determination",
+      "cost": 2,
+      "description": "A tolerance for pain and distress allows you to push through difficult situations. If you are frightened, slowed, or weakened, you can use a maneuver to immediately end one of those conditions."
+    },
+    {
+      "name": "Perseverance",
+      "cost": 1,
+      "description": "Giving up is for other people. You gain an edge on tests made using the Endurance skill. Additionally, when you are slowed, your speed is reduced to 3 instead of 2."
+    },
+    {
+      "name": "Resist the Unnatural",
+      "cost": 1,
+      "description": "Your instinctive resilience protects you from injuries beyond the routine. Whenever you take damage that isn't untyped, you can use a triggered action to take half the damage."
+    },
+    {
+      "name": "Staying Power",
+      "cost": 2,
+      "description": "Your human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2."
+    }
+  ]
+}

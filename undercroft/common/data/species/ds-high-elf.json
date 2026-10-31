@@ -1,0 +1,47 @@
+{
+  "name": "High Elf",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Ancestries/",
+  "source": "mcdm.heroes.v1",
+  "description": "## High Elf\n\nChildren of the solar celestials created to tend their libraries and attend to the true elves as heralds, high elf history describes a better age, before the coming of humans and war. A time when the celestials were still in the world, and all that mattered was art and beauty.\n\nIn the millennia since their creators retired to Arcadia, the high elves built a civilization for themselves, primarily living in and among the fallen celestial sky cities. With no creators left to please, the elves continue as they did before—collecting lore and knowledge, worshipping art, and turning more inward and distrusting of outsiders with each generation.\n\n### High Elf Traits\n\nHigh elf heroes have access to the following traits.\n\n#### Signature Trait: High Elf Glamor\n\nA magic glamor makes others perceive you as interesting and engaging, granting you an edge on Presence tests using the Flirt or Persuade skills. This glamor makes you appear and sound slightly different to each creature you meet, since what is engaging to one might be different for another. However, you never appear to be anyone other than yourself.\n\n#### Purchased High Elf Traits\n\nYou have 3 ancestry points to spend on the following traits. (*Quick Build:* High Senses, Otherworldly Grace.)\n\n##### Glamor of Terror (2 Points)\n\nWhen a foe strikes, you reverse the magic of your glamor to instill fear into their heart. Whenever you take damage from a creature, you can use a triggered action to make that creature frightened of you until the end of their next turn.\n\n##### Graceful Retreat (1 Point)\n\nYou gain a +1 bonus to the distance you can shift when you take the Disengage move action.\n\n##### High Senses (1 Point)\n\nYour senses are especially keen and perceptive. You gain an edge on tests made to notice threats.\n\n##### Otherworldly Grace (2 Points)\n\nYour elf body and mind can't be contained for long. Whenever you make a saving throw, you succeed on a roll of 5 or higher.\n\n##### Revisit Memory (1 Point)\n\nAccessing memories is as easy as living in the present for you. You gain an edge on tests made to recall lore.\n\n##### Unstoppable Mind (2 Points)\n\nYour mind allows you to maintain your focus in any situation. You can't be made dazed.\n",
+  "ancestryPoints": 3,
+  "traits": [
+    {
+      "name": "High Elf Glamor",
+      "signature": true,
+      "description": "A magic glamor makes others perceive you as interesting and engaging, granting you an edge on Presence tests using the Flirt or Persuade skills. This glamor makes you appear and sound slightly different to each creature you meet, since what is engaging to one might be different for another. However, you never appear to be anyone other than yourself."
+    },
+    {
+      "name": "Glamor of Terror",
+      "cost": 2,
+      "description": "When a foe strikes, you reverse the magic of your glamor to instill fear into their heart. Whenever you take damage from a creature, you can use a triggered action to make that creature frightened of you until the end of their next turn."
+    },
+    {
+      "name": "Graceful Retreat",
+      "cost": 1,
+      "description": "You gain a +1 bonus to the distance you can shift when you take the Disengage move action."
+    },
+    {
+      "name": "High Senses",
+      "cost": 1,
+      "description": "Your senses are especially keen and perceptive. You gain an edge on tests made to notice threats."
+    },
+    {
+      "name": "Otherworldly Grace",
+      "cost": 2,
+      "description": "Your elf body and mind can't be contained for long. Whenever you make a saving throw, you succeed on a roll of 5 or higher."
+    },
+    {
+      "name": "Revisit Memory",
+      "cost": 1,
+      "description": "Accessing memories is as easy as living in the present for you. You gain an edge on tests made to recall lore."
+    },
+    {
+      "name": "Unstoppable Mind",
+      "cost": 2,
+      "description": "Your mind allows you to maintain your focus in any situation. You can't be made dazed."
+    }
+  ]
+}

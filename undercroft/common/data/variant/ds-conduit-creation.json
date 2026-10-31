@@ -1,0 +1,29 @@
+{
+  "name": "Creation Domain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "parentKind": "class",
+  "parentId": "ds-conduit",
+  "summary": "",
+  "description": "### 1st-Level Features\n\n###### Creation Domain Piety and Effect\n\n- **Piety:** You gain 2 piety the first time in an encounter that a creature within 10 squares uses an area ability.\n- **Prayer Effect:** You summon the forces of creation and create a wall of stone within 10 squares whose size is 5 + your Intuition score. The wall lasts until the end of the encounter.\n\n##### Hands of the Maker\n\nYou have the following ability.\n\n> ###### Hands of the Maker\n>\n> *You craft objects with the power of your mind.*\n>\n> | **Magic**   | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You create a mundane object of size 1S or smaller. You can maintain a number of objects created this way equal to your Intuition score. You can destroy an object created this way with a thought, no matter how far you are from it (no action required).\n\n### 4th-Level Features\n\n###### Improved Hands of the Maker\n\nWhen you use your Hands of the Maker ability, you can create a mundane object that is size 2 or smaller.\n\n### 7th-Level Features\n\n##### Divine Quartermaster\n\nEach time you finish a respite, you can choose a treasure with a project goal equal to 50 times your level or less. You gain a divine version of this treasure that lasts until you finish another respite or it is consumed.\n",
+  "features": [
+    {
+      "name": "Hands of the Maker",
+      "level": 1,
+      "description": "You have the following ability.\n\n> ###### Hands of the Maker\n>\n> *You craft objects with the power of your mind.*\n>\n> | **Magic**   | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You create a mundane object of size 1S or smaller. You can maintain a number of objects created this way equal to your Intuition score. You can destroy an object created this way with a thought, no matter how far you are from it (no action required)."
+    },
+    {
+      "name": "Improved Hands of the Maker",
+      "level": 4,
+      "description": "When you use your Hands of the Maker ability, you can create a mundane object that is size 2 or smaller."
+    },
+    {
+      "name": "Divine Quartermaster",
+      "level": 7,
+      "description": "Each time you finish a respite, you can choose a treasure with a project goal equal to 50 times your level or less. You gain a divine version of this treasure that lasts until you finish another respite or it is consumed."
+    }
+  ]
+}

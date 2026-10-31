@@ -1,0 +1,49 @@
+{
+  "name": "Fire Specialization",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "parentKind": "class",
+  "parentId": "ds-elementalist",
+  "summary": "Fire is the element of destruction. Fire abilities devastate enemies and melt objects to slag.",
+  "description": "Fire is the element of destruction. Fire abilities devastate enemies and melt objects to slag.\n\n### 1st-Level Features\n\n##### Fire: Acolyte of Fire\n\nYou become an expert at wielding destructive flames. Your abilities that have the Fire and Magic keywords gain a +1 bonus to rolled damage. Your Hurl Element ability (see below) also gains this bonus when you use it to deal fire damage.\n\n##### Return to Formlessness\n\nYou have the following ability.\n\n> ###### Return to Formlessness\n>\n> *With the merest touch, you cause an object to turn to slag or ash.*\n>\n> | **Fire, Magic, Melee** |           **Main action** |\n> | ---------------------- | ------------------------: |\n> | **📏 Melee 1**         | **🎯 One mundane object** |\n>\n> **Effect:** You heat the target and cause it to melt or combust, destroying it. If the object is larger than 1 square, then only the square of the object you touch is destroyed.\n\n### 2nd-Level Features\n\n##### Disciple of Fire\n\nYour connection to fire allows you to protect yourself from it, even as you rip away the protections of others. You have fire immunity equal to 5 plus your level. Additionally, fire damage you deal ignores a target's fire immunity.\n\nAt the start of a combat encounter, you gain a number of surges equal to your Victories. Whenever you spend a surge to deal extra damage, you can make that damage fire damage.\n\n### 3rd-Level Features\n\n##### A Conversation With Fire\n\nWhen you spend 1 uninterrupted minute in front of a fire, you can speak the name of another creature. If that creature is willing to speak to you, their image appears in the fire, and they can see you before them in a shimmering ball of light. The two of you can speak to each other through these images as if you were together in person. As a maneuver, you or the creature can end the conversation.\n\n### 4th-Level Features\n\n##### Burning Grounds\n\nAt the end of each of your turns, each enemy in the area takes fire damage equal to your Reason score.\n\n### 5th-Level Features\n\n##### Smoldering Step\n\nYou can use 1 square of movement to walk into an area of fire your size or larger and teleport to any other area of fire your size or larger within 10 squares of the first area.\n\nAdditionally, whenever you use a fire ability or are targeted by an ability that deals fire damage, each enemy adjacent to you takes fire damage equal to your Reason score.\n\n### 8th-Level Features\n\n##### The Flame Primordial\n\nYou produce a fire that entrances the fates, distracting them from aiding your foes. Whenever you deal fire damage to a creature or object, they take an extra 1d6 fire damage. If you deal fire damage to a mundane object, you can use a free triggered action to target it with your Return to Formlessness ability instead.\n\nAdditionally, any enemy who starts their turn adjacent to you has fire weakness equal to your Reason score until the start of their next turn. This increases to twice your Reason score if the enemy is made of or is wearing mostly metal.\n\n### 10th-Level Features\n\n##### Master of Fire\n\nThe damage bonus of your Acolyte of Fire feature increases to +5 and applies to all your magic abilities.\n\nAdditionally, your Return to Formlessness ability can be used on supernatural objects (but not on artifacts). When you melt a treasure (see Chapter 13: Rewards), you gain breath equal to its echelon.\n",
+  "features": [
+    {
+      "name": "Return to Formlessness",
+      "level": 1,
+      "description": "You have the following ability.\n\n> ###### Return to Formlessness\n>\n> *With the merest touch, you cause an object to turn to slag or ash.*\n>\n> | **Fire, Magic, Melee** |           **Main action** |\n> | ---------------------- | ------------------------: |\n> | **📏 Melee 1**         | **🎯 One mundane object** |\n>\n> **Effect:** You heat the target and cause it to melt or combust, destroying it. If the object is larger than 1 square, then only the square of the object you touch is destroyed."
+    },
+    {
+      "name": "Disciple of Fire",
+      "level": 2,
+      "description": "Your connection to fire allows you to protect yourself from it, even as you rip away the protections of others. You have fire immunity equal to 5 plus your level. Additionally, fire damage you deal ignores a target's fire immunity.\n\nAt the start of a combat encounter, you gain a number of surges equal to your Victories. Whenever you spend a surge to deal extra damage, you can make that damage fire damage."
+    },
+    {
+      "name": "A Conversation With Fire",
+      "level": 3,
+      "description": "When you spend 1 uninterrupted minute in front of a fire, you can speak the name of another creature. If that creature is willing to speak to you, their image appears in the fire, and they can see you before them in a shimmering ball of light. The two of you can speak to each other through these images as if you were together in person. As a maneuver, you or the creature can end the conversation."
+    },
+    {
+      "name": "Burning Grounds",
+      "level": 4,
+      "description": "At the end of each of your turns, each enemy in the area takes fire damage equal to your Reason score."
+    },
+    {
+      "name": "Smoldering Step",
+      "level": 5,
+      "description": "You can use 1 square of movement to walk into an area of fire your size or larger and teleport to any other area of fire your size or larger within 10 squares of the first area.\n\nAdditionally, whenever you use a fire ability or are targeted by an ability that deals fire damage, each enemy adjacent to you takes fire damage equal to your Reason score."
+    },
+    {
+      "name": "The Flame Primordial",
+      "level": 8,
+      "description": "You produce a fire that entrances the fates, distracting them from aiding your foes. Whenever you deal fire damage to a creature or object, they take an extra 1d6 fire damage. If you deal fire damage to a mundane object, you can use a free triggered action to target it with your Return to Formlessness ability instead.\n\nAdditionally, any enemy who starts their turn adjacent to you has fire weakness equal to your Reason score until the start of their next turn. This increases to twice your Reason score if the enemy is made of or is wearing mostly metal."
+    },
+    {
+      "name": "Master of Fire",
+      "level": 10,
+      "description": "The damage bonus of your Acolyte of Fire feature increases to +5 and applies to all your magic abilities.\n\nAdditionally, your Return to Formlessness ability can be used on supernatural objects (but not on artifacts). When you melt a treasure (see Chapter 13: Rewards), you gain breath equal to its echelon."
+    }
+  ]
+}

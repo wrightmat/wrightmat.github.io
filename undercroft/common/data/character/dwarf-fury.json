@@ -6,10 +6,28 @@
   "data": {},
   "name": "Dwarf Fury (Pregen)",
   "level": 1,
-  "ancestry": "Dwarf",
-  "career": "Warden",
-  "class": "Fury",
-  "subclass": "Berserker",
+  "ancestry": {
+    "name": "Dwarf",
+    "refKind": "species",
+    "refId": "ds-dwarf"
+  },
+  "career": {
+    "name": "Warden",
+    "refKind": "background",
+    "refId": "ds-warden"
+  },
+  "class": {
+    "name": "Fury",
+    "refKind": "class",
+    "refId": "ds-fury"
+  },
+  "subclasses": [
+    {
+      "name": "Berserker",
+      "refKind": "variant",
+      "refId": "ds-fury-berserker"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -46,13 +64,19 @@
   },
   "culture": [
     {
-      "name": "Secluded"
+      "name": "Secluded",
+      "refKind": "background",
+      "refId": "ds-secluded"
     },
     {
-      "name": "Bureaucratic"
+      "name": "Bureaucratic",
+      "refKind": "background",
+      "refId": "ds-bureaucratic"
     },
     {
-      "name": "Creative"
+      "name": "Creative",
+      "refKind": "background",
+      "refId": "ds-creative"
     }
   ],
   "languages": [

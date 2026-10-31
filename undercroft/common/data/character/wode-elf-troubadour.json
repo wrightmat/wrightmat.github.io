@@ -6,10 +6,28 @@
   "data": {},
   "name": "Wode Elf Troubadour (Pregen)",
   "level": 1,
-  "ancestry": "Wode Elf",
-  "career": "Performer",
-  "class": "Troubadour",
-  "subclass": "Virtuoso",
+  "ancestry": {
+    "name": "Wode Elf",
+    "refKind": "species",
+    "refId": "ds-wode-elf"
+  },
+  "career": {
+    "name": "Performer",
+    "refKind": "background",
+    "refId": "ds-performer"
+  },
+  "class": {
+    "name": "Troubadour",
+    "refKind": "class",
+    "refId": "ds-troubadour"
+  },
+  "subclasses": [
+    {
+      "name": "Virtuoso",
+      "refKind": "variant",
+      "refId": "ds-troubadour-virtuoso"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 2,
@@ -45,13 +63,19 @@
   },
   "culture": [
     {
-      "name": "Wilderness"
+      "name": "Wilderness",
+      "refKind": "background",
+      "refId": "ds-wilderness"
     },
     {
-      "name": "Bureaucratic"
+      "name": "Bureaucratic",
+      "refKind": "background",
+      "refId": "ds-bureaucratic"
     },
     {
-      "name": "Creative"
+      "name": "Creative",
+      "refKind": "background",
+      "refId": "ds-creative"
     }
   ],
   "languages": [

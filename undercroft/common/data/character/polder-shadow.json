@@ -6,10 +6,28 @@
   "data": {},
   "name": "Polder Shadow (Pregen)",
   "level": 1,
-  "ancestry": "Polder",
-  "career": "Criminal",
-  "class": "Shadow",
-  "subclass": "College of Black Ash",
+  "ancestry": {
+    "name": "Polder",
+    "refKind": "species",
+    "refId": "ds-polder"
+  },
+  "career": {
+    "name": "Criminal",
+    "refKind": "background",
+    "refId": "ds-criminal"
+  },
+  "class": {
+    "name": "Shadow",
+    "refKind": "class",
+    "refId": "ds-shadow"
+  },
+  "subclasses": [
+    {
+      "name": "College of Black Ash",
+      "refKind": "variant",
+      "refId": "ds-shadow-black-ash"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -46,13 +64,19 @@
   },
   "culture": [
     {
-      "name": "Urban"
+      "name": "Urban",
+      "refKind": "background",
+      "refId": "ds-urban"
     },
     {
-      "name": "Communal"
+      "name": "Communal",
+      "refKind": "background",
+      "refId": "ds-communal"
     },
     {
-      "name": "Creative"
+      "name": "Creative",
+      "refKind": "background",
+      "refId": "ds-creative"
     }
   ],
   "languages": [

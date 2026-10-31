@@ -6,10 +6,28 @@
   "data": {},
   "name": "Human Talent (Pregen)",
   "level": 1,
-  "ancestry": "Human",
-  "career": "Agent",
-  "class": "Talent",
-  "subclass": "Telepath",
+  "ancestry": {
+    "name": "Human",
+    "refKind": "species",
+    "refId": "ds-human"
+  },
+  "career": {
+    "name": "Agent",
+    "refKind": "background",
+    "refId": "ds-agent"
+  },
+  "class": {
+    "name": "Talent",
+    "refKind": "class",
+    "refId": "ds-talent"
+  },
+  "subclasses": [
+    {
+      "name": "Telepathy",
+      "refKind": "variant",
+      "refId": "ds-talent-telepathy"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -45,13 +63,19 @@
   },
   "culture": [
     {
-      "name": "Secluded"
+      "name": "Secluded",
+      "refKind": "background",
+      "refId": "ds-secluded"
     },
     {
-      "name": "Bureaucratic"
+      "name": "Bureaucratic",
+      "refKind": "background",
+      "refId": "ds-bureaucratic"
     },
     {
-      "name": "Academic"
+      "name": "Academic",
+      "refKind": "background",
+      "refId": "ds-academic"
     }
   ],
   "languages": [

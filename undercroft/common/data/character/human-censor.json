@@ -6,10 +6,28 @@
   "data": {},
   "name": "Human Censor (Pregen)",
   "level": 1,
-  "ancestry": "Human",
-  "career": "Watch Officer",
-  "class": "Censor",
-  "subclass": "Paragon",
+  "ancestry": {
+    "name": "Human",
+    "refKind": "species",
+    "refId": "ds-human"
+  },
+  "career": {
+    "name": "Watch Officer",
+    "refKind": "background",
+    "refId": "ds-watch-officer"
+  },
+  "class": {
+    "name": "Censor",
+    "refKind": "class",
+    "refId": "ds-censor"
+  },
+  "subclasses": [
+    {
+      "name": "Paragon",
+      "refKind": "variant",
+      "refId": "ds-censor-paragon"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -45,13 +63,19 @@
   },
   "culture": [
     {
-      "name": "Urban"
+      "name": "Urban",
+      "refKind": "background",
+      "refId": "ds-urban"
     },
     {
-      "name": "Communal"
+      "name": "Communal",
+      "refKind": "background",
+      "refId": "ds-communal"
     },
     {
-      "name": "Labor"
+      "name": "Labor",
+      "refKind": "background",
+      "refId": "ds-labor"
     }
   ],
   "languages": [

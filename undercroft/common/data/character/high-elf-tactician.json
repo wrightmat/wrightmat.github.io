@@ -6,10 +6,28 @@
   "data": {},
   "name": "High Elf Tactician (Pregen)",
   "level": 1,
-  "ancestry": "High Elf",
-  "career": "Soldier",
-  "class": "Tactician",
-  "subclass": "Vanguard",
+  "ancestry": {
+    "name": "High Elf",
+    "refKind": "species",
+    "refId": "ds-high-elf"
+  },
+  "career": {
+    "name": "Soldier",
+    "refKind": "background",
+    "refId": "ds-soldier"
+  },
+  "class": {
+    "name": "Tactician",
+    "refKind": "class",
+    "refId": "ds-tactician"
+  },
+  "subclasses": [
+    {
+      "name": "Vanguard",
+      "refKind": "variant",
+      "refId": "ds-tactician-vanguard"
+    }
+  ],
   "victories": 0,
   "wealth": 1,
   "renown": 1,
@@ -45,13 +63,19 @@
   },
   "culture": [
     {
-      "name": "Secluded"
+      "name": "Secluded",
+      "refKind": "background",
+      "refId": "ds-secluded"
     },
     {
-      "name": "Bureaucratic"
+      "name": "Bureaucratic",
+      "refKind": "background",
+      "refId": "ds-bureaucratic"
     },
     {
-      "name": "Martial"
+      "name": "Martial",
+      "refKind": "background",
+      "refId": "ds-martial"
     }
   ],
   "languages": [

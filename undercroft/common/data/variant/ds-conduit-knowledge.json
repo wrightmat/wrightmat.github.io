@@ -1,0 +1,29 @@
+{
+  "name": "Knowledge Domain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "parentKind": "class",
+  "parentId": "ds-conduit",
+  "summary": "",
+  "description": "### 1st-Level Features\n\n###### Knowledge Domain Piety and Effect\n\n- **Piety:** You gain 2 piety the first time in an encounter that the Director spends Malice (see *[Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)*).\n- **Prayer Effect:** Choose up to five allies within 10 squares of you, or choose yourself instead of one ally. Each target gains 1 surge.\n\n##### Blessing of Comprehension\n\nYou can interpret diagrams and charts even if you don't understand the language associated with them. You are considered fluent in all languages for the purpose of understanding the project source for any research or crafting project (see Chapter 12: Downtime Projects).\n\n### 4th-Level Features\n\n###### Saint's Epiphany\n\nAt the start of a respite, you can inspire yourself or another creature taking the same respite with divine knowledge. If the target makes a project roll during this respite, they can add 1d10 plus your Intuition score to the roll.\n\n### 7th-Level Features\n\n##### Gods' Library\n\nYou can gain access to information you need through prayer, so that you no longer require research materials for crafting and research projects (see Chapter 12: Downtime Projects). Additionally, you add your level to project rolls you make for crafting and research projects. You also have any skills in the lore skill group you don't already have, and you gain a number of skills from any other skill groups equal to the number of skills you had in the lore skill group before you gained this feature.\n",
+  "features": [
+    {
+      "name": "Blessing of Comprehension",
+      "level": 1,
+      "description": "You can interpret diagrams and charts even if you don't understand the language associated with them. You are considered fluent in all languages for the purpose of understanding the project source for any research or crafting project (see Chapter 12: Downtime Projects)."
+    },
+    {
+      "name": "Saint's Epiphany",
+      "level": 4,
+      "description": "At the start of a respite, you can inspire yourself or another creature taking the same respite with divine knowledge. If the target makes a project roll during this respite, they can add 1d10 plus your Intuition score to the roll."
+    },
+    {
+      "name": "Gods' Library",
+      "level": 7,
+      "description": "You can gain access to information you need through prayer, so that you no longer require research materials for crafting and research projects (see Chapter 12: Downtime Projects). Additionally, you add your level to project rolls you make for crafting and research projects. You also have any skills in the lore skill group you don't already have, and you gain a number of skills from any other skill groups equal to the number of skills you had in the lore skill group before you gained this feature."
+    }
+  ]
+}
