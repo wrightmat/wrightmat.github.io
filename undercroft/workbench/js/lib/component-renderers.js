@@ -4,11 +4,12 @@ import { resolveIconClassList } from "../../../common/js/lib/icon-picker.js";
 import { createLabeledField } from "./component-layout.js";
 import { createReferenceChip } from "../../../common/js/lib/library-reference.js";
 // Repository's own renderMarkdown, reused as-is (same precedent as
-// Crucible's Notes preview). Called with no options — no resolveWikiLink,
-// no interactive dice/encounter/macro/checkbox handlers — since a
-// Feature/Spell description has no legitimate use for Journal-specific
+// Crucible's Notes preview). Called with no wiki-link/encounter/macro/checkbox
+// handlers — a Feature/Spell description has no legitimate use for Journal-specific
 // extensions; they just stay inert if the text happens to contain that syntax.
+// Dice are the exception: a page that passes `ctx.interactiveDice` gets rollable dice.
 import { renderMarkdown } from "../../../repository/js/lib/markdown.js";
+import { applyProseDiceRollers } from "../../../repository/js/lib/journal-dice.js";
 
 // Once a component has a real `label` property (every component created
 // since that field existed does, default ""), an explicitly-cleared label
@@ -569,7 +570,30 @@ export function renderTextContent(component, ctx) {
   // feet") before marked ever sees it.
   if (component.richText) {
     applyTextFormatting(text, component);
-    text.appendChild(renderMarkdown(resolved != null ? String(resolved) : ""));
+    const interactiveDice = Boolean(ctx.interactiveDice);
+    const { rolls, dice } = (typeof ctx.getRollContext === "function" && ctx.getRollContext()) || {};
+    const rollLabel = typeof ctx.rollLabel === "function" ? ctx.rollLabel(component) : undefined;
+    text.appendChild(
+      renderMarkdown(resolved != null ? String(resolved) : "", {
+        interactiveDice,
+        dataManager: ctx.dataManager,
+        status: ctx.status,
+        rolls,
+        dice,
+        diceLabel: rollLabel,
+      })
+    );
+    // Plain notation ("2d10 + 2") in the prose becomes a roll button too, not only an authored `dice:` tag.
+    if (interactiveDice) {
+      applyProseDiceRollers(text, {
+        status: ctx.status,
+        dataManager: ctx.dataManager,
+        label: rollLabel,
+        rolls,
+        dice,
+        showValue: false,
+      });
+    }
     return text;
   }
   text.textContent = resolved != null ? stripHtmlTags(String(resolved)) : "";

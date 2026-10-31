@@ -547,7 +547,7 @@ export function findRollByShortName(rolls, shortName) {
 
 // A System roll named inside a larger expression ("PowerRoll+@stats.abilities.agility") stands in for its own dice, and
 // grades the whole result. A word counts only when it is a roll's shortName, so a named die or a typo is left alone.
-function expandRollTerm(expression, rolls, dice) {
+export function expandRollTerm(expression, rolls, dice) {
   if (!Array.isArray(rolls) || !rolls.length || !/[A-Za-z]/.test(expression)) {
     return null;
   }

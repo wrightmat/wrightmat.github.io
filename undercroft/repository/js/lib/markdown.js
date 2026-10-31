@@ -218,20 +218,9 @@ function applyExternalLinkTargets(container) {
 
 const ENCOUNTER_CODE_PATTERN = /^encounter:\s*(.+)$/i;
 
-// Same "inline styles, not CSS classes" reasoning as journal-dice.js's own
-// chip — this can render inside handout.js's Dashboard widget, which never
-// loads Repository's own stylesheet.
+// Shared look: shell.css's .inline-ref (an underline in the kind's own color, so the text keeps the surrounding style).
 function styleAsChip(button) {
-  button.style.display = "inline-flex";
-  button.style.alignItems = "center";
-  button.style.gap = "0.25rem";
-  button.style.padding = "0.05rem 0.4rem";
-  button.style.border = "1px solid var(--bs-border-color, #dee2e6)";
-  button.style.borderRadius = "0.375rem";
-  button.style.background = "var(--bs-tertiary-bg, #f8f9fa)";
-  button.style.color = "inherit";
-  button.style.font = "inherit";
-  button.style.lineHeight = "1.4";
+  button.classList.add("inline-ref", "inline-ref--encounter");
 }
 
 function buildEncounterChip(creatures, blockIndex, { interactive, onStartEncounter }) {
@@ -239,7 +228,6 @@ function buildEncounterChip(creatures, blockIndex, { interactive, onStartEncount
   const button = el("button", "repository-encounter-chip");
   button.type = "button";
   styleAsChip(button);
-  button.style.cursor = interactive ? "pointer" : "default";
   const label = el("span", null, `Encounter: ${details}`);
   const icon = el("span", "iconify");
   icon.dataset.icon = "tabler:swords";
@@ -489,6 +477,10 @@ export function renderMarkdown(
     interactiveEncounters = false,
     onStartEncounter,
     interactiveDice = false,
+    // The System's named rolls and dice, so a `dice:` tag can use a roll's shortName (`dice:PowerRoll+2`).
+    rolls,
+    dice,
+    diceLabel,
     interactiveMacros = false,
     groupContext,
     dataManager,
@@ -527,7 +519,7 @@ export function renderMarkdown(
   applyWikiLinkStyling(container, { onNavigate });
   applyExternalLinkTargets(container);
   applyImageAdjustments(container);
-  applyDiceRollers(container, { status, interactive: interactiveDice, dataManager });
+  applyDiceRollers(container, { status, interactive: interactiveDice, dataManager, rolls, dice, label: diceLabel });
   applyEncounterBlocks(container, { interactive: interactiveEncounters, onStartEncounter });
   applyMacroBlocks(container, { status, interactive: interactiveMacros, dataManager, groupContext, ensureWidget, onWledDevicesChange });
   applyKindReferenceBlocks(container, { validKindIds, kindLabels, interactive: Boolean(onOpenReference), onOpenReference, dataManager });

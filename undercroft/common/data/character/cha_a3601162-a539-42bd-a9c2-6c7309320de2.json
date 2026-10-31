@@ -1,0 +1,125 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {
+    "name": "Polder Shadow (Pregen) Copy"
+  },
+  "name": "Sil",
+  "level": 2,
+  "ancestry": "Polder",
+  "career": "Criminal",
+  "class": "Shadow",
+  "subclass": "College of Black Ash",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 0,
+  "xp": 0,
+  "projectPoints": 120,
+  "stats": {
+    "abilities": {
+      "might": -1,
+      "agility": 2,
+      "reason": 2,
+      "intuition": 1,
+      "presence": 1
+    },
+    "hitPoints": {
+      "current": 21,
+      "max": 21,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 8,
+      "max": 8
+    },
+    "heroicResource": {
+      "name": "Insight",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1S",
+    "speed": {
+      "walk": 7
+    },
+    "stability": 0,
+    "disengage": 3
+  },
+  "culture": [
+    {
+      "name": "Urban"
+    },
+    {
+      "name": "Communal"
+    },
+    {
+      "name": "Creative"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Khoursirian"
+    },
+    {
+      "name": "Szetch"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Alertness"
+    },
+    {
+      "name": "Alchemy"
+    },
+    {
+      "name": "Criminal Underworld"
+    },
+    {
+      "name": "Flirt"
+    },
+    {
+      "name": "Gymnastics"
+    },
+    {
+      "name": "Hide"
+    },
+    {
+      "name": "Jump"
+    },
+    {
+      "name": "Lie"
+    },
+    {
+      "name": "Pick Lock"
+    },
+    {
+      "name": "Pick Pocket"
+    },
+    {
+      "name": "Sneak"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-fade",
+    "feat.drawsteel-i-work-better-alone",
+    "feat.drawsteel-two-throats-at-once",
+    "feat.drawsteel-coup-de-grace",
+    "feat.drawsteel-black-ash-teleport",
+    "feat.drawsteel-in-all-this-confusion",
+    "feat.drawsteel-hesitation-is-weakness",
+    "feat.drawsteel-shadowmeld",
+    "feat.drawsteel-melee-weapon-free-strike",
+    "feat.drawsteel-ranged-weapon-free-strike",
+    "feat.drawsteel-insight",
+    "feat.drawsteel-lucky-dog",
+    "feat.drawsteel-cloak-and-dagger-kit",
+    "feat.drawsteel-corruption-immunity",
+    "feat.drawsteel-fearless"
+  ],
+  "title": "Polder Shadow (Pregen) Copy",
+  "image": "https://i.redd.it/nydwu17db3m21.jpg"
+}

@@ -47,20 +47,9 @@ export async function runMacroReference(ref, { dataManager, groupContext, status
   await runMacro(macro, { dataManager, groupContext, status, wledDevices, ensureWidget, onWledDevicesChange });
 }
 
-// Inline styles, not a CSS class — this can render inside handout.js's
-// Dashboard widget, which never loads Repository's own stylesheet.
-function styleAsChip(button, interactive) {
-  button.style.display = "inline-flex";
-  button.style.alignItems = "center";
-  button.style.gap = "0.25rem";
-  button.style.padding = "0.05rem 0.4rem";
-  button.style.border = "1px solid var(--bs-border-color, #dee2e6)";
-  button.style.borderRadius = "0.375rem";
-  button.style.background = "var(--bs-tertiary-bg, #f8f9fa)";
-  button.style.color = "inherit";
-  button.style.font = "inherit";
-  button.style.lineHeight = "1.4";
-  button.style.cursor = interactive ? "pointer" : "default";
+// Shared look: shell.css's .inline-ref (an underline in the kind's own color, so the text keeps the surrounding style).
+function styleAsChip(button) {
+  button.classList.add("inline-ref", "inline-ref--macro");
 }
 
 // Only gets a click handler when `interactive` is true — firing a macro is
@@ -69,7 +58,7 @@ function styleAsChip(button, interactive) {
 function buildMacroChip(ref, { status, interactive, dataManager, groupContext, ensureWidget, onWledDevicesChange }) {
   const button = el("button", "repository-macro-chip");
   button.type = "button";
-  styleAsChip(button, interactive);
+  styleAsChip(button);
   const icon = el("span", "iconify");
   icon.dataset.icon = "tabler:bolt";
   icon.setAttribute("aria-hidden", "true");

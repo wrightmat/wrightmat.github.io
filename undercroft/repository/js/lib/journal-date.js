@@ -17,17 +17,7 @@ import { setDisabledTooltip } from "../../../common/js/lib/tooltips.js";
 const DATE_CODE_PATTERN = /^date:\s*(-?\d+|current|today)\s*(?:\|\s*(.+))?$/i;
 
 function styleAsChip(button) {
-  button.style.display = "inline-flex";
-  button.style.alignItems = "center";
-  button.style.gap = "0.25rem";
-  button.style.padding = "0.05rem 0.4rem";
-  button.style.border = "1px solid var(--bs-border-color, #dee2e6)";
-  button.style.borderRadius = "0.375rem";
-  button.style.background = "var(--bs-tertiary-bg, #f8f9fa)";
-  button.style.color = "inherit";
-  button.style.font = "inherit";
-  button.style.lineHeight = "1.4";
-  button.style.cursor = "default";
+  button.classList.add("inline-ref", "inline-ref--date");
 }
 
 // `calendar` may be absent — describeDate falls back to a plain "Day <N>"

@@ -2198,6 +2198,17 @@ html[data-bs-theme="light"] {
   white-space: nowrap;
 }
 
+/* A System roll's name is any length, so these buttons size to their text instead of sharing the fixed columns. */
+.dice-quick-grid[data-dice-moves] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.dice-quick-grid[data-dice-moves] .btn {
+  width: auto;
+}
+
 @media (max-width: 576px) {
   .dice-quick-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2812,4 +2823,48 @@ html[data-bs-theme="light"] {
   min-width: 0;
   padding-inline: 0.25rem;
   font-size: 0.7rem;
+}
+
+/* Inline items that sit in running text (Library references, dice, macros, dates, encounters): the text keeps the
+   surrounding color and size and only a dashed underline in the kind's color marks it, so lines flow unbroken. */
+.inline-ref {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  text-decoration: underline dashed var(--inline-ref-color, var(--bs-primary));
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.inline-ref:hover,
+.inline-ref:focus-visible {
+  text-decoration-style: solid;
+}
+
+.inline-ref--library {
+  --inline-ref-color: var(--bs-primary);
+}
+
+.inline-ref--dice {
+  --inline-ref-color: var(--bs-success);
+}
+
+.inline-ref--macro {
+  --inline-ref-color: var(--bs-warning);
+}
+
+.inline-ref--date {
+  --inline-ref-color: var(--bs-info);
+}
+
+.inline-ref--encounter {
+  --inline-ref-color: var(--bs-danger);
 }

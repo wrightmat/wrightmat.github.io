@@ -80,8 +80,8 @@
           {
             "type": "image",
             "id": "ds-1",
-            "label": "Portrait",
-            "name": "Portrait",
+            "label": "",
+            "name": "",
             "textColor": "",
             "textColorBinding": "",
             "textColorFormula": "",
@@ -3923,11 +3923,11 @@
                   "readOnlyFormula": "",
                   "textSize": "md",
                   "fontFamily": "",
-                  "fontSizeCustom": null,
+                  "fontSizeCustom": 14,
                   "lineHeight": 1.3,
                   "className": "",
                   "textStyles": {
-                    "bold": false,
+                    "bold": true,
                     "italic": false,
                     "underline": false
                   },

@@ -213,13 +213,6 @@
   box-shadow: none;
 }
 
-/* Base chip look already comes from inline styles (journal-dice.js) so it
-   renders correctly inside handout.js's Dashboard widget too — this just
-   adds the hover feedback, which only matters on Repository's own page. */
-.repository-dice-roller:hover {
-  background: var(--bs-secondary-bg, #e9ecef) !important;
-}
-
 /* Search-cycle highlights (app.js's own highlightTextMatches/
    goToSearchMatch) — Bootstrap's subtle-color tokens instead of a plain
    <mark>'s UA-default yellow, so this stays readable in dark theme too.

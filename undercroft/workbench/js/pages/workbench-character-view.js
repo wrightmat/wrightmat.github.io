@@ -86,6 +86,7 @@ import {
   SOURCES,
 } from "../../../common/js/lib/content-fetch.js";
 import { showConfirmModal } from "../../../common/js/lib/confirm-modal.js";
+import { showImageModal } from "../../../common/js/lib/image-modal.js";
 import { watchGroupForChanges, persistGroupPropertyValue } from "../../../common/js/lib/group-live-sync.js";
 import { collectSystemFields } from "../../../common/js/lib/system-schema.js";
 
@@ -3774,7 +3775,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     moveButtons.clear();
     // NOT `.hidden` — `.dice-quick-grid`'s `display: grid` always beats the
     // `[hidden]` UA rule regardless of specificity. See dom.js's setElementVisible.
-    setElementVisible(elements.diceMovesRow, activeSystemRolls.length > 0, "grid");
+    setElementVisible(elements.diceMovesRow, activeSystemRolls.length > 0, "flex");
     activeSystemRolls.forEach((move, index) => {
       const button = document.createElement("button");
       button.type = "button";
@@ -7347,6 +7348,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       },
     });
     attachImageUrlEditing(component, element, itemContext);
+    attachImageViewer(element, component);
     return element;
   }
 
@@ -7380,6 +7382,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     });
   }
 
+  // Outside Edit mode, clicking a shown image opens it at full size (Edit keeps the click for changing the URL).
+  function attachImageViewer(element, component) {
+    const image = element.querySelector("img");
+    if (state.mode === "edit" || !image) {
+      return;
+    }
+    image.style.cursor = "zoom-in";
+    image.addEventListener("click", () => showImageModal({ src: image.src, alt: component.alt || "" }));
+  }
+
   // iconClass — an "@path" value resolves against the live draft record, or, when
   // itemContext is set, against that one repeater item.
   function renderIconComponent(component, itemContext = null) {
@@ -7404,6 +7416,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // only place a reference chip hovers/previews; the Template editor's
       // preview has no live record and falls back to plain text.
       dataManager,
+      status,
+      interactiveDice: true,
+      getRollContext: () => ({ rolls: activeSystemRolls, dice: activeQuickDice }),
+      // A roll from a row's description (a Feature's) is titled with that row's name.
+      rollLabel: (comp) => itemContext?.item?.name || comp.label || comp.name,
       resolveValue(comp, fallback) {
         if (itemContext) {
           // Formula first, same precedence as the non-item branch below.

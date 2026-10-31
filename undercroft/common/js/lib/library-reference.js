@@ -45,24 +45,9 @@ export function iconFor(kindId) {
   return KIND_ICON[kindId] || "tabler:link";
 }
 
-// Inline styles, not CSS classes — this can render inside pages (Dashboard
-// widgets, Workbench's character sheet) that never load Repository's
-// stylesheet. Deliberately understated (no fill, no icon, dashed outline) —
-// a reference chip should read as "this links to something," not a filled
-// badge competing with real content. What kind of thing it links to shows
-// on hover/focus instead (buildPreviewHeader below).
-function styleAsChip(button, interactive) {
-  button.style.display = "inline-flex";
-  button.style.alignItems = "center";
-  button.style.gap = "0.25rem";
-  button.style.padding = "0.05rem 0.4rem";
-  button.style.border = "1px dashed var(--bs-border-color-translucent, rgba(0, 0, 0, 0.175))";
-  button.style.borderRadius = "0.375rem";
-  button.style.background = "transparent";
-  button.style.color = "inherit";
-  button.style.font = "inherit";
-  button.style.lineHeight = "1.4";
-  button.style.cursor = interactive ? "pointer" : "default";
+// Shared look: shell.css's .inline-ref (an underline in the kind's own color, so the text keeps the surrounding style).
+function styleAsChip(button) {
+  button.classList.add("inline-ref", "inline-ref--library");
 }
 
 // `id` OR `name` identify the target record; passing `id` skips the
@@ -72,7 +57,7 @@ function styleAsChip(button, interactive) {
 export function createReferenceChip({ kind, id, name, dataManager, interactive, onOpen, kindLabel } = {}) {
   const button = el("button", "library-reference-chip");
   button.type = "button";
-  styleAsChip(button, interactive);
+  styleAsChip(button);
   button.append(el("span", null, name || id));
   button.setAttribute("aria-label", `${name || id} (${kindLabel || kind})`);
   if (interactive) {
