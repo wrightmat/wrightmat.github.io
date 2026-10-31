@@ -6920,7 +6920,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       writeRepeaterItems(component, itemContext, [...items, createBlankRepeaterItem(itemColumns)]);
     };
     const handleRemoveItem = (index) => {
-      writeRepeaterItems(component, itemContext, items.filter((_, i) => i !== index));
+      const remaining = items.filter((_, i) => i !== index);
+      // An id-storage Repeater displays expanded records but stores only their ids.
+      writeRepeaterItems(component, itemContext, isIdStorageRepeater(component) ? remaining.map((entry) => entry.refId) : remaining);
     };
     const onRemoveItem = canRemove ? handleRemoveItem : null;
     // Add controls — either the plain blank-row button, a Source-bound picker
@@ -7436,6 +7438,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           // (threads itemContext through) — not renderComponentCard, which has no
           // itemContext concept.
           if (itemContext) {
+            if (!isRepeaterItemNodeVisible(child, itemContext.item)) return;
             const node = renderRepeaterItemNode(child, itemContext.item, itemContext.repeaterComponent, itemContext.index);
             if (node) cell.appendChild(node);
             return;

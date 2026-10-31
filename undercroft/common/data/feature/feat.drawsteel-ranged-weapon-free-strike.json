@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-ranged-weapon-free-strike",
+  "name": "Ranged Weapon Free Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Free Strike** — Ranged, Strike, Weapon — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 7 damage\n- **17+:** 9 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "2d10 + 2: 11 or less: 5 damage; 12-16: 7 damage; 17+: 9 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Free Strike",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-two-throats-at-once",
+  "name": "Two Throats at Once",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A bargain.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 3 Insight\n\n**Distance:** Melee 1 or ranged 10   **Target:** Two creatures or objects\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 7 damage\n- **17+:** 11 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "A bargain. 2d10 + 2: 11 or less: 5 damage; 12-16: 7 damage; 17+: 11 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "Two creatures or objects",
+  "cost": 3
+}

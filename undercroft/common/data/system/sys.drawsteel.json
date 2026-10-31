@@ -1,0 +1,595 @@
+{
+  "title": "Draw Steel",
+  "version": "0.1",
+  "fields": [
+    {
+      "type": "string",
+      "key": "name",
+      "label": "Name",
+      "required": true
+    },
+    {
+      "type": "number",
+      "key": "level",
+      "label": "Level",
+      "minimum": 1,
+      "maximum": 10
+    },
+    {
+      "type": "string",
+      "key": "ancestry",
+      "label": "Ancestry"
+    },
+    {
+      "type": "string",
+      "key": "career",
+      "label": "Career"
+    },
+    {
+      "type": "string",
+      "key": "class",
+      "label": "Class"
+    },
+    {
+      "type": "string",
+      "key": "subclass",
+      "label": "Subclass"
+    },
+    {
+      "type": "number",
+      "key": "victories",
+      "label": "Victories",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "wealth",
+      "label": "Wealth",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "renown",
+      "label": "Renown",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "xp",
+      "label": "XP",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "projectPoints",
+      "label": "Project Points",
+      "minimum": 0
+    },
+    {
+      "type": "object",
+      "key": "abilities",
+      "label": "Characteristics",
+      "children": [
+        {
+          "type": "number",
+          "key": "abilities.might",
+          "label": "Might",
+          "shortName": "MGT",
+          "minimum": -5,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "abilities.agility",
+          "label": "Agility",
+          "shortName": "AGI",
+          "minimum": -5,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "abilities.reason",
+          "label": "Reason",
+          "shortName": "REA",
+          "minimum": -5,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "abilities.intuition",
+          "label": "Intuition",
+          "shortName": "INT",
+          "minimum": -5,
+          "maximum": 5
+        },
+        {
+          "type": "number",
+          "key": "abilities.presence",
+          "label": "Presence",
+          "shortName": "PRE",
+          "minimum": -5,
+          "maximum": 5
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "hitPoints",
+      "label": "Stamina",
+      "children": [
+        {
+          "type": "number",
+          "key": "hitPoints.current",
+          "label": "Current"
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.max",
+          "label": "Max",
+          "minimum": 1
+        },
+        {
+          "type": "number",
+          "key": "hitPoints.temp",
+          "label": "Temporary",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "recoveries",
+      "label": "Recoveries",
+      "children": [
+        {
+          "type": "number",
+          "key": "recoveries.current",
+          "label": "Current",
+          "minimum": 0
+        },
+        {
+          "type": "number",
+          "key": "recoveries.max",
+          "label": "Max",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "object",
+      "key": "heroicResource",
+      "label": "Heroic Resource",
+      "children": [
+        {
+          "type": "string",
+          "key": "heroicResource.name",
+          "label": "Name"
+        },
+        {
+          "type": "number",
+          "key": "heroicResource.current",
+          "label": "Current",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "surges",
+      "label": "Surges",
+      "minimum": 0
+    },
+    {
+      "type": "string",
+      "key": "size",
+      "label": "Size"
+    },
+    {
+      "type": "object",
+      "key": "speed",
+      "label": "Speed",
+      "children": [
+        {
+          "type": "number",
+          "key": "speed.walk",
+          "label": "Speed",
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "type": "number",
+      "key": "stability",
+      "label": "Stability",
+      "minimum": 0
+    },
+    {
+      "type": "number",
+      "key": "disengage",
+      "label": "Disengage",
+      "minimum": 0
+    },
+    {
+      "type": "array",
+      "key": "culture",
+      "label": "Culture",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Aspect"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "languages",
+      "label": "Languages",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Language"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "skills",
+      "label": "Skills",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Skill"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "classes",
+      "label": "Classes",
+      "values": [
+        {
+          "name": "Censor",
+          "heroicResource": "Wrath"
+        },
+        {
+          "name": "Conduit",
+          "heroicResource": "Piety"
+        },
+        {
+          "name": "Elementalist",
+          "heroicResource": "Essence"
+        },
+        {
+          "name": "Fury",
+          "heroicResource": "Ferocity"
+        },
+        {
+          "name": "Null",
+          "heroicResource": "Discipline"
+        },
+        {
+          "name": "Shadow",
+          "heroicResource": "Insight"
+        },
+        {
+          "name": "Tactician",
+          "heroicResource": "Focus"
+        },
+        {
+          "name": "Talent",
+          "heroicResource": "Clarity"
+        },
+        {
+          "name": "Troubadour",
+          "heroicResource": "Drama"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "ancestries",
+      "label": "Ancestries",
+      "values": [
+        {
+          "name": "Devil"
+        },
+        {
+          "name": "Dragon Knight"
+        },
+        {
+          "name": "Dwarf"
+        },
+        {
+          "name": "Hakaan"
+        },
+        {
+          "name": "High Elf"
+        },
+        {
+          "name": "Human"
+        },
+        {
+          "name": "Memonek"
+        },
+        {
+          "name": "Orc"
+        },
+        {
+          "name": "Polder"
+        },
+        {
+          "name": "Revenant"
+        },
+        {
+          "name": "Time Raider"
+        },
+        {
+          "name": "Wode Elf"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "careers",
+      "label": "Careers",
+      "values": [
+        {
+          "name": "Criminal"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "actionTypes",
+      "label": "Action Types",
+      "values": [
+        {
+          "name": "Main action"
+        },
+        {
+          "name": "Maneuver"
+        },
+        {
+          "name": "Triggered"
+        },
+        {
+          "name": "Free triggered"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "skillGroups",
+      "label": "Skill Groups",
+      "values": [
+        {
+          "name": "Crafting"
+        },
+        {
+          "name": "Exploration"
+        },
+        {
+          "name": "Interpersonal"
+        },
+        {
+          "name": "Intrigue"
+        },
+        {
+          "name": "Lore"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "combatBindings",
+      "label": "Combat Bindings",
+      "values": [
+        {
+          "name": "Stamina",
+          "maxPath": "stats.hitPoints.max",
+          "tempPath": "stats.hitPoints.temp",
+          "recordField": "stats.hitPoints.current",
+          "binding": "resource"
+        },
+        {
+          "name": "Recoveries",
+          "maxPath": "stats.recoveries.max",
+          "recordField": "stats.recoveries.current",
+          "binding": "resource"
+        },
+        {
+          "name": "Heroic Resource",
+          "recordField": "stats.heroicResource.current",
+          "binding": "resource"
+        },
+        {
+          "name": "Surges",
+          "recordField": "stats.surges",
+          "binding": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "dice",
+      "label": "Dice",
+      "values": [
+        {
+          "name": "d3",
+          "sides": 3
+        },
+        {
+          "name": "d6",
+          "sides": 6
+        },
+        {
+          "name": "d10",
+          "sides": 10
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "rolls",
+      "label": "Rolls",
+      "values": [
+        {
+          "name": "Might",
+          "shortName": "Might",
+          "expression": "2d10+@stats.abilities.might",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 11,
+              "label": "Tier 1"
+            },
+            {
+              "min": 12,
+              "max": 16,
+              "label": "Tier 2"
+            },
+            {
+              "min": 17,
+              "label": "Tier 3"
+            }
+          ],
+          "description": "2d10 plus Might. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
+        },
+        {
+          "name": "Agility",
+          "shortName": "Agility",
+          "expression": "2d10+@stats.abilities.agility",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 11,
+              "label": "Tier 1"
+            },
+            {
+              "min": 12,
+              "max": 16,
+              "label": "Tier 2"
+            },
+            {
+              "min": 17,
+              "label": "Tier 3"
+            }
+          ],
+          "description": "2d10 plus Agility. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
+        },
+        {
+          "name": "Reason",
+          "shortName": "Reason",
+          "expression": "2d10+@stats.abilities.reason",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 11,
+              "label": "Tier 1"
+            },
+            {
+              "min": 12,
+              "max": 16,
+              "label": "Tier 2"
+            },
+            {
+              "min": 17,
+              "label": "Tier 3"
+            }
+          ],
+          "description": "2d10 plus Reason. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
+        },
+        {
+          "name": "Intuition",
+          "shortName": "Intuition",
+          "expression": "2d10+@stats.abilities.intuition",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 11,
+              "label": "Tier 1"
+            },
+            {
+              "min": 12,
+              "max": 16,
+              "label": "Tier 2"
+            },
+            {
+              "min": 17,
+              "label": "Tier 3"
+            }
+          ],
+          "description": "2d10 plus Intuition. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
+        },
+        {
+          "name": "Presence",
+          "shortName": "Presence",
+          "expression": "2d10+@stats.abilities.presence",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 11,
+              "label": "Tier 1"
+            },
+            {
+              "min": 12,
+              "max": 16,
+              "label": "Tier 2"
+            },
+            {
+              "min": 17,
+              "label": "Tier 3"
+            }
+          ],
+          "description": "2d10 plus Presence. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
+        },
+        {
+          "name": "Power Roll",
+          "shortName": "PowerRoll",
+          "expression": "2d10",
+          "resultMode": "band",
+          "bands": [
+            {
+              "max": 11,
+              "label": "Tier 1"
+            },
+            {
+              "min": 12,
+              "max": 16,
+              "label": "Tier 2"
+            },
+            {
+              "min": 17,
+              "label": "Tier 3"
+            }
+          ],
+          "description": "2d10 with no characteristic added. The tier is read from the total."
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "fieldRoles",
+      "label": "Field Roles",
+      "values": [
+        {
+          "name": "combatBindings → combatBindings",
+          "sourceField": "combatBindings",
+          "binding": "combatBindings"
+        },
+        {
+          "targetPath": "stats.abilities",
+          "name": "abilities → abilityScores",
+          "sourceField": "abilities",
+          "binding": "abilityScores"
+        }
+      ]
+    }
+  ]
+}

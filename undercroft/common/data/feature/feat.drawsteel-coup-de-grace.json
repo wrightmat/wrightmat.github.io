@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-coup-de-grace",
+  "name": "Coup de Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your blade might be the last thing they see.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 2d6 + 10 damage\n- **12-16:** 2d6 + 14 damage\n- **17+:** 2d6 + 19 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "Your blade might be the last thing they see. 2d10 + 2: 11 or less: 2d6 + 10 damage; 12-16: 2d6 + 14 damage; 17+: 2d6 + 19 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature",
+  "cost": 5
+}

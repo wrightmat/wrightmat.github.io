@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-black-ash-teleport",
+  "name": "Black Ash Teleport",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*In a swirl of black ash, you step from one place to another.*\n\n**Maneuver** — Magic — Maneuver\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You teleport up to 5 squares. If you have concealment or cover at your destination, you can use the Hide maneuver even if you are observed. If you successfully hide using this maneuver, you gain 1 surge. Spend 1+ Insight: You teleport 1 additional square for each insight spent.",
+  "mechanics": {
+    "type": "active",
+    "text": "In a swirl of black ash, you step from one place to another. You teleport up to 5 squares. If you have concealment or cover at your destination, you can use the Hide maneuver even if you are observed. If you successfully hide using this maneuver, you gain 1 surge. Spend 1+ Insight: You teleport 1 additional square for each insight spent."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self"
+}

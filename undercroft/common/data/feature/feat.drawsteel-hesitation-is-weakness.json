@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-hesitation-is-weakness",
+  "name": "Hesitation is Weakness",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Keep up the attack. Never give them a moment’s grace.*\n\n**Triggered** — Free triggered\n\n**Cost:** 1 Insight\n\n**Distance:** Self   **Target:** Self\n\n**Trigger:** Another hero ends their turn. That hero can’t have used this ability to start their turn.\n\n**Effect:** You take your turn after the triggering hero.",
+  "mechanics": {
+    "type": "active",
+    "text": "Keep up the attack. Never give them a moment’s grace. Trigger: Another hero ends their turn. That hero can’t have used this ability to start their turn. You take your turn after the triggering hero."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "actionType": "Free triggered",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 1,
+  "trigger": "Another hero ends their turn. That hero can’t have used this ability to start their turn."
+}

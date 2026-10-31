@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-fade",
+  "name": "Fade",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A stab, and a few quick, careful steps back.*\n\n**Signature Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage; you can shift 1 square\n- **12-16:** 8 damage; you can shift up to 2 squares\n- **17+:** 10 damage; you can shift up to 3 squares",
+  "mechanics": {
+    "type": "active",
+    "text": "A stab, and a few quick, careful steps back. 2d10 + 2: 11 or less: 5 damage; you can shift 1 square; 12-16: 8 damage; you can shift up to 2 squares; 17+: 10 damage; you can shift up to 3 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature"
+}

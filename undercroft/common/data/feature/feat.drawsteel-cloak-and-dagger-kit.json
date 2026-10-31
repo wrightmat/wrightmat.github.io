@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-cloak-and-dagger-kit",
+  "name": "Cloak and Dagger Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Kit**\n\nYou wear light armor, such as leather armor, and wield light weapons, such as daggers or handaxes.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You wear light armor, such as leather armor, and wield light weapons, such as daggers or handaxes."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Kit"
+}

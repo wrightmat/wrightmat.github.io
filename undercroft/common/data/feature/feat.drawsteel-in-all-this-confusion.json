@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-in-all-this-confusion",
+  "name": "In All This Confusion",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You vanish in a plume of black smoke to avoid danger.*\n\n**Triggered** — Magic — Triggered\n\n**Distance:** Self   **Target:** Self\n\n**Trigger:** You take damage.\n\n**Effect:** You take half the damage, then can teleport up to 4 squares after the triggering effect resolves. Spend 1+ Insight: You teleport 1 additional square for each insight spent.",
+  "mechanics": {
+    "type": "active",
+    "text": "You vanish in a plume of black smoke to avoid danger. Trigger: You take damage. You take half the damage, then can teleport up to 4 squares after the triggering effect resolves. Spend 1+ Insight: You teleport 1 additional square for each insight spent."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Magic",
+  "actionType": "Triggered",
+  "distance": "Self",
+  "target": "Self",
+  "trigger": "You take damage."
+}
