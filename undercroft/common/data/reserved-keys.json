@@ -83,7 +83,7 @@
     {
       "key": "rolls",
       "type": "array",
-      "description": "Named Rolls/Moves (a fixed dice expression with result bands) for the dice-roller widget. Each value is {name, expression}.",
+      "description": "Named Rolls/Moves (a fixed dice expression with result bands) for the dice-roller widget. Each value is {name, shortName, expression}. A roll's shortName can also be used as a term in a longer expression (\"PowerRoll+@stats.abilities.agility\"); a band with natural:true is read from the roll's own dice instead of the total.",
       "valueRequires": ["expression"]
     },
     {

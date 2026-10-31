@@ -1809,6 +1809,26 @@ export class DataManager {
     return this._request(this._groupPath(groupId, "/addable-players"), { auth: true });
   }
 
+  async getGroupTransferCandidates(groupId) {
+    return this._request(this._groupPath(groupId, "/transfer-candidates"), { auth: true });
+  }
+
+  async getGroupTransfer(groupId) {
+    return this._request(this._groupPath(groupId, "/transfer"), { auth: true });
+  }
+
+  async offerGroupTransfer(groupId, username, keepAsPlayer) {
+    return this._request(this._groupPath(groupId, "/transfer"), { method: "POST", body: { username, keepAsPlayer }, auth: true });
+  }
+
+  async withdrawGroupTransfer(groupId) {
+    return this._request(this._groupPath(groupId, "/transfer/withdraw"), { method: "POST", body: {}, auth: true });
+  }
+
+  async respondToGroupTransfer(groupId, accept) {
+    return this._request(this._groupPath(groupId, "/transfer/respond"), { method: "POST", body: { accept }, auth: true });
+  }
+
   async getAddableGroupCharacters(groupId) {
     return this._request(this._groupPath(groupId, "/addable-characters"), { auth: true });
   }

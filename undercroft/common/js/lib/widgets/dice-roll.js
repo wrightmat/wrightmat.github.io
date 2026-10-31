@@ -186,6 +186,20 @@ export async function rollExpression(
       targetValue,
     });
   }
+  const composed = expandRollTerm(trimmed, rolls, dice);
+  if (composed) {
+    return rollSystemMove(composed.move, {
+      status,
+      label,
+      dataManager,
+      groupContext,
+      post,
+      dice,
+      context,
+      targetValue,
+      expression: composed.expression,
+    });
+  }
   const tableRef = parseTableReferenceExpression(trimmed);
   if (tableRef) {
     if (!dataManager) {
@@ -218,7 +232,7 @@ export async function rollExpression(
     const result = (await tryOverlayRoll(playable, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
     if (announce) {
       const prefix = label ? `${label}: ` : "";
-      status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
+      status?.show(`${prefix}${result.notation || trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
     }
     if (post && dataManager && groupContext?.groupId) {
       const prefix = label ? `${label}: ` : "";
@@ -531,6 +545,23 @@ export function findRollByShortName(rolls, shortName) {
   return rolls.find((entry) => typeof entry.shortName === "string" && entry.shortName.toLowerCase() === needle) || null;
 }
 
+// A System roll named inside a larger expression ("PowerRoll+@stats.abilities.agility") stands in for its own dice, and
+// grades the whole result. A word counts only when it is a roll's shortName, so a named die or a typo is left alone.
+function expandRollTerm(expression, rolls, dice) {
+  if (!Array.isArray(rolls) || !rolls.length || !/[A-Za-z]/.test(expression)) {
+    return null;
+  }
+  const dieIds = new Set((Array.isArray(dice) ? dice : []).map((die) => String(die?.id || "").toLowerCase()));
+  let move = null;
+  const expanded = expression.replace(/(?<![@.\w])[A-Za-z_]\w*/g, (word) => {
+    const found = dieIds.has(word.toLowerCase()) ? null : findRollByShortName(rolls, word);
+    if (!found) return word;
+    move = move || found;
+    return /[+\-*/]/.test(found.expression) ? `(${found.expression})` : found.expression;
+  });
+  return move ? { move, expression: expanded } : null;
+}
+
 // A tally band (`{tally:{gte|lte|eq}}`) matches a `t`-modifier'd dice
 // group's tally count. A range band (`{min?, max?}`) matches the roll's
 // total. All given bounds on a band must hold; an absent bound is
@@ -603,7 +634,9 @@ function evaluateBands(bands, result, targetValue) {
       }
       continue;
     }
-    if (matchesRangeBand(result?.total, band, targetValue)) {
+    // `natural` grades the roll's own first dice (the d20 itself) instead of the total with modifiers added.
+    const graded = band?.natural ? (diceDetails[0]?.total ?? result?.total) : result?.total;
+    if (matchesRangeBand(graded, band, targetValue)) {
       return band.label || null;
     }
   }
@@ -661,6 +694,8 @@ export async function rollSystemMove(
     dataManager,
     targetValue = undefined,
     label = move.label,
+    // The roll's own dice by default; a larger expression that names the roll passes its expanded form.
+    expression = move.expression,
     ...rollOptions
   } = {}
 ) {
@@ -669,7 +704,7 @@ export async function rollSystemMove(
   // the inner call's own posting, once here).
   // announce:false skips that inner call's own toast, since the combined
   // "roll + verdict" toast below is the only one that should show.
-  const rolled = await rollExpression(move.expression, { ...rollOptions, dataManager, label, announce: false });
+  const rolled = await rollExpression(expression, { ...rollOptions, dataManager, label, announce: false });
   if (!rolled || rolled.isTable) {
     return rolled;
   }
@@ -678,7 +713,7 @@ export async function rollSystemMove(
   const verdictSuffix = verdict?.label ? ` — ${verdict.label}` : "";
   // The RESOLVED notation (e.g. "2d6 kh1 t>=6"), not move.expression's own
   // unsubstituted form — the toast should read what was actually rolled.
-  const notation = rolled.result?.notation || move.expression;
+  const notation = rolled.result?.notation || expression;
   rollOptions.status?.show(`${prefix}${notation} → ${rolled.total}${verdictSuffix}`, {
     type: "success",
     timeout: 2600,

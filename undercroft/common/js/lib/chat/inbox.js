@@ -30,6 +30,7 @@ const REASON_LABELS = {
   session_noshow: "Marked as a no-show",
   session_dispute: "No-show disputed",
   application: "Application",
+  group_offer: "Group offer",
 };
 
 // Keeps `onCount(unread)` current: immediately, then on a timer and whenever
@@ -64,10 +65,12 @@ export function watchInboxCount({ dataManager, onCount } = {}) {
 function senderOf(item, viewerId) {
   if (item.session) return item.session.title;
   if (item.application) return applicationCounterpart(item.application, viewerId);
+  if (item.groupOffer) return item.groupOffer.fromUsername || "A GM";
   return item.message ? item.message.voiceName : item.direct?.authorName || "Someone";
 }
 
 function previewOf(item) {
+  if (item.groupOffer) return `Offers you the GM role of ${item.groupName}`;
   if (item.application) {
     const last = item.application.messages[item.application.messages.length - 1];
     return `${item.application.status === "pending" ? "" : `${item.application.status[0].toUpperCase()}${item.application.status.slice(1)} · `}${last ? last.body : ""}`;
@@ -207,10 +210,16 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
   function addDeleteFab(item) {
     const over = item.session
       ? sessionIsOver(item.session)
-      : !(item.application && item.application.status === "pending");
+      : !((item.application && item.application.status === "pending") || item.groupOffer);
     deleteFab = createIconButton({
       icon: "tabler:trash",
-      label: over ? "Delete" : item.application ? "Can be deleted once the application is answered" : "Can be deleted once the session has ended",
+      label: over
+        ? "Delete"
+        : item.groupOffer
+          ? "Can be deleted once you accept or decline the offer"
+          : item.application
+            ? "Can be deleted once the application is answered"
+            : "Can be deleted once the session has ended",
       variant: "danger",
       tooltipPlacement: "top",
       className: "chat-fab chat-fab--second",
@@ -466,9 +475,51 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
     return wrap;
   }
 
+  function showGroupOffer(item) {
+    const pane = el("div", "d-flex flex-column gap-3");
+    const head = el("div", "d-flex flex-column gap-1");
+    head.append(
+      el("h3", "h5 mb-0", `${item.groupOffer.fromUsername || "A GM"} offers you ${item.groupName}`),
+      el("div", "text-body-secondary small", `${REASON_LABELS.group_offer} · ${formatDateTime(item.createdAt)}`),
+    );
+    const body = el(
+      "p",
+      "mb-0",
+      `If you accept, you become the GM of this group.${item.groupOffer.keepAsPlayer ? " They stay in it as a player." : " They leave the group."} Any recruitment listing the group had is closed, and open applications to it are declined.`,
+    );
+    const respond = async (accept) => {
+      try {
+        await dataManager.respondToGroupTransfer(item.groupId, accept);
+        status?.show(accept ? `You are now the GM of ${item.groupName}.` : "Offer declined.", { type: "success", timeout: 3000 });
+        items = items.filter((entry) => entry !== item);
+        selectedId = null;
+        window.dispatchEvent(new CustomEvent(INBOX_CHANGED_EVENT));
+        renderList();
+        setPane(el("div", "text-body-secondary p-3", accept ? "You accepted the group." : "You declined the group."));
+      } catch (error) {
+        status?.show(error.message || "That didn't work.", { type: "error" });
+      }
+    };
+    const actions = el("div", "d-flex gap-2");
+    const accept = el("button", "btn btn-primary btn-sm", "Accept");
+    accept.type = "button";
+    accept.addEventListener("click", () => void respond(true));
+    const decline = el("button", "btn btn-outline-secondary btn-sm", "Decline");
+    decline.type = "button";
+    decline.addEventListener("click", () => void respond(false));
+    actions.append(accept, decline);
+    pane.append(head, body, actions);
+    setPane(pane);
+    addDeleteFab(item);
+  }
+
   function showItem(item) {
     if (item.session) {
       showSession(item);
+      return;
+    }
+    if (item.groupOffer) {
+      showGroupOffer(item);
       return;
     }
     if (item.application) {

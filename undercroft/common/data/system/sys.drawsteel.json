@@ -440,116 +440,6 @@
       "label": "Rolls",
       "values": [
         {
-          "name": "Might",
-          "shortName": "Might",
-          "expression": "2d10+@stats.abilities.might",
-          "resultMode": "band",
-          "bands": [
-            {
-              "max": 11,
-              "label": "Tier 1"
-            },
-            {
-              "min": 12,
-              "max": 16,
-              "label": "Tier 2"
-            },
-            {
-              "min": 17,
-              "label": "Tier 3"
-            }
-          ],
-          "description": "2d10 plus Might. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
-        },
-        {
-          "name": "Agility",
-          "shortName": "Agility",
-          "expression": "2d10+@stats.abilities.agility",
-          "resultMode": "band",
-          "bands": [
-            {
-              "max": 11,
-              "label": "Tier 1"
-            },
-            {
-              "min": 12,
-              "max": 16,
-              "label": "Tier 2"
-            },
-            {
-              "min": 17,
-              "label": "Tier 3"
-            }
-          ],
-          "description": "2d10 plus Agility. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
-        },
-        {
-          "name": "Reason",
-          "shortName": "Reason",
-          "expression": "2d10+@stats.abilities.reason",
-          "resultMode": "band",
-          "bands": [
-            {
-              "max": 11,
-              "label": "Tier 1"
-            },
-            {
-              "min": 12,
-              "max": 16,
-              "label": "Tier 2"
-            },
-            {
-              "min": 17,
-              "label": "Tier 3"
-            }
-          ],
-          "description": "2d10 plus Reason. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
-        },
-        {
-          "name": "Intuition",
-          "shortName": "Intuition",
-          "expression": "2d10+@stats.abilities.intuition",
-          "resultMode": "band",
-          "bands": [
-            {
-              "max": 11,
-              "label": "Tier 1"
-            },
-            {
-              "min": 12,
-              "max": 16,
-              "label": "Tier 2"
-            },
-            {
-              "min": 17,
-              "label": "Tier 3"
-            }
-          ],
-          "description": "2d10 plus Intuition. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
-        },
-        {
-          "name": "Presence",
-          "shortName": "Presence",
-          "expression": "2d10+@stats.abilities.presence",
-          "resultMode": "band",
-          "bands": [
-            {
-              "max": 11,
-              "label": "Tier 1"
-            },
-            {
-              "min": 12,
-              "max": 16,
-              "label": "Tier 2"
-            },
-            {
-              "min": 17,
-              "label": "Tier 3"
-            }
-          ],
-          "description": "2d10 plus Presence. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3."
-        },
-        {
           "name": "Power Roll",
           "shortName": "PowerRoll",
           "expression": "2d10",
@@ -569,7 +459,7 @@
               "label": "Tier 3"
             }
           ],
-          "description": "2d10 with no characteristic added. The tier is read from the total."
+          "description": "2d10. The tier is read from the total: 11 or less is tier 1, 12-16 tier 2, 17 or more tier 3. A characteristic is added from the sheet's own roll buttons."
         }
       ]
     },

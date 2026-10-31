@@ -318,5 +318,12 @@
         }
       ]
     }
+  },
+  "transfer": {
+    "toUserId": 2,
+    "toUsername": "wright.matt.a",
+    "fromUserId": 1,
+    "keepAsPlayer": true,
+    "offeredAt": "2026-10-31T16:15:45.942912"
   }
 }

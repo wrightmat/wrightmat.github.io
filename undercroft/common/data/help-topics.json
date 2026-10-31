@@ -324,6 +324,7 @@
       "summary": "Roll dice from the sheet with the dice buttons, a typed expression, or the rolls your System defines.",
       "details": [
         "The dice buttons come from your System's own dice. Type an expression such as 2d6 + 3 and select Roll, or use a named roll or move button when the System has them.",
+        "A System's named roll can be used inside a longer expression by its short name, for example PowerRoll + 3 or d20Test + 5. The roll's own dice stand in for the name, and its result labels (a tier, a critical) are read from the whole total. A label marked natural is read from the dice alone, so a critical still means a natural 20 whatever you add.",
         "A line above the roller says where a roll will go. Choose Post to thread to add it to the open chat thread, Broadcast to show it to the table, or Private to keep it to yourself with nothing recorded.",
         "A formula can roll as well, using roller(\"2d6+3\", 0). See Formula Functions."
       ],
@@ -2431,6 +2432,21 @@
         "Removing a character from the roster does not remove the player. Use Remove player in the group's Players section to remove someone, which also takes their characters off the roster. A removal never counts against anyone.",
         "Players can leave a group themselves from the Profile tab of Account Settings. Leaving while one of the group's campaigns is running counts as a departure.",
         "A player with no active character in the group receives no session invitations and cannot respond to sessions."
+      ],
+      "category": "Community",
+      "section": "Recruiting",
+      "href": "../loom/index.html?view=groups"
+    },
+    {
+      "id": "community.groupHandover",
+      "title": "Handing a Group to Another GM",
+      "summary": "Pass a group to another GM, for a table that rotates GMs or a one-off hand-over.",
+      "details": [
+        "Choose a GM in Hand over this group and send the offer. Nothing changes until they accept it from their Inbox, and you can withdraw the offer any time before that.",
+        "Keep Stay in the group as a player ticked to remain in the group as one of its players. Untick it to leave the group completely.",
+        "When they accept, they become the GM: they run its sessions, manage its roster and settings, and are the GM in anyone's history from then on. Sessions already run stay on your record.",
+        "The group's recruitment listing is closed and any open applications are declined, since players applied to you. The new GM can list the group again.",
+        "If the new GM was already a player in the group, they leave the player list and their characters come off the roster."
       ],
       "category": "Community",
       "section": "Recruiting",

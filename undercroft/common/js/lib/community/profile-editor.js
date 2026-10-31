@@ -103,7 +103,12 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
   const systemList = el("div", "d-flex flex-wrap gap-1");
   const systemSelect = el("select", "form-select form-select-sm");
   const systemText = el("input", "form-control form-control-sm");
-  systemText.placeholder = "Another system";
+  systemText.placeholder = "Other system";
+  systemText.maxLength = 100;
+  const systemAdd = el("button", "btn btn-outline-primary btn-sm flex-shrink-0", "Add");
+  systemAdd.type = "button";
+  // A system that isn't in the list is typed in only after choosing "Other system…", so the list stays the easy path.
+  const OTHER_SYSTEM = "__other__";
   // Names other people have used, so the same system gets the same spelling.
   const systemSuggestions = el("datalist");
   systemSuggestions.id = "profile-system-suggestions";
@@ -129,19 +134,43 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
         return chip;
       }),
     );
-    systemSelect.replaceChildren(new Option("Add a system…", ""), ...systems.map((s) => new Option(s.title, s.id)));
+    systemSelect.replaceChildren(
+      new Option("Add a system…", ""),
+      ...systems.map((s) => new Option(s.title, s.id)),
+      new Option("Other system…", OTHER_SYSTEM),
+    );
+    systemSelect.value = otherSystemOpen ? OTHER_SYSTEM : "";
+  }
+  // One inline row: the select, and once "Other system…" is chosen the name box and its Add button beside it.
+  let otherSystemOpen = false;
+  function setOtherSystemOpen(open) {
+    otherSystemOpen = open;
+    // Inline display, since Bootstrap's own display on .form-control/.btn would override the hidden attribute.
+    systemText.style.display = open ? "" : "none";
+    systemAdd.style.display = open ? "" : "none";
+    systemSelect.classList.toggle("flex-grow-1", !open);
+    systemSelect.classList.toggle("flex-shrink-0", open);
+    systemSelect.style.width = open ? "8.5rem" : "";
+    if (open) systemText.focus();
   }
   systemSelect.addEventListener("change", () => {
+    if (systemSelect.value === OTHER_SYSTEM) {
+      setOtherSystemOpen(true);
+      return;
+    }
     if (systemSelect.value && !profile.systems.some((e) => e.systemId === systemSelect.value)) {
       profile.systems.push({ systemId: systemSelect.value, name: systems.find((s) => s.id === systemSelect.value)?.title || "" });
     }
+    setOtherSystemOpen(false);
     renderSystems();
   });
   const systemKey = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, "");
-  systemText.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" || !systemText.value.trim()) return;
-    event.preventDefault();
+  function addOtherSystem() {
     const typed = systemText.value.trim();
+    if (!typed) {
+      status?.show("Enter the name of the system.", { type: "warning", timeout: 2500 });
+      return;
+    }
     // A name that is really a Library System is added as that System, not as a free-text one.
     const known = systems.find((entry) => systemKey(entry.title) === systemKey(typed) || systemKey(entry.id) === systemKey(typed));
     if (known) {
@@ -150,8 +179,19 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
       profile.systems.push({ systemId: null, name: typed });
     }
     systemText.value = "";
+    setOtherSystemOpen(false);
     renderSystems();
+  }
+  systemAdd.addEventListener("click", addOtherSystem);
+  systemText.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    addOtherSystem();
   });
+  const systemControls = el("div", "d-flex flex-nowrap gap-2");
+  systemText.style.minWidth = "0";
+  systemControls.append(systemSelect, systemText, systemAdd, systemSuggestions);
+  setOtherSystemOpen(false);
   renderSystems();
 
   // Other accounts: pick a service and give a username. One per service; adding it again replaces the username.
@@ -322,7 +362,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
       field("Open to", selects.openTo),
       field("Role", selects.role),
       field("Experience", selects.experience),
-      field("Systems known", col(systemList, systemSelect, systemText, systemSuggestions)),
+      field("Systems known", col(systemList, systemControls)),
       field("Other accounts", col(accountList, accountControls), undefined, "community.profile"),
       field("Preferred session length", selects.sessionLength),
       field("In-person or online", selects.playMode),

@@ -61,7 +61,7 @@ function wholeNumber(node, label, minimum) {
   return value;
 }
 
-export function initGroupCommunity({ dataManager, getStatus, campaignsMount, playersMount, recruitmentMount, inspectorMount, onGroupChanged, onCampaignsChanged, onInspect }) {
+export function initGroupCommunity({ dataManager, getStatus, campaignsMount, playersMount, recruitmentMount, inspectorMount, ownershipMount, onGroupChanged, onCampaignsChanged, onInspect }) {
   let group = null;
   let campaigns = [];
   let listings = [];
@@ -194,6 +194,16 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
   const playerList = el("div", "d-flex flex-column gap-1");
   const playerContent = el("div", "d-flex flex-column gap-1 border rounded-3 p-2");
   playerContent.appendChild(playerList);
+  const transferBox = el("div", "d-flex flex-column gap-2");
+  const ownershipSection = createCollapsibleSection({
+    label: "Ownership",
+    collapsed: false,
+    helpTopic: "community.groupHandover",
+    content: transferBox,
+    className: "d-flex flex-column gap-2",
+    panelClassName: "d-flex flex-column gap-2",
+  });
+  ownershipMount.appendChild(ownershipSection.section);
   const playerSection = createCollapsibleSection({
     label: "Players",
     collapsed: false,
@@ -253,6 +263,89 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
     playerContent.prepend(row);
     refreshTooltips(row);
     name.focus();
+  }
+
+  async function renderTransfer() {
+    transferBox.textContent = "";
+    if (!group) return;
+    const groupId = group.id;
+    let offer = null;
+    let candidates = [];
+    try {
+      offer = (await dataManager.getGroupTransfer(groupId)).transfer;
+      if (!offer) candidates = (await dataManager.getGroupTransferCandidates(groupId)).candidates;
+    } catch (error) {
+      transferBox.appendChild(el("div", "small text-danger", error.message || "Unable to load the hand-over."));
+      return;
+    }
+    if (group?.id !== groupId) return;
+    if (offer) {
+      const row = el("div", "d-flex flex-nowrap align-items-center gap-2 small");
+      row.append(
+        el("span", "flex-grow-1", `Offered to ${offer.toUsername}. They become the GM when they accept it in their Inbox.`),
+        createIconButton({
+          icon: "tabler:x",
+          label: "Withdraw the offer",
+          variant: "outline-secondary",
+          onClick: async () => {
+            try {
+              await dataManager.withdrawGroupTransfer(groupId);
+              say("Offer withdrawn.");
+              void renderTransfer();
+            } catch (error) {
+              say(error.message || "Unable to withdraw the offer.", "danger");
+            }
+          },
+        }),
+      );
+      transferBox.appendChild(row);
+      refreshTooltips(row);
+      return;
+    }
+    const suggestions = el("datalist");
+    suggestions.id = `transfer-options-${groupId}`;
+    candidates.forEach((username) => suggestions.appendChild(new Option(username)));
+    const name = control("input", {
+      type: "text",
+      maxlength: 80,
+      list: suggestions.id,
+      placeholder: candidates.length ? "Choose or type a GM's username" : "No other GM accounts",
+      "aria-label": "New GM",
+      autocomplete: "off",
+    });
+    name.disabled = !candidates.length;
+    if (!candidates.length) name.title = "Only accounts of GM tier or higher can run a group.";
+    name.classList.add("flex-grow-1");
+    name.style.minWidth = "0";
+    const keepId = `transfer-keep-${groupId}`;
+    const keep = el("input", "form-check-input");
+    keep.type = "checkbox";
+    keep.id = keepId;
+    keep.checked = true;
+    const keepLabel = el("label", "form-check-label small", "Stay in the group as a player");
+    keepLabel.htmlFor = keepId;
+    const submit = async () => {
+      try {
+        const sent = await dataManager.offerGroupTransfer(groupId, name.value, keep.checked);
+        say(`Offer sent to ${sent.transfer.toUsername}.`);
+        void renderTransfer();
+      } catch (error) {
+        say(error.message || "Unable to send the offer.", "danger");
+      }
+    };
+    name.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") void submit();
+    });
+    const row = el("div", "d-flex flex-nowrap align-items-center gap-2");
+    row.append(
+      name,
+      suggestions,
+      createIconButton({ icon: "tabler:send", label: "Offer the group", variant: "outline-primary", onClick: submit }),
+    );
+    const keepRow = el("div", "form-check mb-0");
+    keepRow.append(keep, keepLabel);
+    transferBox.append(row, keepRow);
+    refreshTooltips(row);
   }
 
   function renderPlayers() {
@@ -618,6 +711,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
         campaigns = [];
       }
       renderPlayers();
+      void renderTransfer();
       try {
         await ensureReference();
         const profile = await dataManager.getCommunityProfile().catch(() => null);
@@ -643,6 +737,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
       listings = [];
       campaignList.textContent = "";
       playerList.textContent = "";
+      transferBox.textContent = "";
       listingList.textContent = "";
       renderInspector();
     },

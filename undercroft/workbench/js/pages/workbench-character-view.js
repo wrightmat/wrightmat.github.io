@@ -130,6 +130,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     systemDefinition: null,
     systemPreviewData: {},
     viewLocked: false,
+    // The record the server refused to save this session; its edits stay on screen but are never cached or retried.
+    editDeniedId: "",
     shareToken: "",
     // The active group's Group Properties, merged into the binding
     // context under "group" (see getBindingContext) so "group.partyInventory"
@@ -461,6 +463,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return userOwnsCharacter(state.draft.id);
   }
 
+  // True for a saved record this account may not change (someone else's, a view-only share, or one the server refused),
+  // so the sheet shows it read-only instead of accepting edits it cannot keep.
+  function activeRecordReadOnly() {
+    const id = state.draft?.id;
+    if (!id) return false;
+    return !characterAllowsEdits(characterCatalog.get(id)) || state.editDeniedId === id;
+  }
+
   function describeCharacterEditRestriction(metadata) {
     const ownership = characterOwnership(metadata);
     const permissions = characterPermissions(metadata);
@@ -526,6 +536,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     redoButton: document.querySelector('[data-action="redo-character"]'),
     newCharacterButton: document.querySelector('[data-action="new-character"]'),
     duplicateCharacterButton: document.querySelector('[data-action="duplicate-character"]'),
+    readonlyBanner: document.querySelector("[data-readonly-banner]"),
+    readonlyMessage: document.querySelector("[data-readonly-message]"),
+    readonlyCopyButton: document.querySelector("[data-readonly-copy]"),
     addCharacterModeBlank: document.querySelector('[data-add-character-mode="blank"]'),
     addCharacterModeImport: document.querySelector('[data-add-character-mode="import"]'),
     addCharacterModeBuild: document.querySelector('[data-add-character-mode="build"]'),
@@ -927,6 +940,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       });
     }
 
+    elements.readonlyCopyButton?.addEventListener("click", () => {
+      void duplicateCharacter({ keepName: true });
+    });
     if (elements.duplicateCharacterButton) {
       elements.duplicateCharacterButton.addEventListener("click", () => {
         void duplicateCharacter();
@@ -1513,6 +1529,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
     const canWrite = dataManager.hasWriteAccess("characters");
     const canEditRecord = draftHasId ? characterAllowsEdits(metadata) : false;
+    refreshReadonlyBanner({ draftHasId, locked, canWrite, metadata });
 
     updateToolbarButton(elements.saveButton, {
       disabled:
@@ -3341,6 +3358,21 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // Called from syncCharacterActions (the universal choke point for every
   // load/Save/edit-permission change) — reuses the same draftHasId/
   // canWrite/canEditRecord/locked values Save/Duplicate/Delete compute.
+  function refreshReadonlyBanner({ draftHasId, locked, canWrite, metadata }) {
+    if (!elements.readonlyBanner) return;
+    const denied = draftHasId && state.editDeniedId === state.draft.id;
+    const show = draftHasId && !locked && activeRecordReadOnly();
+    setElementVisible(elements.readonlyBanner, show, "flex");
+    if (!show) return;
+    elements.readonlyMessage.textContent = denied
+      ? "The server wouldn't save your changes because you don't have permission to edit this character. They are still on screen."
+      : describeCharacterEditRestriction(metadata);
+    if (elements.readonlyCopyButton) {
+      elements.readonlyCopyButton.disabled = !canWrite;
+      elements.readonlyCopyButton.title = canWrite ? "" : "You don't have permission to create characters.";
+    }
+  }
+
   function refreshCharacterPropertiesPanel({ draftHasId = false, canWrite = false, canEditRecord = false, locked = false } = {}) {
     if (!elements.characterPropertiesPanel) {
       return;
@@ -3442,7 +3474,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // whenever another group happened to be active. A caller with no
   // `rollKey` checks the typed/inserted text against activeSystemRolls
   // instead — the same list rendered as that panel's buttons.
-  async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined, rollKey = "" } = {}) {
+  async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined, rollKey = "", item = null } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
     if (!trimmed) {
       status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
@@ -3462,7 +3494,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       label: label || undefined,
       dataManager,
       dice: activeQuickDice,
-      context: getBindingContext(),
+      // A roll fired from a Repeater row can read that row's own values as @item.<field>.
+      context: item ? { ...getBindingContext(), item } : getBindingContext(),
       rolls,
       targetValue,
     });
@@ -3528,12 +3561,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return findBindingByRole(combatBindings, "modifier");
   }
 
-  async function handleComponentRoll(expression, label, component, targetValue, rollKey = "") {
+  async function handleComponentRoll(expression, label, component, targetValue, rollKey = "", item = null) {
     if (!expression) {
       return;
     }
     const text = typeof label === "string" && label.trim() ? label.trim() : "";
-    const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue, rollKey });
+    const result = await executeDiceRoll(expression, { label: text, updateInput: true, targetValue, rollKey, item });
     const initiativeBinding = findInitiativeCombatBinding();
     const componentBindingPath = typeof component?.binding === "string" ? component.binding.replace(/^@/, "").trim() : "";
     if (result && initiativeBinding && componentBindingPath && componentBindingPath === initiativeBinding.recordField) {
@@ -6228,6 +6261,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const childKey = typeof child?.key === "string" ? child.key.split(".").pop() : "";
       if (childKey) metaByKey.set(childKey, child);
     });
+    const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
     return Object.entries(value).map(([key, val]) => {
       const meta = metaByKey.get(key) || {};
       return {
@@ -6236,6 +6270,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         shortName: meta.shortName || key.slice(0, 3).toUpperCase(),
         value: val,
         score: val,
+        // From the System's own abilityModifier formula, so a roll on the row can add it (@item.modifier).
+        modifier: Number.isFinite(Number(val)) ? evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score: Number(val) }) || 0 : 0,
       };
     });
   }
@@ -6911,6 +6947,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const canManageBase =
       Boolean(component.binding) &&
       !isGroupBindingBlocked(itemContext ? itemContext.repeaterComponent?.binding : component?.binding) &&
+      !activeRecordReadOnly() &&
       state.mode === "edit";
     // A grouped repeater's (component.groupByBinding set — Spells) "items" are
     // whole GROUPS — a generic per-row Remove there would delete every spell at a
@@ -7203,8 +7240,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           : getBindingValue(component?.binding);
         const numericValue = Number(rawValue);
         const targetValue = Number.isFinite(numericValue) ? numericValue : undefined;
-        const label = (component.label || component.name || "Roll").trim() || "Roll";
-        await handleComponentRoll(expression, label, component, targetValue, expression);
+        // A button on a row can name its row in the label with @item.<field> ("@item.label ability check").
+        const label =
+          (component.label || component.name || "Roll")
+            .replace(/@item\.([A-Za-z0-9_]+)/g, (_, field) => String(itemContext?.item?.[field] ?? ""))
+            .trim() || "Roll";
+        await handleComponentRoll(expression, label, component, targetValue, expression, itemContext?.item);
         return;
       }
       if (action.type === "runMacro") {
@@ -8184,6 +8225,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // a character's own owner edit another group member's non-public
   // group data just by opening their own sheet in Edit mode.
   function isRepeaterCellEditable(comp, itemContext) {
+    if (activeRecordReadOnly()) {
+      return false;
+    }
     if (!itemContext) {
       return isEditable(comp);
     }
@@ -8287,7 +8331,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   }
 
   function isEditable(component) {
-    if (!component) {
+    if (!component || activeRecordReadOnly()) {
       return false;
     }
     if (componentHasFormula(component)) {
@@ -11148,13 +11192,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // Clones the current character into a new record — same "fresh id,
   // register, persist silently" tail as startNewCharacter below, except
   // the source is the current draft's own data instead of a blank shape.
-  async function duplicateCharacter() {
+  async function duplicateCharacter({ keepName = false } = {}) {
     if (!state.draft?.id) {
       status.show("Select a character to duplicate.", { type: "warning", timeout: 2000 });
       return;
     }
     const sourceName = state.draft.title || state.draft.name || state.draft.id;
-    const duplicateName = `${sourceName} Copy`;
+    // "Save as my own copy" keeps the name the person typed; a plain Duplicate adds " Copy".
+    const duplicateName = keepName ? sourceName : `${sourceName} Copy`;
     let id = "";
     do {
       id = generateCharacterId(duplicateName);
@@ -11176,6 +11221,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);
     state.characterOrigin = "local";
+    state.editDeniedId = "";
     const user = sessionUser();
     registerCharacterRecord({
       id,
@@ -11198,7 +11244,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     syncCharacterActions();
     state.shareToken = "";
     clearGameLogContext();
-    status.show(`Duplicated as "${duplicateName}"`, { type: "success", timeout: 2000 });
+    status.show(keepName ? `Saved as your own copy, "${duplicateName}"` : `Duplicated as "${duplicateName}"`, { type: "success", timeout: 2400 });
   }
 
   async function startNewCharacter({ id, name, templateId }) {
@@ -11919,6 +11965,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!state.draft?.id) {
       return false;
     }
+    // Nothing is sent or cached for a record this account can't change.
+    if (activeRecordReadOnly()) {
+      return false;
+    }
     const payload = cloneCharacter(state.draft);
     const id = state.draft.id;
     // A record's id is filename/library_items metadata, not editable
@@ -11980,6 +12030,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         type: "warning",
         timeout: 3000,
       });
+    }
+
+    // A "not allowed" answer is final, unlike a lost connection: keeping a browser-only copy would pass for the saved record.
+    const denied = Boolean(remoteError) && (remoteError.status === 403 || (remoteError.status === 401 && /not permitted|permission/i.test(remoteError.message || "")));
+    if (denied) {
+      state.editDeniedId = id;
+      status?.show("Not saved: you don't have permission to edit this character. Use \"Save as my own copy\" to keep your changes.", { type: "warning", timeout: 7000 });
+      renderCanvas();
+      syncCharacterActions();
+      return false;
     }
 
     if (!remoteSucceeded) {

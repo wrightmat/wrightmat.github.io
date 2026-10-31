@@ -8234,6 +8234,7 @@ async function init() {
     playersMount: document.querySelector("[data-loom-group-players-mount]"),
     recruitmentMount: document.querySelector("[data-loom-group-recruitment-mount]"),
     inspectorMount: document.querySelector("[data-loom-group-listing-inspector-mount]"),
+    ownershipMount: document.querySelector("[data-loom-group-ownership-mount]"),
     onInspect: () => loomGroupSessions?.deselect(),
     onCampaignsChanged: (campaigns) => loomGroupSessions?.setCampaigns(campaigns),
     onGroupChanged: () => {

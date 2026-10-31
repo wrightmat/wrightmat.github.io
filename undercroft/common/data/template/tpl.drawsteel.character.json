@@ -1238,7 +1238,7 @@
                         "iconClass": "ddb-dice-d10",
                         "action": {
                           "type": "rollDice",
-                          "expression": "Might",
+                          "expression": "PowerRoll+@stats.abilities.might",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1451,7 +1451,7 @@
                         "iconClass": "ddb-dice-d10",
                         "action": {
                           "type": "rollDice",
-                          "expression": "Agility",
+                          "expression": "PowerRoll+@stats.abilities.agility",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1664,7 +1664,7 @@
                         "iconClass": "ddb-dice-d10",
                         "action": {
                           "type": "rollDice",
-                          "expression": "Reason",
+                          "expression": "PowerRoll+@stats.abilities.reason",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -1877,7 +1877,7 @@
                         "iconClass": "ddb-dice-d10",
                         "action": {
                           "type": "rollDice",
-                          "expression": "Intuition",
+                          "expression": "PowerRoll+@stats.abilities.intuition",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",
@@ -2090,7 +2090,7 @@
                         "iconClass": "ddb-dice-d10",
                         "action": {
                           "type": "rollDice",
-                          "expression": "Presence",
+                          "expression": "PowerRoll+@stats.abilities.presence",
                           "macroRef": "",
                           "binding": "",
                           "lookupBinding": "",

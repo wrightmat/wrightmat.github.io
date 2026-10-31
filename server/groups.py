@@ -1677,3 +1677,165 @@ def revoke_group_share_link(state: ServerState, owner: Optional[User], group_id:
 def get_group_share_link(state: ServerState, owner: Optional[User], group_id: str) -> Optional[Dict[str, Any]]:
     _require_owner(state, group_id, owner)
     return get_share_link(state, "group", group_id)
+
+
+# --- Handing a group to another GM ----------------------------------------------------------
+# An offer lives on the group's own document ("transfer") until the recipient answers or the
+# GM withdraws it; nothing expires, so nothing runs on a timer.
+
+
+def _transfer_payload(state: ServerState, group_id: str) -> Dict[str, Any]:
+    from . import storage
+
+    try:
+        payload = storage.load_item_raw(state, "group", group_id)
+    except FileNotFoundError:
+        payload = {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _group_write_tier_ok(state: ServerState, user_tier: str) -> bool:
+    from . import storage
+    from .roles import role_rank
+
+    return role_rank(user_tier) >= role_rank(storage.load_kind_policy(state, "group")["writeTier"])
+
+
+def _courtesy_notice(state: ServerState, group_id: str, author_id: int, recipient_id: int, body: str) -> None:
+    """A direct-message Inbox notice that needs no group membership on either side."""
+    now = datetime.utcnow().isoformat()
+    cursor = state.db.execute(
+        "INSERT INTO direct_messages (group_id, author_id, recipient_ids, body, created_at) VALUES (?, ?, ?, ?, ?)",
+        (group_id, author_id, json.dumps([recipient_id]), body, now),
+    )
+    state.db.execute(
+        "INSERT INTO inbox_items (user_id, group_id, reason, dm_id, created_at) VALUES (?, ?, 'direct', ?, ?)",
+        (recipient_id, group_id, cursor.lastrowid, now),
+    )
+
+
+def transfer_candidates(state: ServerState, owner: Optional[User], group_id: str) -> Dict[str, Any]:
+    """Active accounts that could take the group: GM tier or higher, other than the current GM."""
+    row = _require_owner(state, group_id, owner)
+    rows = state.db.execute(
+        "SELECT username, tier FROM users WHERE is_active = 1 AND id IS NOT ? ORDER BY username COLLATE NOCASE",
+        (row["owner_id"],),
+    ).fetchall()
+    return {"candidates": [r["username"] for r in rows if _group_write_tier_ok(state, r["tier"])]}
+
+
+def get_transfer(state: ServerState, owner: Optional[User], group_id: str) -> Dict[str, Any]:
+    _require_owner(state, group_id, owner)
+    return {"transfer": _transfer_payload(state, group_id).get("transfer")}
+
+
+def offer_transfer(state: ServerState, owner: Optional[User], group_id: str, username: str, keep_as_player: bool) -> Dict[str, Any]:
+    from . import storage
+
+    row = _require_owner(state, group_id, owner)
+    target = state.db.execute(
+        "SELECT id, username, tier FROM users WHERE username = ? AND is_active = 1", (str(username or "").strip(),)
+    ).fetchone()
+    if not target:
+        raise AuthError("No account has that username")
+    if target["id"] == row["owner_id"]:
+        raise AuthError("That person is already the GM of this group")
+    if not _group_write_tier_ok(state, target["tier"]):
+        raise AuthError(f"{target['username']} needs a GM account to run a group")
+    payload = _transfer_payload(state, group_id)
+    previous = payload.get("transfer")
+    if previous:
+        state.db.execute(
+            "DELETE FROM inbox_items WHERE group_id = ? AND reason = 'group_offer' AND user_id = ?",
+            (group_id, previous["toUserId"]),
+        )
+    payload["transfer"] = {
+        "toUserId": target["id"],
+        "toUsername": target["username"],
+        "fromUserId": row["owner_id"],
+        "keepAsPlayer": bool(keep_as_player),
+        "offeredAt": datetime.utcnow().isoformat(),
+    }
+    storage.write_item_raw(state, "group", group_id, payload)
+    state.db.execute(
+        "INSERT INTO inbox_items (user_id, group_id, reason, created_at) VALUES (?, ?, 'group_offer', ?)",
+        (target["id"], group_id, datetime.utcnow().isoformat()),
+    )
+    state.db.commit()
+    return {"ok": True, "transfer": payload["transfer"]}
+
+
+def withdraw_transfer(state: ServerState, owner: Optional[User], group_id: str) -> Dict[str, Any]:
+    from . import storage
+
+    _require_owner(state, group_id, owner)
+    payload = _transfer_payload(state, group_id)
+    offer = payload.pop("transfer", None)
+    if offer:
+        storage.write_item_raw(state, "group", group_id, payload)
+        state.db.execute(
+            "DELETE FROM inbox_items WHERE group_id = ? AND reason = 'group_offer' AND user_id = ?",
+            (group_id, offer["toUserId"]),
+        )
+        state.db.commit()
+    return {"ok": True}
+
+
+def respond_to_transfer(state: ServerState, user: Optional[User], group_id: str, accept: bool) -> Dict[str, Any]:
+    from . import applications, storage
+
+    if not user:
+        raise AuthError("Authentication required")
+    row = _load_group_row(state, group_id)
+    payload = _transfer_payload(state, group_id)
+    offer = payload.get("transfer")
+    if not row or not offer or offer.get("toUserId") != user.id:
+        raise AuthError("There is no offer of this group for you")
+    old_owner_id = row["owner_id"]
+    if accept and not _group_write_tier_ok(state, user.tier):
+        raise AuthError("Your account can no longer run a group, so you can't accept this")
+    payload.pop("transfer", None)
+    state.db.execute(
+        "DELETE FROM inbox_items WHERE group_id = ? AND reason = 'group_offer' AND user_id = ?", (group_id, user.id)
+    )
+    if not accept:
+        storage.write_item_raw(state, "group", group_id, payload)
+        if old_owner_id is not None:
+            _courtesy_notice(state, group_id, user.id, old_owner_id, f'{user.username} declined to take over "{row["name"]}".')
+        state.db.commit()
+        return {"ok": True, "accepted": False}
+    now = datetime.utcnow().isoformat()
+    state.db.execute("UPDATE library_items SET owner_id = ?, modified_at = ? WHERE kind = 'group' AND id = ?", (user.id, now, group_id))
+    # The GM stands apart from the players, so the new GM leaves the player list and the roster.
+    state.db.execute("DELETE FROM group_members WHERE group_id = ? AND content_type = 'player' AND content_id = ?", (group_id, str(user.id)))
+    state.db.execute(
+        """
+        DELETE FROM group_members WHERE group_id = ? AND content_type = 'character'
+          AND content_id IN (SELECT id FROM library_items WHERE kind = 'character' AND owner_id = ?)
+        """,
+        (group_id, user.id),
+    )
+    if offer.get("keepAsPlayer") and old_owner_id is not None:
+        ensure_player(state, group_id, old_owner_id)
+    # Listings and applications are addressed to the previous GM, so they end; the new GM can list again.
+    state.db.execute("UPDATE listings SET status = 'closed', updated_at = ? WHERE group_id = ?", (now, group_id))
+    for pending in state.db.execute("SELECT * FROM applications WHERE group_id = ? AND status = 'pending'", (group_id,)).fetchall():
+        applications._close(state, pending, "declined", user.id)
+    storage.write_item_raw(state, "group", group_id, payload)
+    if old_owner_id is not None:
+        outcome = "You are still in the group as a player." if offer.get("keepAsPlayer") else "You are no longer in the group."
+        _courtesy_notice(state, group_id, user.id, old_owner_id, f'{user.username} accepted "{row["name"]}". {outcome}')
+    state.db.commit()
+    return {"ok": True, "accepted": True}
+
+
+def inbox_transfer_entry(state: ServerState, item: Any, user: User) -> Optional[Dict[str, Any]]:
+    offer = _transfer_payload(state, item["group_id"]).get("transfer")
+    if not offer or offer.get("toUserId") != user.id:
+        return None
+    sender = state.db.execute("SELECT username FROM users WHERE id = ?", (offer.get("fromUserId"),)).fetchone()
+    return {
+        "fromUsername": sender["username"] if sender else "",
+        "keepAsPlayer": bool(offer.get("keepAsPlayer")),
+        "offeredAt": offer["offeredAt"],
+    }

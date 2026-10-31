@@ -91,6 +91,8 @@ The chat serves a live session and play-by-post alike. Each message has an autho
 
 A group also has a **session schedule** (Loom's Groups tab): real-world game sessions, live (a start and duration) or play-by-post (a date range), one-off or repeating. Every moment is stored and compared as UTC and shown in each viewer's own zone; repetition is fixed UTC spacing, so no time-zone database is needed. A server scheduler (`server/sessions.py`) creates each repeating date as it comes within its series' lead time, then sends the invitations, reminders and the minimum-players alert. It has no polling interval: it sleeps until the next stored due time and is woken by anything that could change it. Invitations go to players with an **active** character in the group (one per player per group) as Inbox notices that always show the session's current details and who has answered, with Accept / Tentative / Decline. Nothing about a session has a built-in default: lead time, reminder, cutoff, player limits and the rest are per-session settings (the form supplies starting values), and the server rejects a request that omits one.
 
+A GM can hand a group to another GM-tier account from Loom's Groups tab: the offer sits on the group's own record until the recipient accepts it from their Inbox (or the GM withdraws it), and acceptance moves ownership, optionally keeps the old GM as a player, removes the new GM from the player list and roster, and closes the group's listing and open applications.
+
 For the practical how-to — creating a group, spotlighting a Handout, sharing a record — see the in-app help topics under "Groups" and "Accounts & Sharing".
 
 ---

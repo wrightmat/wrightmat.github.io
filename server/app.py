@@ -2444,6 +2444,42 @@ def register_routes():
 
     router.add("GET", r"^/groups/(?P<group_id>[^/]+)/addable-players$", handle_addable_players)
 
+    def handle_transfer_candidates(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(group_store.transfer_candidates(request.state, user, getattr(request, "params")["group_id"]))
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/transfer-candidates$", handle_transfer_candidates)
+
+    def handle_get_transfer(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(group_store.get_transfer(request.state, user, getattr(request, "params")["group_id"]))
+
+    router.add("GET", r"^/groups/(?P<group_id>[^/]+)/transfer$", handle_get_transfer)
+
+    def handle_offer_transfer(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(
+            group_store.offer_transfer(
+                request.state, user, getattr(request, "params")["group_id"], str(data.get("username") or ""), bool(data.get("keepAsPlayer"))
+            )
+        )
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/transfer$", handle_offer_transfer)
+
+    def handle_withdraw_transfer(request: Request) -> Response:
+        user = require_user(request)
+        return json_response(group_store.withdraw_transfer(request.state, user, getattr(request, "params")["group_id"]))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/transfer/withdraw$", handle_withdraw_transfer)
+
+    def handle_respond_transfer(request: Request) -> Response:
+        user = require_user(request)
+        data = require_json(request)
+        return json_response(group_store.respond_to_transfer(request.state, user, getattr(request, "params")["group_id"], bool(data.get("accept"))))
+
+    router.add("POST", r"^/groups/(?P<group_id>[^/]+)/transfer/respond$", handle_respond_transfer)
+
     def handle_addable_characters(request: Request) -> Response:
         user = require_user(request)
         return json_response(group_store.addable_characters(request.state, user, getattr(request, "params")["group_id"]))

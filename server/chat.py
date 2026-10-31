@@ -1110,6 +1110,13 @@ def list_inbox(state: ServerState, user: Optional[User], *, unread_only: bool = 
             if not summary:
                 continue
             entry["session"] = summary
+        elif item["reason"] == "group_offer":
+            from . import groups
+
+            offer = groups.inbox_transfer_entry(state, item, user)
+            if not offer:
+                continue
+            entry["groupOffer"] = offer
         elif item["application_id"]:
             from . import applications
 
