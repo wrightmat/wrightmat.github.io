@@ -5,6 +5,7 @@
   "description": "Standard character sheet for D&D Basic/Expert (B/X).",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#cfcfcf",
     "fontColorBinding": "",
@@ -477,7 +478,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 7
           }
         ]
       },
@@ -785,7 +787,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -973,7 +976,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -1161,7 +1165,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-0": [
@@ -1349,7 +1354,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-1": [
@@ -1537,7 +1543,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-2": [
@@ -1725,7 +1732,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ]
             },
@@ -1973,7 +1981,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -2159,7 +2168,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -2345,7 +2355,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-3": [
@@ -2531,7 +2542,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-4": [
@@ -2717,7 +2729,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ]
             },
@@ -2725,7 +2738,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 7
           },
           {
             "type": "container",
@@ -3462,7 +3476,8 @@
                               "editableInPlay": true
                             }
                           ]
-                        }
+                        },
+                        "minColumnWidth": 0
                       }
                     ]
                   },
@@ -3470,7 +3485,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ]
             },

@@ -5,6 +5,7 @@
   "description": "Standard character sheet for Savage Worlds Adventure Edition.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#cfcfcf",
     "fontColorBinding": "",
@@ -477,7 +478,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 7
           }
         ]
       },
@@ -884,7 +886,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 7
           },
           {
             "type": "container",
@@ -1394,7 +1397,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           }
         ],
         "tab-1": [
@@ -1611,7 +1615,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ]
             },

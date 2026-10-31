@@ -5,6 +5,7 @@
   "description": "Standard character sheet for GURPS.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#cfcfcf",
     "fontColorBinding": "",
@@ -589,7 +590,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           }
         ]
       },
@@ -896,7 +898,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -1084,7 +1087,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -1272,7 +1276,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-3": [
@@ -1460,7 +1465,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ]
             },
@@ -1468,7 +1474,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           },
           {
             "type": "container",
@@ -1708,7 +1715,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -1894,7 +1902,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -2238,7 +2247,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           },
           {
             "type": "container",
@@ -2524,7 +2534,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           }
         ],
         "tab-1": [
@@ -2863,7 +2874,8 @@
                               "editableInPlay": true
                             }
                           ]
-                        }
+                        },
+                        "minColumnWidth": 0
                       }
                     ]
                   },
@@ -2871,7 +2883,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ]
             },

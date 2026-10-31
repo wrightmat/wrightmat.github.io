@@ -5,6 +5,7 @@
   "description": "",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#ffffff",
     "fontColorBinding": "",

@@ -1918,6 +1918,13 @@ html[data-bs-theme="light"] {
   display: grid;
 }
 
+/* A grid narrower than its columns at their minimum width (component-renderers.js sets data-reflow) lets its cells
+   wrap into as many columns as fit, instead of squeezing each one. */
+.template-container-grid[data-reflow="wrap"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min-col)), 1fr)) !important;
+  grid-template-rows: none !important;
+}
+
 .template-container-zone {
   display: flex;
   flex-direction: column;
@@ -2016,6 +2023,65 @@ html[data-bs-theme="light"] {
 
 .workbench-repeater-table tbody tr + tr td {
   border-top: 1px solid var(--bs-border-color);
+}
+
+/* A repeater's table or grid scrolls sideways inside its own box rather than widening the sheet. */
+.workbench-repeater-scroll {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* "Stack rows when narrow" (component-renderers.js sets data-reflow="stack" when the box is narrower than its columns
+   at the minimum column width): each row becomes a small card, each cell labeled by its header text. */
+.workbench-repeater-scroll[data-reflow="stack"] {
+  overflow-x: visible;
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table,
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table tbody,
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table tr,
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table td {
+  display: block;
+  width: 100%;
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table colgroup {
+  display: none;
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table tbody tr {
+  padding: 0.35rem 0;
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table tbody tr + tr {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table tbody tr + tr td {
+  border-top: 0;
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table td {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-block: 0.1rem;
+}
+
+.workbench-repeater-scroll[data-reflow="stack"] .workbench-repeater-table td[data-label]::before {
+  content: attr(data-label);
+  flex: 0 0 35%;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
 }
 
 /* Horizontal Repeater's own rows>1 case (renderRepeaterHorizontalGrid,

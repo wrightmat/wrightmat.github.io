@@ -73,6 +73,47 @@ export function resolveContainerColumns(component) {
   return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 9) : 2;
 }
 
+// A grid wraps once it is narrower than its columns at this width each (rem). A container's own value wins, then the
+// template's; blank means the authored columns are never changed, 0 turns reflow off for that container.
+export function resolveMinColumnWidth(component, ctx) {
+  const own = component.minColumnWidth;
+  const raw = own !== undefined && own !== null && own !== "" ? own : ctx.getTemplateMinColumnWidth?.();
+  const value = Number(raw);
+  return raw === undefined || raw === null || raw === "" || !Number.isFinite(value) || value <= 0 ? 0 : value;
+}
+
+// One observer for every reflowing grid: each reacts to its OWN width (so an open pane or the Template editor's
+// phone preview narrows it just like a phone does), and wrapping never changes that width, so it cannot flip-flop.
+const reflowParams = new WeakMap();
+const reflowObserver =
+  typeof ResizeObserver === "undefined"
+    ? null
+    : new ResizeObserver((entries) => {
+        entries.forEach(({ target }) => {
+          const params = reflowParams.get(target);
+          if (!target.isConnected || !params) {
+            reflowObserver.unobserve(target);
+            return;
+          }
+          const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+          const needed = params.columns * params.minRem * rootPx + (params.columns - 1) * params.gapPx;
+          const wrap = target.clientWidth > 0 && target.clientWidth < needed;
+          if (wrap !== (target.dataset.reflow === params.mode)) {
+            if (wrap) target.dataset.reflow = params.mode;
+            else delete target.dataset.reflow;
+          }
+        });
+      });
+
+// `mode` is the data-reflow value set while the element is too narrow: "wrap" (a container grid's cells flow onto
+// more rows) or "stack" (a repeater table's rows become cards).
+function watchReflow(element, { columns, minRem, gapPx, mode }) {
+  if (!reflowObserver || !minRem || columns < 2) return;
+  element.style.setProperty("--min-col", `${minRem}rem`);
+  reflowParams.set(element, { columns, minRem, gapPx, mode });
+  reflowObserver.observe(element);
+}
+
 // Container — the grid/tabs skeleton, label, alignment, and gap are
 // shared; zone COMPUTATION (ctx.getZones — Template editor derives zones
 // from rows/columns and migrates legacy keys; Play/Edit just reads
@@ -218,6 +259,7 @@ export function renderContainerContent(component, ctx) {
     grid.style.gridTemplateRows = templateRows;
   }
   grid.style.gap = `${gap}px`;
+  watchReflow(grid, { columns: resolveContainerColumns(component), minRem: resolveMinColumnWidth(component, ctx), gapPx: gap, mode: "wrap" });
   zones.forEach((zone) => {
     grid.appendChild(
       ctx.renderZone(component, zone, {
@@ -230,6 +272,216 @@ export function renderContainerContent(component, ctx) {
   });
   wrapper.appendChild(grid);
   return wrapper;
+}
+
+// Repeater — the structure around the cells, shared by Play view (one row per array item, real components in the
+// cells) and the Template editor (one placeholder item, editable dropzones in the cells). Vertical with several
+// columns is a <table>; vertical with one is a list of rows; Horizontal is a flex row of item cells, or with several
+// rows a grid whose columns are the items. `ctx`:
+//   items                          the array items to lay out (the editor passes one placeholder)
+//   columns                        item-template columns (Vertical) or rows (Horizontal)
+//   renderCell(kind, column, item, index)   Node/fragment/null for one cell; kind is "item" or "header"
+//   hasHeader(column)              whether a header cell has anything to show
+//   rowHasContent(item, index)     false skips a row/cell that would be empty
+//   decoratorText(item, index)     the bullet/number/custom marker, "" for none
+//   onRemoveItem / createRemoveButton(onRemove)   Play-only Remove control
+//   getTemplateMinColumnWidth      same hook Container uses; "Stack rows when narrow" reads it
+//   labelCells                     false when header cells are not plain text (the editor's dropzones)
+export function renderRepeaterLayout(component, ctx) {
+  const fragment = document.createDocumentFragment();
+  const { items, columns, onRemoveItem } = ctx;
+  const gapPx = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
+  const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
+  const hasDecorator = Boolean(decorator && decorator.type && decorator.type !== "none");
+  const removeButton = (index) => ctx.createRemoveButton(() => onRemoveItem(index));
+  // A table or grid can be wider than the sheet, so it scrolls sideways on its own instead of widening the page.
+  const scroller = (child) => {
+    const box = document.createElement("div");
+    box.className = "workbench-repeater-scroll";
+    box.appendChild(child);
+    return box;
+  };
+
+  if (component.orientation === "horizontal" && columns > 1) {
+    const grid = document.createElement("div");
+    grid.className = "workbench-repeater-grid";
+    const totalGridRows = columns + (hasDecorator ? 1 : 0) + (onRemoveItem ? 1 : 0);
+    grid.style.gridTemplateRows = `repeat(${totalGridRows}, auto)`;
+    grid.style.gap = `${gapPx}px`;
+    // "Fill available width": the header column keeps its natural width while the N item columns share the rest.
+    if (component.fill) {
+      const itemTrack = `repeat(${items.length}, minmax(0, 1fr))`;
+      grid.style.gridTemplateColumns = component.showHeader ? `auto ${itemTrack}` : itemTrack;
+    }
+    if (component.showHeader) {
+      if (hasDecorator) grid.appendChild(document.createElement("div"));
+      for (let row = 0; row < columns; row += 1) {
+        const cell = document.createElement("div");
+        cell.className = "fw-semibold text-body-secondary small pe-3 border-end";
+        const content = ctx.renderCell("header", row, null, 0);
+        if (content) cell.appendChild(content);
+        grid.appendChild(cell);
+      }
+      if (onRemoveItem) grid.appendChild(document.createElement("div"));
+    }
+    items.forEach((item, index) => {
+      if (hasDecorator) {
+        const marker = document.createElement("div");
+        marker.className = "text-body-secondary small text-center";
+        marker.textContent = ctx.decoratorText(item, index);
+        grid.appendChild(marker);
+      }
+      for (let row = 0; row < columns; row += 1) {
+        const cell = document.createElement("div");
+        const content = ctx.renderCell("item", row, item, index);
+        if (content) cell.appendChild(content);
+        grid.appendChild(cell);
+      }
+      if (onRemoveItem) {
+        const actionCell = document.createElement("div");
+        actionCell.className = "text-center";
+        actionCell.appendChild(removeButton(index));
+        grid.appendChild(actionCell);
+      }
+    });
+    fragment.appendChild(scroller(grid));
+    return fragment;
+  }
+
+  if (component.orientation === "horizontal") {
+    const row = document.createElement("div");
+    row.className = "d-flex flex-row flex-wrap align-items-start";
+    row.style.gap = `${gapPx}px`;
+    if (component.showHeader && ctx.hasHeader(0)) {
+      const headerCell = document.createElement("div");
+      headerCell.className = "d-flex flex-column gap-1 fw-semibold text-body-secondary flex-shrink-0 border-end pe-3";
+      const content = ctx.renderCell("header", 0, null, 0);
+      if (content) headerCell.appendChild(content);
+      row.appendChild(headerCell);
+    }
+    items.forEach((item, index) => {
+      if (!ctx.rowHasContent(item, index)) return;
+      const cell = document.createElement("div");
+      cell.className = "d-flex flex-column gap-1";
+      cell.dataset.repeaterIndex = String(index);
+      // "Fill available width" grows every cell equally; min-content keeps a cell from shrinking below its own
+      // longest word, so a narrow row wraps its cells instead of breaking text inside them.
+      if (component.fill) {
+        cell.style.flex = "1 1 0";
+        cell.style.minWidth = "min-content";
+      }
+      const decoratorText = ctx.decoratorText(item, index);
+      if (decoratorText) {
+        const marker = document.createElement("div");
+        marker.className = "text-body-secondary small";
+        marker.textContent = decoratorText;
+        cell.appendChild(marker);
+      }
+      const content = ctx.renderCell("item", 0, item, index);
+      if (content) cell.appendChild(content);
+      if (onRemoveItem) cell.appendChild(removeButton(index));
+      row.appendChild(cell);
+    });
+    fragment.appendChild(row);
+    return fragment;
+  }
+
+  if (columns > 1) {
+    const table = document.createElement("table");
+    table.className = "workbench-repeater-table";
+    const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
+    if (templateColumns) {
+      const colgroup = document.createElement("colgroup");
+      if (hasDecorator) colgroup.appendChild(document.createElement("col"));
+      templateColumns
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((width) => {
+          const col = document.createElement("col");
+          col.style.width = width;
+          colgroup.appendChild(col);
+        });
+      if (onRemoveItem) colgroup.appendChild(document.createElement("col"));
+      table.appendChild(colgroup);
+    }
+    // Header text, kept so a stacked row can label each of its cells.
+    const labels = [];
+    if (component.showHeader) {
+      const thead = document.createElement("thead");
+      const headerTr = document.createElement("tr");
+      if (hasDecorator) headerTr.appendChild(document.createElement("th"));
+      for (let col = 0; col < columns; col += 1) {
+        const th = document.createElement("th");
+        const content = ctx.renderCell("header", col, null, 0);
+        if (content) th.appendChild(content);
+        labels.push((th.textContent || "").trim());
+        headerTr.appendChild(th);
+      }
+      if (onRemoveItem) headerTr.appendChild(document.createElement("th"));
+      thead.appendChild(headerTr);
+      table.appendChild(thead);
+    }
+    const tbody = document.createElement("tbody");
+    items.forEach((item, index) => {
+      const tr = document.createElement("tr");
+      if (hasDecorator) {
+        const decoratorTd = document.createElement("td");
+        decoratorTd.className = "text-body-secondary";
+        decoratorTd.textContent = ctx.decoratorText(item, index);
+        tr.appendChild(decoratorTd);
+      }
+      for (let col = 0; col < columns; col += 1) {
+        const td = document.createElement("td");
+        if (ctx.labelCells !== false && labels[col]) td.dataset.label = labels[col];
+        const content = ctx.renderCell("item", col, item, index);
+        if (content) td.appendChild(content);
+        tr.appendChild(td);
+      }
+      if (onRemoveItem) {
+        const actionTd = document.createElement("td");
+        actionTd.appendChild(removeButton(index));
+        tr.appendChild(actionTd);
+      }
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    const box = scroller(table);
+    if (component.stackRows) {
+      watchReflow(box, { columns, minRem: resolveMinColumnWidth(component, ctx), gapPx: 0, mode: "stack" });
+    }
+    fragment.appendChild(box);
+    return fragment;
+  }
+
+  if (component.showHeader && ctx.hasHeader(0)) {
+    const headerRow = document.createElement("div");
+    headerRow.className = "d-flex align-items-start gap-2 border-bottom pb-2 fw-semibold";
+    const content = ctx.renderCell("header", 0, null, 0);
+    if (content) headerRow.appendChild(content);
+    fragment.appendChild(headerRow);
+  }
+  items.forEach((item, index) => {
+    if (!ctx.rowHasContent(item, index)) return;
+    const row = document.createElement("div");
+    // Divider is opt-in (component.itemDivider), never forced.
+    row.className = component.itemDivider ? "d-flex align-items-start gap-2 border-bottom pb-2" : "d-flex align-items-start gap-2";
+    row.dataset.repeaterIndex = String(index);
+    const decoratorText = ctx.decoratorText(item, index);
+    if (decoratorText) {
+      const marker = document.createElement("span");
+      marker.className = "text-body-secondary flex-shrink-0";
+      marker.textContent = decoratorText;
+      row.appendChild(marker);
+    }
+    const body = document.createElement("div");
+    body.className = "d-flex flex-column gap-1 flex-grow-1";
+    const content = ctx.renderCell("item", 0, item, index);
+    if (content) body.appendChild(content);
+    row.appendChild(body);
+    if (onRemoveItem) row.appendChild(removeButton(index));
+    fragment.appendChild(row);
+  });
+  return fragment;
 }
 
 // Text — the first type migrated onto the shared ctx pattern. `ctx` carries

@@ -5,6 +5,7 @@
   "description": "Standard character sheet for Daggerheart.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#ffffff",
     "fontColorBinding": "",
@@ -722,7 +723,8 @@
             "segmentFormula": "",
             "statesBinding": "",
             "tabLabelsSourceBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           }
         ]
       },
@@ -1242,7 +1244,8 @@
       "segmentFormula": "",
       "statesBinding": "",
       "tabLabelsSourceBinding": "",
-      "roller": ""
+      "roller": "",
+      "minColumnWidth": 7
     },
     {
       "type": "container",
@@ -1606,7 +1609,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 0
           }
         ],
         "grid-0-3": [
@@ -1972,7 +1976,8 @@
       "segmentFormula": "",
       "statesBinding": "",
       "tabLabelsSourceBinding": "",
-      "roller": ""
+      "roller": "",
+      "minColumnWidth": 8
     },
     {
       "type": "container",

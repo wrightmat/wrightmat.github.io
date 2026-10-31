@@ -5,6 +5,7 @@
   "description": "Minimal dummy character sheet for testing the Genesys symbol-dice rolling pipeline (Rolls/symbol-dice pool stepper + 3D overlay) — not a real character sheet, just enough fields to have a usable test character.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#ffffff"
   },

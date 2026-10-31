@@ -5,6 +5,7 @@
   "description": "Standard investigator character sheet for Call of Cthulhu 7th Edition.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#cfcfcf",
     "fontColorBinding": "",
@@ -589,7 +590,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           }
         ]
       },
@@ -896,7 +898,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -1084,7 +1087,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -1272,7 +1276,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-3": [
@@ -1460,7 +1465,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-0": [
@@ -1648,7 +1654,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-1": [
@@ -1836,7 +1843,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-2": [
@@ -2024,7 +2032,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-3": [
@@ -2212,7 +2221,8 @@
                         "maximum": 90
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ]
             },
@@ -2220,7 +2230,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           },
           {
             "type": "container",
@@ -2450,7 +2461,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 5
                 }
               ],
               "grid-0-1": [
@@ -2626,7 +2638,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 5
                 }
               ],
               "grid-0-2": [
@@ -2873,7 +2886,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-3": [
@@ -3059,7 +3073,8 @@
                         "statesBinding": ""
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-0": [
@@ -3235,7 +3250,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           },
           {
             "type": "container",
@@ -3479,7 +3495,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -3669,7 +3686,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -3859,7 +3877,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-3": [
@@ -4049,7 +4068,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-0": [
@@ -4239,7 +4259,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-1": [
@@ -4429,7 +4450,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-2": [
@@ -4619,7 +4641,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-1-3": [
@@ -4809,7 +4832,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-2-0": [
@@ -4999,7 +5023,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-2-1": [
@@ -5189,7 +5214,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-2-2": [
@@ -5379,7 +5405,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-2-3": [
@@ -5569,7 +5596,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-3-0": [
@@ -5759,7 +5787,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-3-1": [
@@ -5949,7 +5978,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-3-2": [
@@ -6139,7 +6169,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-3-3": [
@@ -6329,7 +6360,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-4-0": [
@@ -6519,7 +6551,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-4-1": [
@@ -6709,7 +6742,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-4-2": [
@@ -6899,7 +6933,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-4-3": [
@@ -7089,7 +7124,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-5-0": [
@@ -7279,7 +7315,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-5-1": [
@@ -7469,7 +7506,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-5-2": [
@@ -7659,7 +7697,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-5-3": [
@@ -7849,7 +7888,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-6-0": [
@@ -8039,7 +8079,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-6-1": [
@@ -8229,7 +8270,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-6-2": [
@@ -8419,7 +8461,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-6-3": [
@@ -8609,7 +8652,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-7-0": [
@@ -8799,7 +8843,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-7-1": [
@@ -8989,7 +9034,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-7-2": [
@@ -9179,7 +9225,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-7-3": [
@@ -9369,7 +9416,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-8-0": [
@@ -9559,7 +9607,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-8-1": [
@@ -9749,7 +9798,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-8-2": [
@@ -9939,7 +9989,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-8-3": [
@@ -10129,7 +10180,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-9-0": [
@@ -10319,7 +10371,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-9-1": [
@@ -10509,7 +10562,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-9-2": [
@@ -10699,7 +10753,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-9-3": [
@@ -10889,7 +10944,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-10-0": [
@@ -11079,7 +11135,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-10-1": [
@@ -11269,7 +11326,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-10-2": [
@@ -11459,7 +11517,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-10-3": [
@@ -11649,7 +11708,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-11-0": [
@@ -11839,7 +11899,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ],
               "grid-11-1": [
@@ -12029,7 +12090,8 @@
                   "segmentBinding": "",
                   "segmentFormula": "",
                   "statesBinding": "",
-                  "roller": ""
+                  "roller": "",
+                  "minColumnWidth": 0
                 }
               ]
             },
@@ -12037,7 +12099,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 8
           }
         ],
         "tab-1": [

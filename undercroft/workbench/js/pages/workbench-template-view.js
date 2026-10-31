@@ -18,6 +18,7 @@ import {
   createJsonDataPanel,
   createIconButton,
   createCompactField,
+  createModeToggleGroup,
   // Aliased — the bare name below is inspector-fields.js's positional-args
   // createCollapsibleSection (Inspector groups); this is ui-components.js's
   // object-arg version (label/content/actions/helpTopic), used only for the
@@ -44,7 +45,7 @@ import {
   createButtonCheckGroup,
 } from "../../../common/js/lib/inspector-fields.js";
 import { createColorPickerField } from "../../../common/js/lib/color-picker.js";
-import { renderTextContent, resolveImageUrl, renderImageContent, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
+import { renderTextContent, resolveImageUrl, renderImageContent, renderIconContent, renderContainerContent, renderRepeaterLayout, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors } from "../lib/component-renderers.js";
 import { collectSystemFields, categorizeFieldType } from "../../../common/js/lib/system-schema.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { createFormulaFunctions } from "../../../common/js/lib/formula-functions.js";
@@ -324,6 +325,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     templateSelect: document.querySelector("[data-template-select]"),
     palette: document.querySelector("[data-palette]"),
     canvasRoot: document.querySelector("[data-canvas-root]"),
+    canvasWidthToggleMount: document.querySelector("[data-canvas-width-toggle-mount]"),
     inspector: document.querySelector("[data-inspector]"),
     saveButton: document.querySelector('[data-action="save-template"]'),
     undoButton: document.querySelector('[data-action="undo-template"]'),
@@ -1487,6 +1489,29 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   syncTemplateActions();
   initPatternModal();
   initAddFontModal();
+  initCanvasWidthToggle();
+
+  // Desktop / Phone: narrows the canvas to a phone's width so an author can see how grids and tables reflow without
+  // a phone. Each grid measures its own width, so nothing else has to know.
+  function initCanvasWidthToggle() {
+    const mount = elements.canvasWidthToggleMount;
+    const root = elements.canvasRoot;
+    if (!mount || !root) return;
+    const apply = (width) => {
+      root.style.maxWidth = width === "phone" ? "24rem" : "";
+      root.style.marginInline = width === "phone" ? "auto" : "";
+    };
+    createModeToggleGroup({
+      container: mount,
+      ariaLabel: "Canvas width",
+      options: [
+        { value: "desktop", icon: "tabler:device-desktop", label: "Desktop" },
+        { value: "phone", icon: "tabler:device-mobile", label: "Phone" },
+      ],
+      value: "desktop",
+      onChange: apply,
+    });
+  }
 
   function renderCanvas() {
     if (!elements.canvasRoot) return;
@@ -1558,6 +1583,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       description: state.template?.description || "",
       type: state.template?.type || "sheet",
       baseFontFamily: state.template?.baseFontFamily || "",
+      minColumnWidth: state.template?.minColumnWidth ?? null,
       defaults: normalizeTemplateDefaults(state.template?.defaults),
       // The sheet's own literal background/border — see createBlankTemplate
       // for why this is separate from `defaults` above.
@@ -3541,43 +3567,33 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       ? `Repeats once per item in ${binding} — build the item's own layout below.`
       : "Bind this to an array field (Data section below), then build the item's own layout here.";
     wrapper.appendChild(hint);
-    const decoratorPreview = previewRepeaterDecorator(component);
-    if (decoratorPreview) {
-      const decoratorRow = document.createElement("div");
-      decoratorRow.className = "d-flex align-items-center gap-2 extra-small text-body-secondary";
-      const marker = document.createElement("span");
-      marker.className = "fw-semibold";
-      marker.textContent = decoratorPreview;
-      decoratorRow.append("Decorator:", marker);
-      wrapper.appendChild(decoratorRow);
-    }
     const zones = ensureRepeaterZone(component);
-    const headerZones = zones.filter((zone) => zone.key.startsWith("header-"));
-    const itemZones = zones.filter((zone) => zone.key.startsWith("item-"));
-    if (headerZones.length) {
-      const headerRow = document.createElement("div");
-      headerRow.className = "d-flex gap-2 align-items-stretch";
-      headerZones.forEach((zone) => {
-        headerRow.appendChild(
-          createContainerDropzone(component, zone, {
-            label: zone.label,
-            hint: "Drop header content here",
-          })
-        );
-      });
-      wrapper.appendChild(headerRow);
-    }
-    const itemRow = document.createElement("div");
-    itemRow.className = "d-flex gap-2 align-items-stretch";
-    itemZones.forEach((zone) => {
-      itemRow.appendChild(
-        createContainerDropzone(component, zone, {
-          label: itemZones.length > 1 ? zone.label : null,
-          hint: "Drag components here to build one item's layout",
-        })
-      );
-    });
-    wrapper.appendChild(itemRow);
+    const zonesByKey = new Map(zones.map((zone) => [zone.key, zone]));
+    const itemZoneCount = zones.filter((zone) => zone.key.startsWith("item-")).length;
+    const columns = clampInteger(component.columns || 1, 1, MAX_REPEATER_COLUMNS);
+    // The same layout Play view uses (table, list, horizontal list or grid), with one placeholder item whose cells
+    // are the editable dropzones, so an authored width, header or decorator shows up here too.
+    wrapper.appendChild(
+      renderRepeaterLayout(component, {
+        items: [{}],
+        columns,
+        labelCells: false,
+        renderCell(kind, column) {
+          const zone = zonesByKey.get(`${kind}-${column}`);
+          if (!zone) return null;
+          return createContainerDropzone(component, zone, {
+            label: kind === "item" && itemZoneCount <= 1 ? null : zone.label,
+            hint: kind === "header" ? "Drop header content here" : "Drag components here to build one item's layout",
+          });
+        },
+        hasHeader: (column) => zonesByKey.has(`header-${column}`),
+        rowHasContent: () => true,
+        decoratorText: () => previewRepeaterDecorator(component),
+        onRemoveItem: null,
+        createRemoveButton: null,
+        getTemplateMinColumnWidth: () => state.template?.minColumnWidth,
+      })
+    );
     return wrapper;
   }
 
@@ -3680,6 +3696,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       getZones(comp) {
         return ensureContainerZones(comp);
       },
+      getTemplateMinColumnWidth: () => state.template?.minColumnWidth,
       renderZone(comp, zone, { label, hint, alignItems, textAlign, zoneIndex }) {
         // Preview-only twin of the live view's own tabEntry lookup — a
         // Source-driven tab's zone gets a { kind: "tab", item, key } context
@@ -4212,6 +4229,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       origin,
       shareToken: effectiveShareToken,
       baseFontFamily: data.baseFontFamily || "",
+      minColumnWidth: data.minColumnWidth ?? null,
       defaults: data.defaults || null,
       backgroundColor: data.backgroundColor || "",
       backgroundColorBinding: data.backgroundColorBinding || "",
@@ -4281,7 +4299,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       { syncOption: true }
     );
     applyTemplateData(
-      { id, title, version, schema, description, type, components: [] },
+      { id, title, version, schema, description, type, minColumnWidth: NEW_TEMPLATE_MIN_COLUMN_WIDTH_REM, components: [] },
       {
         origin: "draft",
         emitStatus: true,
@@ -4338,6 +4356,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         schema: trimmedSchema,
         description,
         type,
+        minColumnWidth: NEW_TEMPLATE_MIN_COLUMN_WIDTH_REM,
         components: componentClones,
       },
       {
@@ -4626,6 +4645,32 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       })
     );
 
+    const minColumnField = createFormFloatingField({
+      type: "number",
+      id: "template-min-column-width",
+      label: "Minimum column width (rem)",
+      placeholder: " ",
+      min: 0,
+      step: 0.5,
+    });
+    const minColumnInput = minColumnField.querySelector("input");
+    minColumnInput.disabled = !canEdit;
+    minColumnInput.dataset.templateField = "template-min-column-width";
+    minColumnInput.value = state.template.minColumnWidth ?? "";
+    minColumnInput.addEventListener("input", () => {
+      const next = minColumnInput.value === "" ? null : Number(minColumnInput.value);
+      if (next !== null && !Number.isFinite(next)) return;
+      state.template.minColumnWidth = next;
+      syncTemplateActions();
+      renderCanvas();
+    });
+    form.appendChild(
+      createCollapsibleSection("Layout", [minColumnField], {
+        defaultCollapsed: true,
+        forceOpen: state.template.minColumnWidth !== null && state.template.minColumnWidth !== undefined,
+      })
+    );
+
     elements.templateProperties.appendChild(form);
     restoreTemplatePropertiesFocus(focusSnapshot);
   }
@@ -4666,7 +4711,11 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
   const TEXT_KEYS = ["labelPosition", "fontFamily", "textSize", "fontSizeCustom", "lineHeight", "textStyles", "align", "richText"];
   const COLOR_KEYS = ["textColor", "foregroundColor", "backgroundColor", "borderColor"];
   const BORDER_KEYS = ["borderWidth", "borderStyle", "borderRadius", "borderSides"];
+  // What a brand-new template's own "Minimum column width" field starts at (saved with the template, shown in
+  // Template Properties — never applied silently).
+  const NEW_TEMPLATE_MIN_COLUMN_WIDTH_REM = 9;
   const BEHAVIOR_KEYS = [
+    "minColumnWidth", "stackRows",
     "collapsible", "collapsibleBinding", "collapsibleFormula",
     "readOnly", "readOnlyBinding", "readOnlyFormula",
     "editableInPlay", "editableInPlayBinding", "editableInPlayFormula",
@@ -4856,6 +4905,27 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       behaviorControls.push(createEditableInPlayToggle(component));
     }
     behaviorControls.push(createVisibilityControl(component));
+    const stacksRows = component.type === "repeater" && component.orientation !== "horizontal" && (component.columns || 1) > 1;
+    if (stacksRows) {
+      behaviorControls.push(
+        createSwitchField("Stack rows when narrow", !!component.stackRows, (checked) => {
+          updateComponent(component.uid, (draft) => {
+            if (checked) draft.stackRows = true;
+            else delete draft.stackRows;
+          }, { rerenderCanvas: true });
+        })
+      );
+    }
+    if ((component.type === "container" && component.containerType !== "tabs") || (stacksRows && component.stackRows)) {
+      behaviorControls.push(
+        createNumberInput(component, "Minimum column width (rem)", component.minColumnWidth ?? null, (value) => {
+          updateComponent(component.uid, (draft) => {
+            if (value === null) delete draft.minColumnWidth;
+            else draft.minColumnWidth = Math.max(0, value);
+          }, { rerenderCanvas: true });
+        }, { min: 0, step: 0.5 })
+      );
+    }
     form.appendChild(
       createCollapsibleSection("Behavior", behaviorControls, {
         defaultCollapsed: true,
@@ -7951,6 +8021,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     origin = "draft",
     shareToken = "",
     baseFontFamily = "",
+    minColumnWidth = null,
     defaults = null,
     backgroundColor = "",
     backgroundColorBinding = "",
@@ -7976,6 +8047,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       ownerId: null,
       ownerUsername: "",
       baseFontFamily: baseFontFamily || "",
+      minColumnWidth: minColumnWidth ?? null,
       // A brand-new template and an already-saved one predating this field
       // both land here — normalizeTemplateDefaults always returns a real
       // fontColor either way.

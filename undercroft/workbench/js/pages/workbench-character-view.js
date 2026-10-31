@@ -22,7 +22,7 @@ import {
   verifyBuiltinAsset,
 } from "../lib/content-registry.js";
 import { applyComponentStyles, applyTextFormatting } from "../lib/component-styles.js";
-import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
+import { renderTextContent, renderImageContent, resolveImageUrl, renderIconContent, renderContainerContent, renderRepeaterLayout, renderInputContent, renderLinearTrackContent, renderCircularTrackContent, renderSelectGroupContent, renderToggleContent, toggleStateEntryFromRaw, excludeToggleWrapperColors, isReferenceValue } from "../lib/component-renderers.js";
 import { loadCustomFonts, DEFAULT_FONT_FAMILY } from "../../../common/js/lib/font-library.js";
 import { evaluateFormula } from "../../../common/js/lib/formula-engine.js";
 import { resolveBinding, findRoleBoundField, findBindingByRole, fieldByKey } from "../../../common/js/lib/bindings.js";
@@ -5099,6 +5099,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // This file keeps its own separate template object from workbench-template-view.js,
       // so baseFontFamily/background/border need the same normalization duplicated here.
       baseFontFamily: typeof payload.baseFontFamily === "string" ? payload.baseFontFamily : "",
+      minColumnWidth: payload.minColumnWidth ?? null,
       defaults: normalizeTemplateDefaults(payload.defaults),
       backgroundColor: typeof payload.backgroundColor === "string" ? payload.backgroundColor : "",
       backgroundColorBinding: typeof payload.backgroundColorBinding === "string" ? payload.backgroundColorBinding : "",
@@ -6096,262 +6097,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return Number.isFinite(raw) && raw > 0 ? Math.min(Math.round(raw), 8) : 1;
   }
 
-  function renderRepeaterItemRow(component, templateNodes, item, index, onRemoveItem = null) {
-    // A row whose own template nodes are all hidden (e.g. Speed of 0) renders
-    // nothing at all, not an empty shell — the wrapper's flex `gap` applies
-    // between every child regardless of content, so an empty row still ate a gap
-    // on each side. `onRemoveItem` alone isn't reason to keep an otherwise-empty row.
-    const visibleNodes = templateNodes.filter((node) => isRepeaterItemNodeVisible(node, item));
-    if (!visibleNodes.length) return null;
-    const row = document.createElement("div");
-    // Divider is opt-in (component.itemDivider), never forced.
-    row.className = component.itemDivider ? "d-flex align-items-start gap-2 border-bottom pb-2" : "d-flex align-items-start gap-2";
-    row.dataset.repeaterIndex = String(index);
-    const decoratorText = resolveRepeaterDecorator(component, item, index);
-    if (decoratorText) {
-      const marker = document.createElement("span");
-      marker.className = "text-body-secondary flex-shrink-0";
-      marker.textContent = decoratorText;
-      row.appendChild(marker);
-    }
-    const body = document.createElement("div");
-    body.className = "d-flex flex-column gap-1 flex-grow-1";
-    visibleNodes.forEach((node) => {
-      body.appendChild(renderRepeaterItemNode(node, item, component, index));
-    });
-    row.appendChild(body);
-    if (onRemoveItem) {
-      row.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
-    }
-    return row;
-  }
-
-  // The non-repeating header block for list mode (columns <= 1), rendered once
-  // from the "header-0" zone. renderRepeaterTable is the columns > 1 counterpart.
-  function renderRepeaterListHeader(headerNodes) {
-    const row = document.createElement("div");
-    row.className = "d-flex align-items-start gap-2 border-bottom pb-2 fw-semibold";
-    headerNodes.forEach((node) => {
-      if (!isRepeaterItemNodeVisible(node, null)) {
-        return;
-      }
-      row.appendChild(renderRepeaterItemNode(node, null));
-    });
-    return row;
-  }
-
-  // A real <table>/<colgroup>/<thead>/<tbody> for a multi-column Repeater, ported
-  // from Press's own "table" mode — not a CSS Grid, since the header row must
-  // render exactly once regardless of item count, which Container zones can't do.
-  function renderRepeaterTable(component, columns, itemColumns, items, onRemoveItem = null) {
-    const table = document.createElement("table");
-    table.className = "workbench-repeater-table";
-    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
-    const hasDecorator = Boolean(decorator && decorator.type && decorator.type !== "none");
-    const templateColumns = typeof component.templateColumns === "string" ? component.templateColumns.trim() : "";
-    if (templateColumns) {
-      const colgroup = document.createElement("colgroup");
-      if (hasDecorator) {
-        colgroup.appendChild(document.createElement("col"));
-      }
-      templateColumns
-        .split(/\s+/)
-        .filter(Boolean)
-        .forEach((width) => {
-          const col = document.createElement("col");
-          col.style.width = width;
-          colgroup.appendChild(col);
-        });
-      if (onRemoveItem) {
-        colgroup.appendChild(document.createElement("col"));
-      }
-      table.appendChild(colgroup);
-    }
-    if (component.showHeader) {
-      const headerColumns = Array.from({ length: columns }, (_, col) =>
-        getRepeaterColumnZoneNodes(component, "header", col)
-      );
-      const thead = document.createElement("thead");
-      const headerTr = document.createElement("tr");
-      if (hasDecorator) {
-        headerTr.appendChild(document.createElement("th"));
-      }
-      headerColumns.forEach((nodes) => {
-        const th = document.createElement("th");
-        nodes.forEach((node) => {
-          if (!isRepeaterItemNodeVisible(node, null)) return;
-          th.appendChild(renderRepeaterItemNode(node, null));
-        });
-        headerTr.appendChild(th);
-      });
-      if (onRemoveItem) {
-        headerTr.appendChild(document.createElement("th"));
-      }
-      thead.appendChild(headerTr);
-      table.appendChild(thead);
-    }
-    const tbody = document.createElement("tbody");
-    items.forEach((item, index) => {
-      const tr = document.createElement("tr");
-      if (hasDecorator) {
-        const decoratorTd = document.createElement("td");
-        decoratorTd.className = "text-body-secondary";
-        decoratorTd.textContent = resolveRepeaterDecorator(component, item, index);
-        tr.appendChild(decoratorTd);
-      }
-      itemColumns.forEach((nodes) => {
-        const td = document.createElement("td");
-        nodes.forEach((node) => {
-          if (!isRepeaterItemNodeVisible(node, item)) return;
-          td.appendChild(renderRepeaterItemNode(node, item, component, index));
-        });
-        tr.appendChild(td);
-      });
-      if (onRemoveItem) {
-        const actionTd = document.createElement("td");
-        actionTd.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
-        tr.appendChild(actionTd);
-      }
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    return table;
-  }
-
-  // Horizontal's single-item-template case (rows === 1, the ability-score box case):
-  // one item template repeated per array item, flowing left-to-right. Mirrors
-  // renderRepeaterItemRow as a self-contained cell for a flex ROW of siblings.
-  function renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem = null) {
-    // Same "nothing visible, render nothing" reasoning as renderRepeaterItemRow.
-    const visibleNodes = templateNodes.filter((node) => isRepeaterItemNodeVisible(node, item));
-    if (!visibleNodes.length) return null;
-    const cell = document.createElement("div");
-    cell.className = "d-flex flex-column gap-1";
-    cell.dataset.repeaterIndex = String(index);
-    // "Fill available width" (Horizontal-only) grows every cell equally instead of
-    // each sizing to content. min-width:0 lets a flex-grow cell shrink below content.
-    if (component.fill) {
-      cell.style.flex = "1 1 0";
-      cell.style.minWidth = "0";
-    }
-    const decoratorText = resolveRepeaterDecorator(component, item, index);
-    if (decoratorText) {
-      const marker = document.createElement("div");
-      marker.className = "text-body-secondary small";
-      marker.textContent = decoratorText;
-      cell.appendChild(marker);
-    }
-    visibleNodes.forEach((node) => {
-      cell.appendChild(renderRepeaterItemNode(node, item, component, index));
-    });
-    if (onRemoveItem) {
-      cell.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
-    }
-    return cell;
-  }
-
-  // The non-repeating header cell for Horizontal's rows===1 case, placed before the
-  // repeated items. renderRepeaterHorizontalGrid's own header column is the rows>1
-  // counterpart.
-  function renderRepeaterHorizontalHeaderCell(headerNodes) {
-    const cell = document.createElement("div");
-    cell.className = "d-flex flex-column gap-1 fw-semibold text-body-secondary flex-shrink-0 border-end pe-3";
-    headerNodes.forEach((node) => {
-      if (!isRepeaterItemNodeVisible(node, null)) return;
-      cell.appendChild(renderRepeaterItemNode(node, null));
-    });
-    return cell;
-  }
-
-  function renderRepeaterHorizontalList(component, templateNodes, items, onRemoveItem = null) {
-    const row = document.createElement("div");
-    row.className = "d-flex flex-row flex-wrap align-items-start";
-    // Matches Container's own "Grid gap (px)" field — was previously a fixed
-    // Bootstrap gap-3 utility class with no way to change it.
-    const gapPx = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
-    row.style.gap = `${gapPx}px`;
-    if (component.showHeader) {
-      const headerNodes = getRepeaterColumnZoneNodes(component, "header", 0);
-      if (headerNodes.length) {
-        row.appendChild(renderRepeaterHorizontalHeaderCell(headerNodes));
-      }
-    }
-    items.forEach((item, index) => {
-      const cell = renderRepeaterHorizontalItemCell(component, templateNodes, item, index, onRemoveItem);
-      if (cell) row.appendChild(cell);
-    });
-    return row;
-  }
-
-  // Horizontal's multi-row case (rows > 1): the transpose of Vertical table mode.
-  // Array items become GRID COLUMNS (auto-generated, no fixed count) instead of
-  // table rows, and `rows` field templates become fixed GRID ROWS within each
-  // item's column. CSS Grid, not a <table>, since items have no fixed count for a
-  // <colgroup>-style width list. Decorator becomes an extra grid ROW of per-item
-  // markers (transposed from Vertical's per-item column).
-  function renderRepeaterHorizontalGrid(component, rows, itemColumns, items, onRemoveItem = null) {
-    const grid = document.createElement("div");
-    grid.className = "workbench-repeater-grid";
-    const decorator = component.decorator && typeof component.decorator === "object" ? component.decorator : null;
-    const hasDecorator = Boolean(decorator && decorator.type && decorator.type !== "none");
-    const totalGridRows = rows + (hasDecorator ? 1 : 0) + (onRemoveItem ? 1 : 0);
-    grid.style.gridTemplateRows = `repeat(${totalGridRows}, auto)`;
-    // Overrides .workbench-repeater-grid's own fixed CSS gap (shell.css).
-    const gapPx = Number.isFinite(Number(component.gap)) ? Number(component.gap) : 16;
-    grid.style.gap = `${gapPx}px`;
-    // "Fill available width": grid-auto-columns applies uniformly to every column
-    // including the header, so a plain CSS override would stretch it too. items.length
-    // is known at render time, so an explicit grid-template-columns keeps the header
-    // column at its natural width while only the N item columns share the remainder.
-    if (component.fill) {
-      const itemTrack = `repeat(${items.length}, minmax(0, 1fr))`;
-      grid.style.gridTemplateColumns = component.showHeader ? `auto ${itemTrack}` : itemTrack;
-    }
-
-    if (component.showHeader) {
-      if (hasDecorator) {
-        grid.appendChild(document.createElement("div"));
-      }
-      const headerRows = Array.from({ length: rows }, (_, row) => getRepeaterColumnZoneNodes(component, "header", row));
-      headerRows.forEach((nodes) => {
-        const cell = document.createElement("div");
-        cell.className = "fw-semibold text-body-secondary small pe-3 border-end";
-        nodes.forEach((node) => {
-          if (!isRepeaterItemNodeVisible(node, null)) return;
-          cell.appendChild(renderRepeaterItemNode(node, null));
-        });
-        grid.appendChild(cell);
-      });
-      if (onRemoveItem) {
-        grid.appendChild(document.createElement("div"));
-      }
-    }
-
-    items.forEach((item, index) => {
-      if (hasDecorator) {
-        const marker = document.createElement("div");
-        marker.className = "text-body-secondary small text-center";
-        marker.textContent = resolveRepeaterDecorator(component, item, index);
-        grid.appendChild(marker);
-      }
-      itemColumns.forEach((nodes) => {
-        const cell = document.createElement("div");
-        nodes.forEach((node) => {
-          if (!isRepeaterItemNodeVisible(node, item)) return;
-          cell.appendChild(renderRepeaterItemNode(node, item, component, index));
-        });
-        grid.appendChild(cell);
-      });
-      if (onRemoveItem) {
-        const actionCell = document.createElement("div");
-        actionCell.className = "text-center";
-        actionCell.appendChild(createRepeaterRemoveButton(() => onRemoveItem(index)));
-        grid.appendChild(actionCell);
-      }
-    });
-    return grid;
-  }
-
   // Small icon-only button for a Repeater row's own "Remove" control — same
   // iconify/tabler pattern as createSpinnerButton above, just danger-styled
   // and sized down to fit inline with a row's own content.
@@ -7207,30 +6952,29 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       renderAddControls().forEach((node) => wrapper.appendChild(node));
       return wrapper;
     }
-    if (component.orientation === "horizontal") {
-      wrapper.appendChild(
-        columns > 1
-          ? renderRepeaterHorizontalGrid(component, columns, itemColumns, items, onRemoveItem)
-          : renderRepeaterHorizontalList(component, itemColumns[0], items, onRemoveItem)
-      );
-      renderAddControls().forEach((node) => wrapper.appendChild(node));
-      return wrapper;
-    }
-    if (columns > 1) {
-      wrapper.appendChild(renderRepeaterTable(component, columns, itemColumns, items, onRemoveItem));
-      renderAddControls().forEach((node) => wrapper.appendChild(node));
-      return wrapper;
-    }
-    if (component.showHeader) {
-      const headerNodes = getRepeaterColumnZoneNodes(component, "header", 0);
-      if (headerNodes.length) {
-        wrapper.appendChild(renderRepeaterListHeader(headerNodes));
-      }
-    }
-    items.forEach((item, index) => {
-      const row = renderRepeaterItemRow(component, itemColumns[0], item, index, onRemoveItem);
-      if (row) wrapper.appendChild(row);
-    });
+    wrapper.appendChild(
+      renderRepeaterLayout(component, {
+        items,
+        columns,
+        renderCell(kind, column, item, index) {
+          const nodes = kind === "header" ? getRepeaterColumnZoneNodes(component, "header", column) : itemColumns[column];
+          const cell = document.createDocumentFragment();
+          nodes.forEach((node) => {
+            if (!isRepeaterItemNodeVisible(node, item)) return;
+            cell.appendChild(
+              kind === "header" ? renderRepeaterItemNode(node, null) : renderRepeaterItemNode(node, item, component, index)
+            );
+          });
+          return cell;
+        },
+        hasHeader: (column) => getRepeaterColumnZoneNodes(component, "header", column).length > 0,
+        rowHasContent: (item) => itemColumns[0].some((node) => isRepeaterItemNodeVisible(node, item)),
+        decoratorText: (item, index) => resolveRepeaterDecorator(component, item, index),
+        onRemoveItem,
+        createRemoveButton: createRepeaterRemoveButton,
+        getTemplateMinColumnWidth: () => state.template?.minColumnWidth,
+      })
+    );
     renderAddControls().forEach((node) => wrapper.appendChild(node));
     return wrapper;
   }
@@ -7660,6 +7404,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       getZones(comp) {
         return normalizeZones(comp);
       },
+      getTemplateMinColumnWidth: () => state.template?.minColumnWidth,
       renderZone(comp, zone, { alignItems, textAlign, zoneIndex }) {
         const cell = document.createElement("div");
         cell.className = "d-flex flex-column";

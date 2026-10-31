@@ -5,6 +5,7 @@
   "description": "Standard character sheet for Apocalypse World.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#cfcfcf",
     "fontColorBinding": "",
@@ -671,7 +672,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-1": [
@@ -859,7 +861,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-2": [
@@ -1047,7 +1050,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-3": [
@@ -1235,7 +1239,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ],
               "grid-0-4": [
@@ -1423,7 +1428,8 @@
                         "editableInPlay": true
                       }
                     ]
-                  }
+                  },
+                  "minColumnWidth": 0
                 }
               ]
             },
@@ -1431,7 +1437,8 @@
             "segmentBinding": "",
             "segmentFormula": "",
             "statesBinding": "",
-            "roller": ""
+            "roller": "",
+            "minColumnWidth": 7
           },
           {
             "type": "container",

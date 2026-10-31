@@ -139,7 +139,8 @@
       "details": [
         "Choose the System the Template is built for. The fields you can bind components to come from that System.",
         "Name and description help you and others tell Templates apart in lists.",
-        "Select a component on the canvas and this panel gives way to the Component Inspector."
+        "Select a component on the canvas and this panel gives way to the Component Inspector.",
+        "Layout holds the Template's minimum column width, which controls when grids wrap on a narrow screen; see Fitting a Template on Small Screens."
       ],
       "category": "Workbench",
       "section": "Templates",
@@ -181,7 +182,23 @@
         "The Inspector is in the right pane. Its sections run from identity and the component's own settings through Appearance and Behavior to Advanced; the last three start closed unless they hold a non-default value.",
         "Binding or Text tells the component which value to show from the character, or a fixed piece of text. Source or Options is where a list of choices comes from, on components that offer a choice. See Bindings and Formulas.",
         "Behavior settings such as Visible, Collapsible and Locked can use a formula, so they can change with the character.",
-        "Changes appear on the canvas immediately and can be undone."
+        "Changes appear on the canvas immediately and can be undone.",
+        "Containers and Repeaters also have a minimum column width and a Stack rows when narrow switch under Behavior; see Fitting a Template on Small Screens."
+      ],
+      "category": "Workbench",
+      "section": "Templates",
+      "href": "../workbench/index.html"
+    },
+    {
+      "id": "workbench.smallScreens",
+      "title": "Fitting a Template on Small Screens",
+      "summary": "Make a sheet wrap and stack on a phone instead of squeezing or running off the screen.",
+      "details": [
+        "A Template's columns share whatever width the screen has, so a wide layout gets cramped on a phone. Minimum column width tells a grid how narrow a column may get: once its columns would be thinner than that, the cells wrap onto more rows instead.",
+        "Set it for the whole Template under Layout in Template Properties, a number in rem (1 rem is about one line of text). A new Template starts at 9, which suits most fields. Leave it blank and no grid ever changes.",
+        "Set it on a single Container under Behavior to override the Template's value. Use a smaller number for a row of narrow boxes you want to keep side by side, a larger one for a row of fields with long labels, and 0 to never wrap that Container.",
+        "A Repeater with several columns shows as a table. Turn on Stack rows when narrow under Behavior and each row becomes a small card, with the column headings as labels, once the table would be thinner than its columns at the minimum width. Without it, a wide table scrolls sideways inside its own box.",
+        "Choose Phone above the canvas to see the Template at a phone's width while you edit, and Desktop to return."
       ],
       "category": "Workbench",
       "section": "Templates",

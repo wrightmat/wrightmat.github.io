@@ -5,6 +5,7 @@
   "description": "Crew sheet for Blades in the Dark: tier, heat, claims, upgrades, and cohorts.",
   "type": "sheet",
   "baseFontFamily": "",
+  "minColumnWidth": 9,
   "defaults": {
     "fontColor": "#ffffff"
   },
