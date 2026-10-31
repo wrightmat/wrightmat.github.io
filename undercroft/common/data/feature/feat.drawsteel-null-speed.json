@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-speed",
+  "name": "Null Speed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nThe flow of psionic power through you allows you to achieve high velocity. You gain a +2 bonus to your speed (already included).",
+  "mechanics": {
+    "type": "passive",
+    "text": "The flow of psionic power through you allows you to achieve high velocity. You gain a +2 bonus to your speed (already included)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-parry",
+  "name": "Parry",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your quick reflexes cost an enemy the precision they seek.*\n\n**Triggered** — Melee, Weapon — Triggered\n\n**Distance:** Melee 2   **Target:** Self or one ally\n\n**Trigger:** A creature deals damage to the target.\n\n**Effect:** You can shift 1 square. If the target is you, or if you end this shift adjacent to the target, the target takes half the damage. If the damage has any potency effect associated with it, the potency is decreased by 1. Spend 1 Focus: This ability's distance becomes Melee 3, and you can shift up 2 squares instead of 1 square.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your quick reflexes cost an enemy the precision they seek. Trigger: A creature deals damage to the target. You can shift 1 square. If the target is you, or if you end this shift adjacent to the target, the target takes half the damage. If the damage has any potency effect associated with it, the potency is decreased by 1. Spend 1 Focus: This ability's distance becomes Melee 3, and you can shift up 2 squares instead of 1 square."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Melee, Weapon",
+  "actionType": "Triggered",
+  "distance": "Melee 2",
+  "target": "Self or one ally",
+  "trigger": "A creature deals damage to the target."
+}

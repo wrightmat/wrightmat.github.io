@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-ward-of-delightful-consequences",
+  "name": "Ward of Delightful Consequences",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nA protective field of void magic absorbs violence aimed at you, then lets you hurl it back at your enemies. The first time each round that you take damage, you gain 1 surge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "A protective field of void magic absorbs violence aimed at you, then lets you hurl it back at your enemies. The first time each round that you take damage, you gain 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

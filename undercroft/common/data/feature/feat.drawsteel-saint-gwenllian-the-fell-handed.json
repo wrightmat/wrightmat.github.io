@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-saint-gwenllian-the-fell-handed",
+  "name": "Saint: Gwenllian the Fell-Handed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Class Feature**\n\nYou venerate Gwenllian the Fell-Handed. Gwenllian is the saint of those who stand watch, of all those who must carry a burden ceaselessly. Gwenllian teaches that vigilance is its own reward. Gwenllian is a saint of the god, Cavall. Cavall believes that mortals cannot live where injustice thrives. To followers of Cavall, the unjust society is the Wasted Land, where people live false lives. The concepts of civil law and just punishment are his.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You venerate Gwenllian the Fell-Handed. Gwenllian is the saint of those who stand watch, of all those who must carry a burden ceaselessly. Gwenllian teaches that vigilance is its own reward. Gwenllian is a saint of the god, Cavall. Cavall believes that mortals cannot live where injustice thrives. To followers of Cavall, the unjust society is the Wasted Land, where people live false lives. The concepts of civil law and just punishment are his."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

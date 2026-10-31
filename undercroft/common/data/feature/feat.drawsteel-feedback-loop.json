@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-feedback-loop",
+  "name": "Feedback Loop",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Creating a brief psychic link between a foe and their target gives that foe a taste of their own medicine.*\n\n**Triggered** — Psionic, Ranged — Triggered\n\n**Distance:** Ranged 12   **Target:** One creature\n\n**Trigger:** The target deals damage to an ally.\n\n**Effect:** The target takes psychic damage equal to half the triggering damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "Creating a brief psychic link between a foe and their target gives that foe a taste of their own medicine. Trigger: The target deals damage to an ally. The target takes psychic damage equal to half the triggering damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Psionic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 12",
+  "target": "One creature",
+  "trigger": "The target deals damage to an ally."
+}

@@ -1,0 +1,120 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "Polder Elementalist (Pregen)",
+  "level": 1,
+  "ancestry": "Polder",
+  "career": "Mage's Apprentice",
+  "class": "Elementalist",
+  "subclass": "Fire Specialization",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 1,
+  "xp": 0,
+  "stats": {
+    "abilities": {
+      "might": -1,
+      "agility": 1,
+      "reason": 2,
+      "intuition": 2,
+      "presence": 1
+    },
+    "hitPoints": {
+      "current": 18,
+      "max": 18,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 8,
+      "max": 8
+    },
+    "heroicResource": {
+      "name": "Essence",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1S",
+    "speed": {
+      "walk": 5
+    },
+    "stability": 0,
+    "disengage": 2
+  },
+  "culture": [
+    {
+      "name": "Urban"
+    },
+    {
+      "name": "Communal"
+    },
+    {
+      "name": "Creative"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Khoursirian"
+    },
+    {
+      "name": "the First Language"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Alchemy"
+    },
+    {
+      "name": "Alertness"
+    },
+    {
+      "name": "Blacksmithing"
+    },
+    {
+      "name": "Empathize"
+    },
+    {
+      "name": "Gymnastics"
+    },
+    {
+      "name": "History"
+    },
+    {
+      "name": "Magic"
+    },
+    {
+      "name": "Monsters"
+    },
+    {
+      "name": "Tailoring"
+    },
+    {
+      "name": "Timescape"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-essence",
+    "feat.drawsteel-persistent-magic",
+    "feat.drawsteel-bifurcated-incineration",
+    "feat.drawsteel-viscous-fire",
+    "feat.drawsteel-practical-magic",
+    "feat.drawsteel-the-flesh-a-crucible",
+    "feat.drawsteel-conflagration",
+    "feat.drawsteel-explosive-assistance",
+    "feat.drawsteel-arcane-trick",
+    "feat.drawsteel-return-to-formlessness",
+    "feat.drawsteel-ward-of-delightful-consequences",
+    "feat.drawsteel-enchantment-of-destruction",
+    "feat.drawsteel-acolyte-of-fire",
+    "feat.drawsteel-corruption-immunity",
+    "feat.drawsteel-fearless",
+    "feat.drawsteel-shadowmeld",
+    "feat.drawsteel-melee-weapon-free-strike-human-talent",
+    "feat.drawsteel-hurl-element"
+  ]
+}

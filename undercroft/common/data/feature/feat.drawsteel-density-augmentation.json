@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-density-augmentation",
+  "name": "Density Augmentation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nYour training has turned your body into the perfect psionic weapon, shaping pathways in your mind that enhance your physical form. You gain a +6 bonus to Stamina and a +1 bonus to stability (both already included).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your training has turned your body into the perfect psionic weapon, shaping pathways in your mind that enhance your physical form. You gain a +6 bonus to Stamina and a +1 bonus to stability (both already included)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-drain",
+  "name": "Drain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You drain the energy from your target to revitalize yourself or an ally.*\n\n**Signature Ability** — Magic, Melee, Strike — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 4 corruption damage\n- **12-16:** 7 corruption damage\n- **17+:** 9 corruption damage\n\n**Effect:** You or one ally within distance can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "You drain the energy from your target to revitalize yourself or an ally. 2d10 + 2: 11 or less: 4 corruption damage; 12-16: 7 corruption damage; 17+: 9 corruption damage. You or one ally within distance can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Melee, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

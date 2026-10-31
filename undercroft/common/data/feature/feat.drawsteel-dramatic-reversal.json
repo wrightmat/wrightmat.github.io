@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-dramatic-reversal",
+  "name": "Dramatic Reversal",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Give the audience a surprise.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** 3 burst   **Target:** Self and each ally in the area\n\n**2d10 + 2**\n\n- **11 or less:** The target can shift 1 square and make a free strike.\n- **12-16:** The target can shift up to 2 squares and make a free strike that gains an edge.\n- **17+:** The target can shift up to 3 squares and make a free strike that gains an edge, then can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "Give the audience a surprise. 2d10 + 2: 11 or less: The target can shift 1 square and make a free strike.; 12-16: The target can shift up to 2 squares and make a free strike that gains an edge.; 17+: The target can shift up to 3 squares and make a free strike that gains an edge, then can spend a Recovery.."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Self and each ally in the area",
+  "cost": 5
+}

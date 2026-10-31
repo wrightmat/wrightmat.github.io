@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-primordial-strength-growing-ferocity",
+  "name": "Primordial Strength: Growing Ferocity",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nFerocity 2: Whenever you use the Knockback maneuver, the forced movement distance gains a +2 bonus. Ferocity 4: The first time you push a creature on a turn, you gain 1 surge. Ferocity 6: You gain an edge on Might tests and the Knockback maneuver.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ferocity 2: Whenever you use the Knockback maneuver, the forced movement distance gains a +2 bonus. Ferocity 4: The first time you push a creature on a turn, you gain 1 surge. Ferocity 6: You gain an edge on Might tests and the Knockback maneuver."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-hypnotic-overtones",
+  "name": "Hypnotic Overtones",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You produce an entrancing note that twists the senses in a spectacular fashion.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 3 Drama\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**2d10 + 2**\n\n- **11 or less:** Slide 1; I < 0 dazed (save ends)\n- **12-16:** Slide 1; I < 1 dazed (save ends)\n- **17+:** Slide 2; I < 2 dazed (save ends)\n\n**Effect:** Spend 2+ Drama: The size of the burst increases by 1 for every 2 drama spent.",
+  "mechanics": {
+    "type": "active",
+    "text": "You produce an entrancing note that twists the senses in a spectacular fashion. 2d10 + 2: 11 or less: Slide 1; I < 0 dazed (save ends); 12-16: Slide 1; I < 1 dazed (save ends); 17+: Slide 2; I < 2 dazed (save ends). Spend 2+ Drama: The size of the burst increases by 1 for every 2 drama spent."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "2 burst",
+  "target": "Each enemy in the area",
+  "cost": 3
+}

@@ -1,0 +1,122 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "Wode Elf Troubadour (Pregen)",
+  "level": 1,
+  "ancestry": "Wode Elf",
+  "career": "Performer",
+  "class": "Troubadour",
+  "subclass": "Virtuoso",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 2,
+  "xp": 0,
+  "stats": {
+    "abilities": {
+      "might": 1,
+      "agility": 2,
+      "reason": 1,
+      "intuition": -1,
+      "presence": 2
+    },
+    "hitPoints": {
+      "current": 21,
+      "max": 21,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 8,
+      "max": 8
+    },
+    "heroicResource": {
+      "name": "Drama",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1M",
+    "speed": {
+      "walk": 9
+    },
+    "stability": 0,
+    "disengage": 2
+  },
+  "culture": [
+    {
+      "name": "Wilderness"
+    },
+    {
+      "name": "Bureaucratic"
+    },
+    {
+      "name": "Creative"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Yllyric"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Brag"
+    },
+    {
+      "name": "Flirt"
+    },
+    {
+      "name": "Gymnastics"
+    },
+    {
+      "name": "Hide"
+    },
+    {
+      "name": "Music"
+    },
+    {
+      "name": "Perform"
+    },
+    {
+      "name": "Persuade"
+    },
+    {
+      "name": "Read Person"
+    },
+    {
+      "name": "Rumors"
+    },
+    {
+      "name": "Sneak"
+    },
+    {
+      "name": "Society"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-drama",
+    "feat.drawsteel-fancy-footwork",
+    "feat.drawsteel-witty-banter",
+    "feat.drawsteel-hypnotic-overtones",
+    "feat.drawsteel-dramatic-reversal",
+    "feat.drawsteel-power-chord",
+    "feat.drawsteel-harmonize",
+    "feat.drawsteel-scene-partner",
+    "feat.drawsteel-harmonizer",
+    "feat.drawsteel-swashbuckler-kit",
+    "feat.drawsteel-routines",
+    "feat.drawsteel-ballad-of-the-beast",
+    "feat.drawsteel-choreography",
+    "feat.drawsteel-revitalizing-limerick",
+    "feat.drawsteel-thunder-mother",
+    "feat.drawsteel-otherworldly-grace",
+    "feat.drawsteel-swift",
+    "feat.drawsteel-wode-elf-glamour",
+    "feat.drawsteel-melee-weapon-free-strike-high-elf-tactician",
+    "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ]
+}

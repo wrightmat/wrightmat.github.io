@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-devastating-rush",
+  "name": "Devastating Rush",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The faster you move, the harder you hit.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 8 damage\n- **17+:** 15 damage\n\n**Effect:** You can move up to 3 squares straight toward the target before this strike, which deals extra damage equal to the number of squares you move this way.",
+  "mechanics": {
+    "type": "active",
+    "text": "The faster you move, the harder you hit. 2d10 + 2: 11 or less: 5 damage; 12-16: 8 damage; 17+: 15 damage. You can move up to 3 squares straight toward the target before this strike, which deals extra damage equal to the number of squares you move this way."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

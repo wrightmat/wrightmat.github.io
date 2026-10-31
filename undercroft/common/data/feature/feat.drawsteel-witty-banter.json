@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-witty-banter",
+  "name": "Witty Banter",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A lyrical (and physical) jab insults an enemy and inspires an ally.*\n\n**Signature Ability** — Magic, Melee, Ranged, Strike — Main action\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 6 psychic damage\n- **12-16:** 7 psychic damage\n- **17+:** 9 psychic damage\n\n**Effect:** One ally within 10 squares of you can end one effect on them that is ended by a saving throw or that ends at the end of their turn. Spend 1 Drama: The chosen ally can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "A lyrical (and physical) jab insults an enemy and inspires an ally. 2d10 + 2: 11 or less: 6 psychic damage; 12-16: 7 psychic damage; 17+: 9 psychic damage. One ally within 10 squares of you can end one effect on them that is ended by a saving throw or that ends at the end of their turn. Spend 1 Drama: The chosen ally can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Melee, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature"
+}

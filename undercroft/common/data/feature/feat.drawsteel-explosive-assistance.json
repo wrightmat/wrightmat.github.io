@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-explosive-assistance",
+  "name": "Explosive Assistance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You add a little magic to an ally's aggression at just the right time.*\n\n**Triggered** — Fire, Magic, Ranged — Triggered\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Trigger:** The target force moves a creature or object.\n\n**Effect:** The forced movement distance gains a +2 bonus. Spend 1 Essence: The forced movement distance bonus is +4 instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "You add a little magic to an ally's aggression at just the right time. Trigger: The target force moves a creature or object. The forced movement distance gains a +2 bonus. Spend 1 Essence: The forced movement distance bonus is +4 instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Fire, Magic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "trigger": "The target force moves a creature or object."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-bastion-ward",
+  "name": "Bastion Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nYour god grants you a holy countenance that protects you at all times. You gain a +1 bonus to saving throws.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your god grants you a holy countenance that protects you at all times. You gain a +1 bonus to saving throws."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

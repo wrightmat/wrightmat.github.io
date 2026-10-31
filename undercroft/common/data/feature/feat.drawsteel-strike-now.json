@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-strike-now",
+  "name": "\"Strike Now!\"",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your foe left an opening. You point this out to an ally!*\n\n**Maneuver** — Ranged — Main action\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Effect:** The target can use a signature ability as a free triggered action. Spend 5 Focus: You target two allies instead of one.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your foe left an opening. You point this out to an ally! The target can use a signature ability as a free triggered action. Spend 5 Focus: You target two allies instead of one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One ally"
+}

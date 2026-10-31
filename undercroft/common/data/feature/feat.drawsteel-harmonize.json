@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-harmonize",
+  "name": "Harmonize",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Give the chorus a little punch.*\n\n**Triggered** — Triggered\n\n**Cost:** 3 Drama\n\n**Distance:** Ranged 5   **Target:** One ally\n\n**Trigger:** The target uses an ability that targets only one enemy and costs 3 or fewer of their Heroic Resource.\n\n**Effect:** The target can choose one additional target for the triggering ability. Any damage dealt to the additional target is sonic damage. Spend 1+ Drama: You can trigger this ability when a target uses an ability that has a Heroic Resource cost of 3 + each additional drama spent.",
+  "mechanics": {
+    "type": "active",
+    "text": "Give the chorus a little punch. Trigger: The target uses an ability that targets only one enemy and costs 3 or fewer of their Heroic Resource. The target can choose one additional target for the triggering ability. Any damage dealt to the additional target is sonic damage. Spend 1+ Drama: You can trigger this ability when a target uses an ability that has a Heroic Resource cost of 3 + each additional drama spent."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "actionType": "Triggered",
+  "distance": "Ranged 5",
+  "target": "One ally",
+  "cost": 3,
+  "trigger": "The target uses an ability that targets only one enemy and costs 3 or fewer of their Heroic Resource."
+}

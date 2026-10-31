@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-judgment-s-hammer",
+  "name": "Judgment's Hammer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your divine fury is a hammer that crashes down upon the unrighteous.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 3 Piety\n\n**Distance:** Ranged 12   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 holy damage; A < 0 prone\n- **12-16:** 8 holy damage; A < 1 prone\n- **17+:** 11 holy damage; A < 2 prone and can't stand (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Your divine fury is a hammer that crashes down upon the unrighteous. 2d10 + 2: 11 or less: 5 holy damage; A < 0 prone; 12-16: 8 holy damage; A < 1 prone; 17+: 11 holy damage; A < 2 prone and can't stand (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 12",
+  "target": "One creature or object",
+  "cost": 3
+}

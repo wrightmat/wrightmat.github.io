@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-revitalizing-limerick",
+  "name": "Revitalizing Limerick",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*There once was a man from Capital...*\n\n**Performance** — Area, Magic, Performance — No action\n\n**Distance:** 5 aura   **Target:** Self and each ally in the area\n\n**Effect:** At the end of each of your turns while this performance is active, you can choose up to a number of targets equal to your Presence score. Each chosen target can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "There once was a man from Capital... At the end of each of your turns while this performance is active, you can choose up to a number of targets equal to your Presence score. Each chosen target can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Performance",
+  "keywords": "Area, Magic, Performance",
+  "actionType": "No action",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area"
+}

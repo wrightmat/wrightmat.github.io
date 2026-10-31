@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-acolyte-of-fire",
+  "name": "Acolyte of Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nYou become an expert at wielding destructive flames. Your abilities that have the Fire and Magic keywords gain a +1 bonus to rolled damage (already included). Your Hurl Element ability also gains this bonus when you use it to deal fire damage (already included).",
+  "mechanics": {
+    "type": "passive",
+    "text": "You become an expert at wielding destructive flames. Your abilities that have the Fire and Magic keywords gain a +1 bonus to rolled damage (already included). Your Hurl Element ability also gains this bonus when you use it to deal fire damage (already included)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

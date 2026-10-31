@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-protective-attack",
+  "name": "Protective Attack",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The strength of your assault makes it impossible for your foe to ignore you.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 7 damage\n- **12-16:** 10 damage\n- **17+:** 13 damage\n\n**Effect:** The target is taunted until the end of their next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "The strength of your assault makes it impossible for your foe to ignore you. 2d10 + 2: 11 or less: 7 damage; 12-16: 10 damage; 17+: 13 damage. The target is taunted until the end of their next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

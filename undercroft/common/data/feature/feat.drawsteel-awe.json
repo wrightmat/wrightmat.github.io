@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-awe",
+  "name": "Awe",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You project psionic energy out to a creature and take on a new visage in their mind.*\n\n**Heroic Ability** — Psionic, Ranged, Strike, Telepathy — Main action\n\n**Cost:** 3 Clarity\n\n**Distance:** Ranged 12   **Target:** One ally or enemy\n\n**2d10 + 2**\n\n- **11 or less:** 5 psychic damage; I < 0 frightened (save ends)\n- **12-16:** 8 psychic damage; I < 1 frightened (save ends)\n- **17+:** 11 psychic damage; I < 2 frightened (save ends)\n\n**Effect:** If you target an ally, they gain 6 temporary Stamina, and they can end one effect on them that is ended by a saving throw or that ends at the end of their turn. If you target an enemy, you make a power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "You project psionic energy out to a creature and take on a new visage in their mind. 2d10 + 2: 11 or less: 5 psychic damage; I < 0 frightened (save ends); 12-16: 8 psychic damage; I < 1 frightened (save ends); 17+: 11 psychic damage; I < 2 frightened (save ends). If you target an ally, they gain 6 temporary Stamina, and they can end one effect on them that is ended by a saving throw or that ends at the end of their turn. If you target an enemy, you make a power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged, Strike, Telepathy",
+  "actionType": "Main action",
+  "distance": "Ranged 12",
+  "target": "One ally or enemy",
+  "cost": 3
+}

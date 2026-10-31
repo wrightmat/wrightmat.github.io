@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-word-of-guidance",
+  "name": "Word of Guidance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You invigorate an attacking ally with divine energy.*\n\n**Triggered** — Magic, Ranged — Triggered\n\n**Distance:** Ranged 12   **Target:** One ally\n\n**Trigger:** The target makes an ability roll for a damage-dealing ability.\n\n**Effect:** The power roll gains an edge. Spend 1 Piety: The power roll gains a double edge.",
+  "mechanics": {
+    "type": "active",
+    "text": "You invigorate an attacking ally with divine energy. Trigger: The target makes an ability roll for a damage-dealing ability. The power roll gains an edge. Spend 1 Piety: The power roll gains a double edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Magic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 12",
+  "target": "One ally",
+  "trigger": "The target makes an ability roll for a damage-dealing ability."
+}

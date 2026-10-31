@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-put-your-back-into-it",
+  "name": "Put Your Back Into It!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Perk**\n\nDuring montage tests, whenever you make a test to assist a test and obtain a tier 1 outcome, you don't add a bane to the assisted test. Additionally, once per montage test, you can turn an ally's tier 1 test outcome into a tier 2 outcome.",
+  "mechanics": {
+    "type": "passive",
+    "text": "During montage tests, whenever you make a test to assist a test and obtain a tier 1 outcome, you don't add a bane to the assisted test. Additionally, once per montage test, you can turn an ally's tier 1 test outcome into a tier 2 outcome."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk"
+}

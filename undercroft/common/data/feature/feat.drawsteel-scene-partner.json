@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-scene-partner",
+  "name": "Scene Partner",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nWhenever you use the Brag, Flirt, Persuade, Music, Perform, or Read Person skill on a test while interacting with an NPC (a bystander, a rival, and so forth) and you don't fail the test, you can form a bond with that NPC. If you then enter into a negotiation with this NPC, their patience increases by 1, and any compelling arguments you personally make to the NPC that would increase their interest by 1 instead increase their interest by 2. You can have 1 bond, losing a bond of your choice whenever you make a new bond beyond your limit.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you use the Brag, Flirt, Persuade, Music, Perform, or Read Person skill on a test while interacting with an NPC (a bystander, a rival, and so forth) and you don't fail the test, you can form a bond with that NPC. If you then enter into a negotiation with this NPC, their patience increases by 1, and any compelling arguments you personally make to the NPC that would increase their interest by 1 instead increase their interest by 2. You can have 1 bond, losing a bond of your choice whenever you make a new bond beyond your limit."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

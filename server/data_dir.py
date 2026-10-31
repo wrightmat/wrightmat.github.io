@@ -171,7 +171,9 @@ def plan_update(
     for key, shipped, current in entries:
         recorded = manifest.get(key) if manifest is not None else None
         if current is None:
-            if recorded is None and manifest is not None:
+            if _accepted(key, accept):
+                actions.append(Action(key, "add", SEEDED, "restored at your request (--accept-shipped)", shipped))
+            elif recorded is None and manifest is not None:
                 actions.append(Action(key, "add", SEEDED, "new shipped file", shipped))
             elif recorded is None or recorded.get("state") != DELETED:
                 actions.append(Action(key, "record", DELETED, "deleted here; will not be re-added"))
@@ -244,6 +246,7 @@ def update_defaults(state: ServerState, apply: bool = False, accept: Iterable[st
                 continue
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dst)
+            _refresh_index(state, action.key)
         else:
             # The server may have saved this file since the plan was made; only replace it if it is still what the
             # plan was based on.

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-faith-is-our-armor",
+  "name": "Faith is Our Armor",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The heroes' armor glows with golden light, granting divine protection.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 12   **Target:** Four allies\n\n**2d10 + 2**\n\n- **11 or less:** The target gains 5 temporary Stamina.\n- **12-16:** The target gains 10 temporary Stamina.\n- **17+:** The target gains 15 temporary Stamina.\n\n**Effect:** You can target yourself instead of one ally with this ability.",
+  "mechanics": {
+    "type": "active",
+    "text": "The heroes' armor glows with golden light, granting divine protection. 2d10 + 2: 11 or less: The target gains 5 temporary Stamina.; 12-16: The target gains 10 temporary Stamina.; 17+: The target gains 15 temporary Stamina.. You can target yourself instead of one ally with this ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 12",
+  "target": "Four allies",
+  "cost": 5
+}

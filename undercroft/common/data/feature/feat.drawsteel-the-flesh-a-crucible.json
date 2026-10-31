@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-the-flesh-a-crucible",
+  "name": "The Flesh, A Crucible",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Fire engulfs your target and continues to churn.*\n\n**Heroic Ability** — Fire, Magic, Ranged, Strike — Main action\n\n**Cost:** 3 Essence\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 9 fire damage\n- **12-16:** 12 fire damage\n- **17+:** 15 fire damage\n\n**Effect:** Persistent 1: If the target is within distance at the start of your turn, you can make the power roll again without spending essence (no action required).",
+  "mechanics": {
+    "type": "active",
+    "text": "Fire engulfs your target and continues to churn. 2d10 + 2: 11 or less: 9 fire damage; 12-16: 12 fire damage; 17+: 15 fire damage. Persistent 1: If the target is within distance at the start of your turn, you can make the power roll again without spending essence (no action required)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Fire, Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 3
+}

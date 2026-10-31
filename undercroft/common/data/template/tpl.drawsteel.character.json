@@ -75,10 +75,6 @@
       ],
       "activeTabBinding": "",
       "gap": 16,
-      "sourceBinding": "",
-      "segmentBinding": "",
-      "segmentFormula": "",
-      "statesBinding": "",
       "zones": {
         "grid-0-0": [
           {
@@ -194,10 +190,6 @@
             ],
             "activeTabBinding": "",
             "gap": 16,
-            "sourceBinding": "",
-            "segmentBinding": "",
-            "segmentFormula": "",
-            "statesBinding": "",
             "zones": {
               "grid-0-0": [
                 {
@@ -250,7 +242,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -325,7 +317,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "@ancestries",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -400,7 +392,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "@careers",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -475,7 +467,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "@classes",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -550,7 +542,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -625,7 +617,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -650,10 +642,18 @@
                 }
               ]
             },
+            "sourceBinding": "",
+            "segmentBinding": "",
+            "segmentFormula": "",
+            "statesBinding": "",
             "minColumnWidth": 6
           }
         ]
       },
+      "sourceBinding": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": "",
       "minColumnWidth": 0
     },
     {
@@ -766,10 +766,6 @@
       ],
       "activeTabBinding": "",
       "gap": 16,
-      "sourceBinding": "",
-      "segmentBinding": "",
-      "segmentFormula": "",
-      "statesBinding": "",
       "zones": {
         "grid-0-0": [
           {
@@ -822,7 +818,7 @@
             ],
             "rows": 3,
             "sourceBinding": "",
-            "labelPosition": "top",
+            "labelPosition": "left",
             "iconClass": "",
             "url": "",
             "width": "",
@@ -897,7 +893,7 @@
             ],
             "rows": 3,
             "sourceBinding": "",
-            "labelPosition": "top",
+            "labelPosition": "left",
             "iconClass": "",
             "url": "",
             "width": "",
@@ -972,7 +968,7 @@
             ],
             "rows": 3,
             "sourceBinding": "",
-            "labelPosition": "top",
+            "labelPosition": "left",
             "iconClass": "",
             "url": "",
             "width": "",
@@ -997,6 +993,10 @@
           }
         ]
       },
+      "sourceBinding": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": "",
       "minColumnWidth": 6
     },
     {
@@ -1054,10 +1054,6 @@
       ],
       "activeTabBinding": "",
       "gap": 16,
-      "sourceBinding": "",
-      "segmentBinding": "",
-      "segmentFormula": "",
-      "statesBinding": "",
       "zones": {
         "tab-0": [
           {
@@ -1114,10 +1110,6 @@
             ],
             "activeTabBinding": "",
             "gap": 16,
-            "sourceBinding": "",
-            "segmentBinding": "",
-            "segmentFormula": "",
-            "statesBinding": "",
             "zones": {
               "grid-0-0": [
                 {
@@ -1174,10 +1166,6 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
@@ -1231,11 +1219,10 @@
                         "rows": 3,
                         "sourceBinding": "",
                         "labelPosition": "left",
-                        "formula": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "iconClass": "ddb-dice-d10",
+                        "url": "",
+                        "width": "28px",
+                        "height": "28px",
                         "action": {
                           "type": "rollDice",
                           "expression": "PowerRoll+@stats.abilities.might",
@@ -1248,9 +1235,11 @@
                           "mode": "delta",
                           "amount": "-1"
                         },
-                        "editableInPlay": true,
-                        "width": "28px",
-                        "height": "28px"
+                        "formula": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
+                        "editableInPlay": true
                       }
                     ],
                     "grid-0-1": [
@@ -1329,6 +1318,10 @@
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -1387,10 +1380,6 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
@@ -1444,11 +1433,10 @@
                         "rows": 3,
                         "sourceBinding": "",
                         "labelPosition": "left",
-                        "formula": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "iconClass": "ddb-dice-d10",
+                        "url": "",
+                        "width": "28px",
+                        "height": "28px",
                         "action": {
                           "type": "rollDice",
                           "expression": "PowerRoll+@stats.abilities.agility",
@@ -1461,9 +1449,11 @@
                           "mode": "delta",
                           "amount": "-1"
                         },
-                        "editableInPlay": true,
-                        "width": "28px",
-                        "height": "28px"
+                        "formula": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
+                        "editableInPlay": true
                       }
                     ],
                     "grid-0-1": [
@@ -1542,6 +1532,10 @@
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -1600,10 +1594,6 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
@@ -1657,11 +1647,10 @@
                         "rows": 3,
                         "sourceBinding": "",
                         "labelPosition": "left",
-                        "formula": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "iconClass": "ddb-dice-d10",
+                        "url": "",
+                        "width": "28px",
+                        "height": "28px",
                         "action": {
                           "type": "rollDice",
                           "expression": "PowerRoll+@stats.abilities.reason",
@@ -1674,9 +1663,11 @@
                           "mode": "delta",
                           "amount": "-1"
                         },
-                        "editableInPlay": true,
-                        "width": "28px",
-                        "height": "28px"
+                        "formula": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
+                        "editableInPlay": true
                       }
                     ],
                     "grid-0-1": [
@@ -1755,6 +1746,10 @@
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -1813,10 +1808,6 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
@@ -1870,11 +1861,10 @@
                         "rows": 3,
                         "sourceBinding": "",
                         "labelPosition": "left",
-                        "formula": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "iconClass": "ddb-dice-d10",
+                        "url": "",
+                        "width": "28px",
+                        "height": "28px",
                         "action": {
                           "type": "rollDice",
                           "expression": "PowerRoll+@stats.abilities.intuition",
@@ -1887,9 +1877,11 @@
                           "mode": "delta",
                           "amount": "-1"
                         },
-                        "editableInPlay": true,
-                        "width": "28px",
-                        "height": "28px"
+                        "formula": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
+                        "editableInPlay": true
                       }
                     ],
                     "grid-0-1": [
@@ -1968,6 +1960,10 @@
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -2026,10 +2022,6 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
@@ -2083,11 +2075,10 @@
                         "rows": 3,
                         "sourceBinding": "",
                         "labelPosition": "left",
-                        "formula": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "iconClass": "ddb-dice-d10",
+                        "url": "",
+                        "width": "28px",
+                        "height": "28px",
                         "action": {
                           "type": "rollDice",
                           "expression": "PowerRoll+@stats.abilities.presence",
@@ -2100,9 +2091,11 @@
                           "mode": "delta",
                           "amount": "-1"
                         },
-                        "editableInPlay": true,
-                        "width": "28px",
-                        "height": "28px"
+                        "formula": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
+                        "editableInPlay": true
                       }
                     ],
                     "grid-0-1": [
@@ -2181,10 +2174,18 @@
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ]
             },
+            "sourceBinding": "",
+            "segmentBinding": "",
+            "segmentFormula": "",
+            "statesBinding": "",
             "minColumnWidth": 7
           },
           {
@@ -2241,10 +2242,6 @@
             ],
             "activeTabBinding": "",
             "gap": 16,
-            "sourceBinding": "",
-            "segmentBinding": "",
-            "segmentFormula": "",
-            "statesBinding": "",
             "zones": {
               "grid-0-0": [
                 {
@@ -2297,7 +2294,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -2372,7 +2369,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -2447,7 +2444,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -2522,7 +2519,7 @@
                   ],
                   "rows": 3,
                   "sourceBinding": "",
-                  "labelPosition": "top",
+                  "labelPosition": "left",
                   "iconClass": "",
                   "url": "",
                   "width": "",
@@ -2547,6 +2544,10 @@
                 }
               ]
             },
+            "sourceBinding": "",
+            "segmentBinding": "",
+            "segmentFormula": "",
+            "statesBinding": "",
             "minColumnWidth": 7
           },
           {
@@ -2603,10 +2604,6 @@
             ],
             "activeTabBinding": "",
             "gap": 16,
-            "sourceBinding": "",
-            "segmentBinding": "",
-            "segmentFormula": "",
-            "statesBinding": "",
             "zones": {
               "grid-0-0": [
                 {
@@ -2662,11 +2659,7 @@
                     "Tab 2"
                   ],
                   "activeTabBinding": "",
-                  "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
+                  "gap": 0,
                   "zones": {
                     "grid-0-0": [
                       {
@@ -2723,10 +2716,6 @@
                         ],
                         "activeTabBinding": "",
                         "gap": 8,
-                        "sourceBinding": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "zones": {
                           "grid-0-0": [
                             {
@@ -2779,7 +2768,7 @@
                               ],
                               "rows": 3,
                               "sourceBinding": "",
-                              "labelPosition": "top",
+                              "labelPosition": "left",
                               "iconClass": "",
                               "url": "",
                               "width": "",
@@ -2800,7 +2789,8 @@
                               "segmentBinding": "",
                               "segmentFormula": "",
                               "statesBinding": "",
-                              "roller": ""
+                              "roller": "",
+                              "editableInPlay": true
                             }
                           ],
                           "grid-0-1": [
@@ -2854,7 +2844,7 @@
                               ],
                               "rows": 3,
                               "sourceBinding": "",
-                              "labelPosition": "top",
+                              "labelPosition": "left",
                               "iconClass": "",
                               "url": "",
                               "width": "",
@@ -2875,7 +2865,8 @@
                               "segmentBinding": "",
                               "segmentFormula": "",
                               "statesBinding": "",
-                              "roller": ""
+                              "roller": "",
+                              "editableInPlay": true
                             }
                           ],
                           "grid-0-2": [
@@ -2929,7 +2920,7 @@
                               ],
                               "rows": 3,
                               "sourceBinding": "",
-                              "labelPosition": "top",
+                              "labelPosition": "left",
                               "iconClass": "",
                               "url": "",
                               "width": "",
@@ -2954,6 +2945,10 @@
                             }
                           ]
                         },
+                        "sourceBinding": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
                         "minColumnWidth": 5
                       },
                       {
@@ -3009,11 +3004,7 @@
                           "Tab 2"
                         ],
                         "activeTabBinding": "",
-                        "gap": 8,
-                        "sourceBinding": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
+                        "gap": 0,
                         "zones": {
                           "grid-0-0": [
                             {
@@ -3120,10 +3111,18 @@
                             }
                           ]
                         },
+                        "sourceBinding": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
                         "minColumnWidth": 5
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -3182,10 +3181,6 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
@@ -3242,10 +3237,6 @@
                         ],
                         "activeTabBinding": "",
                         "gap": 8,
-                        "sourceBinding": "",
-                        "segmentBinding": "",
-                        "segmentFormula": "",
-                        "statesBinding": "",
                         "zones": {
                           "grid-0-0": [
                             {
@@ -3298,7 +3289,7 @@
                               ],
                               "rows": 3,
                               "sourceBinding": "",
-                              "labelPosition": "top",
+                              "labelPosition": "left",
                               "iconClass": "",
                               "url": "",
                               "width": "",
@@ -3319,7 +3310,8 @@
                               "segmentBinding": "",
                               "segmentFormula": "",
                               "statesBinding": "",
-                              "roller": ""
+                              "roller": "",
+                              "editableInPlay": true
                             }
                           ],
                           "grid-0-1": [
@@ -3373,7 +3365,7 @@
                               ],
                               "rows": 3,
                               "sourceBinding": "",
-                              "labelPosition": "top",
+                              "labelPosition": "left",
                               "iconClass": "",
                               "url": "",
                               "width": "",
@@ -3450,10 +3442,18 @@
                             }
                           ]
                         },
+                        "sourceBinding": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
                         "minColumnWidth": 5
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -3502,7 +3502,7 @@
                   "collapsible": false,
                   "formula": "",
                   "containerType": "grid",
-                  "columns": 1,
+                  "columns": 2,
                   "rows": 1,
                   "templateColumns": "",
                   "templateRows": "",
@@ -3512,17 +3512,13 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
-                        "type": "container",
-                        "id": "ds-51",
+                        "type": "input",
+                        "id": "ds-50",
                         "label": "",
-                        "name": "Container",
+                        "name": "",
                         "textColor": "",
                         "textColorBinding": "",
                         "textColorFormula": "",
@@ -3557,181 +3553,99 @@
                         },
                         "align": "start",
                         "alignSelf": "",
-                        "binding": "",
+                        "binding": "@stats.heroicResource.current",
                         "readOnly": false,
                         "collapsible": false,
-                        "formula": "",
-                        "containerType": "grid",
-                        "columns": 2,
-                        "rows": 1,
-                        "templateColumns": "",
-                        "templateRows": "",
-                        "tabLabels": [
-                          "Tab 1",
-                          "Tab 2"
+                        "variant": "number",
+                        "placeholder": "",
+                        "options": [
+                          "Option A",
+                          "Option B"
                         ],
-                        "activeTabBinding": "",
-                        "gap": 8,
+                        "rows": 3,
+                        "sourceBinding": "",
+                        "labelPosition": "left",
+                        "iconClass": "",
+                        "url": "",
+                        "width": "",
+                        "height": "",
+                        "action": {
+                          "type": "rollDice",
+                          "expression": "",
+                          "macroRef": "",
+                          "binding": "",
+                          "lookupBinding": "",
+                          "matchField": "",
+                          "matchValue": "",
+                          "targetField": "",
+                          "mode": "delta",
+                          "amount": "-1"
+                        },
+                        "formula": "",
+                        "segmentBinding": "",
+                        "segmentFormula": "",
+                        "statesBinding": "",
+                        "roller": "",
+                        "editableInPlay": true
+                      }
+                    ],
+                    "grid-0-1": [
+                      {
+                        "type": "text",
+                        "id": "cmp-69",
+                        "label": "Text",
+                        "name": "Text",
+                        "textColor": "",
+                        "textColorBinding": "",
+                        "textColorFormula": "",
+                        "backgroundColor": "",
+                        "backgroundColorBinding": "",
+                        "backgroundColorFormula": "",
+                        "borderStyle": "",
+                        "borderColor": "",
+                        "borderColorBinding": "",
+                        "borderColorFormula": "",
+                        "borderWidth": null,
+                        "borderRadius": 0,
+                        "borderSides": null,
+                        "padding": "",
+                        "margin": "",
+                        "visible": true,
+                        "visibilityBinding": "",
+                        "visibilityFormula": "",
+                        "collapsibleBinding": "",
+                        "collapsibleFormula": "",
+                        "readOnlyBinding": "",
+                        "readOnlyFormula": "",
+                        "textSize": "md",
+                        "fontFamily": "",
+                        "fontSizeCustom": null,
+                        "lineHeight": 1.3,
+                        "className": "",
+                        "textStyles": {
+                          "bold": true,
+                          "italic": false,
+                          "underline": false
+                        },
+                        "align": "start",
+                        "alignSelf": "",
+                        "binding": "@stats.heroicResource.name",
+                        "readOnly": false,
+                        "collapsible": false,
+                        "text": "",
+                        "richText": false,
                         "sourceBinding": "",
                         "segmentBinding": "",
                         "segmentFormula": "",
                         "statesBinding": "",
-                        "zones": {
-                          "grid-0-0": [
-                            {
-                              "type": "input",
-                              "id": "ds-49",
-                              "label": "Name",
-                              "name": "Name",
-                              "textColor": "",
-                              "textColorBinding": "",
-                              "textColorFormula": "",
-                              "backgroundColor": "",
-                              "backgroundColorBinding": "",
-                              "backgroundColorFormula": "",
-                              "borderStyle": "",
-                              "borderColor": "",
-                              "borderColorBinding": "",
-                              "borderColorFormula": "",
-                              "borderWidth": null,
-                              "borderRadius": 0,
-                              "borderSides": null,
-                              "padding": "",
-                              "margin": "",
-                              "visible": true,
-                              "visibilityBinding": "",
-                              "visibilityFormula": "",
-                              "collapsibleBinding": "",
-                              "collapsibleFormula": "",
-                              "readOnlyBinding": "",
-                              "readOnlyFormula": "",
-                              "textSize": "md",
-                              "fontFamily": "",
-                              "fontSizeCustom": null,
-                              "lineHeight": 1.3,
-                              "className": "",
-                              "textStyles": {
-                                "bold": false,
-                                "italic": false,
-                                "underline": false
-                              },
-                              "align": "start",
-                              "alignSelf": "",
-                              "binding": "@stats.heroicResource.name",
-                              "readOnly": false,
-                              "collapsible": false,
-                              "variant": "text",
-                              "placeholder": "",
-                              "options": [
-                                "Option A",
-                                "Option B"
-                              ],
-                              "rows": 3,
-                              "sourceBinding": "",
-                              "labelPosition": "top",
-                              "iconClass": "",
-                              "url": "",
-                              "width": "",
-                              "height": "",
-                              "action": {
-                                "type": "rollDice",
-                                "expression": "",
-                                "macroRef": "",
-                                "binding": "",
-                                "lookupBinding": "",
-                                "matchField": "",
-                                "matchValue": "",
-                                "targetField": "",
-                                "mode": "delta",
-                                "amount": "-1"
-                              },
-                              "formula": "",
-                              "segmentBinding": "",
-                              "segmentFormula": "",
-                              "statesBinding": "",
-                              "roller": ""
-                            }
-                          ],
-                          "grid-0-1": [
-                            {
-                              "type": "input",
-                              "id": "ds-50",
-                              "label": "Current",
-                              "name": "Current",
-                              "textColor": "",
-                              "textColorBinding": "",
-                              "textColorFormula": "",
-                              "backgroundColor": "",
-                              "backgroundColorBinding": "",
-                              "backgroundColorFormula": "",
-                              "borderStyle": "",
-                              "borderColor": "",
-                              "borderColorBinding": "",
-                              "borderColorFormula": "",
-                              "borderWidth": null,
-                              "borderRadius": 0,
-                              "borderSides": null,
-                              "padding": "",
-                              "margin": "",
-                              "visible": true,
-                              "visibilityBinding": "",
-                              "visibilityFormula": "",
-                              "collapsibleBinding": "",
-                              "collapsibleFormula": "",
-                              "readOnlyBinding": "",
-                              "readOnlyFormula": "",
-                              "textSize": "md",
-                              "fontFamily": "",
-                              "fontSizeCustom": null,
-                              "lineHeight": 1.3,
-                              "className": "",
-                              "textStyles": {
-                                "bold": false,
-                                "italic": false,
-                                "underline": false
-                              },
-                              "align": "start",
-                              "alignSelf": "",
-                              "binding": "@stats.heroicResource.current",
-                              "readOnly": false,
-                              "collapsible": false,
-                              "variant": "number",
-                              "placeholder": "",
-                              "options": [
-                                "Option A",
-                                "Option B"
-                              ],
-                              "rows": 3,
-                              "sourceBinding": "",
-                              "labelPosition": "top",
-                              "iconClass": "",
-                              "url": "",
-                              "width": "",
-                              "height": "",
-                              "action": {
-                                "type": "rollDice",
-                                "expression": "",
-                                "macroRef": "",
-                                "binding": "",
-                                "lookupBinding": "",
-                                "matchField": "",
-                                "matchValue": "",
-                                "targetField": "",
-                                "mode": "delta",
-                                "amount": "-1"
-                              },
-                              "formula": "",
-                              "segmentBinding": "",
-                              "segmentFormula": "",
-                              "statesBinding": "",
-                              "roller": ""
-                            }
-                          ]
-                        },
-                        "minColumnWidth": 6
+                        "formula": ""
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ],
@@ -3780,7 +3694,7 @@
                   "collapsible": false,
                   "formula": "",
                   "containerType": "grid",
-                  "columns": 1,
+                  "columns": 2,
                   "rows": 1,
                   "templateColumns": "",
                   "templateRows": "",
@@ -3790,17 +3704,13 @@
                   ],
                   "activeTabBinding": "",
                   "gap": 8,
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
                   "zones": {
                     "grid-0-0": [
                       {
                         "type": "input",
                         "id": "ds-53",
-                        "label": "Current",
-                        "name": "Current",
+                        "label": "",
+                        "name": "",
                         "textColor": "",
                         "textColorBinding": "",
                         "textColorFormula": "",
@@ -3846,7 +3756,7 @@
                         ],
                         "rows": 3,
                         "sourceBinding": "",
-                        "labelPosition": "top",
+                        "labelPosition": "left",
                         "iconClass": "",
                         "url": "",
                         "width": "",
@@ -3867,8 +3777,11 @@
                         "segmentBinding": "",
                         "segmentFormula": "",
                         "statesBinding": "",
-                        "roller": ""
-                      },
+                        "roller": "",
+                        "editableInPlay": true
+                      }
+                    ],
+                    "grid-0-1": [
                       {
                         "type": "text",
                         "id": "ds-54",
@@ -3921,10 +3834,18 @@
                       }
                     ]
                   },
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
                   "minColumnWidth": 0
                 }
               ]
             },
+            "sourceBinding": "",
+            "segmentBinding": "",
+            "segmentFormula": "",
+            "statesBinding": "",
             "minColumnWidth": 14
           }
         ],
@@ -3971,27 +3892,6 @@
             "binding": "@featureIds",
             "readOnly": false,
             "collapsible": false,
-            "decorator": {
-              "type": "none",
-              "text": ""
-            },
-            "columns": 1,
-            "templateColumns": "",
-            "showHeader": false,
-            "orientation": "vertical",
-            "gap": 16,
-            "fill": false,
-            "itemDivider": true,
-            "sortBinding": "",
-            "sortDirection": "asc",
-            "sourceBinding": "",
-            "segmentBinding": "",
-            "segmentFormula": "",
-            "statesBinding": "",
-            "roller": "",
-            "allowAdd": true,
-            "allowRemove": true,
-            "itemStorage": "id",
             "zones": {
               "item-0": [
                 {
@@ -4095,9 +3995,29 @@
                   "statesBinding": "",
                   "formula": ""
                 }
-              ],
-              "header-0": []
-            }
+              ]
+            },
+            "decorator": {
+              "type": "none",
+              "text": ""
+            },
+            "columns": 1,
+            "templateColumns": "",
+            "showHeader": false,
+            "orientation": "vertical",
+            "gap": 16,
+            "fill": false,
+            "itemDivider": true,
+            "sortBinding": "",
+            "sortDirection": "asc",
+            "sourceBinding": "",
+            "segmentBinding": "",
+            "segmentFormula": "",
+            "statesBinding": "",
+            "roller": "",
+            "allowAdd": true,
+            "allowRemove": true,
+            "itemStorage": "id"
           }
         ],
         "tab-2": [
@@ -4155,10 +4075,6 @@
             ],
             "activeTabBinding": "",
             "gap": 16,
-            "sourceBinding": "",
-            "segmentBinding": "",
-            "segmentFormula": "",
-            "statesBinding": "",
             "zones": {
               "grid-0-0": [
                 {
@@ -4276,26 +4192,6 @@
                   "binding": "@culture",
                   "readOnly": false,
                   "collapsible": false,
-                  "decorator": {
-                    "type": "none",
-                    "text": ""
-                  },
-                  "columns": 1,
-                  "templateColumns": "",
-                  "showHeader": false,
-                  "orientation": "horizontal",
-                  "gap": 12,
-                  "fill": false,
-                  "itemDivider": false,
-                  "sortBinding": "",
-                  "sortDirection": "asc",
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
-                  "roller": "",
-                  "allowAdd": true,
-                  "allowRemove": true,
                   "zones": {
                     "item-0": [
                       {
@@ -4348,9 +4244,28 @@
                         "statesBinding": "",
                         "formula": ""
                       }
-                    ],
-                    "header-0": []
-                  }
+                    ]
+                  },
+                  "decorator": {
+                    "type": "none",
+                    "text": ""
+                  },
+                  "columns": 1,
+                  "templateColumns": "",
+                  "showHeader": false,
+                  "orientation": "horizontal",
+                  "gap": 12,
+                  "fill": false,
+                  "itemDivider": false,
+                  "sortBinding": "",
+                  "sortDirection": "asc",
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
+                  "roller": "",
+                  "allowAdd": true,
+                  "allowRemove": true
                 },
                 {
                   "type": "repeater",
@@ -4394,26 +4309,6 @@
                   "binding": "@languages",
                   "readOnly": false,
                   "collapsible": false,
-                  "decorator": {
-                    "type": "none",
-                    "text": ""
-                  },
-                  "columns": 1,
-                  "templateColumns": "",
-                  "showHeader": false,
-                  "orientation": "horizontal",
-                  "gap": 12,
-                  "fill": false,
-                  "itemDivider": false,
-                  "sortBinding": "",
-                  "sortDirection": "asc",
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
-                  "roller": "",
-                  "allowAdd": true,
-                  "allowRemove": true,
                   "zones": {
                     "item-0": [
                       {
@@ -4466,9 +4361,28 @@
                         "statesBinding": "",
                         "formula": ""
                       }
-                    ],
-                    "header-0": []
-                  }
+                    ]
+                  },
+                  "decorator": {
+                    "type": "none",
+                    "text": ""
+                  },
+                  "columns": 1,
+                  "templateColumns": "",
+                  "showHeader": false,
+                  "orientation": "horizontal",
+                  "gap": 12,
+                  "fill": false,
+                  "itemDivider": false,
+                  "sortBinding": "",
+                  "sortDirection": "asc",
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
+                  "roller": "",
+                  "allowAdd": true,
+                  "allowRemove": true
                 }
               ],
               "grid-0-1": [
@@ -4514,26 +4428,6 @@
                   "binding": "@skills",
                   "readOnly": false,
                   "collapsible": false,
-                  "decorator": {
-                    "type": "none",
-                    "text": ""
-                  },
-                  "columns": 1,
-                  "templateColumns": "",
-                  "showHeader": false,
-                  "orientation": "horizontal",
-                  "gap": 12,
-                  "fill": false,
-                  "itemDivider": false,
-                  "sortBinding": "",
-                  "sortDirection": "asc",
-                  "sourceBinding": "",
-                  "segmentBinding": "",
-                  "segmentFormula": "",
-                  "statesBinding": "",
-                  "roller": "",
-                  "allowAdd": true,
-                  "allowRemove": true,
                   "zones": {
                     "item-0": [
                       {
@@ -4586,16 +4480,43 @@
                         "statesBinding": "",
                         "formula": ""
                       }
-                    ],
-                    "header-0": []
-                  }
+                    ]
+                  },
+                  "decorator": {
+                    "type": "none",
+                    "text": ""
+                  },
+                  "columns": 1,
+                  "templateColumns": "",
+                  "showHeader": false,
+                  "orientation": "horizontal",
+                  "gap": 12,
+                  "fill": false,
+                  "itemDivider": false,
+                  "sortBinding": "",
+                  "sortDirection": "asc",
+                  "sourceBinding": "",
+                  "segmentBinding": "",
+                  "segmentFormula": "",
+                  "statesBinding": "",
+                  "roller": "",
+                  "allowAdd": true,
+                  "allowRemove": true
                 }
               ]
             },
+            "sourceBinding": "",
+            "segmentBinding": "",
+            "segmentFormula": "",
+            "statesBinding": "",
             "minColumnWidth": 12
           }
         ]
-      }
+      },
+      "sourceBinding": "",
+      "segmentBinding": "",
+      "segmentFormula": "",
+      "statesBinding": ""
     }
   ]
 }

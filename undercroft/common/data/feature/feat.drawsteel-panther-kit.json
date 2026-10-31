@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-panther-kit",
+  "name": "Panther Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Kit**\n\nYou wear no armor and wield heavy weapons, such as mauls or greatswords.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You wear no armor and wield heavy weapons, such as mauls or greatswords."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Kit"
+}

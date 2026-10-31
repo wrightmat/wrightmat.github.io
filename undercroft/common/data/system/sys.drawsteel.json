@@ -340,7 +340,31 @@
       "label": "Careers",
       "values": [
         {
+          "name": "Agent"
+        },
+        {
           "name": "Criminal"
+        },
+        {
+          "name": "Disciple"
+        },
+        {
+          "name": "Farmer"
+        },
+        {
+          "name": "Mage's Apprentice"
+        },
+        {
+          "name": "Performer"
+        },
+        {
+          "name": "Soldier"
+        },
+        {
+          "name": "Warden"
+        },
+        {
+          "name": "Watch Officer"
         }
       ]
     },

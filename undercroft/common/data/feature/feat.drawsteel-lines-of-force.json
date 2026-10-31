@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-lines-of-force",
+  "name": "Lines of Force",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You redirect the energy of motion.*\n\n**Triggered** — Magic, Melee — Triggered\n\n**Distance:** Melee 1   **Target:** Self or one creature\n\n**Trigger:** The target would be force moved.\n\n**Effect:** You can select a new target of the same size or smaller within distance to be force moved instead. You become the source of the forced movement, determine the new target's destination, and can push the target instead of using the original forced movement type. Additionally, the forced movement distance gains a +2 bonus. Spend 1 Ferocity: The forced movement distance bonus is +4 instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "You redirect the energy of motion. Trigger: The target would be force moved. You can select a new target of the same size or smaller within distance to be force moved instead. You become the source of the forced movement, determine the new target's destination, and can push the target instead of using the original forced movement type. Additionally, the forced movement distance gains a +2 bonus. Spend 1 Ferocity: The forced movement distance bonus is +4 instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Magic, Melee",
+  "actionType": "Triggered",
+  "distance": "Melee 1",
+  "target": "Self or one creature",
+  "trigger": "The target would be force moved."
+}

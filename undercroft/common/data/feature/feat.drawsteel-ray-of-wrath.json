@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-ray-of-wrath",
+  "name": "Ray of Wrath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You unleash a blast of holy light upon your foe.*\n\n**Free Strike** — Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 12   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 4 damage\n- **12-16:** 6 damage\n- **17+:** 8 damage\n\n**Effect:** You can have this ability deal holy damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "You unleash a blast of holy light upon your foe. 2d10 + 2: 11 or less: 4 damage; 12-16: 6 damage; 17+: 8 damage. You can have this ability deal holy damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Free Strike",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 12",
+  "target": "One creature or object"
+}

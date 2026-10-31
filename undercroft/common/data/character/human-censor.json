@@ -1,0 +1,116 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "Human Censor (Pregen)",
+  "level": 1,
+  "ancestry": "Human",
+  "career": "Watch Officer",
+  "class": "Censor",
+  "subclass": "Paragon",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 0,
+  "xp": 0,
+  "stats": {
+    "abilities": {
+      "might": 2,
+      "agility": -1,
+      "reason": 1,
+      "intuition": 1,
+      "presence": 2
+    },
+    "hitPoints": {
+      "current": 30,
+      "max": 30,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 14,
+      "max": 14
+    },
+    "heroicResource": {
+      "name": "Wrath",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1M",
+    "speed": {
+      "walk": 5
+    },
+    "stability": 1,
+    "disengage": 2
+  },
+  "culture": [
+    {
+      "name": "Urban"
+    },
+    {
+      "name": "Communal"
+    },
+    {
+      "name": "Labor"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Szetch"
+    },
+    {
+      "name": "Vaslorian"
+    },
+    {
+      "name": "Zaliac"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Climb"
+    },
+    {
+      "name": "Endurance"
+    },
+    {
+      "name": "Intimidate"
+    },
+    {
+      "name": "Jump"
+    },
+    {
+      "name": "Lift"
+    },
+    {
+      "name": "Read Person"
+    },
+    {
+      "name": "Religion"
+    },
+    {
+      "name": "Search"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-saint-gwenllian-the-fell-handed",
+    "feat.drawsteel-wrath",
+    "feat.drawsteel-pain-for-pain",
+    "feat.drawsteel-your-allies-cannot-save-you",
+    "feat.drawsteel-the-gods-punish-and-defend",
+    "feat.drawsteel-arrest",
+    "feat.drawsteel-judgment",
+    "feat.drawsteel-my-life-for-yours",
+    "feat.drawsteel-judgment-paragon-benefit",
+    "feat.drawsteel-sanctified-weapon",
+    "feat.drawsteel-team-leader",
+    "feat.drawsteel-mountain-kit",
+    "feat.drawsteel-detect-the-supernatural",
+    "feat.drawsteel-resist-the-unnatural",
+    "feat.drawsteel-staying-power",
+    "feat.drawsteel-melee-weapon-free-strike-dwarf-fury",
+    "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ]
+}

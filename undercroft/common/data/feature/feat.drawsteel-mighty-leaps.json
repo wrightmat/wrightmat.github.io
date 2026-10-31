@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-mighty-leaps",
+  "name": "Mighty Leaps",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nYou can't achieve lower than a tier 2 outcome on any Might test made to jump.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can't achieve lower than a tier 2 outcome on any Might test made to jump."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

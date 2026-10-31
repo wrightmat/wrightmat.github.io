@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-brawny",
+  "name": "Brawny",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Perk**\n\nWhenever you fail a Might test, you can lose Stamina equal to 1d6 + 1 to improve the outcome of the test by one tier. You can use this perk only once per test.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you fail a Might test, you can lose Stamina equal to 1d6 + 1 to improve the outcome of the test by one tier. You can use this perk only once per test."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk"
+}

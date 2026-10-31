@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury",
+  "name": "Ranged Weapon Free Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Free Strike** — Ranged, Strike, Weapon — Main action\n\n**Distance:** Ranged 5   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 4 damage\n- **12-16:** 6 damage\n- **17+:** 8 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "2d10 + 2: 11 or less: 4 damage; 12-16: 6 damage; 17+: 8 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Free Strike",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 5",
+  "target": "One creature or object"
+}

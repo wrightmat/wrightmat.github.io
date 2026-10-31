@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-metakinetic-mastery",
+  "name": "Metakinetic Mastery",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nDiscipline 2: Whenever you use the Knockback maneuver, the forced movement distance gains a +2 bonus. Discipline 4: The first time in a combat round that you take damage or are force moved, you gain 1 surge, even if you resist the effect. Discipline 6: You gain an edge on the Grab and Knockback maneuvers.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Discipline 2: Whenever you use the Knockback maneuver, the forced movement distance gains a +2 bonus. Discipline 4: The first time in a combat round that you take damage or are force moved, you gain 1 surge, even if you resist the effect. Discipline 6: You gain an edge on the Grab and Knockback maneuvers."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

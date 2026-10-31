@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conflagration",
+  "name": "Conflagration",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A storm of fire descends upon your enemies.*\n\n**Heroic Ability** — Area, Fire, Magic, Ranged — Main action\n\n**Cost:** 5 Essence\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**2d10 + 2**\n\n- **11 or less:** 6 fire damage\n- **12-16:** 8 fire damage\n- **17+:** 12 fire damage\n\n**Effect:** Persistent 2: At the start of your turn, you can use a maneuver to use this ability again without spending essence.",
+  "mechanics": {
+    "type": "active",
+    "text": "A storm of fire descends upon your enemies. 2d10 + 2: 11 or less: 6 fire damage; 12-16: 8 fire damage; 17+: 12 fire damage. Persistent 2: At the start of your turn, you can use a maneuver to use this ability again without spending essence."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Fire, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

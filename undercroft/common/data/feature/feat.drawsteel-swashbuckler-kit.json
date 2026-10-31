@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-swashbuckler-kit",
+  "name": "Swashbuckler Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Kit**\n\nYou wear light armor, such as leather armor, and wield medium weapons, such as swords, maces, or axes.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You wear light armor, such as leather armor, and wield medium weapons, such as swords, maces, or axes."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Kit"
+}

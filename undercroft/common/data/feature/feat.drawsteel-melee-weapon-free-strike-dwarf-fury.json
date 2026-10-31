@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-melee-weapon-free-strike-dwarf-fury",
+  "name": "Melee Weapon Free Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Free Strike** — Charge, Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 4 damage\n- **12-16:** 7 damage\n- **17+:** 13 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "2d10 + 2: 11 or less: 4 damage; 12-16: 7 damage; 17+: 13 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Free Strike",
+  "keywords": "Charge, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

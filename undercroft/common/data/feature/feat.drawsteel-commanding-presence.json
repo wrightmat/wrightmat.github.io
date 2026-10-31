@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-commanding-presence",
+  "name": "Commanding Presence",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Class Feature**\n\nYou command any room you walk into. While you are present during a negotiation, each hero with you treats their Renown as 2 higher than usual. Additionally, each hero with you during a combat encounter has a double edge on tests made to stop combat and start a negotiation.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You command any room you walk into. While you are present during a negotiation, each hero with you treats their Renown as 2 higher than usual. Additionally, each hero with you during a combat encounter has a double edge on tests made to stop combat and start a negotiation."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

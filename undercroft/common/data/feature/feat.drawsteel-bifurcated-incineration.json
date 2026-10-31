@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-bifurcated-incineration",
+  "name": "Bifurcated Incineration",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Two jets of flame lance out at your command.*\n\n**Signature Ability** — Fire, Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** Two creatures or objects\n\n**2d10 + 2**\n\n- **11 or less:** 4 fire damage\n- **12-16:** 6 fire damage\n- **17+:** 8 fire damage",
+  "mechanics": {
+    "type": "active",
+    "text": "Two jets of flame lance out at your command. 2d10 + 2: 11 or less: 4 fire damage; 12-16: 6 fire damage; 17+: 8 fire damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Fire, Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Two creatures or objects"
+}

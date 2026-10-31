@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-choreography",
+  "name": "Choreography",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Taps, kicks, steps. It's all \"choreography.\"*\n\n**Performance** — Area, Magic, Performance — No action\n\n**Distance:** 5 aura   **Target:** Self and each ally in the area\n\n**Effect:** While this performance is active, each target who starts their turn in the area gains a +2 bonus to speed until the end of their turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Taps, kicks, steps. It's all \"choreography.\" While this performance is active, each target who starts their turn in the area gains a +2 bonus to speed until the end of their turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Performance",
+  "keywords": "Area, Magic, Performance",
+  "actionType": "No action",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area"
+}

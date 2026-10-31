@@ -1,0 +1,124 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "Human Talent (Pregen)",
+  "level": 1,
+  "ancestry": "Human",
+  "career": "Agent",
+  "class": "Talent",
+  "subclass": "Telepath",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 0,
+  "xp": 0,
+  "stats": {
+    "abilities": {
+      "might": -1,
+      "agility": 1,
+      "reason": 2,
+      "intuition": 1,
+      "presence": 2
+    },
+    "hitPoints": {
+      "current": 18,
+      "max": 18,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 10,
+      "max": 10
+    },
+    "heroicResource": {
+      "name": "Clarity",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1M",
+    "speed": {
+      "walk": 5
+    },
+    "stability": 0,
+    "disengage": 1
+  },
+  "culture": [
+    {
+      "name": "Secluded"
+    },
+    {
+      "name": "Bureaucratic"
+    },
+    {
+      "name": "Academic"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Hyrallic"
+    },
+    {
+      "name": "Mindspeech"
+    },
+    {
+      "name": "Vaslorian"
+    },
+    {
+      "name": "Yllyric"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Disguise"
+    },
+    {
+      "name": "Empathize"
+    },
+    {
+      "name": "Lie"
+    },
+    {
+      "name": "Magic"
+    },
+    {
+      "name": "Persuade"
+    },
+    {
+      "name": "Psionics"
+    },
+    {
+      "name": "Read Person"
+    },
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Sneak"
+    },
+    {
+      "name": "Timescape"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-clarity-and-strain",
+    "feat.drawsteel-kinetic-grip",
+    "feat.drawsteel-kinetic-pulse",
+    "feat.drawsteel-awe",
+    "feat.drawsteel-flashback",
+    "feat.drawsteel-remote-assistance",
+    "feat.drawsteel-feedback-loop",
+    "feat.drawsteel-repulsive-ward",
+    "feat.drawsteel-distance-augmentation",
+    "feat.drawsteel-telepathic-speech",
+    "feat.drawsteel-forgettable-face",
+    "feat.drawsteel-detect-the-supernatural-human-talent",
+    "feat.drawsteel-resist-the-unnatural",
+    "feat.drawsteel-staying-power",
+    "feat.drawsteel-melee-weapon-free-strike-human-talent",
+    "feat.drawsteel-mind-spike"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-blessed-light",
+  "name": "Blessed Light",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Burning radiance falls upon your foe, transferring some of their energy to a nearby ally.*\n\n**Signature Ability** — Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 12   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 holy damage\n- **12-16:** 7 holy damage\n- **17+:** 10 holy damage\n\n**Effect:** One ally within distance gains a number of surges equal to the tier outcome of your power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Burning radiance falls upon your foe, transferring some of their energy to a nearby ally. 2d10 + 2: 11 or less: 5 holy damage; 12-16: 7 holy damage; 17+: 10 holy damage. One ally within distance gains a number of surges equal to the tier outcome of your power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 12",
+  "target": "One creature or object"
+}

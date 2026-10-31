@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-spark-off-your-skin",
+  "name": "Spark Off Your Skin",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour stone skin affords you potent protection. You have a +6 bonus to Stamina (already included).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your stone skin affords you potent protection. You have a +6 bonus to Stamina (already included)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-melee-weapon-free-strike-human-talent",
+  "name": "Melee Weapon Free Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Free Strike** — Charge, Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 1**\n\n- **11 or less:** 3 damage\n- **12-16:** 6 damage\n- **17+:** 8 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "2d10 + 1: 11 or less: 3 damage; 12-16: 6 damage; 17+: 8 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Free Strike",
+  "keywords": "Charge, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

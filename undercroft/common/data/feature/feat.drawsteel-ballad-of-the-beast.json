@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-ballad-of-the-beast",
+  "name": "\"Ballad of the Beast\"",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Teeth are bare!  Eyes black!  No escaping the beast!*\n\n**Performance** — Area, Magic, Performance — No action\n\n**Distance:** 5 aura   **Target:** Self and each ally in the area\n\n**Effect:** While this performance is active, each target who starts their turn in the area gains 1 surge.",
+  "mechanics": {
+    "type": "active",
+    "text": "Teeth are bare!  Eyes black!  No escaping the beast! While this performance is active, each target who starts their turn in the area gains 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Performance",
+  "keywords": "Area, Magic, Performance",
+  "actionType": "No action",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area"
+}

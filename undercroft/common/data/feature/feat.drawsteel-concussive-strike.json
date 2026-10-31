@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-concussive-strike",
+  "name": "Concussive Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your precise strike leaves your foe struggling to respond.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 3 Focus\n\n**Distance:** Melee 1 or ranged 12   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 7 damage; M < 0 dazed (save ends)\n- **12-16:** 9 damage; M < 1 dazed (save ends)\n- **17+:** 12 damage; M < 2 dazed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Your precise strike leaves your foe struggling to respond. 2d10 + 2: 11 or less: 7 damage; M < 0 dazed (save ends); 12-16: 9 damage; M < 1 dazed (save ends); 17+: 12 damage; M < 2 dazed (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 12",
+  "target": "One creature or object",
+  "cost": 3
+}

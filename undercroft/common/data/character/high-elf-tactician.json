@@ -1,0 +1,118 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "High Elf Tactician (Pregen)",
+  "level": 1,
+  "ancestry": "High Elf",
+  "career": "Soldier",
+  "class": "Tactician",
+  "subclass": "Vanguard",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 1,
+  "xp": 0,
+  "stats": {
+    "abilities": {
+      "might": 2,
+      "agility": 1,
+      "reason": 2,
+      "intuition": -1,
+      "presence": 1
+    },
+    "hitPoints": {
+      "current": 33,
+      "max": 33,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 10,
+      "max": 10
+    },
+    "heroicResource": {
+      "name": "Focus",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1M",
+    "speed": {
+      "walk": 6
+    },
+    "stability": 1,
+    "disengage": 2
+  },
+  "culture": [
+    {
+      "name": "Secluded"
+    },
+    {
+      "name": "Bureaucratic"
+    },
+    {
+      "name": "Martial"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Hyrallic"
+    },
+    {
+      "name": "Szetch"
+    },
+    {
+      "name": "Vaslorian"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Alertness"
+    },
+    {
+      "name": "Endurance"
+    },
+    {
+      "name": "Flirt"
+    },
+    {
+      "name": "Intimidate"
+    },
+    {
+      "name": "Lead"
+    },
+    {
+      "name": "Monsters"
+    },
+    {
+      "name": "Persuade"
+    },
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Strategy"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-focus",
+    "feat.drawsteel-protective-attack",
+    "feat.drawsteel-two-shot",
+    "feat.drawsteel-concussive-strike",
+    "feat.drawsteel-now",
+    "feat.drawsteel-mark",
+    "feat.drawsteel-parry",
+    "feat.drawsteel-strike-now",
+    "feat.drawsteel-commanding-presence",
+    "feat.drawsteel-put-your-back-into-it",
+    "feat.drawsteel-shining-armor-and-rapid-fire-kits",
+    "feat.drawsteel-high-elf-glamor",
+    "feat.drawsteel-high-senses",
+    "feat.drawsteel-otherworldly-grace",
+    "feat.drawsteel-melee-weapon-free-strike-high-elf-tactician",
+    "feat.drawsteel-ranged-weapon-free-strike-high-elf-tactician"
+  ]
+}

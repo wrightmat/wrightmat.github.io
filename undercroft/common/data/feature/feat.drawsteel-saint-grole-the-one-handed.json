@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-saint-grole-the-one-handed",
+  "name": "Saint: Grole the One-Handed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Class Feature**\n\nYou venerate Grole the One-Handed. Grole is the orcish hero of those facing impossible decisions. He is favored by most orcish leaders. Grole teaches that, even alone, even against impossible odds, extraordinary victories are possible. Grole is a saint of the god, Kul. Kul, Father of Flames, Lord of the Forge, the Cleansing Fire who put fire and magma within the world at its creation. Kul's fire is the fire that destroys, but it is also the fire that creates, the fire of the forge, the fire that makes meat safe to eat, the fire that cauterizes wounds. Kul teaches that action is the defining characteristic of being. Kul's heroes are not philosophers or poets, but warriors and hunters.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You venerate Grole the One-Handed. Grole is the orcish hero of those facing impossible decisions. He is favored by most orcish leaders. Grole teaches that, even alone, even against impossible odds, extraordinary victories are possible. Grole is a saint of the god, Kul. Kul, Father of Flames, Lord of the Forge, the Cleansing Fire who put fire and magma within the world at its creation. Kul's fire is the fire that destroys, but it is also the fire that creates, the fire of the forge, the fire that makes meat safe to eat, the fire that cauterizes wounds. Kul teaches that action is the defining characteristic of being. Kul's heroes are not philosophers or poets, but warriors and hunters."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

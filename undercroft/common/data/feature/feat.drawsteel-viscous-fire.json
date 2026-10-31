@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-viscous-fire",
+  "name": "Viscous Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A jet of heavy fire erupts where you strike.*\n\n**Signature Ability** — Fire, Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 6 fire damage; push 2\n- **12-16:** 9 fire damage; push 3\n- **17+:** 11 fire damage; push 4",
+  "mechanics": {
+    "type": "active",
+    "text": "A jet of heavy fire erupts where you strike. 2d10 + 2: 11 or less: 6 fire damage; push 2; 12-16: 9 fire damage; push 3; 17+: 11 fire damage; push 4."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Fire, Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

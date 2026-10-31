@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-arrest",
+  "name": "Arrest",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"I got you, you son of a bitch.\"*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 8 holy damage; grabbed\n- **12-16:** 11 holy damage; grabbed\n- **17+:** 19 holy damage; grabbed\n\n**Effect:** If the target makes a strike against a creature while grabbed this way, you can spend 3 wrath to deal 2 holy damage to them, then change the target of the strike to another target within the strike's distance.",
+  "mechanics": {
+    "type": "active",
+    "text": "\"I got you, you son of a bitch.\" 2d10 + 2: 11 or less: 8 holy damage; grabbed; 12-16: 11 holy damage; grabbed; 17+: 19 holy damage; grabbed. If the target makes a strike against a creature while grabbed this way, you can spend 3 wrath to deal 2 holy damage to them, then change the target of the strike to another target within the strike's distance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

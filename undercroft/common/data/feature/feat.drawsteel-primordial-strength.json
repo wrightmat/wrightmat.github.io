@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-primordial-strength",
+  "name": "Primordial Strength",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nWhenever you damage an object with a weapon strike, the strike deals an extra 2 damage. Additionally, whenever you push another creature into an object, the creature takes an extra 2 damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you damage an object with a weapon strike, the strike deals an extra 2 damage. Additionally, whenever you push another creature into an object, the creature takes an extra 2 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-staying-power-human-null",
+  "name": "Staying Power",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour human anatomy allows you to fight, run, and stay awake longer than others. Increase your number of Recoveries by 2 (already included).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your human anatomy allows you to fight, run, and stay awake longer than others. Increase your number of Recoveries by 2 (already included)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait"
+}

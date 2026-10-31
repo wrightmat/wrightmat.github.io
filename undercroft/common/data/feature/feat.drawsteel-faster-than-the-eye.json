@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-faster-than-the-eye",
+  "name": "Faster than the Eye",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike so quickly that your hands become a blur.*\n\n**Signature Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** Two creatures or objects\n\n**2d10 + 2**\n\n- **11 or less:** 4 damage\n- **12-16:** 5 damage\n- **17+:** 7 damage\n\n**Effect:** You can deal 2 damage to one creature or object adjacent to you.",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike so quickly that your hands become a blur. 2d10 + 2: 11 or less: 4 damage; 12-16: 5 damage; 17+: 7 damage. You can deal 2 damage to one creature or object adjacent to you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "Two creatures or objects"
+}

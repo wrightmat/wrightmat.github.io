@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-your-allies-cannot-save-you",
+  "name": "Your Allies Cannot Save You!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your magic strike turns your foe's guilt into a burst of holy power.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 holy damage\n- **12-16:** 7 holy damage\n- **17+:** 14 holy damage\n\n**Effect:** Each enemy adjacent to the target is pushed up to 2 squares away from the target.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your magic strike turns your foe's guilt into a burst of holy power. 2d10 + 2: 11 or less: 5 holy damage; 12-16: 7 holy damage; 17+: 14 holy damage. Each enemy adjacent to the target is pushed up to 2 squares away from the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

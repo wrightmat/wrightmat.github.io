@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-power-chord",
+  "name": "Power Chord",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your instrument rings true and your music blows everyone away.*\n\n**Maneuver** — Area, Magic — Maneuver\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**2d10 + 2**\n\n- **11 or less:** Push 1\n- **12-16:** Push 2\n- **17+:** Push 3",
+  "mechanics": {
+    "type": "active",
+    "text": "Your instrument rings true and your music blows everyone away. 2d10 + 2: 11 or less: Push 1; 12-16: Push 2; 17+: Push 3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "2 burst",
+  "target": "Each enemy in the area"
+}

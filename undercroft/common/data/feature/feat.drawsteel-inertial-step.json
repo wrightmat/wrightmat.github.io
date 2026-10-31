@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-inertial-step",
+  "name": "Inertial Step",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You flit about the battlefield and take an opportunistic strike.*\n\n**Signature Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 7 damage\n- **12-16:** 9 damage\n- **17+:** 12 damage\n\n**Effect:** You can shift up to 3 squares before or after you make the strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "You flit about the battlefield and take an opportunistic strike. 2d10 + 2: 11 or less: 7 damage; 12-16: 9 damage; 17+: 12 damage. You can shift up to 3 squares before or after you make the strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

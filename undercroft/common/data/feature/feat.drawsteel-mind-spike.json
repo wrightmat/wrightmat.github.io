@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-mind-spike",
+  "name": "Mind Spike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A telepathic bolt instantly zaps a creature's brain.*\n\n**Free Strike** — Psionic, Ranged, Strike, Telepathy — Main action\n\n**Distance:** Ranged 12   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 4 psychic damage\n- **12-16:** 6 psychic damage\n- **17+:** 8 psychic damage\n\n**Effect:** Strained: The target takes an extra 2 psychic damage. You also take 2 psychic damage that can't be reduced in any way.",
+  "mechanics": {
+    "type": "active",
+    "text": "A telepathic bolt instantly zaps a creature's brain. 2d10 + 2: 11 or less: 4 psychic damage; 12-16: 6 psychic damage; 17+: 8 psychic damage. Strained: The target takes an extra 2 psychic damage. You also take 2 psychic damage that can't be reduced in any way."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Free Strike",
+  "keywords": "Psionic, Ranged, Strike, Telepathy",
+  "actionType": "Main action",
+  "distance": "Ranged 12",
+  "target": "One creature"
+}

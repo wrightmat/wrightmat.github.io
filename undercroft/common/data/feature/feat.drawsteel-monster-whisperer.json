@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-monster-whisperer",
+  "name": "Monster Whisperer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Perk**\n\nYou can use the Handle Animals skill to interact with nonsapient creatures who are not animals.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can use the Handle Animals skill to interact with nonsapient creatures who are not animals."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-revitalizing-ritual",
+  "name": "Revitalizing Ritual",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nEach time you finish a respite, you can choose yourself or one ally who is also finishing a respite to gain the benefit of a divine ritual. The chosen character gains a +1 bonus to their recovery value that lasts until you finish another respite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you finish a respite, you can choose yourself or one ally who is also finishing a respite to gain the benefit of a divine ritual. The chosen character gains a +1 bonus to their recovery value that lasts until you finish another respite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

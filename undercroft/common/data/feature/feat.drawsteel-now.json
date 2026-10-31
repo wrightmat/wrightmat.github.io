@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-now",
+  "name": "Now!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your allies wait for your command--then unleash death!*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 5 Focus\n\n**Distance:** Ranged 12   **Target:** Three allies\n\n**Effect:** Each target can make a free strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your allies wait for your command--then unleash death! Each target can make a free strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 12",
+  "target": "Three allies",
+  "cost": 5
+}

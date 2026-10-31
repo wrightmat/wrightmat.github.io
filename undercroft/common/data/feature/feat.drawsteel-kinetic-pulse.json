@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kinetic-pulse",
+  "name": "Kinetic Pulse",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The force of your mind hurls enemies backward.*\n\n**Signature Ability** — Area, Psionic, Telepathy — Main action\n\n**Distance:** 1 burst   **Target:** Each enemy in the area\n\n**2d10 + 2**\n\n- **11 or less:** 2 psychic damage\n- **12-16:** 5 psychic damage; push 1\n- **17+:** 7 psychic damage; push 2\n\n**Effect:** Strained: The size of the burst increases by 2, and you are bleeding until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "The force of your mind hurls enemies backward. 2d10 + 2: 11 or less: 2 psychic damage; 12-16: 5 psychic damage; push 1; 17+: 7 psychic damage; push 2. Strained: The size of the burst increases by 2, and you are bleeding until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Area, Psionic, Telepathy",
+  "actionType": "Main action",
+  "distance": "1 burst",
+  "target": "Each enemy in the area"
+}

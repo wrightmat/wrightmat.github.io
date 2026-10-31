@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-pain-for-pain",
+  "name": "Pain for Pain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*An enemy who tagged you will pay for that.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 7 damage\n- **17+:** 15 damage\n\n**Effect:** If the target dealt damage to you since the end of your last turn, this strike deals an additional 2 damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "An enemy who tagged you will pay for that. 2d10 + 2: 11 or less: 5 damage; 12-16: 7 damage; 17+: 15 damage. If the target dealt damage to you since the end of your last turn, this strike deals an additional 2 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

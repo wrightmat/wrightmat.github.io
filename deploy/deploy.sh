@@ -33,7 +33,15 @@ for _ in $(seq 1 120); do
         # separate step you take after reading this.
         echo "Shipped content updates (dry run):"
         podman exec undercroft python /app/web-server.py --sync-defaults --update --config /config/server.config.json || true
-        echo "To carry out the updates above: sudo podman exec undercroft python /app/web-server.py --sync-defaults --update --apply --config /config/server.config.json"
+        # Applying is still a separate, deliberate step: nothing is written unless you answer y.
+        if [ -t 0 ]; then
+            read -r -p "Apply the updates above now? [y/N] " ANSWER
+            if [ "$ANSWER" = "y" ] || [ "$ANSWER" = "Y" ]; then
+                podman exec undercroft python /app/web-server.py --sync-defaults --update --apply --config /config/server.config.json
+            fi
+        else
+            echo "To carry out the updates above: sudo podman exec undercroft python /app/web-server.py --sync-defaults --update --apply --config /config/server.config.json"
+        fi
         exit 0
     fi
     sleep 2

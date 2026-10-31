@@ -1,0 +1,117 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "Human Null (Pregen)",
+  "level": 1,
+  "ancestry": "Human",
+  "career": "Farmer",
+  "class": "Null",
+  "subclass": "Metakinetic",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 0,
+  "xp": 0,
+  "projectPoints": 120,
+  "stats": {
+    "abilities": {
+      "might": 1,
+      "agility": 2,
+      "reason": 0,
+      "intuition": 2,
+      "presence": 0
+    },
+    "hitPoints": {
+      "current": 27,
+      "max": 27,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 10,
+      "max": 10
+    },
+    "heroicResource": {
+      "name": "Discipline",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1M",
+    "speed": {
+      "walk": 7
+    },
+    "stability": 1,
+    "disengage": 3
+  },
+  "culture": [
+    {
+      "name": "Secluded"
+    },
+    {
+      "name": "Communal"
+    },
+    {
+      "name": "Labor"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Kalliak"
+    },
+    {
+      "name": "Vaslorian"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Alertness"
+    },
+    {
+      "name": "Climb"
+    },
+    {
+      "name": "Empathize"
+    },
+    {
+      "name": "Handle Animal"
+    },
+    {
+      "name": "Jump"
+    },
+    {
+      "name": "Persuade"
+    },
+    {
+      "name": "Psionics"
+    },
+    {
+      "name": "Read Person"
+    },
+    {
+      "name": "Timescape"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-discipline",
+    "feat.drawsteel-metakinetic-mastery",
+    "feat.drawsteel-faster-than-the-eye",
+    "feat.drawsteel-inertial-step",
+    "feat.drawsteel-stunning-blow",
+    "feat.drawsteel-a-squad-unto-myself",
+    "feat.drawsteel-null-field",
+    "feat.drawsteel-inertial-shield",
+    "feat.drawsteel-density-augmentation",
+    "feat.drawsteel-null-speed",
+    "feat.drawsteel-psionic-martial-arts",
+    "feat.drawsteel-monster-whisperer",
+    "feat.drawsteel-detect-the-supernatural",
+    "feat.drawsteel-perseverance",
+    "feat.drawsteel-staying-power-human-null",
+    "feat.drawsteel-melee-weapon-free-strike-human-null",
+    "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ]
+}

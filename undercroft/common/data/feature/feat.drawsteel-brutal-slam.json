@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-brutal-slam",
+  "name": "Brutal Slam",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The heavy impact of your weapon attacks drives your foes ever back.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage; push 1\n- **12-16:** 8 damage; push 2\n- **17+:** 15 damage; push 4",
+  "mechanics": {
+    "type": "active",
+    "text": "The heavy impact of your weapon attacks drives your foes ever back. 2d10 + 2: 11 or less: 5 damage; push 1; 12-16: 8 damage; push 2; 17+: 15 damage; push 4."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

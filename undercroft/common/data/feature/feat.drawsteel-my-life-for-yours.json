@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-my-life-for-yours",
+  "name": "My Life for Yours",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel some of your vitality into more resilience for you or an ally.*\n\n**Triggered** — Magic, Ranged — Triggered\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Trigger:** The target starts their turn or takes damage.\n\n**Effect:** You spend a Recovery and the target regains Stamina equal to your recovery value. Spend 1 Wrath: You can end one effect on the target that is ended by a saving throw or that ends at the end of their turn, or a prone target can stand up.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel some of your vitality into more resilience for you or an ally. Trigger: The target starts their turn or takes damage. You spend a Recovery and the target regains Stamina equal to your recovery value. Spend 1 Wrath: You can end one effect on the target that is ended by a saving throw or that ends at the end of their turn, or a prone target can stand up."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Triggered",
+  "keywords": "Magic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "trigger": "The target starts their turn or takes damage."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-mountain-kit",
+  "name": "Mountain Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Kit**\n\nYou wear heavy armor, such as plate armor, and wield heavy weapons, such as a maul or greatsword.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You wear heavy armor, such as plate armor, and wield heavy weapons, such as a maul or greatsword."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Kit"
+}

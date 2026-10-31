@@ -1,0 +1,119 @@
+{
+  "template": "tpl.drawsteel.character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "data": {},
+  "name": "Dwarf Fury (Pregen)",
+  "level": 1,
+  "ancestry": "Dwarf",
+  "career": "Warden",
+  "class": "Fury",
+  "subclass": "Berserker",
+  "victories": 0,
+  "wealth": 1,
+  "renown": 0,
+  "xp": 0,
+  "projectPoints": 120,
+  "stats": {
+    "abilities": {
+      "might": 2,
+      "agility": 2,
+      "reason": -1,
+      "intuition": 1,
+      "presence": 1
+    },
+    "hitPoints": {
+      "current": 33,
+      "max": 33,
+      "temp": 0
+    },
+    "recoveries": {
+      "current": 10,
+      "max": 10
+    },
+    "heroicResource": {
+      "name": "Ferocity",
+      "current": 0
+    },
+    "surges": 0,
+    "size": "1M",
+    "speed": {
+      "walk": 6
+    },
+    "stability": 3,
+    "disengage": 1
+  },
+  "culture": [
+    {
+      "name": "Secluded"
+    },
+    {
+      "name": "Bureaucratic"
+    },
+    {
+      "name": "Creative"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Caelian"
+    },
+    {
+      "name": "Vaslorian"
+    },
+    {
+      "name": "Zaliac"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Alertness"
+    },
+    {
+      "name": "Blacksmithing"
+    },
+    {
+      "name": "Brag"
+    },
+    {
+      "name": "Climb"
+    },
+    {
+      "name": "Intimidate"
+    },
+    {
+      "name": "Jump"
+    },
+    {
+      "name": "Lift"
+    },
+    {
+      "name": "Nature"
+    },
+    {
+      "name": "Navigate"
+    },
+    {
+      "name": "Track"
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-ferocity",
+    "feat.drawsteel-primordial-strength-growing-ferocity",
+    "feat.drawsteel-brutal-slam",
+    "feat.drawsteel-devastating-rush",
+    "feat.drawsteel-back",
+    "feat.drawsteel-blood-for-blood",
+    "feat.drawsteel-lines-of-force",
+    "feat.drawsteel-primordial-strength",
+    "feat.drawsteel-mighty-leaps",
+    "feat.drawsteel-brawny",
+    "feat.drawsteel-panther-kit",
+    "feat.drawsteel-grounded",
+    "feat.drawsteel-runic-carving",
+    "feat.drawsteel-spark-off-your-skin",
+    "feat.drawsteel-melee-weapon-free-strike-dwarf-fury",
+    "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ]
+}

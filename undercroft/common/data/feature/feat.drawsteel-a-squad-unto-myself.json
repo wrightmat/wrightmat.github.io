@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-a-squad-unto-myself",
+  "name": "A Squad Unto Myself",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You move so quickly, it seems as though an army assaulted your foes.*\n\n**Heroic Ability** — Area, Melee, Psionic — Main action\n\n**Cost:** 5 Discipline\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**2d10 + 2**\n\n- **11 or less:** 6 damage\n- **12-16:** 9 damage\n- **17+:** 13 damage\n\n**Effect:** You can take the Disengage move action as a free maneuver before or after you make this ability.",
+  "mechanics": {
+    "type": "active",
+    "text": "You move so quickly, it seems as though an army assaulted your foes. 2d10 + 2: 11 or less: 6 damage; 12-16: 9 damage; 17+: 13 damage. You can take the Disengage move action as a free maneuver before or after you make this ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Melee, Psionic",
+  "actionType": "Main action",
+  "distance": "2 burst",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

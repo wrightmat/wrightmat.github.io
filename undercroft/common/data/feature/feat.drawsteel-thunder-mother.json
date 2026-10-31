@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-thunder-mother",
+  "name": "\"Thunder Mother\"",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*All for thunder motherrr! Run and hide for coverrr!*\n\n**Performance** — Magic, Performance, Ranged, Strike — No action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 1 lightning damage\n- **12-16:** 6 lightning damage\n- **17+:** 22 lightning damage\n\n**Effect:** At the end of each combat round while this performance is active, you can make a power roll against the target that ignores cover. You can't target the same creature twice with this effect.",
+  "mechanics": {
+    "type": "active",
+    "text": "All for thunder motherrr! Run and hide for coverrr! 2d10 + 2: 11 or less: 1 lightning damage; 12-16: 6 lightning damage; 17+: 22 lightning damage. At the end of each combat round while this performance is active, you can make a power roll against the target that ignores cover. You can't target the same creature twice with this effect."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Performance",
+  "keywords": "Magic, Performance, Ranged, Strike",
+  "actionType": "No action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

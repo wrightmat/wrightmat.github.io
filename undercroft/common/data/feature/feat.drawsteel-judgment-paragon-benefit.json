@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-judgment-paragon-benefit",
+  "name": "Judgment Paragon Benefit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nThe first time on a turn that you judge any creature, you can vertical pull that creature up to 4 squares.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The first time on a turn that you judge any creature, you can vertical pull that creature up to 4 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

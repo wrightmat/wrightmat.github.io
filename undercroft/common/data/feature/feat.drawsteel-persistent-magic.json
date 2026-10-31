@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-persistent-magic",
+  "name": "Persistent Magic",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Class Feature**\n\nWhenever you use a persistent ability, you decide whether you want to maintain it, and start doing so immediately after you first use the ability. You reduce the amount of essence you earn at the start of your turn by an amount equal to the ability's persistent value. You can stop maintaining an ability at any time (no action required). A creature can't be affected by multiple instances of a persistent ability. If you take 10 or more damage in one turn, you stop maintaining any persistent abilities.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you use a persistent ability, you decide whether you want to maintain it, and start doing so immediately after you first use the ability. You reduce the amount of essence you earn at the start of your turn by an amount equal to the ability's persistent value. You can stop maintaining an ability at any time (no action required). A creature can't be affected by multiple instances of a persistent ability. If you take 10 or more damage in one turn, you stop maintaining any persistent abilities."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

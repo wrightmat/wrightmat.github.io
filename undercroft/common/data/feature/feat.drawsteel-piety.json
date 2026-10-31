@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-piety",
+  "name": "Piety",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Class Feature**\n\nAt the start of a combat encounter or some other stressful situation tracked in combat rounds (as determined by the Director), you gain piety equal to your Victories. At the start of each of your turns during combat, you gain 1d3 piety. You gain 2 piety the first time in an encounter that a creature within 10 squares regains Stamina. You gain 2 piety the first time in an encounter that an enemy within 10 squares takes fire or holy damage. You lose any remaining piety at the end of the encounter.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of a combat encounter or some other stressful situation tracked in combat rounds (as determined by the Director), you gain piety equal to your Victories. At the start of each of your turns during combat, you gain 1d3 piety. You gain 2 piety the first time in an encounter that a creature within 10 squares regains Stamina. You gain 2 piety the first time in an encounter that an enemy within 10 squares takes fire or holy damage. You lose any remaining piety at the end of the encounter."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

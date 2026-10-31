@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-back",
+  "name": "Back!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You hew about you with your mighty weapon, hurling enemies backward.*\n\n**Heroic Ability** — Area, Melee, Weapon — Main action\n\n**Cost:** 3 Ferocity\n\n**Distance:** 1 burst   **Target:** Each enemy in the area\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 8 damage; push 1\n- **17+:** 15 damage; push 3",
+  "mechanics": {
+    "type": "active",
+    "text": "You hew about you with your mighty weapon, hurling enemies backward. 2d10 + 2: 11 or less: 5 damage; 12-16: 8 damage; push 1; 17+: 15 damage; push 3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "1 burst",
+  "target": "Each enemy in the area",
+  "cost": 3
+}

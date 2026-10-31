@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-fancy-footwork",
+  "name": "Fancy Footwork",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*All combat is a dance--and you'll be the one leading.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**2d10 + 2**\n\n- **11 or less:** 7 damage\n- **12-16:** 9 damage; push 1\n- **17+:** 12 damage; push 2\n\n**Effect:** You can shift into any square the target leaves after you push them.",
+  "mechanics": {
+    "type": "active",
+    "text": "All combat is a dance--and you'll be the one leading. 2d10 + 2: 11 or less: 7 damage; 12-16: 9 damage; push 1; 17+: 12 damage; push 2. You can shift into any square the target leaves after you push them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

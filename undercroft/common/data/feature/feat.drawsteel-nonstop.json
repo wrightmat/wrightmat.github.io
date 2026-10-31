@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-nonstop",
+  "name": "Nonstop",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour bloodfire supplies you with a constant rush of adrenaline. You can't be made slowed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your bloodfire supplies you with a constant rush of adrenaline. You can't be made slowed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait"
+}

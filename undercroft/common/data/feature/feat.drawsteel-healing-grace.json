@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-healing-grace",
+  "name": "Healing Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your divine energy restores the righteous.*\n\n**Maneuver** — Magic, Ranged — Maneuver\n\n**Distance:** Ranged 12   **Target:** Self or one ally\n\n**Effect:** The target can spend a Recovery. Spend 1+ Piety: For each piety spent, choose one of the following enhancements: You can target one additional ally within distance. You can end one effect on a target that is ended by a saving throw or that ends at the end of their turn. A prone target can stand up. A target can spend 1 additional Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your divine energy restores the righteous. The target can spend a Recovery. Spend 1+ Piety: For each piety spent, choose one of the following enhancements: You can target one additional ally within distance. You can end one effect on a target that is ended by a saving throw or that ends at the end of their turn. A prone target can stand up. A target can spend 1 additional Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 12",
+  "target": "Self or one ally"
+}

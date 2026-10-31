@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-remote-assistance",
+  "name": "Remote Assistance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*An ally gains the benefit of your intellect.*\n\n**Maneuver** — Psionic, Ranged — Maneuver\n\n**Distance:** Ranged 12   **Target:** One creature or object\n\n**Effect:** The next ability roll an ally makes against the target before the start of your next turn gains an edge. Spend 1 Clarity: You target one additional creature or object.",
+  "mechanics": {
+    "type": "active",
+    "text": "An ally gains the benefit of your intellect. The next ability roll an ally makes against the target before the start of your next turn gains an edge. Spend 1 Clarity: You target one additional creature or object."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "keywords": "Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 12",
+  "target": "One creature or object"
+}

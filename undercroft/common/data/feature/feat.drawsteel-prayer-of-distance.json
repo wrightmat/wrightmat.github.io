@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-prayer-of-distance",
+  "name": "Prayer of Distance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Subclass Feature**\n\nYour god blesses you with the ability to stretch your divine magic farther. You have a +2 bonus to the distance of your ranged magic abilities (already included).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your god blesses you with the ability to stretch your divine magic farther. You have a +2 bonus to the distance of your ranged magic abilities (already included)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

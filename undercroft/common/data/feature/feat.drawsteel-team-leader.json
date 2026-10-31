@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-team-leader",
+  "name": "Team Leader",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Perk**\n\nAt the start of a group test or montage test, you can spend a hero token. If you do, all participants make tests as if they also had any skill you have from the exploration group.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of a group test or montage test, you can spend a hero token. If you do, all participants make tests as if they also had any skill you have from the exploration group."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk"
+}

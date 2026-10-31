@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shining-armor-and-rapid-fire-kits",
+  "name": "Shining Armor and Rapid-Fire Kits",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Kit**\n\nYou wear heavy armor, such as plate armor, or light armor, such as leather armor, and wield a shield and medium weapons, such as swords or axes, and a bow, such as a longbow or crossbow.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You wear heavy armor, such as plate armor, or light armor, such as leather armor, and wield a shield and medium weapons, such as swords or axes, and a bow, such as a longbow or crossbow."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Kit"
+}

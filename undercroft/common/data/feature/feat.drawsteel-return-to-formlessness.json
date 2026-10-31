@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-return-to-formlessness",
+  "name": "Return to Formlessness",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*With the merest touch, you cause an object to turn to slag or ash.*\n\n**Maneuver** — Fire, Magic, Melee — Main action\n\n**Distance:** Melee 1   **Target:** One mundane object\n\n**Effect:** You heat the target and cause it to melt or combust, destroying it. If the object is larger than 1 square, then only the square of the object you touch is destroyed.",
+  "mechanics": {
+    "type": "active",
+    "text": "With the merest touch, you cause an object to turn to slag or ash. You heat the target and cause it to melt or combust, destroying it. If the object is larger than 1 square, then only the square of the object you touch is destroyed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "keywords": "Fire, Magic, Melee",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One mundane object"
+}
