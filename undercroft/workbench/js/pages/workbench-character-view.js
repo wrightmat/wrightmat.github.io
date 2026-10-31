@@ -3390,7 +3390,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     syncNotesEditor(true);
   }
 
+  // On a phone the pane is a drawer over the sheet, so a roll made from the sheet leaves it closed; the result shows in
+  // a toast and the 3D dice play over the page.
   function openToolsPane() {
+    if (window.matchMedia("(max-width: 767.98px)").matches) return;
     if (elements.rightPane) {
       expandPane(elements.rightPane, elements.rightPaneToggle);
     }

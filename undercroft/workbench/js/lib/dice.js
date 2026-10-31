@@ -964,6 +964,12 @@ function buildDetailText(ast) {
 // `dice` is a System's own named-dice array (e.g. Daggerheart's
 // hopeDie/fearDie) — optional and empty by default, so a caller that
 // doesn't pass it sees no behavior change.
+// The expression with every `@path` replaced by its current number and doubled signs folded ("2d10+-1" becomes
+// "2d10-1"), so a roll that only reads the character's numbers can still be played as physical dice.
+export function resolveExpressionVariables(expression, context) {
+  return substituteVariables(expression, context).replace(/\+\s*-/g, "-").replace(/-\s*-/g, "+");
+}
+
 export function rollDiceExpression(expression, { context = {}, random = Math.random, dice = [] } = {}) {
   if (typeof expression !== "string") {
     throw new Error("Enter a dice expression like 2d6 + 3.");

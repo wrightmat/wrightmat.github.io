@@ -5,7 +5,7 @@
 // Dice Roller dashboard widget — one roll-and-report path, one quick-dice
 // behavior, not two of each.
 import { postSystemMessage } from "../chat/target.js";
-import { rollDiceExpression } from "../../../../workbench/js/lib/dice.js";
+import { rollDiceExpression, resolveExpressionVariables } from "../../../../workbench/js/lib/dice.js";
 import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
 // Rollable Journal tables (`[[Page#^blockId]]`) are recognized/resolved
 // here, not in rollDiceExpression itself, which stays a pure numeric-
@@ -212,7 +212,10 @@ export async function rollExpression(
     }
   }
   try {
-    const result = (await tryOverlayRoll(trimmed, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
+    // An expression that reads the character ("2d10+@stats.abilities.might") is still plain dice once those numbers
+    // are filled in, so it gets the physical roll too.
+    const playable = trimmed.includes("@") ? resolveExpressionVariables(trimmed, context) : trimmed;
+    const result = (await tryOverlayRoll(playable, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
     if (announce) {
       const prefix = label ? `${label}: ` : "";
       status?.show(`${prefix}${trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
