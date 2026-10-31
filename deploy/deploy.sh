@@ -3,6 +3,9 @@
 #
 #   sudo bash deploy/deploy.sh [git-ref]      default: the tracked branch's newest commit
 #
+# After the restart it prints, without changing anything, which already-seeded content files the new code would
+# update (see "Content after launch" in the README).
+#
 # The code lives in /srv/containers/undercroft/app (a git checkout mounted read-only into the
 # container). Rebuild the image separately only for base-image patches or dependency changes:
 #   sudo podman build -t localhost/undercroft -f deploy/Containerfile deploy && sudo systemctl restart undercroft
@@ -26,6 +29,11 @@ systemctl restart undercroft
 for _ in $(seq 1 120); do
     if curl -fsS --max-time 3 "$HEALTH" >/dev/null 2>&1; then
         echo "Healthy."
+        # Shows which shipped files the new code changes in the data folder; it writes nothing. Applying is a
+        # separate step you take after reading this.
+        echo "Shipped content updates (dry run):"
+        podman exec undercroft python /app/web-server.py --sync-defaults --update --config /config/server.config.json || true
+        echo "To carry out the updates above: sudo podman exec undercroft python /app/web-server.py --sync-defaults --update --apply --config /config/server.config.json"
         exit 0
     fi
     sleep 2

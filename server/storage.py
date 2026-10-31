@@ -735,6 +735,24 @@ def library_kind_root(state: ServerState, kind: str) -> Path:
     return state.write_path("common", "data", kind)
 
 
+def refresh_library_row(state: ServerState, kind: str, entry_id: str) -> bool:
+    """Re-reads an already-indexed record's title and metadata from its file, after the file was replaced from
+    outside save_item(). Owner, sharing, visibility and dates are left as they are."""
+    try:
+        payload = json.loads(_record_path(state, kind, entry_id).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    policy = load_kind_policy(state, kind)
+    title = _title_from_payload(kind, payload, policy) or entry_id
+    with state.lock:
+        cursor = state.db.execute(
+            "UPDATE library_items SET title = ?, metadata = ? WHERE kind = ? AND id = ?",
+            (title, _extract_metadata(kind, payload, policy), kind, entry_id),
+        )
+        state.db.commit()
+    return cursor.rowcount > 0
+
+
 def _record_filename(id_: str) -> str:
     return id_ if id_.endswith(".json") else f"{id_}.json"
 

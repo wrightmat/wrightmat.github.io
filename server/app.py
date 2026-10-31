@@ -92,7 +92,7 @@ from .static import serve_from_root, serve_local_file
 from .metrics import METRICS, file_size, process_memory_bytes, route_label
 from . import invites as invite_store
 from . import system_names
-from .data_dir import prepare_secrets_dir, seed_data_dir, sync_defaults
+from .data_dir import prepare_secrets_dir, seed_data_dir, sync_defaults, update_defaults
 from .throttle import Throttle
 from .tickets import issue_ticket, redeem_ticket
 from .kinds import normalize_kind
@@ -3785,9 +3785,15 @@ def create_admin(config_path: str) -> None:
     print(f"Admin '{username}' created.")
 
 
-def sync_default_files(config_path: str) -> None:
+def sync_default_files(config_path: str, update: bool = False, apply: bool = False, accept=()) -> None:
     state = ServerState.from_loader(ConfigLoader(Path(config_path)))
-    print(f"Copied {sync_defaults(state)} shipped file(s) that were missing from the data directory.")
+    if not update:
+        print(f"Copied {sync_defaults(state)} shipped file(s) that were missing from the data directory.")
+        return
+    try:
+        update_defaults(state, apply=apply, accept=accept)
+    except ValueError as exc:
+        raise SystemExit(str(exc))
 
 
 def main(config_path: str) -> None:
