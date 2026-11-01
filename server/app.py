@@ -22,6 +22,7 @@ from . import applications as application_store
 from . import listings as listing_store
 from . import signal_report as report_store
 from . import signals as signal_store
+from . import analytics as analytics_store
 from . import sessions as session_store
 from . import spotlight as spotlight_store
 
@@ -3491,6 +3492,37 @@ def register_routes():
         return json_response(METRICS.summary(minutes))
 
     router.add("GET", r"^/admin/load$", handle_load_summary, unlocked=True)
+
+    # Admin analytics: a catalog of what can be asked, a read-only query, and the admin's own saved reports.
+    def handle_analytics_catalog(request: Request) -> Response:
+        require_admin(request)
+        return json_response(analytics_store.public_catalog(request.state))
+
+    router.add("GET", r"^/admin/analytics/catalog$", handle_analytics_catalog, unlocked=True)
+
+    def handle_analytics_query(request: Request) -> Response:
+        require_admin(request)
+        return json_response(analytics_store.run_query(request.state, require_json(request)))
+
+    router.add("POST", r"^/admin/analytics/query$", handle_analytics_query, unlocked=True)
+
+    def handle_analytics_reports(request: Request) -> Response:
+        user = require_admin(request)
+        return json_response(analytics_store.list_reports(request.state, user))
+
+    router.add("GET", r"^/admin/analytics/reports$", handle_analytics_reports, unlocked=True)
+
+    def handle_analytics_report_save(request: Request) -> Response:
+        user = require_admin(request)
+        return json_response(analytics_store.save_report(request.state, user, require_json(request)))
+
+    router.add("POST", r"^/admin/analytics/reports$", handle_analytics_report_save)
+
+    def handle_analytics_report_delete(request: Request) -> Response:
+        user = require_admin(request)
+        return json_response(analytics_store.delete_report(request.state, user, require_json(request).get("id")))
+
+    router.add("POST", r"^/admin/analytics/reports/delete$", handle_analytics_report_delete)
 
     # POST /csp-report — browsers send Content-Security-Policy violations here while the policy is report-only.
     csp_report_throttle = Throttle(limit=60, window_seconds=60)

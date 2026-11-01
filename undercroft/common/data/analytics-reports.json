@@ -1,0 +1,100 @@
+{
+  "reports": [
+    {
+      "id": "library-by-kind",
+      "name": "Library records by kind",
+      "description": "How many records of each kind exist, and how many are public.",
+      "spec": {
+        "dataset": "library_items",
+        "dimensions": [{ "field": "kind" }],
+        "measures": ["records", "public_records", "public_rate"],
+        "sort": [{ "key": "records", "dir": "desc" }]
+      },
+      "view": { "mode": "grid", "chart": "bar" }
+    },
+    {
+      "id": "library-without-system",
+      "name": "Records with no System assigned",
+      "description": "Class, feature, monster, wonder and character records that no System claims, by kind.",
+      "spec": {
+        "dataset": "library_items",
+        "dimensions": [{ "field": "kind" }],
+        "measures": ["records"],
+        "filters": [
+          { "field": "kind", "op": "in", "value": ["class", "feature", "monster", "wonder", "character"] },
+          { "field": "system", "op": "eq", "value": "(none)" }
+        ],
+        "sort": [{ "key": "records", "dir": "desc" }]
+      },
+      "view": { "mode": "grid", "chart": "bar" }
+    },
+    {
+      "id": "library-created-by-month",
+      "name": "Records created per month, by kind",
+      "description": "Growth of the Library over time.",
+      "spec": {
+        "dataset": "library_items",
+        "dimensions": [{ "field": "created", "grain": "month" }, { "field": "kind" }],
+        "measures": ["records"]
+      },
+      "view": { "mode": "chart", "chart": "stacked" }
+    },
+    {
+      "id": "users-by-tier",
+      "name": "Users by tier",
+      "description": "Accounts in each tier, and how many are active.",
+      "spec": {
+        "dataset": "users",
+        "dimensions": [{ "field": "tier" }],
+        "measures": ["users", "active_users", "signed_in_rate"],
+        "sort": [{ "key": "users", "dir": "desc" }]
+      },
+      "view": { "mode": "grid", "chart": "bar" }
+    },
+    {
+      "id": "registrations-by-month-tier",
+      "name": "Registrations by month, by tier",
+      "description": "New accounts over time.",
+      "spec": {
+        "dataset": "users",
+        "dimensions": [{ "field": "created", "grain": "month" }, { "field": "tier" }],
+        "measures": ["users"]
+      },
+      "view": { "mode": "chart", "chart": "stacked" }
+    },
+    {
+      "id": "groups-per-owner",
+      "name": "Player Groups per GM",
+      "description": "How many groups each GM runs, with their players.",
+      "spec": {
+        "dataset": "groups",
+        "dimensions": [{ "field": "owner" }],
+        "measures": ["groups", "players", "characters"],
+        "sort": [{ "key": "groups", "dir": "desc" }]
+      },
+      "view": { "mode": "grid", "chart": "bar" }
+    },
+    {
+      "id": "chat-by-month",
+      "name": "Chat messages per month",
+      "description": "Group chat activity over time.",
+      "spec": {
+        "dataset": "chat_messages",
+        "dimensions": [{ "field": "created", "grain": "month" }],
+        "measures": ["messages", "authors"]
+      },
+      "view": { "mode": "chart", "chart": "line" }
+    },
+    {
+      "id": "sign-ins-by-month",
+      "name": "Sign-ins per month",
+      "description": "Sign-in sessions still stored, by month and distinct people.",
+      "spec": {
+        "dataset": "sign_ins",
+        "dimensions": [{ "field": "created", "grain": "month" }],
+        "measures": ["sessions", "users"]
+      },
+      "view": { "mode": "chart", "chart": "line" }
+    }
+  ]
+}

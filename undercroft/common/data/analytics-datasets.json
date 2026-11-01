@@ -1,0 +1,214 @@
+{
+  "datasets": [
+    {
+      "id": "library_items",
+      "label": "Library records",
+      "from": "library_items AS li LEFT JOIN users AS ou ON ou.id = li.owner_id",
+      "fields": [
+        { "key": "kind", "label": "Kind", "type": "text", "sql": "li.kind" },
+        { "key": "owner", "label": "Owner", "type": "text", "sql": "COALESCE(ou.username, '(no owner)')" },
+        { "key": "owner_tier", "label": "Owner tier", "type": "text", "sql": "COALESCE(ou.tier, '(no owner)')" },
+        { "key": "is_public", "label": "Public", "type": "boolean", "sql": "li.is_public" },
+        { "key": "system", "label": "System", "type": "text", "sql": "COALESCE(CASE WHEN json_valid(li.metadata) THEN json_extract(li.metadata, '$.systemIds[0]') END, '(none)')" },
+        { "key": "created", "label": "Created", "type": "time", "sql": "li.created_at" },
+        { "key": "modified", "label": "Last modified", "type": "time", "sql": "li.modified_at" },
+        { "key": "last_used", "label": "Last used", "type": "time", "sql": "li.last_accessed_at" }
+      ],
+      "measures": [
+        { "key": "records", "label": "Records", "sql": "COUNT(*)" },
+        { "key": "public_records", "label": "Public records", "sql": "COALESCE(SUM(li.is_public), 0)" },
+        { "key": "public_rate", "label": "% public", "format": "percent", "sql": "100.0 * COALESCE(SUM(li.is_public), 0) / COUNT(*)" },
+        { "key": "owners", "label": "Distinct owners", "sql": "COUNT(DISTINCT li.owner_id)" },
+        { "key": "kinds", "label": "Distinct kinds", "sql": "COUNT(DISTINCT li.kind)" }
+      ]
+    },
+    {
+      "id": "users",
+      "label": "Users",
+      "from": "users AS u",
+      "fields": [
+        { "key": "tier", "label": "Tier", "type": "text", "sql": "u.tier" },
+        { "key": "active", "label": "Active account", "type": "boolean", "sql": "u.is_active" },
+        { "key": "invited", "label": "Joined by invite", "type": "boolean", "sql": "CASE WHEN u.invite_code IS NULL OR u.invite_code = '' THEN 0 ELSE 1 END" },
+        { "key": "has_signed_in", "label": "Has signed in", "type": "boolean", "sql": "CASE WHEN u.last_login IS NULL THEN 0 ELSE 1 END" },
+        { "key": "created", "label": "Registered", "type": "time", "sql": "u.created_at" },
+        { "key": "last_login", "label": "Last sign-in", "type": "time", "sql": "u.last_login" }
+      ],
+      "measures": [
+        { "key": "users", "label": "Users", "sql": "COUNT(*)" },
+        { "key": "active_users", "label": "Active accounts", "sql": "COALESCE(SUM(u.is_active), 0)" },
+        { "key": "signed_in_rate", "label": "% ever signed in", "format": "percent", "sql": "100.0 * SUM(CASE WHEN u.last_login IS NULL THEN 0 ELSE 1 END) / COUNT(*)" }
+      ]
+    },
+    {
+      "id": "groups",
+      "label": "Player Groups",
+      "from": "library_items AS g LEFT JOIN users AS ou ON ou.id = g.owner_id",
+      "where": "g.kind = 'group'",
+      "fields": [
+        { "key": "owner", "label": "GM (owner)", "type": "text", "sql": "COALESCE(ou.username, '(no owner)')" },
+        { "key": "owner_tier", "label": "GM tier", "type": "text", "sql": "COALESCE(ou.tier, '(no owner)')" },
+        { "key": "is_public", "label": "Public", "type": "boolean", "sql": "g.is_public" },
+        { "key": "created", "label": "Created", "type": "time", "sql": "g.created_at" },
+        { "key": "modified", "label": "Last modified", "type": "time", "sql": "g.modified_at" }
+      ],
+      "measures": [
+        { "key": "groups", "label": "Groups", "sql": "COUNT(*)" },
+        { "key": "gms", "label": "Distinct GMs", "sql": "COUNT(DISTINCT g.owner_id)" },
+        { "key": "players", "label": "Players", "sql": "COALESCE(SUM((SELECT COUNT(*) FROM group_members AS gm WHERE gm.group_id = g.id AND gm.content_type = 'player')), 0)" },
+        { "key": "avg_players", "label": "Players per group", "format": "decimal", "sql": "1.0 * COALESCE(SUM((SELECT COUNT(*) FROM group_members AS gm WHERE gm.group_id = g.id AND gm.content_type = 'player')), 0) / COUNT(*)" },
+        { "key": "characters", "label": "Rostered characters", "sql": "COALESCE(SUM((SELECT COUNT(*) FROM group_members AS gm WHERE gm.group_id = g.id AND gm.content_type = 'character')), 0)" }
+      ]
+    },
+    {
+      "id": "group_members",
+      "label": "Group memberships",
+      "from": "group_members AS gm LEFT JOIN library_items AS g ON g.kind = 'group' AND g.id = gm.group_id LEFT JOIN users AS ou ON ou.id = g.owner_id",
+      "fields": [
+        { "key": "member_type", "label": "Member type", "type": "text", "sql": "gm.content_type" },
+        { "key": "gm", "label": "GM (owner)", "type": "text", "sql": "COALESCE(ou.username, '(no owner)')" },
+        { "key": "added", "label": "Added", "type": "time", "sql": "gm.added_at" }
+      ],
+      "measures": [
+        { "key": "memberships", "label": "Memberships", "sql": "COUNT(*)" },
+        { "key": "groups", "label": "Distinct groups", "sql": "COUNT(DISTINCT gm.group_id)" }
+      ]
+    },
+    {
+      "id": "shares",
+      "label": "Shares",
+      "from": "shares AS s",
+      "fields": [
+        { "key": "content_type", "label": "Kind shared", "type": "text", "sql": "s.content_type" },
+        { "key": "target", "label": "Shared with", "type": "text", "sql": "CASE WHEN s.shared_with_user_id IS NOT NULL THEN 'a user' WHEN s.shared_with_group_id IS NOT NULL THEN 'a group' ELSE 'everyone' END" },
+        { "key": "permissions", "label": "Permission", "type": "text", "sql": "s.permissions" },
+        { "key": "created", "label": "Shared on", "type": "time", "sql": "s.created_at" }
+      ],
+      "measures": [
+        { "key": "shares", "label": "Shares", "sql": "COUNT(*)" },
+        { "key": "records", "label": "Distinct records shared", "sql": "COUNT(DISTINCT s.content_type || ':' || s.content_id)" }
+      ]
+    },
+    {
+      "id": "chat_messages",
+      "label": "Chat messages",
+      "from": "chat_messages AS m LEFT JOIN users AS a ON a.id = m.author_id",
+      "fields": [
+        { "key": "author_tier", "label": "Author tier", "type": "text", "sql": "COALESCE(a.tier, '(none)')" },
+        { "key": "voice", "label": "Voice", "type": "text", "sql": "COALESCE(m.voice, '(none)')" },
+        { "key": "deleted", "label": "Deleted", "type": "boolean", "sql": "CASE WHEN m.deleted_at IS NULL THEN 0 ELSE 1 END" },
+        { "key": "created", "label": "Posted", "type": "time", "sql": "m.created_at" }
+      ],
+      "measures": [
+        { "key": "messages", "label": "Messages", "sql": "COUNT(*)" },
+        { "key": "authors", "label": "Distinct authors", "sql": "COUNT(DISTINCT m.author_id)" },
+        { "key": "groups", "label": "Distinct groups", "sql": "COUNT(DISTINCT m.group_id)" }
+      ]
+    },
+    {
+      "id": "direct_messages",
+      "label": "Direct messages",
+      "from": "direct_messages AS d",
+      "fields": [
+        { "key": "from_application", "label": "Part of an application", "type": "boolean", "sql": "CASE WHEN d.application_id IS NULL THEN 0 ELSE 1 END" },
+        { "key": "created", "label": "Sent", "type": "time", "sql": "d.created_at" }
+      ],
+      "measures": [
+        { "key": "messages", "label": "Messages", "sql": "COUNT(*)" },
+        { "key": "authors", "label": "Distinct authors", "sql": "COUNT(DISTINCT d.author_id)" }
+      ]
+    },
+    {
+      "id": "sign_ins",
+      "label": "Sign-in sessions (still stored)",
+      "from": "sessions AS s JOIN users AS u ON u.id = s.user_id",
+      "fields": [
+        { "key": "tier", "label": "User tier", "type": "text", "sql": "u.tier" },
+        { "key": "still_active", "label": "Still active", "type": "boolean", "sql": "s.is_active" },
+        { "key": "created", "label": "Signed in", "type": "time", "sql": "s.created_at" },
+        { "key": "last_used", "label": "Last used", "type": "time", "sql": "s.last_accessed_at" }
+      ],
+      "measures": [
+        { "key": "sessions", "label": "Sessions", "sql": "COUNT(*)" },
+        { "key": "users", "label": "Distinct users", "sql": "COUNT(DISTINCT s.user_id)" }
+      ]
+    },
+    {
+      "id": "signals",
+      "label": "Play signals",
+      "from": "signal_events AS e",
+      "fields": [
+        { "key": "role", "label": "Role", "type": "text", "sql": "e.role" },
+        { "key": "kind", "label": "Event", "type": "text", "sql": "e.kind" },
+        { "key": "outcome", "label": "Outcome", "type": "text", "sql": "COALESCE(e.outcome, '(none)')" },
+        { "key": "system", "label": "System", "type": "text", "sql": "COALESCE(e.system_id, '(none)')" },
+        { "key": "late", "label": "Late", "type": "boolean", "sql": "e.late" },
+        { "key": "auto", "label": "Automatic", "type": "boolean", "sql": "e.auto" },
+        { "key": "occurred", "label": "Occurred", "type": "time", "sql": "e.occurred_at" }
+      ],
+      "measures": [
+        { "key": "events", "label": "Events", "sql": "COUNT(*)" },
+        { "key": "people", "label": "Distinct people", "sql": "COUNT(DISTINCT e.user_id)" }
+      ]
+    },
+    {
+      "id": "listings",
+      "label": "Recruitment listings",
+      "from": "listings AS l",
+      "fields": [
+        { "key": "status", "label": "Status", "type": "text", "sql": "l.status" },
+        { "key": "target_kind", "label": "Advertises", "type": "text", "sql": "l.target_kind" },
+        { "key": "system", "label": "System", "type": "text", "sql": "COALESCE(l.system_name, '(none)')" },
+        { "key": "platform", "label": "Platform", "type": "text", "sql": "COALESCE(l.platform, '(none)')" },
+        { "key": "created", "label": "Created", "type": "time", "sql": "l.created_at" }
+      ],
+      "measures": [
+        { "key": "listings", "label": "Listings", "sql": "COUNT(*)" },
+        { "key": "seats", "label": "Seats offered", "sql": "COALESCE(SUM(l.seats_offered), 0)" },
+        { "key": "gms", "label": "Distinct GMs", "sql": "COUNT(DISTINCT l.owner_id)" }
+      ]
+    },
+    {
+      "id": "applications",
+      "label": "Applications to listings",
+      "from": "applications AS ap",
+      "fields": [
+        { "key": "status", "label": "Status", "type": "text", "sql": "ap.status" },
+        { "key": "created", "label": "Applied", "type": "time", "sql": "ap.created_at" },
+        { "key": "decided", "label": "Decided", "type": "time", "sql": "ap.decided_at" }
+      ],
+      "measures": [
+        { "key": "applications", "label": "Applications", "sql": "COUNT(*)" },
+        { "key": "applicants", "label": "Distinct applicants", "sql": "COUNT(DISTINCT ap.applicant_id)" }
+      ]
+    },
+    {
+      "id": "game_sessions",
+      "label": "Game sessions (dates)",
+      "from": "group_session_occurrences AS o JOIN group_sessions AS gs ON gs.id = o.session_id",
+      "fields": [
+        { "key": "status", "label": "Status", "type": "text", "sql": "o.status" },
+        { "key": "kind", "label": "Live or play-by-post", "type": "text", "sql": "gs.kind" },
+        { "key": "starts", "label": "Starts", "type": "time", "sql": "o.start_at" }
+      ],
+      "measures": [
+        { "key": "dates", "label": "Session dates", "sql": "COUNT(*)" },
+        { "key": "series", "label": "Distinct series", "sql": "COUNT(DISTINCT o.session_id)" },
+        { "key": "groups", "label": "Distinct groups", "sql": "COUNT(DISTINCT o.group_id)" }
+      ]
+    },
+    {
+      "id": "rsvps",
+      "label": "Session RSVPs",
+      "from": "session_rsvps AS r",
+      "fields": [
+        { "key": "response", "label": "Response", "type": "text", "sql": "r.response" },
+        { "key": "responded", "label": "Responded", "type": "time", "sql": "r.responded_at" }
+      ],
+      "measures": [
+        { "key": "rsvps", "label": "RSVPs", "sql": "COUNT(*)" },
+        { "key": "people", "label": "Distinct people", "sql": "COUNT(DISTINCT r.user_id)" }
+      ]
+    }
+  ]
+}

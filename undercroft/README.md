@@ -53,6 +53,8 @@ The server otherwise runs on the Python standard library alone. One optional dep
 | **Vault** | Spell and magic item generator — a budget-based feature economy built from the same feature graph as Crucible. |
 | **Loom** | Manage data or import external content — the generic Library/System editor, and where external content (e.g. D&D Beyond) gets imported via mappings. |
 
+Loom's **Analytics** tab (admin only) is how the suite's own data is examined: a visual builder over a catalog of datasets (`common/data/analytics-datasets.json`) that returns a grid or chart of counts, distinct counts, sums and rates, grouped by any listed field or time period, with the generated SQL shown. The catalog is an allow-list, so credentials, password hashes, e-mail addresses and session tokens can't be reached; queries compile to parameterized SQL (`server/analytics.py`) and run on the read-only connection under a time limit. Built-in reports ship in `common/data/analytics-reports.json`; an admin's own saved reports live in that account's settings. Adding a question the catalog can't yet answer means adding a dataset, field or measure there, never new server code.
+
 There's no separate "Admin" tool — account tiers, content ownership, sharing, and Player Group management live inside Loom (tier-gated tabs) and the account page (`common/account.html`), both reachable from the signed-in menu in every tool's header. Every tool shares the same header chrome, the same three-pane shell, and the same save/share/print plumbing described next.
 
 ---

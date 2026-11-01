@@ -1805,6 +1805,26 @@ export class DataManager {
     return this._request(this._groupPath(groupId, "/players"), { method: "POST", body: { username }, auth: true });
   }
 
+  async getAnalyticsCatalog() {
+    return this._request("/admin/analytics/catalog", { auth: true });
+  }
+
+  async runAnalyticsQuery(spec) {
+    return this._request("/admin/analytics/query", { method: "POST", body: spec, auth: true });
+  }
+
+  async listAnalyticsReports() {
+    return this._request("/admin/analytics/reports", { auth: true });
+  }
+
+  async saveAnalyticsReport(report) {
+    return this._request("/admin/analytics/reports", { method: "POST", body: report, auth: true });
+  }
+
+  async deleteAnalyticsReport(id) {
+    return this._request("/admin/analytics/reports/delete", { method: "POST", body: { id }, auth: true });
+  }
+
   async getAddableGroupPlayers(groupId) {
     return this._request(this._groupPath(groupId, "/addable-players"), { auth: true });
   }

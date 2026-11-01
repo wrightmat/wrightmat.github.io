@@ -2868,3 +2868,53 @@ html[data-bs-theme="light"] {
 .inline-ref--encounter {
   --inline-ref-color: var(--bs-danger);
 }
+
+/* Query-result charts (common/js/lib/charts.js): an Okabe-Ito palette that stays distinguishable in both themes. */
+.analytics-chart .chart-grid {
+  stroke: var(--bs-border-color);
+  stroke-width: 1;
+}
+
+.analytics-chart .chart-axis {
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1;
+}
+
+.analytics-chart .chart-label {
+  fill: var(--bs-secondary-color);
+  font-size: 11px;
+}
+
+.analytics-chart rect,
+.analytics-chart circle {
+  fill: var(--chart-color);
+}
+
+.analytics-chart .chart-line {
+  fill: none;
+  stroke: var(--chart-color);
+  stroke-width: 2;
+}
+
+.analytics-chart .chart-fill {
+  fill: var(--chart-color);
+  fill-opacity: 0.35;
+  stroke: none;
+}
+
+.chart-swatch {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 2px;
+  background: var(--chart-color);
+}
+
+.chart-s0 { --chart-color: #0072b2; }
+.chart-s1 { --chart-color: #e69f00; }
+.chart-s2 { --chart-color: #009e73; }
+.chart-s3 { --chart-color: #cc79a7; }
+.chart-s4 { --chart-color: #56b4e9; }
+.chart-s5 { --chart-color: #d55e00; }
+.chart-s6 { --chart-color: #f0e442; }
+.chart-s7 { --chart-color: #999999; }

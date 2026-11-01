@@ -549,6 +549,21 @@
       "href": "../loom/index.html?view=systems"
     },
     {
+      "id": "loom.analytics",
+      "title": "Analytics",
+      "summary": "Ask the database questions and see the answers as a table or a chart.",
+      "details": [
+        "Choose what to look at (Library records, Users, Player Groups, chat messages and so on), then what to group by and what to measure. The result updates as you change anything.",
+        "Group by a date field to see change over time, and pick how coarsely to cut it (day, week, month and so on). A second group-by field splits a chart into colored series, for example users by tier by month.",
+        "Measures are counts, distinct counts, totals and percentages. A filter on a field narrows the rows first; a filter on a measure keeps only the groups above or below a number. Calculate can turn the values into a running total over time or each period's share.",
+        "Show SQL displays exactly what was run. Built-in reports can't be changed, but you can duplicate one and save your own version; saved reports belong to your account.",
+        "Only counts and categories can be asked about. Passwords, e-mail addresses, sign-in tokens and stored credentials are not available here."
+      ],
+      "category": "Loom",
+      "section": "Admin",
+      "href": "../loom/index.html?view=analytics"
+    },
+    {
       "id": "loom.reservedKeys",
       "title": "Special Property Names",
       "summary": "A few property keys are read by other tools, so they appear in their own list.",

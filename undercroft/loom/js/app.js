@@ -46,6 +46,7 @@ import { initShareModal } from "../../common/js/lib/share-modal.js";
 import { setElementVisible } from "../../common/js/lib/dom.js";
 import { initGroupSessions } from "./group-sessions.js";
 import { initGroupCommunity } from "./group-community.js";
+import { initAnalytics } from "./analytics.js";
 import { initCommunityAdmin } from "./community-admin.js";
 import { initInvitesAdmin } from "./invites-admin.js";
 import { renderRelationshipEditor } from "../../common/js/lib/relationship-editor.js";
@@ -117,6 +118,12 @@ createToolbarButtonGroup([
     disabled: true,
     attrs: { "data-library-delete": true, "data-loom-view-panel": "library", hidden: true },
   },
+]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
+createToolbarButtonGroup([
+  { action: "new", label: "New Report", attrs: { "data-loom-view-panel": "analytics", hidden: true } },
+  { action: "save", label: "Save Report", attrs: { "data-loom-view-panel": "analytics", hidden: true } },
+  { action: "duplicate", label: "Duplicate Report", attrs: { "data-loom-view-panel": "analytics", hidden: true } },
+  { action: "delete", label: "Delete Report", disabled: true, attrs: { "data-loom-view-panel": "analytics", hidden: true } },
 ]).forEach((button) => document.querySelector("[data-loom-toolbar-mount]")?.appendChild(button));
 createToolbarButtonGroup([
   { action: "new", label: "New System", attrs: { "data-system-new": true, "data-loom-view-panel": "systems", hidden: true } },
@@ -817,8 +824,6 @@ function resetSystemReservedChecks() {
 // tab's own diagnostics use, just across every System at once instead of one.
 const loomAdminState = {
   systemPayloads: null, // [{id, title, payload}]
-  libraryItems: null, // listOwnedContent({scope:"all"}).items
-  users: null, // listUsers().users
 };
 
 // A section opens the first time it has content, and again whenever the admin asks for a fresh
@@ -851,20 +856,6 @@ async function fetchAdminSystemPayloads({ force = false } = {}) {
   return payloads;
 }
 
-async function fetchAdminLibraryItems({ force = false } = {}) {
-  if (!force && loomAdminState.libraryItems) return loomAdminState.libraryItems;
-  const owned = await dataManager.listOwnedContent({ scope: "all", refresh: force });
-  loomAdminState.libraryItems = Array.isArray(owned?.items) ? owned.items : [];
-  return loomAdminState.libraryItems;
-}
-
-async function fetchAdminUsers({ force = false } = {}) {
-  if (!force && loomAdminState.users) return loomAdminState.users;
-  const payload = await dataManager.listUsers();
-  loomAdminState.users = Array.isArray(payload?.users) ? payload.users : [];
-  return loomAdminState.users;
-}
-
 // Same "tooManyOnce" definition renderSystemBindingsChecklist's own row
 // styling already uses — a "once"-scoped binding declared 2+ times is a
 // real misconfiguration (duplicate warning triangle there); declared ZERO
@@ -889,10 +880,6 @@ function systemHasBindingGap(fields, schema) {
 
 function adminSystemHref(id) {
   return `index.html?system=${encodeURIComponent(id)}`;
-}
-
-function adminLibraryHref(kind, id) {
-  return `index.html?library=${encodeURIComponent(kind)}:${encodeURIComponent(id)}`;
 }
 
 // Shared by every summary line in the Admin tab — a status icon + "label:
@@ -982,145 +969,38 @@ async function runAdminSystemHealth({ force = false, expand = true } = {}) {
 // existing listOwnedContent(scope:"all") rows. species/background don't
 // declare it yet, so checking them would mean fetching every individual
 // record; flagged in the row's own label rather than silently skipped.
+// The three headline numbers on the Overview (Library, Users, Player Groups), asked of the analytics layer; the
+// full breakdowns live in the Analytics tab's built-in reports.
 const ADMIN_SYSTEM_ID_INDEXED_KINDS = ["class", "wonder", "feature", "monster", "character"];
 
-async function runAdminContentInventory({ force = false, expand = true } = {}) {
-  const items = await fetchAdminLibraryItems({ force });
-  const kinds = await loadLibraryKinds();
-  const kindLabel = new Map((Array.isArray(kinds) ? kinds : []).map((kind) => [kind.id, kind.plural || kind.label || kind.id]));
-  adminInventoryList.innerHTML = "";
-  const counts = new Map();
-  items.forEach((item) => {
-    const entry = counts.get(item.bucket) || { total: 0, public: 0 };
-    entry.total += 1;
-    if (item.is_public) entry.public += 1;
-    counts.set(item.bucket, entry);
-  });
-  const summary = document.createElement("p");
-  summary.className = "small text-body-secondary mb-0";
-  summary.textContent = `${items.length} total records across ${counts.size} kinds.`;
-  adminInventoryList.appendChild(summary);
-  const table = document.createElement("div");
-  table.className = "d-flex flex-column gap-1 small";
-  Array.from(counts.entries())
-    .sort((a, b) => b[1].total - a[1].total)
-    .forEach(([bucket, entry]) => {
-      const row = document.createElement("div");
-      row.className = "d-flex justify-content-between gap-2";
-      const label = document.createElement("span");
-      label.textContent = kindLabel.get(bucket) || bucket;
-      const value = document.createElement("span");
-      value.className = "text-body-secondary";
-      value.textContent = `${entry.total} (${entry.public} public)`;
-      row.append(label, value);
-      table.appendChild(row);
-    });
-  adminInventoryList.appendChild(table);
-  const indexedItems = items.filter((item) => ADMIN_SYSTEM_ID_INDEXED_KINDS.includes(item.bucket));
-  const orphaned = indexedItems.filter((item) => !(Array.isArray(item.systemIds) && item.systemIds.length));
-  const orphanRow = buildAdminSummaryRow(
-    "No System assigned (class/feature/monster/wonder/character only — species/background not yet indexed for this check)",
-    indexedItems.length - orphaned.length,
-    indexedItems.length,
-    orphaned,
-    (item) => adminLibraryHref(item.bucket, item.id)
-  );
-  adminInventoryList.appendChild(orphanRow);
-  adminSummary.inventory = { records: items.length, kinds: counts.size, unassigned: orphaned.length };
+async function runAdminOverviewNumbers() {
+  const ask = async (spec) => (await dataManager.runAnalyticsQuery(spec)).rows[0] || [];
+  const [[records, kinds], [unassigned], [users], [neverActive], [groups, owners]] = await Promise.all([
+    ask({ dataset: "library_items", measures: ["records", "kinds"] }),
+    ask({
+      dataset: "library_items",
+      measures: ["records"],
+      filters: [
+        { field: "kind", op: "in", value: ADMIN_SYSTEM_ID_INDEXED_KINDS },
+        { field: "system", op: "eq", value: "(none)" },
+      ],
+    }),
+    ask({ dataset: "users", measures: ["users"] }),
+    ask({ dataset: "users", measures: ["users"], filters: [{ field: "has_signed_in", op: "eq", value: false }] }),
+    ask({ dataset: "groups", measures: ["groups", "gms"] }),
+  ]);
+  adminSummary.inventory = { records, kinds, unassigned: unassigned || 0 };
+  adminSummary.users = { total: users, neverActive: neverActive || 0 };
+  adminSummary.groups = { total: groups || 0, owners: owners || 0 };
   renderAdminSummary();
-  expandAdminSection("inventory", setAdminInventoryCollapsed, expand);
 }
 
-async function runAdminUsersSummary({ force = false, expand = true } = {}) {
-  const users = await fetchAdminUsers({ force });
-  adminUsersList.innerHTML = "";
-  const summary = document.createElement("p");
-  summary.className = "small text-body-secondary mb-0";
-  summary.textContent = `${users.length} total users.`;
-  adminUsersList.appendChild(summary);
-  const byTier = new Map();
-  let neverActive = 0;
-  users.forEach((user) => {
-    const tier = user.tier || "free";
-    byTier.set(tier, (byTier.get(tier) || 0) + 1);
-    if (!user.last_activity && !user.last_login) neverActive += 1;
-  });
-  const table = document.createElement("div");
-  table.className = "d-flex flex-column gap-1 small";
-  ["free", "player", "gm", "creator", "admin"].forEach((tier) => {
-    if (!byTier.has(tier)) return;
-    const row = document.createElement("div");
-    row.className = "d-flex justify-content-between gap-2";
-    const label = document.createElement("span");
-    label.textContent = loomFormatTier(tier);
-    const value = document.createElement("span");
-    value.className = "text-body-secondary";
-    value.textContent = String(byTier.get(tier));
-    row.append(label, value);
-    table.appendChild(row);
-  });
-  adminUsersList.appendChild(table);
-  const neverRow = document.createElement("p");
-  neverRow.className = "small text-body-secondary mt-2 mb-0";
-  neverRow.textContent = `${neverActive} user${neverActive === 1 ? "" : "s"} with no recorded activity.`;
-  adminUsersList.appendChild(neverRow);
-  const link = document.createElement("a");
-  link.className = "small";
-  link.href = "#";
-  link.textContent = "Open Users tab →";
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    setLoomView("users");
-  });
-  adminUsersList.appendChild(link);
-  adminSummary.users = { total: users.length, neverActive };
-  renderAdminSummary();
-  expandAdminSection("users", setAdminUsersCollapsed, expand);
-}
-
-async function runAdminGroupsSummary({ force = false, expand = true } = {}) {
-  const items = await fetchAdminLibraryItems({ force });
-  const groups = items.filter((item) => item.bucket === "group");
-  adminGroupsList.innerHTML = "";
-  const byOwner = new Map();
-  groups.forEach((group) => {
-    byOwner.set(group.owner_username, (byOwner.get(group.owner_username) || 0) + 1);
-  });
-  const summary = document.createElement("p");
-  summary.className = "small text-body-secondary mb-0";
-  summary.textContent = `${groups.length} Player Group${groups.length === 1 ? "" : "s"} across ${byOwner.size} owner${byOwner.size === 1 ? "" : "s"}.`;
-  adminGroupsList.appendChild(summary);
-  const multiOwnerCount = Array.from(byOwner.values()).filter((count) => count > 1).length;
-  if (multiOwnerCount) {
-    const detail = document.createElement("p");
-    detail.className = "small text-body-secondary mb-0";
-    detail.textContent = `${multiOwnerCount} owner${multiOwnerCount === 1 ? "" : "s"} run more than one group.`;
-    adminGroupsList.appendChild(detail);
-  }
-  const link = document.createElement("a");
-  link.className = "small";
-  link.href = "#";
-  link.textContent = "Open Groups tab →";
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    setLoomView("groups");
-  });
-  adminGroupsList.appendChild(link);
-  adminSummary.groups = { total: groups.length, owners: byOwner.size };
-  renderAdminSummary();
-  expandAdminSection("groups", setAdminGroupsCollapsed, expand);
-}
-
-// Runs every overview check. Nothing runs when the Admin tab is merely opened: Check all (or one
-// section's own Check now) fetches, and a section opens the first time it has content.
 async function loomLoadAdminOverview({ force = false } = {}) {
   if (!isLoomAdminSession()) return;
   const expand = force;
   await Promise.all([
     runAdminSystemHealth({ force, expand }).catch(() => {}),
-    runAdminContentInventory({ force, expand }).catch(() => {}),
-    runAdminUsersSummary({ force, expand }).catch(() => {}),
-    runAdminGroupsSummary({ force, expand }).catch(() => {}),
+    runAdminOverviewNumbers().catch(() => {}),
     runAdminServerLoad({ force, expand }).catch(() => {}),
   ]);
 }
@@ -1135,39 +1015,6 @@ const { section: adminSystemHealthSection, setCollapsed: setAdminSystemHealthCol
   content: adminSystemHealthList,
 });
 document.querySelector("[data-admin-system-health-mount]")?.appendChild(adminSystemHealthSection);
-
-const adminInventoryList = document.createElement("div");
-adminInventoryList.className = "d-flex flex-column gap-2 small";
-adminInventoryList.textContent = "Not checked yet.";
-const { section: adminInventorySection, setCollapsed: setAdminInventoryCollapsed } = createCollapsibleSection({
-  label: "Library Content Inventory",
-  collapsed: true,
-  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminContentInventory({ force: true }) }],
-  content: adminInventoryList,
-});
-document.querySelector("[data-admin-inventory-mount]")?.appendChild(adminInventorySection);
-
-const adminUsersList = document.createElement("div");
-adminUsersList.className = "d-flex flex-column gap-2 small";
-adminUsersList.textContent = "Not checked yet.";
-const { section: adminUsersSection, setCollapsed: setAdminUsersCollapsed } = createCollapsibleSection({
-  label: "Users & Tiers",
-  collapsed: true,
-  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminUsersSummary({ force: true }) }],
-  content: adminUsersList,
-});
-document.querySelector("[data-admin-users-mount]")?.appendChild(adminUsersSection);
-
-const adminGroupsList = document.createElement("div");
-adminGroupsList.className = "d-flex flex-column gap-2 small";
-adminGroupsList.textContent = "Not checked yet.";
-const { section: adminGroupsSection, setCollapsed: setAdminGroupsCollapsed } = createCollapsibleSection({
-  label: "Player Groups",
-  collapsed: true,
-  actions: [{ icon: "tabler:refresh", label: "Check now", onClick: () => runAdminGroupsSummary({ force: true }) }],
-  content: adminGroupsList,
-});
-document.querySelector("[data-admin-groups-mount]")?.appendChild(adminGroupsSection);
 
 // Starting points for "look at this before launch"; tune them from real load-test results.
 const LOAD_P95_LIMIT_MS = 500;
@@ -2932,7 +2779,7 @@ if (recentSavesToggle && recentSavesPanel) {
 // active view's cards show, in the main pane AND the side panes (the
 // mapping toolbar/palette/sample-data and tree Inspector are Import-only;
 // Library/Systems carry their own pickers/toolbars inline).
-const LOOM_VIEWS = ["library", "import", "features", "groups", "macros", "systems", "users", "community", "admin"];
+const LOOM_VIEWS = ["library", "import", "features", "groups", "macros", "systems", "users", "community", "analytics", "admin"];
 const loomViewTabsContainer = document.querySelector("[data-loom-view-tabs]");
 
 function setLoomView(view) {
@@ -2962,6 +2809,8 @@ function setLoomView(view) {
     void populateFeatureSelect();
   } else if (view === "community") {
     void loomCommunityAdmin?.show();
+  } else if (view === "analytics") {
+    void loomAnalytics?.show();
   }
 }
 
@@ -3019,6 +2868,7 @@ const loomGroupForm = document.querySelector("[data-loom-group-form]");
 let loomGroupSessions = null;
 let loomGroupCommunity = null;
 let loomCommunityAdmin = null;
+let loomAnalytics = null;
 let loomInvitesAdmin = null;
 const loomGroupNameInput = document.querySelector("[data-loom-group-name]");
 const loomGroupSystemSelect = document.querySelector("[data-loom-group-system]");
@@ -4493,7 +4343,7 @@ function loomAvailableViews() {
   const isAdmin = isLoomAdminSession();
   return LOOM_VIEWS.filter((view) => {
     if (LOOM_CREATOR_TABS.includes(view)) return meetsCreator;
-    if (view === "users" || view === "admin" || view === "community") return isAdmin;
+    if (view === "users" || view === "admin" || view === "community" || view === "analytics") return isAdmin;
     return true; // groups/macros: available to every tier the whole tool already requires (gm+)
   });
 }
@@ -8226,6 +8076,13 @@ async function init() {
     getStatus: () => status,
     mount: document.querySelector("[data-loom-invites-mount]"),
     inspectorMount: document.querySelector("[data-loom-invites-inspector-mount]"),
+  });
+  loomAnalytics = initAnalytics({
+    dataManager,
+    getStatus: () => status,
+    listMount: document.querySelector("[data-analytics-list-mount]"),
+    resultMount: document.querySelector("[data-analytics-result-mount]"),
+    builderMount: document.querySelector("[data-analytics-builder-mount]"),
   });
   loomGroupCommunity = initGroupCommunity({
     dataManager,
