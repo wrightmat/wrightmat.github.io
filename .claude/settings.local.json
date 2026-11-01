@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk '{print $2}')",
+      "Bash(xargs -I{} sh -c 'echo \"{}: $\\(stat -c %y \"{}\" 2>/dev/null || stat -f %Sm \"{}\"\\)\"')",
+      "Bash(git -C \"C:\\\\Users\\\\wrigh\\\\Nextcloud\\\\GitHub\\\\wrightmat.github.io\" status)",
+      "Bash(git -C \"C:\\\\Users\\\\wrigh\\\\Nextcloud\\\\GitHub\\\\wrightmat.github.io\" diff --stat)",
+      "Bash(git -C \"C:\\\\Users\\\\wrigh\\\\Nextcloud\\\\GitHub\\\\wrightmat.github.io\" show --stat HEAD)"
+    ]
+  }
+}
