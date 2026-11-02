@@ -1091,17 +1091,26 @@ def _owner_has_active(state: ServerState, group_id: str, owner_id: Optional[int]
     return bool(row)
 
 
+def _is_group_gm(state: ServerState, group_id: str, user_id: Optional[int]) -> bool:
+    row = state.db.execute("SELECT owner_id FROM library_items WHERE kind = 'group' AND id = ?", (group_id,)).fetchone()
+    return user_id is not None and bool(row) and row["owner_id"] == user_id
+
+
 def _default_active_for_new_member(state: ServerState, group_id: str, character_id: str) -> int:
     """A newly rostered character is the player's active one unless that player
-    already has another active character in this group."""
-    return 0 if _owner_has_active(state, group_id, _owner_of_character(state, character_id), excluding=character_id) else 1
+    already has another active character in this group. The GM's characters
+    stand in for people without accounts, so any number of them can be active."""
+    owner_id = _owner_of_character(state, character_id)
+    if _is_group_gm(state, group_id, owner_id):
+        return 1
+    return 0 if _owner_has_active(state, group_id, owner_id, excluding=character_id) else 1
 
 
 def _ensure_one_active(state: ServerState, group_id: str, owner_ids: Iterable[int]) -> None:
     """After a roster change, a player who still has characters here but no
     active one gets their earliest-added character made active."""
     for owner_id in owner_ids:
-        if _owner_has_active(state, group_id, owner_id):
+        if _is_group_gm(state, group_id, owner_id) or _owner_has_active(state, group_id, owner_id):
             continue
         row = state.db.execute(
             """
@@ -1124,7 +1133,8 @@ def set_member_active(
 ) -> Dict[str, Any]:
     """Marks one rostered character active or inactive. The group's GM (or an
     admin) can change any of them; a player can change their own. Activating a
-    character deactivates that player's other characters in the group."""
+    player's character deactivates their other characters in the group; the
+    GM's own characters have no such limit."""
     if not user:
         raise AuthError("Authentication required")
     row = _load_group_row(state, group_id)
@@ -1140,7 +1150,7 @@ def set_member_active(
     is_gm = user.tier == "admin" or row["owner_id"] == user.id
     if not (is_gm or character_owner == user.id):
         raise AuthError("You can only change your own characters")
-    if active and character_owner is not None:
+    if active and character_owner is not None and character_owner != row["owner_id"]:
         state.db.execute(
             """
             UPDATE group_members SET active = 0
@@ -1817,6 +1827,26 @@ def respond_to_transfer(state: ServerState, user: Optional[User], group_id: str,
     )
     if offer.get("keepAsPlayer") and old_owner_id is not None:
         ensure_player(state, group_id, old_owner_id)
+        # As a GM they could have several active characters; as a player, only the earliest-added stays active.
+        keep = state.db.execute(
+            """
+            SELECT gm.content_id FROM group_members AS gm
+            JOIN library_items AS li ON li.kind = 'character' AND li.id = gm.content_id
+            WHERE gm.group_id = ? AND gm.content_type = 'character' AND li.owner_id = ? AND COALESCE(gm.active, 1) != 0
+            ORDER BY gm.added_at, gm.content_id LIMIT 1
+            """,
+            (group_id, old_owner_id),
+        ).fetchone()
+        if keep:
+            state.db.execute(
+                """
+                UPDATE group_members SET active = 0
+                WHERE group_id = ? AND content_type = 'character' AND content_id != ? AND content_id IN (
+                    SELECT id FROM library_items WHERE kind = 'character' AND owner_id = ?
+                )
+                """,
+                (group_id, keep["content_id"], old_owner_id),
+            )
     # Listings and applications are addressed to the previous GM, so they end; the new GM can list again.
     state.db.execute("UPDATE listings SET status = 'closed', updated_at = ? WHERE group_id = ?", (now, group_id))
     for pending in state.db.execute("SELECT * FROM applications WHERE group_id = ? AND status = 'pending'", (group_id,)).fetchall():

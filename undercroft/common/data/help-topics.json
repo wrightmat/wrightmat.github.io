@@ -764,7 +764,7 @@
       "summary": "Choose which characters are in a group, and which one each player is currently playing.",
       "details": [
         "Select a group to see its character list. Tick a character to add it and untick it to remove it. Changes save automatically.",
-        "Each character in the group has an Active switch. A player has one active character per group, the one they are playing now; turning one on turns their other off. Players can also switch their own from a session invitation in their Inbox.",
+        "Each character in the group has an Active switch. A player has one active character per group, the one they are playing now; turning one on turns their other off. Characters you own as the GM, such as those for players without an account, have no such limit: any number of them can be active. Players can also switch their own from a session invitation in their Inbox.",
         "Only players with an active character are invited to the group's sessions."
       ],
       "category": "Loom",

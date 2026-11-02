@@ -3708,7 +3708,7 @@ function loomRenderGroupMembersList(group) {
     const wrapper = document.createElement("div");
     wrapper.className = "d-flex align-items-center justify-content-between gap-2";
     // Active: the character this player is currently playing in the group. Only
-    // rostered characters have one, and a player has at most one.
+    // rostered characters have one; a player has at most one, the GM any number.
     const activeSwitch = row.checked
       ? `<span class="form-check form-switch mb-0 flex-shrink-0">
            <input class="form-check-input" type="checkbox" role="switch" value="${escapeHtml(row.id)}" id="${escapeHtml(checkboxId)}-active" data-loom-group-member-active ${row.active ? "checked" : ""} />
