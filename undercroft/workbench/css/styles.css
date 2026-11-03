@@ -259,6 +259,11 @@
   resize: vertical;
 }
 
+/* The browser's own stepper sits inside the field, so trim the side padding to leave the value room in narrow columns. */
+.form-control[type="number"] {
+  padding-inline: 0.5rem 0.25rem;
+}
+
 [data-canvas-mode="view"] .form-control:disabled,
 [data-canvas-mode="view"] .form-select:disabled,
 [data-canvas-mode="view"] textarea:disabled,

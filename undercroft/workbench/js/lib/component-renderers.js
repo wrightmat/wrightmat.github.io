@@ -722,8 +722,8 @@ const INPUT_LABEL_CLASSES = ["form-label", "fw-semibold", "mb-0"];
 //     as-authored; preview: falls back to 3 sample options).
 //   decorate(el, component, meta) — live: assignBindingMetadata; preview: no-op.
 //   wrapControl(input, component, { labelText, editable }) — final control
-//     node passed to createLabeledField; live: combat-binding
-//     spinner/roll-overlay wrapping; preview: identity.
+//     node passed to createLabeledField; live: roll-overlay wrapping;
+//     preview: identity.
 //   wrapEmptyOptions(field) — optional, preview only: "no options
 //     configured" hint on an empty Select.
 //   plainReadOnly(component) — optional, only true when !editable; live:

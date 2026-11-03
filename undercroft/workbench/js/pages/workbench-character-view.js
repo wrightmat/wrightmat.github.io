@@ -3612,22 +3612,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return container;
   }
 
-  function createSpinnerButton(iconName, label, onClick) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "btn btn-outline-secondary";
-    button.setAttribute("aria-label", label);
-    button.setAttribute("data-bs-toggle", "tooltip");
-    button.setAttribute("data-bs-title", label);
-    const icon = document.createElement("span");
-    icon.className = "iconify";
-    icon.dataset.icon = iconName;
-    icon.setAttribute("aria-hidden", "true");
-    button.appendChild(icon);
-    button.addEventListener("click", onClick);
-    return button;
-  }
-
   // Rolls from this panel land in the active chat thread; this line says which.
   function syncDiceTarget() {
     const line = elements.dicePanel?.querySelector("[data-dice-target]");
@@ -5793,32 +5777,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       runButtonAction(comp) {
         void runButtonComponentAction(comp, itemContext);
       },
-      // Number fields authored "Editable in Play" (HP, AC, ...) get +/- stepper
-      // buttons instead of a plain input, for fast mid-combat adjustment. Item-aware
-      // (isRepeaterItemNodeEditableInPlay) so a per-row counter inside a Repeater
-      // gets the spinner too, not just top-level fields.
-      wrapControl(input, comp, { labelText, editable }) {
-        const variant = (comp.variant || "text").toLowerCase();
-        const editableInPlay = itemContext
-          ? isRepeaterItemNodeEditableInPlay(comp, itemContext.item)
-          : isComponentEditableInPlay(comp);
-        if (editable && variant === "number" && editableInPlay) {
-          const step = Number(comp.step) || 1;
-          const applyDelta = (delta) => {
-            const current = Number(input.value) || 0;
-            const next = current + delta;
-            input.value = next;
-            writeValue(comp, next);
-            void persistDraft({ silent: true });
-          };
-          const spinnerGroup = document.createElement("div");
-          spinnerGroup.className = "input-group input-group-sm";
-          input.classList.add("text-center");
-          spinnerGroup.appendChild(createSpinnerButton("tabler:minus", `Decrease ${labelText}`, () => applyDelta(-step)));
-          spinnerGroup.appendChild(input);
-          spinnerGroup.appendChild(createSpinnerButton("tabler:plus", `Increase ${labelText}`, () => applyDelta(step)));
-          return spinnerGroup;
-        }
+      wrapControl(input, comp) {
         const inputContainer = document.createElement("div");
         inputContainer.className = "position-relative";
         const componentUid = comp?.uid || "";
@@ -6167,9 +6126,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return Number.isFinite(raw) && raw > 0 ? Math.min(Math.round(raw), 8) : 1;
   }
 
-  // Small icon-only button for a Repeater row's own "Remove" control — same
-  // iconify/tabler pattern as createSpinnerButton above, just danger-styled
-  // and sized down to fit inline with a row's own content.
+  // Small icon-only button for a Repeater row's own "Remove" control, sized
+  // down to fit inline with a row's own content.
   function createRepeaterRemoveButton(onRemove) {
     const button = document.createElement("button");
     button.type = "button";
@@ -7728,7 +7686,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           setValue(optionValue);
         }
         // A button click is a single discrete action — no keystroke-batching reason
-        // to wait for blur, unlike free-typed input. Same as the HP/AC spinners.
+        // to wait for blur, unlike free-typed input.
         void persistDraft({ silent: true });
       },
       decorate(el, comp, meta) {
