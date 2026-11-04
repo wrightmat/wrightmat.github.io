@@ -670,7 +670,8 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         sortDirection: "asc",
       },
       supportsBinding: true,
-      supportsFormula: false,
+      // Only a libraryEntries() query: the Repeater then lists those Library records as read-only reference rows.
+      supportsFormula: true,
       supportsReadOnly: false,
       supportsAlignment: false,
       textControls: false,
@@ -3563,7 +3564,10 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     const binding = normalizeBindingValue(component.binding);
     const hint = document.createElement("div");
     hint.className = "extra-small text-body-secondary";
-    hint.textContent = binding
+    const formula = typeof component.formula === "string" ? component.formula.trim() : "";
+    hint.textContent = formula
+      ? `Repeats once per Library record from =${formula} — build the item's own layout below.`
+      : binding
       ? `Repeats once per item in ${binding} — build the item's own layout below.`
       : "Bind this to an array field (Data section below), then build the item's own layout here.";
     wrapper.appendChild(hint);

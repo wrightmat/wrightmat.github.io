@@ -6301,10 +6301,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const byId = new Map(entries.map((entry) => [entry.id, entry.entity]));
     return (Array.isArray(ids) ? ids : [])
       .filter((id) => typeof id === "string" && id)
-      .map((id) => {
-        const entity = byId.get(id);
-        return { refKind: kind, refId: id, name: entity?.name || id, description: resolveNotes(entity) };
-      });
+      .map((id) => toReferenceItem(kind, id, byId.get(id)));
+  }
+
+  // The record's own fields stay on the row, so an item cell or formula can read any of them (@actionType).
+  function toReferenceItem(kind, id, entity) {
+    return { ...(entity || {}), refKind: kind, refId: id, name: entity?.name || id, description: resolveNotes(entity) };
   }
 
   // Walks the whole template's component tree collecting distinct Library kinds
@@ -6882,14 +6884,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       );
       return wrapper;
     }
-    // Repeater has no formula/roller support — a plain @path is all its binding
-    // ever holds, so the item-relative resolver is enough here, no need for
-    // resolveComponentValue's fuller formula/roller machinery.
     const value = itemContext
       ? resolveItemContextValue(itemContext, component.binding)
       : resolveComponentValue(component);
+    // A top-level Repeater whose formula is a libraryEntries() query lists those records, read-only.
+    const formulaKind = !itemContext && componentHasFormula(component) ? sourceFormulaKind(component.formula) : "";
     let items =
-      Array.isArray(value) && isIdStorageRepeater(component)
+      formulaKind && Array.isArray(value)
+        ? value.filter((entry) => entry?.id).map((entry) => toReferenceItem(formulaKind, entry.id, entry.entity))
+        : Array.isArray(value) && isIdStorageRepeater(component)
         ? expandIdStorageItems(component, value)
         : Array.isArray(value)
           ? value
@@ -7187,7 +7190,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // live draft record, or (when itemContext is set) against that one repeater item,
   // same "resolve relative to the current row" scoping other item-template nodes use.
   function resolveContextFormula(formula, itemContext) {
-    const dataContext = itemContext ? (itemContext.item && typeof itemContext.item === "object" ? itemContext.item : {}) : getBindingContext();
+    const dataContext = itemContext ? itemFormulaContext(itemContext.item) : getBindingContext();
     try {
       return evaluateFormulaWithLookup(formula, dataContext, itemContext ? {} : { rollDice: rollDiceExpression });
     } catch (error) {
@@ -8157,6 +8160,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return overridden || component;
   }
 
+  // An item-template formula reads the row's own fields bare (@actionType) and the whole record as
+  // @character.<field>; a row field named "character" still wins, so existing formulas keep their meaning.
+  function itemFormulaContext(item) {
+    if (Array.isArray(item)) return item;
+    return { character: getBindingContext(), ...(item && typeof item === "object" ? item : {}) };
+  }
+
   // Same idea as isComponentVisible, but for a Repeater item-template node —
   // evaluated against the current item as the data context, same scoping an item
   // node's ordinary binding already uses.
@@ -8165,7 +8175,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const formula = typeof node.visibilityFormula === "string" ? node.visibilityFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {}));
+        return Boolean(evaluateFormulaWithLookup(formula, itemFormulaContext(item), {}));
       } catch (error) {
         console.warn("Character editor: unable to evaluate item visibility formula", error);
         return true;
@@ -8186,7 +8196,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const formula = typeof node.editableInPlayFormula === "string" ? node.editableInPlayFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {}));
+        return Boolean(evaluateFormulaWithLookup(formula, itemFormulaContext(item), {}));
       } catch (error) {
         console.warn("Character editor: unable to evaluate item editable-in-play formula", error);
         return false;
@@ -8209,7 +8219,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const formula = typeof node.readOnlyFormula === "string" ? node.readOnlyFormula.trim() : "";
     if (formula) {
       try {
-        return Boolean(evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {}));
+        return Boolean(evaluateFormulaWithLookup(formula, itemFormulaContext(item), {}));
       } catch (error) {
         console.warn("Character editor: unable to evaluate item locked formula", error);
         return false;
@@ -8283,7 +8293,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
       if (formula) {
         try {
-          const result = evaluateFormulaWithLookup(formula, item && typeof item === "object" ? item : {}, {});
+          const result = evaluateFormulaWithLookup(formula, itemFormulaContext(item), {});
           if (typeof result === "string" && result.trim()) {
             if (!overridden) overridden = { ...node };
             overridden[colorProp] = result.trim();

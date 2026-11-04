@@ -257,6 +257,11 @@
       ]
     },
     {
+      "type": "string",
+      "key": "featureActionFilter",
+      "label": "Feature Filter"
+    },
+    {
       "type": "array",
       "key": "classes",
       "label": "Classes",

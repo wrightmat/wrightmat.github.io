@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-catch-breath",
+  "name": "Catch Breath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Maneuver**\n\nA creature who uses the Catch Breath maneuver spends a Recovery and regains Stamina equal to their recovery value.\n\nA creature who is dying can't use the Catch Breath maneuver, but other creatures can help them spend Recoveries in other ways.",
+  "mechanics": {
+    "type": "active",
+    "text": "A creature who uses the Catch Breath maneuver spends a Recovery and regains Stamina equal to their recovery value. A creature who is dying can't use the Catch Breath maneuver, but other creatures can help them spend Recoveries in other ways."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel",
+      "drawsteel-common-maneuver"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "actionType": "Maneuver"
+}

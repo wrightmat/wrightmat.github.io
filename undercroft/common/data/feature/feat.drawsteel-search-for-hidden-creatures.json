@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-search-for-hidden-creatures",
+  "name": "Search for Hidden Creatures",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Maneuver**\n\nThe Search for Hidden Creatures maneuver allows a creature to attempt to locate creatures hidden from them.",
+  "mechanics": {
+    "type": "active",
+    "text": "The Search for Hidden Creatures maneuver allows a creature to attempt to locate creatures hidden from them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel",
+      "drawsteel-common-maneuver"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "actionType": "Maneuver"
+}

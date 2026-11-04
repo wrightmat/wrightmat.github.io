@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-aid-attack",
+  "name": "Aid Attack",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Maneuver**\n\nA creature who uses the Aid Attack maneuver chooses an enemy adjacent to them. The next ability roll an ally makes against that enemy before the start of the aiding creature's next turn gains an edge.",
+  "mechanics": {
+    "type": "active",
+    "text": "A creature who uses the Aid Attack maneuver chooses an enemy adjacent to them. The next ability roll an ally makes against that enemy before the start of the aiding creature's next turn gains an edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel",
+      "drawsteel-common-maneuver"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "actionType": "Maneuver"
+}

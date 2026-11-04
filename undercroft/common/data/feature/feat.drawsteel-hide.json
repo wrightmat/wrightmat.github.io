@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-hide",
+  "name": "Hide",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Maneuver**\n\nUsing the Hide maneuver, a creature attempts to hide from other creatures who aren't observing them while they have cover or concealment.",
+  "mechanics": {
+    "type": "active",
+    "text": "Using the Hide maneuver, a creature attempts to hide from other creatures who aren't observing them while they have cover or concealment."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel",
+      "drawsteel-common-maneuver"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Maneuver",
+  "actionType": "Maneuver"
+}

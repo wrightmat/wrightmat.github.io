@@ -211,7 +211,7 @@
       "details": [
         "What you type decides how a field is read. Plain text is shown as written, @path reads a value from the character, and =expression calculates one. There is no switch; just type into the same field.",
         "A path is a dot-separated route into the character's data, such as @abilities.strength.score or @inventory.0.name. It works the same in every field that accepts a binding: an Input, a Track's segments, an Icon, an Image's URL, a Container's heading, and Text.",
-        "Inside a Repeater's row template, a path starts from that one row. @name there means this item's own name, not the character's name. That includes a Repeater nested inside another.",
+        "Inside a Repeater's row template, a path starts from that one row. @name there means this item's own name, not the character's name. That includes a Repeater nested inside another. A formula in a row template, such as a Visible formula, can still read the character's own fields by starting the path with @character, so @character.level is the character's level.",
         "Binding and Source are different. Binding or Text pulls a value from the character. Source pulls a list of choices from the System, for an Input's dropdown, radio or checkbox options and a Toggle's states. Don't type a value binding into a Source field.",
         "A path can continue into an array's or object's properties, so @components.length counts the items in a list. A number or text value has no properties, so @dc.length on a plain number shows nothing."
       ],
@@ -257,7 +257,7 @@
       "details": [
         "Under each binding or formula field, a line shows what it currently produces, or a red “Formula error” message if it can't be read.",
         "The preview uses the Template's sample data, not a real character, so a field the System doesn't have, or a path that only means something inside a Repeater row, can show nothing there and still work on a real character.",
-        "A Repeater's own binding takes only an @path, because it needs a real list to repeat over and a formula can't give one.",
+        "A Repeater's own binding is normally an @path to a list on the character. It can instead be a libraryEntries formula, such as =libraryEntries('feature', 'tags.categories', 'drawsteel-common-maneuver'), to list every matching Library record; that list is read-only and each name links to the full record.",
         "A Container's heading, an Icon's glyph and an Image's URL each take a path, a formula or plain text in the one field.",
         "Colors, and the Visible, Collapsible and Locked settings, take the same @path and =formula values."
       ],

@@ -145,5 +145,6 @@
     "feat.drawsteel-fearless"
   ],
   "title": "Polder Shadow (Pregen) Copy",
-  "image": "https://i.redd.it/nydwu17db3m21.jpg"
+  "image": "https://i.redd.it/nydwu17db3m21.jpg",
+  "featureActionFilter": "Main action"
 }
