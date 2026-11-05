@@ -186,12 +186,25 @@ const WLED_SYNC_CHANNEL = "undercroft-wled";
 const WLED_PAGE_ID = Math.random().toString(16).slice(2);
 let wledSendChannel = null;
 
-function notifyWledChanged(key) {
+// Which part of the suite last drove each device ("macro", "combat", "lighting", "clock"), shared across tabs, so a
+// different one taking over starts from dark instead of on top of what the last one left lit.
+const lastWledSource = new Map();
+if (typeof BroadcastChannel !== "undefined") {
+  try {
+    new BroadcastChannel(WLED_SYNC_CHANNEL).addEventListener("message", (event) => {
+      if (event.data?.origin !== WLED_PAGE_ID && event.data?.key && event.data?.source) lastWledSource.set(event.data.key, event.data.source);
+    });
+  } catch (error) {
+    // Best-effort, like the broadcast itself.
+  }
+}
+
+function notifyWledChanged(key, source) {
   window.dispatchEvent(new CustomEvent(WLED_CHANGED_EVENT, { detail: { key } }));
   if (typeof BroadcastChannel === "undefined") return;
   try {
     wledSendChannel = wledSendChannel || new BroadcastChannel(WLED_SYNC_CHANNEL);
-    wledSendChannel.postMessage({ key, origin: WLED_PAGE_ID });
+    wledSendChannel.postMessage({ key, origin: WLED_PAGE_ID, source });
   } catch (error) {
     // Best-effort — a page that can't broadcast just doesn't sync other tabs.
   }
@@ -229,16 +242,31 @@ export function subscribeWledChanges(handler) {
 // widget might meet, unlike the newer /json/state-only shorthand. Also
 // exactly what the Advanced/raw-JSON textarea sends, so "basic" controls
 // and "advanced" commands are the same request shape underneath.
-async function wledPostState(target, body) {
+// A command that sets what's shown (segments or a preset, not master power or brightness) from a `source` other
+// than the device's last one switches every segment off first, in the same request when it's per-segment (WLED
+// applies `seg` entries in order, so the command's own entries still win).
+async function wledPostState(target, body, { source = "" } = {}) {
+  let payload = body;
+  const claims = Boolean(source) && Boolean(body) && typeof body === "object" && (Array.isArray(body.seg) || body.ps !== undefined);
+  if (claims && lastWledSource.get(target.key) !== source) {
+    const state = await wledFetchJson(target, "/json/state");
+    const reset = (Array.isArray(state?.seg) ? state.seg : []).map((seg) => ({ id: seg.id, on: false }));
+    if (reset.length && body && typeof body === "object" && Array.isArray(body.seg)) {
+      payload = { tt: 0, ...body, seg: [...reset, ...body.seg] };
+    } else if (reset.length) {
+      await wledPostState(target, { tt: 0, seg: reset });
+    }
+  }
   const { response } = await wledRequest(target, "/json", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: typeof body === "string" ? body : JSON.stringify(body),
+    body: typeof payload === "string" ? payload : JSON.stringify(payload),
   });
   if (!response.ok) {
     throw new Error(`WLED returned ${response.status}`);
   }
-  notifyWledChanged(target.key);
+  if (claims) lastWledSource.set(target.key, source);
+  notifyWledChanged(target.key, claims ? source : "");
   try {
     return await response.json();
   } catch (error) {
@@ -373,7 +401,7 @@ export async function applyWledSegmentScene(device, { lit = [], off = [] } = {})
   const offIds = new Set(off.map(idFor).filter((id) => id !== undefined && !litIds.has(id)));
   const seg = [...Array.from(offIds, (id) => ({ id, on: false })), ...litEntries];
   if (!seg.length) return;
-  await wledPostState(target, { tt: 0, ...(litEntries.length ? { on: true } : {}), seg });
+  await wledPostState(target, { tt: 0, ...(litEntries.length ? { on: true } : {}), seg }, { source: "combat" });
 }
 
 // One short-lived lookup per device, shared by every editor that lists its
@@ -644,11 +672,11 @@ export function initWledWidget(
 
   // Shared by every failable device request — one place to surface a
   // network/HTTP error as a toast and refresh afterward.
-  async function sendRaw(body) {
+  async function sendRaw(body, source = "lighting") {
     const target = currentTarget();
     if (!target) return;
     try {
-      await wledPostState(target, body);
+      await wledPostState(target, body, { source });
       await refreshState({ silent: true });
     } catch (error) {
       status?.show?.(error?.message || "Unable to send command to WLED.", { type: "error", timeout: 3000 });
@@ -755,7 +783,8 @@ export function initWledWidget(
       ...(supportsBlend && bm !== undefined ? { bm } : {}),
     }));
     live.filter((entry) => entry.id >= remembered.length).forEach((entry) => seg.push({ id: entry.id, stop: 0 }));
-    await sendRaw({ seg });
+    // Restoring the layout reshapes segments rather than lighting anything, so it isn't a new source.
+    await sendRaw({ seg }, "");
   }
 
   function mainSegment() {
@@ -789,10 +818,10 @@ export function initWledWidget(
     lastAppliedFollowKey = key;
     if (config.followMode === "segments" && ids.length) {
       const onCount = Math.round((filled / segments) * ids.length);
-      await sendRaw({ seg: ids.map((id, index) => ({ id, on: index < onCount })) });
+      await sendRaw({ seg: ids.map((id, index) => ({ id, on: index < onCount })) }, "clock");
     } else {
       const bri = Math.max(1, Math.round((filled / segments) * 255));
-      await sendRaw({ bri });
+      await sendRaw({ bri }, "clock");
     }
   }
 
@@ -1298,7 +1327,8 @@ export function initWledWidget(
       palettes: Array.isArray(deviceState?.palettes) ? deviceState.palettes : [],
       presets: presetList,
       effectMeta,
-      segments: segs.map((entry, index) => ({ value: String(entry.id), label: entry.n || `Segment ${index}` })),
+      // Marked so the card shows what's lit, whoever lit it.
+      segments: segs.map((entry, index) => ({ value: String(entry.id), label: `${entry.n || `Segment ${index}`}${entry.on ? " (on)" : ""}` })),
     };
     // One target segment. An id that isn't in the device's list (entered by
     // number) is passed as `segmentId` rather than a listed choice.
@@ -1615,20 +1645,20 @@ export function initWledWidget(
     const params = action?.params || {};
     switch (action?.action) {
       case "on":
-        await sendRaw({ on: true });
+        await sendRaw({ on: true }, "macro");
         return;
       case "off":
-        await sendRaw({ on: false });
+        await sendRaw({ on: false }, "macro");
         return;
       case "preset":
-        await sendRaw({ ps: Number(params.presetId) });
+        await sendRaw({ ps: Number(params.presetId) }, "macro");
         return;
       case "brightness":
-        await sendRaw({ bri: Number(params.value) });
+        await sendRaw({ bri: Number(params.value) }, "macro");
         return;
       case "effect": {
         const { segmentId, otherSegmentIds } = await resolveMacroSegment(currentTarget(), params);
-        await sendRaw(buildWledLookCommand(segmentId, params, otherSegmentIds));
+        await sendRaw(buildWledLookCommand(segmentId, params, otherSegmentIds), "macro");
         return;
       }
       default:
@@ -1965,20 +1995,20 @@ export async function runWledMacroAction(action, { wledDevices = [], widgetInsta
   const params = action?.params || {};
   switch (action?.action) {
     case "on":
-      await wledPostState(target, { on: true });
+      await wledPostState(target, { on: true }, { source: "macro" });
       return;
     case "off":
-      await wledPostState(target, { on: false });
+      await wledPostState(target, { on: false }, { source: "macro" });
       return;
     case "preset":
-      await wledPostState(target, { ps: Number(params.presetId) });
+      await wledPostState(target, { ps: Number(params.presetId) }, { source: "macro" });
       return;
     case "brightness":
-      await wledPostState(target, { bri: Number(params.value) });
+      await wledPostState(target, { bri: Number(params.value) }, { source: "macro" });
       return;
     case "effect": {
       const { segmentId, otherSegmentIds } = await resolveMacroSegment(target, params);
-      await wledPostState(target, buildWledLookCommand(segmentId, params, otherSegmentIds));
+      await wledPostState(target, buildWledLookCommand(segmentId, params, otherSegmentIds), { source: "macro" });
       return;
     }
     default:
