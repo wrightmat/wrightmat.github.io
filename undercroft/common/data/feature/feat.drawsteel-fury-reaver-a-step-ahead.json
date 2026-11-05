@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-reaver-a-step-ahead",
+  "name": "A Step Ahead",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You move with legendary grace. Whenever you make an Agility test, you can roll three dice and choose which two to use. Additionally, whenever you use the Disengage move action, the distance you can shift gains a bonus equal to your Agility score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You move with legendary grace. Whenever you make an Agility test, you can roll three dice and choose which two to use. Additionally, whenever you use the Disengage move action, the distance you can shift gains a bonus equal to your Agility score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

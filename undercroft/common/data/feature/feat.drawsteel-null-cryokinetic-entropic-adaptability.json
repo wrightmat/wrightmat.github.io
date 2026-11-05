@@ -1,0 +1,38 @@
+{
+  "id": "feat.drawsteel-null-cryokinetic-entropic-adaptability",
+  "name": "Entropic Adaptability",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have cold immunity equal to twice your Intuition score. Additionally, you ignore difficult terrain related to cold and ice, and you can automatically climb at full speed while moving.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have cold immunity equal to twice your Intuition score. Additionally, you ignore difficult terrain related to cold and ice, and you can automatically climb at full speed while moving."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Cold",
+          "kind": "Immunity",
+          "formula": "2 * @intuition"
+        }
+      ]
+    }
+  ]
+}

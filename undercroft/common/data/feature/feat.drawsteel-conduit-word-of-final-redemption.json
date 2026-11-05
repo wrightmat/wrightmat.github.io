@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-word-of-final-redemption",
+  "name": "Word of Final Redemption",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your death will fuel our victory.*\n\n**Heroic Ability** — Magic, Ranged — Free triggered\n\n**Cost:** 11 Piety\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Trigger:** The target dies.\n\n**Effect:** Before the target dies, you can look at their stat block and force them to use one ability that is a main action or a maneuver. If the ability costs a Heroic Resource or Malice, the creature can use it without any cost. For the purpose of using this ability, your allies and enemies are the target's allies and enemies, and you decide who the ability targets.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your death will fuel our victory. Trigger: The target dies. Effect: Before the target dies, you can look at their stat block and force them to use one ability that is a main action or a maneuver. If the ability costs a Heroic Resource or Malice, the creature can use it without any cost. For the purpose of using this ability, your allies and enemies are the target's allies and enemies, and you decide who the ability targets."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Free triggered",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-death"
+  ]
+}

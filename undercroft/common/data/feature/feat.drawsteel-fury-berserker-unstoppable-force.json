@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-berserker-unstoppable-force",
+  "name": "Unstoppable Force",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you use the Charge main action, you can use a strike signature ability or a strike heroic ability instead of a free strike. Additionally, you can jump as part of your charge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you use the Charge main action, you can use a strike signature ability or a strike heroic ability instead of a free strike. Additionally, you can jump as part of your charge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

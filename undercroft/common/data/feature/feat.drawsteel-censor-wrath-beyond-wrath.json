@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-censor-wrath-beyond-wrath",
+  "name": "Wrath Beyond Wrath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The first time each combat round that you deal damage to a creature judged by you, you gain 2 wrath instead of 1.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The first time each combat round that you deal damage to a creature judged by you, you gain 2 wrath instead of 1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

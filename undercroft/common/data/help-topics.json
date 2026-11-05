@@ -305,12 +305,24 @@
       "href": "../workbench/index.html"
     },
     {
+      "id": "workbench.scratchpad",
+      "title": "Scratchpad",
+      "summary": "Quick notes for the character you have open, kept on this device only.",
+      "details": [
+        "The Scratchpad in the left pane is for throwaway notes during a session. It is saved in this browser only, not with the character, so it doesn't appear on your other devices and nobody you share the character with can see it.",
+        "For notes you want to keep, use the Notes field on the character sheet if its Template has one. That is saved with the character, so it follows you to any device you sign in on."
+      ],
+      "category": "Workbench",
+      "section": "Characters",
+      "href": "../workbench/index.html"
+    },
+    {
       "id": "workbench.characterSheet",
       "title": "The Character Sheet",
       "summary": "What's on the sheet and in the side panes while a character is open.",
       "details": [
         "The center pane shows the sheet through its Template. In View you play it; in Edit you can change values and the character's details.",
-        "The left pane holds your session Notes (kept in this browser only, not saved with the character), Relationships and the character's JSON data. The right pane holds Character Properties, the Dice Roller, Group Chat and Now Showing.",
+        "The left pane holds the Scratchpad (quick notes kept in this browser only, not saved with the character), Relationships and the character's JSON data. The right pane holds Character Properties, the Dice Roller, Group Chat and Now Showing.",
         "Character Properties has Level Up, Add a Class and Re-import. A button that is greyed out explains why when you hover it.",
         "Level Up and Add a Class walk you through the choices your System's rules call for and then apply them."
       ],

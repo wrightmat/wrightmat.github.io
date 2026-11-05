@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-renegotiated-contract",
+  "name": "Renegotiated Contract",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*No, no. You don't die until the sequel.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Drama\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Effect:** Add your current Stamina to your target's current Stamina, then you have half that total Stamina and the target has the remainder. If either of you would gain more Stamina this way than their Stamina maximum, the difference in Stamina between what that creature would gain and their maximum is gained by the other creature. Neither of you can gain more Stamina than your maximum this way. You then make a power roll.\n\n**Power Roll + Presence:**\n\n- **≤11:** You and the target can each end one effect on yourselves that is ended by a saving throw or that ends at the end of your turns.\n- **12-16:** You and the target can end any effects on yourselves that are ended by a saving throw or that end at the end of your turns.\n- **17+:** You can choose any of the current effects on you and the target that are ended by a saving throw or that end at the end of your turns, apply the chosen effects to the target, and end the rest.",
+  "mechanics": {
+    "type": "active",
+    "text": "No, no. You don't die until the sequel. Effect: Add your current Stamina to your target's current Stamina, then you have half that total Stamina and the target has the remainder. If either of you would gain more Stamina this way than their Stamina maximum, the difference in Stamina between what that creature would gain and their maximum is gained by the other creature. Neither of you can gain more Stamina than your maximum this way. You then make a power roll. Power Roll + Presence: - ≤11: You and the target can each end one effect on yourselves that is ended by a saving throw or that ends at the end of your turns. - 12-16: You and the target can end any effects on yourselves that are ended by a saving throw or that end at the end of your turns. - 17+: You can choose any of the current effects on you and the target that are ended by a saving throw or that end at the end of your turns, apply the chosen effects to the target, and end the rest."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

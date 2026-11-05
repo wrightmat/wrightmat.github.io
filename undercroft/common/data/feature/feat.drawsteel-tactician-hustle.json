@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-hustle",
+  "name": "Hustle!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You and your allies coordinate to form a new battle line.*\n\n**Heroic Ability** — Area — Maneuver\n\n**Cost:** 9 Focus\n\n**Distance:** 2 burst   **Target:** Self and each ally in the area\n\n**Effect:** You mark two enemies within 10 squares of you. Each target can shift up to their speed. You and each target gain 2 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "You and your allies coordinate to form a new battle line. Effect: You mark two enemies within 10 squares of you. Each target can shift up to their speed. You and each target gain 2 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area",
+  "actionType": "Maneuver",
+  "distance": "2 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9
+}

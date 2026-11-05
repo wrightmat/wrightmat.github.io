@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-infernal-gavotte",
+  "name": "Infernal Gavotte",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A spicy performance lights a fire under your allies' feet.*\n\n**Heroic Ability** — Area, Magic, Melee, Weapon — Main action\n\n**Cost:** 7 Drama\n\n**Distance:** 3 burst   **Target:** Each enemy in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** 5 fire damage; A < WEAK, weakened (save ends)\n- **12-16:** 7 fire damage; A < AVERAGE, weakened (save ends)\n- **17+:** 10 fire damage; A < STRONG, weakened (save ends)\n\n**Effect:** Each ally in the area can shift up to 2 squares.",
+  "mechanics": {
+    "type": "active",
+    "text": "A spicy performance lights a fire under your allies' feet. Power Roll + Presence: - ≤11: 5 fire damage; A < WEAK, weakened (save ends) - 12-16: 7 fire damage; A < AVERAGE, weakened (save ends) - 17+: 10 fire damage; A < STRONG, weakened (save ends) Effect: Each ally in the area can shift up to 2 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

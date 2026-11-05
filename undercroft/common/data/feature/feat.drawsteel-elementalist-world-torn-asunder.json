@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-world-torn-asunder",
+  "name": "World Torn Asunder",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You stomp your foot and quake the whole world over.*\n\n**Heroic Ability** — Area, Earth, Magic — Main action\n\n**Cost:** 11 Essence\n\n**Distance:** 5 burst   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** M < WEAK, prone\n- **12-16:** M < AVERAGE, prone\n- **17+:** M < STRONG, prone\n\n**Effect:** You create a fissure in the ground adjacent to you that is a 10 x 2 line and 6 squares deep. Each creature in the area who is prone and size 2 or smaller falls in. Other creatures can enter the fissure or can shift to the nearest unoccupied space of their choice outside it.",
+  "mechanics": {
+    "type": "active",
+    "text": "You stomp your foot and quake the whole world over. Power Roll + Reason: - ≤11: M < WEAK, prone - 12-16: M < AVERAGE, prone - 17+: M < STRONG, prone Effect: You create a fissure in the ground adjacent to you that is a 10 x 2 line and 6 squares deep. Each creature in the area who is prone and size 2 or smaller falls in. Other creatures can enter the fissure or can shift to the nearest unoccupied space of their choice outside it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Earth, Magic",
+  "actionType": "Main action",
+  "distance": "5 burst",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

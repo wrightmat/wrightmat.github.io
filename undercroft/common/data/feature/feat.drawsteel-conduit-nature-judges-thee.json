@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-nature-judges-thee",
+  "name": "Nature Judges Thee",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Mystical thorned vines appear at your bidding and bind your foes.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 damage; A < WEAK, restrained (save ends)\n- **12-16:** 3 damage; A < AVERAGE, restrained (save ends)\n- **17+:** 7 damage; A < STRONG, restrained (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Mystical thorned vines appear at your bidding and bind your foes. Power Roll + Intuition: - ≤11: 2 damage; A < WEAK, restrained (save ends) - 12-16: 3 damage; A < AVERAGE, restrained (save ends) - 17+: 7 damage; A < STRONG, restrained (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-nature"
+  ]
+}

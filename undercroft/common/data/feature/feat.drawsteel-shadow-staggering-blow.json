@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-staggering-blow",
+  "name": "Staggering Blow",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*There's no recovering from this.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 7 Insight\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 7 + A damage; M < WEAK, slowed (save ends)\n- **12-16:** 11 + A damage; M < AVERAGE, prone and can't stand (save ends)\n- **17+:** 16 + A damage; M < STRONG, prone and can't stand (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "There's no recovering from this. Power Roll + Agility: - ≤11: 7 + A damage; M < WEAK, slowed (save ends) - 12-16: 11 + A damage; M < AVERAGE, prone and can't stand (save ends) - 17+: 16 + A damage; M < STRONG, prone and can't stand (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 7
+}

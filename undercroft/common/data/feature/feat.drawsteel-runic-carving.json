@@ -21,5 +21,6 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Ancestry Trait"
+  "kind": "Ancestry Trait",
+  "ancestry": "Dwarf"
 }

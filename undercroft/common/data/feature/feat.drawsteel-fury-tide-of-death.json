@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-tide-of-death",
+  "name": "Tide of Death",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Teach them the folly of lining up for you.*\n\n**Heroic Ability** — Melee, Weapon — Main action\n\n**Cost:** 3 Ferocity\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You move up to your speed in a straight line, and enemy squares are not difficult terrain for this movement. You can end this movement in a creature's space and move them to an adjacent unoccupied space. You make one power roll that targets each enemy whose space you move through.\n\n**Power Roll + Might:**\n\n- **≤11:** 2 damage\n- **12-16:** 3 damage\n- **17+:** 5 damage\n\n**Effect:** The last target you damage takes extra damage equal to your Might score for each opportunity attack you trigger during your move.",
+  "mechanics": {
+    "type": "active",
+    "text": "Teach them the folly of lining up for you. Effect: You move up to your speed in a straight line, and enemy squares are not difficult terrain for this movement. You can end this movement in a creature's space and move them to an adjacent unoccupied space. You make one power roll that targets each enemy whose space you move through. Power Roll + Might: - ≤11: 2 damage - 12-16: 3 damage - 17+: 5 damage Effect: The last target you damage takes extra damage equal to your Might score for each opportunity attack you trigger during your move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 3
+}

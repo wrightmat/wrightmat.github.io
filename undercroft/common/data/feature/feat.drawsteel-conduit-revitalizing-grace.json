@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-revitalizing-grace",
+  "name": "Revitalizing Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*With a gesture, you restore your health and that of your allies.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** 4 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target can spend any number of Recoveries. Additionally, each target can end one effect on themself that is ended by a saving throw or that ends at the end of their turn, or they can stand up if prone.",
+  "mechanics": {
+    "type": "active",
+    "text": "With a gesture, you restore your health and that of your allies. Effect: Each target can spend any number of Recoveries. Additionally, each target can end one effect on themself that is ended by a saving throw or that ends at the end of their turn, or they can stand up if prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "4 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-life"
+  ]
+}

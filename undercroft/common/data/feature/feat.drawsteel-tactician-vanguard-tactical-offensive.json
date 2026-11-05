@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-vanguard-tactical-offensive",
+  "name": "Tactical Offensive",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you use the Charge main action to attack a creature marked by you, you can use a signature or heroic ability with the Melee and Strike keywords instead of a melee free strike.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you use the Charge main action to attack a creature marked by you, you can use a signature or heroic ability with the Melee and Strike keywords instead of a melee free strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

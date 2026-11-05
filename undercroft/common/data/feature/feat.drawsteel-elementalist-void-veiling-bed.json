@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-void-veiling-bed",
+  "name": "Veiling Bed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The area provides concealment for you and your allies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The area provides concealment for you and your allies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

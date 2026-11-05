@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-apostate",
+  "name": "Apostate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel holy energy to seal an enemy's fate.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 13 + M holy damage\n- **12-16:** 19 + M holy damage\n- **17+:** 26 + M holy damage\n\n**Effect:** Until the end of the encounter or until you are dying, the target has damage weakness 10.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel holy energy to seal an enemy's fate. Power Roll + Might: - ≤11: 13 + M holy damage - 12-16: 19 + M holy damage - 17+: 26 + M holy damage Effect: Until the end of the encounter or until you are dying, the target has damage weakness 10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

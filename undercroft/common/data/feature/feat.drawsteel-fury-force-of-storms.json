@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-force-of-storms",
+  "name": "Force of Storms",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike an enemy hard enough to be a projectile that knocks a crowd of creatures around.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 7 + M damage; push 3\n- **12-16:** 11 + M damage; push 5\n- **17+:** 16 + M damage; push 7\n\n**Effect:** When the target ends this forced movement, each creature within 2 squares of the target is pushed 3 squares.",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike an enemy hard enough to be a projectile that knocks a crowd of creatures around. Power Roll + Might: - ≤11: 7 + M damage; push 3 - 12-16: 11 + M damage; push 5 - 17+: 16 + M damage; push 7 Effect: When the target ends this forced movement, each creature within 2 squares of the target is pushed 3 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

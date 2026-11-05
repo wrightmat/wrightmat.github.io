@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-devil-beast-legs",
+  "name": "Beast Legs",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour powerful legs make you faster. You have speed 6.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your powerful legs make you faster. You have speed 6."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Devil",
+  "cost": 1,
+  "speedBonus": 1
+}

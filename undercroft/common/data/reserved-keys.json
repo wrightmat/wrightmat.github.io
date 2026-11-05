@@ -13,14 +13,15 @@
       { "name": "savingThrows", "scope": "once", "description": "Which array field is this System's saving-throws display list (Workbench's Build Wizard)." }
     ],
     "combatBindings": [
-      { "name": "resource", "scope": "unlimited", "description": "A value with a current amount and (optionally) a max/temp — renders as number inputs for each, read/write via recordField/maxPath/tempPath. E.g. Hit Points, Daggerheart's Hope/Stress." },
+      { "name": "resource", "scope": "unlimited", "description": "A value with a current amount and (optionally) a max/temp — renders as number inputs for each, read/write via recordField/maxPath/tempPath. Add capAtMax: true to keep the current amount from going above its max. E.g. Hit Points, Daggerheart's Hope/Stress." },
       { "name": "value", "scope": "unlimited", "description": "A single flat number — renders as one number input, read/write via recordField. E.g. Armor Class." },
       { "name": "tags", "scope": "unlimited", "description": "A list of string tags — renders as a tag-badge/tag-input widget, read/write via recordField (as an array); optional sourceField names which other field supplies the tag vocabulary. E.g. Conditions." },
       { "name": "modifier", "scope": "unlimited", "description": "A read-only number feeding a Roll button — read via recordField, never written. E.g. Initiative." }
     ],
     "derivedFormulas": [
       { "name": "abilityModifier", "scope": "once", "description": "Given an ability score, the modifier applied to rolls using it." },
-      { "name": "hitPointsPerLevelAverage", "scope": "once", "description": "Average HP gained per level from a hit-die-shaped resource, used for level-up growth." },
+      { "name": "hitPointsPerLevelAverage", "scope": "once", "description": "HP gained per level, used for level-up growth. @sides is the class record's hit die; @value is the same number, for a class that records a flat amount per level instead." },
+      { "name": "echelonBonus", "scope": "once", "description": "A bonus that is gained again in each echelon: @value is the per-echelon amount and @level the character's total level. Named by an itemBonuses entry's derivedFormula." },
       { "name": "proficiencyBonusForLevel", "scope": "once", "description": "The proficiency bonus for a given total character level." },
       { "name": "diceAverage", "scope": "once", "description": "The average result of a parsed dice expression." },
       { "name": "attackBonus", "scope": "once", "description": "An attack roll's total bonus from ability modifier + proficiency bonus." },
@@ -32,7 +33,7 @@
       { "name": "sanityStart", "scope": "once", "description": "Call of Cthulhu's starting Sanity formula." }
     ],
     "levelUpBindings": [
-      { "name": "resourceGrowth", "scope": "perKind", "description": "Per-level growth of a hit-die-shaped resource, sourced from the named Library kind's own record." },
+      { "name": "resourceGrowth", "scope": "perKind", "description": "Per-level growth of a resource, sourced from the named Library kind's own record (a hit die, or a flat amount per level)." },
       { "name": "featureLevels", "scope": "perKind", "description": "Which levels grant new class/subclass features, per the named Library kind." },
       { "name": "equipmentChoices", "scope": "perKind", "description": "Starting-equipment choice options declared on the named Library kind's own record." },
       { "name": "proficiencyChoices", "scope": "perKind", "description": "Proficiency choice options declared on the named Library kind's own record." },
@@ -60,6 +61,12 @@
       "type": "array",
       "description": "Role-dispatch bindings the level-up engine reads generically — see bindings.levelUpBindings above for the closed set, each scoped per `libraryKind` (a binding may exist once for \"class\" and once for \"background\"). Each value is {binding, libraryKind, libraryField, ...}.",
       "valueRequires": ["binding", "libraryKind"]
+    },
+    {
+      "key": "itemBonuses",
+      "type": "array",
+      "description": "Stat bonuses from items a character has equipped (a Draw Steel kit's Stamina, speed, stability and disengage bonuses). Each value is {name, libraryKind, sourcePath, libraryField, targetPath, currentPath?, derivedFormula?, combine?}: every entry in the character's sourcePath list that links to a libraryKind record and is marked isEquipped adds that record's libraryField to targetPath. combine: \"highest\" takes only the largest of those bonuses instead of adding them together (Draw Steel's two-kit tactician). derivedFormula (with @value and @level) scales the amount by level; currentPath also moves with the change, kept within the new maximum. The sheet is recalculated whenever an item is added, removed, equipped or unequipped, and whenever the character's level changes.",
+      "valueRequires": ["libraryKind", "sourcePath", "libraryField", "targetPath"]
     },
     {
       "key": "derivedFormulas",

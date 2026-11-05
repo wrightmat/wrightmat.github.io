@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-omnisensory",
+  "name": "Omnisensory",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have a +10 bonus to the distance of your ranged abilities. Additionally, you don't need line of effect to a target of a ranged ability if the target is a creature capable of thought who you have previously had line of effect to.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have a +10 bonus to the distance of your ranged abilities. Additionally, you don't need line of effect to a target of a ranged ability if the target is a creature capable of thought who you have previously had line of effect to."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

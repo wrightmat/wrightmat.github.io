@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-ice-pillars",
+  "name": "Ice Pillars",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Pillars of ice erupt from the ground and launch your foes into the air.*\n\n**Heroic Ability** — Psionic, Ranged — Main action\n\n**Cost:** 9 Discipline\n\n**Distance:** Ranged 10   **Target:** Three creatures or objects\n\n**Power Roll + Intuition:**\n\n- **≤11:** Vertical slide 6\n- **12-16:** Vertical slide 8\n- **17+:** Vertical slide 10\n\n**Effect:** The pillars vanish as soon as the effects of the forced movement are resolved.",
+  "mechanics": {
+    "type": "active",
+    "text": "Pillars of ice erupt from the ground and launch your foes into the air. Power Roll + Intuition: - ≤11: Vertical slide 6 - 12-16: Vertical slide 8 - 17+: Vertical slide 10 Effect: The pillars vanish as soon as the effects of the forced movement are resolved."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Three creatures or objects",
+  "cost": 9
+}

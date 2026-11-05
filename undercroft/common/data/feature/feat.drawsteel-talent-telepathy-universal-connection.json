@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telepathy-universal-connection",
+  "name": "Universal Connection",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The range of your Telepathic Speech feature increases to anywhere on the same world.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The range of your Telepathic Speech feature increases to anywhere on the same world."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-our-hearts-your-strength",
+  "name": "Our Hearts Your Strength",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*An ally gains strength from their friends.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** Self and one ally\n\n**Effect:** Until the end of the encounter or until the target is dying, at the start of each of the target's turns, they gain a bonus to speed and a bonus to rolled damage equal to the number of allies within 10 squares of them. This bonus lasts until the start of their next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "An ally gains strength from their friends. Effect: Until the end of the encounter or until the target is dying, at the start of each of the target's turns, they gain a bonus to speed and a bonus to rolled damage equal to the number of allies within 10 squares of them. This bonus lasts until the start of their next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self and one ally",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-love"
+  ]
+}

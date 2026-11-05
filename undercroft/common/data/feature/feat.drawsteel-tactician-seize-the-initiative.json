@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-seize-the-initiative",
+  "name": "Seize the Initiative",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "If you are not surprised when combat begins, your side gets to go first. If an enemy has an ability that allows their side to go first, you roll as usual to determine who goes first.",
+  "mechanics": {
+    "type": "passive",
+    "text": "If you are not surprised when combat begins, your side gets to go first. If an enemy has an ability that allows their side to go first, you roll as usual to determine who goes first."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

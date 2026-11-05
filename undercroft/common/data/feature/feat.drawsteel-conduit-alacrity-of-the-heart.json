@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-alacrity-of-the-heart",
+  "name": "Alacrity of the Heart",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You speak inspiring words to a friend and spur them to incredible feats.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 11 Piety\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Effect:** The target has an additional main action they can use on their next turn, and gains 3 of their Heroic Resource.",
+  "mechanics": {
+    "type": "active",
+    "text": "You speak inspiring words to a friend and spur them to incredible feats. Effect: The target has an additional main action they can use on their next turn, and gains 3 of their Heroic Resource."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-love"
+  ]
+}

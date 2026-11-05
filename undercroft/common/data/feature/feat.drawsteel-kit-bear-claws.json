@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-bear-claws",
+  "name": "Bear Claws",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Attacks with your sharp and deadly claws grab the weak.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 2 + M damage; M < WEAK, grabbed\n- **12-16:** 5 + M damage; M < AVERAGE, grabbed\n- **17+:** 11 + M damage; M < STRONG, grabbed",
+  "mechanics": {
+    "type": "active",
+    "text": "Attacks with your sharp and deadly claws grab the weak. Power Roll + Might: - ≤11: 2 + M damage; M < WEAK, grabbed - 12-16: 5 + M damage; M < AVERAGE, grabbed - 17+: 11 + M damage; M < STRONG, grabbed"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

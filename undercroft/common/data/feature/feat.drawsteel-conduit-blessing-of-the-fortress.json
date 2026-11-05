@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-blessing-of-the-fortress",
+  "name": "Blessing of the Fortress",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A magic circle extends out from you, barring foes from getting close.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 11 Piety\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** Until the end of the encounter or until you are dying, no enemy can approach within 5 squares of you by moving or by being force moved by any enemy. Targets can be force moved closer to you by you or your allies, or can move closer because of your movement.",
+  "mechanics": {
+    "type": "active",
+    "text": "A magic circle extends out from you, barring foes from getting close. Effect: Until the end of the encounter or until you are dying, no enemy can approach within 5 squares of you by moving or by being force moved by any enemy. Targets can be force moved closer to you by you or your allies, or can move closer because of your movement."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-protection"
+  ]
+}

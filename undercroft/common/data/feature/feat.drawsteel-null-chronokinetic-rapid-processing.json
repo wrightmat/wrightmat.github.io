@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-chronokinetic-rapid-processing",
+  "name": "Rapid Processing",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "As a maneuver, you can read an entire book or process a similar amount of information. Additionally, during any respite, you can take an additional respite activity.",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a maneuver, you can read an entire book or process a similar amount of information. Additionally, during any respite, you can take an additional respite activity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

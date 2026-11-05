@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-arcane-purge",
+  "name": "Arcane Purge",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You focus your null field into a pressure point strike that prevents your foe from channeling sorcery.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 11 Discipline\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 13 + A damage; M < WEAK, the target is suppressed (save ends)\n- **12-16:** 19 + A damage; M < AVERAGE, the target is suppressed (save ends)\n- **17+:** 24 + A damage; M < STRONG, the target is suppressed (save ends)\n\n**Effect:** While suppressed, a target takes psychic damage equal to twice your Intuition score at the start of their turns, whenever they use a supernatural ability, or whenever they use an ability that costs Malice.",
+  "mechanics": {
+    "type": "active",
+    "text": "You focus your null field into a pressure point strike that prevents your foe from channeling sorcery. Power Roll + Agility: - ≤11: 13 + A damage; M < WEAK, the target is suppressed (save ends) - 12-16: 19 + A damage; M < AVERAGE, the target is suppressed (save ends) - 17+: 24 + A damage; M < STRONG, the target is suppressed (save ends) Effect: While suppressed, a target takes psychic damage equal to twice your Intuition score at the start of their turns, whenever they use a supernatural ability, or whenever they use an ability that costs Malice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

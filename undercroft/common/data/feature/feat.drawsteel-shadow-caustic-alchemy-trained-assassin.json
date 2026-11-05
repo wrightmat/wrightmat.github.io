@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-caustic-alchemy-trained-assassin",
+  "name": "Trained Assassin",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You know just where to cut your enemies. Whenever you make a strike that has no bane or double bane, and that incorporates 1 or more surges, you gain 1 additional surge that you can use only on that strike.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You know just where to cut your enemies. Whenever you make a strike that has no bane or double bane, and that incorporates 1 or more surges, you gain 1 additional surge that you can use only on that strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

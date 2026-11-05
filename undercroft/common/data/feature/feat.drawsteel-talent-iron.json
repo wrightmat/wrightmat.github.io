@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-iron",
+  "name": "Iron",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The target's skin turns to hard, dark metal, impenetrable and dense.*\n\n**Heroic Ability** — Metamorphosis, Psionic, Ranged — Maneuver\n\n**Cost:** 5 Clarity\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target's stability increases by an amount equal to your Reason score, and they gain 10 temporary Stamina and 2 surges. This stability increase lasts until the target no longer has temporary Stamina from this ability.\n\n**Strained:** You can't use maneuvers (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "The target's skin turns to hard, dark metal, impenetrable and dense. Effect: The target's stability increases by an amount equal to your Reason score, and they gain 10 temporary Stamina and 2 surges. This stability increase lasts until the target no longer has temporary Stamina from this ability. Strained: You can't use maneuvers (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Metamorphosis, Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 5
+}

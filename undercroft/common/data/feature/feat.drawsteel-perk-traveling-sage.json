@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-traveling-sage",
+  "name": "Traveling Sage",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Lore Perk**\n\nOn any day when you don't take a respite, you can spend 1 uninterrupted hour working on a research project using a skill you have from the lore skill group. If you do so, you gain 1d10 project points toward that project.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On any day when you don't take a respite, you can spend 1 uninterrupted hour working on a research project using a skill you have from the lore skill group. If you do so, you gain 1d10 project points toward that project."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Lore"
+}

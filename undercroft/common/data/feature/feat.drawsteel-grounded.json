@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.drawsteel"
   ],
-  "description": "**Ancestry Trait**\n\nYour heavy stone body and connection to the earth makes it difficult for others to move you. You have a +1 bonus to stability (already included).",
+  "description": "**Ancestry Trait**\n\nYour heavy stone body and connection to the earth makes it difficult for others to move you. You have a +1 bonus to stability.",
   "mechanics": {
     "type": "passive",
     "text": "Your heavy stone body and connection to the earth makes it difficult for others to move you. You have a +1 bonus to stability (already included)."
@@ -21,5 +21,8 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Ancestry Trait"
+  "kind": "Ancestry Trait",
+  "ancestry": "Dwarf",
+  "cost": 1,
+  "stabilityBonus": 1
 }

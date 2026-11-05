@@ -8,5 +8,51 @@
   "description": "#### Mage's Apprentice\n\nFor long years, you studied magic under the mentorship of a more experienced mage. In defining your career, think about the following questions:\n\n- Who did you study under, and what kind of person were they?\n- What were your mentor's areas of expertise?\n- What aspects of magic did you struggle to comprehend?\n- What is your current relationship with your mentor?\n\nYou gain the following career benefits:\n\n**Skills:** The Magic skill (from the lore skill group), plus two other skills from the lore group (*Quick Build:* Magic, Monsters, Timescape.)\n\n**Languages:** One language\n\n**Renown:** +1\n\n**Perk:** One supernatural perk (*Quick Build:* Arcane Trick.)\n\n| d6  | Inciting Incident                                                                                                                                                                                                                                                                                                                                                                                                 |\n| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| 1   | **Forgotten Memories:** While practicing a spell, your inexperience caused the magic to backfire and your memories were wiped, leaving you with only fragments of who you once were. Determined to recall your past, you now dedicate yourself to helping others, hoping your actions will spark some remembrance or lead you to a way to reverse the magic.                                                      |\n| 2   | **Magic of Friendship:** As a sign of your status as a star pupil, your mentor gifted you a familiar as a magic pet. Another jealous apprentice captured the familiar and slipped away in the night. Haunted by your pet's absence, you adventure to find your kidnapped friend and prevent others from feeling your loss.                                                                                        |\n| 3   | **Missing Mage:** One day you woke up and the mage you worked for was gone. They didn't take any of their belongings and there was no sign of any foul play-only the scent of sulfur in their bedchamber. You set out on your heroic journey in the aftermath and have been looking for them ever since.                                                                                                          |\n| 4   | **Nightmares Made Flesh:** Your attempts at magic have always been unpredictable. A powerful mage promised to help you gain control. During your training, a terrible nightmare caused your body to flare with magic and pull the monster of your nightmare into the waking world. The horror escaped. You left, seeking to vanquish their vileness.                                                              |\n| 5   | **Otherworldly:** While studying magic, you accidentally sent yourself from your original world to this one. Now you're stranded here, hoping to find ancient texts or powerful magic treasures that might transport you back home. A life of adventure it is!                                                                                                                                                    |\n| 6   | **Ultimate Power:** The mage you worked for was a kindly old soul, but the basic magic they taught you always seemed like a small part of something bigger. It wasn't until you met an adventuring elementalist that you realized hitting the road as a hero was the only way to truly improve and hone your skills. You resigned your apprenticeship and found yourself walking the path of a hero the next day. |\n",
   "skills": "The Magic skill (from the lore skill group), plus two other skills from the lore group (*Quick Build:* Magic, Monsters, Timescape.)",
   "languages": "One language",
-  "perk": "One supernatural perk (*Quick Build:* Arcane Trick.)"
+  "perk": "One supernatural perk (*Quick Build:* Arcane Trick.)",
+  "category": "Career",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Magic"
+      ]
+    },
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two lore skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Lore"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a language.",
+      "targetPath": "languages",
+      "from": {
+        "systemField": "languages"
+      }
+    },
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose a supernatural perk.",
+      "from": {
+        "filter": {
+          "kind": "Perk",
+          "systemIds": "sys.drawsteel",
+          "perkType": "Supernatural"
+        }
+      }
+    }
+  ],
+  "renown": 1
 }

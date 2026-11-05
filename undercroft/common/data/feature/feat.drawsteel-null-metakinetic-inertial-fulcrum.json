@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-metakinetic-inertial-fulcrum",
+  "name": "Inertial Fulcrum",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you use an ability to reduce damage dealt to you or to reduce the distance of forced movement imposed upon you, you can deal damage to one enemy in the area of your Null Field ability equal to your Intuition score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you use an ability to reduce damage dealt to you or to reduce the distance of forced movement imposed upon you, you can deal damage to one enemy in the area of your Null Field ability equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

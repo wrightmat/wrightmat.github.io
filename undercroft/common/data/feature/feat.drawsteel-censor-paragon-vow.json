@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-censor-paragon-vow",
+  "name": "Vow",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your words take on the power of your deity, with all the authority that entails. If you convince a creature to take an oath, they can't break it for 7 days. If you take an oath, you can't break it for 7 days.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your words take on the power of your deity, with all the authority that entails. If you convince a creature to take an oath, they can't break it for 7 days. If you take an oath, you can't break it for 7 days."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

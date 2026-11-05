@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-harlequin-mask-parkour",
+  "name": "Parkour",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your movement no longer provokes opportunity attacks. Additionally, you can use your Harlequin Gambit feature as a free triggered action when a creature is reduced to 0 Stamina by your Clever Trick ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your movement no longer provokes opportunity attacks. Additionally, you can use your Harlequin Gambit feature as a free triggered action when a creature is reduced to 0 Stamina by your Clever Trick ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

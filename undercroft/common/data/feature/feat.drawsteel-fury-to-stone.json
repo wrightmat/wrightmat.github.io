@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-to-stone",
+  "name": "To Stone!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel the Primordial Chaos into blows that petrify your foe... literally.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 9 + M damage; M < WEAK, slowed (save ends)\n- **12-16:** 13 + M damage; M < AVERAGE, slowed (save ends)\n- **17+:** 18 + M damage; M < STRONG, restrained (save ends)\n\n**Effect:** While the target is slowed this way, any other effect that would make the target slowed instead makes them restrained by this ability. Additionally, a creature who fails the saving throw while restrained this way is petrified until they are given a supernatural cure or you choose to reverse the effect (no action required).",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel the Primordial Chaos into blows that petrify your foe... literally. Power Roll + Might: - ≤11: 9 + M damage; M < WEAK, slowed (save ends) - 12-16: 13 + M damage; M < AVERAGE, slowed (save ends) - 17+: 18 + M damage; M < STRONG, restrained (save ends) Effect: While the target is slowed this way, any other effect that would make the target slowed instead makes them restrained by this ability. Additionally, a creature who fails the saving throw while restrained this way is petrified until they are given a supernatural cure or you choose to reverse the effect (no action required)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-chronopathy-again",
+  "name": "Again",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### Again\n>\n> *You step back a split second to see if things play out a little differently.*\n>\n> | **Psionic, Ranged** |               **Triggered** |\n> | ------------------- | --------------------------: |\n> | **📏 Ranged 10**    | **🎯 Self or one creature** |\n>\n> **Trigger:** The target makes an ability roll.\n>\n> **Effect:** You can use this ability after seeing the result of the triggering roll. The target must reroll the power roll and use the new roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. Again You step back a split second to see if things play out a little differently. Trigger: The target makes an ability roll. Effect: You can use this ability after seeing the result of the triggering roll. The target must reroll the power roll and use the new roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

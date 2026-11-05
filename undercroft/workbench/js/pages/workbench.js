@@ -234,6 +234,8 @@ async function init() {
     content: document.querySelector("[data-selections-panel]"),
   });
   document.querySelector("[data-selections-mount]")?.appendChild(selectionsSection.section);
+  // The boot-time scan above can finish before the views build their pane sections.
+  void initHelpSystem({ root: document });
 
   function renderModeToggle() {
     if (!modeToggleMount) return;

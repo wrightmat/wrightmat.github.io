@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-squad-remember-your-training",
+  "name": "Squad! Remember Your Training!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You remind your allies how to best use their gear.*\n\n**Heroic Ability** — Ranged — Main action\n\n**Cost:** 9 Focus\n\n**Distance:** Ranged 10   **Target:** Self and two allies\n\n**Effect:** Each target gains 1 surge and can use a signature ability that has a double edge.",
+  "mechanics": {
+    "type": "active",
+    "text": "You remind your allies how to best use their gear. Effect: Each target gains 1 surge and can use a signature ability that has a double edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self and two allies",
+  "cost": 9
+}

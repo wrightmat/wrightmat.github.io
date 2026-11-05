@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-instant-retaliation",
+  "name": "Instant Retaliation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You parry with almost supernatural speed.*\n\n**Heroic Ability** — Melee, Weapon — Free triggered\n\n**Cost:** 9 Focus\n\n**Distance:** Melee 1   **Target:** One ally\n\n**Trigger:** A creature deals damage to the target.\n\n**Effect:** The target takes half the damage. You then make a power roll against the triggering creature.\n\n**Power Roll + Might:**\n\n- **≤11:** A < WEAK, dazed (save ends)\n- **12-16:** A < AVERAGE, dazed (save ends)\n- **17+:** A < STRONG, dazed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You parry with almost supernatural speed. Trigger: A creature deals damage to the target. Effect: The target takes half the damage. You then make a power roll against the triggering creature. Power Roll + Might: - ≤11: A < WEAK, dazed (save ends) - 12-16: A < AVERAGE, dazed (save ends) - 17+: A < STRONG, dazed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Weapon",
+  "actionType": "Free triggered",
+  "distance": "Melee 1",
+  "target": "One ally",
+  "cost": 9
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-go-now-and-speed-well",
+  "name": "Go Now and Speed Well",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You direct an attack to strike true.*\n\n**Heroic Ability** — Ranged — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target gains 2 surges and can use a signature or heroic ability as a free triggered action. The ability has a double edge on the power roll, ignores damage immunity, and increases the potency of any potency effects by 1.",
+  "mechanics": {
+    "type": "active",
+    "text": "You direct an attack to strike true. Effect: The target gains 2 surges and can use a signature or heroic ability as a free triggered action. The ability has a double edge on the power roll, ignores damage immunity, and increases the potency of any potency effects by 1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 11
+}

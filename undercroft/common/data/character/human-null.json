@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "Human Null (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Null",
+        "refKind": "class",
+        "refId": "ds-null",
+        "level": 1,
+        "subclass": {
+          "name": "Metakinetic",
+          "refKind": "variant",
+          "refId": "ds-null-metakinetic"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "Human",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-farmer"
   },
-  "class": {
-    "name": "Null",
-    "refKind": "class",
-    "refId": "ds-null"
-  },
-  "subclasses": [
-    {
-      "name": "Metakinetic",
-      "refKind": "variant",
-      "refId": "ds-null-metakinetic"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,

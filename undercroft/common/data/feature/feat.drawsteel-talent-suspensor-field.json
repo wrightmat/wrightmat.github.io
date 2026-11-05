@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-suspensor-field",
+  "name": "Suspensor Field",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You can fly. While flying, your stability is reduced to 0 and can't be increased. If you can already fly, you have a +2 bonus to speed while flying instead.\n\nIf you are strained while flying and are force moved, the forced movement distance gains a +2 bonus.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can fly. While flying, your stability is reduced to 0 and can't be increased. If you can already fly, you have a +2 bonus to speed while flying instead. If you are strained while flying and are force moved, the forced movement distance gains a +2 bonus."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-wall-of-fire",
+  "name": "Wall of Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A blazing, beautifully organized inferno erupts at your command.*\n\n**Heroic Ability** — Area, Fire, Magic, Ranged — Maneuver\n\n**Cost:** 7 Essence\n\n**Distance:** 10 wall within 10   **Target:** Special\n\n**Effect:** The wall lasts until the start of your next turn, and can be placed in occupied squares. Creatures can enter and pass through the wall. Each enemy who enters the area for the first time in a combat round or starts their turn there takes fire damage equal to your Reason score for each square of the area they start their turn in or enter.\n\n**Persistent 1:** The wall lasts until the start of your next turn, and you can add a number of squares to the wall equal to your Reason score.",
+  "mechanics": {
+    "type": "active",
+    "text": "A blazing, beautifully organized inferno erupts at your command. Effect: The wall lasts until the start of your next turn, and can be placed in occupied squares. Creatures can enter and pass through the wall. Each enemy who enters the area for the first time in a combat round or starts their turn there takes fire damage equal to your Reason score for each square of the area they start their turn in or enter. Persistent 1: The wall lasts until the start of your next turn, and you can add a number of squares to the wall equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Fire, Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "10 wall within 10",
+  "target": "Special",
+  "cost": 7
+}

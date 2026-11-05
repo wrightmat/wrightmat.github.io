@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-squad-on-me",
+  "name": "Squad! On Me!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Together we are invincible!*\n\n**Heroic Ability** — Area — Maneuver\n\n**Cost:** 5 Focus\n\n**Distance:** 1 burst   **Target:** Self and each ally in the area\n\n**Effect:** Until the start of your next turn, each target has a bonus to stability equal to your Might score. Additionally, each target gains 2 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "Together we are invincible! Effect: Until the start of your next turn, each target has a bonus to stability equal to your Might score. Additionally, each target gains 2 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area",
+  "actionType": "Maneuver",
+  "distance": "1 burst",
+  "target": "Self and each ally in the area",
+  "cost": 5
+}

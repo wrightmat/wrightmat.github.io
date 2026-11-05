@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-force-redirected",
+  "name": "Force Redirected",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The force of your strike moves your target in a surprising direction.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 5 Discipline\n\n**Distance:** Melee 3   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 8 + A damage; slide 1\n- **12-16:** 12 + A damage; slide 3\n- **17+:** 16 + A damage; slide 5",
+  "mechanics": {
+    "type": "active",
+    "text": "The force of your strike moves your target in a surprising direction. Power Roll + Agility: - ≤11: 8 + A damage; slide 1 - 12-16: 12 + A damage; slide 3 - 17+: 16 + A damage; slide 5"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 3",
+  "target": "One creature",
+  "cost": 5
+}

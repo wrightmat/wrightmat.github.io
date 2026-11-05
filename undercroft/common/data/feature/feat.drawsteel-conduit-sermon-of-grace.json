@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-sermon-of-grace",
+  "name": "Sermon of Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You inspire your allies with tales of your saint's great deeds.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** 4 burst   **Target:** Each ally in the area\n\n**Effect:** Each target can spend a Recovery. Additionally, each target can use a free triggered action to end one effect on them that is ended by a saving throw or that ends at the end of their turn, or to stand up if prone.",
+  "mechanics": {
+    "type": "active",
+    "text": "You inspire your allies with tales of your saint's great deeds. Effect: Each target can spend a Recovery. Additionally, each target can use a free triggered action to end one effect on them that is ended by a saving throw or that ends at the end of their turn, or to stand up if prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "4 burst",
+  "target": "Each ally in the area",
+  "cost": 5
+}

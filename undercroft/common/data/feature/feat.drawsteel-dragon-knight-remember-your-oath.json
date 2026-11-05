@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-dragon-knight-remember-your-oath",
+  "name": "Remember Your Oath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nAs a maneuver, you can recite the following oath. Until the start of your next turn, whenever you make a saving throw, you succeed on a 4 or higher.\n\n*Even should the sun stop in the sky Even should the night last a thousand years I will stand forever I shall not yield Those who suffer and yearn for justice I am your sword and shield I will yield no ground I will speak no lies I will stand against all tyrants Until the last villain dies*",
+  "mechanics": {
+    "type": "active",
+    "text": "Ancestry Trait As a maneuver, you can recite the following oath. Until the start of your next turn, whenever you make a saving throw, you succeed on a 4 or higher. Even should the sun stop in the sky Even should the night last a thousand years I will stand forever I shall not yield Those who suffer and yearn for justice I am your sword and shield I will yield no ground I will speak no lies I will stand against all tyrants Until the last villain dies"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Dragon Knight",
+  "cost": 1
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-death-comes-for-you-all",
+  "name": "Death Comes for You All!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You use your weapon to create a destructive shockwave.*\n\n**Heroic Ability** — Area, Magic, Melee, Weapon — Main action\n\n**Cost:** 11 Ferocity\n\n**Distance:** 3 burst   **Target:** Each enemy in the area\n\n**Power Roll + Might:**\n\n- **≤11:** 7 damage; push 3\n- **12-16:** 10 damage; push 5\n- **17+:** 15 damage; push 7\n\n**Effect:** If this forced movement causes a target to be hurled through an object, that target takes an extra 10 damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "You use your weapon to create a destructive shockwave. Power Roll + Might: - ≤11: 7 damage; push 3 - 12-16: 10 damage; push 5 - 17+: 15 damage; push 7 Effect: If this forced movement causes a target to be hurled through an object, that target takes an extra 10 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

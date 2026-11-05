@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-most-pious",
+  "name": "Most Pious",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you roll for piety at the start of your turn in combat and you pray, you gain 1 additional piety.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll for piety at the start of your turn in combat and you pray, you gain 1 additional piety."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

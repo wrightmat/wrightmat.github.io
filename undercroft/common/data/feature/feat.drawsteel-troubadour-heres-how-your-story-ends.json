@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-heres-how-your-story-ends",
+  "name": "Here's How Your Story Ends",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You give away the ending of this battle, and it's not great for them.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 9 Drama\n\n**Distance:** 5 burst   **Target:** Each enemy in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** 2 psychic damage; P < WEAK, frightened (save ends)\n- **12-16:** 5 psychic damage; P < AVERAGE, frightened (save ends)\n- **17+:** 7 psychic damage; P < STRONG, frightened (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You give away the ending of this battle, and it's not great for them. Power Roll + Presence: - ≤11: 2 psychic damage; P < WEAK, frightened (save ends) - 12-16: 5 psychic damage; P < AVERAGE, frightened (save ends) - 17+: 7 psychic damage; P < STRONG, frightened (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "5 burst",
+  "target": "Each enemy in the area",
+  "cost": 9
+}

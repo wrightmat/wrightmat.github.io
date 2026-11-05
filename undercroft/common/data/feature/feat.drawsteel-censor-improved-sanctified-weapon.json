@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-improved-sanctified-weapon",
+  "name": "Improved Sanctified Weapon",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The weapon improved by your Sanctified Weapon feature grants a +3 bonus to rolled damage instead of +1.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The weapon improved by your Sanctified Weapon feature grants a +3 bonus to rolled damage instead of +1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-war"
+  ]
+}

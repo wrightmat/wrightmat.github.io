@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-wall-of-ice",
+  "name": "Wall of Ice",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You create a wall of ice.*\n\n**Heroic Ability** — Area, Psionic, Ranged — Main action\n\n**Cost:** 9 Discipline\n\n**Distance:** 10 wall within 10   **Target:** Special\n\n**Effect:** You can place this wall in occupied squares, sliding each creature in the area into the nearest unoccupied space of your choice. The wall remains until the end of the encounter or until you are dying. The wall's squares are treated as stone squares for the purpose of damage, and you and allies can move freely through the wall. Each enemy who enters a square adjacent to the wall and has M < AVERAGE is slowed (save ends). Each enemy who is force moved into the wall and has M < AVERAGE is restrained (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "You create a wall of ice. Effect: You can place this wall in occupied squares, sliding each creature in the area into the nearest unoccupied space of your choice. The wall remains until the end of the encounter or until you are dying. The wall's squares are treated as stone squares for the purpose of damage, and you and allies can move freely through the wall. Each enemy who enters a square adjacent to the wall and has M < AVERAGE is slowed (save ends). Each enemy who is force moved into the wall and has M < AVERAGE is restrained (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Ranged",
+  "actionType": "Main action",
+  "distance": "10 wall within 10",
+  "target": "Special",
+  "cost": 9
+}

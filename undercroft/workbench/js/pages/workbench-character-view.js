@@ -37,6 +37,7 @@ import {
   findLevelUpBinding,
   resolveGrantChoices,
   matchFeaturesAtLevel,
+  choicesAtLevel,
   resolveChoiceList,
   resolveEquipmentChoice,
   applyEquipmentBundle,
@@ -60,7 +61,7 @@ import {
   linkCharacterInventoryReferences,
   linkCharacterSpeciesClassReferences,
 } from "../../../common/js/lib/content-feature-matching.js";
-import { resolveNotes } from "../../../common/js/lib/library-reference.js";
+import { resolveNotes, renderNotesPreview } from "../../../common/js/lib/library-reference.js";
 import { formatSymbolPoolResult } from "../lib/symbol-dice.js";
 import { preloadDiceOverlay } from "../../../common/js/lib/widgets/dice-overlay.js";
 import { setElementVisible, setSanitizedHtml } from "../../../common/js/lib/dom.js";
@@ -367,6 +368,26 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return { ...state.draft, group: state.groupContext?.values || {} };
   }
 
+  // Each child of the field a System gives `role` (its characteristics, for "abilityScores"), with the character path it's stored at.
+  function fieldRoleChildren(role) {
+    const resolved = resolveFieldRole(state.systemDefinition, role);
+    if (!resolved) return [];
+    const fieldKey = resolved.fieldDef.key || "";
+    const targetPath = resolved.targetPath || fieldKey;
+    return (Array.isArray(resolved.fieldDef.children) ? resolved.fieldDef.children : [])
+      .map((child) => {
+        const raw = String(child.key || "");
+        const key = raw.startsWith(`${fieldKey}.`) ? raw.slice(fieldKey.length + 1) : raw;
+        return { key, label: child.label || key, path: `${targetPath}.${key}` };
+      })
+      .filter((entry) => entry.key);
+  }
+
+  // Lets prose like "Power Roll + Agility" roll with the character's own Agility.
+  function characteristicRollTerms() {
+    return fieldRoleChildren("abilityScores").map((entry) => ({ text: entry.label, expression: `@${entry.path}` }));
+  }
+
   // Edit view is dirty-gated like Template view and Loom (explicit Save
   // button, see syncCharacterActions/hasUnsavedCharacterChanges) — no
   // autosave on every change. Leaving Edit mode still force-persists as a
@@ -379,6 +400,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     syncCharacterActions();
     renderPreview();
+    if (applied && touchesItemBonusInputs(pathSegments)) {
+      syncItemBonuses();
+    }
     return applied;
   }
 
@@ -668,7 +692,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   {
     const notesSection = createCollapsibleSection({
-      label: "Notes",
+      label: "Scratchpad",
+      helpTopic: "workbench.scratchpad",
       collapsed: notesState.collapsed,
       content: elements.notesPanel,
     });
@@ -1643,10 +1668,220 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return Array.isArray(field?.values) ? field.values : [];
   }
 
+  // The System's own Level field Max is a hard cap; a System that allows levels past it leaves Max empty.
+  function isAtLevelCap() {
+    const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
+    const cap = Number(fields.find((entry) => entry?.key === "level")?.maximum);
+    if (!Number.isFinite(cap) || cap <= 0) return false;
+    const classes = Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : [];
+    return classes.reduce((sum, entry) => sum + (Number(entry?.level) || 0), 0) >= cap;
+  }
+
   function getCombatBindings() {
     const fields = Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [];
     const field = findRoleBoundField(fields);
     return Array.isArray(field?.values) ? field.values : [];
+  }
+
+  function getItemBonusBindings() {
+    return systemFieldValues(state.systemDefinition, "itemBonuses").filter(
+      (entry) => entry?.libraryKind && entry.sourcePath && entry.libraryField && entry.targetPath
+    );
+  }
+
+  function characterLevel(record) {
+    const classes = Array.isArray(record?.identity?.classes) ? record.identity.classes : [];
+    const classLevels = classes.reduce((sum, entry) => sum + (Number(entry?.level) || 0), 0);
+    return classLevels || Number(record?.identity?.level) || 0;
+  }
+
+  const itemBonusRecordCache = new Map();
+
+  async function fetchItemBonusRecord(kind, id) {
+    const key = `${kind}:${id}`;
+    if (!itemBonusRecordCache.has(key)) {
+      itemBonusRecordCache.set(
+        key,
+        dataManager
+          .get(kind, id, { preferLocal: false })
+          .then((result) => result?.payload || null)
+          .catch((error) => {
+            console.error("Character editor: unable to fetch item record for its bonuses", error);
+            return null;
+          })
+      );
+    }
+    return itemBonusRecordCache.get(key);
+  }
+
+  // Bonuses per target path, summed or (`combine: "highest"`) the largest. A source of plain ids counts every
+  // record; a list field on the record collects its entries as `ids` instead of adding a number.
+  async function computeItemBonusTotals(record, level = characterLevel(record)) {
+    const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
+    const formulaContext = characterFormulaContext(record, level);
+    const totals = new Map();
+    for (const binding of getItemBonusBindings()) {
+      const held = resolveDottedPath(record, binding.sourcePath);
+      const refIds = (Array.isArray(held) ? held : [])
+        .filter((entry) => typeof entry === "string" || (entry?.refKind === binding.libraryKind && entry.refId && entry.isEquipped === true))
+        .map((entry) => (typeof entry === "string" ? entry : entry.refId));
+      const total = totals.get(binding.targetPath) || { total: 0, sources: [], ids: [] };
+      const items = await Promise.all(refIds.map((refId) => fetchItemBonusRecord(binding.libraryKind, refId)));
+      for (const [index, item] of items.entries()) {
+        const raw = item?.[binding.libraryField];
+        if (Array.isArray(raw)) {
+          raw.forEach((id) => {
+            if (!total.ids.includes(id)) total.ids.push(id);
+          });
+          continue;
+        }
+        const entry = { refId: refIds[index] };
+        const value = Number(typeof raw === "string" ? evaluateCharacterFormula(raw, formulaContext) : raw) || 0;
+        if (!value) continue;
+        const amount = binding.derivedFormula
+          ? evaluateDerivedFormula(derivedFormulas, binding.derivedFormula, { value, level }) || 0
+          : value;
+        if (!amount) continue;
+        const source = { name: item.name || entry.name || entry.refId, amount };
+        if (binding.combine !== "highest") {
+          total.total += amount;
+          total.sources.push(source);
+        } else if (amount > total.total) {
+          total.total = amount;
+          total.sources = [source];
+        }
+      }
+      totals.set(binding.targetPath, total);
+    }
+    return totals;
+  }
+
+  // What the last saved version of the character already has added in; each sync moves the sheet
+  // by the difference from it, so a swap, an unequip and a new echelon are all the same change.
+  const appliedItemBonuses = new WeakMap();
+  let itemBonusSyncQueue = Promise.resolve();
+
+  function syncItemBonuses() {
+    itemBonusSyncQueue = itemBonusSyncQueue.then(runItemBonusSync).catch((error) => {
+      console.error("Character editor: unable to apply item bonuses", error);
+    });
+    return itemBonusSyncQueue;
+  }
+
+  async function runItemBonusSync() {
+    const source = state.character;
+    const bindings = getItemBonusBindings();
+    if (!source || !bindings.length) return;
+    if (!appliedItemBonuses.has(source)) {
+      appliedItemBonuses.set(source, await computeItemBonusTotals(source));
+    }
+    const applied = appliedItemBonuses.get(source);
+    const next = await computeItemBonusTotals(state.draft);
+    if (state.character !== source) return;
+    let changed = refreshListFormulas(state.draft);
+    new Map(bindings.map((binding) => [binding.targetPath, binding])).forEach((binding, targetPath) => {
+      const nextIds = next.get(targetPath)?.ids || [];
+      const appliedIds = applied.get(targetPath)?.ids || [];
+      if (nextIds.length || appliedIds.length) {
+        const removed = appliedIds.filter((id) => !nextIds.includes(id));
+        const added = nextIds.filter((id) => !appliedIds.includes(id));
+        if (!removed.length && !added.length) return;
+        const existing = resolveDottedPath(state.draft, targetPath);
+        const list = (Array.isArray(existing) ? existing : []).filter((id) => !removed.includes(id));
+        added.forEach((id) => {
+          if (!list.includes(id)) list.push(id);
+        });
+        setAtDottedPath(state.draft, targetPath, list);
+        changed = true;
+        return;
+      }
+      const delta = (next.get(targetPath)?.total || 0) - (applied.get(targetPath)?.total || 0);
+      if (!delta) return;
+      const max = (Number(resolveDottedPath(state.draft, targetPath)) || 0) + delta;
+      setAtDottedPath(state.draft, targetPath, max);
+      if (binding.currentPath) {
+        const current = (Number(resolveDottedPath(state.draft, binding.currentPath)) || 0) + delta;
+        setAtDottedPath(state.draft, binding.currentPath, Math.max(0, Math.min(current, max)));
+      }
+      changed = true;
+    });
+    appliedItemBonuses.set(source, next);
+    if (changed) {
+      const focusSnapshot = captureActiveField();
+      renderCanvas();
+      if (focusSnapshot) restoreActiveField(focusSnapshot);
+      syncCharacterActions();
+      renderPreview();
+    }
+  }
+
+  function touchesItemBonusInputs(pathSegments) {
+    const root = Array.isArray(pathSegments) ? String(pathSegments[0]) : "";
+    const abilitiesPath = resolveFieldRole(state.systemDefinition, "abilityScores")?.targetPath;
+    const path = Array.isArray(pathSegments) ? pathSegments.join(".") : "";
+    return (
+      root === "identity" ||
+      Boolean(abilitiesPath && path.startsWith(abilitiesPath)) ||
+      getItemBonusBindings().some((binding) => binding.sourcePath.split(".")[0] === root)
+    );
+  }
+
+  // Level and each characteristic by its key, for a formula on a record ("@might", a stability bonus equal to
+  // Might) or on a list entry ("@level + 2", an immunity's amount).
+  function characterFormulaContext(record, level = characterLevel(record)) {
+    const context = { level };
+    fieldRoleChildren("abilityScores").forEach((field) => {
+      context[field.key] = Number(resolveDottedPath(record, field.path)) || 0;
+    });
+    return context;
+  }
+
+  function evaluateCharacterFormula(formula, context) {
+    try {
+      return evaluateFormula(formula, context);
+    } catch (error) {
+      console.warn("Character editor: unable to evaluate", formula, error);
+      return null;
+    }
+  }
+
+  // An array field's child may declare `formulaFrom`, the entry key holding that child's formula (an immunity's
+  // `formula`), recomputed whenever bonuses are synced, so a level or characteristic change carries through.
+  function refreshListFormulas(record) {
+    const context = characterFormulaContext(record);
+    let changed = false;
+    (Array.isArray(state.systemDefinition?.fields) ? state.systemDefinition.fields : [])
+      .filter((field) => field?.type === "array" && Array.isArray(field.children))
+      .forEach((field) => {
+        const computed = field.children.filter((child) => child?.formulaFrom && child.key);
+        const list = resolveDottedPath(record, field.key);
+        if (!computed.length || !Array.isArray(list)) return;
+        list.forEach((item) => {
+          computed.forEach((child) => {
+            const formula = item?.[child.formulaFrom];
+            if (typeof formula !== "string" || !formula.trim()) return;
+            const value = evaluateCharacterFormula(formula, context);
+            if (value !== null && value !== undefined && item[child.key] !== value) {
+              item[child.key] = value;
+              changed = true;
+            }
+          });
+        });
+      });
+    return changed;
+  }
+
+  // Opt-in per combatBindings resource (`capAtMax`), since some Systems let a current value pass its max
+  // (Fate Points above Refresh). Only the ceiling: Draw Steel Stamina goes below zero while dying.
+  function capAtResourceMax(pathSegments, value) {
+    if (typeof value !== "number" || !Array.isArray(pathSegments)) return value;
+    const path = pathSegments.join(".");
+    const binding = getCombatBindings().find(
+      (entry) => entry?.capAtMax && entry.maxPath && String(entry.recordField || "").replace(/^@/, "") === path
+    );
+    if (!binding) return value;
+    const max = Number(resolveDottedPath(state.draft, String(binding.maxPath).replace(/^@/, "")));
+    return Number.isFinite(max) ? Math.min(value, max) : value;
   }
 
   function getPendingChoices() {
@@ -1726,15 +1961,24 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
     // Subclass features at this level too, if one's already chosen —
     // fetched up front so the feature-id fetch below covers both.
-    let subclassRecord = null;
-    if (cls.subclass?.refId) {
-      try {
-        const result = await dataManager.get("variant", cls.subclass.refId, { preferLocal: false });
-        subclassRecord = result?.payload || null;
-      } catch (error) {
-        console.error("Character editor: unable to fetch subclass record for Level Up", error);
-      }
-    }
+    // `additionalSubclasses` is for a class that takes more than one at once
+    // (a Draw Steel conduit's two domains); `subclass` stays the primary pick.
+    const subclassRefIds = [cls.subclass, ...(Array.isArray(cls.additionalSubclasses) ? cls.additionalSubclasses : [])]
+      .map((entry) => entry?.refId)
+      .filter(Boolean);
+    const subclassRecords = (
+      await Promise.all(
+        subclassRefIds.map((refId) =>
+          dataManager
+            .get("variant", refId, { preferLocal: false })
+            .then((result) => result?.payload || null)
+            .catch((error) => {
+              console.error("Character editor: unable to fetch subclass record for Level Up", error);
+              return null;
+            })
+        )
+      )
+    ).filter(Boolean);
 
     // Feature grants — every class.features[] entry at this level, matched
     // against class.featureIds[] (the promoted real `feature` kind ids).
@@ -1745,15 +1989,22 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // rather than the wrong feature.
     const classFeatures = Array.isArray(classRecord.features) ? classRecord.features : [];
     const classFeatureIds = Array.isArray(classRecord.featureIds) ? classRecord.featureIds : [];
-    const needsFeatureFetch = classFeatureIds.length || (Array.isArray(subclassRecord?.featureIds) && subclassRecord.featureIds.length);
+    const levelChoiceEntries = [classRecord, ...subclassRecords].flatMap((record) => choicesAtLevel(record.features, nextLevel));
+    const hasFeatureChoice = levelChoiceEntries.some((entry) => levelChoiceGrants(entry).some((grant) => grant.type === "featureChoice"));
+    const itemEntriesByKind = await fetchChoiceItemEntries(levelChoiceEntries);
+    const needsFeatureFetch =
+      hasFeatureChoice || classFeatureIds.length || subclassRecords.some((record) => Array.isArray(record.featureIds) && record.featureIds.length);
     const featureEntries = needsFeatureFetch ? await fetchKindEntriesWithIds(dataManager, "feature") : [];
     const featureEntityById = new Map(featureEntries.map((entry) => [entry.id, entry.entity]));
     const featureNameById = new Map(featureEntries.map((entry) => [entry.id, (entry.entity?.name || "").trim().toLowerCase()]));
     const existingFeatureIds = Array.isArray(state.draft?.featureIds) ? state.draft.featureIds : [];
     const classFeatureMatches = matchFeaturesAtLevel(classFeatures, classFeatureIds, featureNameById, nextLevel, existingFeatureIds);
-    const subclassFeatureMatches = subclassRecord
-      ? grantSubclassFeaturesAtLevel(subclassRecord, nextLevel, featureNameById, [...existingFeatureIds, ...classFeatureMatches])
-      : [];
+    const subclassFeatureMatches = [];
+    subclassRecords.forEach((record) => {
+      subclassFeatureMatches.push(
+        ...grantSubclassFeaturesAtLevel(record, nextLevel, featureNameById, [...existingFeatureIds, ...classFeatureMatches, ...subclassFeatureMatches])
+      );
+    });
     const newFeatureIds = [...classFeatureMatches, ...subclassFeatureMatches];
 
     // Does this level grant the subclass pick, per the class record's own
@@ -1803,8 +2054,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let growth = 0;
     let resourceBinding = null;
     if (growthBinding?.libraryField) {
-      const hitDieSides = Number(classRecord[growthBinding.libraryField]) || 0;
-      growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
+      // `value` for a System whose class field is a flat per-level amount rather than a hit die.
+      const libraryValue = Number(classRecord[growthBinding.libraryField]) || 0;
+      growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: libraryValue, value: libraryValue }) || 0;
       if (growth && growthBinding.abilityBinding) {
         const score = resolveDottedPath(state.draft, growthBinding.abilityBinding);
         growth += evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
@@ -1816,6 +2068,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // the one being leveled — nextLevel only equals total level pre-multiclass.
     const classes = Array.isArray(allClasses) && allClasses.length ? allClasses : [cls];
     const totalLevel = classes.reduce((sum, entry) => sum + (entry === cls ? nextLevel : Number(entry.level) || 0), 0);
+
+    const [itemBonusesNow, itemBonusesNext] = await Promise.all([
+      computeItemBonusTotals(state.draft),
+      computeItemBonusTotals(state.draft, totalLevel),
+    ]);
+    const itemBonusChanges = getItemBonusBindings()
+      .filter((binding, index, list) => list.findIndex((entry) => entry.targetPath === binding.targetPath) === index)
+      .map((binding) => {
+        const now = itemBonusesNow.get(binding.targetPath);
+        const next = itemBonusesNext.get(binding.targetPath);
+        const delta = (next?.total || 0) - (now?.total || 0);
+        return { name: binding.name || binding.targetPath, delta, sources: (next?.sources || []).map((entry) => entry.name) };
+      })
+      .filter((change) => change.delta);
 
     // Class+level progression table (d20 Modern: Base Attack Bonus, Fort/
     // Ref/Will, Defense Bonus, Reputation Bonus — all independently varying
@@ -1844,6 +2110,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     }
 
+    const choicePlan = planChoiceGrants(levelChoiceEntries, {
+      draft: state.draft,
+      featureEntityById,
+      itemEntriesByKind,
+      subclassRefIds,
+      excludeFeatureIds: newFeatureIds,
+    });
+
     return {
       nextLevel,
       className: cls.name || "this class",
@@ -1853,10 +2127,287 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       resourceBinding,
       newProficiencyBonus: evaluateDerivedFormula(systemFieldValues(state.systemDefinition, "derivedFormulas"), "proficiencyBonusForLevel", { level: totalLevel }) || 0,
       classProgressionWrites,
+      itemBonusChanges,
       subclassChoiceOptions,
       featChoiceOptions,
       deferredFeatureId,
+      levelChoices: levelChoiceEntries.filter((entry) => !levelChoiceGrants(entry).length),
+      statChanges: choicePlan.statChanges,
+      listGrants: choicePlan.listGrants,
+      featureIds: choicePlan.featureIds,
+      levelChoicePicks: choicePlan.picks,
     };
+  }
+
+  // The grant types Level Up and Build Character apply; statChange and listGrant need no pick.
+  function isChoiceGrant(grant) {
+    switch (grant?.type) {
+      case "featureChoice":
+        return Array.isArray(grant.from?.featureIds) || Boolean(grant.from?.filter && typeof grant.from.filter === "object");
+      case "statChange":
+        return typeof grant.fieldRole === "string";
+      case "statIncrease":
+        return typeof grant.fieldRole === "string";
+      case "listChoice":
+      case "fieldChoice":
+        return typeof grant.from?.systemField === "string" && typeof grant.targetPath === "string";
+      case "listGrant":
+        return typeof grant.targetPath === "string" && Array.isArray(grant.values);
+      case "itemChoice":
+        return typeof grant.from?.libraryKind === "string" && typeof grant.targetPath === "string";
+      default:
+        return false;
+    }
+  }
+
+  function levelChoiceGrants(entry) {
+    return (Array.isArray(entry?.grants) ? entry.grants : []).filter(isChoiceGrant);
+  }
+
+  // A filter value may be one value or a list of allowed values, and matches a record field (a dotted path) holding either.
+  function recordMatchesFilter(entity, filter) {
+    const toList = (value) => (Array.isArray(value) ? value : [value]).map((item) => String(item).toLowerCase());
+    return Object.entries(filter || {}).every(([field, allowed]) => {
+      const values = toList(resolveDottedPath(entity, field) ?? []);
+      return toList(allowed).some((item) => values.includes(item));
+    });
+  }
+
+  function featureChoiceOptionIds(grant, featureEntityById) {
+    if (Array.isArray(grant.from.featureIds)) {
+      return grant.from.featureIds.filter((id) => featureEntityById.has(id));
+    }
+    return [...featureEntityById.entries()]
+      .filter(([, entity]) => recordMatchesFilter(entity, grant.from.filter))
+      .sort(([, a], [, b]) => String(a?.name || "").localeCompare(String(b?.name || "")))
+      .map(([id]) => id);
+  }
+
+  // `anyOf` keeps a value matching any one of the listed field values ("a skill from the interpersonal or intrigue
+  // group, or Criminal Underworld").
+  function listChoiceValues(grant) {
+    const anyOf = Object.entries(grant.from.anyOf || {});
+    return systemFieldValues(state.systemDefinition, grant.from.systemField).filter(
+      (value) => value?.name && (!anyOf.length || anyOf.some(([field, allowed]) => recordMatchesFilter(value, { [field]: allowed })))
+    );
+  }
+
+  async function fetchChoiceItemEntries(entries) {
+    const kinds = new Set(
+      entries.flatMap((entry) => levelChoiceGrants(entry)).filter((grant) => grant.type === "itemChoice").map((grant) => grant.from.libraryKind)
+    );
+    const byKind = new Map();
+    for (const kind of kinds) {
+      byKind.set(kind, await fetchKindEntriesWithIds(dataManager, kind).catch(() => []));
+    }
+    return byKind;
+  }
+
+  function characterSubclassRefIds(record) {
+    return (Array.isArray(record?.identity?.classes) ? record.identity.classes : [])
+      .flatMap((cls) => [cls?.subclass, ...(Array.isArray(cls?.additionalSubclasses) ? cls.additionalSubclasses : [])])
+      .map((entry) => entry?.refId)
+      .filter(Boolean);
+  }
+
+  // What a set of entries' grants do to `draft`: the fixed changes, and the picks left for the player, with options
+  // that exclude what the character has or is gaining alongside them. A statChange applies `atLeast`, then `add`,
+  // then `max` (never lowering a value already above it), and a pick in the same set sees the result.
+  function planChoiceGrants(entries, { draft, featureEntityById = new Map(), itemEntriesByKind = new Map(), subclassRefIds = [], excludeFeatureIds = [] }) {
+    // A grant's own `subclassIds` limit it to those subclasses (a fury feature that differs by aspect).
+    const grants = entries.flatMap((entry) =>
+      levelChoiceGrants(entry)
+        .filter((grant) => !Array.isArray(grant.subclassIds) || grant.subclassIds.some((id) => subclassRefIds.includes(id)))
+        .map((grant) => ({ entry, grant }))
+    );
+    const statChanges = new Map();
+    const projectedStat = (path) => (statChanges.has(path) ? statChanges.get(path).to : Number(resolveDottedPath(draft, path)) || 0);
+    grants
+      .filter(({ grant }) => grant.type === "statChange")
+      .forEach(({ grant }) => {
+        fieldRoleChildren(grant.fieldRole)
+          .filter((field) => !Array.isArray(grant.keys) || grant.keys.includes(field.key))
+          .forEach((field) => {
+            const before = projectedStat(field.path);
+            let after = before;
+            if (grant.atLeast != null) after = Math.max(after, Number(grant.atLeast));
+            if (grant.add) after += Number(grant.add);
+            if (grant.max != null) after = Math.min(after, Math.max(before, Number(grant.max)));
+            if (after === before) return;
+            const from = statChanges.has(field.path) ? statChanges.get(field.path).from : before;
+            statChanges.set(field.path, { path: field.path, label: field.label, from, to: after });
+          });
+      });
+    const listGrants = grants
+      .filter(({ grant }) => grant.type === "listGrant")
+      // A value is a name, or a whole item ({name, kind, value}: an immunity and its amount).
+      .map(({ grant }) => {
+        const itemKey = grant.itemKey || "name";
+        return { targetPath: grant.targetPath, itemKey, items: grant.values.map((value) => (value && typeof value === "object" ? value : { [itemKey]: String(value) })) };
+      });
+    const ownedNames = (targetPath, itemKey) => {
+      const list = resolveDottedPath(draft, targetPath);
+      return [
+        ...(Array.isArray(list) ? list : []),
+        ...listGrants.filter((entry) => entry.targetPath === targetPath).flatMap((entry) => entry.items),
+      ].map((item) => String(item?.[itemKey] ?? "").toLowerCase());
+    };
+    const ownedFeatureIds = [...(Array.isArray(draft?.featureIds) ? draft.featureIds : []), ...excludeFeatureIds];
+    const systemIds = Array.isArray(draft?.systemIds) ? draft.systemIds : [];
+    const toOption = (id, entity) => ({ id, label: entity?.name || id, description: resolveNotes(entity), raw: entity });
+    // A feature pick with no real choice left (a censor's one domain, a conduit's other domain) is simply granted.
+    const featureIds = [];
+    const picks = grants
+      .filter(({ grant }) => grant.type !== "statChange" && grant.type !== "listGrant")
+      .map(({ entry, grant }) => {
+        // `chooseOwned`: as many picks as the character's list already has entries matching it (Gods' Library: one
+        // skill from another group per lore skill the hero had).
+        const choose = grant.chooseOwned ? countOwnedMatching(draft, grant) : Number(grant.choose) || 1;
+        if (!choose) return null;
+        const base = { type: grant.type, sourceName: entry.name || "Choice", desc: grant.desc || "", choose };
+        if (grant.type === "statIncrease") {
+          const max = Number(grant.max);
+          return {
+            ...base,
+            add: Number(grant.add) || 1,
+            max,
+            options: fieldRoleChildren(grant.fieldRole)
+              .filter((field) => projectedStat(field.path) < max)
+              .map((field) => ({ id: field.path, name: `${field.label} (${projectedStat(field.path)})` })),
+          };
+        }
+        if (grant.type === "featureChoice") {
+          const optionIds = featureChoiceOptionIds(grant, featureEntityById)
+            .filter((id) => !ownedFeatureIds.includes(id) && !featureIds.includes(id))
+            // "Choose one of your domains": each option belongs to a subclass, offered only if the character has it.
+            .filter(
+              (id) =>
+                !grant.subclassOnly ||
+                (featureEntityById.get(id)?.subclassIds || []).some((subclassId) => subclassRefIds.includes(subclassId))
+            );
+          if (!grant.budget && optionIds.length && optionIds.length <= base.choose) {
+            featureIds.push(...optionIds);
+            return null;
+          }
+          return {
+            ...base,
+            // Options bought with points (an ancestry's traits) rather than counted, each costing its record's `cost`.
+            ...(grant.budget ? { budget: Number(grant.budget) } : {}),
+            options: optionIds.map((id) => toOption(id, featureEntityById.get(id))),
+          };
+        }
+        if (grant.type === "itemChoice") {
+          return {
+            ...base,
+            targetPath: grant.targetPath,
+            refKind: grant.from.libraryKind,
+            itemDefaults: grant.itemDefaults && typeof grant.itemDefaults === "object" ? grant.itemDefaults : {},
+            options: (itemEntriesByKind.get(grant.from.libraryKind) || [])
+              .filter(({ entity }) => !Array.isArray(entity?.systemIds) || !entity.systemIds.length || entity.systemIds.some((id) => systemIds.includes(id)))
+              .filter(({ entity }) => recordMatchesFilter(entity, grant.from.filter))
+              .sort((a, b) => String(a.entity?.name || "").localeCompare(String(b.entity?.name || "")))
+              .map(({ id, entity }) => toOption(id, entity)),
+          };
+        }
+        // fieldChoice writes one name to a plain field (a revenant's size), so nothing is "owned" to leave out.
+        const itemKey = grant.itemKey || "name";
+        const owned = grant.type === "listChoice" ? ownedNames(grant.targetPath, itemKey) : [];
+        return {
+          ...base,
+          targetPath: grant.targetPath,
+          itemKey,
+          ...(grant.itemDefaults && typeof grant.itemDefaults === "object" ? { itemDefaults: grant.itemDefaults } : {}),
+          options: listChoiceValues(grant)
+            .filter((value) => !owned.includes(String(value.name).toLowerCase()))
+            .map((value) => ({ id: value.name, name: value.name })),
+        };
+      })
+      .filter(Boolean);
+    return { statChanges: [...statChanges.values()], listGrants, featureIds, picks };
+  }
+
+  function applyChoiceGrantPlan(draft, plan) {
+    plan.statChanges.forEach((change) => setAtDottedPath(draft, change.path, change.to));
+    if (plan.featureIds.length && !Array.isArray(draft.featureIds)) draft.featureIds = [];
+    plan.featureIds.forEach((id) => {
+      if (!draft.featureIds.includes(id)) draft.featureIds.push(id);
+    });
+    plan.listGrants.forEach(({ targetPath, itemKey, items }) => {
+      const existing = resolveDottedPath(draft, targetPath);
+      const list = Array.isArray(existing) ? existing : [];
+      // A granted item replaces what an entry of the same name had (a larger immunity from a later feature).
+      items.forEach((granted) => {
+        const key = String(granted[itemKey] ?? "").toLowerCase();
+        const existingItem = list.find((item) => String(item?.[itemKey] ?? "").toLowerCase() === key);
+        if (existingItem) Object.assign(existingItem, granted);
+        else list.push({ ...granted });
+      });
+      setAtDottedPath(draft, targetPath, list);
+    });
+  }
+
+  function countOwnedMatching(draft, grant) {
+    const owned = resolveDottedPath(draft, grant.targetPath);
+    const names = (Array.isArray(owned) ? owned : []).map((item) => String(item?.[grant.itemKey || "name"] ?? "").toLowerCase());
+    return systemFieldValues(state.systemDefinition, grant.from.systemField).filter(
+      (value) => names.includes(String(value?.name ?? "").toLowerCase()) && recordMatchesFilter(value, grant.chooseOwned)
+    ).length;
+  }
+
+  function pendingChoicesFromPicks(picks, { sourceKind, sourceId, idPrefix }) {
+    const stamp = Date.now();
+    return picks.map((choice, index) => ({ ...choice, id: `${idPrefix}-${index}-${stamp}`, sourceKind, sourceId }));
+  }
+
+  // A feature carrying its own grants (a domain feature's skill, an ancestry trait's speed) applies them as it's gained.
+  async function applyGainedFeatureGrants(draft, featureIds, featureEntityById) {
+    let lookup = featureEntityById instanceof Map ? featureEntityById : new Map();
+    if (featureIds.some((id) => !lookup.get(id))) {
+      lookup = new Map((await fetchKindEntriesWithIds(dataManager, "feature")).map((entry) => [entry.id, entry.entity]));
+    }
+    const gaining = featureIds.filter((id) => levelChoiceGrants(lookup.get(id)).length);
+    if (!gaining.length) return [];
+    if (gaining.some((id) => levelChoiceGrants(lookup.get(id)).some((grant) => grant.type === "featureChoice")) && lookup === featureEntityById) {
+      lookup = new Map((await fetchKindEntriesWithIds(dataManager, "feature")).map((entry) => [entry.id, entry.entity]));
+    }
+    const pending = [];
+    for (const id of gaining) {
+      const record = lookup.get(id);
+      const plan = planChoiceGrants([record], {
+        draft,
+        featureEntityById: lookup,
+        itemEntriesByKind: await fetchChoiceItemEntries([record]),
+        subclassRefIds: characterSubclassRefIds(draft),
+      });
+      applyChoiceGrantPlan(draft, plan);
+      pending.push(...pendingChoicesFromPicks(plan.picks, { sourceKind: "feature", sourceId: id, idPrefix: id }));
+      if (plan.featureIds.length) pending.push(...(await applyGainedFeatureGrants(draft, plan.featureIds, lookup)));
+    }
+    return pending;
+  }
+
+  // Reminders only, shown before Level Up is applied; collapsed because a choice's text can be a whole list of abilities.
+  function renderLevelChoices(body, choices) {
+    if (!choices?.length) return;
+    const heading = document.createElement("p");
+    heading.className = "fw-semibold small mt-3 mb-1";
+    heading.textContent = "Also choose yourself";
+    body.appendChild(heading);
+    const note = document.createElement("p");
+    note.className = "small text-body-secondary mb-1";
+    note.textContent = "Level Up can't pick these for you. Add your choices to the sheet in Edit view.";
+    body.appendChild(note);
+    choices.forEach((choice) => {
+      const details = document.createElement("details");
+      details.className = "small mb-1";
+      const summary = document.createElement("summary");
+      summary.textContent = choice.name || "";
+      details.appendChild(summary);
+      const text = renderNotesPreview(choice.description || "");
+      text.className = "ps-3 pt-1";
+      details.appendChild(text);
+      body.appendChild(details);
+    });
   }
 
   function renderLevelUpModalConfirm(preview) {
@@ -1870,14 +2421,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     intro.textContent = `Level up ${preview.className} to level ${preview.nextLevel}.`;
     body.appendChild(intro);
     const lines = [];
-    if (preview.newFeatureIds.length) {
-      const names = preview.newFeatureIds.map((id) => preview.featureEntityById.get(id)?.name || id);
+    if (preview.newFeatureIds.length || preview.featureIds.length) {
+      const names = [...preview.newFeatureIds, ...preview.featureIds].map((id) => preview.featureEntityById.get(id)?.name || id);
       lines.push(`New feature${names.length > 1 ? "s" : ""}: ${names.join(", ")}`);
     }
     if (preview.growth && preview.resourceBinding) {
       const currentMax = Number(resolveDottedPath(state.draft, preview.resourceBinding.maxPath)) || 0;
-      lines.push(`+${preview.growth} max HP (${currentMax} → ${currentMax + preview.growth})`);
+      lines.push(`+${preview.growth} max ${preview.resourceBinding.name || "HP"} (${currentMax} → ${currentMax + preview.growth})`);
     }
+    preview.itemBonusChanges.forEach((change) => {
+      lines.push(`${change.delta > 0 ? "+" : ""}${change.delta} ${change.name} from ${change.sources.join(", ")}`);
+    });
     if (preview.newProficiencyBonus) {
       lines.push(`Proficiency Bonus: +${preview.newProficiencyBonus}`);
     }
@@ -1887,7 +2441,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (preview.featChoiceOptions) {
       lines.push("Choose a feat");
     }
-    if (!lines.length) {
+    preview.statChanges.forEach((change) => {
+      lines.push(`${change.label} ${change.from} → ${change.to}`);
+    });
+    preview.listGrants.forEach((grant) => {
+      lines.push(`Gain: ${grant.items.map((item) => item[grant.itemKey]).join(", ")}`);
+    });
+    preview.levelChoicePicks.forEach((choice) => {
+      lines.push(`Choose: ${choice.sourceName}`);
+    });
+    if (!lines.length && !preview.levelChoices.length) {
       lines.push("No other changes at this level.");
     }
     const list = document.createElement("ul");
@@ -1897,37 +2460,39 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       li.textContent = text;
       list.appendChild(li);
     });
-    body.appendChild(list);
+    if (lines.length) body.appendChild(list);
+    renderLevelChoices(body, preview.levelChoices);
   }
 
+  // Only stays open for a pick the app can apply (subclass, feat, ...); the success toast covers the rest.
   function renderLevelUpModalResolve(pendingEntries) {
     const body = elements.levelUpModalBody;
     if (!body) {
       return;
     }
+    if (!pendingEntries.length) {
+      levelUpModalInstance?.hide();
+      return;
+    }
     body.innerHTML = "";
     const summary = document.createElement("p");
     summary.className = "mb-2";
-    summary.textContent = pendingEntries.length
-      ? "Leveled up! Resolve the choices below, or close and finish them later from Character Properties."
-      : "Leveled up!";
+    summary.textContent = "Leveled up! Resolve the choices below, or close and finish them later from Character Properties.";
     body.appendChild(summary);
-    if (pendingEntries.length) {
-      const list = document.createElement("div");
-      list.className = "d-flex flex-column gap-2";
-      pendingEntries.forEach((choice) => {
-        const row = renderPendingChoiceRow(choice, {
-          onResolved: () => {
-            row.remove();
-            if (!list.children.length) {
-              summary.textContent = "All done!";
-            }
-          },
-        });
-        list.appendChild(row);
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-2";
+    pendingEntries.forEach((choice) => {
+      const row = renderPendingChoiceRow(choice, {
+        onResolved: () => {
+          row.remove();
+          if (!list.children.length) {
+            summary.textContent = "All done!";
+          }
+        },
       });
-      body.appendChild(list);
-    }
+      list.appendChild(row);
+    });
+    body.appendChild(list);
   }
 
   // 1 class: straight to the confirm screen. 2+ classes: a "which class?"
@@ -1935,7 +2500,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // one is the separate "Add a Class" action.
   async function openLevelUpModal() {
     const classes = Array.isArray(state.draft?.identity?.classes) ? state.draft.identity.classes : [];
-    if (!classes.length || !elements.levelUpModalEl || !state.draft) {
+    if (!classes.length || !elements.levelUpModalEl || !state.draft || isAtLevelCap()) {
       return;
     }
     if (classes.length === 1) {
@@ -2352,6 +2917,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
     cls.level = nextLevel;
 
+    await syncItemBonuses();
     renderCanvas();
     renderPreview();
     await persistDraft({ silent: false });
@@ -2385,7 +2951,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   }
 
   async function openAddClassModal() {
-    if (!elements.addClassModalEl || !state.draft) {
+    if (!elements.addClassModalEl || !state.draft || isAtLevelCap()) {
       return;
     }
     addClassPickedRecord = null;
@@ -2498,7 +3064,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (growthBinding?.libraryField) {
       const hitDieSides = Number(classRecord[growthBinding.libraryField]) || 0;
       const derivedFormulas = systemFieldValues(state.systemDefinition, "derivedFormulas");
-      let growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides }) || 0;
+      let growth = evaluateDerivedFormula(derivedFormulas, "hitPointsPerLevelAverage", { sides: hitDieSides, value: hitDieSides }) || 0;
       if (growth && growthBinding.abilityBinding) {
         const score = resolveDottedPath(state.draft, growthBinding.abilityBinding);
         growth += evaluateDerivedFormula(derivedFormulas, "abilityModifier", { score }) || 0;
@@ -2591,7 +3157,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (!featureRecord || !Array.isArray(featureRecord.grants) || !featureRecord.grants.length) {
         return;
       }
-      const resolved = resolveGrantChoices(featureRecord.grants, state.draft);
+      const resolved = resolveGrantChoices(featureRecord.grants.filter((grant) => !isChoiceGrant(grant)), state.draft);
       resolved.forEach((entry, index) => {
         const pending = {
           id: `${featureId}-addclass-${index}-${Date.now()}`,
@@ -2608,6 +3174,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       });
     });
 
+    await syncItemBonuses();
     renderCanvas();
     renderPreview();
     await persistDraft({ silent: false });
@@ -2693,7 +3260,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (!state.draft.stats || typeof state.draft.stats !== "object") {
       state.draft.stats = {};
     }
-    state.draft.stats.proficiencyBonus = preview.newProficiencyBonus;
+    if (preview.newProficiencyBonus) {
+      state.draft.stats.proficiencyBonus = preview.newProficiencyBonus;
+    }
 
     // Class+level progression table writes (see computeLevelUpPreview) —
     // empty for every System except one declaring "classProgressionTable".
@@ -2751,6 +3320,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       newlyPending.push(pending);
     }
 
+    applyChoiceGrantPlan(state.draft, preview);
+    pendingChoicesFromPicks(preview.levelChoicePicks, { sourceKind: "class", sourceId: cls.refId, idPrefix: `${cls.refId}-choice-${preview.nextLevel}` }).forEach((pending) => {
+      state.draft.pendingChoices.push(pending);
+      newlyPending.push(pending);
+    });
+
     // Every other newly granted feature's grants[], resolving any dynamic
     // source (e.g. "proficientSkills") against current state now, so the UI
     // never interprets a source string later. The deferred feature (if any)
@@ -2764,7 +3339,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (!featureRecord || !Array.isArray(featureRecord.grants) || !featureRecord.grants.length) {
         return;
       }
-      const resolved = resolveGrantChoices(featureRecord.grants, state.draft);
+      const resolved = resolveGrantChoices(featureRecord.grants.filter((grant) => !isChoiceGrant(grant)), state.draft);
       if (!resolved.length) {
         return;
       }
@@ -2783,7 +3358,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         newlyPending.push(pending);
       });
     });
+    const gainedFeatureIds = [...preview.newFeatureIds.filter((featureId) => featureId !== preview.deferredFeatureId), ...preview.featureIds];
+    (await applyGainedFeatureGrants(state.draft, gainedFeatureIds, preview.featureEntityById)).forEach((pending) => {
+      state.draft.pendingChoices.push(pending);
+      newlyPending.push(pending);
+    });
 
+    await syncItemBonuses();
     renderCanvas();
     renderPreview();
     await persistDraft({ silent: false });
@@ -2887,6 +3468,23 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           }
         });
       }
+    } else if (choice.type === "statIncrease") {
+      picks.forEach((pick) => {
+        const path = pick?.raw?.id;
+        if (!path) return;
+        const current = Number(resolveDottedPath(state.draft, path)) || 0;
+        setAtDottedPath(state.draft, path, Math.max(current, Math.min(Number(choice.max), current + (Number(choice.add) || 1))));
+      });
+    } else if (choice.type === "listChoice") {
+      if (choice.targetPath) {
+        const itemKey = choice.itemKey || "name";
+        const list = Array.isArray(resolveDottedPath(state.draft, choice.targetPath)) ? resolveDottedPath(state.draft, choice.targetPath) : [];
+        picks.forEach((pick) => {
+          const name = pick?.raw?.name || pick?.label || "";
+          if (name && !list.some((item) => item?.[itemKey] === name)) list.push({ ...(choice.itemDefaults || {}), [itemKey]: name });
+        });
+        setAtDottedPath(state.draft, choice.targetPath, list);
+      }
     } else if (choice.type === "multiclass") {
       // No real pick to apply — the option list is a single "open the
       // picker" placeholder (Add a Class is already the real multiclass
@@ -2920,22 +3518,37 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         });
         await refreshCharacterSpellSlots(state.draft);
       }
-    } else if (choice.type === "featChoice") {
-      const featOption = picks[0]?.raw;
-      const featRecord = featOption?.raw;
-      const featId = featOption?.id;
-      if (featId) {
-        if (!Array.isArray(state.draft.featureIds)) {
-          state.draft.featureIds = [];
-        }
-        if (!state.draft.featureIds.includes(featId)) {
+    } else if (choice.type === "itemChoice") {
+      const existing = resolveDottedPath(state.draft, choice.targetPath);
+      const list = Array.isArray(existing) ? existing : [];
+      // An item's own featureIds (a kit's signature ability) follow it through the itemBonuses sync below.
+      picks.forEach((pick) => {
+        const option = pick?.raw;
+        if (!option?.id) return;
+        list.push({ name: option.raw?.name || option.label || "", ...(choice.itemDefaults || {}), refKind: choice.refKind, refId: option.id });
+      });
+      setAtDottedPath(state.draft, choice.targetPath, list);
+    } else if (choice.type === "featChoice" || choice.type === "featureChoice") {
+      if (!Array.isArray(state.draft.featureIds)) {
+        state.draft.featureIds = [];
+      }
+      const gained = new Map();
+      picks.forEach((pick) => {
+        const featId = pick?.raw?.id;
+        if (featId && !state.draft.featureIds.includes(featId)) {
           state.draft.featureIds.push(featId);
+          gained.set(featId, pick.raw.raw);
         }
+      });
+      additionalPending.push(...(await applyGainedFeatureGrants(state.draft, [...gained.keys()], gained)));
+      for (const [featId, featRecord] of gained) {
         // If the picked feat has its own grants (true for feat.ability-
         // score-improvement), resolve those too — one level of recursion,
         // filtering out any nested "featChoice" so re-picking ASI doesn't
         // re-trigger another "pick a feat" prompt.
-        const secondaryGrants = Array.isArray(featRecord?.grants) ? featRecord.grants.filter((grant) => grant?.type !== "featChoice") : [];
+        const secondaryGrants = Array.isArray(featRecord?.grants)
+          ? featRecord.grants.filter((grant) => grant?.type !== "featChoice" && !isChoiceGrant(grant))
+          : [];
         if (secondaryGrants.length) {
           const resolved = resolveGrantChoices(secondaryGrants, state.draft);
           resolved.forEach((entry, i) => {
@@ -2953,6 +3566,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         }
       }
     }
+    // Before saving, so a kit's or a feature's bonuses count as a change from the saved character.
+    await syncItemBonuses();
     const remaining = pendingChoices.filter((_, i) => i !== index);
     state.draft.pendingChoices = [...remaining, ...additionalPending];
     renderCanvas();
@@ -2999,6 +3614,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (choice.type === "abilityScoreImprovement") {
       return renderClassAbilityScoreImprovementChoiceRow(choice, { onResolved });
     }
+    if (choice.type === "featureChoice" || choice.type === "itemChoice") {
+      // Rows are built from the stored list, so a pick made in another row since is no longer offered.
+      const ownedIds = choice.type === "featureChoice" ? state.draft?.featureIds || [] : [];
+      const available = { ...choice, options: (Array.isArray(choice.options) ? choice.options : []).filter((option) => !ownedIds.includes(option.id)) };
+      return available.budget || Number(available.choose) > 1
+        ? renderMultiPickChoiceRow(available, { onResolved })
+        : renderFilterableChoiceRow(available, { onResolved });
+    }
     if (choice.type === "subclassChoice" || choice.type === "featChoice") {
       return renderFilterableChoiceRow(choice, { onResolved });
     }
@@ -3010,7 +3633,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       choice.desc ? " — " + escapeHtml(choice.desc) : ""
     }`;
     row.appendChild(title);
-    const rawOptions = Array.isArray(choice.options) ? choice.options : [];
+    const listed = choice.type === "listChoice" ? resolveDottedPath(state.draft, choice.targetPath) : null;
+    const ownedNames = (Array.isArray(listed) ? listed : []).map((item) => String(item?.[choice.itemKey || "name"] ?? "").toLowerCase());
+    const rawOptions = (Array.isArray(choice.options) ? choice.options : []).filter(
+      (option) => !ownedNames.includes(String(option.name ?? "").toLowerCase())
+    );
     const options = rawOptions.map((option) => ({ label: option.label || option.name, id: option.id, kind: "", raw: option }));
     const choose = Math.max(1, Number(choice.choose) || 1);
     const fields = Array.from({ length: choose }, () =>
@@ -3339,6 +3966,88 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     return row;
   }
 
+  // Several picks from one list (two signature abilities, two kits), or picks bought from a point budget (ancestry
+  // traits, each costing its record's `cost`). Confirm waits until nothing else still fits.
+  function renderMultiPickChoiceRow(choice, { onResolved } = {}) {
+    const row = document.createElement("div");
+    row.className = "d-flex flex-column gap-2 border rounded-3 p-2";
+    const title = document.createElement("div");
+    title.className = "small";
+    title.innerHTML = `<span class="fw-semibold">${escapeHtml(choice.sourceName || "")}</span>${
+      choice.desc ? " — " + escapeHtml(choice.desc) : ""
+    }`;
+    row.appendChild(title);
+    const usesPoints = Boolean(choice.budget);
+    const budget = usesPoints ? Number(choice.budget) : Math.max(1, Number(choice.choose) || 1);
+    const costOf = (option) => (usesPoints ? Number(option.raw?.cost) || 1 : 1);
+    const selected = new Set();
+    const spent = () => [...selected].reduce((total, option) => total + costOf(option), 0);
+    const remainingLabel = document.createElement("div");
+    remainingLabel.className = "small text-body-secondary";
+    const list = document.createElement("div");
+    list.className = "d-flex flex-column gap-1";
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className = "btn btn-sm btn-outline-primary align-self-start";
+    confirmButton.textContent = "Confirm";
+    const boxes = (Array.isArray(choice.options) ? choice.options : []).map((option, index) => {
+      const item = document.createElement("div");
+      item.className = "form-check";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.className = "form-check-input";
+      input.id = `${choice.id}-option-${index}`;
+      const label = document.createElement("label");
+      label.className = "form-check-label small";
+      label.htmlFor = input.id;
+      label.textContent = usesPoints ? `${option.label} (${costOf(option)})` : option.label;
+      item.append(input, label);
+      if (option.description) {
+        const details = document.createElement("details");
+        details.className = "small";
+        const summary = document.createElement("summary");
+        summary.className = "text-body-secondary";
+        summary.textContent = "Details";
+        details.append(summary, renderNotesPreview(option.description));
+        item.appendChild(details);
+      }
+      input.addEventListener("change", () => {
+        if (input.checked) selected.add(option);
+        else selected.delete(option);
+        refresh();
+      });
+      list.appendChild(item);
+      return { option, input };
+    });
+    const isReady = () => selected.size > 0 && boxes.every(({ option, input }) => input.checked || costOf(option) > budget - spent());
+    function refresh() {
+      const left = budget - spent();
+      boxes.forEach(({ option, input }) => {
+        input.disabled = !input.checked && costOf(option) > left;
+      });
+      remainingLabel.textContent = usesPoints ? `Points left: ${left} of ${budget}` : `Chosen: ${selected.size} of ${budget}`;
+      confirmButton.disabled = !isReady();
+    }
+    async function tryConfirm() {
+      if (!isReady()) {
+        return false;
+      }
+      await resolvePendingChoice(choice, [...selected].map((option) => ({ id: option.id, label: option.label, raw: option })));
+      onResolved?.();
+      return true;
+    }
+    confirmButton.addEventListener("click", () => {
+      void tryConfirm();
+    });
+    if (!boxes.length) {
+      list.textContent = "No options available.";
+    }
+    row.append(remainingLabel, list, confirmButton);
+    refresh();
+    row._tryConfirm = tryConfirm;
+    return row;
+  }
+
   function renderPendingChoices() {
     const mount = elements.pendingChoicesMount;
     if (!mount) {
@@ -3393,19 +4102,24 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
           : state.mode !== "edit"
             ? "Switch to Edit mode."
             : "";
-    const levelUpDisabled = commonlyDisabled || !hasLinkedClass;
+    const atLevelCap = isAtLevelCap();
+    const levelCapTitle = "This character is already at the System's highest level.";
+    const levelUpDisabled = commonlyDisabled || !hasLinkedClass || atLevelCap;
     const levelUpDisabledTitle = commonlyDisabled
       ? commonDisabledTitle
       : !classes.length
         ? "This character has no class recorded."
-        : "Link this character's class to a Library record first.";
+        : !hasLinkedClass
+          ? "Link this character's class to a Library record first."
+          : levelCapTitle;
     if (elements.levelUpButton) {
       setDisabledTooltip(elements.levelUpButton, levelUpDisabled ? levelUpDisabledTitle : "");
       initTooltip(elements.levelUpButton, { title: levelUpDisabled ? "" : "Level up this character" });
     }
     if (elements.addClassButton) {
-      setDisabledTooltip(elements.addClassButton, commonlyDisabled ? commonDisabledTitle : "");
-      initTooltip(elements.addClassButton, { title: commonlyDisabled ? "" : "Add a class (multiclass)" });
+      const addClassDisabledTitle = commonlyDisabled ? commonDisabledTitle : atLevelCap ? levelCapTitle : "";
+      setDisabledTooltip(elements.addClassButton, addClassDisabledTitle);
+      initTooltip(elements.addClassButton, { title: addClassDisabledTitle ? "" : "Add a class (multiclass)" });
     }
     renderPendingChoices();
   }
@@ -6612,7 +7326,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // A caller that re-creates this picker from scratch on every pick hands the
     // existing selection back in as `initialSelectedId` so it isn't forgotten.
     const initialOption = initialSelectedId ? options.find((option) => option.id === initialSelectedId) : null;
-    setSanitizedHtml(details, initialOption ? initialOption.description || "No description available." : "");
+    details.replaceChildren(renderNotesPreview(initialOption ? initialOption.description || "No description available." : ""));
     if (!initialOption) {
       details.textContent = "Select an option to see its description.";
     }
@@ -6645,7 +7359,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         row.append(icon, label);
         row.addEventListener("click", () => {
           selectedId = option.id;
-          setSanitizedHtml(details, option.description || "No description available.");
+          details.replaceChildren(renderNotesPreview(option.description || "No description available."));
           renderList();
           onSelect(option);
         });
@@ -7412,7 +8126,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       dataManager,
       status,
       interactiveDice: true,
-      getRollContext: () => ({ rolls: activeSystemRolls, dice: activeQuickDice }),
+      getRollContext: () => ({ rolls: activeSystemRolls, dice: activeQuickDice, terms: characteristicRollTerms(), context: getBindingContext() }),
       // A roll from a row's description (a Feature's) is titled with that row's name.
       rollLabel: (comp) => itemContext?.item?.name || comp.label || comp.name,
       resolveValue(comp, fallback) {
@@ -8678,8 +9392,15 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       return;
     }
     const previousValue = cloneValue(getValueAtPath(pathSegments));
-    const nextValue = cloneValue(value);
+    const capped = capAtResourceMax(pathSegments, value);
+    const nextValue = cloneValue(capped);
     if (valuesEqual(previousValue, nextValue)) {
+      // The field still shows the over-max number that was typed; redraw it at the cap.
+      if (capped !== value) {
+        const snapshot = captureActiveField();
+        renderCanvas();
+        if (snapshot) restoreActiveField(snapshot);
+      }
       return;
     }
     const focusSnapshot = captureActiveField();
@@ -8928,8 +9649,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     className: "",
     classRecord: null,
     needsSubclassStep: false,
-    subclassId: "",
-    subclassName: "",
+    // One `{id, name}` per subclass slot (buildSubclassSlots); the first is the class's subclass.
+    subclassPicks: [],
+    // Which of the class's own characteristic arrays is picked ("classArray" method).
+    classArrayIndex: null,
     backgroundId: "",
     backgroundName: "",
     // Mirrors classRecord above — needed so a listPick step can source its
@@ -8966,8 +9689,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.className = "";
     buildWizardState.classRecord = null;
     buildWizardState.needsSubclassStep = false;
-    buildWizardState.subclassId = "";
-    buildWizardState.subclassName = "";
+    buildWizardState.subclassPicks = [];
+    buildWizardState.classArrayIndex = null;
     buildWizardState.backgroundId = "";
     buildWizardState.backgroundName = "";
     buildWizardState.backgroundRecord = null;
@@ -9027,8 +9750,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     buildWizardState.className = "";
     buildWizardState.classRecord = null;
     buildWizardState.needsSubclassStep = false;
-    buildWizardState.subclassId = "";
-    buildWizardState.subclassName = "";
+    buildWizardState.subclassPicks = [];
+    buildWizardState.classArrayIndex = null;
     buildWizardState.backgroundId = "";
     buildWizardState.backgroundName = "";
     buildWizardState.backgroundRecord = null;
@@ -9041,8 +9764,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // active sequence then). Every kind fetched below comes from the step's
     // declared `libraryKind`/`picks[].libraryKind`, never assumed from the id.
     const heritageEntry = getBuildStepEntry("heritage");
-    const speciesKind = heritageEntry ? heritageEntry.picks?.[0]?.libraryKind : getBuildStepEntry("species")?.libraryKind;
-    const backgroundKind = heritageEntry ? heritageEntry.picks?.[1]?.libraryKind : getBuildStepEntry("background")?.libraryKind;
+    const speciesStepEntry = heritageEntry ? heritageEntry.picks?.[0] : getBuildStepEntry("species");
+    const backgroundStepEntry = heritageEntry ? heritageEntry.picks?.[1] : getBuildStepEntry("background");
+    const speciesKind = speciesStepEntry?.libraryKind;
+    const backgroundKind = backgroundStepEntry?.libraryKind;
     const classStepEntry = getBuildStepEntry("class");
     const classKind = classStepEntry?.libraryKind;
     const speciesMount = heritageEntry ? elements.buildHeritageSpeciesMount : elements.buildSpeciesMount;
@@ -9053,7 +9778,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         buildWizardState.speciesId = option?.id || "";
         buildWizardState.speciesName = option?.label || "";
         updateBuildNextState();
-      }),
+      }, speciesStepEntry?.matchField, speciesStepEntry?.matchValue),
       renderBuildLibraryPicker(elements.buildClassMount, classKind, (option) => {
         buildWizardState.classId = option?.id || "";
         buildWizardState.className = option?.label || "";
@@ -9065,8 +9790,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         const subclassStepEntry = getBuildStepEntry("subclass");
         buildWizardState.needsSubclassStep =
           Boolean(subclassStepEntry) && (Boolean(subclassStepEntry.atCreation) || getSubclassGrantLevel(option?.raw) === 1);
-        buildWizardState.subclassId = "";
-        buildWizardState.subclassName = "";
+        buildWizardState.subclassPicks = [];
+        // A class-sourced characteristic array belongs to the class it came from.
+        if (buildWizardState.abilityMethod === "classArray") {
+          buildWizardState.abilityScores = {};
+          buildWizardState.classArrayIndex = null;
+        }
         if (buildWizardState.needsSubclassStep) {
           void renderBuildSubclassPicker();
         }
@@ -9077,7 +9806,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         buildWizardState.backgroundName = option?.label || "";
         buildWizardState.backgroundRecord = option?.raw || null;
         updateBuildNextState();
-      }),
+      }, backgroundStepEntry?.matchField, backgroundStepEntry?.matchValue),
       renderBuildLibraryPicker(elements.buildSecondSpeciesMount, speciesKind, (option) => {
         buildWizardState.secondSpeciesId = option?.id || "";
         buildWizardState.secondSpeciesName = option?.label || "";
@@ -9085,6 +9814,21 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }),
     ]);
     updateBuildNextState();
+  }
+
+  // The picked class's own `subclassPicks` (`[{label, choose, parentId}]`: a Draw Steel conduit's two domains, or a
+  // censor's order and then one domain from the conduit's list), or else one pick from the class's own subclasses.
+  // The first slot is the class's subclass; the rest are its additionalSubclasses.
+  function buildSubclassSlots() {
+    const declared = buildWizardState.classRecord?.subclassPicks;
+    const groups = Array.isArray(declared) && declared.length ? declared : [{}];
+    return groups.flatMap((group) => {
+      const count = Math.max(1, Number(group?.choose) || 1);
+      return Array.from({ length: count }, (_, index) => ({
+        label: group?.label ? (count > 1 ? `${group.label} ${index + 1}` : group.label) : "",
+        parentId: group?.parentId || buildWizardState.classId,
+      }));
+    });
   }
 
   // Subclass options filter to records matching the subclass step's own
@@ -9104,21 +9848,39 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       mount.textContent = "Unable to load subclass options.";
       return;
     }
-    const options = entries
-      .filter((entry) => entry.entity?.parentKind === subclassStepEntry?.parentKind && entry.entity?.parentId === buildWizardState.classId)
-      .map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }))
-      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
-    mount.innerHTML = "";
-    const picker = createFilterableListPicker({
-      options,
-      emptyMessage: "No subclass options available.",
-      onSelect: (option) => {
-        buildWizardState.subclassId = option.id;
-        buildWizardState.subclassName = option.name;
-        updateBuildNextState();
-      },
-    });
-    mount.appendChild(picker.element);
+    const slots = buildSubclassSlots();
+    const optionsFor = (parentId) =>
+      entries
+        .filter((entry) => entry.entity?.parentKind === subclassStepEntry?.parentKind && entry.entity?.parentId === parentId)
+        .map((entry) => ({ id: entry.id, name: entry.entity?.name || entry.id, description: resolveNotes(entry.entity), raw: entry.entity }))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    function renderAll() {
+      mount.innerHTML = "";
+      slots.forEach((slot, slotIndex) => {
+        const takenIds = buildWizardState.subclassPicks.filter((pick, index) => index !== slotIndex && pick).map((pick) => pick.id);
+        const wrap = document.createElement("div");
+        wrap.className = "d-flex flex-column gap-1 mb-2";
+        if (slot.label) {
+          const label = document.createElement("label");
+          label.className = "form-label small text-body-secondary fw-semibold mb-0";
+          label.textContent = slot.label;
+          wrap.appendChild(label);
+        }
+        const picker = createFilterableListPicker({
+          options: optionsFor(slot.parentId).filter((option) => !takenIds.includes(option.id)),
+          emptyMessage: "No subclass options available.",
+          initialSelectedId: buildWizardState.subclassPicks[slotIndex]?.id ?? null,
+          onSelect: (option) => {
+            buildWizardState.subclassPicks[slotIndex] = { id: option.id, name: option.name };
+            if (slots.length > 1) renderAll();
+            updateBuildNextState();
+          },
+        });
+        wrap.appendChild(picker.element);
+        mount.appendChild(wrap);
+      });
+    }
+    renderAll();
   }
 
   // Shared by all three Library-kind picker steps. Filtered to the Template's
@@ -9256,7 +10018,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } else if (step === "class") {
       valid = Boolean(buildWizardState.classId);
     } else if (step === "subclass") {
-      valid = Boolean(buildWizardState.subclassId);
+      valid = buildSubclassSlots().every((_, index) => Boolean(buildWizardState.subclassPicks[index]?.id));
     } else if (step === "background") {
       valid = Boolean(buildWizardState.backgroundId);
     } else if (step === "heritage") {
@@ -9320,6 +10082,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (methodName === "pointBuy") {
       return Number.isFinite(config?.min) && Number.isFinite(config?.max) && Number.isFinite(config?.budget) && config?.costs && typeof config.costs === "object";
     }
+    if (methodName === "classArray") {
+      return typeof config?.libraryField === "string" && config.libraryField.length > 0;
+    }
     if (methodName === "roll") {
       // Either a shared-formula/count shape (D&D: roll 6, assign freely) or a
       // per-ability `formulas` map (CoC: each ability rolls its own formula
@@ -9374,7 +10139,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       mount.textContent = "This System has no ability scores defined.";
       return;
     }
-    if (buildWizardState.abilityMethod === "pointBuy") {
+    if (buildWizardState.abilityMethod === "classArray") {
+      renderClassArrayAbilities(mount, defs);
+    } else if (buildWizardState.abilityMethod === "pointBuy") {
       renderPointBuyAbilities(mount, defs);
     } else if (buildWizardState.abilityMethod === "roll") {
       renderRollAbilities(mount, defs);
@@ -9383,6 +10150,56 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       const declaredArray = getBuildAbilityMethodConfig("array")?.values || [];
       const values = declaredArray.map((entry) => Number(entry.value ?? entry));
       renderValueAssignmentAbilities(mount, defs, values);
+    }
+  }
+
+  // The picked class's own starting scores, on the record field the method names (a Draw Steel class's
+  // `characteristics`): its `fixed` values, then one of its `arrays` assigned across the rest.
+  function renderClassArrayAbilities(mount, defs) {
+    const config = buildWizardState.classRecord?.[getBuildAbilityMethodConfig("classArray")?.libraryField];
+    const fixed = config?.fixed && typeof config.fixed === "object" ? config.fixed : {};
+    const arrays = (Array.isArray(config?.arrays) ? config.arrays : []).filter((values) => Array.isArray(values) && values.length);
+    if (!arrays.length) {
+      mount.textContent = buildWizardState.classRecord ? "This class has no starting arrays." : "Choose a class first.";
+      return;
+    }
+    const allValues = [...Object.values(fixed), ...arrays.flat()].map(Number);
+    const fixedDefs = defs.filter((def) => fixed[def.key] != null);
+    const openDefs = defs.filter((def) => fixed[def.key] == null);
+    fixedDefs.forEach((def) => {
+      buildWizardState.abilityScores[def.key] = Number(fixed[def.key]);
+    });
+    if (fixedDefs.length) {
+      const fixedLine = document.createElement("div");
+      fixedLine.className = "small mb-2";
+      fixedLine.textContent = `From your class: ${fixedDefs.map((def) => `${def.label} ${formatSignedNumber(Number(fixed[def.key]), allValues)}`).join(", ")}`;
+      mount.appendChild(fixedLine);
+    }
+    const arrayGroup = document.createElement("div");
+    arrayGroup.className = "btn-group btn-group-sm flex-wrap mb-2";
+    arrayGroup.setAttribute("role", "group");
+    arrayGroup.setAttribute("aria-label", "Characteristic array");
+    arrays.forEach((values, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `btn ${buildWizardState.classArrayIndex === index ? "btn-primary" : "btn-outline-secondary"}`;
+      button.textContent = values.map((value) => formatSignedNumber(Number(value), allValues)).join(", ");
+      button.addEventListener("click", () => {
+        buildWizardState.classArrayIndex = index;
+        openDefs.forEach((def) => {
+          delete buildWizardState.abilityScores[def.key];
+        });
+        renderBuildAbilitiesStep();
+        updateBuildNextState();
+      });
+      arrayGroup.appendChild(button);
+    });
+    mount.appendChild(arrayGroup);
+    const picked = arrays[buildWizardState.classArrayIndex];
+    if (picked) {
+      const assignMount = document.createElement("div");
+      mount.appendChild(assignMount);
+      renderValueAssignmentAbilities(assignMount, openDefs, picked.map(Number));
     }
   }
 
@@ -10039,6 +10856,14 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   // Ordinary mutually-exclusive <select> picks, for a listPick step whose
   // candidates carry no real description worth a full picker panel.
+  // A pick slot's own `matchField`/`matchValue` narrows the shared options to one kind (a Draw Steel culture's
+  // Environment, Organization and Upbringing slots, all drawn from the same Library kind).
+  function listPickSlotOptions(options, pick) {
+    return pick?.matchField
+      ? options.filter((option) => String(resolveDottedPath(option.raw, pick.matchField) ?? "") === String(pick.matchValue ?? ""))
+      : options;
+  }
+
   function renderSelectListPicks(wrap, options, picks, selections) {
     const selects = [];
     function refreshAll() {
@@ -10052,7 +10877,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         blank.value = "";
         blank.textContent = "—";
         select.appendChild(blank);
-        options
+        listPickSlotOptions(options, picks[slotIndex])
           .filter((option) => !otherLabels.has(option.label))
           .forEach((option) => {
             const el = document.createElement("option");
@@ -10111,7 +10936,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         const otherLabels = new Set(
           picks.map((_, i) => i).filter((i) => i !== slotIndex).map((i) => selections[i]?.label).filter(Boolean)
         );
-        const pickerOptions = options
+        const pickerOptions = listPickSlotOptions(options, pick)
           .filter((option) => !otherLabels.has(option.label))
           .map((option) => ({
             id: option.id || option.label,
@@ -10157,7 +10982,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       } else if (step === "class") {
         lines.push(`${entry?.name || step}: ${buildWizardState.className || "—"}`);
       } else if (step === "subclass") {
-        lines.push(`${entry?.name || step}: ${buildWizardState.subclassName || "—"}`);
+        const names = buildWizardState.subclassPicks.map((pick) => pick?.name).filter(Boolean);
+        lines.push(`${entry?.name || step}: ${names.join(", ") || "—"}`);
       } else if (step === "background") {
         lines.push(`${entry?.name || step}: ${buildWizardState.backgroundName || "—"}`);
       } else if (step === "heritage") {
@@ -10352,31 +11178,34 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let speciesRecord = null;
     let classRecord = null;
     let backgroundRecord = null;
-    let subclassRecord = null;
+    let subclassRecords = [];
     let secondSpeciesRecord = null;
-    const pickedSubclassId = buildWizardState.needsSubclassStep ? buildWizardState.subclassId : "";
+    const subclassPicks = buildWizardState.needsSubclassStep ? buildWizardState.subclassPicks.filter((pick) => pick?.id) : [];
     const wantsSecondSpecies = buildWizardState.mixedAncestry && Boolean(buildWizardState.secondSpeciesId);
     // Kinds come from the relevant buildStep's own declared `libraryKind` (or
     // heritage's `picks[].libraryKind`) — reading buildWizardState.systemDefinition
     // directly is safe here since this function only ever runs for the
     // Template the wizard is actively building against.
     const heritageStepEntry = getBuildStepEntry("heritage");
-    const speciesKind = heritageStepEntry ? heritageStepEntry.picks?.[0]?.libraryKind : getBuildStepEntry("species")?.libraryKind;
-    const classKind = getBuildStepEntry("class")?.libraryKind;
-    const backgroundKind = heritageStepEntry ? heritageStepEntry.picks?.[1]?.libraryKind : getBuildStepEntry("background")?.libraryKind;
+    const speciesStepEntry = heritageStepEntry ? heritageStepEntry.picks?.[0] : getBuildStepEntry("species");
+    const classStepEntry = getBuildStepEntry("class");
+    const backgroundStepEntry = heritageStepEntry ? heritageStepEntry.picks?.[1] : getBuildStepEntry("background");
+    const speciesKind = speciesStepEntry?.libraryKind;
+    const classKind = classStepEntry?.libraryKind;
+    const backgroundKind = backgroundStepEntry?.libraryKind;
     const subclassKind = getBuildStepEntry("subclass")?.libraryKind;
     try {
-      const [speciesResult, classResult, backgroundResult, subclassResult, secondSpeciesResult] = await Promise.all([
+      const [speciesResult, classResult, backgroundResult, subclassResults, secondSpeciesResult] = await Promise.all([
         buildWizardState.speciesId ? dataManager.get(speciesKind, buildWizardState.speciesId, { preferLocal: false }) : null,
         dataManager.get(classKind, buildWizardState.classId, { preferLocal: false }),
         buildWizardState.backgroundId ? dataManager.get(backgroundKind, buildWizardState.backgroundId, { preferLocal: false }) : null,
-        pickedSubclassId ? dataManager.get(subclassKind, pickedSubclassId, { preferLocal: false }) : null,
+        Promise.all(subclassPicks.map((pick) => dataManager.get(subclassKind, pick.id, { preferLocal: false }))),
         wantsSecondSpecies ? dataManager.get(speciesKind, buildWizardState.secondSpeciesId, { preferLocal: false }) : null,
       ]);
       speciesRecord = speciesResult?.payload || null;
       classRecord = classResult?.payload || null;
       backgroundRecord = backgroundResult?.payload || null;
-      subclassRecord = subclassResult?.payload || null;
+      subclassRecords = subclassResults.map((result) => result?.payload).filter(Boolean);
       secondSpeciesRecord = secondSpeciesResult?.payload || null;
     } catch (error) {
       console.error("Character editor: unable to fetch Build Character source records", error);
@@ -10405,6 +11234,19 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const abilityTargetPath = abilityRole?.targetPath || abilityFieldKey;
     const imageUrl = (elements.buildCharacterImage?.value || "").trim();
     const pronouns = (elements.buildCharacterPronouns?.value || "").trim();
+    const subclassRefs = subclassPicks.map((pick) => ({ name: pick.name || "", refKind: subclassKind, refId: pick.id }));
+    const speciesRef = buildWizardState.speciesId
+      ? {
+          name: secondSpeciesRecord
+            ? `${buildWizardState.speciesName || speciesRecord?.name || ""}/${buildWizardState.secondSpeciesName || secondSpeciesRecord.name || ""} (Mixed Ancestry)`
+            : buildWizardState.speciesName || speciesRecord?.name || "",
+          refKind: speciesKind,
+          refId: buildWizardState.speciesId,
+        }
+      : null;
+    const backgroundRef = buildWizardState.backgroundId
+      ? { name: buildWizardState.backgroundName || backgroundRecord?.name || "", refKind: backgroundKind, refId: buildWizardState.backgroundId }
+      : null;
     const draft = {
       id,
       name,
@@ -10424,31 +11266,13 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
             level: 1,
             refKind: classKind,
             refId: buildWizardState.classId,
-            ...(buildWizardState.needsSubclassStep && buildWizardState.subclassId
-              ? { subclass: { name: buildWizardState.subclassName || "", refKind: subclassKind, refId: buildWizardState.subclassId } }
-              : {}),
+            ...(subclassRefs.length ? { subclass: subclassRefs[0] } : {}),
+            ...(subclassRefs.length > 1 ? { additionalSubclasses: subclassRefs.slice(1) } : {}),
           },
         ],
-        ...(buildWizardState.speciesId
-          ? {
-              race: {
-                name: secondSpeciesRecord
-                  ? `${buildWizardState.speciesName || speciesRecord?.name || ""}/${buildWizardState.secondSpeciesName || secondSpeciesRecord.name || ""} (Mixed Ancestry)`
-                  : buildWizardState.speciesName || speciesRecord?.name || "",
-                refKind: speciesKind,
-                refId: buildWizardState.speciesId,
-              },
-            }
-          : {}),
-        ...(buildWizardState.backgroundId
-          ? {
-              background: {
-                name: buildWizardState.backgroundName || backgroundRecord?.name || "",
-                refKind: backgroundKind,
-                refId: buildWizardState.backgroundId,
-              },
-            }
-          : {}),
+        // A step's own `targetPath` (Draw Steel's top-level `ancestry`/`career`) places the link instead.
+        ...(speciesRef && !speciesStepEntry?.targetPath ? { race: speciesRef } : {}),
+        ...(backgroundRef && !backgroundStepEntry?.targetPath ? { background: backgroundRef } : {}),
       },
       stats: {},
       featureIds: [],
@@ -10461,6 +11285,25 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // off the System's own fieldRoles declaration, never guessed from the
     // field's key.
     setAtDottedPath(draft, abilityTargetPath, abilities);
+    if (speciesRef && speciesStepEntry?.targetPath) setAtDottedPath(draft, speciesStepEntry.targetPath, speciesRef);
+    if (backgroundRef && backgroundStepEntry?.targetPath) setAtDottedPath(draft, backgroundStepEntry.targetPath, backgroundRef);
+    // A pick step's `statBindings` copy fields off the picked record (a class's Recoveries, an ancestry's size, a
+    // career's Renown); `base` is added to the record's number, and written even when the record has none.
+    [
+      [speciesStepEntry, speciesRecord],
+      [classStepEntry, classRecord],
+      [backgroundStepEntry, backgroundRecord],
+    ].forEach(([stepEntry, record]) => {
+      (Array.isArray(stepEntry?.statBindings) ? stepEntry.statBindings : []).forEach((binding) => {
+        if (!binding?.targetPath) return;
+        const value = record?.[binding.libraryField];
+        if (binding.base != null) {
+          setAtDottedPath(draft, binding.targetPath, Number(binding.base) + (Number(value) || 0));
+        } else if (value !== undefined && value !== null) {
+          setAtDottedPath(draft, binding.targetPath, value);
+        }
+      });
+    });
 
     // Building a character for `initialSchema`, which isn't necessarily the
     // System currently loaded as state.systemDefinition (that's whatever
@@ -10581,7 +11424,9 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // lowercase-hyphenated convention this suite's own character records
     // already use ("animal-handling") — confirmed against a real imported
     // character, not guessed.
-    const systemSkills = await loadArrayFieldValues(dataManager, initialSchema, "skills");
+    // Only a skill list tied to abilities (D&D's) becomes a rated stats.skills[]; a plain list of names (Draw Steel's)
+    // is what a character picks from instead.
+    const systemSkills = (await loadArrayFieldValues(dataManager, initialSchema, "skills")).filter((entry) => entry?.ability);
     draft.stats.skills = systemSkills.map((entry) => {
       const abilityKey = String(entry.ability || "").toLowerCase();
       const abilityDef = buildWizardState.abilityDefs.find((def) => def.key === abilityKey);
@@ -10615,7 +11460,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     growthBindings.forEach((growthBinding) => {
       const resourceBinding = findBindingByRole(buildCombatBindings, growthBinding.resourceRole);
       if (!growthBinding.libraryField || !resourceBinding) return;
-      const baseValue = Number(classRecord[growthBinding.libraryField]) || 0;
+      // `startingField`: a class whose 1st-level value isn't its per-level growth (Draw Steel's starting Stamina).
+      const baseValue = Number(classRecord[growthBinding.startingField || growthBinding.libraryField]) || 0;
       if (!baseValue) {
         console.warn(`Character editor: class "${classRecord.name}" has no ${growthBinding.libraryField} — starting ${resourceBinding.name} will be understated.`);
       }
@@ -10727,7 +11573,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const speciesFeatureIds = secondSpeciesRecord
       ? [speciesRecord?.featureIds?.[0], secondSpeciesRecord.featureIds?.[1]].filter(Boolean)
       : Array.isArray(speciesRecord?.featureIds) ? speciesRecord.featureIds : [];
-    const subclassFeatureIds = Array.isArray(subclassRecord?.featureIds) ? subclassRecord.featureIds : [];
+    const subclassRecord = subclassRecords[0] || null;
+    const subclassFeatureIds = subclassRecords.flatMap((record) => (Array.isArray(record.featureIds) ? record.featureIds : []));
     const allCandidateIds = [
       ...new Set([
         ...classFeatureIds,
@@ -10777,8 +11624,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     let grantedFromSubclass = [];
     if (subclassRecord && subclassIsTiered) {
       grantedFromSubclass = grantSubclassFeaturesAtTier(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass]);
-    } else if (subclassRecord) {
-      grantedFromSubclass = grantSubclassFeaturesAtLevel(subclassRecord, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass]);
+    } else {
+      subclassRecords.forEach((record) => {
+        grantedFromSubclass.push(
+          ...grantSubclassFeaturesAtLevel(record, 1, featureNameById, [...grantedFromSpecies, ...grantedFromClass, ...grantedFromSubclass])
+        );
+      });
     }
     const grantedFeatureIds = [...grantedFromSpecies, ...grantedFromClass, ...grantedFromSubclass];
     if (backgroundRecord?.feat?.refKind === "feature" && backgroundRecord.feat.refId) {
@@ -10802,7 +11653,8 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Recomputes every now-proficient skill's `value` to include the
     // proficiency bonus just granted (expertise doubles it) — otherwise a
     // skill Background just made proficient shows a stale value.
-    draft.stats.skills.forEach((skill) => {
+    if (!draft.stats.skills.length) delete draft.stats.skills;
+    (draft.stats.skills || []).forEach((skill) => {
       if (skill.proficiency >= 2) {
         const abilityDef = buildWizardState.abilityDefs.find((def) => def.label === skill.ability);
         const score = abilityDef ? abilities[abilityDef.key] : undefined;
@@ -10894,7 +11746,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       if (!featureRecord || !Array.isArray(featureRecord.grants) || !featureRecord.grants.length) {
         return;
       }
-      pushChoice({ kind: "feature", id: featureId, name: featureRecord.name || featureId }, resolveGrantChoices(featureRecord.grants, draft), "");
+      pushChoice(
+        { kind: "feature", id: featureId, name: featureRecord.name || featureId },
+        resolveGrantChoices(featureRecord.grants.filter((grant) => !isChoiceGrant(grant)), draft),
+        ""
+      );
     });
 
     // Creation-time equipment picks — generic, not D&D's per-class
@@ -11046,7 +11902,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
             // combined "Marlane, a pugilist" text (resolveListPickSource);
             // raw.name alone would drop the descriptor.
             const rawValue = selection.id ?? selection.label ?? selection.raw?.name;
-            if (entry.itemKey) {
+            const librarySource = (Array.isArray(entry.source) ? entry.source : [entry.source]).find((src) => src?.from === "library");
+            if (entry.asReference && librarySource && selection.id) {
+              // A picked Library record kept as a link ({name, refKind, refId}), like the class and ancestry.
+              targetArray.push({ name: selection.raw?.name || selection.label || "", refKind: librarySource.libraryKind, refId: selection.id });
+            } else if (entry.itemKey) {
               targetArray.push({ ...(entry.itemDefaults || {}), ...(pickDef?.itemDefaults || {}), [entry.itemKey]: rawValue });
             } else {
               targetArray.push(rawValue);
@@ -11080,6 +11940,55 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         setAtDottedPath(draft, upgradesStepEntry.targetArrayPath, targetArray);
       }
     }
+
+    // The `grants` on each picked record (an ancestry's purchased traits, a career's skills and perk, a culture's
+    // skill) and on the wizard's own steps (a culture's language), and every picked class and subclass's 1st-level
+    // choices: the same grants Level Up applies at later levels. Then the grants of every feature the hero now has.
+    const listPickedRecords = getDeclaredBuildSteps(buildSystemDefinition)
+      .filter((entry) => entry?.type === "listPick")
+      .flatMap((entry) => {
+        const sources = Array.isArray(entry.source) ? entry.source : [entry.source];
+        if (!sources.some((src) => src?.from === "library")) return [];
+        return Object.values(buildWizardState.listPicks[entry.step] || {}).map((selection) => selection?.raw);
+      });
+    const choiceEntries = [
+      speciesRecord,
+      backgroundRecord,
+      ...listPickedRecords,
+      classRecord,
+      ...choicesAtLevel(classRecord.features, 1),
+      ...subclassRecords.flatMap((record) => [record, ...choicesAtLevel(record.features, 1)]),
+      ...getDeclaredBuildSteps(buildSystemDefinition),
+    ].filter((entry) => levelChoiceGrants(entry).length);
+    let choiceFeatures = featureEntityById;
+    if (!choiceFeatures.size && choiceEntries.some((entry) => levelChoiceGrants(entry).some((grant) => grant.type === "featureChoice"))) {
+      choiceFeatures = new Map((await fetchKindEntriesWithIds(dataManager, "feature")).map((entry) => [entry.id, entry.entity]));
+    }
+    const creationPlan = planChoiceGrants(choiceEntries, {
+      draft,
+      featureEntityById: choiceFeatures,
+      itemEntriesByKind: await fetchChoiceItemEntries(choiceEntries),
+      subclassRefIds: characterSubclassRefIds(draft),
+    });
+    applyChoiceGrantPlan(draft, creationPlan);
+    pendingChoices.push(
+      ...pendingChoicesFromPicks(creationPlan.picks, { sourceKind: "class", sourceId: buildWizardState.classId, idPrefix: `${id}-create` }),
+      ...(await applyGainedFeatureGrants(draft, [...draft.featureIds], choiceFeatures))
+    );
+
+    // The new hero's own features' bonuses (a null's speed), added before it's first saved: the itemBonuses sync only
+    // moves the sheet by what changes after that.
+    refreshListFormulas(draft);
+    const creationBonuses = await computeItemBonusTotals(draft);
+    new Map(getItemBonusBindings().map((binding) => [binding.targetPath, binding])).forEach((binding, targetPath) => {
+      const bonus = creationBonuses.get(targetPath);
+      bonus?.ids.forEach((featureId) => {
+        if (!draft.featureIds.includes(featureId)) draft.featureIds.push(featureId);
+      });
+      if (!bonus?.total) return;
+      setAtDottedPath(draft, targetPath, (Number(resolveDottedPath(draft, targetPath)) || 0) + bonus.total);
+      if (binding.currentPath) setAtDottedPath(draft, binding.currentPath, (Number(resolveDottedPath(draft, binding.currentPath)) || 0) + bonus.total);
+    });
 
     state.character = cloneCharacter(draft);
     state.draft = cloneCharacter(draft);

@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-blessing-of-insight",
+  "name": "Blessing of Insight",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The gods grant insight revealing where best to strike your enemies.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** Self and each ally\n\n**Effect:** Until the end of the encounter or until you are dying, each target gains 1 surge at the end of each of your turns.",
+  "mechanics": {
+    "type": "active",
+    "text": "The gods grant insight revealing where best to strike your enemies. Effect: Until the end of the encounter or until you are dying, each target gains 1 surge at the end of each of your turns."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self and each ally",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-war"
+  ]
+}

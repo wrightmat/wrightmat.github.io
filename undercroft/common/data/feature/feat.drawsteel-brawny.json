@@ -4,10 +4,10 @@
   "systemIds": [
     "sys.drawsteel"
   ],
-  "description": "**Perk**\n\nWhenever you fail a Might test, you can lose Stamina equal to 1d6 + 1 to improve the outcome of the test by one tier. You can use this perk only once per test.",
+  "description": "**Exploration Perk**\n\nWhenever you fail a Might test, you can lose Stamina equal to 1d6 + your level to improve the outcome of the test by one tier. You can use this perk only once per test.",
   "mechanics": {
     "type": "passive",
-    "text": "Whenever you fail a Might test, you can lose Stamina equal to 1d6 + 1 to improve the outcome of the test by one tier. You can use this perk only once per test."
+    "text": "Whenever you fail a Might test, you can lose Stamina equal to 1d6 + your level to improve the outcome of the test by one tier. You can use this perk only once per test."
   },
   "budgetCost": 0,
   "tags": {
@@ -21,5 +21,6 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Perk"
+  "kind": "Perk",
+  "perkType": "Exploration"
 }

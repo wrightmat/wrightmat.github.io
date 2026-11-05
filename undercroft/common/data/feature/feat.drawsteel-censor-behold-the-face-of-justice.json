@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-behold-the-face-of-justice",
+  "name": "Behold the Face of Justice!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You attack a foe and your enemies behold a vision of the true nature of your resolve.*\n\n**Heroic Ability** — Magic, Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 3 + M holy damage; if the target has P < WEAK, each enemy within 2 squares of them is frightened of you (save ends)\n- **12-16:** 5 + M holy damage; if the target has P < AVERAGE, each enemy within 2 squares of them is frightened of you (save ends)\n- **17+:** 8 + M holy damage; if the target has P < STRONG, each enemy within 2 squares of them is frightened of you (save ends)\n\n**Effect:** Each enemy frightened this way is pushed up to 2 squares away from the target and takes psychic damage equal to your Presence score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You attack a foe and your enemies behold a vision of the true nature of your resolve. Power Roll + Might: - ≤11: 3 + M holy damage; if the target has P < WEAK, each enemy within 2 squares of them is frightened of you (save ends) - 12-16: 5 + M holy damage; if the target has P < AVERAGE, each enemy within 2 squares of them is frightened of you (save ends) - 17+: 8 + M holy damage; if the target has P < STRONG, each enemy within 2 squares of them is frightened of you (save ends) Effect: Each enemy frightened this way is pushed up to 2 squares away from the target and takes psychic damage equal to your Presence score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 5
+}

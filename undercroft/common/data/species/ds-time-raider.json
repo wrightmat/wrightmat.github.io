@@ -43,5 +43,27 @@
       "cost": 2,
       "description": "Your mind allows you to maintain your focus in any situation. You can't be made dazed."
     }
+  ],
+  "speed": 5,
+  "size": "1M",
+  "featureIds": [
+    "feat.drawsteel-time-raider-psychic-scar"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 3,
+      "desc": "Spend 3 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-time-raider-beyondsight",
+          "feat.drawsteel-time-raider-foresight",
+          "feat.drawsteel-time-raider-four-armed-athletics",
+          "feat.drawsteel-time-raider-four-armed-martial-arts",
+          "feat.drawsteel-time-raider-psionic-gift",
+          "feat.drawsteel-high-elf-unstoppable-mind"
+        ]
+      }
+    }
   ]
 }

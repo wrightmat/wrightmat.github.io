@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-acceleration-field",
+  "name": "Acceleration Field",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You forcibly stuff more moments into a critical point in time, knowing full well you might need to steal some of your own.*\n\n**Heroic Ability** — Chronopathy, Psionic, Ranged — Main action\n\n**Cost:** 11 Clarity\n\n**Distance:** Ranged 5   **Target:** Three allies\n\n**Effect:** Each target can use any main action available to them as a free triggered action, but they lose their main action on their next turn.\n\n**Strained:** Make a power roll that targets you and each enemy within distance.\n\n**Power Roll + Presence:**\n\n- **≤11:** 4 corruption damage; slowed (save ends)\n- **12-16:** 6 corruption damage; slowed (save ends)\n- **17+:** 10 corruption damage; slowed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You forcibly stuff more moments into a critical point in time, knowing full well you might need to steal some of your own. Effect: Each target can use any main action available to them as a free triggered action, but they lose their main action on their next turn. Strained: Make a power roll that targets you and each enemy within distance. Power Roll + Presence: - ≤11: 4 corruption damage; slowed (save ends) - 12-16: 6 corruption damage; slowed (save ends) - 17+: 10 corruption damage; slowed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Chronopathy, Psionic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 5",
+  "target": "Three allies",
+  "cost": 11
+}

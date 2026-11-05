@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-feedback",
+  "name": "Feedback",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your music pounds the crowd to the beat until their hearts can't stand it anymore.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 9 Drama\n\n**Distance:** Three 3 cubes within 1   **Target:** Each enemy in the area\n\n**Effect:** A prone target ignores this ability.\n\n**Power Roll + Presence:**\n\n- **≤11:** 7 sonic damage; P < WEAK, prone\n- **12-16:** 10 sonic damage; P < AVERAGE, prone\n- **17+:** 13 sonic damage; P < STRONG, prone",
+  "mechanics": {
+    "type": "active",
+    "text": "Your music pounds the crowd to the beat until their hearts can't stand it anymore. Effect: A prone target ignores this ability. Power Roll + Presence: - ≤11: 7 sonic damage; P < WEAK, prone - 12-16: 10 sonic damage; P < AVERAGE, prone - 17+: 13 sonic damage; P < STRONG, prone"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "Three 3 cubes within 1",
+  "target": "Each enemy in the area",
+  "cost": 9
+}

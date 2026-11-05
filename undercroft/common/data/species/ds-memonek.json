@@ -53,5 +53,29 @@
       "cost": 1,
       "description": "Velloparatha—the worldsickness—might hinder you, but you know how to turn your pain into something your enemies feel. At the start of any combat, you gain 1 surge."
     }
+  ],
+  "speed": 5,
+  "size": "1M",
+  "featureIds": [
+    "feat.drawsteel-memonek-fall-lightly",
+    "feat.drawsteel-memonek-lightweight"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 4,
+      "desc": "Spend 4 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-memonek-i-am-law",
+          "feat.drawsteel-memonek-keeper-of-order",
+          "feat.drawsteel-memonek-lightning-nimbleness",
+          "feat.drawsteel-memonek-nonstop",
+          "feat.drawsteel-memonek-systematic-mind",
+          "feat.drawsteel-memonek-unphased",
+          "feat.drawsteel-memonek-useful-emotion"
+        ]
+      }
+    }
   ]
 }

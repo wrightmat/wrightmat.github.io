@@ -146,6 +146,13 @@ export function matchFeaturesAtLevel(sourceFeatures, sourceFeatureIds, featureNa
   return matchFeaturesByField(sourceFeatures, sourceFeatureIds, featureNameById, "level", targetLevel, existingFeatureIds);
 }
 
+// A `choice: true` entry ("gain a perk of your choice") has no feature record to grant; Level Up shows its text instead.
+export function choicesAtLevel(sourceFeatures, targetLevel) {
+  return (Array.isArray(sourceFeatures) ? sourceFeatures : []).filter(
+    (entry) => entry?.choice && Number(entry.level) === Number(targetLevel)
+  );
+}
+
 // Matches on a record's own `tier` field — the same shape as `level` for a
 // System whose progression isn't per-character-level but per discrete
 // milestone (Daggerheart's subclass Foundation/Specialization/Mastery,

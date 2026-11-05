@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-gods-grant-thee-strength",
+  "name": "Gods Grant Thee Strength",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel divine force for movement that cannot be stopped.*\n\n**Heroic Ability** — Ranged — Main action\n\n**Cost:** 9 Wrath\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target ends any condition or effect on them that is ended by a saving throw or that ends at the end of their turn, or a prone target can stand up. The target then gains 2 surges, can shift up to their speed while ignoring difficult terrain, and can use a strike signature ability as a free triggered action.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel divine force for movement that cannot be stopped. Effect: The target ends any condition or effect on them that is ended by a saving throw or that ends at the end of their turn, or a prone target can stand up. The target then gains 2 surges, can shift up to their speed while ignoring difficult terrain, and can use a strike signature ability as a free triggered action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 9
+}

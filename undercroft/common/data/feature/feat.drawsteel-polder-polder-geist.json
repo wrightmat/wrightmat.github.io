@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-polder-polder-geist",
+  "name": "Polder Geist",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nEvading others' notice gives you freedom to move. At the start of each of your turns during combat, if no enemy has line of effect to you or if you are hidden from or have concealment from any enemy with line of effect to you, you gain a +3 bonus to speed until the end of your turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Evading others' notice gives you freedom to move. At the start of each of your turns during combat, if no enemy has line of effect to you or if you are hidden from or have concealment from any enemy with line of effect to you, you gain a +3 bonus to speed until the end of your turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Polder",
+  "cost": 1
+}

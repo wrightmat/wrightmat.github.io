@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-too-slow",
+  "name": "Too Slow",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your foe made a big mistake.*\n\n**Heroic Ability** — Free triggered\n\n**Cost:** 5 Insight\n\n**Distance:** Self; see below   **Target:** Self\n\n**Trigger:** You use your In All This Confusion ability.\n\n**Effect:** You ignore any effects associated with the damage that triggered your In All This Confusion ability. Before you teleport, you can make a free strike against a creature who damaged you to trigger In All This Confusion. After you teleport, you can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your foe made a big mistake. Trigger: You use your In All This Confusion ability. Effect: You ignore any effects associated with the damage that triggered your In All This Confusion ability. Before you teleport, you can make a free strike against a creature who damaged you to trigger In All This Confusion. After you teleport, you can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Free triggered",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 5
+}

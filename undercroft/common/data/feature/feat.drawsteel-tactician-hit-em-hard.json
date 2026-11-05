@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-hit-em-hard",
+  "name": "Hit 'Em Hard!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your allies see the advantages in attacking the targets you select.*\n\n**Heroic Ability** — Maneuver\n\n**Cost:** 7 Focus\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter or until you are dying, whenever you or any ally deals damage to a target marked by you, that creature gains 2 surges, which they can use immediately.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your allies see the advantages in attacking the targets you select. Effect: Until the end of the encounter or until you are dying, whenever you or any ally deals damage to a target marked by you, that creature gains 2 surges, which they can use immediately."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

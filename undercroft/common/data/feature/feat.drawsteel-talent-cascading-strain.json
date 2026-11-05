@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-cascading-strain",
+  "name": "Cascading Strain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you take damage from a strained effect or from having negative clarity, you can choose one enemy within distance of your Mind Spike ability to take the same damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you take damage from a strained effect or from having negative clarity, you can choose one enemy within distance of your Mind Spike ability to take the same damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

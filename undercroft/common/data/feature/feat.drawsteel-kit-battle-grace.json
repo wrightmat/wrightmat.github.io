@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-battle-grace",
+  "name": "Battle Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You feint to move your enemies into perfect position.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 5 + M or A damage\n- **12-16:** 8 + M or A damage; you can swap places with the target\n- **17+:** 11 + M or A damage; you can swap places with the target\n\n**Effect:** If you obtain a tier 2 or tier 3 outcome and can't swap places with the target because one or both of you is too big to fit into the swapped space, you both remain in your original spaces and the target takes 1 extra damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "You feint to move your enemies into perfect position. Power Roll + Might or Agility: - ≤11: 5 + M or A damage - 12-16: 8 + M or A damage; you can swap places with the target - 17+: 11 + M or A damage; you can swap places with the target Effect: If you obtain a tier 2 or tier 3 outcome and can't swap places with the target because one or both of you is too big to fit into the swapped space, you both remain in your original spaces and the target takes 1 extra damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

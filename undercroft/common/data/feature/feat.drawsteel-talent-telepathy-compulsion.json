@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telepathy-compulsion",
+  "name": "Compulsion",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you obtain a success on a test using a skill from the interpersonal skill group while interacting with an NPC, you can ask them a question using your Telepathic Speech feature. The NPC must answer the question truthfully to the best of their ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you obtain a success on a test using a skill from the interpersonal skill group while interacting with an NPC, you can ask them a question using your Telepathic Speech feature. The NPC must answer the question truthfully to the best of their ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

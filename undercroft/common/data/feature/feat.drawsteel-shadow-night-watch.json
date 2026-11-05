@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-night-watch",
+  "name": "Night Watch",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your sense for stealth shows those around you how to evade notice. While you are hidden, enemies take a bane on tests made to search for you or other hidden creatures within 10 squares of you.\n\nAdditionally, you have the following ability.\n\n> ###### Night Watch\n>\n> *A steely dagger from out of the blue knocks another weapon off course.*\n>\n> | **Ranged, Weapon** |   **Triggered** |\n> | ------------------ | --------------: |\n> | **📏 Ranged 5**    | **🎯 One ally** |\n>\n> **Trigger:** The target takes damage from another creature's ability while you are hidden.\n>\n> **Effect:** The target takes half the damage. You remain hidden.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your sense for stealth shows those around you how to evade notice. While you are hidden, enemies take a bane on tests made to search for you or other hidden creatures within 10 squares of you. Additionally, you have the following ability. Night Watch A steely dagger from out of the blue knocks another weapon off course. Trigger: The target takes damage from another creature's ability while you are hidden. Effect: The target takes half the damage. You remain hidden."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

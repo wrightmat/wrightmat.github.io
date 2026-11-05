@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-memonek-systematic-mind",
+  "name": "Systematic Mind",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou gain an edge on tests made to parse schematics, maps, and other systematic documents that aren't inherently chaotic. In addition, you treat any language you don't know as if you know a related language.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You gain an edge on tests made to parse schematics, maps, and other systematic documents that aren't inherently chaotic. In addition, you treat any language you don't know as if you know a related language."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Memonek",
+  "cost": 1
+}

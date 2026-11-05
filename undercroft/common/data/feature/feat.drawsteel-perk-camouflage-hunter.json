@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-camouflage-hunter",
+  "name": "Camouflage Hunter",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Exploration Perk**\n\nWhenever you are in wilderness, once you are hidden from a creature, you don't need cover or concealment to stay hidden from them.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you are in wilderness, once you are hidden from a creature, you don't need cover or concealment to stay hidden from them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Exploration"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-spirit-ward",
+  "name": "Spirit Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Invisible spirits surround you if you are harmed. Whenever an adjacent creature deals damage to you, they take corruption damage equal to your Intuition score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Invisible spirits surround you if you are harmed. Whenever an adjacent creature deals damage to you, they take corruption damage equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-hakaan-all-is-a-feather",
+  "name": "All Is a Feather",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou are exceptionally strong. You gain an edge on tests made to lift and haul heavy objects.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You are exceptionally strong. You gain an edge on tests made to lift and haul heavy objects."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Hakaan",
+  "cost": 1
+}

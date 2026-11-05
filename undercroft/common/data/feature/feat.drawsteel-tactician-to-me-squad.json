@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-to-me-squad",
+  "name": "To Me Squad!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You lead your allies in a charge.*\n\n**Heroic Ability** — Charge, Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Focus\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 6 + M damage; one ally within 10 squares can use the Charge main action as a free triggered action, and can use a melee strike signature ability instead of a free strike for the charge\n- **12-16:** 9 + M damage; one ally within 10 squares can use the Charge main action as a free triggered action, and can use a melee strike signature ability that gains an edge instead of a free strike for the charge\n- **17+:** 13 + M damage; two allies within 10 squares can use the Charge main action as a free triggered action, and can each use a melee strike signature ability that gains an edge instead of a free strike for the charge\n\n**Effect:** If the target is hit with two or more strikes as part of this ability and they have R < STRONG, they are dazed (save ends). If the target is reduced to 0 Stamina before one or both allies has made their strike, the ally or allies can pick a different target.",
+  "mechanics": {
+    "type": "active",
+    "text": "You lead your allies in a charge. Power Roll + Might: - ≤11: 6 + M damage; one ally within 10 squares can use the Charge main action as a free triggered action, and can use a melee strike signature ability instead of a free strike for the charge - 12-16: 9 + M damage; one ally within 10 squares can use the Charge main action as a free triggered action, and can use a melee strike signature ability that gains an edge instead of a free strike for the charge - 17+: 13 + M damage; two allies within 10 squares can use the Charge main action as a free triggered action, and can each use a melee strike signature ability that gains an edge instead of a free strike for the charge Effect: If the target is hit with two or more strikes as part of this ability and they have R < STRONG, they are dazed (save ends). If the target is reduced to 0 Stamina before one or both allies has made their strike, the ally or allies can pick a different target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Charge, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

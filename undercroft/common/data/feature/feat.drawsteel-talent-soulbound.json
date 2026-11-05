@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-soulbound",
+  "name": "Soulbound",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You fire a piercing bolt of psychic energy that lances through two foes and leaves a faint intangible thread between them.*\n\n**Heroic Ability** — Animapathy, Psionic, Ranged, Strike — Main action\n\n**Cost:** 9 Clarity\n\n**Distance:** Ranged 10   **Target:** Two enemies\n\n**Power Roll + Presence:**\n\n- **≤11:** 8 damage; A < WEAK, the target is stitched to the other target (save ends)\n- **12-16:** 13 damage; A < AVERAGE, the target is stitched to the other target (save ends)\n- **17+:** 17 damage; A < STRONG, the target is stitched to the other target (save ends)\n\n**Effect:** If any target becomes stitched to the other, both targets are stitched together. While stitched together, a target takes a bane on power rolls while not adjacent to a creature they're stitched to. Whenever a stitched target takes damage that wasn't dealt by or also taken by another stitched target, each other stitched target takes half the damage the initial target took.\n\n**Strained:** You target yourself and three enemies instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "You fire a piercing bolt of psychic energy that lances through two foes and leaves a faint intangible thread between them. Power Roll + Presence: - ≤11: 8 damage; A < WEAK, the target is stitched to the other target (save ends) - 12-16: 13 damage; A < AVERAGE, the target is stitched to the other target (save ends) - 17+: 17 damage; A < STRONG, the target is stitched to the other target (save ends) Effect: If any target becomes stitched to the other, both targets are stitched together. While stitched together, a target takes a bane on power rolls while not adjacent to a creature they're stitched to. Whenever a stitched target takes damage that wasn't dealt by or also taken by another stitched target, each other stitched target takes half the damage the initial target took. Strained: You target yourself and three enemies instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Animapathy, Psionic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Two enemies",
+  "cost": 9
+}

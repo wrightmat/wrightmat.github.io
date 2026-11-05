@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-net-and-stab",
+  "name": "Net and Stab",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The well-thrown net that follows your main attack leaves your foes right where you want them.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 2   **Target:** One creature\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 + M or A damage; A < WEAK, slowed (EoT)\n- **12-16:** 6 + M or A damage; A < AVERAGE, slowed (EoT)\n- **17+:** 8 + M or A damage; A < STRONG, restrained (EoT)",
+  "mechanics": {
+    "type": "active",
+    "text": "The well-thrown net that follows your main attack leaves your foes right where you want them. Power Roll + Might or Agility: - ≤11: 4 + M or A damage; A < WEAK, slowed (EoT) - 12-16: 6 + M or A damage; A < AVERAGE, slowed (EoT) - 17+: 8 + M or A damage; A < STRONG, restrained (EoT)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "One creature"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-reaver-primordial-cunning",
+  "name": "Primordial Cunning",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You are never surprised. Additionally, whenever you would push a target with forced movement, you can slide them instead.\n\nAs your ferocity grows, you gain benefits as noted on the Reaver Growing Ferocity table. Benefits are cumulative except where an improved benefit replaces a lesser benefit.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You are never surprised. Additionally, whenever you would push a target with forced movement, you can slide them instead. As your ferocity grows, you gain benefits as noted on the Reaver Growing Ferocity table. Benefits are cumulative except where an improved benefit replaces a lesser benefit."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

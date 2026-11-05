@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-apex-predator",
+  "name": "Apex Predator",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*I will hunt you down.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 4 damage; I < WEAK, slowed (save ends)\n- **12-16:** 6 damage; I < AVERAGE, slowed (save ends)\n- **17+:** 10 damage; I < STRONG, slowed (save ends)\n\n**Effect:** The target can't be hidden from you for 24 hours. Until the end of the encounter, whenever the target willingly moves, you can use a free triggered action to move.",
+  "mechanics": {
+    "type": "active",
+    "text": "I will hunt you down. Power Roll + Might: - ≤11: 4 damage; I < WEAK, slowed (save ends) - 12-16: 6 damage; I < AVERAGE, slowed (save ends) - 17+: 10 damage; I < STRONG, slowed (save ends) Effect: The target can't be hidden from you for 24 hours. Until the end of the encounter, whenever the target willingly moves, you can use a free triggered action to move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

@@ -21,6 +21,25 @@
       "description": "You have trained your squad to work together, stay silent, and wait for the opportune time to strike. Whenever you or any ally within 10 squares of you becomes hidden, that creature gains 1 surge."
     },
     {
+      "name": "2nd-Level Insurgent Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Fog of War (5 Focus)\n>\n> *Your unorthodox strategy causes enemies to lash out in fear, heedless of who they might be attacking.*\n>\n> | **Ranged**       |         **Maneuver** |\n> | ---------------- | -------------------: |\n> | **📏 Ranged 10** | **🎯 Two creatures** |\n>\n> **Effect:** Each target is marked by you, and must immediately make a free strike against a creature of your choice within 5 squares of them.\n>\n> **Mark Benefit:** Until the end of the encounter, whenever you or any ally makes a strike against a creature marked by you, you can spend 2 focus to force that target to make a free strike against a creature of your choice within 5 squares of them.\n\n> ###### Try Me Instead (5 Focus)\n>\n> *\"Try picking on someone my size.\"*\n>\n> | **Melee, Strike, Weapon** | **Main action** |\n> | ------------------------- | --------------: |\n> | **📏 Self; see below**    |     **🎯 Self** |\n>\n> **Effect:** You shift up to your speed directly toward an ally, ending adjacent to them, then swapping locations with that ally as long as you can fit into each other's spaces. The ally can spend a Recovery, and you can make the following weapon strike with a distance of melee 1 against a creature.\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** 2 + R damage; R < WEAK, frightened (save ends)\n> - **12-16:** 3 + R damage; R < AVERAGE, frightened (save ends)\n> - **17+:** 4 + R damage; R < STRONG, frightened (save ends)",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one insurgent ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-tactician-fog-of-war",
+              "feat.drawsteel-tactician-try-me-instead"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Distracted",
       "level": 5,
       "description": "You have mastered the ability to distract your foes, allowing you and your allies to take advantage of their gaps in attention. Whenever you or any ally attempts to hide, any creature marked by you doesn't count as an observer. Additionally, you and your allies can use other allies as cover for the purpose of hiding."
@@ -31,6 +50,25 @@
       "description": "You and any ally within 10 squares of you can move at full speed while sneaking. Additionally, enemies within 10 squares of you take a bane on tests made to search for you or your allies while any of you are hidden."
     },
     {
+      "name": "6th-Level Insurgent Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Coordinated Execution (9 Focus)\n>\n> *You direct your ally to make a killing blow.*\n>\n> | **Ranged**       | **Free triggered** |\n> | ---------------- | -----------------: |\n> | **📏 Ranged 10** |    **🎯 One ally** |\n>\n> **Trigger:** The target uses an ability to deal rolled damage to a creature while hidden.\n>\n> **Effect:** If the target of the triggering ability is not a leader or solo creature, they are reduced to 0 Stamina. If the target of the triggering ability is a minion, the entire squad is killed. If the target of the triggering ability is a leader or solo creature, the triggering ability's power roll automatically obtains a tier 3 outcome.\n\n> ###### Panic in Their Lines (9 Focus)\n>\n> *You confuse your foes, causing them to turn on each other.*\n>\n> | **Melee, Ranged, Strike, Weapon** |      **Main action** |\n> | --------------------------------- | -------------------: |\n> | **📏 Melee 1 or ranged 5**        | **🎯 Two creatures** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 6 + M damage; slide 1\n> - **12-16:** 9 + M damage; slide 3\n> - **17+:** 13 + M damage; slide 5\n>\n> **Effect:** If a target is force moved into another creature, they must make a free strike against that creature.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one insurgent ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-tactician-coordinated-execution",
+              "feat.drawsteel-tactician-panic-in-their-lines"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Asymmetric Warfare",
       "level": 7,
       "description": "You have advanced your skills in subterfuge, now directing full battlefield strategy and logistics. During a montage test or negotiation, you can obtain one automatic success on a test made using a skill from the intrigue skill group. Additionally, you can use skills from the intrigue skill group to conceal large groups of people, such as escaping civilians and groups of guerilla warriors."
@@ -39,6 +77,49 @@
       "name": "Bait and Ambush",
       "level": 8,
       "description": "You have trained your squad to be silent ambushers.\n\n**Mark Benefit:** When you or any ally makes a strike against a creature marked by you, you can spend 2 focus to let the character making the strike shift up to a number of squares equal to your Reason score and use the Hide maneuver as a free maneuver once during the shift. The creature can shift before or after the strike is resolved."
+    },
+    {
+      "name": "9th-Level Insurgent Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Squad! Hit and Run! (11 Focus)\n>\n> *I had to pry this secret from the shadow colleges.*\n>\n> | **Ranged**       |            **Main action** |\n> | ---------------- | -------------------------: |\n> | **📏 Ranged 10** | **🎯 Self and two allies** |\n>\n> **Effect:** Each target gains 2 surges, and can use a free triggered action to use a signature ability that gains an edge. After resolving their ability, each target can shift up to 2 squares and become hidden even if they have no cover or concealment, or if they are observed.\n\n> ###### Their Lack of Focus Is Their Undoing (11 Focus)\n>\n> *You trick your enemies into attacking each other and leave them confused by the aftermath.*\n>\n> | **Magic, Ranged, Weapon** |      **Main action** |\n> | ------------------------- | -------------------: |\n> | **📏 Ranged 10**          | **🎯 Three enemies** |\n>\n> **Effect:** Each target uses a signature ability against one or more targets of your choosing, with each ability automatically obtaining a tier 3 outcome on the power roll. After resolving the targets' abilities, you make a power roll against each original target.\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** R < WEAK, dazed (save ends)\n> - **12-16:** R < AVERAGE, dazed (save ends)\n> - **17+:** R < STRONG, dazed (save ends)",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one insurgent ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-tactician-squad-hit-and-run",
+              "feat.drawsteel-tactician-their-lack-of-focus-is-their-undoing"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-tactician-insurgent-covert-operations",
+    "feat.drawsteel-tactician-insurgent-infiltration-tactics",
+    "feat.drawsteel-tactician-insurgent-distracted",
+    "feat.drawsteel-tactician-insurgent-leave-no-trace",
+    "feat.drawsteel-tactician-insurgent-asymmetric-warfare",
+    "feat.drawsteel-tactician-insurgent-bait-and-ambush"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an intrigue skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Intrigue"
+          ]
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-targets-of-opportunity",
+  "name": "Targets of Opportunity",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You point out easy targets to your friends, allowing them to include more enemies in their attacks.*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 5 Focus\n\n**Distance:** Ranged 5   **Target:** Two creatures\n\n**Effect:** Each target is marked by you, and you gain two surges.\n\n**Mark Benefit:** Until the end of the encounter, whenever you or any ally makes a strike against a creature marked by you, you can spend 2 focus to add one additional target to the strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "You point out easy targets to your friends, allowing them to include more enemies in their attacks. Effect: Each target is marked by you, and you gain two surges. Mark Benefit: Until the end of the encounter, whenever you or any ally makes a strike against a creature marked by you, you can spend 2 focus to add one additional target to the strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 5",
+  "target": "Two creatures",
+  "cost": 5
+}

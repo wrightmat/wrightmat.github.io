@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-where-i-want-you",
+  "name": "Where I Want You",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*When your stick speaks, your enemy moves.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 2   **Target:** One creature\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 + M or A damage\n- **12-16:** 7 + M or A damage; slide 1\n- **17+:** 10 + M or A damage; slide 3",
+  "mechanics": {
+    "type": "active",
+    "text": "When your stick speaks, your enemy moves. Power Roll + Might or Agility: - ≤11: 4 + M or A damage - 12-16: 7 + M or A damage; slide 1 - 17+: 10 + M or A damage; slide 3"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "One creature"
+}

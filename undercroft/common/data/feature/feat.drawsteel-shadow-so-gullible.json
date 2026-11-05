@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-so-gullible",
+  "name": "So Gullible",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*When your enemy strikes, you reveal you were in a different place all along.*\n\n**Heroic Ability** — Magic — Free triggered\n\n**Cost:** 5 Insight\n\n**Distance:** Self   **Target:** Self\n\n**Trigger:** Another creature targets you with a strike.\n\n**Effect:** You use your Clever Trick ability with no insight cost against the triggering creature and strike. You can teleport to an unoccupied space within 3 squares of that creature and can make a free strike against them. You can then spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "When your enemy strikes, you reveal you were in a different place all along. Trigger: Another creature targets you with a strike. Effect: You use your Clever Trick ability with no insight cost against the triggering creature and strike. You can teleport to an unoccupied space within 3 squares of that creature and can make a free strike against them. You can then spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Free triggered",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 5
+}

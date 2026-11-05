@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-sanctuary-ward",
+  "name": "Sanctuary Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "In response to a foe's aggression, your god protects you. Whenever another creature damages you, that creature can't target you with a strike until you harm them or one of their allies, or until the end of their next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "In response to a foe's aggression, your god protects you. Whenever another creature damages you, that creature can't target you with a strike until you harm them or one of their allies, or until the end of their next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

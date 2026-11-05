@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-revenant-vengeance-mark",
+  "name": "Vengeance Mark",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nAs a maneuver, you place a magic sigil on a creature within 10 squares. When you place a sigil, you decide where it appears on the creature's body, and whether the sigil is visible to only you or to all creatures.\n\nYou always know the direction to the exact location of a creature who bears one of your sigils and is on the same world. You can have a number of active sigils equal to your level, and can remove a sigil from a creature at will (no action required). If you already have the maximum number of sigils activated and you place a new one, your oldest sigil disappears with no other effect.\n\nAdditionally, you have the following signature ability. Signature abilities can be used at will.\n\n###### Detonate Sigil\n\n*A magic sigil you placed on a creature explodes with energy.*\n\n| **Magic, Ranged, Strike** |                        **Main action** |\n| ------------------------- | -------------------------------------: |\n| **📏 Ranged 10**          | **🎯 One creature bearing your sigil** |\n\n**Power Roll + Reason, Intuition, or Presence:**\n\n- **≤11:** 3 + R, I, or P damage; slide 1\n- **12-16:** 5 + R, I, or P damage; slide 2\n- **17+:** 7 + R, I, or P damage; slide 3\n\n**Effect:** The sigil disappears from the creature.",
+  "mechanics": {
+    "type": "active",
+    "text": "Ancestry Trait As a maneuver, you place a magic sigil on a creature within 10 squares. When you place a sigil, you decide where it appears on the creature's body, and whether the sigil is visible to only you or to all creatures. You always know the direction to the exact location of a creature who bears one of your sigils and is on the same world. You can have a number of active sigils equal to your level, and can remove a sigil from a creature at will (no action required). If you already have the maximum number of sigils activated and you place a new one, your oldest sigil disappears with no other effect. Additionally, you have the following signature ability. Signature abilities can be used at will. Detonate Sigil A magic sigil you placed on a creature explodes with energy. Magic, Ranged, Strike Main action ------------------------- -------------------------------------: 📏 Ranged 10 🎯 One creature bearing your sigil Power Roll + Reason, Intuition, or Presence: - ≤11: 3 + R, I, or P damage; slide 1 - 12-16: 5 + R, I, or P damage; slide 2 - 17+: 7 + R, I, or P damage; slide 3 Effect: The sigil disappears from the creature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Revenant",
+  "cost": 2
+}

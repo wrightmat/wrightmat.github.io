@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-sticky-bomb",
+  "name": "Sticky Bomb",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Explosives are best when they're attached to an enemy.*\n\n**Heroic Ability** — Ranged — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Effect:** You attach a small bomb to a creature. If you are hidden from the creature, they don't notice the bomb and you remain hidden. The creature otherwise notices the bomb and can disarm and remove it as a main action. If they don't, at the end of your next turn, the bomb detonates. When the bomb detonates, you make a power roll targeting each enemy within 2 squares of it.\n\n**Power Roll + Agility:**\n\n- **≤11:** 4 + A fire damage\n- **12-16:** 7 + A fire damage\n- **17+:** 11 + A fire damage",
+  "mechanics": {
+    "type": "active",
+    "text": "Explosives are best when they're attached to an enemy. Effect: You attach a small bomb to a creature. If you are hidden from the creature, they don't notice the bomb and you remain hidden. The creature otherwise notices the bomb and can disarm and remove it as a main action. If they don't, at the end of your next turn, the bomb detonates. When the bomb detonates, you make a power roll targeting each enemy within 2 squares of it. Power Roll + Agility: - ≤11: 4 + A fire damage - 12-16: 7 + A fire damage - 17+: 11 + A fire damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 5
+}

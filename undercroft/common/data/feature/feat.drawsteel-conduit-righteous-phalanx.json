@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-righteous-phalanx",
+  "name": "Righteous Phalanx",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A wall of spinning swords and knives appears where you wish.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** 15 wall within 10   **Target:** Special\n\n**Effect:** The wall lasts until the end of the encounter or until you are dying, and can be placed in occupied squares. Creatures can enter and pass through the wall. Each enemy who enters the area for the first time in a combat round or starts their turn there takes 15 damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "A wall of spinning swords and knives appears where you wish. Effect: The wall lasts until the end of the encounter or until you are dying, and can be placed in occupied squares. Creatures can enter and pass through the wall. Each enemy who enters the area for the first time in a combat round or starts their turn there takes 15 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "15 wall within 10",
+  "target": "Special",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-war"
+  ]
+}

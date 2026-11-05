@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-elementalist-the-green-within-the-green-without",
+  "name": "The Green Within, the Green Without",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Whipping vines erupt from a foe's body to grasp at another close by.*\n\n**Signature Ability** — Green, Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 + R damage\n- **12-16:** 5 + R damage\n- **17+:** 7 + R damage\n\n**Effect:** You slide one creature within 10 squares of the target up to 2 squares.",
+  "mechanics": {
+    "type": "active",
+    "text": "Whipping vines erupt from a foe's body to grasp at another close by. Power Roll + Reason: - ≤11: 2 + R damage - 12-16: 5 + R damage - 17+: 7 + R damage Effect: You slide one creature within 10 squares of the target up to 2 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Green, Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

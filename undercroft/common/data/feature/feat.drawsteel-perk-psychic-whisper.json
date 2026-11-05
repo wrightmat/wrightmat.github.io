@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-perk-psychic-whisper",
+  "name": "Psychic Whisper",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Supernatural Perk**\n\nYou have the following ability.\n\n> ###### Psychic Whisper\n>\n> *You send a one-way telepathic message to a friend.*\n>\n> | **Psionic, Ranged** |    **Maneuver** |\n> | ------------------- | --------------: |\n> | **📏 Ranged 10**    | **🎯 One ally** |\n>\n> **Effect:** As long as the target understands one or more languages, you send a telepathic message to them that takes 10 seconds or less to speak. The target knows who the message is from and can decide to ignore it and subsequent messages.",
+  "mechanics": {
+    "type": "active",
+    "text": "You have the following ability. Psychic Whisper You send a one-way telepathic message to a friend. Psionic, Ranged Maneuver ------------------- --------------: 📏 Ranged 10 🎯 One ally Effect: As long as the target understands one or more languages, you send a telepathic message to them that takes 10 seconds or less to speak. The target knows who the message is from and can decide to ignore it and subsequent messages."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Supernatural",
+  "keywords": "Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "One ally"
+}

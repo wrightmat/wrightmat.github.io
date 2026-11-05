@@ -9,5 +9,64 @@
   "skills": "Nature (from the lore skill group), plus one skill from the exploration group and one skill from the intrigue group (*Quick Build:* Nature, Navigate, Track.)",
   "languages": "One language",
   "perk": "One exploration perk (*Quick Build:* Camouflage Hunter.)",
-  "projectPoints": 120
+  "projectPoints": 120,
+  "category": "Career",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Nature"
+      ]
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an exploration skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Exploration"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an intrigue skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Intrigue"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a language.",
+      "targetPath": "languages",
+      "from": {
+        "systemField": "languages"
+      }
+    },
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose an exploration perk.",
+      "from": {
+        "filter": {
+          "kind": "Perk",
+          "systemIds": "sys.drawsteel",
+          "perkType": "Exploration"
+        }
+      }
+    }
+  ]
 }

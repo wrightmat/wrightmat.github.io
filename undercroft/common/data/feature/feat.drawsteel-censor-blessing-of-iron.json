@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-blessing-of-iron",
+  "name": "Blessing of Iron",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The gods send divine favor to you and your allies. While you are not dying, enemies take a bane on strikes against you or any ally within 3 squares of you.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The gods send divine favor to you and your allies. While you are not dying, enemies take a bane on strikes against you or any ally within 3 squares of you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-protection"
+  ]
+}

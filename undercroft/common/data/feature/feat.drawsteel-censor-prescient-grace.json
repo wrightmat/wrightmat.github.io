@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-prescient-grace",
+  "name": "Prescient Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Gifted by a prescient vision, you warn an ally of an impending attack.*\n\n**Heroic Ability** — Magic, Ranged — Triggered\n\n**Cost:** 5 Wrath\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Trigger:** An enemy within 10 squares starts their turn.\n\n**Effect:** You can spend a Recovery to allow the target to regain Stamina equal to your recovery value. The target can then take their turn immediately before the triggering enemy.",
+  "mechanics": {
+    "type": "active",
+    "text": "Gifted by a prescient vision, you warn an ally of an impending attack. Trigger: An enemy within 10 squares starts their turn. Effect: You can spend a Recovery to allow the target to regain Stamina equal to your recovery value. The target can then take their turn immediately before the triggering enemy."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 5
+}

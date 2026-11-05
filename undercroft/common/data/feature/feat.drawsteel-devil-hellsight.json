@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-devil-hellsight",
+  "name": "Hellsight",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour eyes let you see through darkness, fog, and other obscuring effects. You don't take a bane on strikes made against creatures with concealment.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your eyes let you see through darkness, fog, and other obscuring effects. You don't take a bane on strikes made against creatures with concealment."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Devil",
+  "cost": 1
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telekinesis-repel",
+  "name": "Repel",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### Repel\n>\n> *They aren't going anywhere, but you might!*\n>\n> | **Psionic, Ranged** |           **Triggered** |\n> | ------------------- | ----------------------: |\n> | **📏 Ranged 10**    | **🎯 Self or one ally** |\n>\n> **Trigger:** The target takes damage or is force moved.\n>\n> **Effect:** The target takes half the triggering damage, or the distance of the triggering forced movement is reduced by a number of squares equal to your Reason score. If the target took damage and was force moved, you choose the effect. If the forced movement is reduced to 0 squares, the target can push the source of the forced movement a number of squares equal to your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. Repel They aren't going anywhere, but you might! Trigger: The target takes damage or is force moved. Effect: The target takes half the triggering damage, or the distance of the triggering forced movement is reduced by a number of squares equal to your Reason score. If the target took damage and was force moved, you choose the effect. If the forced movement is reduced to 0 squares, the target can push the source of the forced movement a number of squares equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

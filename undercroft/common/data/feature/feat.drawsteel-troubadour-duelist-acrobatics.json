@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-duelist-acrobatics",
+  "name": "Acrobatics",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following performance ability, which is usable with your Routines feature.\n\n> ###### Acrobatics\n>\n> *Folks love a good tumble.*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, each target who starts their turn in the area can automatically obtain a tier 3 outcome on one test made to jump, tumble, or climb as part of their movement before the end of their turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following performance ability, which is usable with your Routines feature. Acrobatics Folks love a good tumble. Effect: While this performance is active, each target who starts their turn in the area can automatically obtain a tier 3 outcome on one test made to jump, tumble, or climb as part of their movement before the end of their turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

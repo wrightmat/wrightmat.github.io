@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-violence-will-not-aid-thee",
+  "name": "Violence Will Not Aid Thee",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*After some holy lightning, your enemy will think twice about their next attack.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 3 Piety\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 3 + I lightning damage\n- **12-16:** 6 + I lightning damage\n- **17+:** 9 + I lightning damage\n\n**Effect:** The first time on a turn that the target deals damage to another creature, the target of this ability takes 1d10 lightning damage (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "After some holy lightning, your enemy will think twice about their next attack. Power Roll + Intuition: - ≤11: 3 + I lightning damage - 12-16: 6 + I lightning damage - 17+: 9 + I lightning damage Effect: The first time on a turn that the target deals damage to another creature, the target of this ability takes 1d10 lightning damage (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 3
+}

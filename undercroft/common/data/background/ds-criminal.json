@@ -9,5 +9,50 @@
   "skills": "The Criminal Underworld skill (from the lore skill group), plus two skills from the intrigue group (*Quick Build:* Criminal Underworld, Pick Lock, Pick Pocket.)",
   "languages": "One language",
   "perk": "One intrigue perk (*Quick Build:* Criminal Contacts.)",
-  "projectPoints": 120
+  "projectPoints": 120,
+  "category": "Career",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Criminal Underworld"
+      ]
+    },
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two intrigue skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Intrigue"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a language.",
+      "targetPath": "languages",
+      "from": {
+        "systemField": "languages"
+      }
+    },
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose an intrigue perk.",
+      "from": {
+        "filter": {
+          "kind": "Perk",
+          "systemIds": "sys.drawsteel",
+          "perkType": "Intrigue"
+        }
+      }
+    }
+  ]
 }

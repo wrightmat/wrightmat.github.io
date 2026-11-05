@@ -571,7 +571,7 @@ export function renderTextContent(component, ctx) {
   if (component.richText) {
     applyTextFormatting(text, component);
     const interactiveDice = Boolean(ctx.interactiveDice);
-    const { rolls, dice } = (typeof ctx.getRollContext === "function" && ctx.getRollContext()) || {};
+    const { rolls, dice, terms, context } = (typeof ctx.getRollContext === "function" && ctx.getRollContext()) || {};
     const rollLabel = typeof ctx.rollLabel === "function" ? ctx.rollLabel(component) : undefined;
     text.appendChild(
       renderMarkdown(resolved != null ? String(resolved) : "", {
@@ -591,6 +591,8 @@ export function renderTextContent(component, ctx) {
         label: rollLabel,
         rolls,
         dice,
+        terms,
+        context,
         showValue: false,
       });
     }

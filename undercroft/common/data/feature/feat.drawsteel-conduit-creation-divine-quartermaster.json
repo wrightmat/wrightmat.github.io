@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-conduit-creation-divine-quartermaster",
+  "name": "Divine Quartermaster",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Each time you finish a respite, you can choose a treasure with a project goal equal to 50 times your level or less. You gain a divine version of this treasure that lasts until you finish another respite or it is consumed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you finish a respite, you can choose a treasure with a project goal equal to 50 times your level or less. You gain a divine version of this treasure that lasts until you finish another respite or it is consumed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-creation"
+  ]
+}

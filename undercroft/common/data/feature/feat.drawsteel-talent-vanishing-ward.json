@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-vanishing-ward",
+  "name": "Vanishing Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your ward allows you to slip away from threats. Whenever you take damage, you become invisible until the end of your next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your ward allows you to slip away from threats. Whenever you take damage, you become invisible until the end of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

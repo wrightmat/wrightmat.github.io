@@ -1,0 +1,43 @@
+{
+  "id": "feat.drawsteel-orc-passionate-artisan",
+  "name": "Passionate Artisan",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nWhen you are stirred by a passion for creation, your bloodfire allows you to work longer and harder. When you gain your initial skills from your career, culture, class, or other source, choose two skills from the crafting skill group, whether you have those skills or not. Whenever you make a project roll for a crafting project that uses these skills, you gain a +2 bonus to the roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait When you are stirred by a passion for creation, your bloodfire allows you to work longer and harder. When you gain your initial skills from your career, culture, class, or other source, choose two skills from the crafting skill group, whether you have those skills or not. Whenever you make a project roll for a crafting project that uses these skills, you gain a +2 bonus to the roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Orc",
+  "cost": 1,
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two crafting skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Crafting"
+          ]
+        }
+      }
+    }
+  ]
+}

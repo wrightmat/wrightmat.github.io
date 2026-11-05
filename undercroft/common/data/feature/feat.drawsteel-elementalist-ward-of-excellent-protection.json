@@ -1,0 +1,51 @@
+{
+  "id": "feat.drawsteel-elementalist-ward-of-excellent-protection",
+  "name": "Ward of Excellent Protection",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You weave a shield of all the elements around yourself, channeling their full protective power. You have immunity to acid, cold, corruption, fire, lightning, poison, or sonic damage equal to your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You weave a shield of all the elements around yourself, channeling their full protective power. You have immunity to acid, cold, corruption, fire, lightning, poison, or sonic damage equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose your ward's damage type.",
+      "targetPath": "immunities",
+      "itemDefaults": {
+        "kind": "Immunity",
+        "formula": "@reason"
+      },
+      "from": {
+        "systemField": "damageTypes",
+        "anyOf": {
+          "name": [
+            "Acid",
+            "Cold",
+            "Corruption",
+            "Fire",
+            "Lightning",
+            "Poison",
+            "Sonic"
+          ]
+        }
+      }
+    }
+  ]
+}

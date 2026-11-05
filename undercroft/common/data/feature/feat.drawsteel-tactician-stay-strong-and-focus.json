@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-stay-strong-and-focus",
+  "name": "Stay Strong and Focus!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"We can do this! Keep faith and hold fast!\"*\n\n**Heroic Ability** — Maneuver\n\n**Cost:** 7 Focus\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter or until you are dying, whenever you or any ally deals damage to a target marked by you, the creature who dealt the damage can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "\"We can do this! Keep faith and hold fast!\" Effect: Until the end of the encounter or until you are dying, whenever you or any ally deals damage to a target marked by you, the creature who dealt the damage can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

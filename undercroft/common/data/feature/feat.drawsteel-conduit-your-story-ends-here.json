@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-your-story-ends-here",
+  "name": "Your Story Ends Here",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You bend the fate of a foe, willing them to die.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 9 + I corruption damage; R < WEAK, weakened (save ends)\n- **12-16:** 14 + I corruption damage; R < AVERAGE, weakened (save ends)\n- **17+:** 19 + I corruption damage; R < STRONG, weakened (save ends)\n\n**Effect:** If this damage kills the target, you and each ally within distance can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "You bend the fate of a foe, willing them to die. Power Roll + Intuition: - ≤11: 9 + I corruption damage; R < WEAK, weakened (save ends) - 12-16: 14 + I corruption damage; R < AVERAGE, weakened (save ends) - 17+: 19 + I corruption damage; R < STRONG, weakened (save ends) Effect: If this damage kills the target, you and each ally within distance can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-fate"
+  ]
+}

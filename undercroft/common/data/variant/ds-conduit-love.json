@@ -9,21 +9,6 @@
   "parentId": "ds-conduit",
   "summary": "",
   "description": "### 1st-Level Features\n\n###### Love Domain Piety and Effect\n\n- **Piety:** You gain 2 piety the first time in an encounter that you or any ally within 10 squares uses the Aid Attack maneuver or an ability that targets an ally.\n- **Prayer Effect:** Each ally within 10 squares of you gains temporary Stamina equal to two times your Intuition score.\n\n##### Blessing of Compassion\n\nYou exude a magic presence that can soothe those willing to socially engage with you. You gain an edge on any test made to assist another creature with a test.\n\nAdditionally, when you are present at the start of a negotiation, one NPC of your choice has their patience increased by 1 (to a maximum of 5), and the first test made to influence them gains an edge.\n\n### 4th-Level Features\n\n###### Invocation of the Heart\n\nAs a main action, you forge a bond of love and friendship with a willing creature you touch. While this bond is active, you can telepathically speak with the creature over any distance, including across different worlds. Additionally, while this bond is active, you can attempt to assist the creature with any test they make regardless of their proximity to you. You can maintain only one bond at a time, and you can end a bond at any time (no action required).\n\n### 7th-Level Features\n\n##### Covenant of the Heart\n\nYou can maintain bonds with up to three willing creatures using your Invocation of the Heart feature. Additionally, you have the following ability.\n\n> ###### Guided to Your Side\n>\n> *You concentrate on a friend and teleport to them.*\n>\n> | **Magic, Ranged** |           **Main action** |\n> | ----------------- | ------------------------: |\n> | **📏 Ranged 10**  | **🎯 Self and each ally** |\n>\n> **Effect:** Each target is teleported to unoccupied spaces within 5 squares of a willing creature who you are bonded to with your Invocation of the Heart feature. You don't need line of effect to the bonded creature but you must be on the same world.\n",
-  "features": [
-    {
-      "name": "Blessing of Compassion",
-      "level": 1,
-      "description": "You exude a magic presence that can soothe those willing to socially engage with you. You gain an edge on any test made to assist another creature with a test.\n\nAdditionally, when you are present at the start of a negotiation, one NPC of your choice has their patience increased by 1 (to a maximum of 5), and the first test made to influence them gains an edge."
-    },
-    {
-      "name": "Invocation of the Heart",
-      "level": 4,
-      "description": "As a main action, you forge a bond of love and friendship with a willing creature you touch. While this bond is active, you can telepathically speak with the creature over any distance, including across different worlds. Additionally, while this bond is active, you can attempt to assist the creature with any test they make regardless of their proximity to you. You can maintain only one bond at a time, and you can end a bond at any time (no action required)."
-    },
-    {
-      "name": "Covenant of the Heart",
-      "level": 7,
-      "description": "You can maintain bonds with up to three willing creatures using your Invocation of the Heart feature. Additionally, you have the following ability.\n\n> ###### Guided to Your Side\n>\n> *You concentrate on a friend and teleport to them.*\n>\n> | **Magic, Ranged** |           **Main action** |\n> | ----------------- | ------------------------: |\n> | **📏 Ranged 10**  | **🎯 Self and each ally** |\n>\n> **Effect:** Each target is teleported to unoccupied spaces within 5 squares of a willing creature who you are bonded to with your Invocation of the Heart feature. You don't need line of effect to the bonded creature but you must be on the same world."
-    }
-  ]
+  "features": [],
+  "featureIds": []
 }

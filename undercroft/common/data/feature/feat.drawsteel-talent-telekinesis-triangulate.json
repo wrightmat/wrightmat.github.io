@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telekinesis-triangulate",
+  "name": "Triangulate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever an ally uses a ranged ability while you are within the ability's distance, you can spend 1 clarity as a free triggered action to allow them to use the ability as if they were in your space.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever an ally uses a ranged ability while you are within the ability's distance, you can spend 1 clarity as a free triggered action to allow them to use the ability as if they were in your space."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

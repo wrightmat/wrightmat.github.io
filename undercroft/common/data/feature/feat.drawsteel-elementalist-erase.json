@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-erase",
+  "name": "Erase",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*With a flick of the wrist, you phase creatures out of existence.*\n\n**Heroic Ability** — Magic, Ranged, Strike, Void — Main action\n\n**Cost:** 7 Essence\n\n**Distance:** Ranged 10   **Target:** Special\n\n**Special:** The number of creatures you target with this ability is determined by your power roll.\n\n**Power Roll + Reason:**\n\n- **≤11:** One creature\n- **12-16:** Two creatures\n- **17+:** Three creatures\n\n**Effect:** Each target begins to fade from existence (save ends). On their first turn while fading from existence, a target takes a bane on power rolls. At the end of their first turn, they have a double bane on power rolls. At the end of their second turn, they fade from existence for 1 hour, after which they reappear in their original space or the nearest unoccupied space.",
+  "mechanics": {
+    "type": "active",
+    "text": "With a flick of the wrist, you phase creatures out of existence. Special: The number of creatures you target with this ability is determined by your power roll. Power Roll + Reason: - ≤11: One creature - 12-16: Two creatures - 17+: Three creatures Effect: Each target begins to fade from existence (save ends). On their first turn while fading from existence, a target takes a bane on power rolls. At the end of their first turn, they have a double bane on power rolls. At the end of their second turn, they fade from existence for 1 hour, after which they reappear in their original space or the nearest unoccupied space."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike, Void",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Special",
+  "cost": 7
+}

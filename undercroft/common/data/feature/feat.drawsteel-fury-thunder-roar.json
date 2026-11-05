@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-thunder-roar",
+  "name": "Thunder Roar",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You unleash a howl that hurls your enemies back.*\n\n**Heroic Ability** — Area, Melee, Weapon — Main action\n\n**Cost:** 5 Ferocity\n\n**Distance:** 5 x 1 line within 1   **Target:** Each enemy in the area\n\n**Power Roll + Might:**\n\n- **≤11:** 6 damage; push 2\n- **12-16:** 9 damage; push 4\n- **17+:** 13 damage; push 6\n\n**Effect:** The targets are force moved one at a time, starting with the target nearest to you, and can be pushed into other targets in the same line.",
+  "mechanics": {
+    "type": "active",
+    "text": "You unleash a howl that hurls your enemies back. Power Roll + Might: - ≤11: 6 damage; push 2 - 12-16: 9 damage; push 4 - 17+: 13 damage; push 6 Effect: The targets are force moved one at a time, starting with the target nearest to you, and can be pushed into other targets in the same line."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "5 x 1 line within 1",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-chronopathy-stasis-shield",
+  "name": "Stasis Shield",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### Stasis Shield (3 Clarity)\n>\n> *You freeze time just long enough to bring the victim to safety!*\n>\n> | **Psionic, Ranged** |                          **Triggered** |\n> | ------------------- | -------------------------------------: |\n> | **📏 Ranged 10**    | **🎯 Self, or one creature or object** |\n>\n> **Trigger:** The target takes damage.\n>\n> **Effect:** The target is teleported to an unoccupied space adjacent to you, taking no damage and suffering no additional effects if this movement would get them out of harm's way.\n>\n> **Strained:** You can't target yourself, and you take the damage and any additional effects instead of the target.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. Stasis Shield (3 Clarity) You freeze time just long enough to bring the victim to safety! Trigger: The target takes damage. Effect: The target is teleported to an unoccupied space adjacent to you, taking no damage and suffering no additional effects if this movement would get them out of harm's way. Strained: You can't target yourself, and you take the damage and any additional effects instead of the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

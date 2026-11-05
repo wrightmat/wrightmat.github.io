@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-growing-ferocity-improvement-4th-level",
+  "name": "Growing Ferocity Improvement (4th Level)",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your Growing Ferocity feature provides additional benefits when you have 8 or more ferocity.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your Growing Ferocity feature provides additional benefits when you have 8 or more ferocity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

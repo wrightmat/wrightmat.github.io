@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-specialization-triggered-action",
+  "name": "Specialization Triggered Action",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your elemental specialization grants you a triggered action, as shown on the Specialization Triggered Actions table.\n\n###### Elemental Specialization Triggered Actions Table\n\n| Specialization | Triggered Action          |\n| -------------- | ------------------------- |\n| Earth          | Skin Like Castle Walls    |\n| Fire           | Explosive Assistance      |\n| Green          | Breath of Dawn Remembered |\n| Void           | Subtle Relocation         |\n\n> ###### Breath of Dawn Remembered\n>\n> *The power you channel grants the ability to get back in the fight.*\n>\n> | **Green, Magic, Ranged** |           **Triggered** |\n> | ------------------------ | ----------------------: |\n> | **📏 Ranged 10**         | **🎯 Self or one ally** |\n>\n> **Trigger:** The target starts their turn or takes damage.\n>\n> **Effect:** The target can spend a Recovery.\n>\n> **Spend 1+ Essence:** The target can spend an additional Recovery for each essence spent.\n\n> ###### Explosive Assistance\n>\n> *You add a little magic to an ally's aggression at just the right time.*\n>\n> | **Fire, Magic, Ranged** |           **Triggered** |\n> | ----------------------- | ----------------------: |\n> | **📏 Ranged 10**        | **🎯 Self or one ally** |\n>\n> **Trigger:** The target force moves a creature or object.\n>\n> **Effect:** The forced movement distance gains a bonus equal to your Reason score.\n>\n> **Spend 1 Essence:** The forced movement distance gains a bonus equal to twice your Reason score instead.\n\n> ###### Skin Like Castle Walls\n>\n> *You cover yourself or an ally in protective stone.*\n>\n> | **Earth, Magic, Ranged** |           **Triggered** |\n> | ------------------------ | ----------------------: |\n> | **📏 Ranged 10**         | **🎯 Self or one ally** |\n>\n> **Trigger:** The target takes damage.\n>\n> **Effect:** The target takes half the damage.\n>\n> **Spend 1 Essence:** If the damage has any potency effects associated with it, the potency is reduced by 1 for the target.\n\n> ###### Subtle Relocation\n>\n> *You call on the void to swallow and spit out an ally.*\n>\n> | **Magic, Ranged, Void** |           **Triggered** |\n> | ----------------------- | ----------------------: |\n> | **📏 Ranged 10**        | **🎯 Self or one ally** |\n>\n> **Trigger:** The target starts their turn, moves, or is force moved.\n>\n> **Effect:** You teleport the target up to a number of squares equal to your Reason score. If the target moves to trigger this ability, you can teleport them at any point during the move.\n>\n> **Spend 1 Essence:** You teleport the target up to a number of squares equal to twice your Reason score instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your elemental specialization grants you a triggered action, as shown on the Specialization Triggered Actions table. Elemental Specialization Triggered Actions Table Breath of Dawn Remembered The power you channel grants the ability to get back in the fight. Trigger: The target starts their turn or takes damage. Effect: The target can spend a Recovery. Spend 1+ Essence: The target can spend an additional Recovery for each essence spent. Explosive Assistance You add a little magic to an ally's aggression at just the right time. Trigger: The target force moves a creature or object. Effect: The forced movement distance gains a bonus equal to your Reason score. Spend 1 Essence: The forced movement distance gains a bonus equal to twice your Reason score instead. Skin Like Castle Walls You cover yourself or an ally in protective stone. Trigger: The target takes damage. Effect: The target takes half the damage. Spend 1 Essence: If the damage has any potency effects associated with it, the potency is reduced by 1 for the target. Subtle Relocation You call on the void to swallow and spit out an ally. Trigger: The target starts their turn, moves, or is force moved. Effect: You teleport the target up to a number of squares equal to your Reason score. If the target moves to trigger this ability, you can teleport them at any point during the move. Spend 1 Essence: You teleport the target up to a number of squares equal to twice your Reason score instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

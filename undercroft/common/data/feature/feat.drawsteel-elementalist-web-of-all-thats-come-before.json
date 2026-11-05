@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-web-of-all-thats-come-before",
+  "name": "Web of All That's Come Before",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Threads you've been weaving through your adventures create a vibrant, pearlescent web.*\n\n**Heroic Ability** — Area, Green, Magic, Ranged — Main action\n\n**Cost:** 9 Essence\n\n**Distance:** 4 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 corruption damage; A < WEAK, restrained (save ends)\n- **12-16:** 3 corruption damage; A < AVERAGE, restrained (save ends)\n- **17+:** 5 corruption damage; A < STRONG, restrained (save ends)\n\n**Effect:** The area is difficult terrain until the start of your next turn. Each enemy who ends their turn in the area is restrained (save ends).\n\n**Persistent 1:** The area remains until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Threads you've been weaving through your adventures create a vibrant, pearlescent web. Power Roll + Reason: - ≤11: 2 corruption damage; A < WEAK, restrained (save ends) - 12-16: 3 corruption damage; A < AVERAGE, restrained (save ends) - 17+: 5 corruption damage; A < STRONG, restrained (save ends) Effect: The area is difficult terrain until the start of your next turn. Each enemy who ends their turn in the area is restrained (save ends). Persistent 1: The area remains until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Green, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "4 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 9
+}

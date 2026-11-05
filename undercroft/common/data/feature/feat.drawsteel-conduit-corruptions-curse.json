@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-corruptions-curse",
+  "name": "Corruption's Curse",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Cursed by you, your enemy takes more damage from your allies.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Intuition:**\n\n- **≤11:** 3 + I corruption damage; M < WEAK, damage weakness 5 (save ends)\n- **12-16:** 6 + I corruption damage; M < AVERAGE, damage weakness 5 (save ends)\n- **17+:** 9 + I corruption damage; M < STRONG, damage weakness 5 (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Cursed by you, your enemy takes more damage from your allies. Power Roll + Intuition: - ≤11: 3 + I corruption damage; M < WEAK, damage weakness 5 (save ends) - 12-16: 6 + I corruption damage; M < AVERAGE, damage weakness 5 (save ends) - 17+: 9 + I corruption damage; M < STRONG, damage weakness 5 (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 5
+}

@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "High Elf Tactician (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Tactician",
+        "refKind": "class",
+        "refId": "ds-tactician",
+        "level": 1,
+        "subclass": {
+          "name": "Vanguard",
+          "refKind": "variant",
+          "refId": "ds-tactician-vanguard"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "High Elf",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-soldier"
   },
-  "class": {
-    "name": "Tactician",
-    "refKind": "class",
-    "refId": "ds-tactician"
-  },
-  "subclasses": [
-    {
-      "name": "Vanguard",
-      "refKind": "variant",
-      "refId": "ds-tactician-vanguard"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 1,
@@ -132,11 +135,28 @@
     "feat.drawsteel-strike-now",
     "feat.drawsteel-commanding-presence",
     "feat.drawsteel-put-your-back-into-it",
-    "feat.drawsteel-shining-armor-and-rapid-fire-kits",
     "feat.drawsteel-high-elf-glamor",
     "feat.drawsteel-high-senses",
     "feat.drawsteel-otherworldly-grace",
     "feat.drawsteel-melee-weapon-free-strike-high-elf-tactician",
     "feat.drawsteel-ranged-weapon-free-strike-high-elf-tactician"
+  ],
+  "inventory": [
+    {
+      "name": "Shining Armor Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "shining-armor-kit-drawsteel"
+    },
+    {
+      "name": "Rapid-Fire Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "rapid-fire-kit-drawsteel"
+    }
   ]
 }

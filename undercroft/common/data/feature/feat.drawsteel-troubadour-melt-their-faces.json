@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-melt-their-faces",
+  "name": "Melt Their Faces",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The power of music rips through the reality around the target and blows them away.*\n\n**Heroic Ability** — Magic, Melee, Ranged, Strike — Main action\n\n**Cost:** 11 Drama\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature or object\n\n**Power Roll + Presence:**\n\n- **≤11:** 12 + P sonic damage; push 5\n- **12-16:** 16 + P sonic damage; push 10\n- **17+:** 22 + P sonic damage; push 15\n\n**Effect:** Forced movement from this ability ignores stability.",
+  "mechanics": {
+    "type": "active",
+    "text": "The power of music rips through the reality around the target and blows them away. Power Roll + Presence: - ≤11: 12 + P sonic damage; push 5 - 12-16: 16 + P sonic damage; push 10 - 17+: 22 + P sonic damage; push 15 Effect: Forced movement from this ability ignores stability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature or object",
+  "cost": 11
+}

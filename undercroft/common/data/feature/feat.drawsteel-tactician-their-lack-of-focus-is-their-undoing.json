@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-their-lack-of-focus-is-their-undoing",
+  "name": "Their Lack of Focus Is Their Undoing",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You trick your enemies into attacking each other and leave them confused by the aftermath.*\n\n**Heroic Ability** — Magic, Ranged, Weapon — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** Ranged 10   **Target:** Three enemies\n\n**Effect:** Each target uses a signature ability against one or more targets of your choosing, with each ability automatically obtaining a tier 3 outcome on the power roll. After resolving the targets' abilities, you make a power roll against each original target.\n\n**Power Roll + Might:**\n\n- **≤11:** R < WEAK, dazed (save ends)\n- **12-16:** R < AVERAGE, dazed (save ends)\n- **17+:** R < STRONG, dazed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You trick your enemies into attacking each other and leave them confused by the aftermath. Effect: Each target uses a signature ability against one or more targets of your choosing, with each ability automatically obtaining a tier 3 outcome on the power roll. After resolving the targets' abilities, you make a power roll against each original target. Power Roll + Might: - ≤11: R < WEAK, dazed (save ends) - 12-16: R < AVERAGE, dazed (save ends) - 17+: R < STRONG, dazed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Three enemies",
+  "cost": 11
+}

@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-open-book",
+  "name": "Open Book",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Interpersonal Perk**\n\nWhenever you speak one-on-one with a creature, you can ask them one question about themself that might typically offend them or raise suspicion. If they choose not to answer honestly, they simply deflect or redirect the question, with no further complications. If they choose to answer honestly, the creature can immediately ask you a question about yourself in turn, which you must answer honestly.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you speak one-on-one with a creature, you can ask them one question about themself that might typically offend them or raise suspicion. If they choose not to answer honestly, they simply deflect or redirect the question, with no further complications. If they choose to answer honestly, the creature can immediately ask you a question about yourself in turn, which you must answer honestly."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Interpersonal"
+}

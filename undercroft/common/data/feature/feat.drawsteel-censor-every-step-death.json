@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-censor-every-step-death",
+  "name": "Every Step... Death!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You show your foe a glimpse of their fate after death.*\n\n**Signature Ability** — Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** 5 + P psychic damage\n- **12-16:** 7 + P psychic damage\n- **17+:** 10 + P psychic damage\n\n**Effect:** Each time the target willingly moves before the end of your next turn, they take 1 psychic damage for each square they move.",
+  "mechanics": {
+    "type": "active",
+    "text": "You show your foe a glimpse of their fate after death. Power Roll + Presence: - ≤11: 5 + P psychic damage - 12-16: 7 + P psychic damage - 17+: 10 + P psychic damage Effect: Each time the target willingly moves before the end of your next turn, they take 1 psychic damage for each square they move."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

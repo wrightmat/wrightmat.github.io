@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-quickness-ward",
+  "name": "Quickness Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The gods imbue a divine swiftness within you. Whenever an adjacent creature deals damage to you, you can shift up to a number of squares equal to your Intuition score after the damage is dealt.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The gods imbue a divine swiftness within you. Whenever an adjacent creature deals damage to you, you can shift up to a number of squares equal to your Intuition score after the damage is dealt."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-reaver-unfettered",
+  "name": "Unfettered",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "At the start of your turn, you can end any restrained condition on you. Additionally, you have a double edge on tests made to escape being confined or imprisoned.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of your turn, you can end any restrained condition on you. Additionally, you have a double edge on tests made to escape being confined or imprisoned."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

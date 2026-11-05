@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-blur",
+  "name": "Blur",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You release stored time, allowing you to act twice.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 5 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You can use a signature or heroic ability. You gain an edge on that ability's power rolls.",
+  "mechanics": {
+    "type": "active",
+    "text": "You release stored time, allowing you to act twice. Effect: You can use a signature or heroic ability. You gain an edge on that ability's power rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 5
+}

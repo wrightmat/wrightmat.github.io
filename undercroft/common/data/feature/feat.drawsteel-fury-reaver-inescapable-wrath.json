@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-fury-reaver-inescapable-wrath",
+  "name": "Inescapable Wrath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have a bonus to speed equal to your Agility score, and you ignore difficult terrain.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have a bonus to speed equal to your Agility score, and you ignore difficult terrain."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "speedBonus": "@agility"
+}

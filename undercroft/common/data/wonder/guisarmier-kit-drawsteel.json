@@ -1,0 +1,22 @@
+{
+  "name": "Guisarmier Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "The Guisarmier kit is for those who want to use a polearm for extended reach while remaining protected by sturdy armor. This is the kit that allows you to become the ultimate halberd, longspear, or glaive fighter.\n\n##### Equipment\n\nYou wear medium armor and wield a polearm.\n\n##### Kit Bonuses\n\n**Stamina Bonus:** +6 per echelon\n\n**Stability Bonus:** +1\n\n**Melee Damage Bonus:** +2/+2/+2\n\n**Melee Distance Bonus:** +1\n\n##### Signature Ability\n\n###### Forward Thrust, Backward Smash\n\n*In your hands, the haft is as good as the head.*\n\n| **Melee, Strike, Weapon** |                 **Main action** |\n| ------------------------- | ------------------------------: |\n| **📏 Melee 2**            | **🎯 Two creatures or objects** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 damage\n- **12-16:** 7 damage\n- **17+:** 9 damage",
+  "equipment": "You wear medium armor and wield a polearm.",
+  "staminaBonus": 6,
+  "stabilityBonus": 1,
+  "meleeDamageBonus": "+2/+2/+2",
+  "meleeDistanceBonus": 1,
+  "signatureAbility": "Forward Thrust, Backward Smash",
+  "kitType": "standard",
+  "featureIds": [
+    "feat.drawsteel-kit-forward-thrust-backward-smash"
+  ]
+}

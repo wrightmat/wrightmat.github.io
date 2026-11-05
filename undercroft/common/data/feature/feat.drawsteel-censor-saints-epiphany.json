@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-saints-epiphany",
+  "name": "Saint's Epiphany",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "At the start of a respite, you can inspire yourself or another creature taking the same respite with divine knowledge. If the target makes a project roll during this respite, they can add 1d10 plus your Presence score to the roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of a respite, you can inspire yourself or another creature taking the same respite with divine knowledge. If the target makes a project roll during this respite, they can add 1d10 plus your Presence score to the roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-knowledge"
+  ]
+}

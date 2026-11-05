@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-kinetic-shield",
+  "name": "Kinetic Shield",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You manifest a force barrier that absorbs incoming kinetic energy.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 5 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Power Roll + Intuition:**\n\n- **≤11:** You gain 10 temporary Stamina.\n- **12-16:** You gain 15 temporary Stamina.\n- **17+:** You gain 20 temporary Stamina.\n\n**Effect:** While you have temporary Stamina from this ability, you can't be made bleeding even while dying.",
+  "mechanics": {
+    "type": "active",
+    "text": "You manifest a force barrier that absorbs incoming kinetic energy. Power Roll + Intuition: - ≤11: You gain 10 temporary Stamina. - 12-16: You gain 15 temporary Stamina. - 17+: You gain 20 temporary Stamina. Effect: While you have temporary Stamina from this ability, you can't be made bleeding even while dying."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 5
+}

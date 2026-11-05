@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-polder-graceful-retreat",
+  "name": "Graceful Retreat",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour small size makes it easier for you to slip away from the fray. You gain a +1 bonus to the distance you can shift when you take the Disengage move action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your small size makes it easier for you to slip away from the fray. You gain a +1 bonus to the distance you can shift when you take the Disengage move action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Polder",
+  "cost": 1,
+  "disengageBonus": 1
+}

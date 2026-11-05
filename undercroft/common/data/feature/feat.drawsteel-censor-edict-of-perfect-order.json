@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-edict-of-perfect-order",
+  "name": "Edict of Perfect Order",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Within the area of your divine presence, your enemies will regret using their fell abilities.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 7 Wrath\n\n**Distance:** 2 aura   **Target:** Each enemy in the area\n\n**Effect:** Until the end of the encounter or until you are dying, whenever a target uses an ability that costs Malice (see *[Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)*), they take holy damage equal to three times your Presence score. A target judged by you takes an extra 2d6 holy damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "Within the area of your divine presence, your enemies will regret using their fell abilities. Effect: Until the end of the encounter or until you are dying, whenever a target uses an ability that costs Malice (see [Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)), they take holy damage equal to three times your Presence score. A target judged by you takes an extra 2d6 holy damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "2 aura",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

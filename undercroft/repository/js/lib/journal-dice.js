@@ -57,7 +57,10 @@ function styleAsChip(button) {
 // A table reference has no synchronous starting value — resolving one means
 // fetching the referenced Journal page, so the chip mounts showing "…" and
 // resolves once, then behaves like any other chip.
-function buildDiceRoller(expression, { status, interactive, dataManager, initialValue, label = "Journal", rolls, dice, showValue = true }) {
+function buildDiceRoller(
+  expression,
+  { status, interactive, dataManager, initialValue, label = "Journal", rolls, dice, showValue = true, context, displayText = "" }
+) {
   const tableRef = parseTableReferenceExpression(expression);
   const button = el("button", "repository-dice-roller");
   button.type = "button";
@@ -65,8 +68,9 @@ function buildDiceRoller(expression, { status, interactive, dataManager, initial
   // Notation found in plain prose is only the dice themselves — no number until the person clicks. An authored
   // `dice:` tag starts with a value, which a click rerolls.
   if (!showValue && !tableRef) {
-    button.append(initialValue ? `${initialValue} (${expression})` : expression);
-    return wireRoll(button, expression, { status, interactive, dataManager, label, rolls, dice, tableRef, valueEl: null });
+    const shown = displayText || expression;
+    button.append(initialValue ? `${initialValue} (${shown})` : shown);
+    return wireRoll(button, expression, { status, interactive, dataManager, label, rolls, dice, tableRef, valueEl: null, context, displayText: shown });
   }
   const valueEl = el(
     "span",
@@ -89,9 +93,9 @@ function buildDiceRoller(expression, { status, interactive, dataManager, initial
   return wireRoll(button, expression, { status, interactive, dataManager, label, rolls, dice, tableRef, valueEl });
 }
 
-function wireRoll(button, expression, { status, interactive, dataManager, label, rolls, dice, tableRef, valueEl }) {
+function wireRoll(button, expression, { status, interactive, dataManager, label, rolls, dice, tableRef, valueEl, context, displayText }) {
   async function performRoll() {
-    const outcome = await rollExpression(expression, { status, label, dataManager, rolls, dice });
+    const outcome = await rollExpression(expression, { status, label, dataManager, rolls, dice, context: context || {} });
     if (!valueEl) return;
     if (!outcome) {
       if (tableRef) valueEl.textContent = "—";
@@ -108,7 +112,7 @@ function wireRoll(button, expression, { status, interactive, dataManager, label,
   }
   if (interactive) {
     button.setAttribute("data-bs-toggle", "tooltip");
-    button.setAttribute("data-bs-title", tableRef ? `Click to reroll on "${tableRef.blockId}"` : `Click to roll ${expression}`);
+    button.setAttribute("data-bs-title", tableRef ? `Click to reroll on "${tableRef.blockId}"` : `Click to roll ${displayText || expression}`);
     // Clicking anywhere in the button (the value, the expression, or the
     // icon) rolls — one click target, not separate handlers per piece, so
     // there's no dead zone between them.
@@ -128,19 +132,62 @@ const PROSE_DICE_PATTERN = /(\d+)\s*\(\s*(\d*d\d+(?:\s*[+-]\s*\d+)?)\s*\)|\b(\d*
 // left alone.
 // `showValue: false` leaves the notation as just the clickable dice string (no pre-rolled number). `rolls` are the
 // System's named rolls: a shortName (optionally followed by a +/- number) in the prose becomes a button that rolls
-// through that roll, so its tiers and labels apply.
-function prosePattern(rolls, dice) {
+// through that roll, so its tiers and labels apply. A roll's full name counts too, but only with a modifier
+// ("Power Roll + Agility"), so prose that merely mentions the roll stays text. `terms` name the character values a
+// modifier may be ({text: "Agility", expression: "@stats.abilities.agility"}).
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function prosePattern(rolls, dice, terms) {
   const dieIds = new Set((Array.isArray(dice) ? dice : []).map((die) => String(die?.id || "").toLowerCase()));
-  const names = (Array.isArray(rolls) ? rolls : [])
+  const rollList = Array.isArray(rolls) ? rolls : [];
+  const names = rollList
     .map((roll) => String(roll?.shortName || ""))
     .filter((name) => /^[A-Za-z_]\w*$/.test(name) && !dieIds.has(name.toLowerCase()));
   if (!names.length) return PROSE_DICE_PATTERN;
-  const named = `\\b(?:${names.join("|")})(?:\\s*[+-]\\s*\\d+)?(?![\\w])`;
+  const termTexts = (Array.isArray(terms) ? terms : []).map((term) => escapeRegExp(String(term?.text || ""))).filter(Boolean);
+  const term = `(?:${termTexts.join("|")})\\b`;
+  // "Might or Agility" (and "A, B, or C") is the higher of them.
+  const modifier = `\\s*[+-]\\s*(?:\\d+${termTexts.length ? `|${term}(?:,?\\s+(?:or\\s+)?${term})*` : ""})`;
+  const fullNames = rollList
+    .map((roll) => String(roll?.label || roll?.name || "").trim())
+    .filter((name) => name && !names.includes(name))
+    .map((name) => escapeRegExp(name).replace(/\s+/g, "\\s+"));
+  const named = `\\b(?:(?:${names.join("|")})(?:${modifier})?(?![\\w])${fullNames.length ? `|(?:${fullNames.join("|")})${modifier}` : ""})`;
   return new RegExp(`(\\d+)\\s*\\(\\s*(\\d*d\\d+(?:\\s*[+-]\\s*\\d+)?)\\s*\\)|(${named})|\\b(\\d*d\\d+(?:\\s*[+-]\\s*\\d+)?)(?![\\d\\w])`, "gi");
 }
 
-export function applyProseDiceRollers(container, { status, interactive = true, dataManager, label, rolls, dice, showValue = true } = {}) {
-  const pattern = prosePattern(rolls, dice);
+// "Power Roll + Agility" -> "PowerRoll+@stats.abilities.agility", the form rollExpression grades through the roll;
+// "Power Roll + Might or Agility" -> "PowerRoll+max(@stats.abilities.might,@stats.abilities.agility)".
+function namedRollExpression(text, rolls, terms) {
+  let expression = text.replace(/\s+/g, " ").trim();
+  (Array.isArray(rolls) ? rolls : []).forEach((roll) => {
+    const name = String(roll?.label || roll?.name || "").trim();
+    if (name && roll.shortName && expression.toLowerCase().startsWith(name.toLowerCase())) {
+      expression = roll.shortName + expression.slice(name.length);
+    }
+  });
+  const usable = (Array.isArray(terms) ? terms : []).filter((term) => term?.text && term.expression);
+  if (usable.length) {
+    const pattern = new RegExp(`\\b(?:${usable.map((term) => escapeRegExp(term.text)).join("|")})\\b`, "gi");
+    const found = [...expression.matchAll(pattern)];
+    if (found.length) {
+      const expressions = found.map((match) => usable.find((term) => term.text.toLowerCase() === match[0].toLowerCase()).expression);
+      const first = found[0].index;
+      const last = found[found.length - 1].index + found[found.length - 1][0].length;
+      const replacement = expressions.length > 1 ? `max(${expressions.join(",")})` : expressions[0];
+      expression = expression.slice(0, first) + replacement + expression.slice(last);
+    }
+  }
+  return expression.replace(/\s+/g, "");
+}
+
+export function applyProseDiceRollers(
+  container,
+  { status, interactive = true, dataManager, label, rolls, dice, terms, context, showValue = true } = {}
+) {
+  const pattern = prosePattern(rolls, dice, terms);
   if (interactive) preloadDiceOverlay(dataManager);
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) =>
@@ -160,8 +207,21 @@ export function applyProseDiceRollers(container, { status, interactive = true, d
     let match;
     while ((match = pattern.exec(text)) !== null) {
       fragment.append(text.slice(cursor, match.index));
-      const expression = (match[2] || match[3] || match[4]).replace(/\s+/g, "");
-      fragment.append(buildDiceRoller(expression, { status, interactive, dataManager, label, initialValue: match[1], rolls, dice, showValue }));
+      const expression = match[3] ? namedRollExpression(match[3], rolls, terms) : (match[2] || match[4]).replace(/\s+/g, "");
+      fragment.append(
+        buildDiceRoller(expression, {
+          status,
+          interactive,
+          dataManager,
+          label,
+          initialValue: match[1],
+          rolls,
+          dice,
+          showValue,
+          context,
+          displayText: match[3] ? match[3].replace(/\s+/g, " ") : "",
+        })
+      );
       cursor = match.index + match[0].length;
     }
     fragment.append(text.slice(cursor));

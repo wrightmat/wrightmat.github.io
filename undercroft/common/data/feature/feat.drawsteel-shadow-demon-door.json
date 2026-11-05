@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-demon-door",
+  "name": "Demon Door",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You create a temporary portal to allow a massive demonic hand to reach through.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** Melee 3   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 13 + A corruption damage; push 3\n- **12-16:** 18 + A corruption damage; push 5\n- **17+:** 25 + A corruption damage; push 7\n\n**Effect:** On a critical hit, the target is grabbed by the demon and pulled through the portal before it closes, never to be seen again.",
+  "mechanics": {
+    "type": "active",
+    "text": "You create a temporary portal to allow a massive demonic hand to reach through. Power Roll + Agility: - ≤11: 13 + A corruption damage; push 3 - 12-16: 18 + A corruption damage; push 5 - 17+: 25 + A corruption damage; push 7 Effect: On a critical hit, the target is grabbed by the demon and pulled through the portal before it closes, never to be seen again."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 3",
+  "target": "One creature",
+  "cost": 11
+}

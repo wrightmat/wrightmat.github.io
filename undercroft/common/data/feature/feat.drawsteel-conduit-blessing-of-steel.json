@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-blessing-of-steel",
+  "name": "Blessing of Steel",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A protective aura defends your allies from harm.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 11 Piety\n\n**Distance:** 5 aura   **Target:** Self and each ally in the area\n\n**Effect:** Until the end of the encounter, any ability roll made against a target takes a bane and each target has damage immunity 5.",
+  "mechanics": {
+    "type": "active",
+    "text": "A protective aura defends your allies from harm. Effect: Until the end of the encounter, any ability roll made against a target takes a bane and each target has damage immunity 5."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area",
+  "cost": 11
+}

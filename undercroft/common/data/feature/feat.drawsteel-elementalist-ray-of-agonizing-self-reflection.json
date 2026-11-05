@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-elementalist-ray-of-agonizing-self-reflection",
+  "name": "Ray of Agonizing Self-Reflection",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You inflict pain and doubt in equal measure.*\n\n**Signature Ability** — Magic, Ranged, Strike, Void — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 + R corruption damage; R < WEAK, slowed (save ends)\n- **12-16:** 4 + R corruption damage; R < AVERAGE, slowed (save ends)\n- **17+:** 6 + R corruption damage; R < STRONG, slowed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You inflict pain and doubt in equal measure. Power Roll + Reason: - ≤11: 2 + R corruption damage; R < WEAK, slowed (save ends) - 12-16: 4 + R corruption damage; R < AVERAGE, slowed (save ends) - 17+: 6 + R corruption damage; R < STRONG, slowed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike, Void",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

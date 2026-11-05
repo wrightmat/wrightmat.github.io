@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-relentless-nemesis",
+  "name": "Relentless Nemesis",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike, and for the next few moments, your enemy can't escape you.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 3 Discipline\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 6 + A damage\n- **12-16:** 8 + A damage\n- **17+:** 12 + A damage\n\n**Effect:** Until the start of your next turn, whenever the target finishes moving or being force moved, you can use a free triggered action to shift up to your speed. You must end this shift adjacent to the target.",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike, and for the next few moments, your enemy can't escape you. Power Roll + Agility: - ≤11: 6 + A damage - 12-16: 8 + A damage - 17+: 12 + A damage Effect: Until the start of your next turn, whenever the target finishes moving or being force moved, you can use a free triggered action to shift up to your speed. You must end this shift adjacent to the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 3
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-debilitating-strike",
+  "name": "Debilitating Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You need just one blow to sabotage your target.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 10 + M damage; M < WEAK, slowed (save ends)\n- **12-16:** 14 + M damage; M < AVERAGE, slowed (save ends)\n- **17+:** 20 + M damage; M < STRONG, slowed (save ends)\n\n**Effect:** While slowed this way, the target takes 1 damage for every square they move, including from forced movement.",
+  "mechanics": {
+    "type": "active",
+    "text": "You need just one blow to sabotage your target. Power Roll + Might: - ≤11: 10 + M damage; M < WEAK, slowed (save ends) - 12-16: 14 + M damage; M < AVERAGE, slowed (save ends) - 17+: 20 + M damage; M < STRONG, slowed (save ends) Effect: While slowed this way, the target takes 1 damage for every square they move, including from forced movement."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-you-are-already-dead",
+  "name": "You Are Already Dead",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Slash. Walk away.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 7 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Effect:** If the target is not a leader or solo creature, they are reduced to 0 Stamina at the end of their next turn. If the target is a leader or solo creature, you gain 3 surges and can make a melee free strike against them.",
+  "mechanics": {
+    "type": "active",
+    "text": "Slash. Walk away. Effect: If the target is not a leader or solo creature, they are reduced to 0 Stamina at the end of their next turn. If the target is a leader or solo creature, you gain 3 surges and can make a melee free strike against them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 7
+}

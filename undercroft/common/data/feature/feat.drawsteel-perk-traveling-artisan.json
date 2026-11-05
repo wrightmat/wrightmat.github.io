@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-traveling-artisan",
+  "name": "Traveling Artisan",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Crafting Perk**\n\nOn any day when you don't take a respite, you can spend 1 uninterrupted hour working on a crafting project using a skill you have from the crafting skill group. If you do so, you gain 1d10 project points toward that project.",
+  "mechanics": {
+    "type": "passive",
+    "text": "On any day when you don't take a respite, you can spend 1 uninterrupted hour working on a crafting project using a skill you have from the crafting skill group. If you do so, you gain 1d10 project points toward that project."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Crafting"
+}

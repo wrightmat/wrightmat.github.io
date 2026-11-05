@@ -43,5 +43,27 @@
       "cost": 2,
       "description": "You have the following signature ability. Signature abilities can be used at will.\n\n###### The Wode Defends\n\n*Thorny vines erupt from every surface and attempt to bind your foe.*\n\n| **Magic, Ranged, Strike** |     **Main action** |\n| ------------------------- | ------------------: |\n| **📏 Ranged 10**          | **🎯 One creature** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 2 + M or A damage; A < WEAK, slowed (save ends)\n- **12-16:** 3 + M or A damage; A < AVERAGE, slowed (save ends)\n- **17+:** 5 + M or A damage; A < STRONG, restrained (save ends)"
     }
+  ],
+  "speed": 5,
+  "size": "1M",
+  "featureIds": [
+    "feat.drawsteel-wode-elf-wode-elf-glamor"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 3,
+      "desc": "Spend 3 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-wode-elf-forest-walk",
+          "feat.drawsteel-wode-elf-quick-and-brutal",
+          "feat.drawsteel-otherworldly-grace",
+          "feat.drawsteel-high-elf-revisit-memory",
+          "feat.drawsteel-wode-elf-swift",
+          "feat.drawsteel-wode-elf-the-wode-defends"
+        ]
+      }
+    }
   ]
 }

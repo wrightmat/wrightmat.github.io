@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-shadow-gasping-in-pain",
+  "name": "Gasping in Pain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your precise strikes let your allies take advantage of a target's agony.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 3 + A damage\n- **12-16:** 5 + A damage\n- **17+:** 8 + A damage; I < STRONG, prone\n\n**Effect:** One ally within 5 squares of the target gains 1 surge.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your precise strikes let your allies take advantage of a target's agony. Power Roll + Agility: - ≤11: 3 + A damage - 12-16: 5 + A damage - 17+: 8 + A damage; I < STRONG, prone Effect: One ally within 5 squares of the target gains 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-faithfuls-reward",
+  "name": "Faithful's Reward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you roll for piety at the start of your turn in combat, you gain 1d3 + 1 piety.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you roll for piety at the start of your turn in combat, you gain 1d3 + 1 piety."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-slow",
+  "name": "Slow",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Perhaps they wonder why everyone else is moving so quickly?*\n\n**Heroic Ability** — Chronopathy, Psionic, Ranged — Maneuver\n\n**Cost:** 5 Clarity\n\n**Distance:** Ranged 10   **Target:** Three creatures or objects\n\n**Power Roll + Presence:**\n\n- **≤11:** The target's speed is halved (save ends), or if P < WEAK, the target is slowed (save ends).\n- **12-16:** The target is slowed (save ends), or if P < AVERAGE, the target's speed is 0 (save ends).\n- **17+:** The target is slowed (save ends), or if P < STRONG, the target's speed is 0 (save ends).\n\n**Effect:** A target can't use triggered actions while their speed is reduced this way.\n\n**Strained:** The potency of this ability increases by 1 and you take 1d6 damage. At the start of each combat round while any target is affected by this ability, you take 1d6 damage. You can end the effect on all affected targets at any time (no action required).",
+  "mechanics": {
+    "type": "active",
+    "text": "Perhaps they wonder why everyone else is moving so quickly? Power Roll + Presence: - ≤11: The target's speed is halved (save ends), or if P < WEAK, the target is slowed (save ends). - 12-16: The target is slowed (save ends), or if P < AVERAGE, the target's speed is 0 (save ends). - 17+: The target is slowed (save ends), or if P < STRONG, the target's speed is 0 (save ends). Effect: A target can't use triggered actions while their speed is reduced this way. Strained: The potency of this ability increases by 1 and you take 1d6 damage. At the start of each combat round while any target is affected by this ability, you take 1d6 damage. You can end the effect on all affected targets at any time (no action required)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Chronopathy, Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Three creatures or objects",
+  "cost": 5
+}

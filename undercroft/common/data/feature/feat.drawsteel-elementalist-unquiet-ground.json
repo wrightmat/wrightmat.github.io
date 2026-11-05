@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-elementalist-unquiet-ground",
+  "name": "Unquiet Ground",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A sudden storm of detritus assaults your foes and leaves them struggling to move.*\n\n**Signature Ability** — Area, Earth, Magic, Ranged — Main action\n\n**Distance:** 2 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 damage\n- **12-16:** 5 damage\n- **17+:** 7 damage\n\n**Effect:** The ground beneath the area is difficult terrain for enemies.",
+  "mechanics": {
+    "type": "active",
+    "text": "A sudden storm of detritus assaults your foes and leaves them struggling to move. Power Roll + Reason: - ≤11: 2 damage - 12-16: 5 damage - 17+: 7 damage Effect: The ground beneath the area is difficult terrain for enemies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Area, Earth, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "2 cube within 10",
+  "target": "Each enemy in the area"
+}

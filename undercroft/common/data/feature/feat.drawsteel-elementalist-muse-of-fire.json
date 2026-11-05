@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-muse-of-fire",
+  "name": "Muse of Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The fire burns hot enough to sear the face of any god watching.*\n\n**Heroic Ability** — Area, Fire, Magic, Ranged — Main action\n\n**Cost:** 11 Essence\n\n**Distance:** 5 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 7 fire damage; the Director loses 2 Malice (see *[Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)*)\n- **12-16:** 10 fire damage; the Director loses 3 Malice\n- **17+:** 15 fire damage; the Director loses 4 Malice\n\n**Effect:** The Director's Malice can become negative as a result of this ability.",
+  "mechanics": {
+    "type": "active",
+    "text": "The fire burns hot enough to sear the face of any god watching. Power Roll + Reason: - ≤11: 7 fire damage; the Director loses 2 Malice (see [Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)) - 12-16: 10 fire damage; the Director loses 3 Malice - 17+: 15 fire damage; the Director loses 4 Malice Effect: The Director's Malice can become negative as a result of this ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Fire, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

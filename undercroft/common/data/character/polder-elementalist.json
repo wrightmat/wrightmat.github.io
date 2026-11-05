@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "Polder Elementalist (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Elementalist",
+        "refKind": "class",
+        "refId": "ds-elementalist",
+        "level": 1,
+        "subclass": {
+          "name": "Fire Specialization",
+          "refKind": "variant",
+          "refId": "ds-elementalist-fire"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "Polder",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-mage-s-apprentice"
   },
-  "class": {
-    "name": "Elementalist",
-    "refKind": "class",
-    "refId": "ds-elementalist"
-  },
-  "subclasses": [
-    {
-      "name": "Fire Specialization",
-      "refKind": "variant",
-      "refId": "ds-elementalist-fire"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 1,
@@ -130,7 +133,7 @@
     "feat.drawsteel-the-flesh-a-crucible",
     "feat.drawsteel-conflagration",
     "feat.drawsteel-explosive-assistance",
-    "feat.drawsteel-arcane-trick",
+    "feat.drawsteel-perk-arcane-trick",
     "feat.drawsteel-return-to-formlessness",
     "feat.drawsteel-ward-of-delightful-consequences",
     "feat.drawsteel-enchantment-of-destruction",

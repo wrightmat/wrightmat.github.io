@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-insurgent-leave-no-trace",
+  "name": "Leave No Trace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You and any ally within 10 squares of you can move at full speed while sneaking. Additionally, enemies within 10 squares of you take a bane on tests made to search for you or your allies while any of you are hidden.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You and any ally within 10 squares of you can move at full speed while sneaking. Additionally, enemies within 10 squares of you take a bane on tests made to search for you or your allies while any of you are hidden."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

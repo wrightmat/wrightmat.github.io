@@ -1,0 +1,44 @@
+{
+  "id": "feat.drawsteel-conduit-trickery-inspired-deception",
+  "name": "Inspired Deception",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The gods favor your thievery with magic. Whenever you make a test that uses a skill you have from the intrigue skill group, you can use Intuition on the test instead of another characteristic.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The gods favor your thievery with magic. Whenever you make a test that uses a skill you have from the intrigue skill group, you can use Intuition on the test instead of another characteristic."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-trickery"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an intrigue skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Intrigue"
+          ]
+        }
+      }
+    }
+  ]
+}

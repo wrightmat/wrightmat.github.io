@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-overkill",
+  "name": "Overkill",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike so no damage is wasted.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 6 + M damage\n- **12-16:** 10 + M damage\n- **17+:** 14 + M damage\n\n**Effect:** If the target is a minion or is winded but isn't a leader or solo creature, they are reduced to 0 Stamina before this ability's damage is dealt. If the target is killed by this damage, you can deal any damage over what was required to kill them to another creature within 5 squares of the target.",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike so no damage is wasted. Power Roll + Might: - ≤11: 6 + M damage - 12-16: 10 + M damage - 17+: 14 + M damage Effect: If the target is a minion or is winded but isn't a leader or solo creature, they are reduced to 0 Stamina before this ability's damage is dealt. If the target is killed by this damage, you can deal any damage over what was required to kill them to another creature within 5 squares of the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

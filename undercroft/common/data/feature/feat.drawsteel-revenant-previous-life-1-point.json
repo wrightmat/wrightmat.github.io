@@ -1,0 +1,53 @@
+{
+  "id": "feat.drawsteel-revenant-previous-life-1-point",
+  "name": "Previous Life: 1 Point",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou select a purchased trait that costs 1 ancestry point from your previous ancestry. You can take this trait multiple times, selecting a different 1 point trait from your previous ancestry each time.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You select a purchased trait that costs 1 ancestry point from your previous ancestry. You can take this trait multiple times, selecting a different 1 point trait from your previous ancestry each time."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Revenant",
+  "cost": 1,
+  "grants": [
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose a 1-point trait from your previous ancestry.",
+      "from": {
+        "filter": {
+          "kind": "Ancestry Trait",
+          "cost": 1,
+          "ancestry": [
+            "Devil",
+            "Dragon Knight",
+            "Dwarf",
+            "Hakaan",
+            "High Elf",
+            "Human",
+            "Memonek",
+            "Orc",
+            "Polder",
+            "Time Raider",
+            "Wode Elf"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-fight-choreography",
+  "name": "Fight Choreography",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You and your partner make a flashy show of derring-do, then get back to your corners.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Drama\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Effect:** You and the target each make a melee free strike that targets each enemy within 3 squares of either of you, dividing the enemies between each of you. You choose which enemies your free strike targets and which enemies the target creature's free strike targets. You then slide the target 5 squares, ignoring stability.",
+  "mechanics": {
+    "type": "active",
+    "text": "You and your partner make a flashy show of derring-do, then get back to your corners. Effect: You and the target each make a melee free strike that targets each enemy within 3 squares of either of you, dividing the enemies between each of you. You choose which enemies your free strike targets and which enemies the target creature's free strike targets. You then slide the target 5 squares, ignoring stability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

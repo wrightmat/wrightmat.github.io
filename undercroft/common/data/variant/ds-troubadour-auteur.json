@@ -21,14 +21,105 @@
       "description": "You have the following ability.\n\n> ###### Dramatic Monologue\n>\n> *It doesn't need to make sense. Just say it with emotion.*\n>\n> | **Magic, Ranged** |   **Maneuver** |\n> | ----------------- | -------------: |\n> | **📏 Ranged 10**  | **🎯 Special** |\n>\n> **Effect:** Choose one of the following effects:\n>\n> - You orate a rousing tale of victory. One ally within distance gains an edge on the next power roll they make before the start of your next turn.\n> - You weave a tale of high-stakes heroics. One ally within distance gains 1 surge.\n> - You insult a foe where they're most vulnerable. One enemy within distance takes a bane on the next power roll they make before the end of their next turn.\n>\n> **Spend 1 Drama:** You can choose two targets for the chosen effect."
     },
     {
+      "name": "2nd-Level Auteur Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Guest Star (5 Drama)\n>\n> *We offered them a percentage of the gross. So they're working for free!*\n>\n> | **Magic, Ranged** | **Main action** |\n> | ----------------- | --------------: |\n> | **📏 Ranged 10**  |  **🎯 Special** |\n>\n> **Effect:** A guest star appears to help you during the encounter: either a bystander within distance uplifted by your magic, or a mysterious new hero who appears in an unoccupied space within distance. This guest star is controlled by you, has their own turn, and shares your characteristics. Their Stamina maximum is half yours. They have no abilities other than your melee and ranged free strikes. At the end of the encounter, or when the guest star is reduced to 0 Stamina, they retreat or revert to a bystander. The same bystander can't be uplifted this way more than once during an encounter.\n\n> ###### Twist at the End (5 Drama)\n>\n> *You didn't see that coming, did you?!*\n>\n> | **Magic, Ranged** |       **Main action** |\n> | ----------------- | --------------------: |\n> | **📏 Ranged 10**  | **🎯 One dead enemy** |\n>\n> **Effect:** A target who is not a leader or solo creature comes back to life with half their Stamina and becomes an ally under the Director's control. The players can work with the Director to determine when the target takes their turn each combat round. At the end of the encounter, the target turns to dust and is blown away.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one auteur ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-guest-star",
+              "feat.drawsteel-troubadour-twist-at-the-end"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Missed Cue",
       "level": 3,
       "description": "If you aren't surprised at the start of an encounter, you can choose one enemy within your line of effect who is not a leader or solo creature. The Director temporarily removes the chosen creature from the encounter. The chosen creature enters the encounter at the start of the second combat round. You must earn 3 Victories before you can use this feature again."
     },
     {
+      "name": "5th-Level Auteur Feature",
+      "level": 5,
+      "description": "Choose one of the following features.\n\n###### Fix It in Post\n\nOnce on each of your turns, you can use a free maneuver to change one condition affecting a creature within distance of your Dramatic Monologue ability. Choose one of the following conditions on the target: bleeding, frightened, prone, slowed, or taunted. You change that condition to another of those conditions, maintaining the duration and origin of the original condition. A target who is no longer prone can stand up.\n\n###### Take Two!\n\nYou have the following performance ability, which is usable with your Routines feature.\n\n> ###### Take Two!\n>\n> *One more, and this time make it interesting.*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, each target who starts their turn in the area can reroll the first power roll that turn that obtains a tier 2 outcome. They must use the new roll.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one auteur feature.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-fix-it-in-post",
+              "feat.drawsteel-troubadour-take-two"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6th-Level Auteur Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Here's How Your Story Ends (9 Drama)\n>\n> *You give away the ending of this battle, and it's not great for them.*\n>\n> | **Area, Magic** |               **Main action** |\n> | --------------- | ----------------------------: |\n> | **📏 5 burst**  | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** 2 psychic damage; P < WEAK, frightened (save ends)\n> - **12-16:** 5 psychic damage; P < AVERAGE, frightened (save ends)\n> - **17+:** 7 psychic damage; P < STRONG, frightened (save ends)\n\n> ###### You're All My Understudies (9 Drama)\n>\n> *It's important for everyone to know each other's lines, just in case...*\n>\n> | **Area, Magic** |                 **Maneuver** |\n> | --------------- | ---------------------------: |\n> | **📏 5 burst**  | **🎯 Each ally in the area** |\n>\n> **Effect:** Until the end of the encounter, each target gains the speed bonus, weapon distance bonus, disengage bonus, and stability bonus of your currently equipped kit in addition to their own kit's bonuses.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one auteur ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-heres-how-your-story-ends",
+              "feat.drawsteel-troubadour-youre-all-my-understudies"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Deleted Scene",
       "level": 8,
       "description": "Whenever a creature within distance of your Dramatic Monologue ability makes a power roll, you can spend 1 drama as a free triggered action to use Dramatic Monologue, targeting only one creature."
+    },
+    {
+      "name": "9th-Level Auteur Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Epic (11 Drama)\n>\n> *Your story tells a tale of the villain's waning power and how the heroes rose to the occasion to stop them.*\n>\n> | **Magic, Melee, Ranged**    |        **Maneuver** |\n> | --------------------------- | ------------------: |\n> | **📏 Melee 1 or ranged 10** | **🎯 One creature** |\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** The target takes a bane on ability rolls (save ends).\n> - **12-16:** The target has a double bane on ability rolls (save ends).\n> - **17+:** The target has a double bane on power rolls (save ends).\n>\n> **Effect:** Choose one ally within distance. While the target is affected by this ability, each time they use an ability, that ally can make a free strike against them after the ability is resolved.\n\n> ###### Rising Tension (11 Drama)\n>\n> *You narrate the tension of the scene and put all hope into your protagonist to turn things around.*\n>\n> | **Magic, Ranged** |    **Maneuver** |\n> | ----------------- | --------------: |\n> | **📏 Ranged 10**  | **🎯 One ally** |\n>\n> **Effect:** The target gains 3 of their Heroic Resource, has a double edge on a power roll of their choice made during their next turn, is no longer slowed or weakened if they were before, and can immediately take their turn after yours if they have not taken their turn already this round.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one auteur ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-epic",
+              "feat.drawsteel-troubadour-rising-tension"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-troubadour-auteur-blocking",
+    "feat.drawsteel-troubadour-auteur-dramatic-monologue",
+    "feat.drawsteel-troubadour-auteur-missed-cue",
+    "feat.drawsteel-troubadour-auteur-deleted-scene"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Brag"
+      ]
     }
   ]
 }

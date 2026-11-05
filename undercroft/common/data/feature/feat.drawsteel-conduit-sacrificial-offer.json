@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-conduit-sacrificial-offer",
+  "name": "Sacrificial Offer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Divine magic tears at your foe and defends a nearby friend.*\n\n**Signature Ability** — Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 + I corruption damage\n- **12-16:** 4 + I corruption damage\n- **17+:** 6 + I corruption damage\n\n**Effect:** Choose yourself or one ally within distance. That character can impose a bane on one power roll made against them before the end of their next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Divine magic tears at your foe and defends a nearby friend. Power Roll + Intuition: - ≤11: 2 + I corruption damage - 12-16: 4 + I corruption damage - 17+: 6 + I corruption damage Effect: Choose yourself or one ally within distance. That character can impose a bane on one power roll made against them before the end of their next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-invocation-of-undoing",
+  "name": "Invocation of Undoing",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You utter a secret word of destruction known only to deities.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** 4 burst   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 3 sonic damage; push 3\n- **12-16:** 6 sonic damage; push 5\n- **17+:** 9 sonic damage; push 7\n\n**Special:** You can choose to have this ability deal damage to and push objects, and to deal damage to buildings.",
+  "mechanics": {
+    "type": "active",
+    "text": "You utter a secret word of destruction known only to deities. Power Roll + Intuition: - ≤11: 3 sonic damage; push 3 - 12-16: 6 sonic damage; push 5 - 17+: 9 sonic damage; push 7 Special: You can choose to have this ability deal damage to and push objects, and to deal damage to buildings."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "4 burst",
+  "target": "Each enemy in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-knowledge"
+  ]
+}

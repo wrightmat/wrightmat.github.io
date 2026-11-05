@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-love-song",
+  "name": "Love Song",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You play a small ditty that plants you inside your target's heart.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 9 Drama\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Effect:** The target gains 20 temporary Stamina. Until the end of the encounter, whenever the target takes damage while you're within distance, you can choose to take the damage instead of the target.",
+  "mechanics": {
+    "type": "active",
+    "text": "You play a small ditty that plants you inside your target's heart. Effect: The target gains 20 temporary Stamina. Until the end of the encounter, whenever the target takes damage while you're within distance, you can choose to take the damage instead of the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 9
+}

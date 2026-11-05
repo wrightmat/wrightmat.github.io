@@ -1,0 +1,44 @@
+{
+  "id": "feat.drawsteel-censor-blessing-of-compassion",
+  "name": "Blessing of Compassion",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You exude a magic presence that can soothe those willing to socially engage with you. You gain an edge on any test made to assist another creature with a test.\n\nAdditionally, when you are present at the start of a negotiation, one NPC of your choice has their patience increased by 1 (to a maximum of 5), and the first test made to influence them gains an edge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You exude a magic presence that can soothe those willing to socially engage with you. You gain an edge on any test made to assist another creature with a test. Additionally, when you are present at the start of a negotiation, one NPC of your choice has their patience increased by 1 (to a maximum of 5), and the first test made to influence them gains an edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-love"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an interpersonal skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Interpersonal"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-force-orbs",
+  "name": "Force Orbs",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Spheres of solid psionic energy float around you.*\n\n**Heroic Ability** — Psionic, Ranged, Strike, Telekinesis — Main action\n\n**Cost:** 7 Clarity\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You create three size 1T orbs that orbit your body. Each orb gives you a cumulative damage immunity 1. Each time you take damage, you lose 1 orb.\n\nOnce on each of your turns, you can use a free maneuver to fire an orb at a creature or object within 5 squares as a ranged strike, losing the orb after the strike.\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 damage\n- **12-16:** 3 damage\n- **17+:** 5 damage\n\n**Strained:** You create five orbs, and you are weakened while you have any orbs active.",
+  "mechanics": {
+    "type": "active",
+    "text": "Spheres of solid psionic energy float around you. Effect: You create three size 1T orbs that orbit your body. Each orb gives you a cumulative damage immunity 1. Each time you take damage, you lose 1 orb. Once on each of your turns, you can use a free maneuver to fire an orb at a creature or object within 5 squares as a ranged strike, losing the orb after the strike. Power Roll + Reason: - ≤11: 2 damage - 12-16: 3 damage - 17+: 5 damage Strained: You create five orbs, and you are weakened while you have any orbs active."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged, Strike, Telekinesis",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 7
+}

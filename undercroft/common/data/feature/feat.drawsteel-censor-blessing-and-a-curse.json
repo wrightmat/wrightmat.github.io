@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-blessing-and-a-curse",
+  "name": "Blessing and a Curse",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The gods bless and damn in equal measure.*\n\n**Heroic Ability** — Magic, Ranged — Triggered\n\n**Cost:** 11 Wrath\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Trigger:** The target makes a power roll.\n\n**Effect:** The target obtains a tier 1 or tier 3 outcome on their power roll (your choice). You can then choose another target within distance, who obtains the opposite outcome on their next power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "The gods bless and damn in equal measure. Trigger: The target makes a power roll. Effect: The target obtains a tier 1 or tier 3 outcome on their power roll (your choice). You can then choose another target within distance, who obtains the opposite outcome on their next power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 11
+}

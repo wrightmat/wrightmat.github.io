@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-conduit-staggering-curse",
+  "name": "Staggering Curse",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A blast of judgment disorients your foe.*\n\n**Signature Ability** — Magic, Melee, Strike — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Intuition:**\n\n- **≤11:** 3 + I holy damage; slide 1\n- **12-16:** 5 + I holy damage; slide 2\n- **17+:** 8 + I holy damage; slide 3",
+  "mechanics": {
+    "type": "active",
+    "text": "A blast of judgment disorients your foe. Power Roll + Intuition: - ≤11: 3 + I holy damage; slide 1 - 12-16: 5 + I holy damage; slide 2 - 17+: 8 + I holy damage; slide 3"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Melee, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

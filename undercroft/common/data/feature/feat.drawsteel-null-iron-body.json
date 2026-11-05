@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-iron-body",
+  "name": "Iron Body",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You focus until your body becomes as hard as iron.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 9 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You gain 20 temporary Stamina. Additionally, until the end of the encounter, your stability gains a bonus equal to your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You focus until your body becomes as hard as iron. Effect: You gain 20 temporary Stamina. Additionally, until the end of the encounter, your stability gains a bonus equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 9
+}

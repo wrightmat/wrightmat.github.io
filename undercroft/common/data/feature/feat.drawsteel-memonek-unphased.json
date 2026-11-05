@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-memonek-unphased",
+  "name": "Unphased",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour ordered mind can't be caught off guard. You can't be made surprised.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your ordered mind can't be caught off guard. You can't be made surprised."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Memonek",
+  "cost": 1
+}

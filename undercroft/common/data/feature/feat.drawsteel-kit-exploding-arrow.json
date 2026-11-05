@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-exploding-arrow",
+  "name": "Exploding Arrow",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your ammunition explodes with magical energy.*\n\n**Signature Ability** — Magic, Ranged, Strike, Weapon — Main action\n\n**Distance:** Ranged 15   **Target:** One creature or object\n\n**Power Roll + Agility, Reason, Intuition, or Presence:**\n\n- **≤11:** 5 + A, R, I, or P fire damage\n- **12-16:** 7 + A, R, I, or P fire damage\n- **17+:** 10 + A, R, I, or P fire damage\n\n**Effect:** One creature or object of your choice within 2 squares of the target takes fire damage equal to the characteristic score used for this ability's power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your ammunition explodes with magical energy. Power Roll + Agility, Reason, Intuition, or Presence: - ≤11: 5 + A, R, I, or P fire damage - 12-16: 7 + A, R, I, or P fire damage - 17+: 10 + A, R, I, or P fire damage Effect: One creature or object of your choice within 2 squares of the target takes fire damage equal to the characteristic score used for this ability's power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 15",
+  "target": "One creature or object"
+}

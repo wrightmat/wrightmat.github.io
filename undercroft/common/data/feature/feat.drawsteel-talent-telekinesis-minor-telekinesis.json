@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telekinesis-minor-telekinesis",
+  "name": "Minor Telekinesis",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### Minor Telekinesis\n>\n> *Wisps of psychic energy ripple visibly from your brain as you force the target to move using only your mind.*\n>\n> | **Psionic, Ranged** |                                 **Maneuver** |\n> | ------------------- | -------------------------------------------: |\n> | **📏 Ranged 10**    | **🎯 Self or one size 1 creature or object** |\n>\n> **Effect:** You slide the target up to a number of squares equal to your Reason score.\n>\n> **Spend 2+ Clarity:** The size of the creature or object you can target increases by 1 for every 2 clarity spent.\n>\n> **Spend 3 Clarity:** You can vertical slide the target.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. Minor Telekinesis Wisps of psychic energy ripple visibly from your brain as you force the target to move using only your mind. Effect: You slide the target up to a number of squares equal to your Reason score. Spend 2+ Clarity: The size of the creature or object you can target increases by 1 for every 2 clarity spent. Spend 3 Clarity: You can vertical slide the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

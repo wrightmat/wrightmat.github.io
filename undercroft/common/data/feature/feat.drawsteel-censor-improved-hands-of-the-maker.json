@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-improved-hands-of-the-maker",
+  "name": "Improved Hands of the Maker",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you use your Hands of the Maker ability, you can create a mundane object that is size 2 or smaller.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you use your Hands of the Maker ability, you can create a mundane object that is size 2 or smaller."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-creation"
+  ]
+}

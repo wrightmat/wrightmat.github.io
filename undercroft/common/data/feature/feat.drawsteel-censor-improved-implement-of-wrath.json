@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-censor-improved-implement-of-wrath",
+  "name": "Improved Implement of Wrath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The weapon you target with your Implement of Wrath feature gains the following additional benefits:\n\n- The weapon's wielder and each ally adjacent to them gain a +2 bonus to saving throws.\n- At the end of each of the weapon wielder's turns, each ally adjacent to the wielder makes a saving throw against each effect on them that is ended by a saving throw.\n- The weapon's wielder has corruption immunity 10.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The weapon you target with your Implement of Wrath feature gains the following additional benefits: - The weapon's wielder and each ally adjacent to them gain a +2 bonus to saving throws. - At the end of each of the weapon wielder's turns, each ally adjacent to the wielder makes a saving throw against each effect on them that is ended by a saving throw. - The weapon's wielder has corruption immunity 10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

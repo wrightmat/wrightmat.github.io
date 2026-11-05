@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-polymath",
+  "name": "Polymath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Lore Perk**\n\nWhenever you make a test to recall lore and don't have a skill that applies to the test, you gain a +1 bonus to the power roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you make a test to recall lore and don't have a skill that applies to the test, you gain a +1 bonus to the power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Lore"
+}

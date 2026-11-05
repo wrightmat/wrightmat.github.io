@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-drag-the-unworthy",
+  "name": "Drag the Unworthy",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You conjure an angel who moves a foe and heals your allies.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Intuition:**\n\n- **≤11:** 9 + I holy damage; slide 3\n- **12-16:** 13 + I holy damage; slide 4\n- **17+:** 18 + I holy damage; slide 6\n\n**Effect:** Each ally the target comes adjacent to during the forced movement can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "You conjure an angel who moves a foe and heals your allies. Power Roll + Intuition: - ≤11: 9 + I holy damage; slide 3 - 12-16: 13 + I holy damage; slide 4 - 17+: 18 + I holy damage; slide 6 Effect: Each ally the target comes adjacent to during the forced movement can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 11
+}

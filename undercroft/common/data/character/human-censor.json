@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "Human Censor (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Censor",
+        "refKind": "class",
+        "refId": "ds-censor",
+        "level": 1,
+        "subclass": {
+          "name": "Paragon",
+          "refKind": "variant",
+          "refId": "ds-censor-paragon"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "Human",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-watch-officer"
   },
-  "class": {
-    "name": "Censor",
-    "refKind": "class",
-    "refId": "ds-censor"
-  },
-  "subclasses": [
-    {
-      "name": "Paragon",
-      "refKind": "variant",
-      "refId": "ds-censor-paragon"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -130,11 +133,20 @@
     "feat.drawsteel-judgment-paragon-benefit",
     "feat.drawsteel-sanctified-weapon",
     "feat.drawsteel-team-leader",
-    "feat.drawsteel-mountain-kit",
     "feat.drawsteel-detect-the-supernatural",
     "feat.drawsteel-resist-the-unnatural",
     "feat.drawsteel-staying-power",
     "feat.drawsteel-melee-weapon-free-strike-dwarf-fury",
     "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ],
+  "inventory": [
+    {
+      "name": "Mountain Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "mountain-kit-drawsteel"
+    }
   ]
 }

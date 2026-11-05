@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-psychic-pulse",
+  "name": "Psychic Pulse",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A burst of psionic energy interferes with your enemy's synapses.*\n\n**Heroic Ability** — Area, Psionic — Maneuver\n\n**Cost:** 3 Discipline\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**Effect:** Each target takes psychic damage equal to twice your Intuition score. Until the start of your next turn, the size of your Null Field ability increases by 1. At the end of your current turn, each enemy in the area of your Null Field ability takes psychic damage equal to your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "A burst of psionic energy interferes with your enemy's synapses. Effect: Each target takes psychic damage equal to twice your Intuition score. Until the start of your next turn, the size of your Null Field ability increases by 1. At the end of your current turn, each enemy in the area of your Null Field ability takes psychic damage equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic",
+  "actionType": "Maneuver",
+  "distance": "2 burst",
+  "target": "Each enemy in the area",
+  "cost": 3
+}

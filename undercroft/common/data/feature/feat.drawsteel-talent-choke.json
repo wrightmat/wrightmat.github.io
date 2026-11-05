@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-choke",
+  "name": "Choke",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You crush a foe in a telekinetic grip.*\n\n**Heroic Ability** — Psionic, Ranged, Strike, Telekinesis — Main action\n\n**Cost:** 3 Clarity\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 + R damage; M < WEAK, slowed (save ends)\n- **12-16:** 5 + R damage; M < AVERAGE, slowed (save ends)\n- **17+:** 8 + R damage; M < STRONG, restrained (save ends)\n\n**Effect:** You can vertical pull the target up to 2 squares. If the target is made restrained by this ability, this forced movement ignores their stability.",
+  "mechanics": {
+    "type": "active",
+    "text": "You crush a foe in a telekinetic grip. Power Roll + Reason: - ≤11: 3 + R damage; M < WEAK, slowed (save ends) - 12-16: 5 + R damage; M < AVERAGE, slowed (save ends) - 17+: 8 + R damage; M < STRONG, restrained (save ends) Effect: You can vertical pull the target up to 2 squares. If the target is made restrained by this ability, this forced movement ignores their stability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged, Strike, Telekinesis",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 3
+}

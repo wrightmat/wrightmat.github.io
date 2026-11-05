@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-this-is-what-we-planned-for",
+  "name": "This Is What We Planned For",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*All those coordination drills you made them do finally pay off.*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 5 Focus\n\n**Distance:** Ranged 10   **Target:** Two allies\n\n**Effect:** Each target who hasn't acted yet this combat round can take their turn in any order immediately after yours.",
+  "mechanics": {
+    "type": "active",
+    "text": "All those coordination drills you made them do finally pay off. Effect: Each target who hasn't acted yet this combat round can take their turn in any order immediately after yours."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Two allies",
+  "cost": 5
+}

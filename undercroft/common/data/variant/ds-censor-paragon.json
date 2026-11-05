@@ -21,14 +21,86 @@
       "description": "You exhibit a small spark of your deity's power, causing creatures to trust or fear you, depending on what you need. You gain an edge on tests made to intimidate or persuade others."
     },
     {
+      "name": "2nd-Level Paragon Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Blessing of the Faithful (5 Wrath)\n>\n> *The gods reward your faith.*\n>\n> | **Area, Magic** |                          **Maneuver** |\n> | --------------- | ------------------------------------: |\n> | **📏 3 aura**   | **🎯 Self and each ally in the area** |\n>\n> **Effect:** Until the end of the encounter or until you are dying, each target gains 1 surge at the end of each of your turns.\n\n> ###### Sentenced (5 Wrath)\n>\n> *The shock of your condemnation freezes your enemy in their boots.*\n>\n> | **Magic, Melee, Strike, Weapon** |     **Main action** |\n> | -------------------------------- | ------------------: |\n> | **📏 Melee 1**                   | **🎯 One creature** |\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** 5 + P damage; P < WEAK, restrained (save ends)\n> - **12-16:** 9 + P damage; P < AVERAGE, restrained (save ends)\n> - **17+:** 12 + P damage; P < STRONG, restrained (save ends)\n>\n> **Effect:** While the target is restrained this way, your abilities that impose forced movement can still move them.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one paragon ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-censor-blessing-of-the-faithful",
+              "feat.drawsteel-censor-sentenced"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Stand Fast!",
       "level": 5,
       "description": "Your divine spark grows in power, allowing you and your allies to focus and endure. At the start of each of your turns, you can spend 1d6 Stamina to end one effect on you that is ended by a saving throw or that ends at the end of your turn. Any ally who starts their turn within 5 squares of you can also spend Stamina to gain this benefit."
     },
     {
+      "name": "6th-Level Paragon Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Congregation (9 Wrath)\n>\n> *You focus your allies' wrath on a chosen foe.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 8 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability against the target\n> - **12-16:** 12 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability that gains an edge against the target\n> - **17+:** 16 + M damage; as a free triggered action, two allies within 10 squares of the target can each use a strike signature ability that gains an edge against the target\n>\n> **Effect:** Each ally can shift up to 2 squares and gains 2 surges before making the strike.\n\n> ###### Intercede (9 Wrath)\n>\n> *You take your ally's place.*\n>\n> | **Magic, Ranged** | **Free triggered** |\n> | ----------------- | -----------------: |\n> | **📏 Ranged 10**  |    **🎯 One ally** |\n>\n> **Trigger:** A creature makes a strike against the target.\n>\n> **Effect:** The target is unaffected by the strike and you become the target instead, even if you aren't a valid target for it. You take half the damage from the strike, and the target gains 3 surges.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one paragon ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-censor-congregation",
+              "feat.drawsteel-censor-intercede"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Vow",
       "level": 8,
       "description": "Your words take on the power of your deity, with all the authority that entails. If you convince a creature to take an oath, they can't break it for 7 days. If you take an oath, you can't break it for 7 days."
+    },
+    {
+      "name": "9th-Level Paragon Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Apostate (11 Wrath)\n>\n> *You channel holy energy to seal an enemy's fate.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 13 + M holy damage\n> - **12-16:** 19 + M holy damage\n> - **17+:** 26 + M holy damage\n>\n> **Effect:** Until the end of the encounter or until you are dying, the target has damage weakness 10.\n\n> ###### Edict of Unyielding Resolve (11 Wrath)\n>\n> *You and your allies are clad in shimmering armor.*\n>\n> | **Area, Magic** |                          **Maneuver** |\n> | --------------- | ------------------------------------: |\n> | **📏 2 aura**   | **🎯 Self and each ally in the area** |\n>\n> **Effect:** Until the end of the encounter or until you are dying, each target who starts their turn in the area gains 10 temporary Stamina.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one paragon ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-censor-apostate",
+              "feat.drawsteel-censor-edict-of-unyielding-resolve"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-censor-paragon-lead-by-example",
+    "feat.drawsteel-censor-paragon-stalwart-icon",
+    "feat.drawsteel-censor-paragon-stand-fast",
+    "feat.drawsteel-censor-paragon-vow"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Lead"
+      ]
     }
   ]
 }

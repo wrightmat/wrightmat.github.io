@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-death-strike",
+  "name": "Death Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Once you taste your foe's blood, you become more efficient and turn every killing blow into an opportunity.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Free triggered\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** Self\n\n**Trigger:** You reduce a creature to 0 Stamina with a strike.\n\n**Effect:** You target a creature adjacent to you with the same strike, using the same power roll as the triggering strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "Once you taste your foe's blood, you become more efficient and turn every killing blow into an opportunity. Trigger: You reduce a creature to 0 Stamina with a strike. Effect: You target a creature adjacent to you with the same strike, using the same power roll as the triggering strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Free triggered",
+  "distance": "Melee 1",
+  "target": "Self",
+  "cost": 9
+}

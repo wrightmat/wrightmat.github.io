@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-seek-and-destroy",
+  "name": "Seek and Destroy",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You break through the enemy lines to make an example.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Effect:** You shift up to your speed.\n\n**Power Roll + Might:**\n\n- **≤11:** 4 + M damage; P < WEAK, frightened (save ends)\n- **12-16:** 6 + M damage; P < AVERAGE, frightened (save ends)\n- **17+:** 10 + M damage; P < STRONG, frightened (save ends)\n\n**Effect:** If a target who is not a leader or solo creature is winded by this strike, they are reduced to 0 Stamina and you choose an enemy within 5 squares of you. If that enemy has P < AVERAGE, they are frightened of you (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "You break through the enemy lines to make an example. Effect: You shift up to your speed. Power Roll + Might: - ≤11: 4 + M damage; P < WEAK, frightened (save ends) - 12-16: 6 + M damage; P < AVERAGE, frightened (save ends) - 17+: 10 + M damage; P < STRONG, frightened (save ends) Effect: If a target who is not a leader or solo creature is winded by this strike, they are reduced to 0 Stamina and you choose an enemy within 5 squares of you. If that enemy has P < AVERAGE, they are frightened of you (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

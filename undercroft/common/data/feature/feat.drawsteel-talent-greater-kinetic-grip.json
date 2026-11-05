@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-greater-kinetic-grip",
+  "name": "Greater Kinetic Grip",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You raise the target into the air without breaking a sweat.*\n\n**Heroic Ability** — Psionic, Ranged, Strike, Telekinesis — Main action\n\n**Cost:** 9 Clarity\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** Slide 4 + R; M < WEAK, the forced movement is vertical\n- **12-16:** Slide 8 + R; M < AVERAGE, the forced movement is vertical\n- **17+:** Slide 12 + R; prone; M < STRONG, the forced movement is vertical\n\n**Strained:** The forced movement ignores stability. You take 2d6 damage and are weakened (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "You raise the target into the air without breaking a sweat. Power Roll + Reason: - ≤11: Slide 4 + R; M < WEAK, the forced movement is vertical - 12-16: Slide 8 + R; M < AVERAGE, the forced movement is vertical - 17+: Slide 12 + R; prone; M < STRONG, the forced movement is vertical Strained: The forced movement ignores stability. You take 2d6 damage and are weakened (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged, Strike, Telekinesis",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 9
+}

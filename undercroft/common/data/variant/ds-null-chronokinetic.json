@@ -16,14 +16,92 @@
       "description": "As a maneuver, you can read an entire book or process a similar amount of information. Additionally, during any respite, you can take an additional respite activity."
     },
     {
+      "name": "2nd-Level Chronokinetic Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Blur (5 Discipline)\n>\n> *You release stored time, allowing you to act twice.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You can use a signature or heroic ability. You gain an edge on that ability's power rolls.\n\n> ###### Force Redirected (5 Discipline)\n>\n> *The force of your strike moves your target in a surprising direction.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 3**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 8 + A damage; slide 1\n> - **12-16:** 12 + A damage; slide 3\n> - **17+:** 16 + A damage; slide 5",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one chronokinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-blur",
+              "feat.drawsteel-null-force-redirected"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Instant Action",
       "level": 5,
       "description": "If you're not surprised at the start of your first turn in combat, you gain an edge on ability rolls and gain 2 surges. If you are surprised, you can spend 3 discipline to no longer be surprised and gain the benefits of this feature."
     },
     {
+      "name": "6th-Level Chronokinetic Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Interphase (9 Discipline)\n>\n> *You slip into a faster timestream to act more quickly.*\n>\n> | **Psionic** | **Main action** |\n> | ----------- | --------------: |\n> | **📏 Self** |     **🎯 Self** |\n>\n> **Effect:** You can use up to three signature abilities, each of which gains an edge.\n\n> ###### Phase Step (9 Discipline)\n>\n> *You weaken your connection to this manifold, allowing you to move through and damage enemies.*\n>\n> | **Melee, Psionic, Weapon** | **Main action** |\n> | -------------------------- | --------------: |\n> | **📏 Self; see below**     |     **🎯 Self** |\n>\n> **Effect:** You can shift up to your speed, and squares occupied by enemies or objects are not difficult terrain for this shift. You make one power roll that targets each enemy you moved through during this shift.\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 6 damage; M < WEAK, dazed\n> - **12-16:** 8 damage; M < AVERAGE, dazed\n> - **17+:** 12 damage; M < STRONG, dazed",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one chronokinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-interphase",
+              "feat.drawsteel-null-phase-step"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Shared Momentum",
       "level": 8,
       "description": "When you take the Disengage move action, one ally in the area of your Null Field ability can also take the Disengage move action as a free triggered action, using your distance for that move action."
+    },
+    {
+      "name": "9th-Level Chronokinetic Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Arrestor Cycle (11 Discipline)\n>\n> *You trap your foe in a looping cycle of time, where they relive the last few seconds over and over again.*\n>\n> | **Psionic, Ranged** |  **Free triggered** |\n> | ------------------- | ------------------: |\n> | **📏 Ranged 10**    | **🎯 One creature** |\n>\n> **Trigger:** The triggering creature starts their turn.\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** I < WEAK, the target loses their turn\n> - **12-16:** I < AVERAGE, the target loses their turn\n> - **17+:** I < STRONG, the target loses their turn\n>\n> **Effect:** If the target loses their turn, the round continues as if they had acted. A target who doesn't lose their turn takes psychic damage equal to twice your Intuition score for each main action they take until the end of their next turn.\n\n> ###### Time Loop (11 Discipline)\n>\n> *You show shadows what true speed is.*\n>\n> | **Psionic** | **Free triggered** |\n> | ----------- | -----------------: |\n> | **📏 Self** |        **🎯 Self** |\n>\n> **Trigger:** Another creature on the encounter map ends their turn.\n>\n> **Effect:** You take a bonus turn immediately after the triggering creature. This ability can be used only once per combat round.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one chronokinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-arrestor-cycle",
+              "feat.drawsteel-null-time-loop"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-null-chronokinetic-rapid-processing",
+    "feat.drawsteel-null-chronokinetic-instant-action",
+    "feat.drawsteel-null-chronokinetic-shared-momentum"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a lore skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Lore"
+          ]
+        }
+      }
     }
   ]
 }

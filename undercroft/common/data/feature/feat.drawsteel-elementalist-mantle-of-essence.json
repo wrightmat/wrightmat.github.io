@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-mantle-of-essence",
+  "name": "Mantle of Essence",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "While you have 3 or more essence and are not dying, you exude an aura of magic whose distance is equal to your Reason score. The effects within the area of the aura are based on your specialization, as shown on the Mantle of Essence Specialization Effects table. You can activate and deactivate the aura at will (no action required).\n\n###### Mantle of Essence Specialization Effects Table\n\n| Specialization | Feature         |\n| -------------- | --------------- |\n| Earth          | Quaking Earth   |\n| Fire           | Burning Grounds |\n| Green          | Flowering Bed   |\n| Void           | Veiling Bed     |\n\n##### Burning Grounds\n\nAt the end of each of your turns, each enemy in the area takes fire damage equal to your Reason score.\n\n##### Flowering Bed\n\nAt the end of each of your turns, each ally in the area gains temporary Stamina equal to your Reason score.\n\n##### Quaking Earth\n\nAt the end of each of your turns, you can push each enemy in the area up to a number of squares equal to your Reason score.\n\n##### Veiling Bed\n\nThe area provides concealment for you and your allies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While you have 3 or more essence and are not dying, you exude an aura of magic whose distance is equal to your Reason score. The effects within the area of the aura are based on your specialization, as shown on the Mantle of Essence Specialization Effects table. You can activate and deactivate the aura at will (no action required). Mantle of Essence Specialization Effects Table Burning Grounds At the end of each of your turns, each enemy in the area takes fire damage equal to your Reason score. Flowering Bed At the end of each of your turns, each ally in the area gains temporary Stamina equal to your Reason score. Quaking Earth At the end of each of your turns, you can push each enemy in the area up to a number of squares equal to your Reason score. Veiling Bed The area provides concealment for you and your allies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

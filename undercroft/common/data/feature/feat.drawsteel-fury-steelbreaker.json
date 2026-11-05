@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-steelbreaker",
+  "name": "Steelbreaker",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*See how useless their weapons are!*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 7 Ferocity\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You gain 20 temporary Stamina.",
+  "mechanics": {
+    "type": "active",
+    "text": "See how useless their weapons are! Effect: You gain 20 temporary Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

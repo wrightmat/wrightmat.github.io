@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-devil-prehensile-tail",
+  "name": "Prehensile Tail",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour prehensile tail allows you to challenge foes on all sides. You can't be flanked.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your prehensile tail allows you to challenge foes on all sides. You can't be flanked."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Devil",
+  "cost": 2
+}

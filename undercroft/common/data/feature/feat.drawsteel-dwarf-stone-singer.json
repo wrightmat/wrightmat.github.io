@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-dwarf-stone-singer",
+  "name": "Stone Singer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou have a magic connection to the earth. When you spend 1 uninterrupted hour singing, you can reshape any unworked mundane stone within 3 squares. You can't destroy this stone, but you can move each square of it anywhere within 3 squares, piling it off to one side to dig a hole or building it up to create a wall.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You have a magic connection to the earth. When you spend 1 uninterrupted hour singing, you can reshape any unworked mundane stone within 3 squares. You can't destroy this stone, but you can move each square of it anywhere within 3 squares, piling it off to one side to dig a hole or building it up to create a wall."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Dwarf",
+  "cost": 1
+}

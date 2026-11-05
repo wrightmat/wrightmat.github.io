@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-meteor",
+  "name": "Meteor",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You teleport the target into the air and let the ground and the elemental force of fire do the rest.*\n\n**Heroic Ability** — Earth, Fire, Magic, Ranged, Void — Main action\n\n**Cost:** 9 Essence\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** You teleport the target up to 4 squares.\n- **12-16:** You teleport the target up to 6 squares.\n- **17+:** You teleport the target up to 8 squares.\n\n**Effect:** If the target is teleported to a space where they would fall, they immediately do so, treating the fall as if their Agility score were 0. The target takes fire damage from the fall, and each enemy within 3 squares of where they land takes the same amount of fire damage. The ground within 3 squares of where the target lands is difficult terrain.",
+  "mechanics": {
+    "type": "active",
+    "text": "You teleport the target into the air and let the ground and the elemental force of fire do the rest. Power Roll + Reason: - ≤11: You teleport the target up to 4 squares. - 12-16: You teleport the target up to 6 squares. - 17+: You teleport the target up to 8 squares. Effect: If the target is teleported to a space where they would fall, they immediately do so, treating the fall as if their Agility score were 0. The target takes fire damage from the fall, and each enemy within 3 squares of where they land takes the same amount of fire damage. The ground within 3 squares of where the target lands is difficult terrain."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Earth, Fire, Magic, Ranged, Void",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 9
+}

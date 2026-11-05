@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-troubadour-we-cant-be-upstaged",
+  "name": "We Can't Be Upstaged!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following performance ability, which is usable with your Routines feature.\n\n> ###### We Can't Be Upstaged!\n>\n> *Swordplay so graceful it looks like you all practiced this.*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, a target who starts their turn in the area gains a bonus to the distance they can shift equal to your Presence score until the end of their turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "You have the following performance ability, which is usable with your Routines feature. We Can't Be Upstaged! Swordplay so graceful it looks like you all practiced this. Area, Magic, Performance No action ---------------------------- ------------------------------------: 📏 5 aura 🎯 Self and each ally in the area Effect: While this performance is active, a target who starts their turn in the area gains a bonus to the distance they can shift equal to your Presence score until the end of their turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "keywords": "Area, Magic, Performance",
+  "actionType": "No action",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area"
+}

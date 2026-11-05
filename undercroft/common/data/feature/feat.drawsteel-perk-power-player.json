@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-power-player",
+  "name": "Power Player",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Interpersonal Perk**\n\nWhenever you make a test that uses the Brag, Flirt, or Intimidate skills, you can use Might instead of any other characteristic the test calls for.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you make a test that uses the Brag, Flirt, or Intimidate skills, you can use Might instead of any other characteristic the test calls for."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Interpersonal"
+}

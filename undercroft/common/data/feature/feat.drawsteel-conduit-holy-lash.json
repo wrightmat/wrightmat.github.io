@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-conduit-holy-lash",
+  "name": "Holy Lash",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A tendril of divine energy shoots forth to draw in your foe.*\n\n**Signature Ability** — Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Intuition:**\n\n- **≤11:** 3 + I holy damage; vertical pull 2\n- **12-16:** 5 + I holy damage; vertical pull 3\n- **17+:** 8 + I holy damage; vertical pull 4",
+  "mechanics": {
+    "type": "active",
+    "text": "A tendril of divine energy shoots forth to draw in your foe. Power Roll + Intuition: - ≤11: 3 + I holy damage; vertical pull 2 - 12-16: 5 + I holy damage; vertical pull 3 - 17+: 8 + I holy damage; vertical pull 4"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

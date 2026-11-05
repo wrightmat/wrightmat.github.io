@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-in-a-puff-of-ash",
+  "name": "In a Puff of Ash",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You enchant a strike with your teleportation magic.*\n\n**Heroic Ability** — Magic, Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 6 + A damage; you can teleport the target 1 square\n- **12-16:** 10 + A damage; you can teleport the target up to 3 squares\n- **17+:** 14 + A damage; you can teleport the target up to 5 squares",
+  "mechanics": {
+    "type": "active",
+    "text": "You enchant a strike with your teleportation magic. Power Roll + Agility: - ≤11: 6 + A damage; you can teleport the target 1 square - 12-16: 10 + A damage; you can teleport the target up to 3 squares - 17+: 14 + A damage; you can teleport the target up to 5 squares"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 5
+}

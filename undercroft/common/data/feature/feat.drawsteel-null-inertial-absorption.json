@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-inertial-absorption",
+  "name": "Inertial Absorption",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You absorb an attack to empower your body.*\n\n**Heroic Ability** — Psionic — Free triggered\n\n**Cost:** 11 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Trigger:** Another creature damages you using an ability.\n\n**Effect:** You take half the damage, negate any effects associated with the damage for you, and gain 3 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "You absorb an attack to empower your body. Trigger: Another creature damages you using an ability. Effect: You take half the damage, negate any effects associated with the damage for you, and gain 3 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Free triggered",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

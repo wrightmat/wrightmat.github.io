@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-censor-exorcist-saints-vigilance",
+  "name": "Saint's Vigilance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have honed your ability to detect sin and can use it to find those who hide from justice. Any creature judged by you can't use the Hide maneuver. Additionally, you gain an edge when searching for hidden creatures. If you find a hidden creature, you can use your Judgment ability against them as a free triggered action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have honed your ability to detect sin and can use it to find those who hide from justice. Any creature judged by you can't use the Hide maneuver. Additionally, you gain an edge when searching for hidden creatures. If you find a hidden creature, you can use your Judgment ability against them as a free triggered action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

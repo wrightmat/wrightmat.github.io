@@ -1,0 +1,22 @@
+{
+  "name": "Whirlwind Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "The Whirlwind kit makes effective use of whips, granting you mobility, damage, and reach. If you want to be a fast-moving warrior who lashes foes with a chain or whip, then this is the kit for you.\n\n##### Equipment\n\nYou wear no armor and wield a whip.\n\n##### Kit Bonuses\n\n**Speed Bonus:** +3\n\n**Melee Damage Bonus:** +1/+1/+1\n\n**Melee Distance Bonus:** +1\n\n**Disengage Bonus:** +1\n\n##### Signature Ability\n\n###### Extension of My Arm\n\n*When you draw your whip back after an attack, your enemy is drawn ever closer.*\n\n| **Melee, Strike, Weapon** |     **Main action** |\n| ------------------------- | ------------------: |\n| **📏 Melee 3**            | **🎯 One creature** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 + M or A damage; vertical pull 1\n- **12-16:** 7 + M or A damage; vertical pull 2\n- **17+:** 10 + M or A damage; vertical pull 3",
+  "equipment": "You wear no armor and wield a whip.",
+  "speedBonus": 3,
+  "meleeDamageBonus": "+1/+1/+1",
+  "meleeDistanceBonus": 1,
+  "disengageBonus": 1,
+  "signatureAbility": "Extension of My Arm",
+  "kitType": "standard",
+  "featureIds": [
+    "feat.drawsteel-kit-extension-of-my-arm"
+  ]
+}

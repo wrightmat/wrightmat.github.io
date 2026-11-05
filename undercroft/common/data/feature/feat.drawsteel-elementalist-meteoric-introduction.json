@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-elementalist-meteoric-introduction",
+  "name": "Meteoric Introduction",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You give your enemy a gentle tap-like an asteroid impact.*\n\n**Signature Ability** — Earth, Magic, Melee, Strike — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 + R damage; push 2\n- **12-16:** 5 + R damage; push 3\n- **17+:** 8 + R damage; push 4",
+  "mechanics": {
+    "type": "active",
+    "text": "You give your enemy a gentle tap-like an asteroid impact. Power Roll + Reason: - ≤11: 3 + R damage; push 2 - 12-16: 5 + R damage; push 3 - 17+: 8 + R damage; push 4"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Earth, Magic, Melee, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

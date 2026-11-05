@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-repent",
+  "name": "Repent!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You conjure memories of their sins to harry your foes.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 3 Wrath\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** 5 + P holy damage; I < WEAK, dazed (save ends)\n- **12-16:** 8 + P holy damage; I < AVERAGE, dazed (save ends)\n- **17+:** 11 + P holy damage; I < STRONG, dazed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You conjure memories of their sins to harry your foes. Power Roll + Presence: - ≤11: 5 + P holy damage; I < WEAK, dazed (save ends) - 12-16: 8 + P holy damage; I < AVERAGE, dazed (save ends) - 17+: 11 + P holy damage; I < STRONG, dazed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 3
+}

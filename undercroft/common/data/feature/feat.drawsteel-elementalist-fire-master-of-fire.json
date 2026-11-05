@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-fire-master-of-fire",
+  "name": "Master of Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The damage bonus of your Acolyte of Fire feature increases to +5 and applies to all your magic abilities.\n\nAdditionally, your Return to Formlessness ability can be used on supernatural objects (but not on artifacts). When you melt a treasure (see Chapter 13: Rewards), you gain breath equal to its echelon.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The damage bonus of your Acolyte of Fire feature increases to +5 and applies to all your magic abilities. Additionally, your Return to Formlessness ability can be used on supernatural objects (but not on artifacts). When you melt a treasure (see Chapter 13: Rewards), you gain breath equal to its echelon."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

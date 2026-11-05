@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-polder-nimblestep",
+  "name": "Nimblestep",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nA light step serves you well when speed is of the essence. You ignore the effects of difficult terrain and can move at full speed while sneaking.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait A light step serves you well when speed is of the essence. You ignore the effects of difficult terrain and can move at full speed while sneaking."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Polder",
+  "cost": 2
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-rejuvenate",
+  "name": "Rejuvenate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You reshape the flow of time in the target's body to return it to an earlier state.*\n\n**Heroic Ability** — Chronopathy, Psionic, Ranged — Maneuver\n\n**Cost:** 11 Clarity\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** Choose two of the following effects:\n\n- The target can spend any number of Recoveries.\n- The target gains 1 of their Heroic Resource, and can end any effects on them that are ended by a saving throw or that end at the end of their turn.\n- The target gains 2 surges, and gains a +3 bonus to speed until the end of the encounter.\n\n**Strained:** You and the target both permanently grow visibly younger (the equivalent of 20 human years, to the minimum of an 18-year-old). Additionally, you are weakened and slowed (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "You reshape the flow of time in the target's body to return it to an earlier state. Effect: Choose two of the following effects: - The target can spend any number of Recoveries. - The target gains 1 of their Heroic Resource, and can end any effects on them that are ended by a saving throw or that end at the end of their turn. - The target gains 2 surges, and gains a +3 bonus to speed until the end of the encounter. Strained: You and the target both permanently grow visibly younger (the equivalent of 20 human years, to the minimum of an 18-year-old). Additionally, you are weakened and slowed (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Chronopathy, Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 11
+}

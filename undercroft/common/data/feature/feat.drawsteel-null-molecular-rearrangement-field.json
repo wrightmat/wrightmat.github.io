@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-molecular-rearrangement-field",
+  "name": "Molecular Rearrangement Field",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your enemies' wounds open, your allies' wounds close.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 7 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, each enemy who has I < AVERAGE and enters the area for the first time in a combat round or starts their turn there is bleeding (save ends). Each ally who enters the area for the first time in a combat round or starts their turn there gains temporary Stamina equal to your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your enemies' wounds open, your allies' wounds close. Effect: Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, each enemy who has I < AVERAGE and enters the area for the first time in a combat round or starts their turn there is bleeding (save ends). Each ally who enters the area for the first time in a combat round or starts their turn there gains temporary Stamina equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-congregation",
+  "name": "Congregation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You focus your allies' wrath on a chosen foe.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 8 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability against the target\n- **12-16:** 12 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability that gains an edge against the target\n- **17+:** 16 + M damage; as a free triggered action, two allies within 10 squares of the target can each use a strike signature ability that gains an edge against the target\n\n**Effect:** Each ally can shift up to 2 squares and gains 2 surges before making the strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "You focus your allies' wrath on a chosen foe. Power Roll + Might: - ≤11: 8 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability against the target - 12-16: 12 + M damage; as a free triggered action, one ally within 10 squares of the target can use a strike signature ability that gains an edge against the target - 17+: 16 + M damage; as a free triggered action, two allies within 10 squares of the target can each use a strike signature ability that gains an edge against the target Effect: Each ally can shift up to 2 squares and gains 2 surges before making the strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

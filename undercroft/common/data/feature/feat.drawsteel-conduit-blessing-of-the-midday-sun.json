@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-blessing-of-the-midday-sun",
+  "name": "Blessing of the Midday Sun",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your body emits a heat that bakes your enemies and inspires your allies.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** 4 aura   **Target:** Self and each creature in the area\n\n**Effect:** Until the end of the encounter or until you are dying, each enemy in the area takes a bane on power rolls, and you and each ally in the area gain 1 surge at the end of each of your turns.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your body emits a heat that bakes your enemies and inspires your allies. Effect: Until the end of the encounter or until you are dying, each enemy in the area takes a bane on power rolls, and you and each ally in the area gain 1 surge at the end of each of your turns."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "4 aura",
+  "target": "Self and each creature in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-sun"
+  ]
+}

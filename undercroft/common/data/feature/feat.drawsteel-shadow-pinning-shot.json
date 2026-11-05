@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-pinning-shot",
+  "name": "Pinning Shot",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*One missile—placed well and placed hard.*\n\n**Heroic Ability** — Ranged, Strike, Weapon — Main action\n\n**Cost:** 7 Insight\n\n**Distance:** Ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 8 + A damage; A < WEAK, restrained (save ends)\n- **12-16:** 12 + A damage; A < AVERAGE, restrained (save ends)\n- **17+:** 16 + A damage; A < STRONG, restrained (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "One missile—placed well and placed hard. Power Roll + Agility: - ≤11: 8 + A damage; A < WEAK, restrained (save ends) - 12-16: 12 + A damage; A < AVERAGE, restrained (save ends) - 17+: 16 + A damage; A < STRONG, restrained (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 5",
+  "target": "One creature",
+  "cost": 7
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-to-the-uttermost-end",
+  "name": "To the Uttermost End",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You gut your life force to ensure a foe's demise.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 7 + M damage\n- **12-16:** 11 + M damage\n- **17+:** 16 + M damage\n\n**Spend 1+ Ferocity:** While you are winded, this ability deals an extra 1d6 damage for each ferocity spent. While you are dying, it deals an extra 1d10 damage for each ferocity spent. In either case, you lose 1d6 Stamina after making this strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "You gut your life force to ensure a foe's demise. Power Roll + Might: - ≤11: 7 + M damage - 12-16: 11 + M damage - 17+: 16 + M damage Spend 1+ Ferocity: While you are winded, this ability deals an extra 1d6 damage for each ferocity spent. While you are dying, it deals an extra 1d10 damage for each ferocity spent. In either case, you lose 1d6 Stamina after making this strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

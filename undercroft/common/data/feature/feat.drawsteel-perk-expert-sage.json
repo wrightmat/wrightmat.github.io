@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-expert-sage",
+  "name": "Expert Sage",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Lore Perk**\n\nWhenever you make a test as part of a crafting or research project using a skill from the lore skill group, you can make the power roll twice and use either roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you make a test as part of a crafting or research project using a skill from the lore skill group, you can make the power roll twice and use either roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Lore"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-intercede",
+  "name": "Intercede",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You take your ally's place.*\n\n**Heroic Ability** — Magic, Ranged — Free triggered\n\n**Cost:** 9 Wrath\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Trigger:** A creature makes a strike against the target.\n\n**Effect:** The target is unaffected by the strike and you become the target instead, even if you aren't a valid target for it. You take half the damage from the strike, and the target gains 3 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "You take your ally's place. Trigger: A creature makes a strike against the target. Effect: The target is unaffected by the strike and you become the target instead, even if you aren't a valid target for it. You take half the damage from the strike, and the target gains 3 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Free triggered",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 9
+}

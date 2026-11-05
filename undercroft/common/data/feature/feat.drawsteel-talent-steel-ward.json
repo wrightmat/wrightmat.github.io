@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-steel-ward",
+  "name": "Steel Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your ward reacts to danger, protecting you from future harm. Whenever you take damage, after the damage resolves, you gain damage immunity equal to your Reason score until the end of your next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your ward reacts to danger, protecting you from future harm. Whenever you take damage, after the damage resolves, you gain damage immunity equal to your Reason score until the end of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

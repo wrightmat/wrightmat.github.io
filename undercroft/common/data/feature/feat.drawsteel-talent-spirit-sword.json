@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-talent-spirit-sword",
+  "name": "Spirit Sword",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You form a blade of mind energy and stab your target, invigorating yourself.*\n\n**Signature Ability** — Animapathy, Melee, Psionic, Strike — Main action\n\n**Distance:** Melee 2   **Target:** One creature or object\n\n**Power Roll + Presence:**\n\n- **≤11:** 3 + P damage\n- **12-16:** 6 + P damage\n- **17+:** 9 + P damage\n\n**Effect:** You gain 1 surge.\n\n**Strained:** The target takes an extra 3 damage. You also take 3 damage that can't be reduced in any way.",
+  "mechanics": {
+    "type": "active",
+    "text": "You form a blade of mind energy and stab your target, invigorating yourself. Power Roll + Presence: - ≤11: 3 + P damage - 12-16: 6 + P damage - 17+: 9 + P damage Effect: You gain 1 surge. Strained: The target takes an extra 3 damage. You also take 3 damage that can't be reduced in any way."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Animapathy, Melee, Psionic, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "One creature or object"
+}

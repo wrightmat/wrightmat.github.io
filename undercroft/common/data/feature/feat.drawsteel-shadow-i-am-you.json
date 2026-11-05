@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-i-am-you",
+  "name": "I Am You",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your mask reflects your foe's face. Surely they won't need it much longer.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 11 Insight\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Effect:** Until the end of the encounter, you gain the target's damage immunities and speed (if they are better than yours), and can use any types of movement they can use. You can also use the target's signature ability, using their bonus for the power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your mask reflects your foe's face. Surely they won't need it much longer. Effect: Until the end of the encounter, you gain the target's damage immunities and speed (if they are better than yours), and can use any types of movement they can use. You can also use the target's signature ability, using their bonus for the power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 11
+}

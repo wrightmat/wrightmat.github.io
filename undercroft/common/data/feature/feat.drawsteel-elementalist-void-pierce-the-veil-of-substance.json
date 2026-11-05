@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-void-pierce-the-veil-of-substance",
+  "name": "Pierce the Veil of Substance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Solidity is merely a suggestion to you. Mundane barriers that are 1 square thick or less do not block your senses or line of effect. You can only sense or have line of effect past one such barrier at a time.\n\nAdditionally, whenever you use a void ability, you or one ally within distance of the ability can teleport a number of squares equal to your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Solidity is merely a suggestion to you. Mundane barriers that are 1 square thick or less do not block your senses or line of effect. You can only sense or have line of effect past one such barrier at a time. Additionally, whenever you use a void ability, you or one ally within distance of the ability can teleport a number of squares equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

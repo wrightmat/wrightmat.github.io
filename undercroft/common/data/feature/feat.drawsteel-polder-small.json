@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-polder-small",
+  "name": "Small!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour diminutive stature lets you easily get out of—or into—trouble. Your size is 1S.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your diminutive stature lets you easily get out of—or into—trouble. Your size is 1S."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Polder"
+}

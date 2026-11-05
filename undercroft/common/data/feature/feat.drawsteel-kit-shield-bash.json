@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-shield-bash",
+  "name": "Shield Bash",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*In your hands, a shield isn't just for protection.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 + M or A damage; push 1\n- **12-16:** 7 + M or A damage; push 2\n- **17+:** 9 + M or A damage; push 3; M < STRONG, prone",
+  "mechanics": {
+    "type": "active",
+    "text": "In your hands, a shield isn't just for protection. Power Roll + Might or Agility: - ≤11: 4 + M or A damage; push 1 - 12-16: 7 + M or A damage; push 2 - 17+: 9 + M or A damage; push 3; M < STRONG, prone"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

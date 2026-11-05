@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-heat-drain",
+  "name": "Heat Drain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You drain all the heat from the target.*\n\n**Heroic Ability** — Melee, Psionic, Strike — Maneuver\n\n**Cost:** 11 Discipline\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 8 + I cold damage; M < WEAK, restrained (save ends)\n- **12-16:** 11 + I cold damage; M < AVERAGE, restrained (save ends)\n- **17+:** 15 + I cold damage; M < STRONG, restrained (save ends)\n\n**Effect:** While restrained this way, the target takes cold damage equal to your Intuition score at the start of each of your turns. Additionally, whenever the target damages another creature while restrained this way, any potency associated with the damage is reduced by 2.",
+  "mechanics": {
+    "type": "active",
+    "text": "You drain all the heat from the target. Power Roll + Intuition: - ≤11: 8 + I cold damage; M < WEAK, restrained (save ends) - 12-16: 11 + I cold damage; M < AVERAGE, restrained (save ends) - 17+: 15 + I cold damage; M < STRONG, restrained (save ends) Effect: While restrained this way, the target takes cold damage equal to your Intuition score at the start of each of your turns. Additionally, whenever the target damages another creature while restrained this way, any potency associated with the damage is reduced by 2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike",
+  "actionType": "Maneuver",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

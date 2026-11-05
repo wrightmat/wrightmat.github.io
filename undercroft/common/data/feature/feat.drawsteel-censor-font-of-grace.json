@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-font-of-grace",
+  "name": "Font of Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Each time you use your My Life for Yours ability, you gain 1 wrath that can be spent only on that ability during the same turn. If you don't use this wrath, it is lost. Additionally, the target of My Life for Yours gains 10 temporary Stamina.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you use your My Life for Yours ability, you gain 1 wrath that can be spent only on that ability during the same turn. If you don't use this wrath, it is lost. Additionally, the target of My Life for Yours gains 10 temporary Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-life"
+  ]
+}

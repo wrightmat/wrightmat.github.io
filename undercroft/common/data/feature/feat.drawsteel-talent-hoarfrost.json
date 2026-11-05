@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-talent-hoarfrost",
+  "name": "Hoarfrost",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You blast a foe with a pulse of cold energy.*\n\n**Signature Ability** — Cryokinesis, Psionic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 + R cold damage; M < WEAK, slowed (EoT)\n- **12-16:** 4 + R cold damage; M < AVERAGE, slowed (EoT)\n- **17+:** 6 + R cold damage; M < STRONG, slowed (EoT)\n\n**Strained:** You are slowed until the end of your next turn. Additionally, a target slowed by this ability is restrained instead.",
+  "mechanics": {
+    "type": "active",
+    "text": "You blast a foe with a pulse of cold energy. Power Roll + Reason: - ≤11: 2 + R cold damage; M < WEAK, slowed (EoT) - 12-16: 4 + R cold damage; M < AVERAGE, slowed (EoT) - 17+: 6 + R cold damage; M < STRONG, slowed (EoT) Strained: You are slowed until the end of your next turn. Additionally, a target slowed by this ability is restrained instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Cryokinesis, Psionic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

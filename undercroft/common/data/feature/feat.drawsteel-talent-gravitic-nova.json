@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-gravitic-nova",
+  "name": "Gravitic Nova",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Unbridled psionic energy erupts from your body and flashes outward, hurling your foes back.*\n\n**Heroic Ability** — Area, Psionic, Telekinesis — Main action\n\n**Cost:** 11 Clarity\n\n**Distance:** 3 burst   **Target:** Each enemy and object in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 6 damage; push 7\n- **12-16:** 9 damage; push 10\n- **17+:** 13 damage; push 15\n\n**Effect:** On a critical hit, the size of the area increases by 3, and this ability deals an extra 10 damage.\n\n**Strained:** You are weakened (save ends). If you scored a critical hit with this ability, you die.",
+  "mechanics": {
+    "type": "active",
+    "text": "Unbridled psionic energy erupts from your body and flashes outward, hurling your foes back. Power Roll + Reason: - ≤11: 6 damage; push 7 - 12-16: 9 damage; push 10 - 17+: 13 damage; push 15 Effect: On a critical hit, the size of the area increases by 3, and this ability deals an extra 10 damage. Strained: You are weakened (save ends). If you scored a critical hit with this ability, you die."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Telekinesis",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Each enemy and object in the area",
+  "cost": 11
+}

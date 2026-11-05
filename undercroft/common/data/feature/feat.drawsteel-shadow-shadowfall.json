@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-shadowfall",
+  "name": "Shadowfall",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You vanish. They fall. You reappear.*\n\n**Heroic Ability** — Area, Melee, Weapon — Main action\n\n**Cost:** 9 Insight\n\n**Distance:** 10 x 1 line within 1   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 10 damage\n- **12-16:** 14 damage\n- **17+:** 20 damage\n\n**Effect:** You disappear before making the power roll. After the power roll is resolved, you appear in the first unoccupied space at the far end of the line.",
+  "mechanics": {
+    "type": "active",
+    "text": "You vanish. They fall. You reappear. Power Roll + Agility: - ≤11: 10 damage - 12-16: 14 damage - 17+: 20 damage Effect: You disappear before making the power roll. After the power roll is resolved, you appear in the first unoccupied space at the far end of the line."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "10 x 1 line within 1",
+  "target": "Each enemy in the area",
+  "cost": 9
+}

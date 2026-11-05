@@ -9,5 +9,51 @@
   "skills": "The Endurance skill (from the exploration skill group), plus two skills from either the crafting group or the exploration group (*Quick Build:* Blacksmithing, Endurance, Lift.)",
   "languages": "One language",
   "perk": "One exploration perk (*Quick Build:* Brawny.)",
-  "projectPoints": 120
+  "projectPoints": 120,
+  "category": "Career",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Endurance"
+      ]
+    },
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two crafting or exploration skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Crafting",
+            "Exploration"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a language.",
+      "targetPath": "languages",
+      "from": {
+        "systemField": "languages"
+      }
+    },
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose an exploration perk.",
+      "from": {
+        "filter": {
+          "kind": "Perk",
+          "systemIds": "sys.drawsteel",
+          "perkType": "Exploration"
+        }
+      }
+    }
+  ]
 }

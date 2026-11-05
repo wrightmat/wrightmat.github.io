@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-stunning-blow",
+  "name": "Stunning Blow",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You focus your psionic technique into a concussive punch.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 3 Discipline\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 4 + A damage; I < WEAK, dazed and slowed (save ends)\n- **12-16:** 5 + A damage; I < AVERAGE, dazed and slowed (save ends)\n- **17+:** 7 + A damage; I < STRONG, dazed and slowed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You focus your psionic technique into a concussive punch. Power Roll + Agility: - ≤11: 4 + A damage; I < WEAK, dazed and slowed (save ends) - 12-16: 5 + A damage; I < AVERAGE, dazed and slowed (save ends) - 17+: 7 + A damage; I < STRONG, dazed and slowed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 3
+}

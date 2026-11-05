@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-edict-of-unyielding-resolve",
+  "name": "Edict of Unyielding Resolve",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You and your allies are clad in shimmering armor.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 11 Wrath\n\n**Distance:** 2 aura   **Target:** Self and each ally in the area\n\n**Effect:** Until the end of the encounter or until you are dying, each target who starts their turn in the area gains 10 temporary Stamina.",
+  "mechanics": {
+    "type": "active",
+    "text": "You and your allies are clad in shimmering armor. Effect: Until the end of the encounter or until you are dying, each target who starts their turn in the area gains 10 temporary Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "2 aura",
+  "target": "Self and each ally in the area",
+  "cost": 11
+}

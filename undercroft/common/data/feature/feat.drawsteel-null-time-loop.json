@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-time-loop",
+  "name": "Time Loop",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You show shadows what true speed is.*\n\n**Heroic Ability** — Psionic — Free triggered\n\n**Cost:** 11 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Trigger:** Another creature on the encounter map ends their turn.\n\n**Effect:** You take a bonus turn immediately after the triggering creature. This ability can be used only once per combat round.",
+  "mechanics": {
+    "type": "active",
+    "text": "You show shadows what true speed is. Trigger: Another creature on the encounter map ends their turn. Effect: You take a bonus turn immediately after the triggering creature. This ability can be used only once per combat round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Free triggered",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

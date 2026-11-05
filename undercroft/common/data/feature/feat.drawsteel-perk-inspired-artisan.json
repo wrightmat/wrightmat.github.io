@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-inspired-artisan",
+  "name": "Inspired Artisan",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Crafting Perk**\n\nWhen you make a project roll using a skill from the crafting skill group, you can spend a hero token to make another project roll for the same project as part of the same respite activity. You can't use this perk more than once per respite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you make a project roll using a skill from the crafting skill group, you can spend a hero token to make another project roll for the same project as part of the same respite activity. You can't use this perk more than once per respite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Crafting"
+}

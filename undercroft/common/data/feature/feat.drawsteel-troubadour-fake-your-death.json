@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-fake-your-death",
+  "name": "Fake Your Death",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*O happy dagger, this is thy sheath!*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 5 Drama\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You turn invisible and create a magical illusion of your corpse falling in your space. While you are invisible, you gain a +3 bonus to speed and you ignore difficult terrain. The illusion and your invisibility last until the end of your next turn, or until the illusion is interacted with, you take damage, or you use a main action or a maneuver.",
+  "mechanics": {
+    "type": "active",
+    "text": "O happy dagger, this is thy sheath! Effect: You turn invisible and create a magical illusion of your corpse falling in your space. While you are invisible, you gain a +3 bonus to speed and you ignore difficult terrain. The illusion and your invisibility last until the end of your next turn, or until the illusion is interacted with, you take damage, or you use a main action or a maneuver."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 5
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Arcane Archer Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "The Arcane Archer kit allows you to combine magic and ranged weapon strikes. Your lack of armor keeps you mobile, and your magic makes your arrows explode to devastate your foes.\n\n##### Equipment\n\nYou wear no armor and wield a bow.\n\n##### Kit Bonuses\n\n**Speed Bonus:** +1\n\n**Ranged Damage Bonus:** +2/+2/+2\n\n**Ranged Distance Bonus:** +10\n\n**Disengage Bonus:** +1\n\n##### Signature Ability\n\n###### Exploding Arrow\n\n*Your ammunition explodes with magical energy.*\n\n| **Magic, Ranged, Strike, Weapon** |               **Main action** |\n| --------------------------------- | ----------------------------: |\n| **📏 Ranged 15**                  | **🎯 One creature or object** |\n\n**Power Roll + Agility, Reason, Intuition, or Presence:**\n\n- **≤11:** 5 + A, R, I, or P fire damage\n- **12-16:** 7 + A, R, I, or P fire damage\n- **17+:** 10 + A, R, I, or P fire damage\n\n**Effect:** One creature or object of your choice within 2 squares of the target takes fire damage equal to the characteristic score used for this ability's power roll.",
+  "equipment": "You wear no armor and wield a bow.",
+  "speedBonus": 1,
+  "rangedDamageBonus": "+2/+2/+2",
+  "rangedDistanceBonus": 10,
+  "disengageBonus": 1,
+  "signatureAbility": "Exploding Arrow",
+  "kitType": "standard",
+  "featureIds": [
+    "feat.drawsteel-kit-exploding-arrow"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "feat.drawsteel-conduit-knowledge-blessing-of-comprehension",
+  "name": "Blessing of Comprehension",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You can interpret diagrams and charts even if you don't understand the language associated with them. You are considered fluent in all languages for the purpose of understanding the project source for any research or crafting project (see Chapter 12: Downtime Projects).",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can interpret diagrams and charts even if you don't understand the language associated with them. You are considered fluent in all languages for the purpose of understanding the project source for any research or crafting project (see Chapter 12: Downtime Projects)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-knowledge"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a lore skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Lore"
+          ]
+        }
+      }
+    }
+  ]
+}

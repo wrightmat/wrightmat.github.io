@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-synaptic-terror",
+  "name": "Synaptic Terror",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You project a terrifying image into the brains of your foes, and their fear psionically invigorates your allies.*\n\n**Heroic Ability** — Area, Psionic, Telepathy — Main action\n\n**Cost:** 11 Clarity\n\n**Distance:** 3 burst   **Target:** Each ally and enemy in the area\n\n**Effect:** You and each target ally can't obtain lower than a tier 2 outcome on power rolls until the start of your next turn. Each target enemy is affected by the ability's power roll.\n\n**Power Roll + Reason:**\n\n- **≤11:** R < WEAK, frightened (save ends)\n- **12-16:** R < AVERAGE, frightened (save ends)\n- **17+:** R < STRONG, frightened (save ends)\n\n**Strained:** You can't use this ability if doing so would cause you to have negative clarity.",
+  "mechanics": {
+    "type": "active",
+    "text": "You project a terrifying image into the brains of your foes, and their fear psionically invigorates your allies. Effect: You and each target ally can't obtain lower than a tier 2 outcome on power rolls until the start of your next turn. Each target enemy is affected by the ability's power roll. Power Roll + Reason: - ≤11: R < WEAK, frightened (save ends) - 12-16: R < AVERAGE, frightened (save ends) - 17+: R < STRONG, frightened (save ends) Strained: You can't use this ability if doing so would cause you to have negative clarity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Telepathy",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Each ally and enemy in the area",
+  "cost": 11
+}

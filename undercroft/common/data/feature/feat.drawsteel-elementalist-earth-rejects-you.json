@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-earth-rejects-you",
+  "name": "Earth Rejects You",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Everyone and everything gets blown away in an eruption of rocks and debris.*\n\n**Heroic Ability** — Area, Earth, Magic, Ranged — Main action\n\n**Cost:** 11 Essence\n\n**Distance:** 5 cube within 10   **Target:** Each enemy and object in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 6 damage\n- **12-16:** 9 damage\n- **17+:** 13 damage\n\n**Persistent 2:** At the start of your turn, you can use a maneuver to use this ability again without spending essence.",
+  "mechanics": {
+    "type": "active",
+    "text": "Everyone and everything gets blown away in an eruption of rocks and debris. Power Roll + Reason: - ≤11: 6 damage - 12-16: 9 damage - 17+: 13 damage Persistent 2: At the start of your turn, you can use a maneuver to use this ability again without spending essence."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Earth, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 10",
+  "target": "Each enemy and object in the area",
+  "cost": 11
+}

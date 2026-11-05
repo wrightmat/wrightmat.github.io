@@ -1,0 +1,69 @@
+{
+  "id": "feat.drawsteel-conduit-knowledge-gods-library",
+  "name": "Gods' Library",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You can gain access to information you need through prayer, so that you no longer require research materials for crafting and research projects (see Chapter 12: Downtime Projects). Additionally, you add your level to project rolls you make for crafting and research projects. You also have any skills in the lore skill group you don't already have, and you gain a number of skills from any other skill groups equal to the number of skills you had in the lore skill group before you gained this feature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can gain access to information you need through prayer, so that you no longer require research materials for crafting and research projects (see Chapter 12: Downtime Projects). Additionally, you add your level to project rolls you make for crafting and research projects. You also have any skills in the lore skill group you don't already have, and you gain a number of skills from any other skill groups equal to the number of skills you had in the lore skill group before you gained this feature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-knowledge"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "chooseOwned": {
+        "group": [
+          "Lore"
+        ]
+      },
+      "desc": "Choose a skill from another group for each lore skill you had.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Crafting",
+            "Exploration",
+            "Interpersonal",
+            "Intrigue"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Criminal Underworld",
+        "Culture",
+        "History",
+        "Magic",
+        "Monsters",
+        "Nature",
+        "Psionics",
+        "Religion",
+        "Rumors",
+        "Society",
+        "Strategy",
+        "Timescape"
+      ]
+    }
+  ]
+}

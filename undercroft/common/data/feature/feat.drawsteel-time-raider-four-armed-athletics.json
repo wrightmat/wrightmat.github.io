@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-time-raider-four-armed-athletics",
+  "name": "Four-Armed Athletics",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour unique physiology enhances your movement. You gain an edge on tests that use the Climb, Gymnastics, or Swim skills when you can use all your arms in the attempt.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your unique physiology enhances your movement. You gain an edge on tests that use the Climb, Gymnastics, or Swim skills when you can use all your arms in the attempt."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Time Raider",
+  "cost": 1
+}

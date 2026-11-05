@@ -38,5 +38,26 @@
       "cost": 1,
       "description": "Your body is made to withstand the blows of your enemies. Your Might score is treated as 1 higher for the purpose of resisting potencies, and you gain an edge on Might tests when called for to resist environmental effects or a creature's traits or abilities."
     }
+  ],
+  "speed": 5,
+  "size": "1L",
+  "featureIds": [
+    "feat.drawsteel-hakaan-big"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 3,
+      "desc": "Spend 3 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-hakaan-all-is-a-feather",
+          "feat.drawsteel-hakaan-doomsight",
+          "feat.drawsteel-hakaan-forceful",
+          "feat.drawsteel-dwarf-great-fortitude",
+          "feat.drawsteel-dwarf-stand-tough"
+        ]
+      }
+    }
   ]
 }

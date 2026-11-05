@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-entropic-field",
+  "name": "Entropic Field",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You drastically increase the local entropy.*\n\n**Heroic Ability** — Area, Psionic, Weapon — Main action\n\n**Cost:** 5 Discipline\n\n**Distance:** 3 cube within 1   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 6 cold damage; A < WEAK, slowed (save ends)\n- **12-16:** 9 cold damage; A < AVERAGE, slowed (save ends)\n- **17+:** 13 cold damage; A < STRONG, slowed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You drastically increase the local entropy. Power Roll + Agility: - ≤11: 6 cold damage; A < WEAK, slowed (save ends) - 12-16: 9 cold damage; A < AVERAGE, slowed (save ends) - 17+: 13 cold damage; A < STRONG, slowed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Weapon",
+  "actionType": "Main action",
+  "distance": "3 cube within 1",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

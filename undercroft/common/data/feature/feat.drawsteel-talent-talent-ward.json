@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-talent-ward",
+  "name": "Talent Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Through meditation, you create a ward that protects you. Choose one of the following wards. You can change your ward and psionic augmentation (see above) by undergoing a psionic meditation as a respite activity. (*Quick Build:* Repulsive Ward.)\n\n##### Entropy Ward\n\nYour ward slows time for your enemies. Whenever a creature deals damage to you, their speed is reduced by an amount equal to your Reason score and they can't use triggered actions until the end of their next turn.\n\n##### Repulsive Ward\n\nYou surround yourself with an invisible ward of telekinetic energy. Whenever an adjacent creature deals damage to you, you can use a free triggered action to push them up to a number of squares equal to your Reason score.\n\n##### Steel Ward\n\nYour ward reacts to danger, protecting you from future harm. Whenever you take damage, after the damage resolves, you gain damage immunity equal to your Reason score until the end of your next turn.\n\n##### Vanishing Ward\n\nYour ward allows you to slip away from threats. Whenever you take damage, you become invisible until the end of your next turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Through meditation, you create a ward that protects you. Choose one of the following wards. You can change your ward and psionic augmentation (see above) by undergoing a psionic meditation as a respite activity. (Quick Build: Repulsive Ward.) Entropy Ward Your ward slows time for your enemies. Whenever a creature deals damage to you, their speed is reduced by an amount equal to your Reason score and they can't use triggered actions until the end of their next turn. Repulsive Ward You surround yourself with an invisible ward of telekinetic energy. Whenever an adjacent creature deals damage to you, you can use a free triggered action to push them up to a number of squares equal to your Reason score. Steel Ward Your ward reacts to danger, protecting you from future harm. Whenever you take damage, after the damage resolves, you gain damage immunity equal to your Reason score until the end of your next turn. Vanishing Ward Your ward allows you to slip away from threats. Whenever you take damage, you become invisible until the end of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

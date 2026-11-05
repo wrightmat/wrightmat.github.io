@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-fury-to-the-death",
+  "name": "To the Death!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your reckless assault leaves you tactically vulnerable.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 3 + M damage\n- **12-16:** 6 + M damage\n- **17+:** 9 + M damage\n\n**Effect:** You gain 2 surges, and the target can make an opportunity attack against you as a free triggered action.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your reckless assault leaves you tactically vulnerable. Power Roll + Might: - ≤11: 3 + M damage - 12-16: 6 + M damage - 17+: 9 + M damage Effect: You gain 2 surges, and the target can make an opportunity attack against you as a free triggered action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

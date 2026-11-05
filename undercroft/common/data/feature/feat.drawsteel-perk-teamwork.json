@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-teamwork",
+  "name": "Teamwork",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Exploration Perk**\n\nWhen you take your first turn during any montage test, you can both make a test and assist another hero's test.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you take your first turn during any montage test, you can both make a test and assist another hero's test."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Exploration"
+}

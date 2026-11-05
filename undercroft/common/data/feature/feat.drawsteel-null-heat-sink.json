@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-heat-sink",
+  "name": "Heat Sink",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You absorb ambient heat, coating the ground in frost and precipitating snow from the air.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 5 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the start of your next turn, the size of your Null Field ability increases by 1, and you and any ally benefit from concealment while in the area. At the end of this turn, each enemy in the area takes cold damage equal to your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You absorb ambient heat, coating the ground in frost and precipitating snow from the air. Effect: Until the start of your next turn, the size of your Null Field ability increases by 1, and you and any ally benefit from concealment while in the area. At the end of this turn, each enemy in the area takes cold damage equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 5
+}

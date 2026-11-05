@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-saved-in-the-edit",
+  "name": "Saved in the Edit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You shout a word of power that allows you to rewrite reality to your whims.*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 11 Drama\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter, whenever you deal rolled damage to a creature or object, or enable a creature to spend a Recovery, you can use a free triggered action to give that creature or object one of the following effects until the start of your next turn. If this ability is triggered by multiple targets taking damage or multiple creatures spending Recoveries simultaneously, each target receives the same effect:\n\n- The target has damage weakness equal to your Presence score against any magic, psionic, or weapon ability.\n- The target has damage immunity equal to your Presence score.\n- The target has a bonus to stability and a penalty to speed equal to your Presence score.\n- The target has a bonus to speed and a penalty to stability equal to your Presence score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You shout a word of power that allows you to rewrite reality to your whims. Effect: Until the end of the encounter, whenever you deal rolled damage to a creature or object, or enable a creature to spend a Recovery, you can use a free triggered action to give that creature or object one of the following effects until the start of your next turn. If this ability is triggered by multiple targets taking damage or multiple creatures spending Recoveries simultaneously, each target receives the same effect: - The target has damage weakness equal to your Presence score against any magic, psionic, or weapon ability. - The target has damage immunity equal to your Presence score. - The target has a bonus to stability and a penalty to speed equal to your Presence score. - The target has a bonus to speed and a penalty to stability equal to your Presence score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

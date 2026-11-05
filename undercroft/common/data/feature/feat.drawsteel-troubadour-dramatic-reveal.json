@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-dramatic-reveal",
+  "name": "Dramatic Reveal",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A little stage trickery, and where once stood a foe, now stands a friend!*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 11 Drama\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter, whenever you reduce a creature to 0 Stamina using an ability, you can use a free triggered action to teleport an ally within distance of that ability into the creature's space in a plume of rose petals. You or the teleported ally can then make a melee free strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "A little stage trickery, and where once stood a foe, now stands a friend! Effect: Until the end of the encounter, whenever you reduce a creature to 0 Stamina using an ability, you can use a free triggered action to teleport an ally within distance of that ability into the creature's space in a plume of rose petals. You or the teleported ally can then make a melee free strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

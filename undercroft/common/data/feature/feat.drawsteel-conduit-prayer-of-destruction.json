@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-prayer-of-destruction",
+  "name": "Prayer of Destruction",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your god infuses wrath within your being. You gain a +1 bonus to rolled damage with magic abilities.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your god infuses wrath within your being. You gain a +1 bonus to rolled damage with magic abilities."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

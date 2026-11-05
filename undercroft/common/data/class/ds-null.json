@@ -10,5 +10,559 @@
   "staminaPerLevel": 9,
   "recoveries": 8,
   "startingCharacteristics": "You start with an Agility of 2 and an Intuition of 2, and you can choose one of the following arrays for your other characteristic scores:",
-  "skills": "You gain the Psionics skill (see Skills in Chapter 9: Tests). Then choose any two skills from the interpersonal or lore skill groups. (*Quick Build:* Psionics, Read Person, Timescape.)"
+  "skills": "You gain the Psionics skill (see Skills in Chapter 9: Tests). Then choose any two skills from the interpersonal or lore skill groups. (*Quick Build:* Psionics, Read Person, Timescape.)",
+  "features": [
+    {
+      "name": "Ranged Weapon Free Strike",
+      "level": 1,
+      "description": "**Free Strike** — Ranged, Strike, Weapon — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 7 damage\n- **17+:** 9 damage"
+    },
+    {
+      "name": "Melee Weapon Free Strike",
+      "level": 1,
+      "description": "**Free Strike** — Charge, Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**2d10 + 2**\n\n- **11 or less:** 5 damage\n- **12-16:** 8 damage\n- **17+:** 10 damage"
+    },
+    {
+      "name": "Null Tradition",
+      "level": 1,
+      "description": "Through extensive physical and psionic training, you have learned to unlock the full potential of your body. As you shape the growth of your power, you choose a null tradition from the following options, each of which grants you a skill. (*Quick Build:* Chronokinetic and the Monsters skill.)\n\n- **Chronokinetic:** Your training unmoors you from temporal reality, allowing you to use the flow of time as another dimension that all things move through. You gain one skill from the lore group.\n- **Cryokinetic:** You can tap into absolute cold, the most essential energy of myriad manifolds, and manifest its effects in your body. You gain one skill from the crafting group.\n- **Metakinetic:** You learn to see through the illusions of the universe to more fully understand your body and its psionic potential. You gain one skill from the exploration group.\n\nYour null tradition is your subclass, and your choice of tradition determines many of the features you'll gain as you gain new levels."
+    },
+    {
+      "name": "Discipline",
+      "level": 1,
+      "description": "As your mastery of your body and tradition grows, it imbues you with a Heroic Resource called discipline.\n\n##### Discipline in Combat\n\nAt the start of a combat encounter or some other stressful situation tracked in combat rounds (as determined by the Director), you gain discipline equal to your Victories. At the start of each of your turns during combat, you gain 2 discipline.\n\nAdditionally, the first time each combat round that an enemy in the area of your Null Field ability (see below) uses a main action, you gain 1 discipline. The first time each combat round that the Director uses an ability that costs Malice (see *[Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)*), you gain 1 discipline.\n\nYou lose any remaining discipline at the end of the encounter.\n\n##### Discipline Outside of Combat\n\nThough you can't gain discipline outside of combat, you can use your heroic abilities and effects that cost discipline without spending it. Whenever you use an ability or effect outside of combat that costs discipline, you can't use that same ability or effect outside of combat again until you earn 1 or more Victories or finish a respite.\n\nWhen you use an ability outside of combat that lets you spend unlimited discipline on its effect, you can use it as if you had spent an amount of discipline equal to your Victories. (Such abilities aren't part of the core rules for the null, but they might appear in future products.)"
+    },
+    {
+      "name": "Null Field",
+      "level": 1,
+      "description": "You project a psionic field of order around your body, dampening the effects of supernatural abilities harmful to you and your allies.\n\n> ###### Null Field\n>\n> *You project an aura that dampens the power of your foes.*\n>\n> | **Area, Psionic** |                  **Maneuver** |\n> | ----------------- | ----------------------------: |\n> | **📏 1 aura**     | **🎯 Each enemy in the area** |\n>\n> **Effect:** Each target reduces their potencies by 1.\n>\n> Once as a free maneuver on each of your turns, you can spend 1 discipline and give your Null Field one of the following additional effects until the start of your next turn:\n>\n> - Gravitic Disruption: The first time on a turn that a target takes damage, you can slide them up to 2 squares.\n> - Inertial Anchor: Any target who starts their turn in the area can't shift.\n> - Synaptic Break: Whenever you or any ally uses an ability against a target that has a potency effect, the potency is increased by 1.\n>\n> This ability remains active even after an encounter ends. It ends only if you are dying or if you willingly end it (no action required)."
+    },
+    {
+      "name": "Inertial Shield",
+      "level": 1,
+      "description": "Your instincts for danger let you predict attacks before they happen.\n\n> ###### Inertial Shield\n>\n> *You intuit the course of an incoming attack, reducing its effects.*\n>\n> | **Psionic** | **Triggered** |\n> | ----------- | ------------: |\n> | **📏 Self** |   **🎯 Self** |\n>\n> **Trigger:** You take damage.\n>\n> **Effect:** You take half the damage.\n>\n> **Spend 1 Discipline:** The potency of one effect associated with the damage is reduced by 1 for you."
+    },
+    {
+      "name": "Discipline Mastery",
+      "level": 1,
+      "description": "As you advance in your chosen null tradition, you gain certain benefits in combat, including benefits based on the amount of discipline you have. Benefits based on how much discipline you have last until the end of your turn, even if a benefit would become unavailable to you because of the amount of discipline you spend during your turn.\n\nSome Discipline Mastery benefits can be applied only if you are a specific level or higher, with the level of those benefits noted in the tables below.\n\n##### Chronokinetic Mastery\n\nWhenever you use the Inertial Shield ability, you can use the Disengage move action as a free triggered action.\n\nAdditionally, as your discipline grows, your psionic mastery of your body intensifies, granting benefits from the Chronokinetic Mastery table. Benefits are cumulative except where an improved benefit replaces a lesser benefit.\n\n###### Chronokinetic Mastery Table\n\n| Discipline      | Benefit                                                                                                                                                                                     |\n| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| 2               | Whenever you use the Knockback maneuver, you can use the Disengage move action as a free triggered action either before or after the maneuver.                                              |\n| 4               | The first time on a turn that you willingly move 1 or more squares as part of an ability, you gain 1 surge.                                                                                 |\n| 6               | You gain an edge on the Grab and Knockback maneuvers.                                                                                                                                       |\n| 8 (4th level)   | The first time on a turn that you willingly move 1 or more squares as part of an ability, you gain 2 surges.                                                                                |\n| 10 (7th level)  | You have a double edge on the Grab and Knockback maneuvers.                                                                                                                                 |\n| 12 (10th level) | Whenever you force move a target, the forced movement distance gains a bonus equal to your Intuition score. Additionally, whenever you use a heroic ability, you gain 10 temporary Stamina. |\n\n##### Cryokinetic Mastery\n\nWhenever you use your Inertial Shield ability, you can then use the Grab maneuver as a free triggered action.\n\nAdditionally, as your discipline grows, you strengthen the psionic power suffusing you, granting benefits from the Cryokinetic Mastery table. Benefits are cumulative except where an improved benefit replaces a lesser benefit.\n\n###### Cryokinetic Mastery Table\n\n| Discipline      | Benefit                                                                                                                                                                                           |\n| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| 2               | Whenever you use the Knockback maneuver, you can target one additional creature. Additionally, whenever you deal untyped damage with a psionic ability, you can change it to cold damage instead. |\n| 4               | The first time on a turn that you grab a creature or an enemy moves 1 or more squares in the area of your Null Field ability, you gain 1 surge.                                                   |\n| 6               | You gain an edge on the Grab and Knockback maneuvers.                                                                                                                                             |\n| 8 (4th level)   | The first time on a turn that you grab a creature or an enemy moves 1 or more squares in the area of your Null Field ability, you gain 2 surges.                                                  |\n| 10 (7th level)  | You have a double edge on the Grab and Knockback maneuvers.                                                                                                                                       |\n| 12 (10th level) | Whenever you force move a target, the forced movement distance gains a bonus equal to your Intuition score. Additionally, whenever you use a heroic ability, you gain 10 temporary Stamina.       |\n\n##### Metakinetic Mastery\n\nWhenever you use your Inertial Shield ability, you can then use the Knockback maneuver as a free triggered action.\n\nAdditionally, as your discipline grows, your psionic potential is amplified, granting benefits from the Metakinetic Mastery table. Benefits are cumulative except where an improved benefit replaces a lesser benefit.\n\n###### Metakinetic Mastery Table\n\n| Discipline      | Benefit                                                                                                                                                                                     |\n| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| 2               | Whenever you use the Knockback maneuver, the forced movement distance gains a bonus equal to your Intuition score.                                                                          |\n| 4               | The first time in a combat round that you take damage or are force moved, you gain 1 surge, even if you resist the effect.                                                                  |\n| 6               | You gain an edge on the Grab and Knockback maneuvers.                                                                                                                                       |\n| 8 (4th level)   | The first time in a combat round that you take damage or are force moved, you gain 2 surges, even if you resist the effect.                                                                 |\n| 10 (7th level)  | You have a double edge on the Grab and Knockback maneuvers.                                                                                                                                 |\n| 12 (10th level) | Whenever you force move a target, the forced movement distance gains a bonus equal to your Intuition score. Additionally, whenever you use a heroic ability, you gain 10 temporary Stamina. |"
+    },
+    {
+      "name": "Null Speed",
+      "level": 1,
+      "description": "The flow of psionic power through you allows you to achieve high velocity. You gain a bonus to speed and to the number of squares you can shift when you take the Disengage move action equal to your Agility score."
+    },
+    {
+      "name": "Psionic Augmentation",
+      "level": 1,
+      "description": "Your training has turned your body into the perfect psionic weapon, shaping pathways in your mind that enhance your physical form. Choose one of the following augmentations. You can change your augmentation by undergoing a psionic meditation as a respite activity. (*Quick Build:* Speed Augmentation.)\n\n##### Density Augmentation\n\nYou gain a +6 bonus to Stamina, and this bonus increases by 6 at 4th, 7th, and 10th levels. Additionally, you gain a +1 bonus to stability.\n\n##### Force Augmentation\n\nYour damage-dealing psionic abilities gain a +1 bonus to rolled damage.\n\n##### Speed Augmentation\n\nYou gain a +1 bonus to speed and to the distance you can shift when you take the Disengage move action.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose your psionic augmentation.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-density-augmentation",
+              "feat.drawsteel-null-force-augmentation",
+              "feat.drawsteel-null-speed-augmentation"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Psionic Martial Arts",
+      "level": 1,
+      "description": "Whenever you use the Knockback or Grab maneuver, you use Intuition instead of Might for the power roll and for determining if you can target creatures larger than you. Additionally, whenever you use the Knockback maneuver, you can choose to slide the target instead of pushing them."
+    },
+    {
+      "name": "Null Abilities",
+      "level": 1,
+      "description": "You rely on a unique blend of martial techniques and psionic prowess to take down your foes and defend your allies.\n\n##### Signature Abilities\n\nChoose two signature abilities from the following options. Signature abilities can be used at will. (*Quick Build:* Faster Than the Eye, Inertial Step.)\n\n> ###### Dance of Blows\n>\n> *You strike everywhere at once, tricking an enemy into moving out of position.*\n>\n> | **Area, Psionic, Weapon** |               **Main action** |\n> | ------------------------- | ----------------------------: |\n> | **📏 1 burst**            | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 3 damage\n> - **12-16:** 4 damage\n> - **17+:** 5 damage\n>\n> **Effect:** You can slide one adjacent enemy up to a number of squares equal to your Intuition score.\n\n> ###### Faster Than the Eye\n>\n> *You strike so quickly that your hands become a blur.*\n>\n> | **Melee, Psionic, Strike, Weapon** |                 **Main action** |\n> | ---------------------------------- | ------------------------------: |\n> | **📏 Melee 1**                     | **🎯 Two creatures or objects** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 damage\n> - **12-16:** 5 damage\n> - **17+:** 7 damage\n>\n> **Effect:** You can deal damage equal to your Agility score to one creature or object adjacent to you.\n\n> ###### Inertial Step\n>\n> *You flit about the battlefield and take an opportunistic strike.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 5 + A damage\n> - **12-16:** 7 + A damage\n> - **17+:** 10 + A damage\n>\n> **Effect:** You can shift up to half your speed before or after you make this strike.\n\n> ###### Joint Lock\n>\n> *You contort your enemy's body into a stance they struggle to escape from.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A damage; A < WEAK, grabbed\n> - **12-16:** 7 + A damage; A < AVERAGE, grabbed\n> - **17+:** 9 + A damage; A < STRONG, grabbed\n\n> ###### Kinetic Strike\n>\n> *Your opponent staggers. They cannot ignore you.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A damage; taunted (EoT)\n> - **12-16:** 5 + A damage; taunted (EoT), slide 1\n> - **17+:** 6 + A damage; taunted (EoT), slide 2\n\n> ###### Magnetic Strike\n>\n> *The force of your blow extends past the limits of your body, pulling your enemy closer.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 2**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 5 + A psychic damage; vertical pull 1\n> - **12-16:** 8 + A psychic damage; vertical pull 2\n> - **17+:** 11 + A psychic damage; vertical pull 3\n\n> ###### Phase Inversion Strike\n>\n> *You step momentarily out of phase as you pull an enemy through you.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A damage; push 2\n> - **12-16:** 6 + A damage; push 4\n> - **17+:** 8 + A damage; push 6\n>\n> **Effect:** Before the push is resolved, you teleport the target to a square adjacent to you and opposite the one they started in. If the target can't be teleported this way, you can't push them.\n\n> ###### Pressure Points\n>\n> *You strike at key nerve clusters to leave your foe staggered.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A damage; A < WEAK, weakened (save ends)\n> - **12-16:** 7 + A damage; A < AVERAGE, weakened (save ends)\n> - **17+:** 9 + A damage; A < STRONG, weakened (save ends)\n\n##### Heroic Abilities\n\nYou have mastered a range of heroic abilities, all of them channeled through your discipline.\n\n###### 3-Discipline Ability\n\nChoose one heroic ability from the following options, each of which costs 3 discipline to use. (*Quick Build:* Chronal Spike.)\n\n> ###### Chronal Spike (3 Discipline)\n>\n> *You foresee the best moment to strike, then exploit it.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 7 + A damage\n> - **12-16:** 10 + A damage\n> - **17+:** 13 + A damage\n>\n> **Effect:** You can shift up to half your speed before or after you make this strike. Additionally, whenever an effect lets you make a free strike or use a signature ability, you can use this ability instead, paying its discipline cost as usual.\n\n> ###### Psychic Pulse (3 Discipline)\n>\n> *A burst of psionic energy interferes with your enemy's synapses.*\n>\n> | **Area, Psionic** |                  **Maneuver** |\n> | ----------------- | ----------------------------: |\n> | **📏 2 burst**    | **🎯 Each enemy in the area** |\n>\n> **Effect:** Each target takes psychic damage equal to twice your Intuition score. Until the start of your next turn, the size of your Null Field ability increases by 1. At the end of your current turn, each enemy in the area of your Null Field ability takes psychic damage equal to your Intuition score.\n\n> ###### Relentless Nemesis (3 Discipline)\n>\n> *You strike, and for the next few moments, your enemy can't escape you.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 6 + A damage\n> - **12-16:** 8 + A damage\n> - **17+:** 12 + A damage\n>\n> **Effect:** Until the start of your next turn, whenever the target finishes moving or being force moved, you can use a free triggered action to shift up to your speed. You must end this shift adjacent to the target.\n\n> ###### Stunning Blow (3 Discipline)\n>\n> *You focus your psionic technique into a concussive punch.*\n>\n> | **Melee, Psionic, Strike, Weapon** |               **Main action** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A damage; I < WEAK, dazed and slowed (save ends)\n> - **12-16:** 5 + A damage; I < AVERAGE, dazed and slowed (save ends)\n> - **17+:** 7 + A damage; I < STRONG, dazed and slowed (save ends)\n\n###### 5-Discipline Ability\n\nChoose one heroic ability from the following options, each of which costs 5 discipline to use. (*Quick Build:* A Squad Unto Myself.)\n\n> ###### Arcane Disruptor (5 Discipline)\n>\n> *Your blow reorders a foe's body, causing pain if they attempt to channel sorcery.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 8 + **A** psychic damage; M < WEAK, weakened (save ends)\n> - **12-16:** 12 + **A** psychic damage; M < AVERAGE, weakened (save ends)\n> - **17+:** 16 + **A** psychic damage; M < STRONG, weakened (save ends)\n>\n> **Effect:** While weakened this way, the target takes damage equal to your Intuition score whenever they use a supernatural ability that costs Malice.\n\n> ###### Impart Force (5 Discipline)\n>\n> *A single touch from you, and your enemy flies backward.*\n>\n> | **Melee, Psionic, Strike, Weapon** |                  **Maneuver** |\n> | ---------------------------------- | ----------------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature or object** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** Push 3\n> - **12-16:** Push 5\n> - **17+:** Push 7\n>\n> **Effect:** An object you target must be your size or smaller. You gain an edge on this ability. Additionally, for each square you push the target, they take 1 psychic damage.\n\n> ###### Phase Strike (5 Discipline)\n>\n> *For a moment, your foe slips out of phase with this manifold.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 3 + A psychic damage; I < WEAK, the target goes out of phase (save ends)\n> - **12-16:** 4 + A psychic damage; I < AVERAGE, the target goes out of phase (save ends)\n> - **17+:** 6 + A psychic damage; I < STRONG, the target goes out of phase (save ends)\n>\n> **Effect:** A target who goes out of phase is slowed, has their stability reduced by 2, and can't obtain a tier 3 outcome on ability rolls.\n\n> ###### A Squad Unto Myself (5 Discipline)\n>\n> *You move so quickly, it seems as though an army assaulted your foes.*\n>\n> | **Area, Psionic, Weapon** |               **Main action** |\n> | ------------------------- | ----------------------------: |\n> | **📏 2 burst**            | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 6 damage\n> - **12-16:** 9 damage\n> - **17+:** 13 damage\n>\n> **Effect:** You can take the Disengage move action as a free maneuver before or after you use this ability.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 2,
+          "desc": "Choose two signature abilities.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-dance-of-blows",
+              "feat.drawsteel-null-faster-than-the-eye",
+              "feat.drawsteel-inertial-step",
+              "feat.drawsteel-null-joint-lock",
+              "feat.drawsteel-null-kinetic-strike",
+              "feat.drawsteel-null-magnetic-strike",
+              "feat.drawsteel-null-phase-inversion-strike",
+              "feat.drawsteel-null-pressure-points"
+            ]
+          }
+        },
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose a 3-discipline heroic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-chronal-spike",
+              "feat.drawsteel-null-psychic-pulse",
+              "feat.drawsteel-null-relentless-nemesis",
+              "feat.drawsteel-null-stunning-blow"
+            ]
+          }
+        },
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose a 5-discipline heroic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-arcane-disruptor",
+              "feat.drawsteel-null-impart-force",
+              "feat.drawsteel-null-phase-strike",
+              "feat.drawsteel-a-squad-unto-myself"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perk",
+      "level": 2,
+      "description": "You gain one exploration, interpersonal, or intrigue perk of your choice. See Chapter 7: Perks.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose an exploration, interpersonal or intrigue perk.",
+          "from": {
+            "filter": {
+              "kind": "Perk",
+              "systemIds": "sys.drawsteel",
+              "perkType": [
+                "Exploration",
+                "Interpersonal",
+                "Intrigue"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2nd-Level Tradition Ability",
+      "level": 2,
+      "description": "Your null tradition grants your choice of one of two abilities.\n\n##### 2nd-Level Chronokinetic Ability\n\nChoose one of the following abilities.\n\n> ###### Blur (5 Discipline)\n>\n> *You release stored time, allowing you to act twice.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You can use a signature or heroic ability. You gain an edge on that ability's power rolls.\n\n> ###### Force Redirected (5 Discipline)\n>\n> *The force of your strike moves your target in a surprising direction.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 3**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 8 + A damage; slide 1\n> - **12-16:** 12 + A damage; slide 3\n> - **17+:** 16 + A damage; slide 5\n\n##### 2nd-Level Cryokinetic Ability\n\nChoose one of the following heroic abilities.\n\n> ###### Entropic Field (5 Discipline)\n>\n> *You drastically increase the local entropy.*\n>\n> | **Area, Psionic, Weapon** |               **Main action** |\n> | ------------------------- | ----------------------------: |\n> | **📏 3 cube within 1**    | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 6 cold damage; A < WEAK, slowed (save ends)\n> - **12-16:** 9 cold damage; A < AVERAGE, slowed (save ends)\n> - **17+:** 13 cold damage; A < STRONG, slowed (save ends)\n\n> ###### Heat Sink (5 Discipline)\n>\n> *You absorb ambient heat, coating the ground in frost and precipitating snow from the air.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** Until the start of your next turn, the size of your Null Field ability increases by 1, and you and any ally benefit from concealment while in the area. At the end of this turn, each enemy in the area takes cold damage equal to your Intuition score.\n\n##### 2nd-Level Metakinetic Ability\n\nChoose one of the following abilities.\n\n> ###### Gravitic Strike (5 Discipline)\n>\n> *Your fist emanates gravitic force that pulls a distant enemy closer.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 3**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 8 + A psychic damage; vertical pull 3\n> - **12-16:** 12 + A psychic damage; vertical pull 5\n> - **17+:** 16 + A psychic damage; vertical pull 7\n\n> ###### Kinetic Shield (5 Discipline)\n>\n> *You manifest a force barrier that absorbs incoming kinetic energy.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** You gain 10 temporary Stamina.\n> - **12-16:** You gain 15 temporary Stamina.\n> - **17+:** You gain 20 temporary Stamina.\n>\n> **Effect:** While you have temporary Stamina from this ability, you can't be made bleeding even while dying."
+    },
+    {
+      "name": "Psionic Leap",
+      "level": 3,
+      "description": "You can long jump and high jump a distance equal to twice your Agility score without needing to make a test."
+    },
+    {
+      "name": "Reorder",
+      "level": 3,
+      "description": "At the start of each of your turns, you can use a free triggered action to end one effect on you that is ended by a saving throw or that ends at the end of your turn. Alternatively, you can grant this benefit to one creature in the area of your Null Field ability."
+    },
+    {
+      "name": "7-Discipline Ability",
+      "level": 3,
+      "description": "Choose one heroic ability from the following options, each of which costs 7 discipline to use.\n\n> ###### Absorption Field (7 Discipline)\n>\n> *Your null field absorbs kinetic energy.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, each enemy in the area takes a bane on ability rolls.\n\n> ###### Molecular Rearrangement Field (7 Discipline)\n>\n> *Your enemies' wounds open, your allies' wounds close.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, each enemy who has I < AVERAGE and enters the area for the first time in a combat round or starts their turn there is bleeding (save ends). Each ally who enters the area for the first time in a combat round or starts their turn there gains temporary Stamina equal to your Intuition score.\n\n> ###### Stabilizing Field (7 Discipline)\n>\n> *You project order, making it harder for your enemies to interfere with you and your allies.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, you ignore difficult terrain and reduce the potency of enemy effects targeting you by 1 for you. You can also use a free triggered action at the start of each of your turns to end one effect on you that is ended by a saving throw or that ends at the end of your turn. Each ally in the area also gains these benefits.\n\n> ###### Synapse Field (7 Discipline)\n>\n> *Attacks made by allies in your null field disrupt your enemies' thoughts, causing psychic pain.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, whenever an enemy in the area takes rolled damage, they take extra psychic damage equal to twice your Intuition score.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one 7-discipline ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-absorption-field",
+              "feat.drawsteel-null-molecular-rearrangement-field",
+              "feat.drawsteel-null-stabilizing-field",
+              "feat.drawsteel-null-synapse-field"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Characteristic Increase",
+      "level": 4,
+      "description": "Your Agility and Intuition scores each increase to 3.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "statChange",
+          "fieldRole": "abilityScores",
+          "keys": [
+            "agility",
+            "intuition"
+          ],
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "name": "Discipline Mastery Improvement (4th Level)",
+      "level": 4,
+      "description": "Your Discipline Mastery feature provides additional benefits when you have 8 or more discipline."
+    },
+    {
+      "name": "Enhanced Null Field",
+      "level": 4,
+      "description": "While using your Null Field ability, you disrupt magic and psionic power suffusing the area around you. During combat, any temporary supernatural terrain effects of your level or lower are removed when your aura partially or fully overlaps with their location. Permanent supernatural terrain effects of your level or lower are temporarily negated while your aura overlaps with their location, but return when the aura no longer overlaps with them."
+    },
+    {
+      "name": "Perk",
+      "level": 4,
+      "description": "You gain one perk of your choice.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose a perk.",
+          "from": {
+            "filter": {
+              "kind": "Perk",
+              "systemIds": "sys.drawsteel"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Regenerative Field",
+      "level": 4,
+      "description": "The first time each combat round that an enemy in the area of your Null Field ability uses a main action, you gain 2 discipline instead of 1."
+    },
+    {
+      "name": "Skill",
+      "level": 4,
+      "description": "You gain one skill of your choice. See Skills in Chapter 9: Tests.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "listChoice",
+          "choose": 1,
+          "desc": "Choose a skill.",
+          "targetPath": "skills",
+          "from": {
+            "systemField": "skills"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9-Discipline Ability",
+      "level": 5,
+      "description": "Choose one heroic ability from the following options, each of which costs 9 discipline to use.\n\n> ###### Anticipating Strike (9 Discipline)\n>\n> *You suddenly strike an enemy, then grab them in a psionically enhanced grip.*\n>\n> | **Melee, Psionic, Strike, Weapon** |  **Free triggered** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Trigger:** The target moves or uses a main action.\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 7 + A damage; I < WEAK, restrained (save ends)\n> - **12-16:** 10 + A damage; I < AVERAGE, restrained (save ends)\n> - **17+:** 13 + A damage; I < STRONG, restrained (save ends)\n>\n> **Effect:** This strike resolves before the triggering movement or main action.\n\n> ###### Iron Grip (9 Discipline)\n>\n> *You grab the target with supernatural force.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 10 + A damage; A < WEAK, grabbed\n> - **12-16:** 14 + A damage; A < AVERAGE, grabbed\n> - **17+:** 18 + A damage; A < STRONG, grabbed\n>\n> **Effect:** While grabbed this way, the target takes a bane on the Escape Grab maneuver. Each time they use that maneuver, they take damage equal to twice your Agility score.\n\n> ###### Phase Leap (9 Discipline)\n>\n> *You leap beyond reality, leaving an afterimage of yourself.*\n>\n> | **Psionic** |    **Move** |\n> | ----------- | ----------: |\n> | **📏 Self** | **🎯 Self** |\n>\n> **Effect:** You jump up to your speed without provoking opportunity attacks. Until the end of your next turn, a static afterimage of you remains in the space you left, and any enemy adjacent to your afterimage takes a bane on ability rolls. You can use your abilities from your own space or from the space of your afterimage as if you were still there. Additionally, if your Null Field ability is active, your afterimage also projects the aura from that ability, which you control as if you were in the afterimage's space.\n\n> ###### Synaptic Reset (9 Discipline)\n>\n> *You expand your nullifying power to mitigate harmful effects.*\n>\n> | **Area, Psionic** |                          **Maneuver** |\n> | ----------------- | ------------------------------------: |\n> | **📏 3 burst**    | **🎯 Self and each ally in the area** |\n>\n> **Effect:** Each target can end any conditions or effects on themself, and gains 5 temporary Stamina for each condition or effect removed.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one 9-discipline ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-anticipating-strike",
+              "feat.drawsteel-null-iron-grip",
+              "feat.drawsteel-null-phase-leap",
+              "feat.drawsteel-null-synaptic-reset"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Elemental Absorption",
+      "level": 6,
+      "description": "Whenever you use your Inertial Shield triggered action, you gain immunity to acid, cold, corruption, fire, lightning, poison, and sonic damage equal to your Intuition score against the triggering damage."
+    },
+    {
+      "name": "Elemental Buffer",
+      "level": 6,
+      "description": "Whenever you reduce acid, cold, corruption, fire, lightning, poison, or sonic damage with damage immunity, you gain 2 surges that can be used only to increase the damage of your next strike."
+    },
+    {
+      "name": "Perk",
+      "level": 6,
+      "description": "You gain one exploration, interpersonal, or intrigue perk of your choice.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose an exploration, interpersonal or intrigue perk.",
+          "from": {
+            "filter": {
+              "kind": "Perk",
+              "systemIds": "sys.drawsteel",
+              "perkType": [
+                "Exploration",
+                "Interpersonal",
+                "Intrigue"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6th-Level Tradition Ability",
+      "level": 6,
+      "description": "Your null tradition grants your choice of one of two heroic abilities.\n\n##### 6th-Level Chronokinetic Abilities\n\nChoose one of the following abilities.\n\n> ###### Interphase (9 Discipline)\n>\n> *You slip into a faster timestream to act more quickly.*\n>\n> | **Psionic** | **Main action** |\n> | ----------- | --------------: |\n> | **📏 Self** |     **🎯 Self** |\n>\n> **Effect:** You can use up to three signature abilities, each of which gains an edge.\n\n> ###### Phase Step (9 Discipline)\n>\n> *You weaken your connection to this manifold, allowing you to move through and damage enemies.*\n>\n> | **Melee, Psionic, Weapon** | **Main action** |\n> | -------------------------- | --------------: |\n> | **📏 Self; see below**     |     **🎯 Self** |\n>\n> **Effect:** You can shift up to your speed, and squares occupied by enemies or objects are not difficult terrain for this shift. You make one power roll that targets each enemy you moved through during this shift.\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 6 damage; M < WEAK, dazed\n> - **12-16:** 8 damage; M < AVERAGE, dazed\n> - **17+:** 12 damage; M < STRONG, dazed\n\n##### 6th-Level Cryokinetic Abilities\n\nChoose one of the following abilities.\n\n> ###### Ice Pillars (9 Discipline)\n>\n> *Pillars of ice erupt from the ground and launch your foes into the air.*\n>\n> | **Psionic, Ranged** |                   **Main action** |\n> | ------------------- | --------------------------------: |\n> | **📏 Ranged 10**    | **🎯 Three creatures or objects** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** Vertical slide 6\n> - **12-16:** Vertical slide 8\n> - **17+:** Vertical slide 10\n>\n> **Effect:** The pillars vanish as soon as the effects of the forced movement are resolved.\n\n> ###### Wall of Ice (9 Discipline)\n>\n> *You create a wall of ice.*\n>\n> | **Area, Psionic, Ranged** | **Main action** |\n> | ------------------------- | --------------: |\n> | **📏 10 wall within 10**  |  **🎯 Special** |\n>\n> **Effect:** You can place this wall in occupied squares, sliding each creature in the area into the nearest unoccupied space of your choice. The wall remains until the end of the encounter or until you are dying. The wall's squares are treated as stone squares for the purpose of damage, and you and allies can move freely through the wall. Each enemy who enters a square adjacent to the wall and has M < AVERAGE is slowed (save ends). Each enemy who is force moved into the wall and has M < AVERAGE is restrained (save ends).\n\n##### 6th-Level Metakinetic Abilities\n\nChoose one of the following abilities.\n\n> ###### Gravitic Charge (9 Discipline)\n>\n> *You channel your discipline into momentum that defies gravity.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** Vertical slide 5\n> - **12-16:** Vertical slide 7\n> - **17+:** Vertical slide 9\n>\n> **Effect:** This movement ignores stability. If you slide into another creature, you resolve damage to both of you as if your force movement had ended, but you keep moving through that creature's space.\n\n> ###### Iron Body (9 Discipline)\n>\n> *You focus until your body becomes as hard as iron.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You gain 20 temporary Stamina. Additionally, until the end of the encounter, your stability gains a bonus equal to your Intuition score."
+    },
+    {
+      "name": "Characteristic Increase",
+      "level": 7,
+      "description": "Each of your characteristic scores increases by 1, to a maximum of 4.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "statChange",
+          "fieldRole": "abilityScores",
+          "add": 1,
+          "max": 4
+        }
+      ]
+    },
+    {
+      "name": "Discipline Mastery Improvement (7th Level)",
+      "level": 7,
+      "description": "Your Discipline Mastery feature provides additional benefits when you have 10 or more discipline."
+    },
+    {
+      "name": "Psi Boost",
+      "level": 7,
+      "description": "Whenever you use an ability that is a main action or a maneuver with the Psionic keyword, you can spend additional discipline to apply a psi boost to it and enhance its effects. A psi boost's effects only last until the end of the turn which the ability is first used. You can apply multiple psi boosts to an ability, but only one instance of each specific boost. You can use the following psi boosts.\n\n##### Dynamic Power (1 Discipline)\n\nIf the ability force moves a target, the forced movement distance gains a bonus equal to your Intuition score.\n\n##### Expanded Power (3 Discipline)\n\nIf the ability targets an area, you increase the size of the area by 1. If the area is a line, you increase the size of one dimension, not both.\n\n##### Extended Power (1 Discipline)\n\nIf the ability is ranged, the distance gains a bonus equal to your Intuition score. If the ability is melee, the distance gains a +2 bonus.\n\n##### Heightened Power (1 Discipline)\n\nIf the ability deals rolled damage, it deals extra damage equal to your Intuition score.\n\n##### Magnified Power (5 Discipline)\n\nIf the ability has a potency, you increase that potency by an amount equal to your Intuition score.\n\n##### Shared Power (5 Discipline)\n\nIf the ability targets individual creatures or objects, you target one additional creature or object within distance.\n\n##### Sharpened Power (1 Discipline)\n\nIf the ability has any power roll, that roll gains an edge."
+    },
+    {
+      "name": "Improved Body",
+      "level": 7,
+      "description": "When you gain discipline at the start of each of your turns during combat, you gain 3 discipline instead of 2."
+    },
+    {
+      "name": "Skill",
+      "level": 7,
+      "description": "You gain one skill of your choice.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "listChoice",
+          "choose": 1,
+          "desc": "Choose a skill.",
+          "targetPath": "skills",
+          "from": {
+            "systemField": "skills"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perk",
+      "level": 8,
+      "description": "You gain one perk of your choice.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose a perk.",
+          "from": {
+            "filter": {
+              "kind": "Perk",
+              "systemIds": "sys.drawsteel"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11-Discipline Ability",
+      "level": 8,
+      "description": "Choose one heroic ability from the following options, each of which costs 11 discipline to use.\n\n> ###### Arcane Purge (11 Discipline)\n>\n> *You focus your null field into a pressure point strike that prevents your foe from channeling sorcery.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 13 + A damage; M < WEAK, the target is suppressed (save ends)\n> - **12-16:** 19 + A damage; M < AVERAGE, the target is suppressed (save ends)\n> - **17+:** 24 + A damage; M < STRONG, the target is suppressed (save ends)\n>\n> **Effect:** While suppressed, a target takes psychic damage equal to twice your Intuition score at the start of their turns, whenever they use a supernatural ability, or whenever they use an ability that costs Malice.\n\n> ###### Phase Hurl (11 Discipline)\n>\n> *You throw your foe out of phase with this manifold, causing them to harm other enemies as they return.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 9 + A damage; push 5; I < WEAK, dazed (save ends)\n> - **12-16:** 13 + A damage; push 7; I < AVERAGE, dazed (save ends)\n> - **17+:** 18 + A damage; push 10; I < STRONG, dazed (save ends)\n>\n> **Effect:** The target and each creature or object they collide with from this forced movement takes psychic damage equal to the total number of squares the target was force moved. While the target is dazed this way, they see glimpses of creatures from other parts of the timescape.\n\n> ###### Scalar Assault (11 Discipline)\n>\n> *You warp reality to grow a limb for just a moment and make a single devastating attack.*\n>\n> | **Area, Psionic**      |               **Main action** |\n> | ---------------------- | ----------------------------: |\n> | **📏 3 cube within 1** | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 12 psychic damage; push 3\n> - **12-16:** 17 psychic damage; push 5\n> - **17+:** 23 psychic damage; push 7\n\n> ###### Synaptic Anchor (11 Discipline)\n>\n> *You disrupt an enemy's strike and create a feedback loop in their mind, preventing them from focusing on future attacks.*\n>\n> | **Psionic**            |          **Free triggered** |\n> | ---------------------- | --------------------------: |\n> | **📏 Self; see below** | **🎯 Self or one creature** |\n>\n> **Trigger:** The target takes damage from another creature's ability while in the area of your Null Field ability.\n>\n> **Effect:** The target takes half the damage, and if the triggering creature has I < AVERAGE, they are dazed (save ends). While the triggering creature is dazed this way, they take psychic damage equal to your Intuition score whenever they use a main action.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one 11-discipline ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-arcane-purge",
+              "feat.drawsteel-null-phase-hurl",
+              "feat.drawsteel-null-scalar-assault",
+              "feat.drawsteel-null-synaptic-anchor"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "I Am the Weapon",
+      "level": 9,
+      "description": "Your Stamina increases by 21 and you can't be made bleeding even while dying. You no longer age or have need of food. Additionally, you can use Intuition instead of another characteristic when resisting potencies."
+    },
+    {
+      "name": "9th-Level Tradition Ability",
+      "level": 9,
+      "description": "Your null tradition grants your choice of one of two heroic abilities.\n\n##### 9th-Level Chronokinetic Abilities\n\nChoose one of the following abilities.\n\n> ###### Arrestor Cycle (11 Discipline)\n>\n> *You trap your foe in a looping cycle of time, where they relive the last few seconds over and over again.*\n>\n> | **Psionic, Ranged** |  **Free triggered** |\n> | ------------------- | ------------------: |\n> | **📏 Ranged 10**    | **🎯 One creature** |\n>\n> **Trigger:** The triggering creature starts their turn.\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** I < WEAK, the target loses their turn\n> - **12-16:** I < AVERAGE, the target loses their turn\n> - **17+:** I < STRONG, the target loses their turn\n>\n> **Effect:** If the target loses their turn, the round continues as if they had acted. A target who doesn't lose their turn takes psychic damage equal to twice your Intuition score for each main action they take until the end of their next turn.\n\n> ###### Time Loop (11 Discipline)\n>\n> *You show shadows what true speed is.*\n>\n> | **Psionic** | **Free triggered** |\n> | ----------- | -----------------: |\n> | **📏 Self** |        **🎯 Self** |\n>\n> **Trigger:** Another creature on the encounter map ends their turn.\n>\n> **Effect:** You take a bonus turn immediately after the triggering creature. This ability can be used only once per combat round.\n\n##### 9th-Level Cryokinetic Abilities\n\nChoose one of the following abilities.\n\n> ###### Absolute Zero (11 Discipline)\n>\n> *You become the coldest thing in the timescape.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** You gain 20 temporary Stamina.\n> - **12-16:** You gain 30 temporary Stamina.\n> - **17+:** You gain 40 temporary Stamina.\n>\n> **Effect:** Until the end of the encounter or until you are dead, you become an avatar of uttermost cold. You gain immunity to all damage equal to the cold damage immunity granted by your Entropic Adaptability trait, you ignore the negative effects of dying, and you have a +2 bonus to potencies.\n\n> ###### Heat Drain (11 Discipline)\n>\n> *You drain all the heat from the target.*\n>\n> | **Melee, Psionic, Strike** |        **Maneuver** |\n> | -------------------------- | ------------------: |\n> | **📏 Melee 1**             | **🎯 One creature** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** 8 + I cold damage; M < WEAK, restrained (save ends)\n> - **12-16:** 11 + I cold damage; M < AVERAGE, restrained (save ends)\n> - **17+:** 15 + I cold damage; M < STRONG, restrained (save ends)\n>\n> **Effect:** While restrained this way, the target takes cold damage equal to your Intuition score at the start of each of your turns. Additionally, whenever the target damages another creature while restrained this way, any potency associated with the damage is reduced by 2.\n\n##### 9th-Level Metakinetic Abilities\n\nChoose one of the following abilities.\n\n> ###### Inertial Absorption (11 Discipline)\n>\n> *You absorb an attack to empower your body.*\n>\n> | **Psionic** | **Free triggered** |\n> | ----------- | -----------------: |\n> | **📏 Self** |        **🎯 Self** |\n>\n> **Trigger:** Another creature damages you using an ability.\n>\n> **Effect:** You take half the damage, negate any effects associated with the damage for you, and gain 3 surges.\n\n> ###### Realitas (11 Discipline)\n>\n> *Your essential hyperreality disrupts your enemy's connection to existence.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 7 + A psychic damage; I < WEAK, dazed\n> - **12-16:** 10 + A psychic damage; I < AVERAGE, dazed\n> - **17+:** 13 + A psychic damage; I < STRONG, dazed\n>\n> **Effect:** While dazed this way, the target takes psychic damage equal to twice your Intuition score at the start of each of your turns. If this ability causes a creature who is not a leader or solo creature to become winded, they are instead reduced to 0 Stamina. Any creature reduced to 0 Stamina by this ability is forgotten by all creatures of your level or lower in the timescape who are not present in the encounter. Loved ones of the forgotten creature retain a faint sense of melancholy. This effect can be reversed only at the Director's discretion."
+    },
+    {
+      "name": "Characteristic Increase",
+      "level": 10,
+      "description": "Your Agility and Intuition scores each increase to 5.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "statChange",
+          "fieldRole": "abilityScores",
+          "keys": [
+            "agility",
+            "intuition"
+          ],
+          "atLeast": 5
+        }
+      ]
+    },
+    {
+      "name": "Discipline Mastery Improvement (10th Level)",
+      "level": 10,
+      "description": "Your Discipline Mastery feature provides additional benefits when you have 12 or more discipline."
+    },
+    {
+      "name": "Manifold Body",
+      "level": 10,
+      "description": "When you gain discipline at the start of each of your turns during combat, you gain 4 discipline instead of 3."
+    },
+    {
+      "name": "Manifold Resonance",
+      "level": 10,
+      "description": "Your body becomes perfected matter, beyond the whims and chaos of the timescape and the restrictions of the manifolds. Each time you finish a respite, you can shift yourself and any creatures in the area of your Null Field ability to any location in the timescape known to you, known to any other creature in the area, or where any supernatural treasure in the area has been before.\n\nWhenever you use an ability, you gain 1 discipline that can be used only to apply a benefit from your Psi Boost feature to that ability. Additionally, you and allies in the area of your Null Field ability ignore banes and double banes on your power rolls."
+    },
+    {
+      "name": "Order",
+      "level": 10,
+      "description": "You have an epic resource called order. Each time you finish a respite, you gain order equal to the XP you gain. You can spend order on your abilities as if it were discipline.\n\nAt the start of a combat encounter, you can spend 1 order to increase the size of your Null Field by 1 until the end of the encounter.\n\nOrder remains until you spend it."
+    },
+    {
+      "name": "Perk",
+      "level": 10,
+      "description": "You gain one exploration, interpersonal, or intrigue perk of your choice.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose an exploration, interpersonal or intrigue perk.",
+          "from": {
+            "filter": {
+              "kind": "Perk",
+              "systemIds": "sys.drawsteel",
+              "perkType": [
+                "Exploration",
+                "Interpersonal",
+                "Intrigue"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Skill",
+      "level": 10,
+      "description": "You gain one skill of your choice.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "listChoice",
+          "choose": 1,
+          "desc": "Choose a skill.",
+          "targetPath": "skills",
+          "from": {
+            "systemField": "skills"
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-null-null-tradition",
+    "feat.drawsteel-discipline",
+    "feat.drawsteel-null-field",
+    "feat.drawsteel-inertial-shield",
+    "feat.drawsteel-null-discipline-mastery",
+    "feat.drawsteel-null-speed",
+    "feat.drawsteel-psionic-martial-arts",
+    "feat.drawsteel-null-psionic-leap",
+    "feat.drawsteel-null-reorder",
+    "feat.drawsteel-null-discipline-mastery-improvement-4th-level",
+    "feat.drawsteel-null-enhanced-null-field",
+    "feat.drawsteel-null-regenerative-field",
+    "feat.drawsteel-null-elemental-absorption",
+    "feat.drawsteel-null-elemental-buffer",
+    "feat.drawsteel-null-discipline-mastery-improvement-7th-level",
+    "feat.drawsteel-null-psi-boost",
+    "feat.drawsteel-null-improved-body",
+    "feat.drawsteel-null-i-am-the-weapon",
+    "feat.drawsteel-null-discipline-mastery-improvement-10th-level",
+    "feat.drawsteel-null-manifold-body",
+    "feat.drawsteel-null-manifold-resonance",
+    "feat.drawsteel-null-order",
+    "feat.drawsteel-melee-weapon-free-strike",
+    "feat.drawsteel-ranged-weapon-free-strike"
+  ],
+  "characteristics": {
+    "fixed": {
+      "agility": 2,
+      "intuition": 2
+    },
+    "arrays": [
+      [
+        2,
+        -1,
+        -1
+      ],
+      [
+        1,
+        1,
+        -1
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ]
+  },
+  "heroicResource": "Discipline",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Psionics"
+      ]
+    },
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two interpersonal or lore skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Interpersonal",
+            "Lore"
+          ]
+        }
+      }
+    }
+  ]
 }

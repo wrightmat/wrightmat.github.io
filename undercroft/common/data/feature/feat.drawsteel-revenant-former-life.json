@@ -1,0 +1,37 @@
+{
+  "id": "feat.drawsteel-revenant-former-life",
+  "name": "Former Life",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nChoose the ancestry you were before you died. Your size is that ancestry's size and your speed is 5. Unless you select one of the Previous Life traits (see below), you don't receive any other ancestral traits from your original ancestry.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Choose the ancestry you were before you died. Your size is that ancestry's size and your speed is 5. Unless you select one of the Previous Life traits (see below), you don't receive any other ancestral traits from your original ancestry."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Revenant",
+  "grants": [
+    {
+      "type": "fieldChoice",
+      "choose": 1,
+      "desc": "Choose the size of the ancestry you were before you died.",
+      "targetPath": "stats.size",
+      "from": {
+        "systemField": "sizes"
+      }
+    }
+  ]
+}

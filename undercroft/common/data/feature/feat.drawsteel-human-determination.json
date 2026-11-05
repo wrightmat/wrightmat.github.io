@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-human-determination",
+  "name": "Determination",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nA tolerance for pain and distress allows you to push through difficult situations. If you are frightened, slowed, or weakened, you can use a maneuver to immediately end one of those conditions.",
+  "mechanics": {
+    "type": "active",
+    "text": "Ancestry Trait A tolerance for pain and distress allows you to push through difficult situations. If you are frightened, slowed, or weakened, you can use a maneuver to immediately end one of those conditions."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Human",
+  "cost": 2
+}

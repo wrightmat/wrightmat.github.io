@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-phase-leap",
+  "name": "Phase Leap",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You leap beyond reality, leaving an afterimage of yourself.*\n\n**Heroic Ability** — Psionic — Move\n\n**Cost:** 9 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You jump up to your speed without provoking opportunity attacks. Until the end of your next turn, a static afterimage of you remains in the space you left, and any enemy adjacent to your afterimage takes a bane on ability rolls. You can use your abilities from your own space or from the space of your afterimage as if you were still there. Additionally, if your Null Field ability is active, your afterimage also projects the aura from that ability, which you control as if you were in the afterimage's space.",
+  "mechanics": {
+    "type": "active",
+    "text": "You leap beyond reality, leaving an afterimage of yourself. Effect: You jump up to your speed without provoking opportunity attacks. Until the end of your next turn, a static afterimage of you remains in the space you left, and any enemy adjacent to your afterimage takes a bane on ability rolls. You can use your abilities from your own space or from the space of your afterimage as if you were still there. Additionally, if your Null Field ability is active, your afterimage also projects the aura from that ability, which you control as if you were in the afterimage's space."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Move",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 9
+}

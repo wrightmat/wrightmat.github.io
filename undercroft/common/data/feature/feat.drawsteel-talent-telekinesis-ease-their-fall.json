@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telekinesis-ease-their-fall",
+  "name": "Ease Their Fall",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you land after a fall, or if any falling creature lands within 2 squares of you, you can use a free triggered action to reduce the falling damage by an amount equal to 2 + your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you land after a fall, or if any falling creature lands within 2 squares of you, you can use a free triggered action to reduce the falling damage by an amount equal to 2 + your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

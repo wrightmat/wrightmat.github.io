@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-green-flowering-bed",
+  "name": "Flowering Bed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "At the end of each of your turns, each ally in the area gains temporary Stamina equal to your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the end of each of your turns, each ally in the area gains temporary Stamina equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

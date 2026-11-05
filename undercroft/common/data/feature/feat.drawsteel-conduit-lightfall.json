@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-conduit-lightfall",
+  "name": "Lightfall",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A rain of holy light scours your enemies and repositions your allies.*\n\n**Signature Ability** — Area, Magic — Main action\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 holy damage\n- **12-16:** 3 holy damage\n- **17+:** 5 holy damage\n\n**Effect:** You can teleport yourself and each ally in the area to unoccupied spaces in the area.",
+  "mechanics": {
+    "type": "active",
+    "text": "A rain of holy light scours your enemies and repositions your allies. Power Roll + Intuition: - ≤11: 2 holy damage - 12-16: 3 holy damage - 17+: 5 holy damage Effect: You can teleport yourself and each ally in the area to unoccupied spaces in the area."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "2 burst",
+  "target": "Each enemy in the area"
+}

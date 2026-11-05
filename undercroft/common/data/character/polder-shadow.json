@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "Polder Shadow (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Shadow",
+        "refKind": "class",
+        "refId": "ds-shadow",
+        "level": 1,
+        "subclass": {
+          "name": "College of Black Ash",
+          "refKind": "variant",
+          "refId": "ds-shadow-black-ash"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "Polder",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-criminal"
   },
-  "class": {
-    "name": "Shadow",
-    "refKind": "class",
-    "refId": "ds-shadow"
-  },
-  "subclasses": [
-    {
-      "name": "College of Black Ash",
-      "refKind": "variant",
-      "refId": "ds-shadow-black-ash"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -138,8 +141,17 @@
     "feat.drawsteel-ranged-weapon-free-strike",
     "feat.drawsteel-insight",
     "feat.drawsteel-lucky-dog",
-    "feat.drawsteel-cloak-and-dagger-kit",
     "feat.drawsteel-corruption-immunity",
     "feat.drawsteel-fearless"
+  ],
+  "inventory": [
+    {
+      "name": "Cloak and Dagger Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "cloak-and-dagger-kit-drawsteel"
+    }
   ]
 }

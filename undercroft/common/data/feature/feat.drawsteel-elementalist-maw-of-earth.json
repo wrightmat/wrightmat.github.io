@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-maw-of-earth",
+  "name": "Maw of Earth",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You open up the ground, spewing out shrapnel of stone and debris.*\n\n**Heroic Ability** — Area, Earth, Magic, Ranged — Main action\n\n**Cost:** 7 Essence\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 5 damage\n- **12-16:** 9 damage\n- **17+:** 12 damage\n\n**Effect:** The ground in or directly beneath the area drops 3 squares.",
+  "mechanics": {
+    "type": "active",
+    "text": "You open up the ground, spewing out shrapnel of stone and debris. Power Roll + Reason: - ≤11: 5 damage - 12-16: 9 damage - 17+: 12 damage Effect: The ground in or directly beneath the area drops 3 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Earth, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

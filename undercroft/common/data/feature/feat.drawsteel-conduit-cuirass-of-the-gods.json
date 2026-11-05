@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-cuirass-of-the-gods",
+  "name": "Cuirass of the Gods",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your allies are covered in spiritual armor.*\n\n**Heroic Ability** — Area, Magic, Ranged — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 10   **Target:** Three creatures\n\n**Effect:** You can target yourself instead of one creature with this ability. Each target has damage immunity 5 until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your allies are covered in spiritual armor. Effect: You can target yourself instead of one creature with this ability. Each target has damage immunity 5 until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Three creatures",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-protection"
+  ]
+}

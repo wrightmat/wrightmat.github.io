@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-behold-the-mystery",
+  "name": "Behold the Mystery",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You open a rift into the void to harry your foes.*\n\n**Heroic Ability** — Area, Magic, Ranged, Void — Main action\n\n**Cost:** 3 Essence\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 psychic damage\n- **12-16:** 4 psychic damage\n- **17+:** 6 psychic damage\n\n**Persistent 1:** At the start of your turn, you can use a maneuver to use this ability again without spending essence.",
+  "mechanics": {
+    "type": "active",
+    "text": "You open a rift into the void to harry your foes. Power Roll + Reason: - ≤11: 2 psychic damage - 12-16: 4 psychic damage - 17+: 6 psychic damage Persistent 1: At the start of your turn, you can use a maneuver to use this ability again without spending essence."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged, Void",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 3
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-battle-cry",
+  "name": "Battle Cry",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You shout a phrase that galvanizes your team.*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 3 Focus\n\n**Distance:** Ranged 10   **Target:** Three allies\n\n**Power Roll + Reason:**\n\n- **≤11:** Each target gains 1 surge.\n- **12-16:** Each target gains 2 surges.\n- **17+:** Each target gains 3 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "You shout a phrase that galvanizes your team. Power Roll + Reason: - ≤11: Each target gains 1 surge. - 12-16: Each target gains 2 surges. - 17+: Each target gains 3 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Three allies",
+  "cost": 3
+}

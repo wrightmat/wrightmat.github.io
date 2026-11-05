@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-void-master-of-void",
+  "name": "Master of Void",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you willingly move, you can teleport.\n\nAdditionally, your mind is connected to the mystery and helps you find the answers you seek. You no longer require project sources for research projects. Whenever you use a respite activity to make a project roll for a research project, you automatically complete the project.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you willingly move, you can teleport. Additionally, your mind is connected to the mystery and helps you find the answers you seek. You no longer require project sources for research projects. Whenever you use a respite activity to make a project roll for a research project, you automatically complete the project."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

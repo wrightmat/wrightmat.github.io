@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-weakening-brand",
+  "name": "Weakening Brand",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The impact of your weapon brands your target for destruction.*\n\n**Signature Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might, Reason, Intuition, or Presence:**\n\n- **≤11:** 3 + M, R, I, or P holy damage\n- **12-16:** 5 + M, R, I, or P holy damage\n- **17+:** 8 + M, R, I, or P holy damage\n\n**Effect:** Until the end of the target's next turn, they have damage weakness equal to the characteristic score used for this ability's power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "The impact of your weapon brands your target for destruction. Power Roll + Might, Reason, Intuition, or Presence: - ≤11: 3 + M, R, I, or P holy damage - 12-16: 5 + M, R, I, or P holy damage - 17+: 8 + M, R, I, or P holy damage Effect: Until the end of the target's next turn, they have damage weakness equal to the characteristic score used for this ability's power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

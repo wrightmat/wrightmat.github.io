@@ -1,0 +1,52 @@
+{
+  "id": "feat.drawsteel-dragon-knight-prismatic-scales",
+  "name": "Prismatic Scales",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nSelect one damage immunity granted by your Wyrmplate trait. You always have this immunity, in addition to the immunity granted by Wyrmplate.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Select one damage immunity granted by your Wyrmplate trait. You always have this immunity, in addition to the immunity granted by Wyrmplate."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Dragon Knight",
+  "cost": 1,
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose the immunity you always have.",
+      "targetPath": "immunities",
+      "itemDefaults": {
+        "kind": "Immunity",
+        "formula": "@level"
+      },
+      "from": {
+        "systemField": "damageTypes",
+        "anyOf": {
+          "name": [
+            "Acid",
+            "Cold",
+            "Corruption",
+            "Fire",
+            "Lightning",
+            "Poison"
+          ]
+        }
+      }
+    }
+  ]
+}

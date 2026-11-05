@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-null-pressure-points",
+  "name": "Pressure Points",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike at key nerve clusters to leave your foe staggered.*\n\n**Signature Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 4 + A damage; A < WEAK, weakened (save ends)\n- **12-16:** 7 + A damage; A < AVERAGE, weakened (save ends)\n- **17+:** 9 + A damage; A < STRONG, weakened (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike at key nerve clusters to leave your foe staggered. Power Roll + Agility: - ≤11: 4 + A damage; A < WEAK, weakened (save ends) - 12-16: 7 + A damage; A < AVERAGE, weakened (save ends) - 17+: 9 + A damage; A < STRONG, weakened (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

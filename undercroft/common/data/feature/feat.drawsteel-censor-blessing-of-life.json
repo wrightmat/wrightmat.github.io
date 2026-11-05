@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-blessing-of-life",
+  "name": "Blessing of Life",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your divine presence causes those you deem worthy to recover quickly from a fight. Whenever an ally within distance of your My Life for Yours ability regains Stamina, they regain additional Stamina equal to your Presence score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your divine presence causes those you deem worthy to recover quickly from a fight. Whenever an ally within distance of your My Life for Yours ability regains Stamina, they regain additional Stamina equal to your Presence score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-life"
+  ]
+}

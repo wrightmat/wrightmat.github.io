@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-action-hero",
+  "name": "Action Hero",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You wield your weapon at blistering speed, leaving everyone around you fighting for their lives.*\n\n**Heroic Ability** — Area, Melee, Weapon — Main action\n\n**Cost:** 9 Drama\n\n**Distance:** 3 burst   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 10 damage\n- **12-16:** 14 damage\n- **17+:** 20 damage\n\n**Effect:** Unless you score a critical hit, this ability can't reduce a non-minion target below 1 Stamina.",
+  "mechanics": {
+    "type": "active",
+    "text": "You wield your weapon at blistering speed, leaving everyone around you fighting for their lives. Power Roll + Agility: - ≤11: 10 damage - 12-16: 14 damage - 17+: 20 damage Effect: Unless you score a critical hit, this ability can't reduce a non-minion target below 1 Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Each enemy in the area",
+  "cost": 9
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-guest-star",
+  "name": "Guest Star",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*We offered them a percentage of the gross. So they're working for free!*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** Ranged 10   **Target:** Special\n\n**Effect:** A guest star appears to help you during the encounter: either a bystander within distance uplifted by your magic, or a mysterious new hero who appears in an unoccupied space within distance. This guest star is controlled by you, has their own turn, and shares your characteristics. Their Stamina maximum is half yours. They have no abilities other than your melee and ranged free strikes. At the end of the encounter, or when the guest star is reduced to 0 Stamina, they retreat or revert to a bystander. The same bystander can't be uplifted this way more than once during an encounter.",
+  "mechanics": {
+    "type": "active",
+    "text": "We offered them a percentage of the gross. So they're working for free! Effect: A guest star appears to help you during the encounter: either a bystander within distance uplifted by your magic, or a mysterious new hero who appears in an unoccupied space within distance. This guest star is controlled by you, has their own turn, and shares your characteristics. Their Stamina maximum is half yours. They have no abilities other than your melee and ranged free strikes. At the end of the encounter, or when the guest star is reduced to 0 Stamina, they retreat or revert to a bystander. The same bystander can't be uplifted this way more than once during an encounter."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Special",
+  "cost": 5
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-epic",
+  "name": "Epic",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your story tells a tale of the villain's waning power and how the heroes rose to the occasion to stop them.*\n\n**Heroic Ability** — Magic, Melee, Ranged — Maneuver\n\n**Cost:** 11 Drama\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** The target takes a bane on ability rolls (save ends).\n- **12-16:** The target has a double bane on ability rolls (save ends).\n- **17+:** The target has a double bane on power rolls (save ends).\n\n**Effect:** Choose one ally within distance. While the target is affected by this ability, each time they use an ability, that ally can make a free strike against them after the ability is resolved.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your story tells a tale of the villain's waning power and how the heroes rose to the occasion to stop them. Power Roll + Presence: - ≤11: The target takes a bane on ability rolls (save ends). - 12-16: The target has a double bane on ability rolls (save ends). - 17+: The target has a double bane on power rolls (save ends). Effect: Choose one ally within distance. While the target is affected by this ability, each time they use an ability, that ally can make a free strike against them after the ability is resolved."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature",
+  "cost": 11
+}

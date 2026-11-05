@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-chronokinetic-shared-momentum",
+  "name": "Shared Momentum",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you take the Disengage move action, one ally in the area of your Null Field ability can also take the Disengage move action as a free triggered action, using your distance for that move action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you take the Disengage move action, one ally in the area of your Null Field ability can also take the Disengage move action as a free triggered action, using your distance for that move action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

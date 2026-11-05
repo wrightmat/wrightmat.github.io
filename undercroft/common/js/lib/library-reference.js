@@ -162,7 +162,7 @@ export function resolveNotes(record) {
 // degrades to plain text if the CDN scripts haven't loaded. `breaks: true`
 // matches renderMarkdown's own setting so identical source renders
 // identically in both places.
-function renderNotesPreview(text) {
+export function renderNotesPreview(text) {
   const container = document.createElement("div");
   const marked = window.marked;
   const DOMPurify = window.DOMPurify;

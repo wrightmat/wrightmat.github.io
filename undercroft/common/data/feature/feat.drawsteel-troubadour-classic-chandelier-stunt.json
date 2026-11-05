@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-classic-chandelier-stunt",
+  "name": "Classic Chandelier Stunt",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Audiences love this bit.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** Melee 1   **Target:** Self and one willing ally\n\n**Effect:** Each target can shift up to 5 squares, including vertically, but must end this movement adjacent to the other target and on solid ground. Each target can then make a melee free strike that deals extra damage equal to twice their highest characteristic score.",
+  "mechanics": {
+    "type": "active",
+    "text": "Audiences love this bit. Effect: Each target can shift up to 5 squares, including vertically, but must end this movement adjacent to the other target and on solid ground. Each target can then make a melee free strike that deals extra damage equal to twice their highest characteristic score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "Self and one willing ally",
+  "cost": 5
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-chronopathy-doubling-the-hours",
+  "name": "Doubling the Hours",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "While you have 5 or more Victories, you can undertake an additional respite activity during a respite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While you have 5 or more Victories, you can undertake an additional respite activity during a respite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

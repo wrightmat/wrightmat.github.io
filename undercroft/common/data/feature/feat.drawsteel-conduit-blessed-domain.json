@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-blessed-domain",
+  "name": "Blessed Domain",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you gain piety from a domain effect, you gain 1 additional piety.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you gain piety from a domain effect, you gain 1 additional piety."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

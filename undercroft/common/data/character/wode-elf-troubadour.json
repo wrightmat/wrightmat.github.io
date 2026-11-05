@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "Wode Elf Troubadour (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Troubadour",
+        "refKind": "class",
+        "refId": "ds-troubadour",
+        "level": 1,
+        "subclass": {
+          "name": "Virtuoso",
+          "refKind": "variant",
+          "refId": "ds-troubadour-virtuoso"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "Wode Elf",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-performer"
   },
-  "class": {
-    "name": "Troubadour",
-    "refKind": "class",
-    "refId": "ds-troubadour"
-  },
-  "subclasses": [
-    {
-      "name": "Virtuoso",
-      "refKind": "variant",
-      "refId": "ds-troubadour-virtuoso"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 2,
@@ -131,7 +134,6 @@
     "feat.drawsteel-harmonize",
     "feat.drawsteel-scene-partner",
     "feat.drawsteel-harmonizer",
-    "feat.drawsteel-swashbuckler-kit",
     "feat.drawsteel-routines",
     "feat.drawsteel-ballad-of-the-beast",
     "feat.drawsteel-choreography",
@@ -142,5 +144,15 @@
     "feat.drawsteel-wode-elf-glamour",
     "feat.drawsteel-melee-weapon-free-strike-high-elf-tactician",
     "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ],
+  "inventory": [
+    {
+      "name": "Swashbuckler Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "swashbuckler-kit-drawsteel"
+    }
   ]
 }

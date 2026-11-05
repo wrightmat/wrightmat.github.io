@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-talent-tradition",
+  "name": "Talent Tradition",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Psionic abilities are grouped into categories according to their effects, with each category comprising one of many talent traditions:\n\n- **Animapathy** abilities allow you to manipulate, meld, and exchange the souls of living things.\n- **Chronopathy** abilities allow you to view future and past events, and to manipulate time to aid allies and hinder foes.\n- **Cryokinesis** abilities allow you to manifest and manipulate absolute cold to enemies and the environment alike.\n- **Metamorphosis** abilities allow you to strengthen and manipulate your body and the bodies of others to perform preternatural exploits.\n- **Pyrokinesis** abilities allow you to create and manipulate fire by interacting with the potential energy found in all things.\n- **Resopathy** abilities allow you to manipulate matter and space to create, alter, or displace your environment and the creatures and objects in it.\n- **Telekinesis** abilities allow you to physically manipulate creatures and objects.\n- **Telepathy** abilities allow you to communicate with, read, and influence the minds of other creatures.\n\nYou choose a talent tradition from the following options: chronopathy, telekinesis, or telepathy. Your talent tradition is your subclass, and your choice of tradition determines many of the features you'll gain as you gain new levels. (Other talent traditions will be featured in future products.) (*Quick Build:* Telekinesis.)",
+  "mechanics": {
+    "type": "passive",
+    "text": "Psionic abilities are grouped into categories according to their effects, with each category comprising one of many talent traditions: - Animapathy abilities allow you to manipulate, meld, and exchange the souls of living things. - Chronopathy abilities allow you to view future and past events, and to manipulate time to aid allies and hinder foes. - Cryokinesis abilities allow you to manifest and manipulate absolute cold to enemies and the environment alike. - Metamorphosis abilities allow you to strengthen and manipulate your body and the bodies of others to perform preternatural exploits. - Pyrokinesis abilities allow you to create and manipulate fire by interacting with the potential energy found in all things. - Resopathy abilities allow you to manipulate matter and space to create, alter, or displace your environment and the creatures and objects in it. - Telekinesis abilities allow you to physically manipulate creatures and objects. - Telepathy abilities allow you to communicate with, read, and influence the minds of other creatures. You choose a talent tradition from the following options: chronopathy, telekinesis, or telepathy. Your talent tradition is your subclass, and your choice of tradition determines many of the features you'll gain as you gain new levels. (Other talent traditions will be featured in future products.) (Quick Build: Telekinesis.)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

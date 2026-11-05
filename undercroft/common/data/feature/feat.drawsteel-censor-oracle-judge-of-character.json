@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-censor-oracle-judge-of-character",
+  "name": "Judge of Character",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your focus on your fragmentary visions grants divine insight into the world and its creatures beyond your usual senses. Whenever you would make an Intuition test, you can make a Presence test instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your focus on your fragmentary visions grants divine insight into the world and its creatures beyond your usual senses. Whenever you would make an Intuition test, you can make a Presence test instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

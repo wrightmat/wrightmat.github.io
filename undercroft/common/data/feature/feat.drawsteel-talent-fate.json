@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-fate",
+  "name": "Fate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your foe gets a glimpse of how it will end for them.*\n\n**Heroic Ability** — Chronopathy, Psionic, Melee — Main action\n\n**Cost:** 9 Clarity\n\n**Distance:** Melee 2   **Target:** One enemy\n\n**Effect:** The target has damage weakness 5 until the end of your next turn. Whenever the target takes damage while they have this weakness, they are knocked prone.\n\n**Strained:** This ability gains the Strike keyword as the vision hurts the target's psyche. You make a power roll, then are weakened (save ends).\n\n**Power Roll + Presence:**\n\n- **≤11:** 8 + P psychic damage\n- **12-16:** 13 + P psychic damage\n- **17+:** 17 + P psychic damage",
+  "mechanics": {
+    "type": "active",
+    "text": "Your foe gets a glimpse of how it will end for them. Effect: The target has damage weakness 5 until the end of your next turn. Whenever the target takes damage while they have this weakness, they are knocked prone. Strained: This ability gains the Strike keyword as the vision hurts the target's psyche. You make a power roll, then are weakened (save ends). Power Roll + Presence: - ≤11: 8 + P psychic damage - 12-16: 13 + P psychic damage - 17+: 17 + P psychic damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Chronopathy, Psionic, Melee",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "One enemy",
+  "cost": 9
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-scalar-assault",
+  "name": "Scalar Assault",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You warp reality to grow a limb for just a moment and make a single devastating attack.*\n\n**Heroic Ability** — Area, Psionic — Main action\n\n**Cost:** 11 Discipline\n\n**Distance:** 3 cube within 1   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 12 psychic damage; push 3\n- **12-16:** 17 psychic damage; push 5\n- **17+:** 23 psychic damage; push 7",
+  "mechanics": {
+    "type": "active",
+    "text": "You warp reality to grow a limb for just a moment and make a single devastating attack. Power Roll + Agility: - ≤11: 12 psychic damage; push 3 - 12-16: 17 psychic damage; push 5 - 17+: 23 psychic damage; push 7"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic",
+  "actionType": "Main action",
+  "distance": "3 cube within 1",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

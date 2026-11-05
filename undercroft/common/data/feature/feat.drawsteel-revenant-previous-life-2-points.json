@@ -1,0 +1,53 @@
+{
+  "id": "feat.drawsteel-revenant-previous-life-2-points",
+  "name": "Previous Life: 2 Points",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou select a purchased trait that costs 2 ancestry points from your previous ancestry.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You select a purchased trait that costs 2 ancestry points from your previous ancestry."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Revenant",
+  "cost": 2,
+  "grants": [
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose a 2-point trait from your previous ancestry.",
+      "from": {
+        "filter": {
+          "kind": "Ancestry Trait",
+          "cost": 2,
+          "ancestry": [
+            "Devil",
+            "Dragon Knight",
+            "Dwarf",
+            "Hakaan",
+            "High Elf",
+            "Human",
+            "Memonek",
+            "Orc",
+            "Polder",
+            "Time Raider",
+            "Wode Elf"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-impart-force",
+  "name": "Impart Force",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A single touch from you, and your enemy flies backward.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Maneuver\n\n**Cost:** 5 Discipline\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Intuition:**\n\n- **≤11:** Push 3\n- **12-16:** Push 5\n- **17+:** Push 7\n\n**Effect:** An object you target must be your size or smaller. You gain an edge on this ability. Additionally, for each square you push the target, they take 1 psychic damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "A single touch from you, and your enemy flies backward. Power Roll + Intuition: - ≤11: Push 3 - 12-16: Push 5 - 17+: Push 7 Effect: An object you target must be your size or smaller. You gain an edge on this ability. Additionally, for each square you push the target, they take 1 psychic damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Maneuver",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 5
+}

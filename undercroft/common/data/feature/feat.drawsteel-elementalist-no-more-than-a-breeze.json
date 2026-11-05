@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-no-more-than-a-breeze",
+  "name": "No More Than a Breeze",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The material substance of a creature shreds away at your command.*\n\n**Heroic Ability** — Magic, Ranged, Void — Maneuver\n\n**Cost:** 5 Essence\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** Until the start of your next turn, the target can move through solid matter, they ignore difficult terrain, and their movement can't provoke opportunity attacks. If the target ends their turn inside solid matter, they are forced out into the space where they entered it and this effect ends.\n\n**Persistent 1:** The effect lasts until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "The material substance of a creature shreds away at your command. Effect: Until the start of your next turn, the target can move through solid matter, they ignore difficult terrain, and their movement can't provoke opportunity attacks. If the target ends their turn inside solid matter, they are forced out into the space where they entered it and this effect ends. Persistent 1: The effect lasts until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Void",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 5
+}

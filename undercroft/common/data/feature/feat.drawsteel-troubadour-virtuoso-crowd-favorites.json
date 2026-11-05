@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-virtuoso-crowd-favorites",
+  "name": "Crowd Favorites",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following performance abilities, which are usable with your Routines feature.\n\n> ###### Moonlight Sonata\n>\n> *Music pours out of your heart, filling the area with the utmost delicacy and without damper.*\n>\n> | **Area, Magic, Performance** |                **No action** |\n> | ---------------------------- | ---------------------------: |\n> | **📏 5 aura**                | **🎯 Each ally in the area** |\n>\n> **Effect:** While this performance is active, each target who is dead can choose to continue taking turns after death. On each of their turns, a target can move and use either a main action or a maneuver, but can't spend Recoveries or use triggered actions. At the end of the encounter, each target who chose to take turns this way turns to dust and blows away.\n\n> ###### Radical Fantasia\n>\n> *𝅘𝅥𝅮♪Viras, my Viras, will you hold their hands as they cryyy—aaaiigh?♪*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, each target who starts their turn in the area ignores difficult terrain, and any ability they use that imposes forced movement gains a +2 bonus to the forced movement distance until the end of their turn. Additionally, once per combat round, each target can use a triggered action as a free triggered action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following performance abilities, which are usable with your Routines feature. Moonlight Sonata Music pours out of your heart, filling the area with the utmost delicacy and without damper. Effect: While this performance is active, each target who is dead can choose to continue taking turns after death. On each of their turns, a target can move and use either a main action or a maneuver, but can't spend Recoveries or use triggered actions. At the end of the encounter, each target who chose to take turns this way turns to dust and blows away. Radical Fantasia 𝅘𝅥𝅮♪Viras, my Viras, will you hold their hands as they cryyy—aaaiigh?♪ Effect: While this performance is active, each target who starts their turn in the area ignores difficult terrain, and any ability they use that imposes forced movement gains a +2 bonus to the forced movement distance until the end of their turn. Additionally, once per combat round, each target can use a triggered action as a free triggered action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

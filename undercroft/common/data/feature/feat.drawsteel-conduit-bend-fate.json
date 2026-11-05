@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-bend-fate",
+  "name": "Bend Fate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The gods know you must prevail, and they bless your fate.*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** Until the end of the encounter or until you are dying, each of the target's power rolls has its outcome improved by one tier.",
+  "mechanics": {
+    "type": "active",
+    "text": "The gods know you must prevail, and they bless your fate. Effect: Until the end of the encounter or until you are dying, each of the target's power rolls has its outcome improved by one tier."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-fate"
+  ]
+}

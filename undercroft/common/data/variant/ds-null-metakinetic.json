@@ -16,14 +16,92 @@
       "description": "You add your Intuition score to your effective size for the purpose of interacting with creatures and objects, such as for determining whether you can lift an object, whether you are affected by forced movement, and so forth. This has no effect on whether you can be grabbed.\n\nAdditionally, when you fall, you reduce the effective height of the fall by 5 squares in addition to any other reductions. Whenever you take damage from being force moved, you reduce that damage by an amount equal to your level."
     },
     {
+      "name": "2nd-Level Metakinetic Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Gravitic Strike (5 Discipline)\n>\n> *Your fist emanates gravitic force that pulls a distant enemy closer.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 3**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 8 + A psychic damage; vertical pull 3\n> - **12-16:** 12 + A psychic damage; vertical pull 5\n> - **17+:** 16 + A psychic damage; vertical pull 7\n\n> ###### Kinetic Shield (5 Discipline)\n>\n> *You manifest a force barrier that absorbs incoming kinetic energy.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** You gain 10 temporary Stamina.\n> - **12-16:** You gain 15 temporary Stamina.\n> - **17+:** You gain 20 temporary Stamina.\n>\n> **Effect:** While you have temporary Stamina from this ability, you can't be made bleeding even while dying.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one metakinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-gravitic-strike",
+              "feat.drawsteel-null-kinetic-shield"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Inertial Fulcrum",
       "level": 5,
       "description": "Whenever you use an ability to reduce damage dealt to you or to reduce the distance of forced movement imposed upon you, you can deal damage to one enemy in the area of your Null Field ability equal to your Intuition score."
     },
     {
+      "name": "6th-Level Metakinetic Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Gravitic Charge (9 Discipline)\n>\n> *You channel your discipline into momentum that defies gravity.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** Vertical slide 5\n> - **12-16:** Vertical slide 7\n> - **17+:** Vertical slide 9\n>\n> **Effect:** This movement ignores stability. If you slide into another creature, you resolve damage to both of you as if your force movement had ended, but you keep moving through that creature's space.\n\n> ###### Iron Body (9 Discipline)\n>\n> *You focus until your body becomes as hard as iron.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You gain 20 temporary Stamina. Additionally, until the end of the encounter, your stability gains a bonus equal to your Intuition score.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one metakinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-gravitic-charge",
+              "feat.drawsteel-null-iron-body"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Inertial Dampener",
       "level": 8,
       "description": "You and each creature or object of your choice in the area of your Null Field ability gain a bonus to stability equal to your Intuition score. A creature who attempts to force move a target with this bonus takes psychic damage equal to your Intuition score."
+    },
+    {
+      "name": "9th-Level Metakinetic Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Inertial Absorption (11 Discipline)\n>\n> *You absorb an attack to empower your body.*\n>\n> | **Psionic** | **Free triggered** |\n> | ----------- | -----------------: |\n> | **📏 Self** |        **🎯 Self** |\n>\n> **Trigger:** Another creature damages you using an ability.\n>\n> **Effect:** You take half the damage, negate any effects associated with the damage for you, and gain 3 surges.\n\n> ###### Realitas (11 Discipline)\n>\n> *Your essential hyperreality disrupts your enemy's connection to existence.*\n>\n> | **Melee, Psionic, Strike, Weapon** |     **Main action** |\n> | ---------------------------------- | ------------------: |\n> | **📏 Melee 1**                     | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 7 + A psychic damage; I < WEAK, dazed\n> - **12-16:** 10 + A psychic damage; I < AVERAGE, dazed\n> - **17+:** 13 + A psychic damage; I < STRONG, dazed\n>\n> **Effect:** While dazed this way, the target takes psychic damage equal to twice your Intuition score at the start of each of your turns. If this ability causes a creature who is not a leader or solo creature to become winded, they are instead reduced to 0 Stamina. Any creature reduced to 0 Stamina by this ability is forgotten by all creatures of your level or lower in the timescape who are not present in the encounter. Loved ones of the forgotten creature retain a faint sense of melancholy. This effect can be reversed only at the Director's discretion.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one metakinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-inertial-absorption",
+              "feat.drawsteel-null-realitas"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-null-metakinetic-inertial-sink",
+    "feat.drawsteel-null-metakinetic-inertial-fulcrum",
+    "feat.drawsteel-null-metakinetic-inertial-dampener"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an exploration skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Exploration"
+          ]
+        }
+      }
     }
   ]
 }

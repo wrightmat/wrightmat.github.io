@@ -13,7 +13,28 @@
     {
       "name": "Kit",
       "level": 1,
-      "description": "You can use and gain the benefits of a kit. See Chapter 6: Kits for more information. (*Quick Build:* Panther.)"
+      "description": "You can use and gain the benefits of a kit. See Chapter 6: Kits for more information. (*Quick Build:* Panther.)",
+      "choice": true,
+      "grants": [
+        {
+          "type": "itemChoice",
+          "choose": 1,
+          "desc": "Choose a kit.",
+          "targetPath": "inventory",
+          "itemDefaults": {
+            "quantity": 1,
+            "notes": "",
+            "isEquipped": true
+          },
+          "from": {
+            "libraryKind": "wonder",
+            "filter": {
+              "properties.form": "kit",
+              "kitType": "standard"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "Primordial Strength",
@@ -26,6 +47,25 @@
       "description": "Whenever you use the Charge main action, you can use a strike signature ability or a strike heroic ability instead of a free strike. Additionally, you can jump as part of your charge."
     },
     {
+      "name": "2nd-Level Berserker Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Special Delivery (5 Ferocity)\n>\n> *You ready?*\n>\n> | **Melee, Weapon** |            **Maneuver** |\n> | ----------------- | ----------------------: |\n> | **📏 Melee 1**    | **🎯 One willing ally** |\n>\n> **Effect:** You vertically push the target up to 4 squares. This forced movement ignores the target's stability, and the target takes no damage from colliding with creatures or objects. At the end of this movement, the target can make a free strike that deals extra damage equal to your Might score.\n\n> ###### Wrecking Ball (5 Ferocity)\n>\n> *It's easier to destroy than to create. Much easier, in fact!*\n>\n> | **Melee, Weapon**      | **Maneuver** |\n> | ---------------------- | -----------: |\n> | **📏 Self; see below** |  **🎯 Self** |\n>\n> **Effect:** You move up to your speed in a straight line. During this movement, you can move through mundane structures, including walls, which are difficult terrain for you. You automatically destroy each square of structure you move through and leave behind a square of difficult terrain.\n>\n> Additionally, you make one power roll that targets each enemy you move adjacent to during this movement.\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** Push 1\n> - **12-16:** Push 2\n> - **17+:** Push 3",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one berserker ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-fury-special-delivery",
+              "feat.drawsteel-fury-wrecking-ball"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Immovable Object",
       "level": 3,
       "description": "You add your level to your effective size for the purpose of interacting with creatures and objects, including determining whether you can lift an object, are affected by forced movement, and so forth. This has no effect on whether you can be grabbed.\n\nAdditionally, you have a bonus to stability equal to your Might score."
@@ -36,9 +76,64 @@
       "description": "Your jump distance and height double (see Movement Types in Chapter 10: Combat). Additionally, when you fall, you reduce the effective height of your fall by a number of squares equal to your jump distance for the purpose of determining damage and whether you land prone (see Falling in Chapter 10). You are not prone after falling and landing on another creature."
     },
     {
+      "name": "6th-Level Berserker Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Avalanche Impact (9 Ferocity)\n>\n> *You leap and crash down, causing a shockwave that devastates foes.*\n>\n> | **Magic**   | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You jump up to your maximum jump distance and make one power roll that targets each creature adjacent to the space where you land.\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 4 damage; push 1\n> - **12-16:** 7 damage; push 2\n> - **17+:** 11 damage; push 3\n\n> ###### Force of Storms (9 Ferocity)\n>\n> *You strike an enemy hard enough to be a projectile that knocks a crowd of creatures around.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 7 + M damage; push 3\n> - **12-16:** 11 + M damage; push 5\n> - **17+:** 16 + M damage; push 7\n>\n> **Effect:** When the target ends this forced movement, each creature within 2 squares of the target is pushed 3 squares.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one berserker ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-fury-avalanche-impact",
+              "feat.drawsteel-fury-force-of-storms"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Strongest There Is",
       "level": 8,
       "description": "Your strength is unmatched. Whenever you make a Might test, you can roll three dice and choose which two to use. Additionally, whenever you use the Knockback maneuver, the forced movement distance gains a bonus equal to your Might score."
+    },
+    {
+      "name": "9th-Level Berserker Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Death Comes for You All! (11 Ferocity)\n>\n> *You use your weapon to create a destructive shockwave.*\n>\n> | **Area, Magic, Melee, Weapon** |               **Main action** |\n> | ------------------------------ | ----------------------------: |\n> | **📏 3 burst**                 | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 7 damage; push 3\n> - **12-16:** 10 damage; push 5\n> - **17+:** 15 damage; push 7\n>\n> **Effect:** If this forced movement causes a target to be hurled through an object, that target takes an extra 10 damage.\n\n> ###### Primordial Vortex (11 Ferocity)\n>\n> *You channel the power of the Primordial Chaos to pull foes to you.*\n>\n> | **Area, Magic, Melee, Weapon** |               **Main action** |\n> | ------------------------------ | ----------------------------: |\n> | **📏 3 burst**                 | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 3 damage; vertical pull 3\n> - **12-16:** 5 damage; vertical pull 5\n> - **17+:** 8 damage; vertical pull 7\n>\n> **Effect:** If this forced movement causes a target to slam into you, you take no damage from the collision and the target takes the damage you would have taken.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one berserker ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-fury-death-comes-for-you-all",
+              "feat.drawsteel-fury-primordial-vortex"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-fury-berserker-kit",
+    "feat.drawsteel-primordial-strength",
+    "feat.drawsteel-fury-berserker-unstoppable-force",
+    "feat.drawsteel-fury-berserker-immovable-object",
+    "feat.drawsteel-fury-berserker-bounder",
+    "feat.drawsteel-fury-berserker-strongest-there-is"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Lift"
+      ]
     }
   ]
 }

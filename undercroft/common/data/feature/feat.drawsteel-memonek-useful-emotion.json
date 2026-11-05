@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-memonek-useful-emotion",
+  "name": "Useful Emotion",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nVelloparatha—the worldsickness—might hinder you, but you know how to turn your pain into something your enemies feel. At the start of any combat, you gain 1 surge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Velloparatha—the worldsickness—might hinder you, but you know how to turn your pain into something your enemies feel. At the start of any combat, you gain 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Memonek",
+  "cost": 1
+}

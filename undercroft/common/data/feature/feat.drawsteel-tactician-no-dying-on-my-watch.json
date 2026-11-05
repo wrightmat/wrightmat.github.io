@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-no-dying-on-my-watch",
+  "name": "No Dying on My Watch",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You prioritize saving an ally over your own safety.*\n\n**Heroic Ability** — Ranged, Strike, Weapon — Triggered\n\n**Cost:** 5 Focus\n\n**Distance:** Ranged 5   **Target:** One enemy\n\n**Trigger:** The target deals damage to an ally.\n\n**Effect:** You move up to your speed toward the triggering ally, ending this movement adjacent to them or in the nearest square if you can't reach an adjacent square. The triggering ally can spend a Recovery and gains 5 temporary Stamina for each enemy you came adjacent to during the move. You then make a power roll against the target.\n\n**Power Roll + Might:**\n\n- **≤11:** R < WEAK, the target is frightened of the triggering ally (save ends)\n- **12-16:** R < AVERAGE, the target is frightened of the triggering ally (save ends)\n- **17+:** R < STRONG, the target is frightened of the triggering ally (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You prioritize saving an ally over your own safety. Trigger: The target deals damage to an ally. Effect: You move up to your speed toward the triggering ally, ending this movement adjacent to them or in the nearest square if you can't reach an adjacent square. The triggering ally can spend a Recovery and gains 5 temporary Stamina for each enemy you came adjacent to during the move. You then make a power roll against the target. Power Roll + Might: - ≤11: R < WEAK, the target is frightened of the triggering ally (save ends) - 12-16: R < AVERAGE, the target is frightened of the triggering ally (save ends) - 17+: R < STRONG, the target is frightened of the triggering ally (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Triggered",
+  "distance": "Ranged 5",
+  "target": "One enemy",
+  "cost": 5
+}

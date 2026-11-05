@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-fortress-of-perfect-thought",
+  "name": "Fortress of Perfect Thought",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your mind is an impenetrable palace that shields you from danger. You gain the following effects:\n\n- You can breathe even when there is no breathable air.\n- You have psychic immunity 10.\n- Creatures can't read your thoughts unless you allow them to.\n- Your Reason and Intuition are treated as 2 higher for the purpose of resisting the potency of abilities.\n- You can't be made taunted or frightened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your mind is an impenetrable palace that shields you from danger. You gain the following effects: - You can breathe even when there is no breathable air. - You have psychic immunity 10. - Creatures can't read your thoughts unless you allow them to. - Your Reason and Intuition are treated as 2 higher for the purpose of resisting the potency of abilities. - You can't be made taunted or frightened."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

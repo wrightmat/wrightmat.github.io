@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-gravitic-charge",
+  "name": "Gravitic Charge",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel your discipline into momentum that defies gravity.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 9 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Power Roll + Intuition:**\n\n- **≤11:** Vertical slide 5\n- **12-16:** Vertical slide 7\n- **17+:** Vertical slide 9\n\n**Effect:** This movement ignores stability. If you slide into another creature, you resolve damage to both of you as if your force movement had ended, but you keep moving through that creature's space.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel your discipline into momentum that defies gravity. Power Roll + Intuition: - ≤11: Vertical slide 5 - 12-16: Vertical slide 7 - 17+: Vertical slide 9 Effect: This movement ignores stability. If you slide into another creature, you resolve damage to both of you as if your force movement had ended, but you keep moving through that creature's space."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 9
+}

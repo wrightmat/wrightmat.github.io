@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-conduit-death-word-of-death-deferred",
+  "name": "Word of Death Deferred",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You can stop death from taking your allies. When an ally within distance of your Healing Grace ability dies and you are not dying, you can use a free triggered action to instead have that ally fall unconscious until they regain Stamina.\n\nAdditionally, your abilities deal an extra 5 damage to winded creatures.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can stop death from taking your allies. When an ally within distance of your Healing Grace ability dies and you are not dying, you can use a free triggered action to instead have that ally fall unconscious until they regain Stamina. Additionally, your abilities deal an extra 5 damage to winded creatures."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-death"
+  ]
+}

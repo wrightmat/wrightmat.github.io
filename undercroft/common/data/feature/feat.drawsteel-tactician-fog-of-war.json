@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-fog-of-war",
+  "name": "Fog of War",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your unorthodox strategy causes enemies to lash out in fear, heedless of who they might be attacking.*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 5 Focus\n\n**Distance:** Ranged 10   **Target:** Two creatures\n\n**Effect:** Each target is marked by you, and must immediately make a free strike against a creature of your choice within 5 squares of them.\n\n**Mark Benefit:** Until the end of the encounter, whenever you or any ally makes a strike against a creature marked by you, you can spend 2 focus to force that target to make a free strike against a creature of your choice within 5 squares of them.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your unorthodox strategy causes enemies to lash out in fear, heedless of who they might be attacking. Effect: Each target is marked by you, and must immediately make a free strike against a creature of your choice within 5 squares of them. Mark Benefit: Until the end of the encounter, whenever you or any ally makes a strike against a creature marked by you, you can spend 2 focus to force that target to make a free strike against a creature of your choice within 5 squares of them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Two creatures",
+  "cost": 5
+}

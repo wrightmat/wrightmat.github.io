@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-you-talk-too-much",
+  "name": "You Talk Too Much",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Silence is a virtue. A knife pinning their mouth shut is the next best thing.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 9 Insight\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 10 + A damage; P < WEAK, dazed (save ends)\n- **12-16:** 15 + A damage; P < AVERAGE, dazed (save ends)\n- **17+:** 21 + A damage; P < STRONG, dazed (save ends)\n\n**Effect:** The target can't communicate with anyone until the end of the encounter.",
+  "mechanics": {
+    "type": "active",
+    "text": "Silence is a virtue. A knife pinning their mouth shut is the next best thing. Power Roll + Agility: - ≤11: 10 + A damage; P < WEAK, dazed (save ends) - 12-16: 15 + A damage; P < AVERAGE, dazed (save ends) - 17+: 21 + A damage; P < STRONG, dazed (save ends) Effect: The target can't communicate with anyone until the end of the encounter."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 9
+}

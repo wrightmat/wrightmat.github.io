@@ -9,21 +9,6 @@
   "parentId": "ds-conduit",
   "summary": "",
   "description": "### 1st-Level Features\n\n###### Death Domain Piety and Effect\n\n- **Piety:** You gain 2 piety the first time in an encounter that a creature within 10 squares who isn't a minion is reduced to 0 Stamina, or the first time in an encounter that a solo creature within 10 squares becomes winded.\n- **Prayer Effect:** You inflict a deadly curse on up to two enemies within 10 squares of you. Each target takes corruption damage equal to twice your Intuition score.\n\n##### Grave Speech\n\nYou have the following ability.\n\n> ###### Grave Speech\n>\n> *You commune with the lingering soul of the recently dead.*\n>\n> | **Magic**      |             **Maneuver** |\n> | -------------- | -----------------------: |\n> | **📏 Melee 1** | **🎯 One dead creature** |\n>\n> **Effect:** You can speak to the target if they are a creature who has died within the last 24 hours and who can speak a language you know, even if they are just a head. The target regards you as they would have in life, and you might need to make tests to influence them and convince them to speak with you. The trauma of dying can make a creature's memory of that event hazy, but the target otherwise knows all they knew in life. After 1 minute, the effect ends. You can't use this ability on the same creature twice.\n\n### 4th-Level Features\n\n###### Seance\n\nYou can commune with a network of spirits. As a respite activity, you speak the name of a creature who died and isn't undead. If the creature's spirit is free and willing to speak with you, they appear and you can have a conversation with them. During this time, the creature responds to you as they would have in life. If the creature isn't free or willing to appear, you can speak another name or choose another respite activity.\n\n### 7th-Level Features\n\n##### Word of Death Deferred\n\nYou can stop death from taking your allies. When an ally within distance of your Healing Grace ability dies and you are not dying, you can use a free triggered action to instead have that ally fall unconscious until they regain Stamina.\n\nAdditionally, your abilities deal an extra 5 damage to winded creatures.\n",
-  "features": [
-    {
-      "name": "Grave Speech",
-      "level": 1,
-      "description": "You have the following ability.\n\n> ###### Grave Speech\n>\n> *You commune with the lingering soul of the recently dead.*\n>\n> | **Magic**      |             **Maneuver** |\n> | -------------- | -----------------------: |\n> | **📏 Melee 1** | **🎯 One dead creature** |\n>\n> **Effect:** You can speak to the target if they are a creature who has died within the last 24 hours and who can speak a language you know, even if they are just a head. The target regards you as they would have in life, and you might need to make tests to influence them and convince them to speak with you. The trauma of dying can make a creature's memory of that event hazy, but the target otherwise knows all they knew in life. After 1 minute, the effect ends. You can't use this ability on the same creature twice."
-    },
-    {
-      "name": "Seance",
-      "level": 4,
-      "description": "You can commune with a network of spirits. As a respite activity, you speak the name of a creature who died and isn't undead. If the creature's spirit is free and willing to speak with you, they appear and you can have a conversation with them. During this time, the creature responds to you as they would have in life. If the creature isn't free or willing to appear, you can speak another name or choose another respite activity."
-    },
-    {
-      "name": "Word of Death Deferred",
-      "level": 7,
-      "description": "You can stop death from taking your allies. When an ally within distance of your Healing Grace ability dies and you are not dying, you can use a free triggered action to instead have that ally fall unconscious until they regain Stamina.\n\nAdditionally, your abilities deal an extra 5 damage to winded creatures."
-    }
-  ]
+  "features": [],
+  "featureIds": []
 }

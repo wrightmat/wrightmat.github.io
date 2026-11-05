@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-conduit-the-lists-of-heaven",
+  "name": "The Lists of Heaven",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your deity is aware of your growing influence, making it easier to draw their attention and power when you heal your allies. Whenever you allow another creature to spend a Recovery, you can also spend a Recovery.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your deity is aware of your growing influence, making it easier to draw their attention and power when you heal your allies. Whenever you allow another creature to spend a Recovery, you can also spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

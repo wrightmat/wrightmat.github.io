@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-black-ash-eruption",
+  "name": "Black Ash Eruption",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your attack produces a cloud of black ash that launches an enemy into the air.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Insight\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 3 + A damage; vertical push 5\n- **12-16:** 6 + A damage; vertical push 10\n- **17+:** 9 + A damage; vertical push 15\n\n**Effect:** A creature force moved by this ability must be moved straight upward.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your attack produces a cloud of black ash that launches an enemy into the air. Power Roll + Agility: - ≤11: 3 + A damage; vertical push 5 - 12-16: 6 + A damage; vertical push 10 - 17+: 9 + A damage; vertical push 15 Effect: A creature force moved by this ability must be moved straight upward."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-chronopathy-distortion-temporal",
+  "name": "Distortion Temporal",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "While you are not dying, time behaves irregularly around you in a 3 aura. That area is difficult terrain for enemies. Additionally, when an ally enters the area for the first time in a combat round or starts their turn there, they gain a +2 bonus to speed until the end of the turn.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While you are not dying, time behaves irregularly around you in a 3 aura. That area is difficult terrain for enemies. Additionally, when an ally enters the area for the first time in a combat round or starts their turn there, they gain a +2 bonus to speed until the end of the turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

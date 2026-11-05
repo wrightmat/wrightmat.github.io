@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-orison-of-victory",
+  "name": "Orison of Victory",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel your god's will to overcome hardship and inflict pain.*\n\n**Heroic Ability** — Area — Maneuver\n\n**Cost:** 9 Wrath\n\n**Distance:** 1 burst   **Target:** Self and each ally in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** Each target gains 1 surge.\n- **12-16:** Each target gains 2 surges.\n- **17+:** Each target gains 3 surges.\n\n**Effect:** A target can end one effect on them that is ended by a saving throw or that ends at the end of their turn, or a prone target can stand up.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel your god's will to overcome hardship and inflict pain. Power Roll + Presence: - ≤11: Each target gains 1 surge. - 12-16: Each target gains 2 surges. - 17+: Each target gains 3 surges. Effect: A target can end one effect on them that is ended by a saving throw or that ends at the end of their turn, or a prone target can stand up."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area",
+  "actionType": "Maneuver",
+  "distance": "1 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9
+}

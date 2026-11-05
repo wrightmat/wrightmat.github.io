@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-elementalist-ward",
+  "name": "Elementalist Ward",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You create an invisible elemental ward that protects you. Choose one of the following wards. You can change your ward and enchantment (see above) by performing a complex ritual as a respite activity. (*Quick Build:* Ward of Surprising Reactivity.)\n\n##### Ward of Delightful Consequences\n\nA protective field of void magic absorbs violence aimed at you, then lets you hurl it back at your enemies. The first time each round that you take damage, you gain 1 surge.\n\n##### Ward of Excellent Protection\n\nYou weave a shield of all the elements around yourself, channeling their full protective power. You have immunity to acid, cold, corruption, fire, lightning, poison, or sonic damage equal to your Reason score.\n\n##### Ward of Nature's Affection\n\nThe green energy writhing within your body allows you to produce powerful vines when you're in danger. Whenever a creature within a number of squares equal to your Reason score deals damage to you, you can use a free triggered action to slide that creature up to a number of squares equal to your Reason score.\n\n##### Ward of Surprising Reactivity\n\nYou use the magic of fire to create a ward of explosive energy. Whenever an adjacent creature deals damage to you, you can use a free triggered action to push that creature up to a number of squares equal to twice your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You create an invisible elemental ward that protects you. Choose one of the following wards. You can change your ward and enchantment (see above) by performing a complex ritual as a respite activity. (Quick Build: Ward of Surprising Reactivity.) Ward of Delightful Consequences A protective field of void magic absorbs violence aimed at you, then lets you hurl it back at your enemies. The first time each round that you take damage, you gain 1 surge. Ward of Excellent Protection You weave a shield of all the elements around yourself, channeling their full protective power. You have immunity to acid, cold, corruption, fire, lightning, poison, or sonic damage equal to your Reason score. Ward of Nature's Affection The green energy writhing within your body allows you to produce powerful vines when you're in danger. Whenever a creature within a number of squares equal to your Reason score deals damage to you, you can use a free triggered action to slide that creature up to a number of squares equal to your Reason score. Ward of Surprising Reactivity You use the magic of fire to create a ward of explosive energy. Whenever an adjacent creature deals damage to you, you can use a free triggered action to push that creature up to a number of squares equal to twice your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

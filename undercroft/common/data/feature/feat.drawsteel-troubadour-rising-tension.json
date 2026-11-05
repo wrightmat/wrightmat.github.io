@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-rising-tension",
+  "name": "Rising Tension",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You narrate the tension of the scene and put all hope into your protagonist to turn things around.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 11 Drama\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Effect:** The target gains 3 of their Heroic Resource, has a double edge on a power roll of their choice made during their next turn, is no longer slowed or weakened if they were before, and can immediately take their turn after yours if they have not taken their turn already this round.",
+  "mechanics": {
+    "type": "active",
+    "text": "You narrate the tension of the scene and put all hope into your protagonist to turn things around. Effect: The target gains 3 of their Heroic Resource, has a double edge on a power roll of their choice made during their next turn, is no longer slowed or weakened if they were before, and can immediately take their turn after yours if they have not taken their turn already this round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 11
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-blade-of-the-heavens",
+  "name": "Blade of the Heavens",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A greatsword streams down from the sky, threatening to pin your foe.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 5   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 8 + I damage; A < WEAK, prone and restrained (save ends)\n- **12-16:** 12 + I damage; A < AVERAGE, prone and restrained (save ends)\n- **17+:** 16 + I damage; A < STRONG, prone and restrained (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "A greatsword streams down from the sky, threatening to pin your foe. Power Roll + Intuition: - ≤11: 8 + I damage; A < WEAK, prone and restrained (save ends) - 12-16: 12 + I damage; A < AVERAGE, prone and restrained (save ends) - 17+: 16 + I damage; A < STRONG, prone and restrained (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 5",
+  "target": "One creature",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-war"
+  ]
+}

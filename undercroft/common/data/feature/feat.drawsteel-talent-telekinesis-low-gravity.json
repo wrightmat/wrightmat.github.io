@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telekinesis-low-gravity",
+  "name": "Low Gravity",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your mind can carry your body through tough times. You ignore difficult terrain and don't need to spend additional movement while prone.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your mind can carry your body through tough times. You ignore difficult terrain and don't need to spend additional movement while prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

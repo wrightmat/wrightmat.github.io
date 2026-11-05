@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-stormwight-tooth-and-claw",
+  "name": "Tooth and Claw",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "At the end of each of your turns, each enemy adjacent to you takes damage equal to your Might score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the end of each of your turns, each enemy adjacent to you takes damage equal to your Might score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -45,5 +45,14 @@
       "level": 10,
       "description": "Whenever you willingly move, you can teleport.\n\nAdditionally, your mind is connected to the mystery and helps you find the answers you seek. You no longer require project sources for research projects. Whenever you use a respite activity to make a project roll for a research project, you automatically complete the project."
     }
+  ],
+  "featureIds": [
+    "feat.drawsteel-elementalist-void-a-beyonding-of-vision",
+    "feat.drawsteel-elementalist-void-there-is-no-space-between",
+    "feat.drawsteel-elementalist-void-distance-is-only-memory",
+    "feat.drawsteel-elementalist-void-veiling-bed",
+    "feat.drawsteel-elementalist-void-pierce-the-veil-of-substance",
+    "feat.drawsteel-elementalist-void-black-hole-star",
+    "feat.drawsteel-elementalist-void-master-of-void"
   ]
 }

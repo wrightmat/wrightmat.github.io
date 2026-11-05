@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-aura-of-souls",
+  "name": "Aura of Souls",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A whirlwind of souls of the dead flies around you at your command.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** 4 aura   **Target:** Each creature in the area\n\n**Effect:** Until the end of the encounter or until you are dying, at the end of each of your turns, you can slide each creature in the area up to a number of squares equal to your Intuition score. This forced movement ignores stability for your allies.",
+  "mechanics": {
+    "type": "active",
+    "text": "A whirlwind of souls of the dead flies around you at your command. Effect: Until the end of the encounter or until you are dying, at the end of each of your turns, you can slide each creature in the area up to a number of squares equal to your Intuition score. This forced movement ignores stability for your allies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "4 aura",
+  "target": "Each creature in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-death"
+  ]
+}

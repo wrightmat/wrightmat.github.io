@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-cryokinetic-chilling-readiness",
+  "name": "Chilling Readiness",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You steel yourself for imminent danger by tapping into your body's cold energy. At the start of any combat, you gain a number of surges equal to your Victories.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You steel yourself for imminent danger by tapping into your body's cold energy. At the start of any combat, you gain a number of surges equal to your Victories."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-wing-buffet",
+  "name": "Wing Buffet",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Foes who try to close in around you do so at their peril.*\n\n**Signature Ability** — Area, Melee, Weapon — Main action\n\n**Distance:** 1 burst   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 3 damage\n- **12-16:** 6 damage\n- **17+:** 8 damage\n\n**Effect:** You can shift up to 2 squares before or after making the power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Foes who try to close in around you do so at their peril. Power Roll + Agility: - ≤11: 3 damage - 12-16: 6 damage - 17+: 8 damage Effect: You can shift up to 2 squares before or after making the power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Area, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "1 burst",
+  "target": "Each enemy in the area"
+}

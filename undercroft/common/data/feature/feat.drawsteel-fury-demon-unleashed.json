@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-demon-unleashed",
+  "name": "Demon Unleashed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Foes tremble at the sight of you.*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 7 Ferocity\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter or until you are dying, each enemy who starts their turn adjacent to you and has P < STRONG is frightened until the end of their turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Foes tremble at the sight of you. Effect: Until the end of the encounter or until you are dying, each enemy who starts their turn adjacent to you and has P < STRONG is frightened until the end of their turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

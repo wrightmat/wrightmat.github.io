@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-setup",
+  "name": "Setup",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your friends will thank you.*\n\n**Heroic Ability** — Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** Ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 6 + A damage; R < WEAK, the target has damage weakness 5 (save ends)\n- **12-16:** 9 + A damage; R < AVERAGE, the target has damage weakness 5 (save ends)\n- **17+:** 13 + A damage; R < STRONG, the target has damage weakness 5 (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Your friends will thank you. Power Roll + Agility: - ≤11: 6 + A damage; R < WEAK, the target has damage weakness 5 (save ends) - 12-16: 9 + A damage; R < AVERAGE, the target has damage weakness 5 (save ends) - 17+: 13 + A damage; R < STRONG, the target has damage weakness 5 (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 5",
+  "target": "One creature",
+  "cost": 5
+}

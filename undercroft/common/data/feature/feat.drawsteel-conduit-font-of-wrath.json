@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-font-of-wrath",
+  "name": "Font of Wrath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A brilliant column of holy light appears on the battlefield, striking out at nearby enemies.*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 3 Piety\n\n**Distance:** Ranged 10   **Target:** Special\n\n**Effect:** You summon a spirit of size 2 who can't be harmed, and who appears in an unoccupied space within distance. The spirit lasts until the end of your next turn. You and your allies can move through the spirit's space, but enemies can't. Any enemy who moves within 2 squares of the spirit for the first time in a combat round or starts their turn there takes holy damage equal to your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "A brilliant column of holy light appears on the battlefield, striking out at nearby enemies. Effect: You summon a spirit of size 2 who can't be harmed, and who appears in an unoccupied space within distance. The spirit lasts until the end of your next turn. You and your allies can move through the spirit's space, but enemies can't. Any enemy who moves within 2 squares of the spirit for the first time in a combat round or starts their turn there takes holy damage equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Special",
+  "cost": 3
+}

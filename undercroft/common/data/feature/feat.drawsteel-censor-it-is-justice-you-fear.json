@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-it-is-justice-you-fear",
+  "name": "It Is Justice You Fear",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*I am but a vessel. Your own deeds weigh upon you.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 8 + M holy damage; P < WEAK, frightened (save ends)\n- **12-16:** 12 + M holy damage; P < AVERAGE, frightened (save ends)\n- **17+:** 15 + M holy damage; P < STRONG, frightened (save ends)\n\n**Effect:** If the target is already frightened of you or another creature and this ability would frighten them again, they instead take psychic damage equal to twice your Presence score.",
+  "mechanics": {
+    "type": "active",
+    "text": "I am but a vessel. Your own deeds weigh upon you. Power Roll + Might: - ≤11: 8 + M holy damage; P < WEAK, frightened (save ends) - 12-16: 12 + M holy damage; P < AVERAGE, frightened (save ends) - 17+: 15 + M holy damage; P < STRONG, frightened (save ends) Effect: If the target is already frightened of you or another creature and this ability would frighten them again, they instead take psychic damage equal to twice your Presence score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 5
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-unbalancing-attack",
+  "name": "Unbalancing Attack",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A wild assault forces your foe onto their back.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 4 + M damage; A < WEAK, prone\n- **12-16:** 7 + M damage; A < AVERAGE, prone\n- **17+:** 9 + M damage; A < STRONG, prone",
+  "mechanics": {
+    "type": "active",
+    "text": "A wild assault forces your foe onto their back. Power Roll + Might: - ≤11: 4 + M damage; A < WEAK, prone - 12-16: 7 + M damage; A < AVERAGE, prone - 17+: 9 + M damage; A < STRONG, prone"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

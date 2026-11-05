@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-mastermind-i-predicted-that",
+  "name": "I Predicted That",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your expertise in history and lore allows you and your allies to outthink rivals in the present day. You and any ally within 10 squares of you gain an edge on Reason tests.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your expertise in history and lore allows you and your allies to outthink rivals in the present day. You and any ally within 10 squares of you gain an edge on Reason tests."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

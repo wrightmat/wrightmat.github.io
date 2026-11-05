@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-revenant-bloodless",
+  "name": "Bloodless",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nFor you, an open wound is indistinguishable from a scratch. You can't be made bleeding even while dying.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait For you, an open wound is indistinguishable from a scratch. You can't be made bleeding even while dying."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Revenant",
+  "cost": 2
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-try-me-instead",
+  "name": "Try Me Instead",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"Try picking on someone my size.\"*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Focus\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You shift up to your speed directly toward an ally, ending adjacent to them, then swapping locations with that ally as long as you can fit into each other's spaces. The ally can spend a Recovery, and you can make the following weapon strike with a distance of melee 1 against a creature.\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 + R damage; R < WEAK, frightened (save ends)\n- **12-16:** 3 + R damage; R < AVERAGE, frightened (save ends)\n- **17+:** 4 + R damage; R < STRONG, frightened (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "\"Try picking on someone my size.\" Effect: You shift up to your speed directly toward an ally, ending adjacent to them, then swapping locations with that ally as long as you can fit into each other's spaces. The ally can spend a Recovery, and you can make the following weapon strike with a distance of melee 1 against a creature. Power Roll + Reason: - ≤11: 2 + R damage; R < WEAK, frightened (save ends) - 12-16: 3 + R damage; R < AVERAGE, frightened (save ends) - 17+: 4 + R damage; R < STRONG, frightened (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 5
+}

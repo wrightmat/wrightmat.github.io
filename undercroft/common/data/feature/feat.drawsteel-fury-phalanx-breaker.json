@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-phalanx-breaker",
+  "name": "Phalanx-Breaker",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Organizing your forces like feckless creatures of Law. Pitiful.*\n\n**Heroic Ability** — Melee, Weapon — Main action\n\n**Cost:** 5 Ferocity\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You shift up to your speed and make one power roll that targets up to three enemies you move adjacent to during this shift.\n\n**Power Roll + Might:**\n\n- **≤11:** 2 damage; A < WEAK, dazed (save ends)\n- **12-16:** 4 damage; A < AVERAGE, dazed (save ends)\n- **17+:** 6 damage; A < STRONG, dazed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Organizing your forces like feckless creatures of Law. Pitiful. Effect: You shift up to your speed and make one power roll that targets up to three enemies you move adjacent to during this shift. Power Roll + Might: - ≤11: 2 damage; A < WEAK, dazed (save ends) - 12-16: 4 damage; A < AVERAGE, dazed (save ends) - 17+: 6 damage; A < STRONG, dazed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 5
+}

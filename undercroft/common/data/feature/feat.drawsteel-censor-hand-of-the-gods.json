@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-hand-of-the-gods",
+  "name": "Hand of the Gods",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You use your foe as a tool against your enemies.*\n\n**Heroic Ability** — Ranged, Strike, Weapon — Main action\n\n**Cost:** 11 Wrath\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 10 + M damage\n- **12-16:** 15 + M damage\n- **17+:** 21 + M damage\n\n**Effect:** Until the end of the encounter, while the target is judged by you, you can choose to make them the source of any of your abilities. Additionally, the target counts as an ally for the purpose of flanking.",
+  "mechanics": {
+    "type": "active",
+    "text": "You use your foe as a tool against your enemies. Power Roll + Might: - ≤11: 10 + M damage - 12-16: 15 + M damage - 17+: 21 + M damage Effect: Until the end of the encounter, while the target is judged by you, you can choose to make them the source of any of your abilities. Additionally, the target counts as an ally for the purpose of flanking."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 11
+}

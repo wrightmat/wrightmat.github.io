@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-doctrine-triggered-action",
+  "name": "Doctrine Triggered Action",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your tactical doctrine grants you a triggered action, as shown on the Doctrine Triggered Actions table.\n\n###### Doctrine Triggered Actions Table\n\n| Doctrine   | Triggered Action |\n| ---------- | ---------------- |\n| Insurgent  | Advanced Tactics |\n| Mastermind | Overwatch        |\n| Vanguard   | Parry            |\n\n> ###### Advanced Tactics\n>\n> *Your leadership aids an ally.*\n>\n> | **Ranged**       |   **Triggered** |\n> | ---------------- | --------------: |\n> | **📏 Ranged 10** | **🎯 One ally** |\n>\n> **Trigger:** The target deals damage to another creature.\n>\n> **Effect:** The target gains 2 surges, which they can use on the triggering damage.\n>\n> **Spend 1 Focus:** If the damage has any potency effect associated with it, the potency is increased by 1.\n\n> ###### Overwatch\n>\n> *Under your direction, an ally waits for just the right moment to strike.*\n>\n> | **Ranged**       |       **Triggered** |\n> | ---------------- | ------------------: |\n> | **📏 Ranged 10** | **🎯 One creature** |\n>\n> **Trigger:** The target moves.\n>\n> **Effect:** At any time during the target's movement, one ally can make a free strike against them.\n>\n> **Spend 1 Focus:** If the target has R < AVERAGE, they are slowed (EoT).\n\n> ###### Parry\n>\n> *Your quick reflexes cost an enemy the precision they seek.*\n>\n> | **Melee, Weapon** |           **Triggered** |\n> | ----------------- | ----------------------: |\n> | **📏 Melee 2**    | **🎯 Self or one ally** |\n>\n> **Trigger:** A creature deals damage to the target.\n>\n> **Effect:** You can shift 1 square. If the target is you, or if you end this shift adjacent to the target, the target takes half the damage. If the damage has any potency effect associated with it, the potency is decreased by 1.\n>\n> **Spend 1 Focus:** This ability's distance becomes Melee 1 + your Reason score, and you can shift up to a number of squares equal to your Reason score instead of 1 square.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your tactical doctrine grants you a triggered action, as shown on the Doctrine Triggered Actions table. Doctrine Triggered Actions Table Advanced Tactics Your leadership aids an ally. Trigger: The target deals damage to another creature. Effect: The target gains 2 surges, which they can use on the triggering damage. Spend 1 Focus: If the damage has any potency effect associated with it, the potency is increased by 1. Overwatch Under your direction, an ally waits for just the right moment to strike. Trigger: The target moves. Effect: At any time during the target's movement, one ally can make a free strike against them. Spend 1 Focus: If the target has R < AVERAGE, they are slowed (EoT). Parry Your quick reflexes cost an enemy the precision they seek. Trigger: A creature deals damage to the target. Effect: You can shift 1 square. If the target is you, or if you end this shift adjacent to the target, the target takes half the damage. If the damage has any potency effect associated with it, the potency is decreased by 1. Spend 1 Focus: This ability's distance becomes Melee 1 + your Reason score, and you can shift up to a number of squares equal to your Reason score instead of 1 square."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-shadowgrasp",
+  "name": "Shadowgrasp",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The shadows around you give way, allowing the shadow creature within you to grasp at your foes.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 11 corruption damage; A < WEAK, restrained (save ends)\n- **12-16:** 16 corruption damage; A < AVERAGE, restrained (save ends)\n- **17+:** 21 corruption damage; A < STRONG, restrained (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "The shadows around you give way, allowing the shadow creature within you to grasp at your foes. Power Roll + Agility: - ≤11: 11 corruption damage; A < WEAK, restrained (save ends) - 12-16: 16 corruption damage; A < AVERAGE, restrained (save ends) - 17+: 21 corruption damage; A < STRONG, restrained (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "2 burst",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

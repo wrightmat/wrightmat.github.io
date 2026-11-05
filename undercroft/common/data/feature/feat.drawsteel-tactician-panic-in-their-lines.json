@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-panic-in-their-lines",
+  "name": "Panic in Their Lines",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You confuse your foes, causing them to turn on each other.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 9 Focus\n\n**Distance:** Melee 1 or ranged 5   **Target:** Two creatures\n\n**Power Roll + Might:**\n\n- **≤11:** 6 + M damage; slide 1\n- **12-16:** 9 + M damage; slide 3\n- **17+:** 13 + M damage; slide 5\n\n**Effect:** If a target is force moved into another creature, they must make a free strike against that creature.",
+  "mechanics": {
+    "type": "active",
+    "text": "You confuse your foes, causing them to turn on each other. Power Roll + Might: - ≤11: 6 + M damage; slide 1 - 12-16: 9 + M damage; slide 3 - 17+: 13 + M damage; slide 5 Effect: If a target is force moved into another creature, they must make a free strike against that creature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "Two creatures",
+  "cost": 9
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-twist-at-the-end",
+  "name": "Twist at the End",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You didn't see that coming, did you?!*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** Ranged 10   **Target:** One dead enemy\n\n**Effect:** A target who is not a leader or solo creature comes back to life with half their Stamina and becomes an ally under the Director's control. The players can work with the Director to determine when the target takes their turn each combat round. At the end of the encounter, the target turns to dust and is blown away.",
+  "mechanics": {
+    "type": "active",
+    "text": "You didn't see that coming, did you?! Effect: A target who is not a leader or solo creature comes back to life with half their Stamina and becomes an ally under the Director's control. The players can work with the Director to determine when the target takes their turn each combat round. At the end of the encounter, the target turns to dust and is blown away."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One dead enemy",
+  "cost": 5
+}

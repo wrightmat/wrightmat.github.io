@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-the-gods-command-you-obey",
+  "name": "The Gods Command You Obey",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You speak with the voice of your saint, commanding your enemies.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 4 + I holy damage; P < WEAK, before taking damage, the target makes a free strike against a target you choose\n- **12-16:** 7 + I holy damage; P < AVERAGE, before taking damage, the target uses an ability of your choice and you choose any targets for that ability\n- **17+:** 11 + I holy damage; P < STRONG, before taking damage, the target shifts up to their speed to a location you choose, uses an ability of your choice, and you choose any targets for that ability",
+  "mechanics": {
+    "type": "active",
+    "text": "You speak with the voice of your saint, commanding your enemies. Power Roll + Intuition: - ≤11: 4 + I holy damage; P < WEAK, before taking damage, the target makes a free strike against a target you choose - 12-16: 7 + I holy damage; P < AVERAGE, before taking damage, the target uses an ability of your choice and you choose any targets for that ability - 17+: 11 + I holy damage; P < STRONG, before taking damage, the target shifts up to their speed to a location you choose, uses an ability of your choice, and you choose any targets for that ability"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-knowledge"
+  ]
+}

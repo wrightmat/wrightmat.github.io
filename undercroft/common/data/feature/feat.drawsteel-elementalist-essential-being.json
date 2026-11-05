@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-essential-being",
+  "name": "Essential Being",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you gain essence at the start of each of your turns during combat, you gain 4 essence instead of 3.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you gain essence at the start of each of your turns during combat, you gain 4 essence instead of 3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

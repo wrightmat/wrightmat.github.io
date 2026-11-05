@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-revelator",
+  "name": "Revelator",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel holy energy to harm unbelievers and reveal those hidden from your judgment.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 5 Wrath\n\n**Distance:** 3 burst   **Target:** Each enemy in the area\n\n**Effect:** Each target takes holy damage equal to twice your Presence score. Additionally, each hidden target is automatically revealed and can't become hidden again until the start of your next turn. You can then use your Judgment ability against one target as a free triggered action.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel holy energy to harm unbelievers and reveal those hidden from your judgment. Effect: Each target takes holy damage equal to twice your Presence score. Additionally, each hidden target is automatically revealed and can't become hidden again until the start of your next turn. You can then use your Judgment ability against one target as a free triggered action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "3 burst",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

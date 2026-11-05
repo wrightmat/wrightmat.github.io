@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-riders-on-the-storm",
+  "name": "Riders on the Storm",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You focus your connection to the Primordial Chaos into a seething storm.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Ferocity\n\n**Distance:** 3 aura   **Target:** Each creature in the area\n\n**Effect:** Until the end of the encounter or until you are dying, each enemy target takes damage of your primordial damage type equal to twice your Might score at the end of each of your turns. Additionally, you can fly while the aura is active. Each ally target who starts or ends their turn in the area can also fly until the start of their next turn or until the effect ends.\n\n**Special:** When you use this ability outside of combat without spending ferocity, you must spend 1 uninterrupted minute summoning a primordial storm that fills the area, and you take 1d6 damage before the ability takes effect. The storm lasts for 1 hour or until a combat encounter begins.",
+  "mechanics": {
+    "type": "active",
+    "text": "You focus your connection to the Primordial Chaos into a seething storm. Effect: Until the end of the encounter or until you are dying, each enemy target takes damage of your primordial damage type equal to twice your Might score at the end of each of your turns. Additionally, you can fly while the aura is active. Each ally target who starts or ends their turn in the area can also fly until the start of their next turn or until the effect ends. Special: When you use this ability outside of combat without spending ferocity, you must spend 1 uninterrupted minute summoning a primordial storm that fills the area, and you take 1d6 damage before the ability takes effect. The storm lasts for 1 hour or until a combat encounter begins."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "3 aura",
+  "target": "Each creature in the area",
+  "cost": 9
+}

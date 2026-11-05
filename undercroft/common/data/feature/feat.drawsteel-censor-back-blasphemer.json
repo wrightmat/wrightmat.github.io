@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-censor-back-blasphemer",
+  "name": "Back Blasphemer!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel power through your weapon to repel foes.*\n\n**Signature Ability** — Area, Magic, Melee, Weapon — Main action\n\n**Distance:** 2 cube within 1   **Target:** Each enemy in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** 2 holy damage; push 1\n- **12-16:** 4 holy damage; push 2\n- **17+:** 6 holy damage; push 3",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel power through your weapon to repel foes. Power Roll + Presence: - ≤11: 2 holy damage; push 1 - 12-16: 4 holy damage; push 2 - 17+: 6 holy damage; push 3"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Area, Magic, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "2 cube within 1",
+  "target": "Each enemy in the area"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-ive-got-you",
+  "name": "I've Got You!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Exploration Perk**\n\nWhenever a willing ally falls and would land on you or adjacent to you, you can safely catch them as a free triggered action. Neither of you takes damage from the ally's fall.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever a willing ally falls and would land on you or adjacent to you, you can safely catch them as a free triggered action. Neither of you takes damage from the ally's fall."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Exploration"
+}

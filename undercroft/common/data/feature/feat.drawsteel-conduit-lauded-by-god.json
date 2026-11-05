@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-lauded-by-god",
+  "name": "Lauded by God",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You beseech the gods to give your allies what they need to win the day, and the gods answer.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 10   **Target:** Two allies\n\n**Effect:** Each target gains 3 of their Heroic Resource.",
+  "mechanics": {
+    "type": "active",
+    "text": "You beseech the gods to give your allies what they need to win the day, and the gods answer. Effect: Each target gains 3 of their Heroic Resource."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Two allies",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-love"
+  ]
+}

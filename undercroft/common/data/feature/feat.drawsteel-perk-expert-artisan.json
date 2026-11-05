@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-expert-artisan",
+  "name": "Expert Artisan",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Crafting Perk**\n\nWhenever you make a test as part of a crafting or research project that uses a skill you already have from the crafting skill group, you can make the power roll twice and use either roll.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you make a test as part of a crafting or research project that uses a skill you already have from the crafting skill group, you can make the power roll twice and use either roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Crafting"
+}

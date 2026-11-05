@@ -16,14 +16,92 @@
       "description": "You have cold immunity equal to twice your Intuition score. Additionally, you ignore difficult terrain related to cold and ice, and you can automatically climb at full speed while moving."
     },
     {
+      "name": "2nd-Level Cryokinetic Ability",
+      "level": 2,
+      "description": "Choose one of the following heroic abilities.\n\n> ###### Entropic Field (5 Discipline)\n>\n> *You drastically increase the local entropy.*\n>\n> | **Area, Psionic, Weapon** |               **Main action** |\n> | ------------------------- | ----------------------------: |\n> | **📏 3 cube within 1**    | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 6 cold damage; A < WEAK, slowed (save ends)\n> - **12-16:** 9 cold damage; A < AVERAGE, slowed (save ends)\n> - **17+:** 13 cold damage; A < STRONG, slowed (save ends)\n\n> ###### Heat Sink (5 Discipline)\n>\n> *You absorb ambient heat, coating the ground in frost and precipitating snow from the air.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** Until the start of your next turn, the size of your Null Field ability increases by 1, and you and any ally benefit from concealment while in the area. At the end of this turn, each enemy in the area takes cold damage equal to your Intuition score.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one cryokinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-entropic-field",
+              "feat.drawsteel-null-heat-sink"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Chilling Readiness",
       "level": 5,
       "description": "You steel yourself for imminent danger by tapping into your body's cold energy. At the start of any combat, you gain a number of surges equal to your Victories."
     },
     {
+      "name": "6th-Level Cryokinetic Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Ice Pillars (9 Discipline)\n>\n> *Pillars of ice erupt from the ground and launch your foes into the air.*\n>\n> | **Psionic, Ranged** |                   **Main action** |\n> | ------------------- | --------------------------------: |\n> | **📏 Ranged 10**    | **🎯 Three creatures or objects** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** Vertical slide 6\n> - **12-16:** Vertical slide 8\n> - **17+:** Vertical slide 10\n>\n> **Effect:** The pillars vanish as soon as the effects of the forced movement are resolved.\n\n> ###### Wall of Ice (9 Discipline)\n>\n> *You create a wall of ice.*\n>\n> | **Area, Psionic, Ranged** | **Main action** |\n> | ------------------------- | --------------: |\n> | **📏 10 wall within 10**  |  **🎯 Special** |\n>\n> **Effect:** You can place this wall in occupied squares, sliding each creature in the area into the nearest unoccupied space of your choice. The wall remains until the end of the encounter or until you are dying. The wall's squares are treated as stone squares for the purpose of damage, and you and allies can move freely through the wall. Each enemy who enters a square adjacent to the wall and has M < AVERAGE is slowed (save ends). Each enemy who is force moved into the wall and has M < AVERAGE is restrained (save ends).",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one cryokinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-ice-pillars",
+              "feat.drawsteel-null-wall-of-ice"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Synaptic Triage",
       "level": 8,
       "description": "As a free maneuver, you can spend 1d6 Stamina to remove one effect on you. Each creature of your choice in the area of your Null Field ability also gains this benefit."
+    },
+    {
+      "name": "9th-Level Cryokinetic Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Absolute Zero (11 Discipline)\n>\n> *You become the coldest thing in the timescape.*\n>\n> | **Psionic** | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** You gain 20 temporary Stamina.\n> - **12-16:** You gain 30 temporary Stamina.\n> - **17+:** You gain 40 temporary Stamina.\n>\n> **Effect:** Until the end of the encounter or until you are dead, you become an avatar of uttermost cold. You gain immunity to all damage equal to the cold damage immunity granted by your Entropic Adaptability trait, you ignore the negative effects of dying, and you have a +2 bonus to potencies.\n\n> ###### Heat Drain (11 Discipline)\n>\n> *You drain all the heat from the target.*\n>\n> | **Melee, Psionic, Strike** |        **Maneuver** |\n> | -------------------------- | ------------------: |\n> | **📏 Melee 1**             | **🎯 One creature** |\n>\n> **Power Roll + Intuition:**\n>\n> - **≤11:** 8 + I cold damage; M < WEAK, restrained (save ends)\n> - **12-16:** 11 + I cold damage; M < AVERAGE, restrained (save ends)\n> - **17+:** 15 + I cold damage; M < STRONG, restrained (save ends)\n>\n> **Effect:** While restrained this way, the target takes cold damage equal to your Intuition score at the start of each of your turns. Additionally, whenever the target damages another creature while restrained this way, any potency associated with the damage is reduced by 2.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one cryokinetic ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-null-absolute-zero",
+              "feat.drawsteel-null-heat-drain"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-null-cryokinetic-entropic-adaptability",
+    "feat.drawsteel-null-cryokinetic-chilling-readiness",
+    "feat.drawsteel-null-cryokinetic-synaptic-triage"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a crafting skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Crafting"
+          ]
+        }
+      }
     }
   ]
 }

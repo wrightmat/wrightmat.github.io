@@ -1,0 +1,41 @@
+{
+  "id": "feat.drawsteel-conduit-sun-light-of-the-burning-sun",
+  "name": "Light of the Burning Sun",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Sun infuses your body. Whenever you use an ability to deal rolled damage to another creature, that ability deals an extra 5 fire damage, or an extra 15 fire damage if the creature is undead. Additionally, you have fire immunity equal to your level, which is added to any other fire immunity you have.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Sun infuses your body. Whenever you use an ability to deal rolled damage to another creature, that ability deals an extra 5 fire damage, or an extra 15 fire damage if the creature is undead. Additionally, you have fire immunity equal to your level, which is added to any other fire immunity you have."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-sun"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Fire (Light of the Burning Sun)",
+          "kind": "Immunity",
+          "formula": "@level"
+        }
+      ]
+    }
+  ]
+}

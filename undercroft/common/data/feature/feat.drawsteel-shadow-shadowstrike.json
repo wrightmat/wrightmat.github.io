@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-shadowstrike",
+  "name": "Shadowstrike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*They have no idea what the college taught you.*\n\n**Heroic Ability** — Magic, Melee, Ranged — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You use a strike signature ability twice.",
+  "mechanics": {
+    "type": "active",
+    "text": "They have no idea what the college taught you. Effect: You use a strike signature ability twice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 5
+}

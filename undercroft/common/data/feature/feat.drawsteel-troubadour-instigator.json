@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-troubadour-instigator",
+  "name": "Instigator",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*I didn't do it! What?*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** 3 + P damage\n- **12-16:** 6 + P damage\n- **17+:** 9 + P damage\n\n**Effect:** The target is taunted by you or a willing ally adjacent to you until the end of the target's next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "I didn't do it! What? Power Roll + Presence: - ≤11: 3 + P damage - 12-16: 6 + P damage - 17+: 9 + P damage Effect: The target is taunted by you or a willing ally adjacent to you until the end of the target's next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-keep-it-down",
+  "name": "Keep It Down",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "While conversing with any creature you share a language with, you can decide whether anyone else can perceive what you're conveying, even while yelling.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While conversing with any creature you share a language with, you can decide whether anyone else can perceive what you're conveying, even while yelling."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

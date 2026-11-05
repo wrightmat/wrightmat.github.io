@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-word-of-weakening",
+  "name": "Word of Weakening",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You utter a divine word that makes a foe brittle.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Intuition:**\n\n- **≤11:** 10 + I corruption damage; A < WEAK, weakened (save ends)\n- **12-16:** 15 + I corruption damage; A < AVERAGE, weakened (save ends)\n- **17+:** 21 + I corruption damage; A < STRONG, weakened (save ends)\n\n**Effect:** While weakened this way, the target has damage weakness 10.",
+  "mechanics": {
+    "type": "active",
+    "text": "You utter a divine word that makes a foe brittle. Power Roll + Intuition: - ≤11: 10 + I corruption damage; A < WEAK, weakened (save ends) - 12-16: 15 + I corruption damage; A < AVERAGE, weakened (save ends) - 17+: 21 + I corruption damage; A < STRONG, weakened (save ends) Effect: While weakened this way, the target has damage weakness 10."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-knowledge"
+  ]
+}

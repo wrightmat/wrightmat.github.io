@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-spot-the-tell",
+  "name": "Spot the Tell",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Interpersonal Perk**\n\nWhenever you make a test to read a person and obtain a tier 3 outcome, you notice several tells that give away their true feelings. Any test you make to read that person in the future gains an edge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you make a test to read a person and obtain a tier 3 outcome, you notice several tells that give away their true feelings. Any test you make to read that person in the future gains an edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Interpersonal"
+}

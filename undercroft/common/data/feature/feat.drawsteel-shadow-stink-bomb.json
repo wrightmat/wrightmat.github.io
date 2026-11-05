@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-stink-bomb",
+  "name": "Stink Bomb",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Putrid yellow gas explodes from a bomb you toss.*\n\n**Heroic Ability** — Area, Ranged — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** 3 cube within 10   **Target:** Each creature in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 2 poison damage\n- **12-16:** 5 poison damage\n- **17+:** 7 poison damage\n\n**Effect:** The gas remains in the area until the end of the encounter. Any creature who starts their turn in the area and has M < AVERAGE is weakened (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "Putrid yellow gas explodes from a bomb you toss. Power Roll + Agility: - ≤11: 2 poison damage - 12-16: 5 poison damage - 17+: 7 poison damage Effect: The gas remains in the area until the end of the encounter. Any creature who starts their turn in the area and has M < AVERAGE is weakened (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each creature in the area",
+  "cost": 5
+}

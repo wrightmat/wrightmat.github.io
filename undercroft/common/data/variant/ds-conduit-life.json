@@ -9,21 +9,6 @@
   "parentId": "ds-conduit",
   "summary": "",
   "description": "### 1st-Level Features\n\n###### Life Domain Piety and Effect\n\n- **Piety:** You gain 2 piety the first time in an encounter that a creature within 10 squares regains Stamina.\n- **Prayer Effect:** Choose yourself or one ally within 10 squares. That character can spend a Recovery, can end one effect on them that is ended by a saving throw or that ends at the end of their turn, or can stand up if they are prone. Alternatively, you or one ally within 10 squares gains temporary Stamina equal to two times your Intuition score.\n\n##### Revitalizing Ritual\n\nEach time you finish a respite, you can choose yourself or one ally who is also finishing a respite to gain the benefit of a divine ritual. The chosen character gains a bonus to their recovery value equal to your level that lasts until you finish another respite.\n\n### 4th-Level Features\n\n###### Blessing of Life\n\nYour divine presence causes those you deem worthy to recover quickly from a fight. Whenever an ally within distance of your Healing Grace ability regains Stamina, they regain additional Stamina equal to your Intuition score.\n\n### 7th-Level Features\n\n##### Font of Grace\n\nEach time you use your Healing Grace ability, you gain 1 piety that can be spent only on that ability during the same turn. If you don't use this piety, it is lost. Additionally, you can use your Minor Miracle feature to return a creature to life even if you don't have their remains.\n",
-  "features": [
-    {
-      "name": "Revitalizing Ritual",
-      "level": 1,
-      "description": "Each time you finish a respite, you can choose yourself or one ally who is also finishing a respite to gain the benefit of a divine ritual. The chosen character gains a bonus to their recovery value equal to your level that lasts until you finish another respite."
-    },
-    {
-      "name": "Blessing of Life",
-      "level": 4,
-      "description": "Your divine presence causes those you deem worthy to recover quickly from a fight. Whenever an ally within distance of your Healing Grace ability regains Stamina, they regain additional Stamina equal to your Intuition score."
-    },
-    {
-      "name": "Font of Grace",
-      "level": 7,
-      "description": "Each time you use your Healing Grace ability, you gain 1 piety that can be spent only on that ability during the same turn. If you don't use this piety, it is lost. Additionally, you can use your Minor Miracle feature to return a creature to life even if you don't have their remains."
-    }
-  ]
+  "features": [],
+  "featureIds": []
 }

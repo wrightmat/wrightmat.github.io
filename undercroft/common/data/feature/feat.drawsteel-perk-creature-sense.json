@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-creature-sense",
+  "name": "Creature Sense",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Supernatural Perk**\n\nAs a maneuver, choose a creature within 10 squares. If that creature is your level or lower, you learn the keywords in their stat block (Demon, Humanoid, Undead, and so forth).",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a maneuver, choose a creature within 10 squares. If that creature is your level or lower, you learn the keywords in their stat block (Demon, Humanoid, Undead, and so forth)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Supernatural"
+}

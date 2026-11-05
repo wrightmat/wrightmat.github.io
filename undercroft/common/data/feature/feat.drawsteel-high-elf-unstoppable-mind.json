@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-high-elf-unstoppable-mind",
+  "name": "Unstoppable Mind",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour mind allows you to maintain your focus in any situation. You can't be made dazed.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your mind allows you to maintain your focus in any situation. You can't be made dazed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Time Raider",
+  "cost": 2
+}

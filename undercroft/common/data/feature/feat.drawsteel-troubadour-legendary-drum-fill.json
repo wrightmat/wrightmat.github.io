@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-legendary-drum-fill",
+  "name": "Legendary Drum Fill",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You start a drumroll that roars like thunder with every impact the heroes make.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Drama\n\n**Distance:** 4 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target gains 1 surge, then gains 1 surge at the start of each combat round until the end of the encounter.",
+  "mechanics": {
+    "type": "active",
+    "text": "You start a drumroll that roars like thunder with every impact the heroes make. Effect: Each target gains 1 surge, then gains 1 surge at the start of each combat round until the end of the encounter."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "4 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9
+}

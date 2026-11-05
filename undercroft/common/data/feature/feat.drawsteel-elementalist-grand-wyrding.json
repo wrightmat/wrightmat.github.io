@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-grand-wyrding",
+  "name": "Grand Wyrding",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have mastered the magic of shaping a wyrd, and can use your Wyrding feature as a main action.\n\nAdditionally, when you have 5 or more Victories, choose one of the following damage types: acid, cold, corruption, fire, lightning, poison, or sonic. You have immunity all to that type.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have mastered the magic of shaping a wyrd, and can use your Wyrding feature as a main action. Additionally, when you have 5 or more Victories, choose one of the following damage types: acid, cold, corruption, fire, lightning, poison, or sonic. You have immunity all to that type."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

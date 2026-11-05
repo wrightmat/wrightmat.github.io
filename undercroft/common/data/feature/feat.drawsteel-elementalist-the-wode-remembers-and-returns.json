@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-the-wode-remembers-and-returns",
+  "name": "The Wode Remembers and Returns",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You create a terrarium that spans from canopy above to underbrush below.*\n\n**Heroic Ability** — Area, Earth, Green, Magic, Void — Main action\n\n**Cost:** 9 Essence\n\n**Distance:** 4 burst   **Target:** Special\n\n**Effect:** The area becomes dark and verdant, with trees and plant life appearing in unoccupied spaces within it until the start of your next turn. The area is difficult terrain for enemies, and any ally who ends their turn in the area has cover.\n\n**Persistent 2:** The area remains until the start of your next turn. Additionally, at the start of your turn, each ally in the area can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "You create a terrarium that spans from canopy above to underbrush below. Effect: The area becomes dark and verdant, with trees and plant life appearing in unoccupied spaces within it until the start of your next turn. The area is difficult terrain for enemies, and any ally who ends their turn in the area has cover. Persistent 2: The area remains until the start of your next turn. Additionally, at the start of your turn, each ally in the area can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Earth, Green, Magic, Void",
+  "actionType": "Main action",
+  "distance": "4 burst",
+  "target": "Special",
+  "cost": 9
+}

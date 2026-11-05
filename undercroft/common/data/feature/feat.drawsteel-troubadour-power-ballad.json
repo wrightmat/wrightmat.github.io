@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-power-ballad",
+  "name": "Power Ballad",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A song for the brokenhearted wraps itself around the target and blossoms into a ward of thorns.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 11 Drama\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** Until the end of the encounter, whenever the target takes damage while winded, they can use a free triggered action to deal half the damage they took to the source of the damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "A song for the brokenhearted wraps itself around the target and blossoms into a ward of thorns. Effect: Until the end of the encounter, whenever the target takes damage while winded, they can use a free triggered action to deal half the damage they took to the source of the damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 11
+}

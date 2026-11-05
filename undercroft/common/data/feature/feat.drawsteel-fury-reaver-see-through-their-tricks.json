@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-reaver-see-through-their-tricks",
+  "name": "See Through Their Tricks",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have a double edge on tests made to search for hidden creatures, discern hidden motives, or detect lies. You also have a double edge on tests made to gamble!",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have a double edge on tests made to search for hidden creatures, discern hidden motives, or detect lies. You also have a double edge on tests made to gamble!"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

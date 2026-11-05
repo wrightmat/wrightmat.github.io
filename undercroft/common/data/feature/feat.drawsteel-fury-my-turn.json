@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-my-turn",
+  "name": "My Turn!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You quickly strike back at a foe.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Free triggered\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** The triggering creature\n\n**Trigger:** A creature causes you to be winded or dying, or damages you while you are winded or dying.\n\n**Power Roll + Might:**\n\n- **≤11:** 6 + M damage\n- **12-16:** 9 + M damage\n- **17+:** 13 + M damage\n\n**Effect:** You can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "You quickly strike back at a foe. Trigger: A creature causes you to be winded or dying, or damages you while you are winded or dying. Power Roll + Might: - ≤11: 6 + M damage - 12-16: 9 + M damage - 17+: 13 + M damage Effect: You can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Free triggered",
+  "distance": "Melee 1",
+  "target": "The triggering creature",
+  "cost": 9
+}

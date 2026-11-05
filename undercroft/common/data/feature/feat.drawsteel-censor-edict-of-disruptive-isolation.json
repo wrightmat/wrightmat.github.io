@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-edict-of-disruptive-isolation",
+  "name": "Edict of Disruptive Isolation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The evil within your foes detonates with holy fire that burns only the guilty.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 7 Wrath\n\n**Distance:** 2 aura   **Target:** Each enemy in the area\n\n**Effect:** Until the end of the encounter or until you are dying, each target takes holy damage equal to your Presence score at the end of each of your turns. A target takes an extra 2d6 holy damage if they are judged by you or if they are adjacent to any enemy.",
+  "mechanics": {
+    "type": "active",
+    "text": "The evil within your foes detonates with holy fire that burns only the guilty. Effect: Until the end of the encounter or until you are dying, each target takes holy damage equal to your Presence score at the end of each of your turns. A target takes an extra 2d6 holy damage if they are judged by you or if they are adjacent to any enemy."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "2 aura",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-subverted-perception-of-space",
+  "name": "Subverted Perception of Space",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You rip an enemy's world in twain.*\n\n**Heroic Ability** — Magic, Ranged, Strike, Void — Main action\n\n**Cost:** 9 Essence\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** 9 + R corruption damage\n- **12-16:** 10 + R corruption damage; the target has line of effect only to creatures and objects within 4 squares of them until the start of your next turn\n- **17+:** 15 + R corruption damage; the target has line of effect only to adjacent creatures and objects until the start of your next turn",
+  "mechanics": {
+    "type": "active",
+    "text": "You rip an enemy's world in twain. Power Roll + Reason: - ≤11: 9 + R corruption damage - 12-16: 10 + R corruption damage; the target has line of effect only to creatures and objects within 4 squares of them until the start of your next turn - 17+: 15 + R corruption damage; the target has line of effect only to adjacent creatures and objects until the start of your next turn"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike, Void",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 9
+}

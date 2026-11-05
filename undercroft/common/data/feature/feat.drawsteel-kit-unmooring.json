@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-unmooring",
+  "name": "Unmooring",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your weapon unleashes psionic energy that reduces your target's weight.*\n\n**Signature Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might, Reason, Intuition, or Presence:**\n\n- **≤11:** 5 + M, R, I, or P damage\n- **12-16:** 8 + M, R, I, or P damage\n- **17+:** 11 + M, R, I, or P damage\n\n**Effect:** Until the end of the target's next turn, any forced movement that affects the target has its distance increased by 2.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your weapon unleashes psionic energy that reduces your target's weight. Power Roll + Might, Reason, Intuition, or Presence: - ≤11: 5 + M, R, I, or P damage - 12-16: 8 + M, R, I, or P damage - 17+: 11 + M, R, I, or P damage Effect: Until the end of the target's next turn, any forced movement that affects the target has its distance increased by 2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-squad-hit-and-run",
+  "name": "Squad! Hit and Run!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*I had to pry this secret from the shadow colleges.*\n\n**Heroic Ability** — Ranged — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** Ranged 10   **Target:** Self and two allies\n\n**Effect:** Each target gains 2 surges, and can use a free triggered action to use a signature ability that gains an edge. After resolving their ability, each target can shift up to 2 squares and become hidden even if they have no cover or concealment, or if they are observed.",
+  "mechanics": {
+    "type": "active",
+    "text": "I had to pry this secret from the shadow colleges. Effect: Each target gains 2 surges, and can use a free triggered action to use a signature ability that gains an edge. After resolving their ability, each target can shift up to 2 squares and become hidden even if they have no cover or concealment, or if they are observed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self and two allies",
+  "cost": 11
+}

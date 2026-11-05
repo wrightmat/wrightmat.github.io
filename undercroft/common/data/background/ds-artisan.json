@@ -9,5 +9,43 @@
   "skills": "Two skills from the crafting skill group (*Quick Build:* Blacksmithing, Carpentry.)",
   "languages": "One language",
   "perk": "One crafting perk (*Quick Build:* Area of Expertise.)",
-  "projectPoints": 240
+  "projectPoints": 240,
+  "category": "Career",
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two crafting skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Crafting"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a language.",
+      "targetPath": "languages",
+      "from": {
+        "systemField": "languages"
+      }
+    },
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose a crafting perk.",
+      "from": {
+        "filter": {
+          "kind": "Perk",
+          "systemIds": "sys.drawsteel",
+          "perkType": "Crafting"
+        }
+      }
+    }
+  ]
 }

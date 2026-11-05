@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-wellspring-of-grace",
+  "name": "Wellspring of Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A holy light is emitted from your body, healing your allies.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** 3 aura   **Target:** Each ally in the area\n\n**Effect:** Until the end of the encounter or until you are dying, whenever a target starts their turn in the area, they can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "A holy light is emitted from your body, healing your allies. Effect: Until the end of the encounter or until you are dying, whenever a target starts their turn in the area, they can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "3 aura",
+  "target": "Each ally in the area",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-life"
+  ]
+}

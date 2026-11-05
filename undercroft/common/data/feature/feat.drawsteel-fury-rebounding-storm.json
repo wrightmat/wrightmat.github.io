@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-rebounding-storm",
+  "name": "Rebounding Storm",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You knock around enemies like playthings.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** Two creatures or objects\n\n**Power Roll + Might:**\n\n- **≤11:** 9 damage; push 3\n- **12-16:** 14 damage; push 5\n- **17+:** 19 damage; push 7\n\n**Effect:** When a target would end this forced movement by colliding with a creature or object, they take damage as usual, then are pushed the remaining distance away from the creature or object in the direction they came from. As long as forced movement remains, this effect continues if the target collides with another creature or object.",
+  "mechanics": {
+    "type": "active",
+    "text": "You knock around enemies like playthings. Power Roll + Might: - ≤11: 9 damage; push 3 - 12-16: 14 damage; push 5 - 17+: 19 damage; push 7 Effect: When a target would end this forced movement by colliding with a creature or object, they take damage as usual, then are pushed the remaining distance away from the creature or object in the direction they came from. As long as forced movement remains, this effect continues if the target collides with another creature or object."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "Two creatures or objects",
+  "cost": 9
+}

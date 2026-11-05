@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-translated-through-flame",
+  "name": "Translated Through Flame",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your ally disappears, then reappears in a burst of fire.*\n\n**Heroic Ability** — Fire, Magic, Ranged, Void — Main action\n\n**Cost:** 5 Essence\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target is teleported to another space within distance. Make a power roll that affects each enemy adjacent to the target's new space.\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 fire damage\n- **12-16:** 5 fire damage\n- **17+:** 8 fire damage",
+  "mechanics": {
+    "type": "active",
+    "text": "Your ally disappears, then reappears in a burst of fire. Effect: The target is teleported to another space within distance. Make a power roll that affects each enemy adjacent to the target's new space. Power Roll + Reason: - ≤11: 3 fire damage - 12-16: 5 fire damage - 17+: 8 fire damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Fire, Magic, Ranged, Void",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 5
+}

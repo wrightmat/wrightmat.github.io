@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-assassinate",
+  "name": "Assassinate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A practiced attack will instantly kill an already weakened foe.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 12 + A damage\n- **12-16:** 18 + A damage\n- **17+:** 24 + A damage\n\n**Effect:** A target who is not a minion, leader, or solo creature and who is winded after taking this damage is reduced to 0 Stamina.",
+  "mechanics": {
+    "type": "active",
+    "text": "A practiced attack will instantly kill an already weakened foe. Power Roll + Agility: - ≤11: 12 + A damage - 12-16: 18 + A damage - 17+: 24 + A damage Effect: A target who is not a minion, leader, or solo creature and who is winded after taking this damage is reduced to 0 Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 11
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-invocation-of-mystery",
+  "name": "Invocation of Mystery",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"Now you see us...\"*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** 4 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target is invisible until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "\"Now you see us...\" Effect: Each target is invisible until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "4 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-trickery"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-deluge",
+  "name": "Deluge",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You summon your primordial storm.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 11 Ferocity\n\n**Distance:** 5 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Might:**\n\n- **≤11:** 7 damage\n- **12-16:** 10 damage\n- **17+:** 15 damage\n\n**Effect:** This ability deals your primordial damage type and ignores damage immunity.",
+  "mechanics": {
+    "type": "active",
+    "text": "You summon your primordial storm. Power Roll + Might: - ≤11: 7 damage - 12-16: 10 damage - 17+: 15 damage Effect: This ability deals your primordial damage type and ignores damage immunity."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

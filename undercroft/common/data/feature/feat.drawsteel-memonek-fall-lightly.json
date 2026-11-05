@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-memonek-fall-lightly",
+  "name": "Fall Lightly",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour silicone body is low in density. Whenever you fall, you reduce the distance of the fall by 2 squares.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your silicone body is low in density. Whenever you fall, you reduce the distance of the fall by 2 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Memonek"
+}

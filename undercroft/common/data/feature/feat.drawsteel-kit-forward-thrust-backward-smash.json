@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-forward-thrust-backward-smash",
+  "name": "Forward Thrust, Backward Smash",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*In your hands, the haft is as good as the head.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 2   **Target:** Two creatures or objects\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 damage\n- **12-16:** 7 damage\n- **17+:** 9 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "In your hands, the haft is as good as the head. Power Roll + Might or Agility: - ≤11: 4 damage - 12-16: 7 damage - 17+: 9 damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "Two creatures or objects"
+}

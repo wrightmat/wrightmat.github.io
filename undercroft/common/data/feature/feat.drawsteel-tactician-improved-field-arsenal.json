@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-improved-field-arsenal",
+  "name": "Improved Field Arsenal",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your expertise with weapons has grown. Whenever you use a signature ability from one of your equipped kits or make a free strike using a weapon from one of your equipped kits, you gain an edge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your expertise with weapons has grown. Whenever you use a signature ability from one of your equipped kits or make a free strike using a weapon from one of your equipped kits, you gain an edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

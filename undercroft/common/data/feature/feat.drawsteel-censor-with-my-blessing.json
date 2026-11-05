@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-with-my-blessing",
+  "name": "With My Blessing",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A word in prayer, and the gods show the way.*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target can use a free triggered action to use a strike signature ability or a strike heroic ability, and has a double edge on that ability. If a heroic ability is chosen, reduce its Heroic Resource cost by 3 (to a minimum cost of 0).",
+  "mechanics": {
+    "type": "active",
+    "text": "A word in prayer, and the gods show the way. Effect: The target can use a free triggered action to use a strike signature ability or a strike heroic ability, and has a double edge on that ability. If a heroic ability is chosen, reduce its Heroic Resource cost by 3 (to a minimum cost of 0)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 5
+}

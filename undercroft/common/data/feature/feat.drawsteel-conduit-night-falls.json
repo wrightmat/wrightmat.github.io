@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-night-falls",
+  "name": "Night Falls",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You summon darkness that thwarts only your foes.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** 5 cube within 10   **Target:** Special\n\n**Effect:** Until the end of the encounter or until you are dying, the area is filled with magic darkness that your enemies can't see through, but you and your allies can.",
+  "mechanics": {
+    "type": "active",
+    "text": "You summon darkness that thwarts only your foes. Effect: Until the end of the encounter or until you are dying, the area is filled with magic darkness that your enemies can't see through, but you and your allies can."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 10",
+  "target": "Special",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-trickery"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-i-am-the-weapon",
+  "name": "I Am the Weapon",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your Stamina increases by 21 and you can't be made bleeding even while dying. You no longer age or have need of food. Additionally, you can use Intuition instead of another characteristic when resisting potencies.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your Stamina increases by 21 and you can't be made bleeding even while dying. You no longer age or have need of food. Additionally, you can use Intuition instead of another characteristic when resisting potencies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

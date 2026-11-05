@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-discipline-mastery-improvement-7th-level",
+  "name": "Discipline Mastery Improvement (7th Level)",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your Discipline Mastery feature provides additional benefits when you have 10 or more discipline.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your Discipline Mastery feature provides additional benefits when you have 10 or more discipline."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

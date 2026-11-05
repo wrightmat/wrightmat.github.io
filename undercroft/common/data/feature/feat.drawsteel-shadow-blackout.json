@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-blackout",
+  "name": "Blackout",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You cause a plume of shadow to erupt from your eyes and create a cloud of darkness.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Insight\n\n**Distance:** 3 burst   **Target:** Special\n\n**Effect:** A black cloud fills the area until the end of your next turn, granting you and your allies concealment against enemies. While you are in the area, whenever an enemy ends their turn in the area, you can use a free triggered action to shift to a new location within the area and make a free strike against them.",
+  "mechanics": {
+    "type": "active",
+    "text": "You cause a plume of shadow to erupt from your eyes and create a cloud of darkness. Effect: A black cloud fills the area until the end of your next turn, granting you and your allies concealment against enemies. While you are in the area, whenever an enemy ends their turn in the area, you can use a free triggered action to shift to a new location within the area and make a free strike against them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "3 burst",
+  "target": "Special",
+  "cost": 9
+}

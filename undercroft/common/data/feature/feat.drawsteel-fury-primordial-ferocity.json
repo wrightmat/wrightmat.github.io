@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-primordial-ferocity",
+  "name": "Primordial Ferocity",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The first time you take damage each combat round, you gain 3 ferocity instead of 2.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The first time you take damage each combat round, you gain 3 ferocity instead of 2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-words-of-wrath-and-grace",
+  "name": "Words of Wrath and Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your saint grants your enemies a vision of pain and fills your allies with healing energy.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 7 Piety\n\n**Distance:** 5 burst   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 holy damage\n- **12-16:** 5 holy damage\n- **17+:** 7 holy damage\n\n**Effect:** Each ally in the area can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your saint grants your enemies a vision of pain and fills your allies with healing energy. Power Roll + Intuition: - ≤11: 2 holy damage - 12-16: 5 holy damage - 17+: 7 holy damage Effect: Each ally in the area can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "5 burst",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

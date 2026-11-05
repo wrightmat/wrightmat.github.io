@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-one-hundred-throats",
+  "name": "One Hundred Throats",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*As you move across the battlefield, every foe within reach feels your wrath.*\n\n**Heroic Ability** — Melee, Weapon — Main action\n\n**Cost:** 5 Insight\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You shift up to your speed and make one power roll that targets up to three enemies who came adjacent to you during the move.\n\n**Power Roll + Agility:**\n\n- **≤11:** 3 damage\n- **12-16:** 6 damage\n- **17+:** 9 damage",
+  "mechanics": {
+    "type": "active",
+    "text": "As you move across the battlefield, every foe within reach feels your wrath. Effect: You shift up to your speed and make one power roll that targets up to three enemies who came adjacent to you during the move. Power Roll + Agility: - ≤11: 3 damage - 12-16: 6 damage - 17+: 9 damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 5
+}

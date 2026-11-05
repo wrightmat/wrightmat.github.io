@@ -1,0 +1,24 @@
+{
+  "name": "Raider Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "The Raider kit keeps you protected while granting you full mobility, providing a boost to speed and distance that lets you run around the battlefield like a Viking warrior.\n\n##### Equipment\n\nYou wear light armor and wield a shield and a light weapon.\n\n##### Kit Bonuses\n\n**Stamina Bonus:** +6 per echelon\n\n**Speed Bonus:** +1\n\n**Melee Damage Bonus:** +1/+1/+1\n\n**Ranged Damage Bonus:** +1/+1/+1\n\n**Ranged Distance Bonus:** +5\n\n**Disengage Bonus:** +1\n\n##### Signature Ability\n\n###### Raider's Awe\n\n*You execute a brutal strike that leaves your foe reeling. (Previously known as \"Shock and Awe\")*\n\n| **Melee, Ranged, Strike, Weapon** |     **Main action** |\n| --------------------------------- | ------------------: |\n| **📏 Melee 1 or ranged 10**       | **🎯 One creature** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 3 + M or A damage\n- **12-16:** 6 + M or A damage\n- **17+:** 8 + M or A damage\n\n**Effect:** The target takes a bane on their next power roll made before the end of their next turn.",
+  "equipment": "You wear light armor and wield a shield and a light weapon.",
+  "staminaBonus": 6,
+  "speedBonus": 1,
+  "meleeDamageBonus": "+1/+1/+1",
+  "rangedDamageBonus": "+1/+1/+1",
+  "rangedDistanceBonus": 5,
+  "disengageBonus": 1,
+  "signatureAbility": "Raider's Awe",
+  "kitType": "standard",
+  "featureIds": [
+    "feat.drawsteel-kit-raiders-awe"
+  ]
+}

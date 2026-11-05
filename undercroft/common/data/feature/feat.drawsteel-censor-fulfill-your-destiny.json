@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-fulfill-your-destiny",
+  "name": "Fulfill Your Destiny",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You have looked at various futures, and only this one works.*\n\n**Heroic Ability** — Magic, Ranged — Triggered\n\n**Cost:** 11 Wrath\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Trigger:** You or another hero ends their turn.\n\n**Effect:** The target takes their turn after the triggering hero, and immediately removes all conditions and negative effects on themself. During their turn, the target has a double edge on power rolls.",
+  "mechanics": {
+    "type": "active",
+    "text": "You have looked at various futures, and only this one works. Trigger: You or another hero ends their turn. Effect: The target takes their turn after the triggering hero, and immediately removes all conditions and negative effects on themself. During their turn, the target has a double edge on power rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Triggered",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 11
+}

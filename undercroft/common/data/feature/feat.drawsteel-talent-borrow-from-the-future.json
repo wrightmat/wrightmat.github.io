@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-borrow-from-the-future",
+  "name": "Borrow From the Future",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You lean on future heroism to assist you in the now.*\n\n**Heroic Ability** — Area, Chronopathy, Psionic — Maneuver\n\n**Cost:** 11 Clarity\n\n**Distance:** 2 burst   **Target:** Each ally in the area\n\n**Effect:** The targets share 6 of their Heroic Resource among themselves, as you determine. A target can't gain more than 3 of their Heroic Resource this way. After using this ability, you can't gain any clarity until the end of the next combat round.",
+  "mechanics": {
+    "type": "active",
+    "text": "You lean on future heroism to assist you in the now. Effect: The targets share 6 of their Heroic Resource among themselves, as you determine. A target can't gain more than 3 of their Heroic Resource this way. After using this ability, you can't gain any clarity until the end of the next combat round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Chronopathy, Psionic",
+  "actionType": "Maneuver",
+  "distance": "2 burst",
+  "target": "Each ally in the area",
+  "cost": 11
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-steel",
+  "name": "Steel",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The target's skin becomes covered in tough metal.*\n\n**Heroic Ability** — Metamorphosis, Psionic, Ranged — Maneuver\n\n**Cost:** 11 Clarity\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target has damage immunity 5 and can't be made slowed or weakened until the start of your next turn. Whenever the target force moves a creature or object while under this effect, the forced movement distance gains a +5 bonus.\n\n**Strained:** You can't use maneuvers (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "The target's skin becomes covered in tough metal. Effect: The target has damage immunity 5 and can't be made slowed or weakened until the start of your next turn. Whenever the target force moves a creature or object while under this effect, the forced movement distance gains a +5 bonus. Strained: You can't use maneuvers (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Metamorphosis, Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 11
+}

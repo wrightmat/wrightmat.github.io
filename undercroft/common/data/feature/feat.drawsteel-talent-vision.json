@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-vision",
+  "name": "Vision",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have an epic resource called vision. Each time you finish a respite, you gain vision equal to the XP you gain. You can spend vision on your abilities as if it were clarity.\n\nAdditionally, you can spend vision to use one additional psionic ability on your turn, provided you pay the entire cost of the ability in vision. If you choose to use a psionic ability that usually costs no clarity, you must spend 1 vision to use it.\n\nVision remains until you spend it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have an epic resource called vision. Each time you finish a respite, you gain vision equal to the XP you gain. You can spend vision on your abilities as if it were clarity. Additionally, you can spend vision to use one additional psionic ability on your turn, provided you pay the entire cost of the ability in vision. If you choose to use a psionic ability that usually costs no clarity, you must spend 1 vision to use it. Vision remains until you spend it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

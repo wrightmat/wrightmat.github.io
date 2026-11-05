@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-face-the-storm",
+  "name": "Face the Storm!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Shocked in the face of your naked brutality, your enemy's instincts take over.*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 7 Ferocity\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter or until you are dying, each creature you make a melee strike against who has P < AVERAGE is taunted until the end of their next turn. Additionally, when you use an ability that deals rolled damage against any enemy taunted by you, the ability deals extra damage equal to twice your Might score and increases its potency by 1.",
+  "mechanics": {
+    "type": "active",
+    "text": "Shocked in the face of your naked brutality, your enemy's instincts take over. Effect: Until the end of the encounter or until you are dying, each creature you make a melee strike against who has P < AVERAGE is taunted until the end of their next turn. Additionally, when you use an ability that deals rolled damage against any enemy taunted by you, the ability deals extra damage equal to twice your Might score and increases its potency by 1."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

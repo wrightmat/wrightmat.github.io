@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-visceral-roar",
+  "name": "Visceral Roar",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The sound of the storm within you staggers your opponents.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 5 Ferocity\n\n**Distance:** 2 burst   **Target:** Each enemy in the area\n\n**Power Roll + Might:**\n\n- **≤11:** 2 damage; push 1; M < WEAK, dazed (save ends)\n- **12-16:** 5 damage; push 2; M < AVERAGE, dazed (save ends)\n- **17+:** 7 damage; push 3; M < STRONG, dazed (save ends)\n\n**Effect:** This ability deals your primordial damage type (see Stormwight Kits).",
+  "mechanics": {
+    "type": "active",
+    "text": "The sound of the storm within you staggers your opponents. Power Roll + Might: - ≤11: 2 damage; push 1; M < WEAK, dazed (save ends) - 12-16: 5 damage; push 2; M < AVERAGE, dazed (save ends) - 17+: 7 damage; push 3; M < STRONG, dazed (save ends) Effect: This ability deals your primordial damage type (see Stormwight Kits)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "2 burst",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-primordial-vortex",
+  "name": "Primordial Vortex",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel the power of the Primordial Chaos to pull foes to you.*\n\n**Heroic Ability** — Area, Magic, Melee, Weapon — Main action\n\n**Cost:** 11 Ferocity\n\n**Distance:** 3 burst   **Target:** Each enemy in the area\n\n**Power Roll + Might:**\n\n- **≤11:** 3 damage; vertical pull 3\n- **12-16:** 5 damage; vertical pull 5\n- **17+:** 8 damage; vertical pull 7\n\n**Effect:** If this forced movement causes a target to slam into you, you take no damage from the collision and the target takes the damage you would have taken.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel the power of the Primordial Chaos to pull foes to you. Power Roll + Might: - ≤11: 3 damage; vertical pull 3 - 12-16: 5 damage; vertical pull 5 - 17+: 8 damage; vertical pull 7 Effect: If this forced movement causes a target to slam into you, you take no damage from the collision and the target takes the damage you would have taken."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

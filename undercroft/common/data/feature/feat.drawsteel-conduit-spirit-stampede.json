@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-spirit-stampede",
+  "name": "Spirit Stampede",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Animal spirits run through the battlefield, trampling your foes.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** 10 x 2 line within 5   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 5 damage; M < WEAK, prone and can't stand (save ends)\n- **12-16:** 8 damage; M < AVERAGE, prone and can't stand (save ends)\n- **17+:** 11 damage; M < STRONG, prone and can't stand (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Animal spirits run through the battlefield, trampling your foes. Power Roll + Intuition: - ≤11: 5 damage; M < WEAK, prone and can't stand (save ends) - 12-16: 8 damage; M < AVERAGE, prone and can't stand (save ends) - 17+: 11 damage; M < STRONG, prone and can't stand (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "10 x 2 line within 5",
+  "target": "Each enemy in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-nature"
+  ]
+}

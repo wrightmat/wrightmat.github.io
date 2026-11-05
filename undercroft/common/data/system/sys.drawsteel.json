@@ -31,19 +31,6 @@
       "label": "Class"
     },
     {
-      "type": "array",
-      "key": "subclasses",
-      "label": "Subclasses",
-      "values": [],
-      "children": [
-        {
-          "type": "string",
-          "key": "name",
-          "label": "Subclass"
-        }
-      ]
-    },
-    {
       "type": "number",
       "key": "victories",
       "label": "Victories",
@@ -219,6 +206,35 @@
     },
     {
       "type": "array",
+      "key": "immunities",
+      "label": "Immunities & Weaknesses",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "kind",
+          "label": "Kind"
+        },
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Type"
+        },
+        {
+          "type": "number",
+          "key": "value",
+          "label": "Amount",
+          "formulaFrom": "formula"
+        },
+        {
+          "type": "string",
+          "key": "formula",
+          "label": "Amount Formula"
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "culture",
       "label": "Culture",
       "values": [],
@@ -234,7 +250,218 @@
       "type": "array",
       "key": "languages",
       "label": "Languages",
-      "values": [],
+      "values": [
+        {
+          "name": "Anjali",
+          "group": "Ancestry",
+          "description": "Devils, hobgoblins. The language of contract law."
+        },
+        {
+          "name": "Axiomatic",
+          "group": "Ancestry",
+          "description": "Memonek. Native language of Axiom, and the common language of the timescape by trade."
+        },
+        {
+          "name": "Caelian",
+          "group": "Ancestry",
+          "description": "Orden denizens. The common language of Orden."
+        },
+        {
+          "name": "Filliaric",
+          "group": "Ancestry",
+          "description": "Angulotls."
+        },
+        {
+          "name": "The First Language",
+          "group": "Ancestry",
+          "description": "Elder dragons. The language of magic."
+        },
+        {
+          "name": "Hyrallic",
+          "group": "Ancestry",
+          "description": "High elves. The language of interspecies diplomacy."
+        },
+        {
+          "name": "Illyvric",
+          "group": "Ancestry",
+          "description": "Shadow elves."
+        },
+        {
+          "name": "Kalliak",
+          "group": "Ancestry",
+          "description": "Orcs. An offshoot of Zaliac."
+        },
+        {
+          "name": "Kethaic",
+          "group": "Ancestry",
+          "description": "Kobolds. A patois of Vastariax and Caelian."
+        },
+        {
+          "name": "Khelt",
+          "group": "Ancestry",
+          "description": "Bugbears, fey. An offshoot of Kheltivari."
+        },
+        {
+          "name": "Khoursirian",
+          "group": "Ancestry",
+          "description": "Polders, humans. A distant offshoot of Khamish."
+        },
+        {
+          "name": "High Kuric",
+          "group": "Ancestry",
+          "description": "Bredbeddles, giants, ogres, trolls."
+        },
+        {
+          "name": "Low Kuric",
+          "group": "Ancestry",
+          "description": "Elementals."
+        },
+        {
+          "name": "Mindspeech",
+          "group": "Ancestry",
+          "description": "Voiceless talkers. A symbolic language shared among native telepaths."
+        },
+        {
+          "name": "Proto-Ctholl",
+          "group": "Ancestry",
+          "description": "Lower demons. An incomplete precursor of Tholl."
+        },
+        {
+          "name": "Szetch",
+          "group": "Ancestry",
+          "description": "Goblins, radenwights."
+        },
+        {
+          "name": "Tholl",
+          "group": "Ancestry",
+          "description": "Higher demons, gnolls."
+        },
+        {
+          "name": "Urollialic",
+          "group": "Ancestry",
+          "description": "Olothec."
+        },
+        {
+          "name": "Variac",
+          "group": "Ancestry",
+          "description": "Olothec, trolls, voiceless talkers. The common language of the World Below."
+        },
+        {
+          "name": "Vastariax",
+          "group": "Ancestry",
+          "description": "Dragons, dragon knights."
+        },
+        {
+          "name": "Vhoric",
+          "group": "Ancestry",
+          "description": "Hakaan. An offshoot of the stone giant dialect of High Kuric."
+        },
+        {
+          "name": "Voll",
+          "group": "Ancestry",
+          "description": "Time raiders."
+        },
+        {
+          "name": "Yllyric",
+          "group": "Ancestry",
+          "description": "Wode elves. The language of druids."
+        },
+        {
+          "name": "Za'hariax",
+          "group": "Ancestry",
+          "description": "Overminds."
+        },
+        {
+          "name": "Zaliac",
+          "group": "Ancestry",
+          "description": "Dwarves. The language of engineering."
+        },
+        {
+          "name": "Uvalic",
+          "group": "Human",
+          "description": "The Gol."
+        },
+        {
+          "name": "Higaran",
+          "group": "Human",
+          "description": "Higara."
+        },
+        {
+          "name": "Oaxuatl",
+          "group": "Human",
+          "description": "Ix."
+        },
+        {
+          "name": "Khemharic",
+          "group": "Human",
+          "description": "Khemhara."
+        },
+        {
+          "name": "Phaedran",
+          "group": "Human",
+          "description": "Phaedros."
+        },
+        {
+          "name": "Riojan",
+          "group": "Human",
+          "description": "Rioja."
+        },
+        {
+          "name": "Vaniric",
+          "group": "Human",
+          "description": "Vanigar."
+        },
+        {
+          "name": "Vaslorian",
+          "group": "Human",
+          "description": "Vasloria."
+        },
+        {
+          "name": "Ananjali",
+          "group": "Dead",
+          "description": "Old hobgoblin."
+        },
+        {
+          "name": "High Rhyvian",
+          "group": "Dead",
+          "description": "Sun elf."
+        },
+        {
+          "name": "Khamish",
+          "group": "Dead",
+          "description": "Beast lord."
+        },
+        {
+          "name": "Kheltivari",
+          "group": "Dead",
+          "description": "Old fae."
+        },
+        {
+          "name": "Low Rhyvian",
+          "group": "Dead",
+          "description": "Sky elf."
+        },
+        {
+          "name": "Old Variac",
+          "group": "Dead",
+          "description": "Olothec, voiceless talkers."
+        },
+        {
+          "name": "Phorialtic",
+          "group": "Dead",
+          "description": "Old elemental."
+        },
+        {
+          "name": "Rallarian",
+          "group": "Dead",
+          "description": "Steel dwarf."
+        },
+        {
+          "name": "Ullorvic",
+          "group": "Dead",
+          "description": "Star elf."
+        }
+      ],
       "children": [
         {
           "type": "string",
@@ -247,7 +474,293 @@
       "type": "array",
       "key": "skills",
       "label": "Skills",
-      "values": [],
+      "values": [
+        {
+          "name": "Alchemy",
+          "group": "Crafting",
+          "description": "Make bombs and potions"
+        },
+        {
+          "name": "Architecture",
+          "group": "Crafting",
+          "description": "Create buildings and vehicles"
+        },
+        {
+          "name": "Blacksmithing",
+          "group": "Crafting",
+          "description": "Forge metal armor and weapons"
+        },
+        {
+          "name": "Carpentry",
+          "group": "Crafting",
+          "description": "Create items out of wood"
+        },
+        {
+          "name": "Cooking",
+          "group": "Crafting",
+          "description": "Create delicious dishes"
+        },
+        {
+          "name": "Fletching",
+          "group": "Crafting",
+          "description": "Make ranged weapons and ammunition"
+        },
+        {
+          "name": "Forgery",
+          "group": "Crafting",
+          "description": "Create false badges, documents, and other items"
+        },
+        {
+          "name": "Jewelry",
+          "group": "Crafting",
+          "description": "Create bracelets, crowns, rings, and other jewelry"
+        },
+        {
+          "name": "Mechanics",
+          "group": "Crafting",
+          "description": "Build machines and clockwork items"
+        },
+        {
+          "name": "Tailoring",
+          "group": "Crafting",
+          "description": "Craft clothing of cloth or leather"
+        },
+        {
+          "name": "Climb",
+          "group": "Exploration",
+          "description": "Move up vertical surfaces"
+        },
+        {
+          "name": "Drive",
+          "group": "Exploration",
+          "description": "Control vehicles"
+        },
+        {
+          "name": "Endurance",
+          "group": "Exploration",
+          "description": "Remain engaged in strenuous activity over a long period of time"
+        },
+        {
+          "name": "Gymnastics",
+          "group": "Exploration",
+          "description": "Move across unsteady or narrow surfaces; tumble"
+        },
+        {
+          "name": "Heal",
+          "group": "Exploration",
+          "description": "Use mundane first aid"
+        },
+        {
+          "name": "Jump",
+          "group": "Exploration",
+          "description": "Leap vertical and horizontal distances"
+        },
+        {
+          "name": "Lift",
+          "group": "Exploration",
+          "description": "Pick up, carry, and throw heavy objects"
+        },
+        {
+          "name": "Navigate",
+          "group": "Exploration",
+          "description": "Read a map and travel without becoming lost"
+        },
+        {
+          "name": "Ride",
+          "group": "Exploration",
+          "description": "Ride and control a nonsapient mount, such as a horse"
+        },
+        {
+          "name": "Swim",
+          "group": "Exploration",
+          "description": "Move through deep liquid"
+        },
+        {
+          "name": "Brag",
+          "group": "Interpersonal",
+          "description": "Impress others with stories of your deeds"
+        },
+        {
+          "name": "Empathize",
+          "group": "Interpersonal",
+          "description": "Relate to someone on a personal level"
+        },
+        {
+          "name": "Flirt",
+          "group": "Interpersonal",
+          "description": "Attract romantic attention from someone"
+        },
+        {
+          "name": "Gamble",
+          "group": "Interpersonal",
+          "description": "Make bets with others"
+        },
+        {
+          "name": "Handle Animals",
+          "group": "Interpersonal",
+          "description": "Interact with nonsapient animal wildlife"
+        },
+        {
+          "name": "Interrogate",
+          "group": "Interpersonal",
+          "description": "Obtain information from a creature withholding it"
+        },
+        {
+          "name": "Intimidate",
+          "group": "Interpersonal",
+          "description": "Awe or scare a creature"
+        },
+        {
+          "name": "Lead",
+          "group": "Interpersonal",
+          "description": "Inspire people to action"
+        },
+        {
+          "name": "Lie",
+          "group": "Interpersonal",
+          "description": "Convince someone that a falsehood is true"
+        },
+        {
+          "name": "Music",
+          "group": "Interpersonal",
+          "description": "Perform music vocally or with an instrument"
+        },
+        {
+          "name": "Perform",
+          "group": "Interpersonal",
+          "description": "Engage in dance, oratory, acting, or some other physical performance"
+        },
+        {
+          "name": "Persuade",
+          "group": "Interpersonal",
+          "description": "Convince someone to agree with you through use of your charms and grace"
+        },
+        {
+          "name": "Read Person",
+          "group": "Interpersonal",
+          "description": "Read the emotions and body language of other creatures"
+        },
+        {
+          "name": "Alertness",
+          "group": "Intrigue",
+          "description": "Intuitively sense the details of your surroundings"
+        },
+        {
+          "name": "Conceal Object",
+          "group": "Intrigue",
+          "description": "Hide an object on your person or in your environment"
+        },
+        {
+          "name": "Disguise",
+          "group": "Intrigue",
+          "description": "Change your appearance to look like a different person"
+        },
+        {
+          "name": "Eavesdrop",
+          "group": "Intrigue",
+          "description": "Actively listen to something that is hard to hear, such as a whispered conversation through a door"
+        },
+        {
+          "name": "Escape Artist",
+          "group": "Intrigue",
+          "description": "Escape from bonds such as rope or manacles"
+        },
+        {
+          "name": "Hide",
+          "group": "Intrigue",
+          "description": "Conceal yourself from others' observation"
+        },
+        {
+          "name": "Pick Lock",
+          "group": "Intrigue",
+          "description": "Open a lock without using the key"
+        },
+        {
+          "name": "Pick Pocket",
+          "group": "Intrigue",
+          "description": "Steal an item that another person wears or carries without them noticing"
+        },
+        {
+          "name": "Sabotage",
+          "group": "Intrigue",
+          "description": "Disable a mechanical device such as a trap"
+        },
+        {
+          "name": "Search",
+          "group": "Intrigue",
+          "description": "Actively search an environment for important details and items"
+        },
+        {
+          "name": "Sneak",
+          "group": "Intrigue",
+          "description": "Move silently"
+        },
+        {
+          "name": "Track",
+          "group": "Intrigue",
+          "description": "Follow a trail that another creature has left behind"
+        },
+        {
+          "name": "Criminal Underworld",
+          "group": "Lore",
+          "description": "Knowing about criminal organizations, their crimes, their relationships, and their leaders"
+        },
+        {
+          "name": "Culture",
+          "group": "Lore",
+          "description": "Knowing about a culture's customs, folktales, and taboos"
+        },
+        {
+          "name": "History",
+          "group": "Lore",
+          "description": "Knowing about significant past events"
+        },
+        {
+          "name": "Magic",
+          "group": "Lore",
+          "description": "Knowing about magical places, spells, rituals, items, and phenomena"
+        },
+        {
+          "name": "Monsters",
+          "group": "Lore",
+          "description": "Knowing monster ecology, strengths, and weaknesses"
+        },
+        {
+          "name": "Nature",
+          "group": "Lore",
+          "description": "Knowing about natural flora, fauna, and weather"
+        },
+        {
+          "name": "Psionics",
+          "group": "Lore",
+          "description": "Knowing about psionic places, spells, rituals, items, and phenomena"
+        },
+        {
+          "name": "Religion",
+          "group": "Lore",
+          "description": "Knowing about religious mythology, practices, and rituals"
+        },
+        {
+          "name": "Rumors",
+          "group": "Lore",
+          "description": "Knowing gossip, legends, and uncertain truths"
+        },
+        {
+          "name": "Society",
+          "group": "Lore",
+          "description": "Knowing noble etiquette and the leadership and power dynamics of noble families"
+        },
+        {
+          "name": "Strategy",
+          "group": "Lore",
+          "description": "Knowing about battle tactics and logistics"
+        },
+        {
+          "name": "Timescape",
+          "group": "Lore",
+          "description": "Knowing about the many worlds of the timescape"
+        }
+      ],
       "children": [
         {
           "type": "string",
@@ -255,6 +768,92 @@
           "label": "Skill"
         }
       ]
+    },
+    {
+      "type": "array",
+      "key": "damageTypes",
+      "label": "Damage Types",
+      "values": [
+        {
+          "name": "Acid"
+        },
+        {
+          "name": "Cold"
+        },
+        {
+          "name": "Corruption"
+        },
+        {
+          "name": "Fire"
+        },
+        {
+          "name": "Holy"
+        },
+        {
+          "name": "Lightning"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Psychic"
+        },
+        {
+          "name": "Sonic"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "sizes",
+      "label": "Sizes",
+      "values": [
+        {
+          "name": "1T",
+          "description": "Tiny"
+        },
+        {
+          "name": "1S",
+          "description": "Small, like a polder"
+        },
+        {
+          "name": "1M",
+          "description": "Medium, like most ancestries"
+        },
+        {
+          "name": "1L",
+          "description": "Large, like a hakaan"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "inventory",
+      "label": "Inventory",
+      "values": [],
+      "children": [
+        {
+          "type": "string",
+          "key": "name",
+          "label": "Item"
+        },
+        {
+          "type": "number",
+          "key": "quantity",
+          "label": "Quantity",
+          "minimum": 0
+        },
+        {
+          "type": "string",
+          "key": "notes",
+          "label": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "key": "notes",
+      "label": "Notes"
     },
     {
       "type": "string",
@@ -451,6 +1050,173 @@
     },
     {
       "type": "array",
+      "key": "buildSteps",
+      "label": "Build Wizard Steps",
+      "values": [
+        {
+          "step": "species",
+          "name": "Ancestry",
+          "libraryKind": "species",
+          "targetPath": "ancestry",
+          "statBindings": [
+            {
+              "libraryField": "size",
+              "targetPath": "stats.size"
+            },
+            {
+              "targetPath": "stats.stability",
+              "base": 0
+            },
+            {
+              "targetPath": "stats.disengage",
+              "base": 1
+            }
+          ]
+        },
+        {
+          "step": "culture",
+          "type": "listPick",
+          "name": "Culture",
+          "searchable": true,
+          "source": {
+            "from": "library",
+            "libraryKind": "background"
+          },
+          "picks": [
+            {
+              "label": "Environment",
+              "matchField": "category",
+              "matchValue": "Environment"
+            },
+            {
+              "label": "Organization",
+              "matchField": "category",
+              "matchValue": "Organization"
+            },
+            {
+              "label": "Upbringing",
+              "matchField": "category",
+              "matchValue": "Upbringing"
+            }
+          ],
+          "targetArrayPath": "culture",
+          "asReference": true,
+          "grants": [
+            {
+              "type": "listGrant",
+              "targetPath": "languages",
+              "values": [
+                "Caelian"
+              ]
+            },
+            {
+              "type": "listChoice",
+              "choose": 1,
+              "desc": "Choose your culture's language.",
+              "targetPath": "languages",
+              "from": {
+                "systemField": "languages"
+              }
+            }
+          ]
+        },
+        {
+          "step": "background",
+          "name": "Career",
+          "libraryKind": "background",
+          "matchField": "category",
+          "matchValue": "Career",
+          "targetPath": "career",
+          "statBindings": [
+            {
+              "libraryField": "projectPoints",
+              "targetPath": "projectPoints",
+              "base": 0
+            },
+            {
+              "libraryField": "renown",
+              "targetPath": "renown",
+              "base": 0
+            },
+            {
+              "libraryField": "wealth",
+              "targetPath": "wealth",
+              "base": 1
+            },
+            {
+              "targetPath": "victories",
+              "base": 0
+            },
+            {
+              "targetPath": "xp",
+              "base": 0
+            }
+          ]
+        },
+        {
+          "step": "class",
+          "name": "Class",
+          "libraryKind": "class",
+          "statBindings": [
+            {
+              "libraryField": "recoveries",
+              "targetPath": "stats.recoveries.max"
+            },
+            {
+              "libraryField": "recoveries",
+              "targetPath": "stats.recoveries.current"
+            },
+            {
+              "libraryField": "heroicResource",
+              "targetPath": "stats.heroicResource.name"
+            },
+            {
+              "targetPath": "stats.heroicResource.current",
+              "base": 0
+            },
+            {
+              "targetPath": "stats.hitPoints.temp",
+              "base": 0
+            },
+            {
+              "targetPath": "stats.surges",
+              "base": 0
+            }
+          ]
+        },
+        {
+          "step": "subclass",
+          "name": "Subclass",
+          "libraryKind": "variant",
+          "parentKind": "class",
+          "atCreation": true
+        },
+        {
+          "step": "abilities",
+          "name": "Characteristics",
+          "methods": [
+            {
+              "name": "classArray",
+              "libraryField": "characteristics"
+            }
+          ]
+        },
+        {
+          "step": "details",
+          "name": "Details"
+        },
+        {
+          "step": "review",
+          "name": "Review"
+        },
+        {
+          "step": "choices",
+          "name": "Finish Choices"
+        }
+      ]
+    },
+    {
+      "type": "array",
       "key": "combatBindings",
       "label": "Combat Bindings",
       "values": [
@@ -459,12 +1225,14 @@
           "maxPath": "stats.hitPoints.max",
           "tempPath": "stats.hitPoints.temp",
           "recordField": "stats.hitPoints.current",
+          "capAtMax": true,
           "binding": "resource"
         },
         {
           "name": "Recoveries",
           "maxPath": "stats.recoveries.max",
           "recordField": "stats.recoveries.current",
+          "capAtMax": true,
           "binding": "resource"
         },
         {
@@ -476,6 +1244,150 @@
           "name": "Surges",
           "recordField": "stats.surges",
           "binding": "value"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "levelUpBindings",
+      "label": "Level Up Bindings",
+      "values": [
+        {
+          "name": "Class Features by Level",
+          "libraryField": "features",
+          "binding": "featureLevels",
+          "libraryKind": "class"
+        },
+        {
+          "name": "Subclass Features by Level",
+          "libraryField": "features",
+          "binding": "featureLevels",
+          "libraryKind": "variant"
+        },
+        {
+          "name": "Class Stamina per Level",
+          "resourceRole": "resource",
+          "libraryField": "staminaPerLevel",
+          "binding": "resourceGrowth",
+          "libraryKind": "class",
+          "startingField": "startingStamina"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "derivedFormulas",
+      "label": "Derived Formulas",
+      "values": [
+        {
+          "formula": "@value",
+          "name": "hitPointsPerLevelAverage",
+          "binding": "hitPointsPerLevelAverage"
+        },
+        {
+          "formula": "@value * (floor((@level - 1) / 3) + 1)",
+          "name": "echelonBonus",
+          "binding": "echelonBonus"
+        },
+        {
+          "formula": "@value * @level",
+          "name": "levelBonus",
+          "binding": "levelBonus"
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "key": "itemBonuses",
+      "label": "Item Bonuses",
+      "values": [
+        {
+          "name": "Stamina",
+          "libraryKind": "wonder",
+          "sourcePath": "inventory",
+          "libraryField": "staminaBonus",
+          "targetPath": "stats.hitPoints.max",
+          "currentPath": "stats.hitPoints.current",
+          "derivedFormula": "echelonBonus",
+          "combine": "highest"
+        },
+        {
+          "name": "Speed",
+          "libraryKind": "wonder",
+          "sourcePath": "inventory",
+          "libraryField": "speedBonus",
+          "targetPath": "stats.speed.walk",
+          "combine": "highest"
+        },
+        {
+          "name": "Stability",
+          "libraryKind": "wonder",
+          "sourcePath": "inventory",
+          "libraryField": "stabilityBonus",
+          "targetPath": "stats.stability",
+          "combine": "highest"
+        },
+        {
+          "name": "Disengage",
+          "libraryKind": "wonder",
+          "sourcePath": "inventory",
+          "libraryField": "disengageBonus",
+          "targetPath": "stats.disengage",
+          "combine": "highest"
+        },
+        {
+          "name": "Kit Abilities",
+          "libraryKind": "wonder",
+          "sourcePath": "inventory",
+          "libraryField": "featureIds",
+          "targetPath": "featureIds"
+        },
+        {
+          "name": "Stamina",
+          "libraryKind": "feature",
+          "sourcePath": "featureIds",
+          "libraryField": "staminaBonus",
+          "targetPath": "stats.hitPoints.max",
+          "currentPath": "stats.hitPoints.current",
+          "derivedFormula": "echelonBonus"
+        },
+        {
+          "name": "Stamina",
+          "libraryKind": "feature",
+          "sourcePath": "featureIds",
+          "libraryField": "staminaBonusPerLevel",
+          "targetPath": "stats.hitPoints.max",
+          "currentPath": "stats.hitPoints.current",
+          "derivedFormula": "levelBonus"
+        },
+        {
+          "name": "Speed",
+          "libraryKind": "feature",
+          "sourcePath": "featureIds",
+          "libraryField": "speedBonus",
+          "targetPath": "stats.speed.walk"
+        },
+        {
+          "name": "Stability",
+          "libraryKind": "feature",
+          "sourcePath": "featureIds",
+          "libraryField": "stabilityBonus",
+          "targetPath": "stats.stability"
+        },
+        {
+          "name": "Disengage",
+          "libraryKind": "feature",
+          "sourcePath": "featureIds",
+          "libraryField": "disengageBonus",
+          "targetPath": "stats.disengage"
+        },
+        {
+          "name": "Recoveries",
+          "libraryKind": "feature",
+          "sourcePath": "featureIds",
+          "libraryField": "recoveriesBonus",
+          "targetPath": "stats.recoveries.max",
+          "currentPath": "stats.recoveries.current"
         }
       ]
     },

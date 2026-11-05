@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-subterfuge",
+  "name": "Subterfuge",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have an epic resource called subterfuge. Each time you finish a respite, you gain subterfuge equal to the XP you gain. You can spend subterfuge on your abilities as if it were insight.\n\nAdditionally, you can spend subterfuge to take additional maneuvers on your turn. You can use one maneuver for each subterfuge you spend.\n\nSubterfuge remains until you spend it.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have an epic resource called subterfuge. Each time you finish a respite, you gain subterfuge equal to the XP you gain. You can spend subterfuge on your abilities as if it were insight. Additionally, you can spend subterfuge to take additional maneuvers on your turn. You can use one maneuver for each subterfuge you spend. Subterfuge remains until you spend it."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

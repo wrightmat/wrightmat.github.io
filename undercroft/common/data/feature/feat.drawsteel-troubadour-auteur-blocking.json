@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-auteur-blocking",
+  "name": "Blocking",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following performance ability, which is usable with your Routines feature.\n\n> ###### Blocking\n>\n> *No, no, no, you lose the audience that way. Try it like this...*\n>\n> | **Area, Magic, Performance** |                    **No action** |\n> | ---------------------------- | -------------------------------: |\n> | **📏 2 aura**                | **🎯 Each creature in the area** |\n>\n> **Effect:** At the end of each of your turns while this performance is active, you can choose up to a number of targets equal to your Presence score and teleport those targets to unoccupied spaces in the area. A target can't be teleported in a way that would harm them (such as over a cliff), leave them dying, or result in them suffering a condition or other negative effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following performance ability, which is usable with your Routines feature. Blocking No, no, no, you lose the audience that way. Try it like this... Effect: At the end of each of your turns while this performance is active, you can choose up to a number of targets equal to your Presence score and teleport those targets to unoccupied spaces in the area. A target can't be teleported in a way that would harm them (such as over a cliff), leave them dying, or result in them suffering a condition or other negative effect."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

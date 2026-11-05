@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-hakaan-big",
+  "name": "Big!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour stature reflects your giant forebears. Your size is 1L.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your stature reflects your giant forebears. Your size is 1L."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Hakaan"
+}

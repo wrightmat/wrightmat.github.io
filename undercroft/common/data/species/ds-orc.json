@@ -38,5 +38,26 @@
       "cost": 1,
       "description": "When you are stirred by a passion for creation, your bloodfire allows you to work longer and harder. When you gain your initial skills from your career, culture, class, or other source, choose two skills from the crafting skill group, whether you have those skills or not. Whenever you make a project roll for a crafting project that uses these skills, you gain a +2 bonus to the roll."
     }
+  ],
+  "speed": 5,
+  "size": "1M",
+  "featureIds": [
+    "feat.drawsteel-relentless"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 3,
+      "desc": "Spend 3 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-orc-bloodfire-rush",
+          "feat.drawsteel-orc-glowing-recovery",
+          "feat.drawsteel-grounded-orc-conduit",
+          "feat.drawsteel-nonstop",
+          "feat.drawsteel-orc-passionate-artisan"
+        ]
+      }
+    }
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-force-augmentation",
+  "name": "Force Augmentation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your damage-dealing psionic abilities gain a +1 bonus to rolled damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your damage-dealing psionic abilities gain a +1 bonus to rolled damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

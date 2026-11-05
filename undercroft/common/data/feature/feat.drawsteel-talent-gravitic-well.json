@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-gravitic-well",
+  "name": "Gravitic Well",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You bend gravity into a fine point and pull your foes toward it.*\n\n**Heroic Ability** — Area, Psionic, Ranged, Telekinesis — Main action\n\n**Cost:** 9 Clarity\n\n**Distance:** 4 cube within 10   **Target:** Each creature and object in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 6 damage; vertical pull 5 toward the center of the area\n- **12-16:** 9 damage; vertical pull 7 toward the center of the area\n- **17+:** 13 damage; vertical pull 10 toward the center of the area\n\n**Effect:** Targets closest to the center of the area are pulled first.\n\n**Strained:** The size of the area increases by 2. You also target yourself and each ally within distance.",
+  "mechanics": {
+    "type": "active",
+    "text": "You bend gravity into a fine point and pull your foes toward it. Power Roll + Reason: - ≤11: 6 damage; vertical pull 5 toward the center of the area - 12-16: 9 damage; vertical pull 7 toward the center of the area - 17+: 13 damage; vertical pull 10 toward the center of the area Effect: Targets closest to the center of the area are pulled first. Strained: The size of the area increases by 2. You also target yourself and each ally within distance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Ranged, Telekinesis",
+  "actionType": "Main action",
+  "distance": "4 cube within 10",
+  "target": "Each creature and object in the area",
+  "cost": 9
+}

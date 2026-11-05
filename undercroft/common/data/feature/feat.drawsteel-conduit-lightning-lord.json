@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-lightning-lord",
+  "name": "Lightning Lord",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Lightning bursts forth from your body in several directions.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** Three 10 x 1 lines within 1   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 6 lightning damage; push 1\n- **12-16:** 9 lightning damage; push 2\n- **17+:** 13 lightning damage; push 3\n\n**Effect:** The targets are force moved one at a time, starting with the target nearest to you, and can be pushed into other targets in the same line.",
+  "mechanics": {
+    "type": "active",
+    "text": "Lightning bursts forth from your body in several directions. Power Roll + Intuition: - ≤11: 6 lightning damage; push 1 - 12-16: 9 lightning damage; push 2 - 17+: 13 lightning damage; push 3 Effect: The targets are force moved one at a time, starting with the target nearest to you, and can be pushed into other targets in the same line."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "Three 10 x 1 lines within 1",
+  "target": "Each enemy in the area",
+  "cost": 9,
+  "subclassIds": [
+    "ds-conduit-storm"
+  ]
+}

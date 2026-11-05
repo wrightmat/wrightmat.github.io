@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-squad-gear-check",
+  "name": "Squad! Gear Check!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You distract a foe while your allies secure their defensive gear.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Focus\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 9 + M damage\n- **12-16:** 13 + M damage\n- **17+:** 18 + M damage\n\n**Effect:** You and each ally adjacent to the target gain 10 temporary Stamina.",
+  "mechanics": {
+    "type": "active",
+    "text": "You distract a foe while your allies secure their defensive gear. Power Roll + Might: - ≤11: 9 + M damage - 12-16: 13 + M damage - 17+: 18 + M damage Effect: You and each ally adjacent to the target gain 10 temporary Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

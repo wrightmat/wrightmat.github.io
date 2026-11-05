@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telepathy-remote-amplification",
+  "name": "Remote Amplification",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "The distance of your ranged psionic abilities increases by 5. Additionally, the range of your Telepathic Speech feature increases to 1 mile.",
+  "mechanics": {
+    "type": "passive",
+    "text": "The distance of your ranged psionic abilities increases by 5. Additionally, the range of your Telepathic Speech feature increases to 1 mile."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

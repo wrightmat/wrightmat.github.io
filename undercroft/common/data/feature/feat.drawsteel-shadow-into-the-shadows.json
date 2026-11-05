@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-into-the-shadows",
+  "name": "Into the Shadows",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You sweep your foe off their feet and plunge them into absolute darkness.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Insight\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Effect:** You and the target are removed from the encounter map until the start of your next turn. You reappear in the spaces you left or the nearest unoccupied spaces. Make a power roll upon your return.\n\n**Power Roll + Agility:**\n\n- **≤11:** 8 + A corruption damage\n- **12-16:** 13 + A corruption damage\n- **17+:** 17 + A corruption damage",
+  "mechanics": {
+    "type": "active",
+    "text": "You sweep your foe off their feet and plunge them into absolute darkness. Effect: You and the target are removed from the encounter map until the start of your next turn. You reappear in the spaces you left or the nearest unoccupied spaces. Make a power roll upon your return. Power Roll + Agility: - ≤11: 8 + A corruption damage - 12-16: 13 + A corruption damage - 17+: 17 + A corruption damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 9
+}

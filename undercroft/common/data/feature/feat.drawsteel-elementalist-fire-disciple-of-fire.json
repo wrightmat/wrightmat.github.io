@@ -1,0 +1,38 @@
+{
+  "id": "feat.drawsteel-elementalist-fire-disciple-of-fire",
+  "name": "Disciple of Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your connection to fire allows you to protect yourself from it, even as you rip away the protections of others. You have fire immunity equal to 5 plus your level. Additionally, fire damage you deal ignores a target's fire immunity.\n\nAt the start of a combat encounter, you gain a number of surges equal to your Victories. Whenever you spend a surge to deal extra damage, you can make that damage fire damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your connection to fire allows you to protect yourself from it, even as you rip away the protections of others. You have fire immunity equal to 5 plus your level. Additionally, fire damage you deal ignores a target's fire immunity. At the start of a combat encounter, you gain a number of surges equal to your Victories. Whenever you spend a surge to deal extra damage, you can make that damage fire damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Fire",
+          "kind": "Immunity",
+          "formula": "5 + @level"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-conduit-warriors-prayer",
+  "name": "Warrior's Prayer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your quickly uttered prayer lends aggressive divine energy to a friend engaged in melee.*\n\n**Signature Ability** — Magic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 3 + I holy damage\n- **12-16:** 6 + I holy damage\n- **17+:** 9 + I holy damage\n\n**Effect:** You or one ally within distance gains temporary Stamina equal to your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your quickly uttered prayer lends aggressive divine energy to a friend engaged in melee. Power Roll + Intuition: - ≤11: 3 + I holy damage - 12-16: 6 + I holy damage - 17+: 9 + I holy damage Effect: You or one ally within distance gains temporary Stamina equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

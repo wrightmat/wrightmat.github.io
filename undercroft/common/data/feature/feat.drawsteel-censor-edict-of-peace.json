@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-edict-of-peace",
+  "name": "Edict of Peace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You anticipate your foes' moves and deny them.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 9 Wrath\n\n**Distance:** 3 aura   **Target:** Each enemy in the area\n\n**Effect:** Until the end of the encounter or until you are dying, whenever any target takes a triggered action or a free triggered action, that action is negated and the target takes holy damage equal to your Presence score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You anticipate your foes' moves and deny them. Effect: Until the end of the encounter or until you are dying, whenever any target takes a triggered action or a free triggered action, that action is negated and the target takes holy damage equal to your Presence score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "3 aura",
+  "target": "Each enemy in the area",
+  "cost": 9
+}

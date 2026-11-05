@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-harsh-critic",
+  "name": "Harsh Critic",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Just one bad review will ruin their day.*\n\n**Heroic Ability** — Magic, Melee, Ranged, Strike — Main action\n\n**Cost:** 3 Drama\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature or object\n\n**Power Roll + Presence:**\n\n- **≤11:** 7 + P sonic damage\n- **12-16:** 10 + P sonic damage\n- **17+:** 13 + P sonic damage\n\n**Effect:** The first time the target uses an ability before the start of your next turn, any effects from the ability's tier outcomes other than damage are negated for all targets. Ability effects that always happen regardless of the power roll work as usual.",
+  "mechanics": {
+    "type": "active",
+    "text": "Just one bad review will ruin their day. Power Roll + Presence: - ≤11: 7 + P sonic damage - 12-16: 10 + P sonic damage - 17+: 13 + P sonic damage Effect: The first time the target uses an ability before the start of your next turn, any effects from the ability's tier outcomes other than damage are negated for all targets. Ability effects that always happen regardless of the power roll work as usual."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature or object",
+  "cost": 3
+}

@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-conduit-prayer-of-speed",
+  "name": "Prayer of Speed",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your god blesses your flesh and infuses it with divine quickness. You gain a +1 bonus to speed and to the distance you can shift when you take the Disengage move action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your god blesses your flesh and infuses it with divine quickness. You gain a +1 bonus to speed and to the distance you can shift when you take the Disengage move action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "speedBonus": 1,
+  "disengageBonus": 1
+}

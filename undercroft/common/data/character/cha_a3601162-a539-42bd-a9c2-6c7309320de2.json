@@ -7,7 +7,22 @@
     "name": "Polder Shadow (Pregen) Copy"
   },
   "name": "Sil",
-  "level": 2,
+  "identity": {
+    "classes": [
+      {
+        "name": "Shadow",
+        "refKind": "class",
+        "refId": "ds-shadow",
+        "level": 2,
+        "subclass": {
+          "name": "College of Black Ash",
+          "refKind": "variant",
+          "refId": "ds-shadow-black-ash"
+        }
+      }
+    ],
+    "level": 2
+  },
   "ancestry": {
     "name": "Polder",
     "refKind": "species",
@@ -18,18 +33,6 @@
     "refKind": "background",
     "refId": "ds-criminal"
   },
-  "class": {
-    "name": "Shadow",
-    "refKind": "class",
-    "refId": "ds-shadow"
-  },
-  "subclasses": [
-    {
-      "name": "College of Black Ash",
-      "refKind": "variant",
-      "refId": "ds-shadow-black-ash"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -44,8 +47,8 @@
       "presence": 1
     },
     "hitPoints": {
-      "current": 21,
-      "max": 21,
+      "current": 27,
+      "max": 27,
       "temp": 0
     },
     "recoveries": {
@@ -140,11 +143,25 @@
     "feat.drawsteel-ranged-weapon-free-strike",
     "feat.drawsteel-insight",
     "feat.drawsteel-lucky-dog",
-    "feat.drawsteel-cloak-and-dagger-kit",
     "feat.drawsteel-corruption-immunity",
-    "feat.drawsteel-fearless"
+    "feat.drawsteel-fearless",
+    "feat.drawsteel-shadow-black-ash-burning-ash",
+    "feat.drawsteel-perk-criminal-contacts",
+    "feat.drawsteel-shadow-in-a-puff-of-ash"
   ],
   "title": "Polder Shadow (Pregen) Copy",
   "image": "https://i.redd.it/nydwu17db3m21.jpg",
-  "featureActionFilter": "Main action"
+  "featureActionFilter": "Main action",
+  "inventory": [
+    {
+      "name": "Cloak and Dagger Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "cloak-and-dagger-kit-drawsteel"
+    }
+  ],
+  "limitedUses": [],
+  "pendingChoices": []
 }

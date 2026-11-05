@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-beacon-of-grace",
+  "name": "Beacon of Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You ignite a foe with holy radiance, rewarding allies who attack them.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 8 + I holy damage\n- **12-16:** 13 + I holy damage\n- **17+:** 17 + I holy damage\n\n**Effect:** Until the end of the encounter, whenever you or any ally damages the target using an ability, that creature can spend a Recovery. If the target is reduced to 0 Stamina before the end of the encounter, you can use a free triggered action to move this effect to another creature within distance.",
+  "mechanics": {
+    "type": "active",
+    "text": "You ignite a foe with holy radiance, rewarding allies who attack them. Power Roll + Intuition: - ≤11: 8 + I holy damage - 12-16: 13 + I holy damage - 17+: 17 + I holy damage Effect: Until the end of the encounter, whenever you or any ally damages the target using an ability, that creature can spend a Recovery. If the target is reduced to 0 Stamina before the end of the encounter, you can use a free triggered action to move this effect to another creature within distance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 9
+}

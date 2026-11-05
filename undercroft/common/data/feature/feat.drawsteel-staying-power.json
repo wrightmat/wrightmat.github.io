@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.drawsteel"
   ],
-  "description": "**Ancestry Trait**\n\nYour human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2 (already included).",
+  "description": "**Ancestry Trait**\n\nYour human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2.",
   "mechanics": {
     "type": "passive",
     "text": "Your human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2 (already included)."
@@ -21,5 +21,8 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Ancestry Trait"
+  "kind": "Ancestry Trait",
+  "ancestry": "Human",
+  "cost": 2,
+  "recoveriesBonus": 2
 }

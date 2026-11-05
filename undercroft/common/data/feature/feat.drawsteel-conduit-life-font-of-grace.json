@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-conduit-life-font-of-grace",
+  "name": "Font of Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Each time you use your Healing Grace ability, you gain 1 piety that can be spent only on that ability during the same turn. If you don't use this piety, it is lost. Additionally, you can use your Minor Miracle feature to return a creature to life even if you don't have their remains.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you use your Healing Grace ability, you gain 1 piety that can be spent only on that ability during the same turn. If you don't use this piety, it is lost. Additionally, you can use your Minor Miracle feature to return a creature to life even if you don't have their remains."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-life"
+  ]
+}

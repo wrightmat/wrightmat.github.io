@@ -21,5 +21,7 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Subclass Feature"
+  "kind": "Subclass Feature",
+  "staminaBonus": 6,
+  "stabilityBonus": 1
 }

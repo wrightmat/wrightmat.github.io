@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-conduit-love-invocation-of-the-heart",
+  "name": "Invocation of the Heart",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "As a main action, you forge a bond of love and friendship with a willing creature you touch. While this bond is active, you can telepathically speak with the creature over any distance, including across different worlds. Additionally, while this bond is active, you can attempt to assist the creature with any test they make regardless of their proximity to you. You can maintain only one bond at a time, and you can end a bond at any time (no action required).",
+  "mechanics": {
+    "type": "passive",
+    "text": "As a main action, you forge a bond of love and friendship with a willing creature you touch. While this bond is active, you can telepathically speak with the creature over any distance, including across different worlds. Additionally, while this bond is active, you can attempt to assist the creature with any test they make regardless of their proximity to you. You can maintain only one bond at a time, and you can end a bond at any time (no action required)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-love"
+  ]
+}

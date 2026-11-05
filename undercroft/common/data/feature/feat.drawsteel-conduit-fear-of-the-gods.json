@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-fear-of-the-gods",
+  "name": "Fear of the Gods",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your divine magic makes a creature appear as what your enemies fear most.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 7 Piety\n\n**Distance:** 5 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 6 psychic damage; I < WEAK, frightened (save ends)\n- **12-16:** 9 psychic damage; I < AVERAGE, frightened (save ends)\n- **17+:** 13 psychic damage; I < STRONG, frightened (save ends)\n\n**Effect:** Each target is frightened of you or a creature you choose within distance.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your divine magic makes a creature appear as what your enemies fear most. Power Roll + Intuition: - ≤11: 6 psychic damage; I < WEAK, frightened (save ends) - 12-16: 9 psychic damage; I < AVERAGE, frightened (save ends) - 17+: 13 psychic damage; I < STRONG, frightened (save ends) Effect: Each target is frightened of you or a creature you choose within distance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-patter-song",
+  "name": "Patter Song",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Dazzle them with your fancy patter and they forget where they were.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 9 Drama\n\n**Distance:** Ranged 10   **Target:** Special\n\n**Power Roll + Presence:**\n\n- **≤11:** One ally within distance can take their turn immediately after yours.\n- **12-16:** Two allies within distance can take their turns immediately after yours in any order.\n- **17+:** Three allies within distance can take their turns immediately after yours in any order. One of those allies can have already taken a turn this combat round.",
+  "mechanics": {
+    "type": "active",
+    "text": "Dazzle them with your fancy patter and they forget where they were. Power Roll + Presence: - ≤11: One ally within distance can take their turn immediately after yours. - 12-16: Two allies within distance can take their turns immediately after yours in any order. - 17+: Three allies within distance can take their turns immediately after yours in any order. One of those allies can have already taken a turn this combat round."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Special",
+  "cost": 9
+}

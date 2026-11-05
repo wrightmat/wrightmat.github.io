@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-telekinesis-kinetic-amplifier",
+  "name": "Kinetic Amplifier",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you force move a creature, you can spend up to 2 surges. For each surge spent, the forced movement distance gains a bonus equal to your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you force move a creature, you can spend up to 2 surges. For each surge spent, the forced movement distance gains a bonus equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-mastermind-anticipation",
+  "name": "Anticipation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have learned to be more preemptive on the battlefield, thinking more steps ahead than your opponents. You can target two creatures with your Mark ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have learned to be more preemptive on the battlefield, thinking more steps ahead than your opponents. You can target two creatures with your Mark ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

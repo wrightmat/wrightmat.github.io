@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-godstorm",
+  "name": "Godstorm",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You summon a divine storm that remains under your control.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** 5 cube within 5   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 lightning damage, 2 sonic damage\n- **12-16:** 3 lightning damage, 3 sonic damage\n- **17+:** 5 lightning damage, 5 sonic damage\n\n**Effect:** A raging storm fills the area until the end of the encounter or until you are dying. At the start of each of your turns, you can move the storm up to 5 squares (no action required). On subsequent turns while the storm is active, you can use a maneuver to make its power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "You summon a divine storm that remains under your control. Power Roll + Intuition: - ≤11: 2 lightning damage, 2 sonic damage - 12-16: 3 lightning damage, 3 sonic damage - 17+: 5 lightning damage, 5 sonic damage Effect: A raging storm fills the area until the end of the encounter or until you are dying. At the start of each of your turns, you can move the storm up to 5 squares (no action required). On subsequent turns while the storm is active, you can use a maneuver to make its power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 5",
+  "target": "Each enemy in the area",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-storm"
+  ]
+}

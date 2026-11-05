@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-special-delivery",
+  "name": "Special Delivery",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You ready?*\n\n**Heroic Ability** — Melee, Weapon — Maneuver\n\n**Cost:** 5 Ferocity\n\n**Distance:** Melee 1   **Target:** One willing ally\n\n**Effect:** You vertically push the target up to 4 squares. This forced movement ignores the target's stability, and the target takes no damage from colliding with creatures or objects. At the end of this movement, the target can make a free strike that deals extra damage equal to your Might score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You ready? Effect: You vertically push the target up to 4 squares. This forced movement ignores the target's stability, and the target takes no damage from colliding with creatures or objects. At the end of this movement, the target can make a free strike that deals extra damage equal to your Might score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Weapon",
+  "actionType": "Maneuver",
+  "distance": "Melee 1",
+  "target": "One willing ally",
+  "cost": 5
+}

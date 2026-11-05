@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-dwarf-great-fortitude",
+  "name": "Great Fortitude",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour hearty constitution prevents you from losing strength. You can't be made weakened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your hearty constitution prevents you from losing strength. You can't be made weakened."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Hakaan",
+  "cost": 2
+}

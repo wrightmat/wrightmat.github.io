@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-master-of-disguise",
+  "name": "Master of Disguise",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Intrigue Perk**\n\nYou can don or remove a disguise as part of any test you make using the Hide skill, or while using the Hide maneuver.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can don or remove a disguise as part of any test you make using the Hide skill, or while using the Hide maneuver."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Intrigue"
+}

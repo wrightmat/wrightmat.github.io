@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-gravitic-strike",
+  "name": "Gravitic Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your fist emanates gravitic force that pulls a distant enemy closer.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 5 Discipline\n\n**Distance:** Melee 3   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 8 + A psychic damage; vertical pull 3\n- **12-16:** 12 + A psychic damage; vertical pull 5\n- **17+:** 16 + A psychic damage; vertical pull 7",
+  "mechanics": {
+    "type": "active",
+    "text": "Your fist emanates gravitic force that pulls a distant enemy closer. Power Roll + Agility: - ≤11: 8 + A psychic damage; vertical pull 3 - 12-16: 12 + A psychic damage; vertical pull 5 - 17+: 16 + A psychic damage; vertical pull 7"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 3",
+  "target": "One creature",
+  "cost": 5
+}

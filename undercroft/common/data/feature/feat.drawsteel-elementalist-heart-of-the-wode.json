@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-heart-of-the-wode",
+  "name": "Heart of the Wode",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You call forth one of the Great Tree's many splinters to provide for your every need.*\n\n**Heroic Ability** — Green, Magic, Ranged — Main action\n\n**Cost:** 11 Essence\n\n**Distance:** Ranged 10   **Target:** Special\n\n**Effect:** A size 5 tree appears in an unoccupied space within distance. The tree has 100 Stamina and can't be force moved. You and any ally can touch the tree to use the Catch Breath maneuver as a free maneuver. Additionally, when you start your turn with line of effect to the tree, you can end one effect on yourself that is ended by a saving throw or that ends at the end of your turn, or you can stand up if you are prone. Each ally within distance also gains this benefit.\n\nEach enemy who ends their turn within 3 squares of the tree is restrained until the end of their next turn. A creature restrained this way can use a main action to end the effect early.",
+  "mechanics": {
+    "type": "active",
+    "text": "You call forth one of the Great Tree's many splinters to provide for your every need. Effect: A size 5 tree appears in an unoccupied space within distance. The tree has 100 Stamina and can't be force moved. You and any ally can touch the tree to use the Catch Breath maneuver as a free maneuver. Additionally, when you start your turn with line of effect to the tree, you can end one effect on yourself that is ended by a saving throw or that ends at the end of your turn, or you can stand up if you are prone. Each ally within distance also gains this benefit. Each enemy who ends their turn within 3 squares of the tree is restrained until the end of their next turn. A creature restrained this way can use a main action to end the effect early."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Green, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Special",
+  "cost": 11
+}

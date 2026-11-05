@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-berserker-strongest-there-is",
+  "name": "Strongest There Is",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your strength is unmatched. Whenever you make a Might test, you can roll three dice and choose which two to use. Additionally, whenever you use the Knockback maneuver, the forced movement distance gains a bonus equal to your Might score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your strength is unmatched. Whenever you make a Might test, you can roll three dice and choose which two to use. Additionally, whenever you use the Knockback maneuver, the forced movement distance gains a bonus equal to your Might score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

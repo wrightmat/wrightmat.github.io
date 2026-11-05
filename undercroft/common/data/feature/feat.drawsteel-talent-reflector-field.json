@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-reflector-field",
+  "name": "Reflector Field",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A protective field reverses the momentum of incoming attacks.*\n\n**Heroic Ability** — Area, Psionic, Telepathy — Main action\n\n**Cost:** 7 Clarity\n\n**Distance:** 3 aura   **Target:** Special\n\n**Effect:** The aura lasts until the start of your next turn. Whenever an enemy targets an ally in the area with a ranged ability, the ability is negated on the ally and reflected back at the enemy. The ability deals half the damage to the enemy that it would have dealt to the ally and loses any additional effects.\n\n**Strained:** The size of the aura increases by 1. Whenever your aura reflects an ability, you take 2d6 damage and forget a memory, as determined by you and the Director.",
+  "mechanics": {
+    "type": "active",
+    "text": "A protective field reverses the momentum of incoming attacks. Effect: The aura lasts until the start of your next turn. Whenever an enemy targets an ally in the area with a ranged ability, the ability is negated on the ally and reflected back at the enemy. The ability deals half the damage to the enemy that it would have dealt to the ally and loses any additional effects. Strained: The size of the aura increases by 1. Whenever your aura reflects an ability, you take 2d6 damage and forget a memory, as determined by you and the Director."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Telepathy",
+  "actionType": "Main action",
+  "distance": "3 aura",
+  "target": "Special",
+  "cost": 7
+}

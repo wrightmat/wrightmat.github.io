@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-talent-materialize",
+  "name": "Materialize",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You picture an object in your mind and give it form—directly above your opponent's head.*\n\n**Signature Ability** — Psionic, Ranged, Resopathy, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 + R damage\n- **12-16:** 5 + R damage\n- **17+:** 8 + R damage\n\n**Effect:** A worthless size 1M object drops onto the target to deal the damage, then rolls into an adjacent unoccupied space of your choice. The object is made of wood, stone, or metal (your choice).\n\n**Strained:** The object explodes after the damage is dealt, and each creature adjacent to the target takes damage equal to your Reason score. You also take damage equal to your Reason score that can't be reduced in any way.",
+  "mechanics": {
+    "type": "active",
+    "text": "You picture an object in your mind and give it form—directly above your opponent's head. Power Roll + Reason: - ≤11: 3 + R damage - 12-16: 5 + R damage - 17+: 8 + R damage Effect: A worthless size 1M object drops onto the target to deal the damage, then rolls into an adjacent unoccupied space of your choice. The object is made of wood, stone, or metal (your choice). Strained: The object explodes after the damage is dealt, and each creature adjacent to the target takes damage equal to your Reason score. You also take damage equal to your Reason score that can't be reduced in any way."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Psionic, Ranged, Resopathy, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

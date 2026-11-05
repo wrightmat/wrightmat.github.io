@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-prism",
+  "name": "Prism",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You split your essence, allowing you to cast multiple effects at once.*\n\n**Heroic Ability** — Magic, Void — Main action\n\n**Cost:** 11 Essence\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You use up to three heroic abilities whose essence costs total 11 or less, spending no additional essence beyond the cost of this ability. You can shift up to 2 squares between your use of each ability.",
+  "mechanics": {
+    "type": "active",
+    "text": "You split your essence, allowing you to cast multiple effects at once. Effect: You use up to three heroic abilities whose essence costs total 11 or less, spending no additional essence beyond the cost of this ability. You can shift up to 2 squares between your use of each ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Void",
+  "actionType": "Main action",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

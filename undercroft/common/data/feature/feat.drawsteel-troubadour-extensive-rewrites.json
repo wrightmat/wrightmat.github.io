@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-extensive-rewrites",
+  "name": "Extensive Rewrites",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*No, this isn't right. That foe was over there!*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 7 Drama\n\n**Distance:** 4 burst   **Target:** Each enemy in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** Slide 3; P < WEAK, this slide ignores the target's stability\n- **12-16:** Slide 5; P < AVERAGE, this slide ignores the target's stability\n- **17+:** Slide 7; P < STRONG, this slide ignores the target's stability\n\n**Effect:** Instead of sliding a target, you can swap their location with another target as long as each can fit into the other's space. You can't slide targets into other creatures or objects using this ability.",
+  "mechanics": {
+    "type": "active",
+    "text": "No, this isn't right. That foe was over there! Power Roll + Presence: - ≤11: Slide 3; P < WEAK, this slide ignores the target's stability - 12-16: Slide 5; P < AVERAGE, this slide ignores the target's stability - 17+: Slide 7; P < STRONG, this slide ignores the target's stability Effect: Instead of sliding a target, you can swap their location with another target as long as each can fit into the other's space. You can't slide targets into other creatures or objects using this ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "4 burst",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-righteous-judgment",
+  "name": "Righteous Judgment",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You amplify the power of your judgment.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 10 + M damage\n- **12-16:** 14 + M damage\n- **17+:** 20 + M damage\n\n**Effect:** Until the end of the encounter, whenever any ally deals damage to a target judged by you, that ally gains 1 surge.",
+  "mechanics": {
+    "type": "active",
+    "text": "You amplify the power of your judgment. Power Roll + Might: - ≤11: 10 + M damage - 12-16: 14 + M damage - 17+: 20 + M damage Effect: Until the end of the encounter, whenever any ally deals damage to a target judged by you, that ally gains 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-censor-windwalk",
+  "name": "Windwalk",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "While you have 5 or more Victories, you can fly. If you can already fly, you have a +2 bonus to speed while flying instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "While you have 5 or more Victories, you can fly. If you can already fly, you have a +2 bonus to speed while flying instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "subclassIds": [
+    "ds-conduit-storm"
+  ]
+}

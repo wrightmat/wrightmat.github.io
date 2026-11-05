@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-iron-grip",
+  "name": "Iron Grip",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You grab the target with supernatural force.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 9 Discipline\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 10 + A damage; A < WEAK, grabbed\n- **12-16:** 14 + A damage; A < AVERAGE, grabbed\n- **17+:** 18 + A damage; A < STRONG, grabbed\n\n**Effect:** While grabbed this way, the target takes a bane on the Escape Grab maneuver. Each time they use that maneuver, they take damage equal to twice your Agility score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You grab the target with supernatural force. Power Roll + Agility: - ≤11: 10 + A damage; A < WEAK, grabbed - 12-16: 14 + A damage; A < AVERAGE, grabbed - 17+: 18 + A damage; A < STRONG, grabbed Effect: While grabbed this way, the target takes a bane on the Escape Grab maneuver. Each time they use that maneuver, they take damage equal to twice your Agility score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

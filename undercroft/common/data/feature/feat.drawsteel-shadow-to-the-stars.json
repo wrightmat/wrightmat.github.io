@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-to-the-stars",
+  "name": "To the Stars",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You attach your most potent explosive to your foe. Under less pressing circumstances, you're sure you could launch them into orbit.*\n\n**Heroic Ability** — Melee, Ranged, Strike — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 4 + A fire damage; vertical push 8\n- **12-16:** 7 + A fire damage; vertical push 10\n- **17+:** 11 + A fire damage; vertical push 15\n\n**Effect:** The ground beneath a 3-cube area around the target's starting position is difficult terrain.",
+  "mechanics": {
+    "type": "active",
+    "text": "You attach your most potent explosive to your foe. Under less pressing circumstances, you're sure you could launch them into orbit. Power Roll + Agility: - ≤11: 4 + A fire damage; vertical push 8 - 12-16: 7 + A fire damage; vertical push 10 - 17+: 11 + A fire damage; vertical push 15 Effect: The ground beneath a 3-cube area around the target's starting position is difficult terrain."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature or object",
+  "cost": 11
+}

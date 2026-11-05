@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-mind-game",
+  "name": "Mind Game",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your attack demoralizes your foe. Your allies begin to think you can win.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Focus\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature or object\n\n**Effect:** You mark the target.\n\n**Power Roll + Might:**\n\n- **≤11:** 4 + M damage; R < WEAK, weakened (save ends)\n- **12-16:** 6 + M damage; R < AVERAGE, weakened (save ends)\n- **17+:** 10 + M damage; R < STRONG, weakened (save ends)\n\n**Effect:** Before the start of your next turn, the first time any ally deals damage to any target marked by you, that ally can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your attack demoralizes your foe. Your allies begin to think you can win. Effect: You mark the target. Power Roll + Might: - ≤11: 4 + M damage; R < WEAK, weakened (save ends) - 12-16: 6 + M damage; R < AVERAGE, weakened (save ends) - 17+: 10 + M damage; R < STRONG, weakened (save ends) Effect: Before the start of your next turn, the first time any ally deals damage to any target marked by you, that ally can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature or object",
+  "cost": 5
+}

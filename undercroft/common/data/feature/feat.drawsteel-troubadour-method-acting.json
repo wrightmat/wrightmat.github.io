@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-method-acting",
+  "name": "Method Acting",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*They're so hurt by your performance, you start to believe it yourself.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 6 + A damage; P < WEAK, weakened (save ends)\n- **12-16:** 10 + A damage; P < AVERAGE, weakened (save ends)\n- **17+:** 14 + A damage; P < STRONG, weakened (save ends)\n\n**Effect:** You can become bleeding (save ends) to deal an extra 5 corruption damage to the target.",
+  "mechanics": {
+    "type": "active",
+    "text": "They're so hurt by your performance, you start to believe it yourself. Power Roll + Agility: - ≤11: 6 + A damage; P < WEAK, weakened (save ends) - 12-16: 10 + A damage; P < AVERAGE, weakened (save ends) - 17+: 14 + A damage; P < STRONG, weakened (save ends) Effect: You can become bleeding (save ends) to deal an extra 5 corruption damage to the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-encore",
+  "name": "Encore",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Again! Again!*\n\n**Heroic Ability** — Magic, Strike — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** Special   **Target:** Special\n\n**Effect:** You use an ability that you have observed being used this combat round. The ability must have the Strike keyword, cost 5 or fewer of a Heroic Resource, and cost no Malice. When you make the strike, you use your Presence score for any power rolls, and any damage you deal is sonic damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "Again! Again! Effect: You use an ability that you have observed being used this combat round. The ability must have the Strike keyword, cost 5 or fewer of a Heroic Resource, and cost no Malice. When you make the strike, you use your Presence score for any power rolls, and any damage you deal is sonic damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Strike",
+  "actionType": "Main action",
+  "distance": "Special",
+  "target": "Special",
+  "cost": 5
+}

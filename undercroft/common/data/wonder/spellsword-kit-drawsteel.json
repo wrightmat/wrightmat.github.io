@@ -1,0 +1,22 @@
+{
+  "name": "Spellsword Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "The Spellsword kit combines melee strikes and a little bit of magic, letting you create a warrior who doesn't have to choose between the incantation and the blade.\n\n##### Equipment\n\nYou wear light armor and wield a shield and a medium weapon.\n\n##### Kit Bonuses\n\n**Stamina Bonus:** +6 per echelon\n\n**Speed Bonus:** +1\n\n**Stability Bonus:** +1\n\n**Melee Damage Bonus:** +2/+2/+2\n\n##### Signature Ability\n\n###### Leaping Lightning\n\n*Lightning jumps from your weapon as you strike to harm a nearby foe.*\n\n| **Magic, Melee, Strike, Weapon** |               **Main action** |\n| -------------------------------- | ----------------------------: |\n| **📏 Melee 1**                   | **🎯 One creature or object** |\n\n**Power Roll + Might, Reason, Intuition, or Presence:**\n\n- **≤11:** 5 + M, R, I, or P lightning damage\n- **12-16:** 8 + M, R, I, or P lightning damage\n- **17+:** 11 + M, R, I, or P lightning damage\n\n**Effect:** A creature or object of your choice within 2 squares of the target takes lightning damage equal to the characteristic score used for this ability's power roll.",
+  "equipment": "You wear light armor and wield a shield and a medium weapon.",
+  "staminaBonus": 6,
+  "speedBonus": 1,
+  "stabilityBonus": 1,
+  "meleeDamageBonus": "+2/+2/+2",
+  "signatureAbility": "Leaping Lightning",
+  "kitType": "standard",
+  "featureIds": [
+    "feat.drawsteel-kit-leaping-lightning"
+  ]
+}

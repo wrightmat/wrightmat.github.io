@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-the-gods-punish-and-defend",
+  "name": "The Gods Punish and Defend",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You channel holy energy to smite a foe and heal an ally.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 3 Wrath\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 5 + M holy damage\n- **12-16:** 8 + M holy damage\n- **17+:** 11 + M holy damage\n\n**Effect:** You can spend a Recovery to allow yourself or one ally within 10 squares to regain Stamina equal to your recovery value.",
+  "mechanics": {
+    "type": "active",
+    "text": "You channel holy energy to smite a foe and heal an ally. Power Roll + Might: - ≤11: 5 + M holy damage - 12-16: 8 + M holy damage - 17+: 11 + M holy damage Effect: You can spend a Recovery to allow yourself or one ally within 10 squares to regain Stamina equal to your recovery value."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 3
+}

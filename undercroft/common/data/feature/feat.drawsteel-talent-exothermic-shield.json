@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-exothermic-shield",
+  "name": "Exothermic Shield",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You encase the target in psionic flame and allow them to flicker without fear of burning out.*\n\n**Heroic Ability** — Pyrokinesis, Psionic, Ranged — Maneuver\n\n**Cost:** 9 Clarity\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** Until the start of your next turn, the target has cold immunity 10 and fire immunity 10, and their strikes deal extra fire damage equal to twice your Reason score. Additionally, whenever an enemy uses a melee ability against the target while they are under this effect, the enemy takes 5 fire damage.\n\n**Strained:** The target gains 2 surges. You are weakened and slowed (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "You encase the target in psionic flame and allow them to flicker without fear of burning out. Effect: Until the start of your next turn, the target has cold immunity 10 and fire immunity 10, and their strikes deal extra fire damage equal to twice your Reason score. Additionally, whenever an enemy uses a melee ability against the target while they are under this effect, the enemy takes 5 fire damage. Strained: The target gains 2 surges. You are weakened and slowed (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Pyrokinesis, Psionic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 9
+}

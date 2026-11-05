@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-mindwipe",
+  "name": "Mindwipe",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You attempt to make them forget all their training.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Telepathy — Main action\n\n**Cost:** 11 Clarity\n\n**Distance:** Melee 2   **Target:** One creature\n\n**Power Roll + Reason:**\n\n- **≤11:** 12 + R damage; R < WEAK, the target takes a bane on their next power roll\n- **12-16:** 17 + R damage; R < AVERAGE, the target takes a bane on power rolls (save ends)\n- **17+:** 23 + R damage; R < STRONG, the target has a double bane on power rolls (save ends)\n\n**Effect:** The target can't communicate with anyone until the end of the encounter.\n\n**Strained:** You take 3d6 damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "You attempt to make them forget all their training. Power Roll + Reason: - ≤11: 12 + R damage; R < WEAK, the target takes a bane on their next power roll - 12-16: 17 + R damage; R < AVERAGE, the target takes a bane on power rolls (save ends) - 17+: 23 + R damage; R < STRONG, the target has a double bane on power rolls (save ends) Effect: The target can't communicate with anyone until the end of the encounter. Strained: You take 3d6 damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Telepathy",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "One creature",
+  "cost": 11
+}

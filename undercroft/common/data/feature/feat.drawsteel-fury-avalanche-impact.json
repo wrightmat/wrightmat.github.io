@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-avalanche-impact",
+  "name": "Avalanche Impact",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You leap and crash down, causing a shockwave that devastates foes.*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 9 Ferocity\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You jump up to your maximum jump distance and make one power roll that targets each creature adjacent to the space where you land.\n\n**Power Roll + Might:**\n\n- **≤11:** 4 damage; push 1\n- **12-16:** 7 damage; push 2\n- **17+:** 11 damage; push 3",
+  "mechanics": {
+    "type": "active",
+    "text": "You leap and crash down, causing a shockwave that devastates foes. Effect: You jump up to your maximum jump distance and make one power roll that targets each creature adjacent to the space where you land. Power Roll + Might: - ≤11: 4 damage; push 1 - 12-16: 7 damage; push 2 - 17+: 11 damage; push 3"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 9
+}

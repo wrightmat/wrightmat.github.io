@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-dramaturgy",
+  "name": "Dramaturgy",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You gain 1 additional drama or other Heroic Resource whenever you use your Appeal to the Muses feature. Additionally, your performances no longer have a distance, but can affect any target on the encounter map within your line of effect.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain 1 additional drama or other Heroic Resource whenever you use your Appeal to the Muses feature. Additionally, your performances no longer have a distance, but can affect any target on the encounter map within your line of effect."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

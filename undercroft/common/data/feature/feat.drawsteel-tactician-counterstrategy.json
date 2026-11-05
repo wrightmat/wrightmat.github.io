@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-counterstrategy",
+  "name": "Counterstrategy",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*I've identified a way to negate their strengths.*\n\n**Heroic Ability** — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You gain 6 surges. Until the end of the encounter or until you are dying, whenever the Director spends Malice (see *[Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)*), choose yourself or one ally within 10 squares. The chosen character gains 2 of their Heroic Resource.",
+  "mechanics": {
+    "type": "active",
+    "text": "I've identified a way to negate their strengths. Effect: You gain 6 surges. Until the end of the encounter or until you are dying, whenever the Director spends Malice (see [Draw Steel: Monsters](https://mcdm.gg/DS-Monsters)), choose yourself or one ally within 10 squares. The chosen character gains 2 of their Heroic Resource."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Main action",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

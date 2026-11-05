@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-talent-entropic-bolt",
+  "name": "Entropic Bolt",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You advance an enemy's age for a moment.*\n\n**Signature Ability** — Chronopathy, Psionic, Ranged, Strike — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Presence:**\n\n- **≤11:** 2 + P corruption damage; P < WEAK, slowed (save ends)\n- **12-16:** 3 + P corruption damage; P < AVERAGE, slowed (save ends)\n- **17+:** 5 + P corruption damage; P < STRONG, slowed (save ends)\n\n**Effect:** The target takes an extra 1 corruption damage for each additional time they are targeted by this ability during the encounter.\n\n**Strained:** You gain 1 clarity when you obtain a tier 2 or tier 3 outcome on the power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "You advance an enemy's age for a moment. Power Roll + Presence: - ≤11: 2 + P corruption damage; P < WEAK, slowed (save ends) - 12-16: 3 + P corruption damage; P < AVERAGE, slowed (save ends) - 17+: 5 + P corruption damage; P < STRONG, slowed (save ends) Effect: The target takes an extra 1 corruption damage for each additional time they are targeted by this ability during the encounter. Strained: You gain 1 clarity when you obtain a tier 2 or tier 3 outcome on the power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Chronopathy, Psionic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

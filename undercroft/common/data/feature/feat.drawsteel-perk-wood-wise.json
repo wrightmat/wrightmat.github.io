@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-wood-wise",
+  "name": "Wood Wise",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Exploration Perk**\n\nWhen you make a test using a skill from the exploration skill group and at least one of the d10s rolled is a 1, you can reroll one d10. You can use this perk only once per test.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you make a test using a skill from the exploration skill group and at least one of the d10s rolled is a 1, you can reroll one d10. You can use this perk only once per test."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Exploration"
+}

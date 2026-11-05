@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-talent-kinetic-grip",
+  "name": "Kinetic Grip",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You lift and hurl your foe away from you.*\n\n**Signature Ability** — Psionic, Ranged, Telekinesis — Main action\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** Slide 2 + R\n- **12-16:** Slide 4 + R\n- **17+:** Slide 6 + R; prone\n\n**Strained:** You must vertical push the target instead of sliding them.",
+  "mechanics": {
+    "type": "active",
+    "text": "You lift and hurl your foe away from you. Power Roll + Reason: - ≤11: Slide 2 + R - 12-16: Slide 4 + R - 17+: Slide 6 + R; prone Strained: You must vertical push the target instead of sliding them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Psionic, Ranged, Telekinesis",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object"
+}

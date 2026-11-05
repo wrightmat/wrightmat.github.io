@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-soul-burn",
+  "name": "Soul Burn",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You blast their soul out of their body, leaving it to helplessly float back to a weakened husk.*\n\n**Heroic Ability** — Animapathy, Psionic, Ranged, Strike — Main action\n\n**Cost:** 7 Clarity\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** 6 + P damage; P < WEAK, dazed (save ends)\n- **12-16:** 10 + P damage; P < AVERAGE, dazed (save ends)\n- **17+:** 14 + P damage; P < STRONG, dazed (save ends)\n\n**Effect:** The target takes a bane on Presence tests until the end of the encounter.\n\n**Strained:** The potency of this ability increases by 1. You take 2d6 damage and gain 3 surges that you can use immediately.",
+  "mechanics": {
+    "type": "active",
+    "text": "You blast their soul out of their body, leaving it to helplessly float back to a weakened husk. Power Roll + Presence: - ≤11: 6 + P damage; P < WEAK, dazed (save ends) - 12-16: 10 + P damage; P < AVERAGE, dazed (save ends) - 17+: 14 + P damage; P < STRONG, dazed (save ends) Effect: The target takes a bane on Presence tests until the end of the encounter. Strained: The potency of this ability increases by 1. You take 2d6 damage and gain 3 surges that you can use immediately."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Animapathy, Psionic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 7
+}

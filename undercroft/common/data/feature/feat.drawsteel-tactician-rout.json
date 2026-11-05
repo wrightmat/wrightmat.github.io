@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-rout",
+  "name": "Rout",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The tide begins to turn.*\n\n**Heroic Ability** — Maneuver\n\n**Cost:** 7 Focus\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter or until you are dying, whenever you or any ally deals damage to a target marked by you who has R < AVERAGE, the target is frightened of the creature who dealt the damage (save ends).",
+  "mechanics": {
+    "type": "active",
+    "text": "The tide begins to turn. Effect: Until the end of the encounter or until you are dying, whenever you or any ally deals damage to a target marked by you who has R < AVERAGE, the target is frightened of the creature who dealt the damage (save ends)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

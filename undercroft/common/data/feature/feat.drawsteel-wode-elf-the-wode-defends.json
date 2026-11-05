@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-wode-elf-the-wode-defends",
+  "name": "The Wode Defends",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou have the following signature ability. Signature abilities can be used at will.\n\n###### The Wode Defends\n\n*Thorny vines erupt from every surface and attempt to bind your foe.*\n\n| **Magic, Ranged, Strike** |     **Main action** |\n| ------------------------- | ------------------: |\n| **📏 Ranged 10**          | **🎯 One creature** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 2 + M or A damage; A < WEAK, slowed (save ends)\n- **12-16:** 3 + M or A damage; A < AVERAGE, slowed (save ends)\n- **17+:** 5 + M or A damage; A < STRONG, restrained (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Ancestry Trait You have the following signature ability. Signature abilities can be used at will. The Wode Defends Thorny vines erupt from every surface and attempt to bind your foe. Magic, Ranged, Strike Main action ------------------------- ------------------: 📏 Ranged 10 🎯 One creature Power Roll + Might or Agility: - ≤11: 2 + M or A damage; A < WEAK, slowed (save ends) - 12-16: 3 + M or A damage; A < AVERAGE, slowed (save ends) - 17+: 5 + M or A damage; A < STRONG, restrained (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Wode Elf",
+  "cost": 2
+}

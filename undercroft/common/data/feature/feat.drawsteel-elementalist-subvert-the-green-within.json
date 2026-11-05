@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-subvert-the-green-within",
+  "name": "Subvert the Green Within",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Fungal spores sprout inside your enemy's brain, allowing you to control their actions.*\n\n**Heroic Ability** — Green, Magic, Ranged, Strike, Void — Main action\n\n**Cost:** 5 Essence\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Effect:** The target uses their signature ability against a creature of your choice. This signature ability can target the creature even if it usually wouldn't. You then make a power roll against the target of this ability.\n\n**Power Roll + Reason:**\n\n- **≤11:** 5 + R poison damage\n- **12-16:** 9 + R poison damage\n- **17+:** 12 + R poison damage",
+  "mechanics": {
+    "type": "active",
+    "text": "Fungal spores sprout inside your enemy's brain, allowing you to control their actions. Effect: The target uses their signature ability against a creature of your choice. This signature ability can target the creature even if it usually wouldn't. You then make a power roll against the target of this ability. Power Roll + Reason: - ≤11: 5 + R poison damage - 12-16: 9 + R poison damage - 17+: 12 + R poison damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Green, Magic, Ranged, Strike, Void",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 5
+}

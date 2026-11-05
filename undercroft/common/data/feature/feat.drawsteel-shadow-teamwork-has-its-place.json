@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-shadow-teamwork-has-its-place",
+  "name": "Teamwork Has Its Place",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You attack an enemy as an ally exposes their weakness.*\n\n**Signature Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 3 + A damage\n- **12-16:** 6 + A damage\n- **17+:** 9 + A damage\n\n**Effect:** If any ally is adjacent to the target, you gain 1 surge before making the power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "You attack an enemy as an ally exposes their weakness. Power Roll + Agility: - ≤11: 3 + A damage - 12-16: 6 + A damage - 17+: 9 + A damage Effect: If any ally is adjacent to the target, you gain 1 surge before making the power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature or object"
+}

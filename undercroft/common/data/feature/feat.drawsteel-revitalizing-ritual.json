@@ -21,5 +21,24 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Subclass Feature"
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-life"
+  ],
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose an exploration skill.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Exploration"
+          ]
+        }
+      }
+    }
+  ]
 }

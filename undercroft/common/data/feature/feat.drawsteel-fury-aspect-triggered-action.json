@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-aspect-triggered-action",
+  "name": "Aspect Triggered Action",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your primordial aspect grants you a triggered action, as shown on the Aspect Triggered Actions table.\n\n###### Aspect Triggered Actions Table\n\n| Aspect     | Triggered Action   |\n| ---------- | ------------------ |\n| Berserker  | Lines of Force     |\n| Reaver     | Unearthly Reflexes |\n| Stormwight | Furious Change     |\n\n> ###### Furious Change\n>\n> *In your anger, you revert to a more bestial form.*\n>\n> | **-**       | **Triggered** |\n> | ----------- | ------------: |\n> | **📏 Self** |   **🎯 Self** |\n>\n> **Trigger:** You lose Stamina and are not dying.\n>\n> **Effect:** You gain temporary Stamina equal to your Might score and can enter your animal form or hybrid form.\n>\n> **Spend 1 Ferocity:** If you are not dying, you can spend a Recovery.\n\n> ###### Lines of Force\n>\n> *You redirect the energy of motion.*\n>\n> | **Magic, Melee** |               **Triggered** |\n> | ---------------- | --------------------------: |\n> | **📏 Melee 1**   | **🎯 Self or one creature** |\n>\n> **Trigger:** The target would be force moved.\n>\n> **Effect:** You can select a new target of the same size or smaller within distance to be force moved instead. You become the source of the forced movement, determine the new target's destination, and can push the target instead of using the original forced movement type. Additionally, the forced movement distance gains a bonus equal to your Might score.\n>\n> **Spend 1 Ferocity:** The forced movement distance gains a bonus equal to twice your Might score instead.\n\n> ###### Unearthly Reflexes\n>\n> *You are as elusive as a hummingbird.*\n>\n> | **-**       | **Triggered** |\n> | ----------- | ------------: |\n> | **📏 Self** |   **🎯 Self** |\n>\n> **Trigger:** You take damage.\n>\n> **Effect:** You take half the damage from the triggering effect and can shift up to a number of squares equal to your Agility score.\n>\n> **Spend 1 Ferocity:** If the damage has any potency effects associated with it, the potency is reduced by 1 for you.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your primordial aspect grants you a triggered action, as shown on the Aspect Triggered Actions table. Aspect Triggered Actions Table Furious Change In your anger, you revert to a more bestial form. Trigger: You lose Stamina and are not dying. Effect: You gain temporary Stamina equal to your Might score and can enter your animal form or hybrid form. Spend 1 Ferocity: If you are not dying, you can spend a Recovery. Lines of Force You redirect the energy of motion. Trigger: The target would be force moved. Effect: You can select a new target of the same size or smaller within distance to be force moved instead. You become the source of the forced movement, determine the new target's destination, and can push the target instead of using the original forced movement type. Additionally, the forced movement distance gains a bonus equal to your Might score. Spend 1 Ferocity: The forced movement distance gains a bonus equal to twice your Might score instead. Unearthly Reflexes You are as elusive as a hummingbird. Trigger: You take damage. Effect: You take half the damage from the triggering effect and can shift up to a number of squares equal to your Agility score. Spend 1 Ferocity: If the damage has any potency effects associated with it, the potency is reduced by 1 for you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

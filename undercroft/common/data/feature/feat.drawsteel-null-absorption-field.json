@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-absorption-field",
+  "name": "Absorption Field",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your null field absorbs kinetic energy.*\n\n**Heroic Ability** — Psionic — Maneuver\n\n**Cost:** 7 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, each enemy in the area takes a bane on ability rolls.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your null field absorbs kinetic energy. Effect: Until the end of the encounter, the size of your Null Field ability increases by 1. While the area of that ability is enlarged this way, each enemy in the area takes a bane on ability rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

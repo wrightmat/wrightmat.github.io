@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.drawsteel"
   ],
-  "description": "**Perk**\n\nYou can use the Handle Animals skill to interact with nonsapient creatures who are not animals.",
+  "description": "**Exploration Perk**\n\nYou can use the Handle Animals skill to interact with nonsapient creatures who are not animals.",
   "mechanics": {
     "type": "passive",
     "text": "You can use the Handle Animals skill to interact with nonsapient creatures who are not animals."
@@ -21,5 +21,6 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Perk"
+  "kind": "Perk",
+  "perkType": "Exploration"
 }

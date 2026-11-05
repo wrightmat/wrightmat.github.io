@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-elemental-buffer",
+  "name": "Elemental Buffer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you reduce acid, cold, corruption, fire, lightning, poison, or sonic damage with damage immunity, you gain 2 surges that can be used only to increase the damage of your next strike.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you reduce acid, cold, corruption, fire, lightning, poison, or sonic damage with damage immunity, you gain 2 surges that can be used only to increase the damage of your next strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

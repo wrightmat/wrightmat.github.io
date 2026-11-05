@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-kit-leaping-lightning",
+  "name": "Leaping Lightning",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Lightning jumps from your weapon as you strike to harm a nearby foe.*\n\n**Signature Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might, Reason, Intuition, or Presence:**\n\n- **≤11:** 5 + M, R, I, or P lightning damage\n- **12-16:** 8 + M, R, I, or P lightning damage\n- **17+:** 11 + M, R, I, or P lightning damage\n\n**Effect:** A creature or object of your choice within 2 squares of the target takes lightning damage equal to the characteristic score used for this ability's power roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "Lightning jumps from your weapon as you strike to harm a nearby foe. Power Roll + Might, Reason, Intuition, or Presence: - ≤11: 5 + M, R, I, or P lightning damage - 12-16: 8 + M, R, I, or P lightning damage - 17+: 11 + M, R, I, or P lightning damage Effect: A creature or object of your choice within 2 squares of the target takes lightning damage equal to the characteristic score used for this ability's power roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object"
+}

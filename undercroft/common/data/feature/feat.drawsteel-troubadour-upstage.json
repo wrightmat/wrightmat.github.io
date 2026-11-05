@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-upstage",
+  "name": "Upstage",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*As you bob and weave through the crowd, you can't help but leave the audience wanting more.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Maneuver\n\n**Cost:** 3 Drama\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You shift up to your speed. You make one power roll that targets each enemy you move adjacent to during this shift.\n\n**Power Roll + Agility or Presence:**\n\n- **≤11:** Taunted (EoT); A < WEAK, prone\n- **12-16:** Taunted (EoT); A < AVERAGE, prone\n- **17+:** Taunted (EoT); A < STRONG, prone and can't stand (EoT)",
+  "mechanics": {
+    "type": "active",
+    "text": "As you bob and weave through the crowd, you can't help but leave the audience wanting more. Effect: You shift up to your speed. You make one power roll that targets each enemy you move adjacent to during this shift. Power Roll + Agility or Presence: - ≤11: Taunted (EoT); A < WEAK, prone - 12-16: Taunted (EoT); A < AVERAGE, prone - 17+: Taunted (EoT); A < STRONG, prone and can't stand (EoT)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Maneuver",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 3
+}

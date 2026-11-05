@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-win-this-day",
+  "name": "Win This Day!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You inspire your allies to recover and gather their strength.*\n\n**Heroic Ability** — Area — Main action\n\n**Cost:** 9 Focus\n\n**Distance:** 3 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target gains 2 surges. Additionally, they can spend a Recovery, remove any conditions or effects on them, and stand up if they are prone.",
+  "mechanics": {
+    "type": "active",
+    "text": "You inspire your allies to recover and gather their strength. Effect: Each target gains 2 surges. Additionally, they can spend a Recovery, remove any conditions or effects on them, and stand up if they are prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9
+}

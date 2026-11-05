@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-sentenced",
+  "name": "Sentenced",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The shock of your condemnation freezes your enemy in their boots.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** 5 + P damage; P < WEAK, restrained (save ends)\n- **12-16:** 9 + P damage; P < AVERAGE, restrained (save ends)\n- **17+:** 12 + P damage; P < STRONG, restrained (save ends)\n\n**Effect:** While the target is restrained this way, your abilities that impose forced movement can still move them.",
+  "mechanics": {
+    "type": "active",
+    "text": "The shock of your condemnation freezes your enemy in their boots. Power Roll + Presence: - ≤11: 5 + P damage; P < WEAK, restrained (save ends) - 12-16: 9 + P damage; P < AVERAGE, restrained (save ends) - 17+: 12 + P damage; P < STRONG, restrained (save ends) Effect: While the target is restrained this way, your abilities that impose forced movement can still move them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

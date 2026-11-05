@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-strike-now",
+  "name": "Strike Now",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### \"Strike Now!\"\n>\n> *Your foe left an opening. You point this out to an ally!*\n>\n> | **Ranged**       | **Main action** |\n> | ---------------- | --------------: |\n> | **📏 Ranged 10** | **🎯 One ally** |\n>\n> **Effect:** The target can use a signature ability as a free triggered action.\n>\n> **Spend 5 Focus:** You target two allies instead of one.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. \"Strike Now!\" Your foe left an opening. You point this out to an ally! Effect: The target can use a signature ability as a free triggered action. Spend 5 Focus: You target two allies instead of one."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-hammer-and-anvil",
+  "name": "Hammer and Anvil",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"Let's not argue about who's the hammer and who's the anvil!\"*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Focus\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 5 + M damage; one ally within 10 squares of you can use a strike signature ability against the target as a free triggered action\n- **12-16:** 9 + M damage; one ally within 10 squares of you can use a strike signature ability that gains an edge against the target as a free triggered action\n- **17+:** 12 + M damage; two allies within 10 squares of you can each use a strike signature ability that gains an edge against the target as a free triggered action\n\n**Effect:** If the target is reduced to 0 Stamina before one or both chosen allies has made their strike, the ally or allies can pick a different target.",
+  "mechanics": {
+    "type": "active",
+    "text": "\"Let's not argue about who's the hammer and who's the anvil!\" Power Roll + Might: - ≤11: 5 + M damage; one ally within 10 squares of you can use a strike signature ability against the target as a free triggered action - 12-16: 9 + M damage; one ally within 10 squares of you can use a strike signature ability that gains an edge against the target as a free triggered action - 17+: 12 + M damage; two allies within 10 squares of you can each use a strike signature ability that gains an edge against the target as a free triggered action Effect: If the target is reduced to 0 Stamina before one or both chosen allies has made their strike, the ally or allies can pick a different target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature or object",
+  "cost": 5
+}

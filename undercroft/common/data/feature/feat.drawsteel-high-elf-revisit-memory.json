@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-high-elf-revisit-memory",
+  "name": "Revisit Memory",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nAccessing memories is as easy as living in the present for you. You gain an edge on tests made to recall lore.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Accessing memories is as easy as living in the present for you. You gain an edge on tests made to recall lore."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Wode Elf",
+  "cost": 1
+}

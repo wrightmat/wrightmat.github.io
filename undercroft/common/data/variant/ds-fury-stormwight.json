@@ -13,7 +13,28 @@
     {
       "name": "Beast Shape",
       "level": 1,
-      "description": "You can use and gain the benefits of a stormwight kit (see Stormwight Kits). Your stormwight kit grants you a number of benefits, including benefits tied to your Growing Ferocity feature."
+      "description": "You can use and gain the benefits of a stormwight kit (see Stormwight Kits). Your stormwight kit grants you a number of benefits, including benefits tied to your Growing Ferocity feature.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "itemChoice",
+          "choose": 1,
+          "desc": "Choose a stormwight kit.",
+          "targetPath": "inventory",
+          "itemDefaults": {
+            "quantity": 1,
+            "notes": "",
+            "isEquipped": true
+          },
+          "from": {
+            "libraryKind": "wonder",
+            "filter": {
+              "properties.form": "kit",
+              "kitType": "stormwight"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "Relentless Hunter",
@@ -26,6 +47,25 @@
       "description": "At the end of each of your turns, each enemy adjacent to you takes damage equal to your Might score."
     },
     {
+      "name": "2nd-Level Stormwight Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Apex Predator (5 Ferocity)\n>\n> *I will hunt you down.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 4 damage; I < WEAK, slowed (save ends)\n> - **12-16:** 6 damage; I < AVERAGE, slowed (save ends)\n> - **17+:** 10 damage; I < STRONG, slowed (save ends)\n>\n> **Effect:** The target can't be hidden from you for 24 hours. Until the end of the encounter, whenever the target willingly moves, you can use a free triggered action to move.\n\n> ###### Visceral Roar (5 Ferocity)\n>\n> *The sound of the storm within you staggers your opponents.*\n>\n> | **Area, Magic** |               **Main action** |\n> | --------------- | ----------------------------: |\n> | **📏 2 burst**  | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 2 damage; push 1; M < WEAK, dazed (save ends)\n> - **12-16:** 5 damage; push 2; M < AVERAGE, dazed (save ends)\n> - **17+:** 7 damage; push 3; M < STRONG, dazed (save ends)\n>\n> **Effect:** This ability deals your primordial damage type (see Stormwight Kits).",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one stormwight ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-fury-apex-predator",
+              "feat.drawsteel-fury-visceral-roar"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Nature's Knight",
       "level": 3,
       "description": "You can speak with animals and elementals. Additionally, you automatically sense the presence of animals and elementals within 10 squares of you, even if they are hidden.\n\nWhen you are in a negotiation with an animal or elemental, you treat your Renown as 1 higher than usual. This stacks with the increase to your effective Renown in a negotiation with an animal of your type while in animal form (see Stormwight Kits)."
@@ -36,9 +76,64 @@
       "description": "You and each ally within 5 squares of you ignore negative effects from inclement weather, such as banes or environmental damage. Additionally, you can use the Blessing of Fortunate Weather feature as if you were a 1st-level conduit (see 1st-Level Domain Feature in the Conduit section)."
     },
     {
+      "name": "6th-Level Stormwight Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Pounce (9 Ferocity)\n>\n> *You strike at the target like the ultimate predator you are.*\n>\n> | **Magic, Melee, Strike, Weapon** |     **Main action** |\n> | -------------------------------- | ------------------: |\n> | **📏 Melee 1**                   | **🎯 One creature** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 8 damage; M < WEAK, grabbed\n> - **12-16:** 13 damage; M < AVERAGE, grabbed\n> - **17+:** 17 damage; M < STRONG, grabbed\n>\n> **Effect:** You can shift up to 4 squares, bringing the target with you. While grabbed this way, the target takes damage equal to twice your Might score at the start of each of your turns.\n\n> ###### Riders on the Storm (9 Ferocity)\n>\n> *You focus your connection to the Primordial Chaos into a seething storm.*\n>\n> | **Area, Magic** |                     **Maneuver** |\n> | --------------- | -------------------------------: |\n> | **📏 3 aura**   | **🎯 Each creature in the area** |\n>\n> **Effect:** Until the end of the encounter or until you are dying, each enemy target takes damage of your primordial damage type equal to twice your Might score at the end of each of your turns. Additionally, you can fly while the aura is active. Each ally target who starts or ends their turn in the area can also fly until the start of their next turn or until the effect ends.\n>\n> **Special:** When you use this ability outside of combat without spending ferocity, you must spend 1 uninterrupted minute summoning a primordial storm that fills the area, and you take 1d6 damage before the ability takes effect. The storm lasts for 1 hour or until a combat encounter begins.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one stormwight ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-fury-pounce",
+              "feat.drawsteel-fury-riders-on-the-storm"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Menagerie",
       "level": 8,
       "description": "You can use all stormwight kits. During a respite, you can choose to swap your stormwight kit and still take another respite activity. Your Nature's Knight feature now lets you automatically sense the presence of animals within 1 mile of you. Additionally, whenever you make a test to track another creature, you can roll three dice and choose which two to use."
+    },
+    {
+      "name": "9th-Level Stormwight Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Death Rattle (11 Ferocity)\n>\n> *You unleash an otherworldly cry that rips through your enemies, killing the weakest of them.*\n>\n> | **Area, Magic** |               **Main action** |\n> | --------------- | ----------------------------: |\n> | **📏 3 burst**  | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 4 psychic damage; any target who is a minion is reduced to 0 Stamina\n> - **12-16:** 6 psychic damage; any target who is a minion is reduced to 0 Stamina, as does one winded target who is not a leader or solo creature\n> - **17+:** 10 psychic damage; each target who is not a leader or solo creature is winded; any target who is a minion is reduced to 0 Stamina, as does one winded target who is not a leader or solo creature\n\n> ###### Deluge (11 Ferocity)\n>\n> *You summon your primordial storm.*\n>\n> | **Area, Magic, Ranged** |               **Main action** |\n> | ----------------------- | ----------------------------: |\n> | **📏 5 cube within 10** | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Might:**\n>\n> - **≤11:** 7 damage\n> - **12-16:** 10 damage\n> - **17+:** 15 damage\n>\n> **Effect:** This ability deals your primordial damage type and ignores damage immunity.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one stormwight ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-fury-death-rattle",
+              "feat.drawsteel-fury-deluge"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-fury-stormwight-beast-shape",
+    "feat.drawsteel-fury-stormwight-relentless-hunter",
+    "feat.drawsteel-fury-stormwight-tooth-and-claw",
+    "feat.drawsteel-fury-stormwight-natures-knight",
+    "feat.drawsteel-fury-stormwight-stormborn",
+    "feat.drawsteel-fury-stormwight-menagerie"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Track"
+      ]
     }
   ]
 }

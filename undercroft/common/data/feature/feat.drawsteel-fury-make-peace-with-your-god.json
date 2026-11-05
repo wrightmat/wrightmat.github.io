@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-make-peace-with-your-god",
+  "name": "Make Peace With Your God!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Anger is your energy.*\n\n**Heroic Ability** — Free maneuver\n\n**Cost:** 5 Ferocity\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You gain 1 surge, and the next ability roll you make this turn automatically obtains a tier 3 outcome.",
+  "mechanics": {
+    "type": "active",
+    "text": "Anger is your energy. Effect: You gain 1 surge, and the next ability roll you make this turn automatically obtains a tier 3 outcome."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Free maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 5
+}

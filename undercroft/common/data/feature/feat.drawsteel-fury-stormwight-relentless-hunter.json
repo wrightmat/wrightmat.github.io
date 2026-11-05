@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-stormwight-relentless-hunter",
+  "name": "Relentless Hunter",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You gain an edge on tests made using the Track skill.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You gain an edge on tests made using the Track skill."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

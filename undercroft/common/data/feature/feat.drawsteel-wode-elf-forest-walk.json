@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-wode-elf-forest-walk",
+  "name": "Forest Walk",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou can shift into and while within difficult terrain.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You can shift into and while within difficult terrain."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Wode Elf",
+  "cost": 1
+}

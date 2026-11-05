@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-disorienting-strike",
+  "name": "Disorienting Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your attack leaves them reeling, allowing you to follow up.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 3 Insight\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 4 + A damage; slide 2\n- **12-16:** 6 + A damage; slide 3\n- **17+:** 10 + A damage; slide 5\n\n**Effect:** You can shift into any square the target leaves when you slide them.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your attack leaves them reeling, allowing you to follow up. Power Roll + Agility: - ≤11: 4 + A damage; slide 2 - 12-16: 6 + A damage; slide 3 - 17+: 10 + A damage; slide 5 Effect: You can shift into any square the target leaves when you slide them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 3
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-pain-of-your-own-making",
+  "name": "Pain of Your Own Making",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You reverse the effects from an evildoer.*\n\n**Heroic Ability** — Magic, Ranged — Free triggered\n\n**Cost:** 9 Wrath\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Trigger:** The target gains a condition or effect that is ended by a saving throw or that ends at the end of their turn.\n\n**Effect:** The effect ends on the target and is applied to the creature who imposed the effect on them. That creature also takes damage equal to three times your Presence score.",
+  "mechanics": {
+    "type": "active",
+    "text": "You reverse the effects from an evildoer. Trigger: The target gains a condition or effect that is ended by a saving throw or that ends at the end of their turn. Effect: The effect ends on the target and is applied to the creature who imposed the effect on them. That creature also takes damage equal to three times your Presence score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Free triggered",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 9
+}

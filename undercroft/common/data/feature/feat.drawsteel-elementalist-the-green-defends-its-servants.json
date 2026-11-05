@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-the-green-defends-its-servants",
+  "name": "The Green Defends Its Servants",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A luminous green shield shows its true beauty the more it cracks.*\n\n**Heroic Ability** — Green, Magic, Ranged — Maneuver\n\n**Cost:** 11 Essence\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** You conjure an elemental shield that protects the target until the end of your next turn. While the shield is active, the target can take the Defend main action as a maneuver on each of their turns. The target gains 30 temporary Stamina that lasts until depleted or until the effect ends. If this temporary Stamina disappears, the effect ends and the shield explodes, dealing 10 damage to each enemy within 5 squares of the target.\n\n**Persistent 2:** The effect lasts until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "A luminous green shield shows its true beauty the more it cracks. Effect: You conjure an elemental shield that protects the target until the end of your next turn. While the shield is active, the target can take the Defend main action as a maneuver on each of their turns. The target gains 30 temporary Stamina that lasts until depleted or until the effect ends. If this temporary Stamina disappears, the effect ends and the shield explodes, dealing 10 damage to each enemy within 5 squares of the target. Persistent 2: The effect lasts until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Green, Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 11
+}

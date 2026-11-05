@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-cinderstorm",
+  "name": "Cinderstorm",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You teleport your friends in a burst of ash and fire.*\n\n**Heroic Ability** — Magic — Maneuver\n\n**Cost:** 9 Insight\n\n**Distance:** 4 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target can teleport up to 5 squares. For each target in addition to you who teleports away from or into a space adjacent to an enemy, that enemy takes fire damage equal to your Agility score. Additionally, a target who ends this movement in concealment or cover can use the Hide maneuver even if they are observed.",
+  "mechanics": {
+    "type": "active",
+    "text": "You teleport your friends in a burst of ash and fire. Effect: Each target can teleport up to 5 squares. For each target in addition to you who teleports away from or into a space adjacent to an enemy, that enemy takes fire damage equal to your Agility score. Additionally, a target who ends this movement in concealment or cover can use the Hide maneuver even if they are observed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Maneuver",
+  "distance": "4 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9
+}

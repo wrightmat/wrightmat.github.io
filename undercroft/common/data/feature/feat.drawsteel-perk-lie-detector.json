@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-lie-detector",
+  "name": "Lie Detector",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Interpersonal Perk**\n\nIn response to another creature communicating information to you, you can spend a hero token to determine whether that information contained any knowing lies. If so, you know what the lies are, but not what the truth is.",
+  "mechanics": {
+    "type": "passive",
+    "text": "In response to another creature communicating information to you, you can spend a hero token to determine whether that information contained any knowing lies. If so, you know what the lies are, but not what the truth is."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Interpersonal"
+}

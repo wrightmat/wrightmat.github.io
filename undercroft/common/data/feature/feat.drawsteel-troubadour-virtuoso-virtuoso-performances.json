@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-virtuoso-virtuoso-performances",
+  "name": "Virtuoso Performances",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following performance abilities, which are usable with your Routines feature.\n\n> ###### \"Thunder Mother\"\n>\n> *All for thunder motherrr! ♪ Run and hide for coverrr!♪*\n>\n> | **Magic, Performance, Ranged, Strike** |       **No action** |\n> | -------------------------------------- | ------------------: |\n> | **📏 Ranged 10**                       | **🎯 One creature** |\n>\n> **Effect:** At the end of each combat round while this performance is active, you can make a power roll against the target that ignores cover. You can't target the same creature twice with this effect.\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** Lightning damage equal to your level\n> - **12-16:** Lightning damage equal to 5 + your level\n> - **17+:** Lightning damage equal to 10 + your level\n\n> ###### \"Ballad of the Beast\"\n>\n> *Teeth are bare! ♪ Eyes black! ♪ No escaping the beast!♪*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, each target who starts their turn in the area gains 1 surge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following performance abilities, which are usable with your Routines feature. \"Thunder Mother\" All for thunder motherrr! ♪ Run and hide for coverrr!♪ Effect: At the end of each combat round while this performance is active, you can make a power roll against the target that ignores cover. You can't target the same creature twice with this effect. Power Roll + Presence: - ≤11: Lightning damage equal to your level - 12-16: Lightning damage equal to 5 + your level - 17+: Lightning damage equal to 10 + your level \"Ballad of the Beast\" Teeth are bare! ♪ Eyes black! ♪ No escaping the beast!♪ Effect: While this performance is active, each target who starts their turn in the area gains 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

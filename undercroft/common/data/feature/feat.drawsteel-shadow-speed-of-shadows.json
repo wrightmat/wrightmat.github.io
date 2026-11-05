@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-speed-of-shadows",
+  "name": "Speed of Shadows",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You make multiple strikes against a foe before they even notice they're dead.*\n\n**Heroic Ability** — Magic — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You can use a strike signature ability four times, use a strike signature ability that gains an edge three times, or use a strike signature ability that has a double edge twice. You can shift up to 2 squares between each use.",
+  "mechanics": {
+    "type": "active",
+    "text": "You make multiple strikes against a foe before they even notice they're dead. Effect: You can use a strike signature ability four times, use a strike signature ability that gains an edge three times, or use a strike signature ability that has a double edge twice. You can shift up to 2 squares between each use."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic",
+  "actionType": "Main action",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 11
+}

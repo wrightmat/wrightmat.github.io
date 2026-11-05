@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-blessing-of-fate-and-destiny",
+  "name": "Blessing of Fate and Destiny",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your enemies suffer their fate; your allies embrace their destiny!*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** Three creatures\n\n**Effect:** You can target yourself instead of one creature with this ability. Choose one of the following effects, which lasts until the end of the encounter or until you are dying:\n\n- Whenever a target makes a power roll, they can roll three dice and choose which two rolls to use.\n- Whenever a target makes a power roll, they must roll three dice and use the lowest two rolls.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your enemies suffer their fate; your allies embrace their destiny! Effect: You can target yourself instead of one creature with this ability. Choose one of the following effects, which lasts until the end of the encounter or until you are dying: - Whenever a target makes a power roll, they can roll three dice and choose which two rolls to use. - Whenever a target makes a power roll, they must roll three dice and use the lowest two rolls."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Three creatures",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-fate"
+  ]
+}

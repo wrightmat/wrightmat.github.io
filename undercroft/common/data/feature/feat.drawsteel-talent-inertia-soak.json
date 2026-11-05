@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-inertia-soak",
+  "name": "Inertia Soak",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your psionic energy surrounds the target and pushes everything else away from them.*\n\n**Heroic Ability** — Psionic, Ranged, Telekinesis — Maneuver\n\n**Cost:** 5 Clarity\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target ignores difficult terrain and takes no damage from forced movement until the start of your next turn. Whenever the target enters a square while under this effect, they can push one adjacent creature up to a number of squares equal to your Reason score. When pushing an ally, the target can ignore that ally's stability. A creature can only be force moved this way once a turn.\n\n**Strained:** You are weakened (save ends). While you are weakened this way, whenever you are force moved, the forced movement distance gains a +5 bonus.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your psionic energy surrounds the target and pushes everything else away from them. Effect: The target ignores difficult terrain and takes no damage from forced movement until the start of your next turn. Whenever the target enters a square while under this effect, they can push one adjacent creature up to a number of squares equal to your Reason score. When pushing an ally, the target can ignore that ally's stability. A creature can only be force moved this way once a turn. Strained: You are weakened (save ends). While you are weakened this way, whenever you are force moved, the forced movement distance gains a +5 bonus."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged, Telekinesis",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 5
+}

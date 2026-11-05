@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-blessing-of-the-faithful",
+  "name": "Blessing of the Faithful",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The gods reward your faith.*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 5 Wrath\n\n**Distance:** 3 aura   **Target:** Self and each ally in the area\n\n**Effect:** Until the end of the encounter or until you are dying, each target gains 1 surge at the end of each of your turns.",
+  "mechanics": {
+    "type": "active",
+    "text": "The gods reward your faith. Effect: Until the end of the encounter or until you are dying, each target gains 1 surge at the end of each of your turns."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "3 aura",
+  "target": "Self and each ally in the area",
+  "cost": 5
+}

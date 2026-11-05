@@ -26,14 +26,87 @@
       "description": "You know just where to cut your enemies. Whenever you make a strike that has no bane or double bane, and that incorporates 1 or more surges, you gain 1 additional surge that you can use only on that strike."
     },
     {
+      "name": "2nd-Level Caustic Alchemy Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Sticky Bomb (5 Insight)\n>\n> *Explosives are best when they're attached to an enemy.*\n>\n> | **Ranged**       |     **Main action** |\n> | ---------------- | ------------------: |\n> | **📏 Ranged 10** | **🎯 One creature** |\n>\n> **Effect:** You attach a small bomb to a creature. If you are hidden from the creature, they don't notice the bomb and you remain hidden. The creature otherwise notices the bomb and can disarm and remove it as a main action. If they don't, at the end of your next turn, the bomb detonates. When the bomb detonates, you make a power roll targeting each enemy within 2 squares of it.\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A fire damage\n> - **12-16:** 7 + A fire damage\n> - **17+:** 11 + A fire damage\n\n> ###### Stink Bomb (5 Insight)\n>\n> *Putrid yellow gas explodes from a bomb you toss.*\n>\n> | **Area, Ranged**        |                  **Main action** |\n> | ----------------------- | -------------------------------: |\n> | **📏 3 cube within 10** | **🎯 Each creature in the area** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 2 poison damage\n> - **12-16:** 5 poison damage\n> - **17+:** 7 poison damage\n>\n> **Effect:** The gas remains in the area until the end of the encounter. Any creature who starts their turn in the area and has M < AVERAGE is weakened (save ends).",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one caustic alchemy ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-shadow-sticky-bomb",
+              "feat.drawsteel-shadow-stink-bomb"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Volatile Reagents",
       "level": 5,
       "description": "Whenever you take damage, each enemy adjacent to you takes fire, acid, or poison damage (your choice) equal to your Agility score.\n\nAdditionally, your Defensive Roll ability now allows you to shift up to 5 squares, including shifting vertically. If you don't end this shift on solid ground and are not flying, you fall."
     },
     {
+      "name": "6th-Level Caustic Alchemy Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### One Vial Makes You Better (9 Insight)\n>\n> *A well-timed throw of a potion will keep your allies in the fight.*\n>\n> | **Ranged**       |           **Maneuver** |\n> | ---------------- | ---------------------: |\n> | **📏 Ranged 10** | **🎯 Three creatures** |\n>\n> **Effect:** You ready, hand, or lob a potion to each target, who can immediately quaff the potion (no action required). If they don't drink the potion right away, they must use the Use Consumable maneuver to consume it later. The potion loses its potency at the end of the encounter.\n>\n> A creature who drinks the potion can spend up to 2 Recoveries, and has acid immunity, fire immunity, or poison immunity (their choice) equal to your level until the end of the encounter.\n\n> ###### One Vial Makes You Faster (9 Insight)\n>\n> *Each ally who catches a potion you throw can take the battle to the next level.*\n>\n> | **Ranged**       |        **Main action** |\n> | ---------------- | ---------------------: |\n> | **📏 Ranged 10** | **🎯 Three creatures** |\n>\n> **Effect:** You ready, hand, or lob a potion to each target, who can immediately quaff the potion (no action required). If they don't drink the potion right away, they must use the Use Consumable maneuver to consume it later. The potion loses its potency at the end of the encounter.\n>\n> A creature who drinks the potion receives benefits based on your power roll.\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** The creature's speed is increased by 2 until the end of the encounter.\n> - **12-16:** The creature can fly until the end of the encounter.\n> - **17+:** The creature turns invisible until the end of their next turn.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one caustic alchemy ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-shadow-one-vial-makes-you-better",
+              "feat.drawsteel-shadow-one-vial-makes-you-faster"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Time Bomb",
       "level": 8,
       "description": "You have damage immunity against area abilities and effects equal to your Agility score. You also have the following ability, which you can use once per round on your turn.\n\n> ###### Time Bomb\n>\n> *The longer it cooks, the bigger the boom.*\n>\n> | **Area, Ranged**        |             **Free maneuver** |\n> | ----------------------- | ----------------------------: |\n> | **📏 2 cube within 10** | **🎯 Each enemy in the area** |\n>\n> **Effect:** Each target takes acid, fire, or poison damage (your choice) equal to your Agility score.\n>\n> For each combat round that has passed since this ability was last used in the current encounter, the area increases by 1 and you gain 1 surge that must be used with this ability. After using the ability or at the end of the encounter, its area and surges are reset.\n>\n> **Spend 2+ Insight:** For every 2 insight spent, you increase the cube's size by 1 and gain 1 surge that can be used only with this ability."
+    },
+    {
+      "name": "9th-Level Caustic Alchemy Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Chain Reaction (11 Insight)\n>\n> *One explosion, an offense. Three explosions, an assault. Nine explosions, a celebration.*\n>\n> | **Ranged**       |               **Main action** |\n> | ---------------- | ----------------------------: |\n> | **📏 Ranged 10** | **🎯 One creature or object** |\n>\n> **Effect:** Each enemy within 3 squares of the target who is not currently targeted by this ability also becomes targeted by this ability. This effect continues until there are no more available targets. The ability deals acid, fire, or poison damage (your choice).\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 7 damage\n> - **12-16:** 10 damage\n> - **17+:** 15 damage\n\n> ###### To the Stars (11 Insight)\n>\n> *You attach your most potent explosive to your foe. Under less pressing circumstances, you're sure you could launch them into orbit.*\n>\n> | **Melee, Ranged, Strike**   |               **Main action** |\n> | --------------------------- | ----------------------------: |\n> | **📏 Melee 1 or ranged 10** | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 4 + A fire damage; vertical push 8\n> - **12-16:** 7 + A fire damage; vertical push 10\n> - **17+:** 11 + A fire damage; vertical push 15\n>\n> **Effect:** The ground beneath a 3-cube area around the target's starting position is difficult terrain.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one caustic alchemy ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-shadow-chain-reaction",
+              "feat.drawsteel-shadow-to-the-stars"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-shadow-caustic-alchemy-coat-the-blade",
+    "feat.drawsteel-shadow-caustic-alchemy-smoke-bomb",
+    "feat.drawsteel-shadow-caustic-alchemy-trained-assassin",
+    "feat.drawsteel-shadow-caustic-alchemy-volatile-reagents",
+    "feat.drawsteel-shadow-caustic-alchemy-time-bomb"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Alchemy"
+      ]
     }
   ]
 }

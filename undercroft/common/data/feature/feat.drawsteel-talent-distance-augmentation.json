@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-distance-augmentation",
+  "name": "Distance Augmentation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your ranged psionic abilities gain a +2 bonus to distance.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your ranged psionic abilities gain a +2 bonus to distance."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

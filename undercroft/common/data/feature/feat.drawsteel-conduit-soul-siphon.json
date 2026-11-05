@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-soul-siphon",
+  "name": "Soul Siphon",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A beam of energy connects a foe to a friend, draining life from one to heal the other.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 7 Piety\n\n**Distance:** Ranged 10   **Target:** One enemy\n\n**Power Roll + Intuition:**\n\n- **≤11:** 7 + I corruption damage\n- **12-16:** 10 + I corruption damage\n- **17+:** 15 + I corruption damage\n\n**Effect:** One ally within distance can spend any number of Recoveries.",
+  "mechanics": {
+    "type": "active",
+    "text": "A beam of energy connects a foe to a friend, draining life from one to heal the other. Power Roll + Intuition: - ≤11: 7 + I corruption damage - 12-16: 10 + I corruption damage - 17+: 15 + I corruption damage Effect: One ally within distance can spend any number of Recoveries."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One enemy",
+  "cost": 7
+}

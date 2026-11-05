@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-puppet-strings",
+  "name": "Puppet Strings",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You prick little needles on the tips of your fingers into the nerves of your enemies and cause them to lose control.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Insight\n\n**Distance:** Melee 1   **Target:** Two enemies\n\n**Power Roll + Agility:**\n\n- **≤11:** 2 damage; if the target has R < WEAK, before the damage is resolved, they make a free strike.\n- **12-16:** 5 damage; if the target has R < AVERAGE, before the damage is resolved, they use a main action ability of your choice.\n- **17+:** 7 damage; if the target has R < STRONG, before the damage is resolved, they can shift up to their speed and use a main action ability of your choice.\n\n**Effect:** You choose the new targets for the original target's free strike or ability. Additionally, if you are hidden or disguised, using this ability doesn't cause you to be revealed.",
+  "mechanics": {
+    "type": "active",
+    "text": "You prick little needles on the tips of your fingers into the nerves of your enemies and cause them to lose control. Power Roll + Agility: - ≤11: 2 damage; if the target has R < WEAK, before the damage is resolved, they make a free strike. - 12-16: 5 damage; if the target has R < AVERAGE, before the damage is resolved, they use a main action ability of your choice. - 17+: 7 damage; if the target has R < STRONG, before the damage is resolved, they can shift up to their speed and use a main action ability of your choice. Effect: You choose the new targets for the original target's free strike or ability. Additionally, if you are hidden or disguised, using this ability doesn't cause you to be revealed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "Two enemies",
+  "cost": 9
+}

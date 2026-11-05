@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-combustion-deferred",
+  "name": "Combustion Deferred",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your flames dance from kindling to kindling to kindling.*\n\n**Heroic Ability** — Fire, Magic, Ranged, Strike — Main action\n\n**Cost:** 9 Essence\n\n**Distance:** Ranged 10   **Target:** One creature or object\n\n**Power Roll + Reason:**\n\n- **≤11:** 8 + R fire damage\n- **12-16:** 13 + R fire damage\n- **17+:** 17 + R fire damage\n\n**Effect:** When the target ends their next turn, or if they drop to 0 Stamina before then, each enemy adjacent to them takes fire damage equal to twice your Reason score. Each affected enemy then gains this same effect.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your flames dance from kindling to kindling to kindling. Power Roll + Reason: - ≤11: 8 + R fire damage - 12-16: 13 + R fire damage - 17+: 17 + R fire damage Effect: When the target ends their next turn, or if they drop to 0 Stamina before then, each enemy adjacent to them takes fire damage equal to twice your Reason score. Each affected enemy then gains this same effect."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Fire, Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature or object",
+  "cost": 9
+}

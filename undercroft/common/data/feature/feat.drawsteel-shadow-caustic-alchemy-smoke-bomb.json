@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-caustic-alchemy-smoke-bomb",
+  "name": "Smoke Bomb",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You always carry a supply of smoke bombs to use for distractions and easy getaways. You can use the Hide maneuver even if you are observed and don't initially have cover or concealment. When you do so, you can shift a number of squares equal to your Agility score. If you end this movement with cover or concealment, you are automatically hidden.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You always carry a supply of smoke bombs to use for distractions and easy getaways. You can use the Hide maneuver even if you are observed and don't initially have cover or concealment. When you do so, you can shift a number of squares equal to your Agility score. If you end this movement with cover or concealment, you are automatically hidden."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-blessing-of-the-blade",
+  "name": "Blessing of the Blade",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"The power of the gods is within you, friends. Allow me to unleash it.\"*\n\n**Heroic Ability** — Area, Magic — Maneuver\n\n**Cost:** 11 Piety\n\n**Distance:** 5 aura   **Target:** Self and each ally in the area\n\n**Effect:** At the end of each of your turns until the end of the encounter or until you are dying, each target gains 3 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "\"The power of the gods is within you, friends. Allow me to unleash it.\" Effect: At the end of each of your turns until the end of the encounter or until you are dying, each target gains 3 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Maneuver",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area",
+  "cost": 11
+}

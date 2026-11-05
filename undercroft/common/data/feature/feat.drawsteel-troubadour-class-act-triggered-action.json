@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-class-act-triggered-action",
+  "name": "Class Act Triggered Action",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Your troubadour class act grants you a triggered action, as shown on the Class Act Triggered Actions table.\n\n###### Class Act Triggered Actions Table\n\n| Class Act | Triggered Action       |\n| --------- | ---------------------- |\n| Auteur    | Turnabout Is Fair Play |\n| Duelist   | Riposte                |\n| Virtuoso  | Harmonize              |\n\n> ###### Harmonize (3 Drama)\n>\n> *Give the chorus a little punch.*\n>\n> | **Ranged**      |   **Triggered** |\n> | --------------- | --------------: |\n> | **📏 Ranged 5** | **🎯 One ally** |\n>\n> **Trigger:** The target uses an ability that targets only one enemy and costs 3 or fewer of their Heroic Resource.\n>\n> **Effect:** The target can choose one additional target for the triggering ability. Any damage dealt to the additional target is sonic damage.\n>\n> **Spend 1+ Drama:** You can trigger this ability when a target uses an ability that has a Heroic Resource cost of 3 + each additional drama spent.\n\n> ###### Riposte\n>\n> *\"I'd have brought treats had I known I'd be fighting a dog.\"*\n>\n> | **Melee**      |           **Triggered** |\n> | -------------- | ----------------------: |\n> | **📏 Melee 1** | **🎯 Self or one ally** |\n>\n> **Trigger:** The target takes damage from a melee strike.\n>\n> **Effect:** The target makes a free strike against the creature who made the triggering strike.\n\n> ###### Turnabout Is Fair Play\n>\n> *All's fair in love and whatever.*\n>\n> | **Ranged**       |       **Triggered** |\n> | ---------------- | ------------------: |\n> | **📏 Ranged 10** | **🎯 One creature** |\n>\n> **Trigger:** The target makes an ability roll that has an edge, a double edge, a bane, or a double bane.\n>\n> **Effect:** An edge on the triggering roll becomes a bane, or a double edge becomes an edge. A bane becomes an edge, or a double bane becomes a bane.\n>\n> **Spend 3 Drama:** An edge on the triggering roll becomes a double bane, or a double edge is negated. A bane becomes a double edge, or a double bane is negated.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Your troubadour class act grants you a triggered action, as shown on the Class Act Triggered Actions table. Class Act Triggered Actions Table Harmonize (3 Drama) Give the chorus a little punch. Trigger: The target uses an ability that targets only one enemy and costs 3 or fewer of their Heroic Resource. Effect: The target can choose one additional target for the triggering ability. Any damage dealt to the additional target is sonic damage. Spend 1+ Drama: You can trigger this ability when a target uses an ability that has a Heroic Resource cost of 3 + each additional drama spent. Riposte \"I'd have brought treats had I known I'd be fighting a dog.\" Trigger: The target takes damage from a melee strike. Effect: The target makes a free strike against the creature who made the triggering strike. Turnabout Is Fair Play All's fair in love and whatever. Trigger: The target makes an ability roll that has an edge, a double edge, a bane, or a double bane. Effect: An edge on the triggering roll becomes a bane, or a double edge becomes an edge. A bane becomes an edge, or a double bane becomes a bane. Spend 3 Drama: An edge on the triggering roll becomes a double bane, or a double edge is negated. A bane becomes a double edge, or a double bane is negated."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

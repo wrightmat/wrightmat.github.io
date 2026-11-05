@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-pounce",
+  "name": "Pounce",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike at the target like the ultimate predator you are.*\n\n**Heroic Ability** — Magic, Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 8 damage; M < WEAK, grabbed\n- **12-16:** 13 damage; M < AVERAGE, grabbed\n- **17+:** 17 damage; M < STRONG, grabbed\n\n**Effect:** You can shift up to 4 squares, bringing the target with you. While grabbed this way, the target takes damage equal to twice your Might score at the start of each of your turns.",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike at the target like the ultimate predator you are. Power Roll + Might: - ≤11: 8 damage; M < WEAK, grabbed - 12-16: 13 damage; M < AVERAGE, grabbed - 17+: 17 damage; M < STRONG, grabbed Effect: You can shift up to 4 squares, bringing the target with you. While grabbed this way, the target takes damage equal to twice your Might score at the start of each of your turns."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

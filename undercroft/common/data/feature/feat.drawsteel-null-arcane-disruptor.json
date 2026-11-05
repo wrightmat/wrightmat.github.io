@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-arcane-disruptor",
+  "name": "Arcane Disruptor",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your blow reorders a foe's body, causing pain if they attempt to channel sorcery.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 5 Discipline\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 8 + **A** psychic damage; M < WEAK, weakened (save ends)\n- **12-16:** 12 + **A** psychic damage; M < AVERAGE, weakened (save ends)\n- **17+:** 16 + **A** psychic damage; M < STRONG, weakened (save ends)\n\n**Effect:** While weakened this way, the target takes damage equal to your Intuition score whenever they use a supernatural ability that costs Malice.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your blow reorders a foe's body, causing pain if they attempt to channel sorcery. Power Roll + Agility: - ≤11: 8 + A psychic damage; M < WEAK, weakened (save ends) - 12-16: 12 + A psychic damage; M < AVERAGE, weakened (save ends) - 17+: 16 + A psychic damage; M < STRONG, weakened (save ends) Effect: While weakened this way, the target takes damage equal to your Intuition score whenever they use a supernatural ability that costs Malice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

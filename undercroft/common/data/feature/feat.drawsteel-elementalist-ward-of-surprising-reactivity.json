@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-ward-of-surprising-reactivity",
+  "name": "Ward of Surprising Reactivity",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You use the magic of fire to create a ward of explosive energy. Whenever an adjacent creature deals damage to you, you can use a free triggered action to push that creature up to a number of squares equal to twice your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You use the magic of fire to create a ward of explosive energy. Whenever an adjacent creature deals damage to you, you can use a free triggered action to push that creature up to a number of squares equal to twice your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-solar-flare",
+  "name": "Solar Flare",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You call down a sphere of fire that burns your foes to ash.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** 5 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 9 fire damage\n- **12-16:** 14 fire damage\n- **17+:** 19 fire damage",
+  "mechanics": {
+    "type": "active",
+    "text": "You call down a sphere of fire that burns your foes to ash. Power Roll + Intuition: - ≤11: 9 fire damage - 12-16: 14 fire damage - 17+: 19 fire damage"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "5 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-sun"
+  ]
+}

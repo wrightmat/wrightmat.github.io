@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-star-solo",
+  "name": "Star Solo",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your performance travels and doesn't stop moving until your audience is completely rocked.*\n\n**Heroic Ability** — Magic, Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 7 Drama\n\n**Distance:** Melee 1 or ranged 10   **Target:** One creature or object\n\n**Power Roll + Presence:**\n\n- **≤11:** 5 + P damage\n- **12-16:** 8 + P damage; push 3\n- **17+:** 11 + P damage; push 5\n\n**Effect:** You can choose to have this ability deal sonic damage. Additionally, you can use this ability against the same target for the next 2 combat rounds without spending drama.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your performance travels and doesn't stop moving until your audience is completely rocked. Power Roll + Presence: - ≤11: 5 + P damage - 12-16: 8 + P damage; push 3 - 17+: 11 + P damage; push 5 Effect: You can choose to have this ability deal sonic damage. Additionally, you can use this ability against the same target for the next 2 combat rounds without spending drama."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 10",
+  "target": "One creature or object",
+  "cost": 7
+}

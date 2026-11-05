@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-careful-observation",
+  "name": "Careful Observation",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### Careful Observation\n>\n> *A moment of focus leaves a foe firmly in your sights.*\n>\n> | **Ranged**       |        **Maneuver** |\n> | ---------------- | ------------------: |\n> | **📏 Ranged 20** | **🎯 One creature** |\n>\n> **Effect:** As long as you remain within distance of the target, maintain line of effect to them, and strike no other creature first, you gain an edge on the next strike you make against the assessed creature, and gain 1 surge you can use only on that strike.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. Careful Observation A moment of focus leaves a foe firmly in your sights. Effect: As long as you remain within distance of the target, maintain line of effect to them, and strike no other creature first, you gain an edge on the next strike you make against the assessed creature, and gain 1 surge you can use only on that strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

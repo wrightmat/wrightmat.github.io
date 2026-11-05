@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-duelist-star-power",
+  "name": "Star Power",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following ability.\n\n> ###### Star Power (1 Drama)\n>\n> *Your years of practicing fencing and dancing pay off on the battlefield.*\n>\n> | **-**       | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You gain a +2 bonus to speed until the end of your turn. Additionally, the next power roll you make this turn can't have an outcome lower than tier 2.\n>\n> **Spend 1 Drama:** You gain a +4 bonus to speed instead.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have the following ability. Star Power (1 Drama) Your years of practicing fencing and dancing pay off on the battlefield. Effect: You gain a +2 bonus to speed until the end of your turn. Additionally, the next power roll you make this turn can't have an outcome lower than tier 2. Spend 1 Drama: You gain a +4 bonus to speed instead."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

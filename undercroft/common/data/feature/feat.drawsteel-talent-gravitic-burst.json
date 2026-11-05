@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-gravitic-burst",
+  "name": "Gravitic Burst",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Everyone get away from me!*\n\n**Heroic Ability** — Area, Psionic, Telekinesis — Main action\n\n**Cost:** 5 Clarity\n\n**Distance:** 1 burst   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 damage; vertical push 2\n- **12-16:** 6 damage; vertical push 4\n- **17+:** 9 damage; vertical push 6\n\n**Strained:** The size of the burst increases by 1, and you are weakened until the end of your turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Everyone get away from me! Power Roll + Reason: - ≤11: 3 damage; vertical push 2 - 12-16: 6 damage; vertical push 4 - 17+: 9 damage; vertical push 6 Strained: The size of the burst increases by 1, and you are weakened until the end of your turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic, Telekinesis",
+  "actionType": "Main action",
+  "distance": "1 burst",
+  "target": "Each enemy in the area",
+  "cost": 5
+}

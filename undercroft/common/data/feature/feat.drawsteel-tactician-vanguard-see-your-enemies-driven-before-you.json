@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-vanguard-see-your-enemies-driven-before-you",
+  "name": "See Your Enemies Driven Before You",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have trained your squad to maximize impact and break enemy lines when they attack.\n\n**Mark Benefit:** When you or any ally makes a melee strike against a creature marked by you, you can spend 2 focus to have the character making the strike push the target up to a number of squares equal to your Reason score. That character can then shift up to a number of squares equal to your Reason score, ending this shift adjacent to the target.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have trained your squad to maximize impact and break enemy lines when they attack. Mark Benefit: When you or any ally makes a melee strike against a creature marked by you, you can spend 2 focus to have the character making the strike push the target up to a number of squares equal to your Reason score. That character can then shift up to a number of squares equal to your Reason score, ending this shift adjacent to the target."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

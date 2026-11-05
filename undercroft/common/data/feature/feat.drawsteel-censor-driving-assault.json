@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-driving-assault",
+  "name": "Driving Assault",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*As you force your enemy back with your weapon, you use your faith to stay close.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 3 Wrath\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 3 + M damage; push 1\n- **12-16:** 6 + M damage; push 3\n- **17+:** 9 + M damage; push 5\n\n**Effect:** You can shift up to your speed in a straight line toward the target after pushing them.",
+  "mechanics": {
+    "type": "active",
+    "text": "As you force your enemy back with your weapon, you use your faith to stay close. Power Roll + Might: - ≤11: 3 + M damage; push 1 - 12-16: 6 + M damage; push 3 - 17+: 9 + M damage; push 5 Effect: You can shift up to your speed in a straight line toward the target after pushing them."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 3
+}

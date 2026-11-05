@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-curse-of-terror",
+  "name": "Curse of Terror",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Fear of divine judgment overwhelms your foe.*\n\n**Heroic Ability** — Magic, Ranged, Strike — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Intuition:**\n\n- **≤11:** 6 + I holy damage; I < WEAK, frightened (save ends)\n- **12-16:** 9 + I holy damage; I < AVERAGE, frightened (save ends)\n- **17+:** 13 + I holy damage; I < STRONG, frightened (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Fear of divine judgment overwhelms your foe. Power Roll + Intuition: - ≤11: 6 + I holy damage; I < WEAK, frightened (save ends) - 12-16: 9 + I holy damage; I < AVERAGE, frightened (save ends) - 17+: 13 + I holy damage; I < STRONG, frightened (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 5
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-one-vial-makes-you-better",
+  "name": "One Vial Makes You Better",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A well-timed throw of a potion will keep your allies in the fight.*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 9 Insight\n\n**Distance:** Ranged 10   **Target:** Three creatures\n\n**Effect:** You ready, hand, or lob a potion to each target, who can immediately quaff the potion (no action required). If they don't drink the potion right away, they must use the Use Consumable maneuver to consume it later. The potion loses its potency at the end of the encounter.\n\nA creature who drinks the potion can spend up to 2 Recoveries, and has acid immunity, fire immunity, or poison immunity (their choice) equal to your level until the end of the encounter.",
+  "mechanics": {
+    "type": "active",
+    "text": "A well-timed throw of a potion will keep your allies in the fight. Effect: You ready, hand, or lob a potion to each target, who can immediately quaff the potion (no action required). If they don't drink the potion right away, they must use the Use Consumable maneuver to consume it later. The potion loses its potency at the end of the encounter. A creature who drinks the potion can spend up to 2 Recoveries, and has acid immunity, fire immunity, or poison immunity (their choice) equal to your level until the end of the encounter."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Three creatures",
+  "cost": 9
+}

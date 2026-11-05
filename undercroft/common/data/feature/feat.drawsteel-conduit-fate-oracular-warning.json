@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-conduit-fate-oracular-warning",
+  "name": "Oracular Warning",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Each time you finish a respite, you can share the vague dreams of the future granted to you by the gods with allies who finished the respite with you. These premonitions help you and your allies stay alive, granting each of you temporary Stamina equal to 10 + your level that lasts until you finish a respite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you finish a respite, you can share the vague dreams of the future granted to you by the gods with allies who finished the respite with you. These premonitions help you and your allies stay alive, granting each of you temporary Stamina equal to 10 + your level that lasts until you finish a respite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "subclassIds": [
+    "ds-conduit-fate"
+  ]
+}

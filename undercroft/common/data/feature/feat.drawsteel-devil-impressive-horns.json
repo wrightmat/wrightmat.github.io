@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-devil-impressive-horns",
+  "name": "Impressive Horns",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour cherished horns are larger than the average devil's, and a hardened representation of your force of will. Whenever you make a saving throw, you succeed on a roll of 5 or higher.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your cherished horns are larger than the average devil's, and a hardened representation of your force of will. Whenever you make a saving throw, you succeed on a roll of 5 or higher."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Devil",
+  "cost": 2
+}

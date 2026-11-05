@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-insurgent-infiltration-tactics",
+  "name": "Infiltration Tactics",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have trained your squad to work together, stay silent, and wait for the opportune time to strike. Whenever you or any ally within 10 squares of you becomes hidden, that creature gains 1 surge.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have trained your squad to work together, stay silent, and wait for the opportune time to strike. Whenever you or any ally within 10 squares of you becomes hidden, that creature gains 1 surge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

@@ -45,5 +45,14 @@
       "level": 10,
       "description": "The damage bonus of your Acolyte of Fire feature increases to +5 and applies to all your magic abilities.\n\nAdditionally, your Return to Formlessness ability can be used on supernatural objects (but not on artifacts). When you melt a treasure (see Chapter 13: Rewards), you gain breath equal to its echelon."
     }
+  ],
+  "featureIds": [
+    "feat.drawsteel-return-to-formlessness",
+    "feat.drawsteel-elementalist-fire-disciple-of-fire",
+    "feat.drawsteel-elementalist-fire-a-conversation-with-fire",
+    "feat.drawsteel-elementalist-fire-burning-grounds",
+    "feat.drawsteel-elementalist-fire-smoldering-step",
+    "feat.drawsteel-elementalist-fire-the-flame-primordial",
+    "feat.drawsteel-elementalist-fire-master-of-fire"
   ]
 }

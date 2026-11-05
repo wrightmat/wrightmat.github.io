@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.drawsteel"
   ],
-  "description": "**Ancestry Trait**\n\nYour stone skin affords you potent protection. You have a +6 bonus to Stamina (already included).",
+  "description": "**Ancestry Trait**\n\nYour stone skin affords you potent protection. You have a +6 bonus to Stamina.",
   "mechanics": {
     "type": "passive",
     "text": "Your stone skin affords you potent protection. You have a +6 bonus to Stamina (already included)."
@@ -21,5 +21,8 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Ancestry Trait"
+  "kind": "Ancestry Trait",
+  "ancestry": "Dwarf",
+  "cost": 2,
+  "staminaBonus": 6
 }

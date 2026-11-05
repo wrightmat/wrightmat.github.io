@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-vessel-of-retribution",
+  "name": "Vessel of Retribution",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You infuse yourself or an ally with the retributive energy of the gods, waiting to be unleashed.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The first time the target is dying or winded before the end of the encounter, each enemy within 5 squares of them takes 15 holy damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "You infuse yourself or an ally with the retributive energy of the gods, waiting to be unleashed. Effect: The first time the target is dying or winded before the end of the encounter, each enemy within 5 squares of them takes 15 holy damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 9
+}

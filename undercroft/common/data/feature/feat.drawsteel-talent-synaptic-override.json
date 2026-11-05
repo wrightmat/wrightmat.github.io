@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-synaptic-override",
+  "name": "Synaptic Override",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You control an enemy's nervous system. How pleasant for them.*\n\n**Heroic Ability** — Psionic, Ranged, Telepathy — Main action\n\n**Cost:** 5 Clarity\n\n**Distance:** Ranged 10   **Target:** One enemy\n\n**Power Roll + Reason:**\n\n- **≤11:** The target makes a free strike against one enemy of your choice.\n- **12-16:** The target shifts up to their speed and uses their signature ability against any enemies of your choice.\n- **17+:** The target moves up to their speed and uses their signature ability against any enemies of your choice.\n\n**Effect:** You control the target's movement. The target can't be moved in a way that would harm them (such as over a cliff), leave them dying, or result in them suffering a condition or other negative effect. However, you can move them to provoke opportunity attacks.\n\n**Strained:** You take 1d6 damage and are weakened until the end of your turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "You control an enemy's nervous system. How pleasant for them. Power Roll + Reason: - ≤11: The target makes a free strike against one enemy of your choice. - 12-16: The target shifts up to their speed and uses their signature ability against any enemies of your choice. - 17+: The target moves up to their speed and uses their signature ability against any enemies of your choice. Effect: You control the target's movement. The target can't be moved in a way that would harm them (such as over a cliff), leave them dying, or result in them suffering a condition or other negative effect. However, you can move them to provoke opportunity attacks. Strained: You take 1d6 damage and are weakened until the end of your turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Ranged, Telepathy",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One enemy",
+  "cost": 5
+}

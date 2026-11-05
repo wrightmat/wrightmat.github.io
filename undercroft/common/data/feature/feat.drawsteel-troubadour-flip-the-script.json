@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-flip-the-script",
+  "name": "Flip the Script",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You try a different take on events, justifying the new locations everyone ended up in.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 5 Drama\n\n**Distance:** 3 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target can teleport up to 5 squares. Any teleported target who was slowed is no longer slowed.",
+  "mechanics": {
+    "type": "active",
+    "text": "You try a different take on events, justifying the new locations everyone ended up in. Effect: Each target can teleport up to 5 squares. Any teleported target who was slowed is no longer slowed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Self and each ally in the area",
+  "cost": 5
+}

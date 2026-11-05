@@ -43,5 +43,27 @@
       "cost": 1,
       "description": "Staying light on your feet lets you quickly get back into position. Whenever you are force moved, you can use a free triggered action to shift 1 square after the forced movement is resolved."
     }
+  ],
+  "speed": 5,
+  "size": "1S",
+  "featureIds": [
+    "feat.drawsteel-polder-small"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 4,
+      "desc": "Spend 4 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-corruption-immunity",
+          "feat.drawsteel-polder-fearless",
+          "feat.drawsteel-polder-graceful-retreat",
+          "feat.drawsteel-polder-nimblestep",
+          "feat.drawsteel-polder-polder-geist",
+          "feat.drawsteel-polder-reactive-tumble"
+        ]
+      }
+    }
   ]
 }

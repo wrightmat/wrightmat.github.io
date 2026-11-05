@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-saints-raiment",
+  "name": "Saint's Raiment",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*An ally becomes the wearer of an empowered golden cloak.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 7 Piety\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Effect:** The target gains 20 temporary Stamina and 3 surges.",
+  "mechanics": {
+    "type": "active",
+    "text": "An ally becomes the wearer of an empowered golden cloak. Effect: The target gains 20 temporary Stamina and 3 surges."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 7
+}

@@ -1,0 +1,39 @@
+{
+  "id": "feat.drawsteel-time-raider-psychic-scar",
+  "name": "Psychic Scar",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour mind is a formidable layer of defense. You have psychic immunity equal to your level.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your mind is a formidable layer of defense. You have psychic immunity equal to your level."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Time Raider",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Psychic",
+          "kind": "Immunity",
+          "formula": "@level"
+        }
+      ]
+    }
+  ]
+}

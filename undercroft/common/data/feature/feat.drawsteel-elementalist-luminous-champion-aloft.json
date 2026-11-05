@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-luminous-champion-aloft",
+  "name": "Luminous Champion Aloft",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*They shine vibrantly, a beautiful diamond in the night sky.*\n\n**Heroic Ability** — Fire, Green, Magic, Ranged, Void — Maneuver\n\n**Cost:** 9 Essence\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target has a +3 bonus to speed, they can fly, and their abilities ignore concealment. Additionally, whenever the target gains their Heroic Resource, they gain 1 additional Heroic Resource. This effect lasts until the start of your next turn.\n\n**Persistent 1:** The effect lasts until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "They shine vibrantly, a beautiful diamond in the night sky. Effect: The target has a +3 bonus to speed, they can fly, and their abilities ignore concealment. Additionally, whenever the target gains their Heroic Resource, they gain 1 additional Heroic Resource. This effect lasts until the start of your next turn. Persistent 1: The effect lasts until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Fire, Green, Magic, Ranged, Void",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 9
+}

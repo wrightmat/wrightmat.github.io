@@ -43,5 +43,27 @@
       "cost": 2,
       "description": "Your mind allows you to maintain your focus in any situation. You can't be made dazed."
     }
+  ],
+  "speed": 5,
+  "size": "1M",
+  "featureIds": [
+    "feat.drawsteel-high-elf-glamor"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 3,
+      "desc": "Spend 3 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-high-elf-glamor-of-terror",
+          "feat.drawsteel-high-elf-graceful-retreat",
+          "feat.drawsteel-high-senses",
+          "feat.drawsteel-otherworldly-grace",
+          "feat.drawsteel-high-elf-revisit-memory",
+          "feat.drawsteel-high-elf-unstoppable-mind"
+        ]
+      }
+    }
   ]
 }

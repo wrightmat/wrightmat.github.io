@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-synaptic-reset",
+  "name": "Synaptic Reset",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You expand your nullifying power to mitigate harmful effects.*\n\n**Heroic Ability** — Area, Psionic — Maneuver\n\n**Cost:** 9 Discipline\n\n**Distance:** 3 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target can end any conditions or effects on themself, and gains 5 temporary Stamina for each condition or effect removed.",
+  "mechanics": {
+    "type": "active",
+    "text": "You expand your nullifying power to mitigate harmful effects. Effect: Each target can end any conditions or effects on themself, and gains 5 temporary Stamina for each condition or effect removed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Psionic",
+  "actionType": "Maneuver",
+  "distance": "3 burst",
+  "target": "Self and each ally in the area",
+  "cost": 9
+}

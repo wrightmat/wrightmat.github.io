@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-saints-tempest",
+  "name": "Saint's Tempest",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A raging storm appears, striking your foes with lightning and throwing them around with wind.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 5 Piety\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 lightning damage; vertical slide 1\n- **12-16:** 5 lightning damage; vertical slide 2\n- **17+:** 7 lightning damage; vertical slide 3",
+  "mechanics": {
+    "type": "active",
+    "text": "A raging storm appears, striking your foes with lightning and throwing them around with wind. Power Roll + Intuition: - ≤11: 2 lightning damage; vertical slide 1 - 12-16: 5 lightning damage; vertical slide 2 - 17+: 7 lightning damage; vertical slide 3"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-storm"
+  ]
+}

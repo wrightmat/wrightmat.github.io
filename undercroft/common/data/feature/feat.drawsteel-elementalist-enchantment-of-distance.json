@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-enchantment-of-distance",
+  "name": "Enchantment of Distance",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have a +2 bonus to the distance of your ranged magic abilities.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have a +2 bonus to the distance of your ranged magic abilities."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

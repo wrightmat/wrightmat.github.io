@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-memonek-lightweight",
+  "name": "Lightweight",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour body is light for a creature of your height. Whenever another creature attempts to force move you, you treat your size as one size smaller than it is.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your body is light for a creature of your height. Whenever another creature attempts to force move you, you treat your size as one size smaller than it is."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Memonek"
+}

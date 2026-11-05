@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-improved-body",
+  "name": "Improved Body",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you gain discipline at the start of each of your turns during combat, you gain 3 discipline instead of 2.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you gain discipline at the start of each of your turns during combat, you gain 3 discipline instead of 2."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-youve-still-got-something-left",
+  "name": "You've Still Got Something Left",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You push an ally to use a heroic ability sooner than they otherwise would.*\n\n**Heroic Ability** — Ranged — Main action\n\n**Cost:** 9 Focus\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Effect:** The target uses a heroic ability with the Strike keyword as a free triggered action, and deals extra damage with that ability equal to your Reason score. The ability has its Heroic Resource cost reduced by 1 + your Reason score (minimum cost 0).",
+  "mechanics": {
+    "type": "active",
+    "text": "You push an ally to use a heroic ability sooner than they otherwise would. Effect: The target uses a heroic ability with the Strike keyword as a free triggered action, and deals extra damage with that ability equal to your Reason score. The ability has its Heroic Resource cost reduced by 1 + your Reason score (minimum cost 0)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 9
+}

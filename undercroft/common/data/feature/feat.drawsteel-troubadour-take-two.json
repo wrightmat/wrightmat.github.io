@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-troubadour-take-two",
+  "name": "Take Two!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have the following performance ability, which is usable with your Routines feature.\n\n> ###### Take Two!\n>\n> *One more, and this time make it interesting.*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, each target who starts their turn in the area can reroll the first power roll that turn that obtains a tier 2 outcome. They must use the new roll.",
+  "mechanics": {
+    "type": "active",
+    "text": "You have the following performance ability, which is usable with your Routines feature. Take Two! One more, and this time make it interesting. Area, Magic, Performance No action ---------------------------- ------------------------------------: 📏 5 aura 🎯 Self and each ally in the area Effect: While this performance is active, each target who starts their turn in the area can reroll the first power roll that turn that obtains a tier 2 outcome. They must use the new roll."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "keywords": "Area, Magic, Performance",
+  "actionType": "No action",
+  "distance": "5 aura",
+  "target": "Self and each ally in the area"
+}

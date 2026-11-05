@@ -1,0 +1,38 @@
+{
+  "id": "feat.drawsteel-shadow-caustic-alchemy-time-bomb",
+  "name": "Time Bomb",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You have damage immunity against area abilities and effects equal to your Agility score. You also have the following ability, which you can use once per round on your turn.\n\n> ###### Time Bomb\n>\n> *The longer it cooks, the bigger the boom.*\n>\n> | **Area, Ranged**        |             **Free maneuver** |\n> | ----------------------- | ----------------------------: |\n> | **📏 2 cube within 10** | **🎯 Each enemy in the area** |\n>\n> **Effect:** Each target takes acid, fire, or poison damage (your choice) equal to your Agility score.\n>\n> For each combat round that has passed since this ability was last used in the current encounter, the area increases by 1 and you gain 1 surge that must be used with this ability. After using the ability or at the end of the encounter, its area and surges are reset.\n>\n> **Spend 2+ Insight:** For every 2 insight spent, you increase the cube's size by 1 and gain 1 surge that can be used only with this ability.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You have damage immunity against area abilities and effects equal to your Agility score. You also have the following ability, which you can use once per round on your turn. Time Bomb The longer it cooks, the bigger the boom. Effect: Each target takes acid, fire, or poison damage (your choice) equal to your Agility score. For each combat round that has passed since this ability was last used in the current encounter, the area increases by 1 and you gain 1 surge that must be used with this ability. After using the ability or at the end of the encounter, its area and surges are reset. Spend 2+ Insight: For every 2 insight spent, you increase the cube's size by 1 and gain 1 surge that can be used only with this ability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Area abilities and effects",
+          "kind": "Immunity",
+          "formula": "@agility"
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,22 @@
   ],
   "data": {},
   "name": "Dwarf Fury (Pregen)",
-  "level": 1,
+  "identity": {
+    "classes": [
+      {
+        "name": "Fury",
+        "refKind": "class",
+        "refId": "ds-fury",
+        "level": 1,
+        "subclass": {
+          "name": "Berserker",
+          "refKind": "variant",
+          "refId": "ds-fury-berserker"
+        }
+      }
+    ],
+    "level": 1
+  },
   "ancestry": {
     "name": "Dwarf",
     "refKind": "species",
@@ -16,18 +31,6 @@
     "refKind": "background",
     "refId": "ds-warden"
   },
-  "class": {
-    "name": "Fury",
-    "refKind": "class",
-    "refId": "ds-fury"
-  },
-  "subclasses": [
-    {
-      "name": "Berserker",
-      "refKind": "variant",
-      "refId": "ds-fury-berserker"
-    }
-  ],
   "victories": 0,
   "wealth": 1,
   "renown": 0,
@@ -133,11 +136,20 @@
     "feat.drawsteel-primordial-strength",
     "feat.drawsteel-mighty-leaps",
     "feat.drawsteel-brawny",
-    "feat.drawsteel-panther-kit",
     "feat.drawsteel-grounded",
     "feat.drawsteel-runic-carving",
     "feat.drawsteel-spark-off-your-skin",
     "feat.drawsteel-melee-weapon-free-strike-dwarf-fury",
     "feat.drawsteel-ranged-weapon-free-strike-dwarf-fury"
+  ],
+  "inventory": [
+    {
+      "name": "Panther Kit",
+      "quantity": 1,
+      "notes": "",
+      "isEquipped": true,
+      "refKind": "wonder",
+      "refId": "panther-kit-drawsteel"
+    }
   ]
 }

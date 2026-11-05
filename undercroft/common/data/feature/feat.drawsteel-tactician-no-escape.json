@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-no-escape",
+  "name": "No Escape",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Nothing will stop you from reaching your foe.*\n\n**Heroic Ability** — Charge, Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Effect:** You mark the target.\n\n**Power Roll + Might:**\n\n- **≤11:** 11 + M damage\n- **12-16:** 16 + M damage\n- **17+:** 21 + M damage\n\n**Effect:** If you use this ability as part of the Charge main action, enemies' spaces don't count as difficult terrain for your movement. Additionally, if you move through any creature's space, you can slide that creature 1 square out of the path of your charge.",
+  "mechanics": {
+    "type": "active",
+    "text": "Nothing will stop you from reaching your foe. Effect: You mark the target. Power Roll + Might: - ≤11: 11 + M damage - 12-16: 16 + M damage - 17+: 21 + M damage Effect: If you use this ability as part of the Charge main action, enemies' spaces don't count as difficult terrain for your movement. Additionally, if you move through any creature's space, you can slide that creature 1 square out of the path of your charge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Charge, Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

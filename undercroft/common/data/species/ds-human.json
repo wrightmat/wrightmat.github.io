@@ -38,5 +38,26 @@
       "cost": 2,
       "description": "Your human physiology allows you to fight, run, and stay awake longer than others. You increase your number of Recoveries by 2."
     }
+  ],
+  "speed": 5,
+  "size": "1M",
+  "featureIds": [
+    "feat.drawsteel-human-detect-the-supernatural"
+  ],
+  "grants": [
+    {
+      "type": "featureChoice",
+      "budget": 3,
+      "desc": "Spend 3 ancestry points on purchased traits.",
+      "from": {
+        "featureIds": [
+          "feat.drawsteel-human-cant-take-hold",
+          "feat.drawsteel-human-determination",
+          "feat.drawsteel-perseverance",
+          "feat.drawsteel-resist-the-unnatural",
+          "feat.drawsteel-staying-power"
+        ]
+      }
+    }
   ]
 }

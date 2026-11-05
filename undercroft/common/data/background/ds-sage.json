@@ -9,5 +9,43 @@
   "skills": "Two skills from the lore skill group (*Quick Build:* History, Magic.)",
   "languages": "One language",
   "perk": "One lore perk (*Quick Build:* Expert Sage.)",
-  "projectPoints": 240
+  "projectPoints": 240,
+  "category": "Career",
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 2,
+      "desc": "Choose two lore skills.",
+      "targetPath": "skills",
+      "from": {
+        "systemField": "skills",
+        "anyOf": {
+          "group": [
+            "Lore"
+          ]
+        }
+      }
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose a language.",
+      "targetPath": "languages",
+      "from": {
+        "systemField": "languages"
+      }
+    },
+    {
+      "type": "featureChoice",
+      "choose": 1,
+      "desc": "Choose a lore perk.",
+      "from": {
+        "filter": {
+          "kind": "Perk",
+          "systemIds": "sys.drawsteel",
+          "perkType": "Lore"
+        }
+      }
+    }
+  ]
 }

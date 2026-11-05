@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-talent-incinerate",
+  "name": "Incinerate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The air erupts into a column of smokeless flame.*\n\n**Signature Ability** — Area, Fire, Psionic, Pyrokinesis, Ranged — Main action\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 2 fire damage\n- **12-16:** 4 fire damage\n- **17+:** 6 fire damage\n\n**Effect:** A column of fire remains in the area until the start of your next turn. Each enemy who enters the area for the first time in a combat round or starts their turn there takes 2 fire damage.\n\n**Strained:** The size of the cube increases by 2, but the fire disappears at the end of your turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "The air erupts into a column of smokeless flame. Power Roll + Reason: - ≤11: 2 fire damage - 12-16: 4 fire damage - 17+: 6 fire damage Effect: A column of fire remains in the area until the start of your next turn. Each enemy who enters the area for the first time in a combat round or starts their turn there takes 2 fire damage. Strained: The size of the cube increases by 2, but the fire disappears at the end of your turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Area, Fire, Psionic, Pyrokinesis, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area"
+}

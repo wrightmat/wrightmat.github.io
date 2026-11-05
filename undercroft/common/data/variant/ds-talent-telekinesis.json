@@ -26,6 +26,25 @@
       "description": "Whenever you land after a fall, or if any falling creature lands within 2 squares of you, you can use a free triggered action to reduce the falling damage by an amount equal to 2 + your Reason score."
     },
     {
+      "name": "2nd-Level Telekinesis Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Gravitic Burst (5 Clarity)\n>\n> *Everyone get away from me!*\n>\n> | **Area, Psionic, Telekinesis** |               **Main action** |\n> | ------------------------------ | ----------------------------: |\n> | **📏 1 burst**                 | **🎯 Each enemy in the area** |\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** 3 damage; vertical push 2\n> - **12-16:** 6 damage; vertical push 4\n> - **17+:** 9 damage; vertical push 6\n>\n> **Strained:** The size of the burst increases by 1, and you are weakened until the end of your turn.\n\n> ###### Levity and Gravity (5 Clarity)\n>\n> *You raise the target slightly into the air, then smother them against the ground.*\n>\n> | **Psionic, Ranged, Strike, Telekinesis** |               **Main action** |\n> | ---------------------------------------- | ----------------------------: |\n> | **📏 Ranged 10**                         | **🎯 One creature or object** |\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** 6 + R damage; M < WEAK, prone\n> - **12-16:** 10 + R damage; M < AVERAGE, prone\n> - **17+:** 14 + R damage; M < STRONG, prone and can't stand (save ends)\n>\n> **Strained:** You take half the damage the target takes.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one telekinesis ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-talent-gravitic-burst",
+              "feat.drawsteel-talent-levity-and-gravity"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Kinetic Amplifier",
       "level": 5,
       "description": "Whenever you force move a creature, you can spend up to 2 surges. For each surge spent, the forced movement distance gains a bonus equal to your Reason score."
@@ -36,6 +55,25 @@
       "description": "Whenever an ally uses a ranged ability while you are within the ability's distance, you can spend 1 clarity as a free triggered action to allow them to use the ability as if they were in your space."
     },
     {
+      "name": "6th-Level Telekinesis Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Gravitic Well (9 Clarity)\n>\n> *You bend gravity into a fine point and pull your foes toward it.*\n>\n> | **Area, Psionic, Ranged, Telekinesis** |                             **Main action** |\n> | -------------------------------------- | ------------------------------------------: |\n> | **📏 4 cube within 10**                | **🎯 Each creature and object in the area** |\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** 6 damage; vertical pull 5 toward the center of the area\n> - **12-16:** 9 damage; vertical pull 7 toward the center of the area\n> - **17+:** 13 damage; vertical pull 10 toward the center of the area\n>\n> **Effect:** Targets closest to the center of the area are pulled first.\n>\n> **Strained:** The size of the area increases by 2. You also target yourself and each ally within distance.\n\n> ###### Greater Kinetic Grip (9 Clarity)\n>\n> *You raise the target into the air without breaking a sweat.*\n>\n> | **Psionic, Ranged**, **Strike, Telekinesis** |               **Main action** |\n> | -------------------------------------------- | ----------------------------: |\n> | **📏 Ranged 10**                             | **🎯 One creature or object** |\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** Slide 4 + R; M < WEAK, the forced movement is vertical\n> - **12-16:** Slide 8 + R; M < AVERAGE, the forced movement is vertical\n> - **17+:** Slide 12 + R; prone; M < STRONG, the forced movement is vertical\n>\n> **Strained:** The forced movement ignores stability. You take 2d6 damage and are weakened (save ends).",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one telekinesis ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-talent-gravitic-well",
+              "feat.drawsteel-talent-greater-kinetic-grip"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Levitation Field",
       "level": 8,
       "description": "You have the following ability.\n\n> ###### Levitation Field\n>\n> *You manipulate the air around your allies so they can move as freely through the sky as you can.*\n>\n> | **Area, Psionic** |                 **Maneuver** |\n> | ----------------- | ---------------------------: |\n> | **📏 3 burst**    | **🎯 Each ally in the area** |\n>\n> **Effect:** Each target can fly until the start of your next turn, and can immediately shift up to their speed. You can also shift up to your speed. While flying, a target's stability is reduced to 0 and can't be increased.\n>\n> **Spend 5 Clarity:** The effects last for 1 hour instead."
@@ -44,6 +82,34 @@
       "name": "Low Gravity",
       "level": 8,
       "description": "Your mind can carry your body through tough times. You ignore difficult terrain and don't need to spend additional movement while prone."
+    },
+    {
+      "name": "9th-Level Telekinesis Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Fulcrum (11 Clarity)\n>\n> *You precisely manipulate the creatures around you.*\n>\n> | **Area, Psionic, Telekinesis** |                          **Main action** |\n> | ------------------------------ | ---------------------------------------: |\n> | **📏 Special**                 | **🎯 Each enemy and object in the area** |\n>\n> **Effect:** Make a power roll to determine the area of this ability. Each target is vertical pushed 6 squares. You can target only objects of size 1L or smaller.\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** 2 burst\n> - **12-16:** 3 burst\n> - **17+:** 4 burst\n>\n> **Strained:** You can choose to reduce the size of the burst by 2 (to a minimum of 1 burst) to give the forced movement distance a +2 bonus. You take half the total damage all targets take from forced movement.\n\n> ###### Gravitic Nova (11 Clarity)\n>\n> *Unbridled psionic energy erupts from your body and flashes outward, hurling your foes back.*\n>\n> | **Area, Psionic, Telekinesis** |                          **Main action** |\n> | ------------------------------ | ---------------------------------------: |\n> | **📏 3 burst**                 | **🎯 Each enemy and object in the area** |\n>\n> **Power Roll + Reason:**\n>\n> - **≤11:** 6 damage; push 7\n> - **12-16:** 9 damage; push 10\n> - **17+:** 13 damage; push 15\n>\n> **Effect:** On a critical hit, the size of the area increases by 3, and this ability deals an extra 10 damage.\n>\n> **Strained:** You are weakened (save ends). If you scored a critical hit with this ability, you die.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one telekinesis ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-talent-fulcrum",
+              "feat.drawsteel-talent-gravitic-nova"
+            ]
+          }
+        }
+      ]
     }
+  ],
+  "featureIds": [
+    "feat.drawsteel-talent-telekinesis-minor-telekinesis",
+    "feat.drawsteel-talent-telekinesis-repel",
+    "feat.drawsteel-talent-telekinesis-ease-their-fall",
+    "feat.drawsteel-talent-telekinesis-kinetic-amplifier",
+    "feat.drawsteel-talent-telekinesis-triangulate",
+    "feat.drawsteel-talent-telekinesis-levitation-field",
+    "feat.drawsteel-talent-telekinesis-low-gravity"
   ]
 }

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-call-the-thunder-down",
+  "name": "Call the Thunder Down",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You ask your saint for thunder and your prayer is answered.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 3 Piety\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Intuition:**\n\n- **≤11:** 2 sonic damage; push 1\n- **12-16:** 3 sonic damage; push 2\n- **17+:** 5 sonic damage; push 3\n\n**Effect:** You can push each willing ally in the area the same distance, ignoring stability.",
+  "mechanics": {
+    "type": "active",
+    "text": "You ask your saint for thunder and your prayer is answered. Power Roll + Intuition: - ≤11: 2 sonic damage; push 1 - 12-16: 3 sonic damage; push 2 - 17+: 5 sonic damage; push 3 Effect: You can push each willing ally in the area the same distance, ignoring stability."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 3
+}

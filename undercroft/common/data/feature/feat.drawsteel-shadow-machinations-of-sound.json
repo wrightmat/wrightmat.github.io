@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-machinations-of-sound",
+  "name": "Machinations of Sound",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Illusory sounds make your foes reposition themselves as they cower or investigate the disturbance.*\n\n**Heroic Ability** — Area, Magic, Ranged — Maneuver\n\n**Cost:** 5 Insight\n\n**Distance:** 3 cube within 10   **Target:** Each creature in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** Slide 4\n- **12-16:** Slide 5\n- **17+:** Slide 7\n\n**Effect:** This forced movement ignores stability. Instead, the forced movement is reduced by a number equal to the target's Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "Illusory sounds make your foes reposition themselves as they cower or investigate the disturbance. Power Roll + Agility: - ≤11: Slide 4 - 12-16: Slide 5 - 17+: Slide 7 Effect: This forced movement ignores stability. Instead, the forced movement is reduced by a number equal to the target's Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "3 cube within 10",
+  "target": "Each creature in the area",
+  "cost": 5
+}

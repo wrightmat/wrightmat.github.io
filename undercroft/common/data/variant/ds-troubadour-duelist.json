@@ -21,14 +21,105 @@
       "description": "You have the following ability.\n\n> ###### Star Power (1 Drama)\n>\n> *Your years of practicing fencing and dancing pay off on the battlefield.*\n>\n> | **-**       | **Maneuver** |\n> | ----------- | -----------: |\n> | **📏 Self** |  **🎯 Self** |\n>\n> **Effect:** You gain a +2 bonus to speed until the end of your turn. Additionally, the next power roll you make this turn can't have an outcome lower than tier 2.\n>\n> **Spend 1 Drama:** You gain a +4 bonus to speed instead."
     },
     {
+      "name": "2nd-Level Duelist Ability",
+      "level": 2,
+      "description": "Choose one of the following abilities.\n\n> ###### Classic Chandelier Stunt (5 Drama)\n>\n> *Audiences love this bit.*\n>\n> | **Melee, Strike, Weapon** |                  **Main action** |\n> | ------------------------- | -------------------------------: |\n> | **📏 Melee 1**            | **🎯 Self and one willing ally** |\n>\n> **Effect:** Each target can shift up to 5 squares, including vertically, but must end this movement adjacent to the other target and on solid ground. Each target can then make a melee free strike that deals extra damage equal to twice their highest characteristic score.\n\n> ###### En Garde! (5 Drama)\n>\n> *Wait, it's... Guard! Turn! Parry! Dodge! Spin! Thrust! Ha!*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 7 + **A** damage\n> - **12-16:** 11 + **A** damage\n> - **17+:** 16 + **A** damage\n>\n> **Effect:** The target can make a melee free strike against you. If they do, you can make a melee free strike against the target.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one duelist ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-classic-chandelier-stunt",
+              "feat.drawsteel-troubadour-en-garde"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Foil",
       "level": 3,
       "description": "At the start of an encounter, choose one creature within your line of effect. You have a double edge on power rolls made against or in competition with that creature. The chosen creature also has a double edge on power rolls made against or in competition with you. If the chosen creature is reduced to 0 Stamina, you can choose a new foil at the start of the next combat round."
     },
     {
+      "name": "5th-Level Duelist Feature",
+      "level": 5,
+      "description": "Choose one of the following features.\n\n###### Verbal Duel\n\nOnce on each of your turns while the target of your Foil feature is adjacent to you, you can use a free maneuver to exchange words with them. Make an opposed Presence test with the target. Whoever gets the higher result can make a free strike, which deals psychic damage instead of its usual damage.\n\n###### We Can't Be Upstaged!\n\nYou have the following performance ability, which is usable with your Routines feature.\n\n> ###### We Can't Be Upstaged!\n>\n> *Swordplay so graceful it looks like you all practiced this.*\n>\n> | **Area, Magic, Performance** |                         **No action** |\n> | ---------------------------- | ------------------------------------: |\n> | **📏 5 aura**                | **🎯 Self and each ally in the area** |\n>\n> **Effect:** While this performance is active, a target who starts their turn in the area gains a bonus to the distance they can shift equal to your Presence score until the end of their turn.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one duelist feature.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-verbal-duel",
+              "feat.drawsteel-troubadour-we-cant-be-upstaged"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6th-Level Duelist Ability",
+      "level": 6,
+      "description": "Choose one of the following abilities.\n\n> ###### Blood on the Stage (9 Drama)\n>\n> *It's love and blood or drama and blood. Either way, there's always blood.*\n>\n> | **Melee, Strike, Weapon** |               **Main action** |\n> | ------------------------- | ----------------------------: |\n> | **📏 Melee 1**            | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 12 + A damage; M < WEAK, bleeding (save ends)\n> - **12-16:** 18 + A damage; M < AVERAGE, bleeding (save ends)\n> - **17+:** 24 + A damage; bleeding (EoT), or if M < STRONG, bleeding (save ends)\n\n> ###### Fight Choreography (9 Drama)\n>\n> *You and your partner make a flashy show of derring-do, then get back to your corners.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Effect:** You and the target each make a melee free strike that targets each enemy within 3 squares of either of you, dividing the enemies between each of you. You choose which enemies your free strike targets and which enemies the target creature's free strike targets. You then slide the target 5 squares, ignoring stability.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one duelist ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-blood-on-the-stage",
+              "feat.drawsteel-troubadour-fight-choreography"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Masterwork",
       "level": 8,
       "description": "Choose one of your signature abilities and name it after yourself. You always have this ability available, even if it is sourced from a kit you switch out. Whenever you use this ability, you gain an edge and 1 surge that you can use only on this ability.\n\nAdditionally, when your named signature ability is the last ability you use in an encounter, you can immediately use the Hear Ye, Hear Ye! effect of your Zeitgeist feature to tell tales of your exploits after the encounter ends."
+    },
+    {
+      "name": "9th-Level Duelist Ability",
+      "level": 9,
+      "description": "Choose one of the following abilities.\n\n> ###### Expert Fencer (11 Drama)\n>\n> *If you can land the strike, the crowd goes wild.*\n>\n> | **Charge, Melee, Strike, Weapon** |               **Main action** |\n> | --------------------------------- | ----------------------------: |\n> | **📏 Melee 3**                    | **🎯 One creature or object** |\n>\n> **Power Roll + Agility:**\n>\n> - **≤11:** 15 + A damage\n> - **12-16:** 21 + A damage\n> - **17+:** 28 + A damage; M < STRONG, bleeding (save ends)\n>\n> **Effect:** This ability can't obtain better than a tier 2 outcome unless the target is at maximum distance. If you obtain a tier 3 outcome with a natural 17 or higher, you gain 3 surges that you can use immediately.\n\n> ###### Renegotiated Contract (11 Drama)\n>\n> *No, no. You don't die until the sequel.*\n>\n> | **Melee, Strike, Weapon** |     **Main action** |\n> | ------------------------- | ------------------: |\n> | **📏 Melee 1**            | **🎯 One creature** |\n>\n> **Effect:** Add your current Stamina to your target's current Stamina, then you have half that total Stamina and the target has the remainder. If either of you would gain more Stamina this way than their Stamina maximum, the difference in Stamina between what that creature would gain and their maximum is gained by the other creature. Neither of you can gain more Stamina than your maximum this way. You then make a power roll.\n>\n> **Power Roll + Presence:**\n>\n> - **≤11:** You and the target can each end one effect on yourselves that is ended by a saving throw or that ends at the end of your turns.\n> - **12-16:** You and the target can end any effects on yourselves that are ended by a saving throw or that end at the end of your turns.\n> - **17+:** You can choose any of the current effects on you and the target that are ended by a saving throw or that end at the end of your turns, apply the chosen effects to the target, and end the rest.",
+      "choice": true,
+      "grants": [
+        {
+          "type": "featureChoice",
+          "choose": 1,
+          "desc": "Choose one duelist ability.",
+          "from": {
+            "featureIds": [
+              "feat.drawsteel-troubadour-expert-fencer",
+              "feat.drawsteel-troubadour-renegotiated-contract"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "featureIds": [
+    "feat.drawsteel-troubadour-duelist-acrobatics",
+    "feat.drawsteel-troubadour-duelist-star-power",
+    "feat.drawsteel-troubadour-duelist-foil",
+    "feat.drawsteel-troubadour-duelist-masterwork"
+  ],
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "skills",
+      "values": [
+        "Gymnastics"
+      ]
     }
   ]
 }

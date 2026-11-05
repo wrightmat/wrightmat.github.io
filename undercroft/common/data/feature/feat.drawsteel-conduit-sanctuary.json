@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-conduit-sanctuary",
+  "name": "Sanctuary",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You send yourself or an ally to a divine manifold to instantaneously regain health.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 9 Piety\n\n**Distance:** Ranged 10   **Target:** Self or one ally\n\n**Effect:** The target is removed from the encounter map until the start of their next turn and can spend any number of Recoveries. At the start of their turn, the target reappears in the space they left or the nearest unoccupied space of their choice.",
+  "mechanics": {
+    "type": "active",
+    "text": "You send yourself or an ally to a divine manifold to instantaneously regain health. Effect: The target is removed from the encounter map until the start of their next turn and can spend any number of Recoveries. At the start of their turn, the target reappears in the space they left or the nearest unoccupied space of their choice."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self or one ally",
+  "cost": 9
+}

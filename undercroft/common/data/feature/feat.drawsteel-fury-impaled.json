@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-fury-impaled",
+  "name": "Impaled!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You skewer your enemy like a boar upon a spit.*\n\n**Signature Ability** — Melee, Strike, Weapon — Main action\n\n**Distance:** Melee 1   **Target:** One creature of your size or smaller\n\n**Power Roll + Might:**\n\n- **≤11:** 2 + M damage; M < WEAK, grabbed\n- **12-16:** 5 + M damage; M < AVERAGE, grabbed\n- **17+:** 7 + M damage; M < STRONG, grabbed",
+  "mechanics": {
+    "type": "active",
+    "text": "You skewer your enemy like a boar upon a spit. Power Roll + Might: - ≤11: 2 + M damage; M < WEAK, grabbed - 12-16: 5 + M damage; M < AVERAGE, grabbed - 17+: 7 + M damage; M < STRONG, grabbed"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature of your size or smaller"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-they-always-line-up",
+  "name": "They Always Line Up",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You fire a projectile so fast that it passes through a line of foes, hamstringing them.*\n\n**Heroic Ability** — Area, Ranged, Weapon — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** 5 x 1 line within 5   **Target:** Each enemy in the area\n\n**Power Roll + Agility:**\n\n- **≤11:** 12 damage; M < WEAK, slowed (save ends)\n- **12-16:** 18 damage; M < AVERAGE, slowed (save ends)\n- **17+:** 24 damage; M < STRONG, slowed (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You fire a projectile so fast that it passes through a line of foes, hamstringing them. Power Roll + Agility: - ≤11: 12 damage; M < WEAK, slowed (save ends) - 12-16: 18 damage; M < AVERAGE, slowed (save ends) - 17+: 24 damage; M < STRONG, slowed (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Ranged, Weapon",
+  "actionType": "Main action",
+  "distance": "5 x 1 line within 5",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

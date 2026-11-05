@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-ive-got-your-back",
+  "name": "I've Got Your Back",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your enemy will think twice about attacking your friend.*\n\n**Heroic Ability** — Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Focus\n\n**Distance:** Ranged 5   **Target:** One creature\n\n**Power Roll + Reason:**\n\n- **≤11:** 5 + R damage; taunted (EoT)\n- **12-16:** 9 + R damage; taunted (EoT)\n- **17+:** 12 + R damage; taunted (EoT)\n\n**Effect:** One ally adjacent to the target can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your enemy will think twice about attacking your friend. Power Roll + Reason: - ≤11: 5 + R damage; taunted (EoT) - 12-16: 9 + R damage; taunted (EoT) - 17+: 12 + R damage; taunted (EoT) Effect: One ally adjacent to the target can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 5",
+  "target": "One creature",
+  "cost": 5
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-finish-them",
+  "name": "Finish Them!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You point out an opening to your ally so they can land a killing blow.*\n\n**Heroic Ability** — Ranged — Free triggered\n\n**Cost:** 11 Focus\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Trigger:** The target is not a leader or solo creature, and becomes winded.\n\n**Effect:** The target is killed. Additionally, the creature who caused the target to be winded can spend a Recovery.",
+  "mechanics": {
+    "type": "active",
+    "text": "You point out an opening to your ally so they can land a killing blow. Trigger: The target is not a leader or solo creature, and becomes winded. Effect: The target is killed. Additionally, the creature who caused the target to be winded can spend a Recovery."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Free triggered",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 11
+}

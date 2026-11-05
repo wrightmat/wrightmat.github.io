@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-polder-fearless",
+  "name": "Fearless",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nCourage is all you know. You can't be made frightened.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Courage is all you know. You can't be made frightened."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Polder",
+  "cost": 2
+}

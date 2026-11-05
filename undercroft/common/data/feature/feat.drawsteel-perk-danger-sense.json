@@ -1,0 +1,26 @@
+{
+  "id": "feat.drawsteel-perk-danger-sense",
+  "name": "Danger Sense",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Exploration Perk**\n\nWhenever you are in a natural environment (but not in a settlement in that environment), you gain an edge on tests made using the Alertness skill, and you can't be surprised. Additionally, you have a connection to nature that warns you if any natural disaster is imminent within the next 72 hours, though you don't know exactly what it will entail (an earthquake, a wildfire, and so forth).",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you are in a natural environment (but not in a settlement in that environment), you gain an edge on tests made using the Alertness skill, and you can't be surprised. Additionally, you have a connection to nature that warns you if any natural disaster is imminent within the next 72 hours, though you don't know exactly what it will entail (an earthquake, a wildfire, and so forth)."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Perk",
+  "perkType": "Exploration"
+}

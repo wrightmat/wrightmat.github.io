@@ -4,7 +4,7 @@
   "systemIds": [
     "sys.drawsteel"
   ],
-  "description": "**Subclass Feature**\n\nThe flow of psionic power through you allows you to achieve high velocity. You gain a +2 bonus to your speed (already included).",
+  "description": "**Subclass Feature**\n\nThe flow of psionic power through you allows you to achieve high velocity. You gain a +2 bonus to your speed.",
   "mechanics": {
     "type": "passive",
     "text": "The flow of psionic power through you allows you to achieve high velocity. You gain a +2 bonus to your speed (already included)."
@@ -21,5 +21,6 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Subclass Feature"
+  "kind": "Subclass Feature",
+  "speedBonus": 2
 }

@@ -1,0 +1,21 @@
+{
+  "name": "Vuken Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Classes/",
+  "source": "mcdm.heroes.v1",
+  "description": "With this stormwight kit, you channel your primordial ferocity into the form of a wolf, becoming a fleet-footed hunter. Vuken are tied to forests and open steppes, and this aspect is associated with the thunderstorm.\n\n##### Aspect Benefits\n\nWhenever you use the Knockback maneuver, you can then use the Aid Attack maneuver as a free triggered action.\n\n##### Animal Form: Wolf\n\nWhile you are in your wolf form, your size is 1L, you have a +2 bonus to speed, and you ignore difficult terrain.\n\n##### Hybrid Form: Wolf\n\nWhile you are in your hybrid form, your size is 1L, you have a +2 bonus to speed, and you ignore difficult terrain. At 4th level, the first time you take hybrid form in an encounter, you gain 10 temporary Stamina.\n\n##### Primordial Storm: Lightning Storm\n\nYour primordial damage type is lightning.\n\n##### Kit Bonuses\n\n- **Stamina Bonus:** +9 per echelon\n- **Speed Bonus:** +2\n- **Melee Damage Bonus:** +2/+2/+2\n- **Disengage Bonus:** +1\n\n##### Signature Ability\n\n###### Unbalancing Attack\n\n*A wild assault forces your foe onto their back.*\n\n| **Melee, Strike, Weapon** |               **Main action** |\n| ------------------------- | ----------------------------: |\n| **📏 Melee 1**            | **🎯 One creature or object** |\n\n**Power Roll + Might:**\n\n- **≤11:** 4 + M damage; A < WEAK, prone\n- **12-16:** 7 + M damage; A < AVERAGE, prone\n- **17+:** 9 + M damage; A < STRONG, prone\n\n##### Growing Ferocity\n\nAs your ferocity grows, you gain benefits as noted on the Vuken Growing Ferocity table. Benefits are cumulative except where an improved benefit replaces a lesser benefit.\n\n###### Vuken Growing Ferocity Table\n\n| Ferocity        | Benefit                                                                                                                                                                                                                          |\n| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| 2               | Whenever you use the Knockback maneuver, you can target one additional creature.                                                                                                                                                 |\n| 4               | The first time on a turn that you push a creature or knock a creature prone, you gain 1 surge.                                                                                                                                   |\n| 6               | You gain an edge on Agility tests and the Knockback maneuver.                                                                                                                                                                    |\n| 8 (4th level)   | The first time on a turn that you push a creature or knock a creature prone, you gain 2 surges.                                                                                                                                  |\n| 10 (7th level)  | You have a double edge on Agility tests and the Knockback maneuver.                                                                                                                                                              |\n| 12 (10th level) | Whenever you use a heroic ability, you gain 10 temporary Stamina. Additionally, whenever you make a power roll that imposes forced movement on a target, the forced movement distance gains a bonus equal to your Agility score. |",
+  "staminaBonus": 9,
+  "speedBonus": 2,
+  "meleeDamageBonus": "+2/+2/+2",
+  "disengageBonus": 1,
+  "signatureAbility": "Unbalancing Attack",
+  "kitType": "stormwight",
+  "featureIds": [
+    "feat.drawsteel-kit-unbalancing-attack"
+  ]
+}

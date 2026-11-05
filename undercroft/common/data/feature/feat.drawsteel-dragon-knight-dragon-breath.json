@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-dragon-knight-dragon-breath",
+  "name": "Dragon Breath",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou have the following signature ability.\n\n###### Dragon Breath\n\n*A furious exhalation of energy washes over your foes.*\n\n| **Area, Magic**        |               **Main action** |\n| ---------------------- | ----------------------------: |\n| **📏 3 cube within 1** | **🎯 Each enemy in the area** |\n\n**Power Roll + Might or Presence:**\n\n- **≤11:** 2 damage\n- **12-16:** 4 damage\n- **17+:** 6 damage\n\n**Effect:** You choose the ability's damage type from acid, cold, corruption, fire, lightning, or poison.",
+  "mechanics": {
+    "type": "active",
+    "text": "Ancestry Trait You have the following signature ability. Dragon Breath A furious exhalation of energy washes over your foes. Area, Magic Main action ---------------------- ----------------------------: 📏 3 cube within 1 🎯 Each enemy in the area Power Roll + Might or Presence: - ≤11: 2 damage - 12-16: 4 damage - 17+: 6 damage Effect: You choose the ability's damage type from acid, cold, corruption, fire, lightning, or poison."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Dragon Knight",
+  "cost": 2
+}

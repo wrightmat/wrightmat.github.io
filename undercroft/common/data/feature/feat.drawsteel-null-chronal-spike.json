@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-chronal-spike",
+  "name": "Chronal Spike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You foresee the best moment to strike, then exploit it.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Main action\n\n**Cost:** 3 Discipline\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Agility:**\n\n- **≤11:** 7 + A damage\n- **12-16:** 10 + A damage\n- **17+:** 13 + A damage\n\n**Effect:** You can shift up to half your speed before or after you make this strike. Additionally, whenever an effect lets you make a free strike or use a signature ability, you can use this ability instead, paying its discipline cost as usual.",
+  "mechanics": {
+    "type": "active",
+    "text": "You foresee the best moment to strike, then exploit it. Power Roll + Agility: - ≤11: 7 + A damage - 12-16: 10 + A damage - 17+: 13 + A damage Effect: You can shift up to half your speed before or after you make this strike. Additionally, whenever an effect lets you make a free strike or use a signature ability, you can use this ability instead, paying its discipline cost as usual."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 3
+}

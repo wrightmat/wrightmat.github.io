@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-purifying-fire",
+  "name": "Purifying Fire",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The gods judge, fire cleanses.*\n\n**Heroic Ability** — Magic, Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 5 + M holy damage; M < WEAK, the target has fire weakness 3 (save ends)\n- **12-16:** 9 + M holy damage; M < AVERAGE, the target has fire weakness 5 (save ends)\n- **17+:** 12 + M holy damage; M < STRONG, the target has fire weakness 7 (save ends)\n\n**Effect:** While the target has fire weakness from this ability, you can choose to have your abilities deal fire damage to the target instead of holy damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "The gods judge, fire cleanses. Power Roll + Might: - ≤11: 5 + M holy damage; M < WEAK, the target has fire weakness 3 (save ends) - 12-16: 9 + M holy damage; M < AVERAGE, the target has fire weakness 5 (save ends) - 17+: 12 + M holy damage; M < STRONG, the target has fire weakness 7 (save ends) Effect: While the target has fire weakness from this ability, you can choose to have your abilities deal fire damage to the target instead of holy damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 5
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-coordinated-execution",
+  "name": "Coordinated Execution",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You direct your ally to make a killing blow.*\n\n**Heroic Ability** — Ranged — Free triggered\n\n**Cost:** 9 Focus\n\n**Distance:** Ranged 10   **Target:** One ally\n\n**Trigger:** The target uses an ability to deal rolled damage to a creature while hidden.\n\n**Effect:** If the target of the triggering ability is not a leader or solo creature, they are reduced to 0 Stamina. If the target of the triggering ability is a minion, the entire squad is killed. If the target of the triggering ability is a leader or solo creature, the triggering ability's power roll automatically obtains a tier 3 outcome.",
+  "mechanics": {
+    "type": "active",
+    "text": "You direct your ally to make a killing blow. Trigger: The target uses an ability to deal rolled damage to a creature while hidden. Effect: If the target of the triggering ability is not a leader or solo creature, they are reduced to 0 Stamina. If the target of the triggering ability is a minion, the entire squad is killed. If the target of the triggering ability is a leader or solo creature, the triggering ability's power roll automatically obtains a tier 3 outcome."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Free triggered",
+  "distance": "Ranged 10",
+  "target": "One ally",
+  "cost": 9
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-anticipating-strike",
+  "name": "Anticipating Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You suddenly strike an enemy, then grab them in a psionically enhanced grip.*\n\n**Heroic Ability** — Melee, Psionic, Strike, Weapon — Free triggered\n\n**Cost:** 9 Discipline\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Trigger:** The target moves or uses a main action.\n\n**Power Roll + Agility:**\n\n- **≤11:** 7 + A damage; I < WEAK, restrained (save ends)\n- **12-16:** 10 + A damage; I < AVERAGE, restrained (save ends)\n- **17+:** 13 + A damage; I < STRONG, restrained (save ends)\n\n**Effect:** This strike resolves before the triggering movement or main action.",
+  "mechanics": {
+    "type": "active",
+    "text": "You suddenly strike an enemy, then grab them in a psionically enhanced grip. Trigger: The target moves or uses a main action. Power Roll + Agility: - ≤11: 7 + A damage; I < WEAK, restrained (save ends) - 12-16: 10 + A damage; I < AVERAGE, restrained (save ends) - 17+: 13 + A damage; I < STRONG, restrained (save ends) Effect: This strike resolves before the triggering movement or main action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Psionic, Strike, Weapon",
+  "actionType": "Free triggered",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

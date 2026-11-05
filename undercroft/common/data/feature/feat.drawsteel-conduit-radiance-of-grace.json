@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-radiance-of-grace",
+  "name": "Radiance of Grace",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Intense light is emitted from your body, healing your allies.*\n\n**Heroic Ability** — Magic, Ranged — Main action\n\n**Cost:** 11 Piety\n\n**Distance:** Ranged 10   **Target:** Four allies\n\n**Effect:** You can target yourself instead of one ally with this ability. Each target can spend any number of Recoveries, can end any effects on them that are ended by a saving throw or that end at the end of their turn, and can stand up if they are prone.",
+  "mechanics": {
+    "type": "active",
+    "text": "Intense light is emitted from your body, healing your allies. Effect: You can target yourself instead of one ally with this ability. Each target can spend any number of Recoveries, can end any effects on them that are ended by a saving throw or that end at the end of their turn, and can stand up if they are prone."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "Four allies",
+  "cost": 11,
+  "subclassIds": [
+    "ds-conduit-life"
+  ]
+}

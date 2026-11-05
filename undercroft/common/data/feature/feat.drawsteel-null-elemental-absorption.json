@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-elemental-absorption",
+  "name": "Elemental Absorption",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever you use your Inertial Shield triggered action, you gain immunity to acid, cold, corruption, fire, lightning, poison, and sonic damage equal to your Intuition score against the triggering damage.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever you use your Inertial Shield triggered action, you gain immunity to acid, cold, corruption, fire, lightning, poison, and sonic damage equal to your Intuition score against the triggering damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

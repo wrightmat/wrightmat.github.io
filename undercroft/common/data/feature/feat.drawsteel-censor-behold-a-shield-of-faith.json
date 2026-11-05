@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-behold-a-shield-of-faith",
+  "name": "Behold a Shield of Faith!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*A mighty blow turns your foe's vitality into a holy light that envelops you and an ally, discouraging enemies who might attack you.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 3 Wrath\n\n**Distance:** Melee 1   **Target:** One creature or object\n\n**Power Roll + Might:**\n\n- **≤11:** 3 + M holy damage\n- **12-16:** 6 + M holy damage\n- **17+:** 9 + M holy damage\n\n**Effect:** Until the start of your next turn, enemies take a bane on ability rolls made against you or any ally adjacent to you.",
+  "mechanics": {
+    "type": "active",
+    "text": "A mighty blow turns your foe's vitality into a holy light that envelops you and an ally, discouraging enemies who might attack you. Power Roll + Might: - ≤11: 3 + M holy damage - 12-16: 6 + M holy damage - 17+: 9 + M holy damage Effect: Until the start of your next turn, enemies take a bane on ability rolls made against you or any ally adjacent to you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature or object",
+  "cost": 3
+}

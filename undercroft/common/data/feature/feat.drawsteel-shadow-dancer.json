@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-dancer",
+  "name": "Dancer",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You enter a flow state that makes you nearly impossible to pin down.*\n\n**Heroic Ability** — Maneuver\n\n**Cost:** 7 Insight\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** Until the end of the encounter, whenever an enemy moves or is force moved adjacent to you or damages you, you can take the Disengage move action as a free triggered action.",
+  "mechanics": {
+    "type": "active",
+    "text": "You enter a flow state that makes you nearly impossible to pin down. Effect: Until the end of the encounter, whenever an enemy moves or is force moved adjacent to you or damages you, you can take the Disengage move action as a free triggered action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "",
+  "actionType": "Maneuver",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 7
+}

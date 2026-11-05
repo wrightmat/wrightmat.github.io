@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-hakaan-forceful",
+  "name": "Forceful",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nWhenever you force move a creature or object, the forced movement distance gains a +1 bonus.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Whenever you force move a creature or object, the forced movement distance gains a +1 bonus."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Hakaan",
+  "cost": 1
+}

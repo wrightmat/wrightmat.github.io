@@ -1,0 +1,33 @@
+{
+  "id": "feat.drawsteel-conduit-reap",
+  "name": "Reap",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*The gods reward those who smite their foes.*\n\n**Heroic Ability** — Magic, Ranged — Maneuver\n\n**Cost:** 5 Piety\n\n**Distance:** Ranged 10   **Target:** Each ally\n\n**Effect:** Until the start of your next turn, each time a target kills an enemy, they regain Stamina equal to 5 + your Intuition score.",
+  "mechanics": {
+    "type": "active",
+    "text": "The gods reward those who smite their foes. Effect: Until the start of your next turn, each time a target kills an enemy, they regain Stamina equal to 5 + your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Each ally",
+  "cost": 5,
+  "subclassIds": [
+    "ds-conduit-death"
+  ]
+}

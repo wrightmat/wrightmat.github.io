@@ -1,0 +1,29 @@
+{
+  "id": "feat.drawsteel-troubadour-cutting-sarcasm",
+  "name": "Cutting Sarcasm",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*There you are, radiating your usual charisma.*\n\n**Signature Ability** — Magic, Ranged, Strike, Weapon — Main action\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Power Roll + Presence:**\n\n- **≤11:** 2 + P psychic damage; P < WEAK, bleeding (save ends)\n- **12-16:** 5 + P psychic damage; P < AVERAGE, bleeding (save ends)\n- **17+:** 7 + P psychic damage; P < STRONG, bleeding (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "There you are, radiating your usual charisma. Power Roll + Presence: - ≤11: 2 + P psychic damage; P < WEAK, bleeding (save ends) - 12-16: 5 + P psychic damage; P < AVERAGE, bleeding (save ends) - 17+: 7 + P psychic damage; P < STRONG, bleeding (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Signature Ability",
+  "keywords": "Magic, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature"
+}

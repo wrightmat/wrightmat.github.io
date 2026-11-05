@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-tactician-true-focus",
+  "name": "True Focus",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "When you gain focus at the start of each of your turns during combat, you gain 4 focus instead of 3.",
+  "mechanics": {
+    "type": "passive",
+    "text": "When you gain focus at the start of each of your turns during combat, you gain 4 focus instead of 3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

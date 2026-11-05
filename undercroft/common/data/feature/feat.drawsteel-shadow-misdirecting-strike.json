@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-misdirecting-strike",
+  "name": "Misdirecting Strike",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*\"Why are you looking at ME?!\"*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 7 Insight\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 9 + A damage\n- **12-16:** 13 + A damage\n- **17+:** 18 + A damage\n\n**Effect:** The target is taunted by a willing ally within 5 squares of you until the end of the target's next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "\"Why are you looking at ME?!\" Power Roll + Agility: - ≤11: 9 + A damage - 12-16: 13 + A damage - 17+: 18 + A damage Effect: The target is taunted by a willing ally within 5 squares of you until the end of the target's next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 7
+}

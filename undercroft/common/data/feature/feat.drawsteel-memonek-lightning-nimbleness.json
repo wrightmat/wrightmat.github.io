@@ -1,0 +1,28 @@
+{
+  "id": "feat.drawsteel-memonek-lightning-nimbleness",
+  "name": "Lightning Nimbleness",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYou can push your body to move at incredible speeds. Your speed is 7.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait You can push your body to move at incredible speeds. Your speed is 7."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Memonek",
+  "cost": 2,
+  "speedBonus": 2
+}

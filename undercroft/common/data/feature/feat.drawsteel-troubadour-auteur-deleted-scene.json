@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-troubadour-auteur-deleted-scene",
+  "name": "Deleted Scene",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Whenever a creature within distance of your Dramatic Monologue ability makes a power roll, you can spend 1 drama as a free triggered action to use Dramatic Monologue, targeting only one creature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Whenever a creature within distance of your Dramatic Monologue ability makes a power roll, you can spend 1 drama as a free triggered action to use Dramatic Monologue, targeting only one creature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

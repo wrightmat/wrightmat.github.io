@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-squad-forward",
+  "name": "Squad! Forward!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*On your command, you and your allies force back the enemy line.*\n\n**Heroic Ability** — Ranged — Maneuver\n\n**Cost:** 3 Focus\n\n**Distance:** Ranged 10   **Target:** Self and two allies\n\n**Effect:** Each target can move up to their speed.",
+  "mechanics": {
+    "type": "active",
+    "text": "On your command, you and your allies force back the enemy line. Effect: Each target can move up to their speed."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Ranged",
+  "actionType": "Maneuver",
+  "distance": "Ranged 10",
+  "target": "Self and two allies",
+  "cost": 3
+}

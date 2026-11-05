@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-cacophony-of-cinders",
+  "name": "Cacophony of Cinders",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You tumble through the battle, stabbing foes and teleporting allies.*\n\n**Heroic Ability** — Magic, Melee, Weapon — Main action\n\n**Cost:** 11 Insight\n\n**Distance:** Self; see below   **Target:** Self\n\n**Effect:** You shift up to twice your speed, making one power roll that targets each creature you come adjacent to during the shift.\n\n**Power Roll + Agility:**\n\n- **≤11:** An enemy takes 6 damage; an ally can teleport up to 3 squares.\n- **12-16:** An enemy takes 10 damage; an ally can teleport up to 5 squares.\n- **17+:** An enemy takes 14 damage; an ally can teleport up to 7 squares.",
+  "mechanics": {
+    "type": "active",
+    "text": "You tumble through the battle, stabbing foes and teleporting allies. Effect: You shift up to twice your speed, making one power roll that targets each creature you come adjacent to during the shift. Power Roll + Agility: - ≤11: An enemy takes 6 damage; an ally can teleport up to 3 squares. - 12-16: An enemy takes 10 damage; an ally can teleport up to 5 squares. - 17+: An enemy takes 14 damage; an ally can teleport up to 7 squares."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Magic, Melee, Weapon",
+  "actionType": "Main action",
+  "distance": "Self; see below",
+  "target": "Self",
+  "cost": 11
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-elementalist-swarm-of-spirits",
+  "name": "Swarm of Spirits",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Guardian animal spirits surround you to harry your foes and bolster your allies.*\n\n**Heroic Ability** — Area, Green, Magic — Main action\n\n**Cost:** 7 Essence\n\n**Distance:** 3 aura   **Target:** Each enemy in the area\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 damage\n- **12-16:** 6 damage\n- **17+:** 9 damage\n\n**Effect:** Until the end of your next turn, each ally in the area has each of their characteristic scores treated as 1 higher for the purpose of resisting potencies, and has a +1 bonus to saving throws.\n\n**Persistent 1:** You make the power roll again to target each enemy in the area without spending essence, and the effect lasts until the start of your next turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Guardian animal spirits surround you to harry your foes and bolster your allies. Power Roll + Reason: - ≤11: 3 damage - 12-16: 6 damage - 17+: 9 damage Effect: Until the end of your next turn, each ally in the area has each of their characteristic scores treated as 1 higher for the purpose of resisting potencies, and has a +1 bonus to saving throws. Persistent 1: You make the power roll again to target each enemy in the area without spending essence, and the effect lasts until the start of your next turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Green, Magic",
+  "actionType": "Main action",
+  "distance": "3 aura",
+  "target": "Each enemy in the area",
+  "cost": 7
+}

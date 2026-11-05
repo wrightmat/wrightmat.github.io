@@ -1,0 +1,27 @@
+{
+  "id": "feat.drawsteel-wode-elf-quick-and-brutal",
+  "name": "Quick and Brutal",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nWhenever you score a critical hit, you can take an additional main action and an additional move action instead of just a main action.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Whenever you score a critical hit, you can take an additional main action and an additional move action instead of just a main action."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Wode Elf",
+  "cost": 1
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-quick-rewrite",
+  "name": "Quick Rewrite",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You write something unexpected into the scene that hinders your enemy.*\n\n**Heroic Ability** — Area, Magic, Ranged — Main action\n\n**Cost:** 3 Drama\n\n**Distance:** 3 cube within 10   **Target:** Each enemy in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** 4 damage; P < WEAK, slowed (save ends)\n- **12-16:** 5 damage; P < AVERAGE, slowed (save ends)\n- **17+:** 6 damage; P < STRONG, restrained (save ends)\n\n**Effect:** The area is difficult terrain for enemies.",
+  "mechanics": {
+    "type": "active",
+    "text": "You write something unexpected into the scene that hinders your enemy. Power Roll + Presence: - ≤11: 4 damage; P < WEAK, slowed (save ends) - 12-16: 5 damage; P < AVERAGE, slowed (save ends) - 17+: 6 damage; P < STRONG, restrained (save ends) Effect: The area is difficult terrain for enemies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic, Ranged",
+  "actionType": "Main action",
+  "distance": "3 cube within 10",
+  "target": "Each enemy in the area",
+  "cost": 3
+}

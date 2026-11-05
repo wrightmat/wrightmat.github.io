@@ -1,0 +1,97 @@
+{
+  "id": "feat.drawsteel-fury-elemental-form",
+  "name": "Elemental Form",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You exhibit ever-stronger signs of how the force of the Primordial Chaos flows within you. Whenever you show strong emotion or increase your ferocity, elemental motes attuned to your mood flit around you, and your skin changes in appearance to reflect an element of your choice.\n\nAdditionally, if you are a berserker or reaver, you have immunity to acid, cold, corruption, fire, lightning, poison, and sonic damage equal to your Might score. If you are a stormwight, you have immunity to the damage type of your Primordial Storm feature equal to twice your Might score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You exhibit ever-stronger signs of how the force of the Primordial Chaos flows within you. Whenever you show strong emotion or increase your ferocity, elemental motes attuned to your mood flit around you, and your skin changes in appearance to reflect an element of your choice. Additionally, if you are a berserker or reaver, you have immunity to acid, cold, corruption, fire, lightning, poison, and sonic damage equal to your Might score. If you are a stormwight, you have immunity to the damage type of your Primordial Storm feature equal to twice your Might score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature",
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Acid",
+          "kind": "Immunity",
+          "formula": "@might"
+        },
+        {
+          "name": "Cold",
+          "kind": "Immunity",
+          "formula": "@might"
+        },
+        {
+          "name": "Corruption",
+          "kind": "Immunity",
+          "formula": "@might"
+        },
+        {
+          "name": "Fire",
+          "kind": "Immunity",
+          "formula": "@might"
+        },
+        {
+          "name": "Lightning",
+          "kind": "Immunity",
+          "formula": "@might"
+        },
+        {
+          "name": "Poison",
+          "kind": "Immunity",
+          "formula": "@might"
+        },
+        {
+          "name": "Sonic",
+          "kind": "Immunity",
+          "formula": "@might"
+        }
+      ],
+      "subclassIds": [
+        "ds-fury-berserker",
+        "ds-fury-reaver"
+      ]
+    },
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose your stormwight kit's primordial damage type.",
+      "targetPath": "immunities",
+      "itemDefaults": {
+        "kind": "Immunity",
+        "formula": "2 * @might",
+        "source": "Primordial Storm"
+      },
+      "from": {
+        "systemField": "damageTypes",
+        "anyOf": {
+          "name": [
+            "Cold",
+            "Corruption",
+            "Fire",
+            "Lightning"
+          ]
+        }
+      },
+      "subclassIds": [
+        "ds-fury-stormwight"
+      ]
+    }
+  ]
+}

@@ -21,5 +21,20 @@
   },
   "synergizesWith": [],
   "conflictsWith": [],
-  "kind": "Ancestry Trait"
+  "kind": "Ancestry Trait",
+  "ancestry": "Polder",
+  "cost": 1,
+  "grants": [
+    {
+      "type": "listGrant",
+      "targetPath": "immunities",
+      "values": [
+        {
+          "name": "Corruption",
+          "kind": "Immunity",
+          "formula": "@level + 2"
+        }
+      ]
+    }
+  ]
 }

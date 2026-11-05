@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-shadow-eviscerate",
+  "name": "Eviscerate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You leave your foe bleeding out after a devastating attack.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 3 Insight\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Power Roll + Agility:**\n\n- **≤11:** 4 + A damage; A < WEAK, bleeding (save ends)\n- **12-16:** 6 + A damage; A < AVERAGE, bleeding (save ends)\n- **17+:** 10 + A damage; A < STRONG, bleeding (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "You leave your foe bleeding out after a devastating attack. Power Roll + Agility: - ≤11: 4 + A damage; A < WEAK, bleeding (save ends) - 12-16: 6 + A damage; A < AVERAGE, bleeding (save ends) - 17+: 10 + A damage; A < STRONG, bleeding (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 3
+}

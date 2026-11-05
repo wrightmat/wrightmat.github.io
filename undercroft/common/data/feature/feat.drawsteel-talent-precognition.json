@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-precognition",
+  "name": "Precognition",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You give a target a glimpse into the future so that they're ready for what comes next.*\n\n**Heroic Ability** — Chronopathy, Melee, Psionic — Main action\n\n**Cost:** 3 Clarity\n\n**Distance:** Melee 2   **Target:** Self or one ally\n\n**Effect:** Ability rolls made against the target take a bane until the start of your next turn. Whenever the target takes damage while under this effect, they can use a triggered action to make a free strike against the source of the damage.",
+  "mechanics": {
+    "type": "active",
+    "text": "You give a target a glimpse into the future so that they're ready for what comes next. Effect: Ability rolls made against the target take a bane until the start of your next turn. Whenever the target takes damage while under this effect, they can use a triggered action to make a free strike against the source of the damage."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Chronopathy, Melee, Psionic",
+  "actionType": "Main action",
+  "distance": "Melee 2",
+  "target": "Self or one ally",
+  "cost": 3
+}

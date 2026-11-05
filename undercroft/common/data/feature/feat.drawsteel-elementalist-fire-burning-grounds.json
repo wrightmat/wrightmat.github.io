@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-elementalist-fire-burning-grounds",
+  "name": "Burning Grounds",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "At the end of each of your turns, each enemy in the area takes fire damage equal to your Reason score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the end of each of your turns, each enemy in the area takes fire damage equal to your Reason score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

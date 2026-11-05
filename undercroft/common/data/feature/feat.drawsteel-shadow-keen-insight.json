@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-shadow-keen-insight",
+  "name": "Keen Insight",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "At the start of each of your turns during combat, you gain 1d3 + 1 insight instead of 1d3.",
+  "mechanics": {
+    "type": "passive",
+    "text": "At the start of each of your turns during combat, you gain 1d3 + 1 insight instead of 1d3."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

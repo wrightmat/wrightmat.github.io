@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-censored",
+  "name": "Censored",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Judged and sentenced.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 5 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 2 + M holy damage\n- **12-16:** 3 + M holy damage\n- **17+:** 5 + M holy damage\n\n**Effect:** When a target who is not a leader or solo creature is made winded by this ability, they are reduced to 0 Stamina.",
+  "mechanics": {
+    "type": "active",
+    "text": "Judged and sentenced. Power Roll + Might: - ≤11: 2 + M holy damage - 12-16: 3 + M holy damage - 17+: 5 + M holy damage Effect: When a target who is not a leader or solo creature is made winded by this ability, they are reduced to 0 Stamina."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 5
+}

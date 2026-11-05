@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-troubadour-jam-session",
+  "name": "Jam Session",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Your jam session creates new genres that compel everyone to get up and move.*\n\n**Heroic Ability** — Area, Magic — Main action\n\n**Cost:** 11 Drama\n\n**Distance:** 5 burst   **Target:** Each enemy in the area\n\n**Power Roll + Presence:**\n\n- **≤11:** 8 sonic damage\n- **12-16:** 11 sonic damage\n- **17+:** 15 sonic damage\n\n**Effect:** Each creature within distance gains a +5 bonus to speed until the end of their next turn. While under this effect, each target must use their full movement during their turn.",
+  "mechanics": {
+    "type": "active",
+    "text": "Your jam session creates new genres that compel everyone to get up and move. Power Roll + Presence: - ≤11: 8 sonic damage - 12-16: 11 sonic damage - 17+: 15 sonic damage Effect: Each creature within distance gains a +5 bonus to speed until the end of their next turn. While under this effect, each target must use their full movement during their turn."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area, Magic",
+  "actionType": "Main action",
+  "distance": "5 burst",
+  "target": "Each enemy in the area",
+  "cost": 11
+}

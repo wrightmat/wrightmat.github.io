@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-fury-stormwight-beast-shape",
+  "name": "Beast Shape",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You can use and gain the benefits of a stormwight kit (see Stormwight Kits). Your stormwight kit grants you a number of benefits, including benefits tied to your Growing Ferocity feature.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You can use and gain the benefits of a stormwight kit (see Stormwight Kits). Your stormwight kit grants you a number of benefits, including benefits tied to your Growing Ferocity feature."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

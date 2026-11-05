@@ -1,0 +1,24 @@
+{
+  "name": "Cloak and Dagger Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "Providing throwable light weapons and light armor easily concealed by a cloak to confuse your enemies, the Cloak and Dagger kit makes you more mobile while increasing the effectiveness of your short-range strikes.\n\n##### Equipment\n\nYou wear light armor and wield one or two light weapons.\n\n##### Kit Bonuses\n\n**Stamina Bonus:** +3 per echelon\n\n**Speed Bonus:** +2\n\n**Melee Damage Bonus:** +1/+1/+1\n\n**Ranged Damage Bonus:** +1/+1/+1\n\n**Ranged Distance Bonus:** +5\n\n**Disengage Bonus:** +1\n\n##### Signature Ability\n\n###### Fade\n\n*A stab, and a few quick, careful steps back.*\n\n| **Melee, Ranged, Strike, Weapon** |     **Main action** |\n| --------------------------------- | ------------------: |\n| **📏 Melee 1 or ranged 10**       | **🎯 One creature** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 3 + M or A damage; you can shift 1 square\n- **12-16:** 6 + M or A damage; you can shift up to 2 squares\n- **17+:** 8 + M or A damage; you can shift up to 3 squares",
+  "equipment": "You wear light armor and wield one or two light weapons.",
+  "staminaBonus": 3,
+  "speedBonus": 2,
+  "meleeDamageBonus": "+1/+1/+1",
+  "rangedDamageBonus": "+1/+1/+1",
+  "rangedDistanceBonus": 5,
+  "disengageBonus": 1,
+  "signatureAbility": "Fade",
+  "featureIds": [
+    "feat.drawsteel-fade"
+  ],
+  "kitType": "standard"
+}

@@ -1,0 +1,51 @@
+{
+  "id": "feat.drawsteel-dragon-knight-wyrmplate",
+  "name": "Wyrmplate",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "**Ancestry Trait**\n\nYour hardened scales grant you damage immunity equal to your level to one of the following damage types: acid, cold, corruption, fire, lightning, or poison. You can change your damage immunity type when you finish a respite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Ancestry Trait Your hardened scales grant you damage immunity equal to your level to one of the following damage types: acid, cold, corruption, fire, lightning, or poison. You can change your damage immunity type when you finish a respite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Ancestry Trait",
+  "ancestry": "Dragon Knight",
+  "grants": [
+    {
+      "type": "listChoice",
+      "choose": 1,
+      "desc": "Choose your Wyrmplate's damage type.",
+      "targetPath": "immunities",
+      "itemDefaults": {
+        "kind": "Immunity",
+        "formula": "@level"
+      },
+      "from": {
+        "systemField": "damageTypes",
+        "anyOf": {
+          "name": [
+            "Acid",
+            "Cold",
+            "Corruption",
+            "Fire",
+            "Lightning",
+            "Poison"
+          ]
+        }
+      }
+    }
+  ]
+}

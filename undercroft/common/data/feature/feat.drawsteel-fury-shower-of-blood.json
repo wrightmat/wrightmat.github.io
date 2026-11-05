@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-fury-shower-of-blood",
+  "name": "Shower of Blood",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You shock your foes with the brutality of your strike, resetting the balance of combat.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 11 Ferocity\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 12 + M damage\n- **12-16:** 18 + M damage\n- **17+:** 24 + M damage\n\n**Effect:** Each enemy within 5 squares of you is distracted until the end of the round. While a creature is distracted this way, they can't take triggered actions or free triggered actions, ability rolls made against them gain an edge, and their characteristic scores are considered 1 lower for the purpose of resisting potencies.",
+  "mechanics": {
+    "type": "active",
+    "text": "You shock your foes with the brutality of your strike, resetting the balance of combat. Power Roll + Might: - ≤11: 12 + M damage - 12-16: 18 + M damage - 17+: 24 + M damage Effect: Each enemy within 5 squares of you is distracted until the end of the round. While a creature is distracted this way, they can't take triggered actions or free triggered actions, ability rolls made against them gain an edge, and their characteristic scores are considered 1 lower for the purpose of resisting potencies."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 11
+}

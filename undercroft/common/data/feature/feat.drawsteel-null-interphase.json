@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-null-interphase",
+  "name": "Interphase",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You slip into a faster timestream to act more quickly.*\n\n**Heroic Ability** — Psionic — Main action\n\n**Cost:** 9 Discipline\n\n**Distance:** Self   **Target:** Self\n\n**Effect:** You can use up to three signature abilities, each of which gains an edge.",
+  "mechanics": {
+    "type": "active",
+    "text": "You slip into a faster timestream to act more quickly. Effect: You can use up to three signature abilities, each of which gains an edge."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic",
+  "actionType": "Main action",
+  "distance": "Self",
+  "target": "Self",
+  "cost": 9
+}

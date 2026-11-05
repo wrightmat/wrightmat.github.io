@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-blot-out-the-sun",
+  "name": "Blot Out the Sun!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*What makes a good soldier? The ability to fire four shots a minute in any weather.*\n\n**Heroic Ability** — Area — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** 3 burst   **Target:** Self and each ally in the area\n\n**Effect:** Each target can make a ranged free strike that gains an edge against any enemy marked by you within distance of their ranged free strike. A target ignores banes and double banes when making this strike.",
+  "mechanics": {
+    "type": "active",
+    "text": "What makes a good soldier? The ability to fire four shots a minute in any weather. Effect: Each target can make a ranged free strike that gains an edge against any enemy marked by you within distance of their ranged free strike. A target ignores banes and double banes when making this strike."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Area",
+  "actionType": "Main action",
+  "distance": "3 burst",
+  "target": "Self and each ally in the area",
+  "cost": 11
+}

@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-censor-shield-of-the-righteous",
+  "name": "Shield of the Righteous",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You strike a foe and create a fleet of divine shields that protect your allies.*\n\n**Heroic Ability** — Melee, Strike, Weapon — Main action\n\n**Cost:** 9 Wrath\n\n**Distance:** Melee 1   **Target:** One creature\n\n**Power Roll + Might:**\n\n- **≤11:** 10 + M damage; you and each ally adjacent to you gain 10 temporary Stamina\n- **12-16:** 14 + M damage; you and each ally adjacent to you gain 15 temporary Stamina\n- **17+:** 20 + M damage; you and each ally adjacent to you gain 20 temporary Stamina",
+  "mechanics": {
+    "type": "active",
+    "text": "You strike a foe and create a fleet of divine shields that protect your allies. Power Roll + Might: - ≤11: 10 + M damage; you and each ally adjacent to you gain 10 temporary Stamina - 12-16: 14 + M damage; you and each ally adjacent to you gain 15 temporary Stamina - 17+: 20 + M damage; you and each ally adjacent to you gain 20 temporary Stamina"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1",
+  "target": "One creature",
+  "cost": 9
+}

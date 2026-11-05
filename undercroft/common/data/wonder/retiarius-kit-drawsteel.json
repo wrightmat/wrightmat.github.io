@@ -1,0 +1,23 @@
+{
+  "name": "Retiarius Kit",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "properties": {
+    "form": "kit"
+  },
+  "url": "https://steelcompendium.io/compendium/main/Rules/Chapters/Kits/",
+  "source": "mcdm.heroes.v1",
+  "description": "The retiarius is often depicted as a lightly armored warrior with a net in one hand and a trident in the other, and this kit gives you the equipment and fighting technique to make that happen. Tie up your foe with a net and then poke them to death!\n\n##### Equipment\n\nYou wear light armor and wield several ensnaring weapons and a polearm.\n\n##### Kit Bonuses\n\n**Stamina Bonus:** +3 per echelon\n\n**Speed Bonus:** +1\n\n**Melee Damage Bonus:** +2/+2/+2\n\n**Melee Distance Bonus:** +1\n\n**Disengage Bonus:** +1\n\n##### Signature Ability\n\n###### Net and Stab\n\n*The well-thrown net that follows your main attack leaves your foes right where you want them.*\n\n| **Melee, Strike, Weapon** |     **Main action** |\n| ------------------------- | ------------------: |\n| **📏 Melee 2**            | **🎯 One creature** |\n\n**Power Roll + Might or Agility:**\n\n- **≤11:** 4 + M or A damage; A < WEAK, slowed (EoT)\n- **12-16:** 6 + M or A damage; A < AVERAGE, slowed (EoT)\n- **17+:** 8 + M or A damage; A < STRONG, restrained (EoT)",
+  "equipment": "You wear light armor and wield several ensnaring weapons and a polearm.",
+  "staminaBonus": 3,
+  "speedBonus": 1,
+  "meleeDamageBonus": "+2/+2/+2",
+  "meleeDistanceBonus": 1,
+  "disengageBonus": 1,
+  "signatureAbility": "Net and Stab",
+  "kitType": "standard",
+  "featureIds": [
+    "feat.drawsteel-kit-net-and-stab"
+  ]
+}

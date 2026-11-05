@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-talent-ancestral-memory",
+  "name": "Ancestral Memory",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "Each time you finish a respite, you can choose a number of skills you have up to your Reason score and replace them with an equal number of skills from the interpersonal and lore skill groups. These replacements last until the end of your next respite.",
+  "mechanics": {
+    "type": "passive",
+    "text": "Each time you finish a respite, you can choose a number of skills you have up to your Reason score and replace them with an equal number of skills from the interpersonal and lore skill groups. These replacements last until the end of your next respite."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Class Feature"
+}

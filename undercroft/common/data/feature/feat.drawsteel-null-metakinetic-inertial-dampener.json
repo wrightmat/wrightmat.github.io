@@ -1,0 +1,25 @@
+{
+  "id": "feat.drawsteel-null-metakinetic-inertial-dampener",
+  "name": "Inertial Dampener",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "You and each creature or object of your choice in the area of your Null Field ability gain a bonus to stability equal to your Intuition score. A creature who attempts to force move a target with this bonus takes psychic damage equal to your Intuition score.",
+  "mechanics": {
+    "type": "passive",
+    "text": "You and each creature or object of your choice in the area of your Null Field ability gain a bonus to stability equal to your Intuition score. A creature who attempts to force move a target with this bonus takes psychic damage equal to your Intuition score."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Subclass Feature"
+}

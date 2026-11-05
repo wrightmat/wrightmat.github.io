@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-talent-smolder",
+  "name": "Smolder",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*Smoke flows from your enemy like tears as their skin begins to blacken and flake.*\n\n**Heroic Ability** — Psionic, Pyrokinesis, Ranged, Strike — Main action\n\n**Cost:** 3 Clarity\n\n**Distance:** Ranged 10   **Target:** One creature\n\n**Effect:** Choose the damage type and the weakness for this ability from one of the following: acid, corruption, or fire. The target takes damage before this ability imposes any weakness.\n\n**Power Roll + Reason:**\n\n- **≤11:** 3 + R damage; R < WEAK, the target has weakness 5 (save ends)\n- **12-16:** 6 + R damage; R < AVERAGE, the target has weakness 5 (save ends)\n- **17+:** 9 + R damage; R < STRONG, the target has weakness equal to 5 + your Reason score (save ends)",
+  "mechanics": {
+    "type": "active",
+    "text": "Smoke flows from your enemy like tears as their skin begins to blacken and flake. Effect: Choose the damage type and the weakness for this ability from one of the following: acid, corruption, or fire. The target takes damage before this ability imposes any weakness. Power Roll + Reason: - ≤11: 3 + R damage; R < WEAK, the target has weakness 5 (save ends) - 12-16: 6 + R damage; R < AVERAGE, the target has weakness 5 (save ends) - 17+: 9 + R damage; R < STRONG, the target has weakness equal to 5 + your Reason score (save ends)"
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Psionic, Pyrokinesis, Ranged, Strike",
+  "actionType": "Main action",
+  "distance": "Ranged 10",
+  "target": "One creature",
+  "cost": 3
+}

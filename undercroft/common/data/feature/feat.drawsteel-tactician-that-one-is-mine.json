@@ -1,0 +1,30 @@
+{
+  "id": "feat.drawsteel-tactician-that-one-is-mine",
+  "name": "That One Is Mine!",
+  "systemIds": [
+    "sys.drawsteel"
+  ],
+  "description": "*You focus on making an enemy irrelevant.*\n\n**Heroic Ability** — Melee, Ranged, Strike, Weapon — Main action\n\n**Cost:** 11 Focus\n\n**Distance:** Melee 1 or ranged 5   **Target:** One creature\n\n**Effect:** The target is marked by you.\n\n**Power Roll + Might:**\n\n- **≤11:** 8 + M damage\n- **12-16:** 13 + M damage\n- **17+:** 17 + M damage\n\n**Effect:** Until the end of the encounter or until you are dying, you can use a signature or heroic ability instead of a free strike against any target marked by you.",
+  "mechanics": {
+    "type": "active",
+    "text": "You focus on making an enemy irrelevant. Effect: The target is marked by you. Power Roll + Might: - ≤11: 8 + M damage - 12-16: 13 + M damage - 17+: 17 + M damage Effect: Until the end of the encounter or until you are dying, you can use a signature or heroic ability instead of a free strike against any target marked by you."
+  },
+  "budgetCost": 0,
+  "tags": {
+    "behaviors": [],
+    "recipeSlots": [],
+    "roles": [],
+    "creatureTypes": [],
+    "categories": [
+      "drawsteel"
+    ]
+  },
+  "synergizesWith": [],
+  "conflictsWith": [],
+  "kind": "Heroic Ability",
+  "keywords": "Melee, Ranged, Strike, Weapon",
+  "actionType": "Main action",
+  "distance": "Melee 1 or ranged 5",
+  "target": "One creature",
+  "cost": 11
+}
