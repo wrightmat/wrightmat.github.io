@@ -15,5 +15,16 @@
     "weaponCategory": "simple-melee",
     "equipmentCategory": "arcane-foci"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d6",
+    "type": "Bludgeoning"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Versatile"
+  ],
+  "mastery": "Topple"
 }

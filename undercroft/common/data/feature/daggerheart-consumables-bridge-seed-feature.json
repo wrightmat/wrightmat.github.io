@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-bridge-seed-feature",
-  "name": "feat.daggerheart-consumables-bridge-seed-feature",
+  "name": "Bridge Seed",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "Thick vines grow from your location to a point of your choice within Far range, allowing you to climb up or across them. The vines dissipate on your next short rest."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

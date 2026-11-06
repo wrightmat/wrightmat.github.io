@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-woven-net-feature",
-  "name": "feat.daggerheart-items-woven-net-feature",
+  "name": "Woven Net",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can make a Finesse Roll using this net to trap a small creature. A trapped target can break free with a successful Attack Roll (16)."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-1"
+    ]
+  }
 }

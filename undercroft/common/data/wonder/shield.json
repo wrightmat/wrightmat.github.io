@@ -14,5 +14,9 @@
     "form": "armor",
     "armorCategory": "shield"
   },
-  "featureIds": []
+  "featureIds": [],
+  "armorClass": {
+    "base": 2,
+    "dexBonus": false
+  }
 }

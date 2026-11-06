@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-manacles-feature",
-  "name": "feat.daggerheart-items-manacles-feature",
+  "name": "Manacles",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "This pair of locking cuffs comes with a key."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-1"
+    ]
+  }
 }

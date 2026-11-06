@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-towering-stalk-feature",
-  "name": "feat.daggerheart-domain-card-towering-stalk-feature",
+  "name": "Towering Stalk",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

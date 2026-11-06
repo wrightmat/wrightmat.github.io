@@ -11,10 +11,49 @@
 // set of property types with zero changes here.
 
 const DEFAULT_TARGET_BUDGET = 10;
+// Real items rarely carry a drawback, so a generated one gets at most one, and only sometimes.
+const MAX_REFUNDS = 1;
+const REFUND_CHANCE = 0.25;
+// The budget is a ceiling: a generated wonder spends somewhere between this share of it and all of it.
+const MIN_SPEND_SHARE = 0.5;
+
+// A base item lends its stats (damage, armor values, weight, ...), never its identity or Library bookkeeping.
+const BASE_ITEM_SKIP_KEYS = new Set([
+  "id", "index", "name", "notes", "url", "mapping", "price", "systemIds", "properties", "featureIds", "featureParams",
+  "featureTiers", "features", "signatureFeatureId", "budget", "baseItemId", "charges", "createdAt", "updatedAt", "relationships",
+]);
 
 function pickRandom(list, random) {
   if (!list.length) return null;
   return list[Math.floor(random() * list.length)];
+}
+
+// Each use of a feature by a Library item of the same Form adds this much weight to an unseen feature's 1, so a
+// ring draws mostly what real rings do while still sometimes trying something new.
+const LIBRARY_USE_WEIGHT = 3;
+
+function pickWeighted(list, weightOf, random) {
+  if (!list.length) return null;
+  const weights = list.map(weightOf);
+  let roll = random() * weights.reduce((sum, weight) => sum + weight, 0);
+  for (let index = 0; index < list.length; index += 1) {
+    roll -= weights[index];
+    if (roll < 0) return list[index];
+  }
+  return list[list.length - 1];
+}
+
+// How many Library items sharing the wonder's Form (any property whose values pick a feature category) use each feature.
+function libraryFeatureUses(libraryItems, properties, propertyTypes) {
+  const formIds = propertyTypes
+    .filter((propertyType) => (propertyType.values || []).some((value) => value.featureCategory))
+    .map((propertyType) => propertyType.id);
+  const uses = new Map();
+  for (const item of libraryItems) {
+    if (!formIds.every((id) => item.properties?.[id] === properties[id])) continue;
+    for (const id of item.featureIds || []) uses.set(id, (uses.get(id) || 0) + 1);
+  }
+  return (feature) => 1 + LIBRARY_USE_WEIGHT * (uses.get(feature.id) || 0);
 }
 
 function matchesSystem(entity, systemId) {
@@ -23,13 +62,34 @@ function matchesSystem(entity, systemId) {
   return !ids.length || ids.includes(systemId);
 }
 
-// A feature with no categories tag is universally compatible; otherwise it
-// must claim "spell" or "item" — Vault produces one wonder concept usable as
-// either (Form controls presentation, not eligibility).
-export function matchesCategory(feature) {
+// A feature with no categories tag is universally compatible; otherwise it must claim one of `required` (the
+// resolved Form's `featureCategory`), or "spell" or "item" when no Form says which.
+export function matchesCategory(feature, required) {
   const categories = feature.tags?.categories;
   if (!Array.isArray(categories) || !categories.length) return true;
-  return categories.includes("spell") || categories.includes("item");
+  const allowed = Array.isArray(required) && required.length ? required : ["spell", "item"];
+  return categories.some((category) => allowed.includes(category));
+}
+
+// A feature may name the property values it needs ({ form: ["weapon"], tier: ["tier-3", "tier-4"] }), checked
+// against the wonder's own properties and whatever its base item lends (a weapon's Primary/Secondary type).
+function matchesRequiredProperties(feature, properties) {
+  const required = feature.requiresProperties;
+  if (!required || typeof required !== "object") return true;
+  return Object.entries(required).every(
+    ([key, values]) => !Array.isArray(values) || !values.length || values.map(String).includes(String(properties?.[key] ?? ""))
+  );
+}
+
+function isRefund(feature) {
+  return Number(feature?.budgetCost ?? 0) < 0;
+}
+
+// A feature's priced tiers, cheapest first (a tier without a number, or a negative one, isn't an upgrade step).
+function pricedTiers(feature) {
+  return (Array.isArray(feature?.tiers) ? feature.tiers : [])
+    .filter((tier) => typeof tier?.budgetCost === "number" && tier.budgetCost >= 0)
+    .sort((a, b) => a.budgetCost - b.budgetCost);
 }
 
 // A Feature with no `tags.propertyHints`, or a class with no
@@ -97,7 +157,7 @@ export function resolveFeatureBudgetCost(feature, featureTierIds) {
 }
 
 /**
- * computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds)
+ * computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds, baseItem)
  *
  * Shared by both the automatic generator and the manual authoring UI, so
  * they can never disagree about the running total. `properties` is a plain
@@ -105,12 +165,20 @@ export function resolveFeatureBudgetCost(feature, featureTierIds) {
  * System's `propertyTypes` array (degrades gracefully to
  * DEFAULT_TARGET_BUDGET/0-cost when data is missing).
  */
-export function computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds = {}) {
+export function computeBudget(selectedFeatures, properties, propertyTypes, featureTierIds = {}, baseItem = null) {
   let target = DEFAULT_TARGET_BUDGET;
   let spent = 0;
   (propertyTypes || []).forEach((propertyType) => {
     const valueId = properties?.[propertyType.id];
     const value = (propertyType.values || []).find((entry) => entry.id === valueId);
+    if (propertyType.setsBudgetCeiling) {
+      // A base item with its own ceiling value (a Tier 3 sword) already has what that value adds over the lowest
+      // one in its stats, so only the lowest value's budget is left for features.
+      const baseValue = (propertyType.values || []).find((entry) => entry.id === baseItem?.properties?.[propertyType.id]);
+      if (baseValue) {
+        spent += Number(baseValue.cost ?? 0) - Math.min(...propertyType.values.map((entry) => Number(entry.cost ?? 0)));
+      }
+    }
     if (!value) return;
     if (propertyType.setsBudgetCeiling) {
       target = Number(value.cost ?? target);
@@ -134,6 +202,62 @@ function resolvePropertyValue(propertyType, overrideId, random) {
   return pickRandom(values, random);
 }
 
+// The resolved property value (a Weapon Form, say) whose wonders are built on a plain System item, if any.
+function baseItemProperty(properties, propertyTypes) {
+  for (const propertyType of propertyTypes || []) {
+    const value = (propertyType.values || []).find((entry) => entry.id === properties?.[propertyType.id]);
+    if (value?.baseItem) return { propertyTypeId: propertyType.id, valueId: value.id };
+  }
+  return null;
+}
+
+function baseStatKeys(record) {
+  return Object.keys(record || {}).filter((key) => !BASE_ITEM_SKIP_KEYS.has(key));
+}
+
+// Plain Library items sharing that value: no features, and no ceiling value (a Rarity, a Tier) other than the
+// wonder's own. One per name, the one with most stats kept.
+export function baseItemCandidates(wonders, properties, propertyTypes) {
+  const wanted = baseItemProperty(properties, propertyTypes);
+  if (!wanted) return [];
+  const ceilingIds = (propertyTypes || []).filter((propertyType) => propertyType.setsBudgetCeiling).map((propertyType) => propertyType.id);
+  const byName = new Map();
+  (wonders || []).forEach((wonder) => {
+    if (wonder.properties?.[wanted.propertyTypeId] !== wanted.valueId) return;
+    if (Array.isArray(wonder.featureIds) && wonder.featureIds.length) return;
+    if (ceilingIds.some((id) => wonder.properties?.[id] && wonder.properties[id] !== properties?.[id])) return;
+    const key = String(wonder.name || wonder.id).toLowerCase();
+    const existing = byName.get(key);
+    if (!existing || baseStatKeys(wonder).length > baseStatKeys(existing).length) byName.set(key, wonder);
+  });
+  return [...byName.values()].sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id)));
+}
+
+// Swaps `record` onto `base` (or off any base when null), taking away whatever the previous base lent it.
+export function applyBaseItem(record, base, previousBase, propertyTypes) {
+  const ownPropertyKeys = new Set((propertyTypes || []).map((propertyType) => propertyType.id));
+  const properties = { ...(record.properties || {}) };
+  if (previousBase) {
+    baseStatKeys(previousBase).forEach((key) => delete record[key]);
+    Object.keys(previousBase.properties || {}).forEach((key) => {
+      if (!ownPropertyKeys.has(key)) delete properties[key];
+    });
+  }
+  if (base) {
+    baseStatKeys(base).forEach((key) => {
+      record[key] = structuredClone(base[key]);
+    });
+    Object.entries(base.properties || {}).forEach(([key, value]) => {
+      if (!ownPropertyKeys.has(key)) properties[key] = value;
+    });
+    record.baseItemId = base.id;
+  } else {
+    delete record.baseItemId;
+  }
+  record.properties = properties;
+  return record;
+}
+
 // Backs the per-property reroll button in Identity (mirroring Forge's/
 // Crucible's own per-attribute reroll) — excludes the current value when
 // another choice exists. Returns null if nothing else to reroll into.
@@ -144,11 +268,24 @@ export function rerollPropertyValue(propertyType, currentValueId, { random = Mat
 }
 
 // Optional per-type override (blank = random), same convention as Crucible's
-// Creature Type/Archetype/Role overrides.
+// Creature Type/Archetype/Role overrides. The ceiling is resolved first, and a
+// random value must fit what's left of it with a point to spare for the
+// Signature (the cheapest value when none does); an override is never limited.
 function resolveProperties(propertyTypes, overrides, random) {
   const properties = {};
-  (propertyTypes || []).forEach((propertyType) => {
-    const value = resolvePropertyValue(propertyType, overrides?.[propertyType.id], random);
+  const ordered = [...(propertyTypes || [])].sort((a, b) => Number(Boolean(b.setsBudgetCeiling)) - Number(Boolean(a.setsBudgetCeiling)));
+  ordered.forEach((propertyType) => {
+    const values = Array.isArray(propertyType.values) ? propertyType.values : [];
+    const overridden = overrides?.[propertyType.id] && values.some((entry) => entry.id === overrides[propertyType.id]);
+    let value;
+    if (propertyType.setsBudgetCeiling || overridden) {
+      value = resolvePropertyValue(propertyType, overrides?.[propertyType.id], random);
+    } else {
+      const allowance = computeBudget([], properties, propertyTypes).remaining - 1;
+      const fitting = values.filter((entry) => Number(entry.cost ?? 0) <= allowance);
+      const cheapest = Math.min(...values.map((entry) => Number(entry.cost ?? 0)));
+      value = pickRandom(fitting.length ? fitting : values.filter((entry) => Number(entry.cost ?? 0) === cheapest), random);
+    }
     if (value) properties[propertyType.id] = value.id;
   });
   return properties;
@@ -161,17 +298,19 @@ function resolveProperties(propertyTypes, overrides, random) {
 // synergizes — without this, traversal routinely stalled after 1-2 Features
 // with most of the budget still unspent. Returns null once nothing
 // qualifies (out of budget, or every candidate used/conflicting).
-function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random) {
+function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random, featureTiers, refundsLeft, baseItem, weightOf) {
   const featuresById = new Map(eligibleFeatures.map((entry) => [entry.id, entry]));
   const selectedIds = new Set(selected.map((entry) => entry.id));
-  const { remaining } = computeBudget(selected, properties, propertyTypes);
+  const { remaining } = computeBudget(selected, properties, propertyTypes, featureTiers, baseItem);
   const scored = [];
   for (const candidate of eligibleFeatures) {
     if (selectedIds.has(candidate.id)) continue;
+    if (isRefund(candidate) && refundsLeft <= 0) continue;
     if (conflictsWithSelected(candidate, selected)) continue;
     const bundle = collectDependencyBundle(candidate, featuresById, selectedIds, new Set());
     if (!bundle) continue;
     if (bundle.some((entry) => entry.id !== candidate.id && conflictsWithSelected(entry, selected))) continue;
+    if (bundle.filter(isRefund).length > refundsLeft) continue;
     const bundleCost = bundle.reduce((sum, entry) => sum + Number(entry.budgetCost ?? 0), 0);
     if (bundleCost > remaining) continue;
     scored.push({ candidate, bundle, score: synergyScore(candidate, selected) });
@@ -179,7 +318,7 @@ function pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes
   if (!scored.length) return null;
   const bestScore = Math.max(...scored.map((entry) => entry.score));
   const best = scored.filter((entry) => entry.score === bestScore);
-  return pickRandom(best, random);
+  return pickWeighted(best, (entry) => weightOf(entry.candidate), random);
 }
 
 // Expands an already-selected list to include every transitively unmet
@@ -205,13 +344,34 @@ function expandWithDependencies(selectedList, eligibleFeatures) {
   return result;
 }
 
-function traverse(eligibleFeatures, selected, properties, propertyTypes, random) {
-  let next = pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random);
-  while (next) {
+// Raises one chosen tiered feature a step (the Signature first), within what's left of the ceiling. Returns
+// whether anything changed.
+function upgradeOneTier(selected, featureTiers, remaining) {
+  for (const feature of selected) {
+    const tiers = pricedTiers(feature);
+    if (!tiers.length) continue;
+    const current = resolveFeatureBudgetCost(feature, featureTiers);
+    const next = tiers.find((tier) => tier.budgetCost > current);
+    if (next && next.budgetCost - current <= remaining) {
+      featureTiers[feature.id] = next.id;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Until the drawn spend is reached: strengthen what's chosen before adding anything new, so the budget goes into
+// one strong effect rather than many weak ones.
+function traverse(eligibleFeatures, selected, properties, propertyTypes, random, featureTiers, spendTarget, refundsAllowed, baseItem, weightOf) {
+  const budget = () => computeBudget(selected, properties, propertyTypes, featureTiers, baseItem);
+  while (budget().spent < spendTarget) {
+    if (upgradeOneTier(selected, featureTiers, budget().remaining)) continue;
+    const refundsLeft = refundsAllowed - selected.filter(isRefund).length;
+    const next = pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random, featureTiers, refundsLeft, baseItem, weightOf);
+    if (!next) break;
     next.bundle.forEach((feature) => {
       if (!selected.some((entry) => entry.id === feature.id)) selected.push(feature);
     });
-    next = pickNextCandidate(eligibleFeatures, selected, properties, propertyTypes, random);
   }
   return selected;
 }
@@ -249,15 +409,31 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     // allowedFeatureTags — no hardcoded "Wizard"/"Cleric" notion here, same
     // as Vault has none of "Rarity". null/undefined means unconstrained.
     allowedFeatureTags = null,
+    // The System's Library items: what a Form's base item is drawn from, and how often each feature is favored.
+    libraryItems = [],
+    // Pins the base item (blank = random).
+    baseItemId = "",
     random = Math.random,
   } = options;
 
-  const eligibleFeatures = allFeatures.filter(
-    (feature) => matchesSystem(feature, systemId) && matchesCategory(feature) && matchesClass(feature, allowedFeatureTags)
-  );
   const eligiblePropertyTypes = propertyTypes || [];
-
   const properties = resolveProperties(eligiblePropertyTypes, propertyOverrides, random);
+  // A Spell-form wonder draws spell features and any other Form item features, as the System's Form values say.
+  const requiredCategories = eligiblePropertyTypes
+    .map((propertyType) => (propertyType.values || []).find((value) => value.id === properties[propertyType.id])?.featureCategory)
+    .filter(Boolean);
+  const bases = baseItemCandidates(libraryItems, properties, eligiblePropertyTypes);
+  const weightOf = libraryFeatureUses(libraryItems, properties, eligiblePropertyTypes);
+  const baseItem = bases.find((entry) => entry.id === baseItemId) || pickRandom(bases, random);
+  const effectiveProperties = { ...(baseItem?.properties || {}), ...properties };
+  const eligibleFeatures = allFeatures.filter(
+    (feature) =>
+      matchesSystem(feature, systemId) &&
+      matchesCategory(feature, requiredCategories) &&
+      matchesClass(feature, allowedFeatureTags) &&
+      matchesRequiredProperties(feature, effectiveProperties)
+  );
+  const featureTiers = {};
 
   const lockedFeatures = lockedFeatureIds
     .map((id) => eligibleFeatures.find((entry) => entry.id === id))
@@ -273,9 +449,12 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     // a low Rarity tier would start generation already over budget. An
     // explicit signatureFeatureId override is still allowed to exceed it —
     // that's a deliberate user choice, not a random accident.
+    // The Signature is the item's core effect, so never a drawback or a free add-on (Charges, Attunement).
     const excludeIds = new Set(lockedFeatures.map((entry) => entry.id));
-    const candidates = eligibleFeatures.filter((entry) => !excludeIds.has(entry.id));
-    const { remaining } = computeBudget(lockedFeatures, properties, eligiblePropertyTypes);
+    const candidates = eligibleFeatures.filter(
+      (entry) => !excludeIds.has(entry.id) && (Number(entry.budgetCost ?? 0) > 0 || pricedTiers(entry).some((tier) => tier.budgetCost > 0))
+    );
+    const { remaining } = computeBudget(lockedFeatures, properties, eligiblePropertyTypes, {}, baseItem);
     const withBundleCost = candidates
       .map((entry) => {
         const bundle = collectDependencyBundle(entry, featuresById, excludeIds, new Set());
@@ -287,7 +466,7 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
     const affordable = withBundleCost.filter((item) => item.cost <= remaining);
     let chosen = null;
     if (affordable.length) {
-      chosen = pickRandom(affordable, random);
+      chosen = pickWeighted(affordable, (item) => weightOf(item.entry), random);
     } else if (withBundleCost.length) {
       // Nothing fits (an unusually tight budget) — fall back to whichever
       // eligible feature costs least, so the overshoot is as small as possible.
@@ -314,18 +493,21 @@ export function generateWonder(allFeatures, propertyTypes, options = {}) {
   // pick above, which already accounted for its own bundle cost).
   selected = expandWithDependencies(selected, eligibleFeatures);
 
-  traverse(eligibleFeatures, selected, properties, eligiblePropertyTypes, random);
+  const { target } = computeBudget([], properties, eligiblePropertyTypes);
+  const spendTarget = Math.round(target * (MIN_SPEND_SHARE + random() * (1 - MIN_SPEND_SHARE)));
+  const refundsAllowed = random() < REFUND_CHANCE ? MAX_REFUNDS : 0;
+  traverse(eligibleFeatures, selected, properties, eligiblePropertyTypes, random, featureTiers, spendTarget, refundsAllowed, baseItem, weightOf);
 
-  return {
+  const wonder = {
     systemIds: systemId ? [systemId] : [],
     signatureFeatureId: signatureFeature ? signatureFeature.id : null,
     featureIds: selected.map((entry) => entry.id),
-    // Always present (even empty) so callers never need an `|| {}` guard —
-    // automatic generation always starts a tiered feature at its cheapest
-    // tier; a GM upgrades it by hand afterward.
-    featureTiers: {},
+    // Always present (even empty) so callers never need an `|| {}` guard. A tiered feature with no entry is at
+    // its cheapest tier.
+    featureTiers,
     properties,
-    budget: computeBudget(selected, properties, eligiblePropertyTypes),
+    budget: computeBudget(selected, properties, eligiblePropertyTypes, featureTiers, baseItem),
     notes: "",
   };
+  return baseItem ? applyBaseItem(wonder, baseItem, null, eligiblePropertyTypes) : wonder;
 }

@@ -9,16 +9,26 @@
     "type": "passive",
     "text": "You reduce incoming magic damage by your Armor Score before applying it to your damage thresholds."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-2",
+      "tier-3",
+      "tier-4"
+    ]
+  }
 }

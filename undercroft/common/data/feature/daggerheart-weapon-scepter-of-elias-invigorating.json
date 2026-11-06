@@ -9,16 +9,30 @@
     "type": "passive",
     "text": "On a successful attack, roll a d4. On a result of 4 clear a Stress."
   },
-  "budgetCost": 0,
+  "budgetCost": 1,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-2",
+      "tier-3",
+      "tier-4"
+    ],
+    "type": [
+      "Primary (Physical)",
+      "Primary (Magic)"
+    ]
+  }
 }

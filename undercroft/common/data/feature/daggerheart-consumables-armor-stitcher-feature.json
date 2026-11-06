@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-armor-stitcher-feature",
-  "name": "feat.daggerheart-consumables-armor-stitcher-feature",
+  "name": "Armor Stitcher",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can use this stitcher to spend any number of Hope and clear that many Armor Slots."
   },
-  "budgetCost": 0,
+  "budgetCost": 3,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-2"
+    ]
+  }
 }

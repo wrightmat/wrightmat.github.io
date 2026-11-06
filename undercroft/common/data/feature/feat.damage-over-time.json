@@ -20,5 +20,11 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon",
+      "equipment"
+    ]
+  }
 }

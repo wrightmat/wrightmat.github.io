@@ -9,16 +9,25 @@
     "type": "passive",
     "text": "Once per short rest, when you would mark your last Hit Point, you can instead mark a Stress."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-3",
+      "tier-4"
+    ]
+  }
 }

@@ -5,7 +5,8 @@
     "sys.daggerheart"
   ],
   "properties": {
-    "form": "consumable"
+    "form": "consumable",
+    "tier": "tier-1"
   },
   "features": [
     {
@@ -15,5 +16,6 @@
   ],
   "featureIds": [
     "feat.daggerheart-consumables-control-potion-feature"
-  ]
+  ],
+  "roll": 3
 }

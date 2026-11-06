@@ -14,5 +14,10 @@
     "form": "armor",
     "armorCategory": "medium"
   },
-  "featureIds": []
+  "featureIds": [],
+  "armorClass": {
+    "base": 13,
+    "dexBonus": true,
+    "maxBonus": 2
+  }
 }

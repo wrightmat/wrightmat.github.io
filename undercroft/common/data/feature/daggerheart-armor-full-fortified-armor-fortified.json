@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "When you mark an Armor Slot, you reduce the severity of an attack by two thresholds instead of one."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-specter-of-the-dark-feature",
-  "name": "feat.daggerheart-domain-card-specter-of-the-dark-feature",
+  "name": "Specter of the Dark",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-grindletooth-venom-feature",
-  "name": "feat.daggerheart-consumables-grindletooth-venom-feature",
+  "name": "Grindletooth Venom",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can apply this venom to a weapon that deals physical damage to add a d6 to your next damage roll with that weapon."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-1"
+    ]
+  }
 }

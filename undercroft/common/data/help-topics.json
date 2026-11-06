@@ -257,7 +257,7 @@
       "details": [
         "Under each binding or formula field, a line shows what it currently produces, or a red “Formula error” message if it can't be read.",
         "The preview uses the Template's sample data, not a real character, so a field the System doesn't have, or a path that only means something inside a Repeater row, can show nothing there and still work on a real character.",
-        "A Repeater's own binding is normally an @path to a list on the character. It can instead be a libraryEntries formula, such as =libraryEntries('feature', 'tags.categories', 'drawsteel-common-maneuver'), to list every matching Library record; that list is read-only and each name links to the full record.",
+        "A Repeater's own binding is normally an @path to a list on the character. It can instead be a libraryEntries formula, such as =libraryEntries('feature', 'tags.categories', 'common-maneuver'), to list every matching Library record; that list is read-only and each name links to the full record.",
         "A Container's heading, an Icon's glyph and an Image's URL each take a path, a formula or plain text in the one field.",
         "Colors, and the Visible, Collapsible and Locked settings, take the same @path and =formula values."
       ],
@@ -603,6 +603,7 @@
         "Binding: which role a value plays for combat tracking. See Combat Bindings.",
         "Cost: a number each value spends from the generation budget, or refunds if negative. It is for properties like Activation and Item Form. If the property is the Vault budget ceiling, this value sets the budget instead.",
         "Weight: how much one unit weighs, for the Dashboard's Inventory Weight calculator. Leave it empty for anything it doesn't total, such as most items.",
+        "For an Item Form value, Extra properties can say which Features it draws (\"featureCategory\": \"spell\" or \"item\") and whether its magic items are built on a plain Library item of the same Form, such as a dagger (\"baseItem\": true).",
         "Anything else about a value goes in its Extra properties (JSON)."
       ],
       "category": "Loom",
@@ -643,7 +644,8 @@
       "details": [
         "Choose a Feature to edit its description, mechanics, categories, the recipe slots, roles and creature types it fits, and the Features it works well with or conflicts with. Comparing near-duplicates, such as several “Dagger” Features, is easy by switching between them.",
         "A brand new Feature starts on the Library tab, where you give it an ID. Everything else is editable here.",
-        "Cost Budget is a rough points value, usually 1 to 6. Crucible adds up a monster's Feature costs against its Combat Scaling level's budget.",
+        "Cost Budget is a rough points value, usually 1 to 6. Crucible adds up a monster's Feature costs against its Combat Scaling level's budget. Vault does the same against a Wonder's budget, and a negative cost is a refund: a drawback that gives budget back.",
+        "A Feature can name the Property values it needs in its JSON (\"requiresProperties\"), such as { \"form\": [\"weapon\"], \"tier\": [\"tier-3\", \"tier-4\"] }. Vault only offers it to Wonders that have them, counting what a Base Item lends, such as a weapon's type.",
         "Scope “Generic” means any monster can use it, which is right for nearly every Feature. “Unique” keeps it out of Crucible's automatic generation, so only mark one Unique when it truly can't be reduced to shared parts.",
         "A note under Scope appears when a Feature has no recipe slots yet. Crucible's automatic generation only fills slots, so an untagged Feature won't be picked.",
         "Suggest Cost & Tags asks Claude for a starting guess at behaviors, recipe slots, roles, creature types and cost. It never saves on its own; review it, then save."
@@ -1827,8 +1829,9 @@
       "title": "Generating a Wonder",
       "summary": "Choose a System, optionally fix some choices, then Generate Wonder to build a spell or magic item from a budget.",
       "details": [
-        "A Wonder is a spell or magic item. Its Properties, such as Rarity, Activation and Item Form, set a budget, and Features are added until the budget is used.",
+        "A Wonder is a spell or magic item. Its Properties, such as Rarity, Activation and Item Form, set a budget, and Features are added without going over it. Features that the Library's own items of the same Item Form already use come up more often, so a generated ring tends to do what rings do.",
         "If the System has casting classes, Casting Class narrows which Features are eligible. You can also fix any Property, choose a Signature Feature, or lock other Features before generating.",
+        "Some Item Forms, such as Weapon, build each Wonder on a plain item of that Form from the Library, such as a dagger, and it keeps that item's stats (damage, armor class, weight and so on). Fix the Item Form to choose which item as the Base Item, or leave it Random.",
         "Once you open a saved Wonder, these generation choices are tucked away. They only matter when making something new.",
         "Save keeps the Wonder. After generating, you can edit the name and the Features, and add notes."
       ],
@@ -1856,7 +1859,7 @@
       "details": [
         "Each Property is either what you fixed beforehand or a random pick from what's eligible.",
         "The Property the System names as the budget ceiling sets the Feature budget's target. Every other Property's value spends from that budget, or refunds into it. That choice is made in Loom.",
-        "The name is the only thing here you edit directly. Generate again to get a new set of Properties."
+        "You can change or reroll any Property here, and the Base Item for a Form that has one. A new Base Item replaces the old one's stats."
       ],
       "category": "Vault",
       "section": "Reading the Result",

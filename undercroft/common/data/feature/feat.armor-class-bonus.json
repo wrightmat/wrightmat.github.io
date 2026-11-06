@@ -41,5 +41,11 @@
       "shortName": "+3",
       "budgetCost": 20
     }
-  ]
+  ],
+  "requiresProperties": {
+    "form": [
+      "armor",
+      "spell"
+    ]
+  }
 }

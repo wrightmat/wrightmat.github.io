@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-chain-lightning-feature",
-  "name": "feat.daggerheart-domain-card-chain-lightning-feature",
+  "name": "Chain Lightning",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

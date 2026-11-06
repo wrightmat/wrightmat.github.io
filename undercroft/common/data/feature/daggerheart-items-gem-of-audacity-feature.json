@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-gem-of-audacity-feature",
-  "name": "feat.daggerheart-items-gem-of-audacity-feature",
+  "name": "Gem of Audacity",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can attach this gem to a weapon, allowing you to use your Presence when making an attack with that weapon."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

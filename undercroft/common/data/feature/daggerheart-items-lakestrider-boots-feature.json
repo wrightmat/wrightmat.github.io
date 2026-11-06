@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-lakestrider-boots-feature",
-  "name": "feat.daggerheart-items-lakestrider-boots-feature",
+  "name": "Lakestrider Boots",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can walk on the surface of water as if it were soft ground."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

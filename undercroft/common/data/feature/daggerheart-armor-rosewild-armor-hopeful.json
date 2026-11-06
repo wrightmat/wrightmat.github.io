@@ -9,16 +9,26 @@
     "type": "passive",
     "text": "When you would spend a Hope, you can mark an Armor Slot instead."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-2",
+      "tier-3",
+      "tier-4"
+    ]
+  }
 }

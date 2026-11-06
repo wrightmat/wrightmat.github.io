@@ -14,5 +14,17 @@
     "form": "weapon",
     "weaponCategory": "simple-melee"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d6",
+    "type": "Slashing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Light",
+    "Thrown"
+  ],
+  "mastery": "Vex"
 }

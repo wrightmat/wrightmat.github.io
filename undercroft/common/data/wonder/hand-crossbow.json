@@ -5,8 +5,7 @@
   "price": "25 gp",
   "weight": 2,
   "systemIds": [
-    "sys.dnd5e",
-    "sys.dnd5e2014"
+    "sys.dnd5e"
   ],
   "url": "https://www.dnd5eapi.co/api/2024/equipment/hand-crossbow",
   "mapping": "5e-api-equipment",
@@ -14,5 +13,19 @@
     "form": "weapon",
     "weaponCategory": "martial-ranged"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d6",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 30,
+    "long": 120
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Light",
+    "Loading"
+  ],
+  "mastery": "Vex"
 }

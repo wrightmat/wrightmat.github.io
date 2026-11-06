@@ -14,5 +14,11 @@
     "form": "armor",
     "armorCategory": "heavy"
   },
-  "featureIds": []
+  "featureIds": [],
+  "armorClass": {
+    "base": 18,
+    "dexBonus": false
+  },
+  "strengthMinimum": 15,
+  "stealthDisadvantage": true
 }

@@ -5,7 +5,8 @@
     "sys.daggerheart"
   ],
   "properties": {
-    "form": "consumable"
+    "form": "consumable",
+    "tier": "tier-3"
   },
   "features": [
     {
@@ -15,5 +16,6 @@
   ],
   "featureIds": [
     "feat.daggerheart-consumables-major-stride-potion-feature"
-  ]
+  ],
+  "roll": 25
 }

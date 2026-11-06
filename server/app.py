@@ -1035,12 +1035,12 @@ def register_routes():
     # given deployment has).
     FORGE_NOTE_SYSTEM_PROMPT = (
         "You write a single, tightly-formatted NPC character note for a tabletop RPG GM.\n"
-        "Respond with EXACTLY this format and nothing else — no preamble, no markdown, no extra commentary:\n\n"
-        "Name (Alignment Gender Species Archetype). [2-3 sentences weaving the given Description, Demeanor, "
-        "Drive, and Direction traits into a vivid but concise character note.]\n\n"
-        "Use the exact Name, Alignment, Gender, Species, and Archetype values given verbatim. Do not invent "
-        "new attributes, do not restate these instructions, and do not add anything before or after the "
-        "single formatted line."
+        "Respond with EXACTLY one paragraph and nothing else — no preamble, no markdown, no extra commentary: "
+        "2-3 sentences weaving the given Description, Demeanor, Drive, and Direction traits into a vivid but "
+        "concise character note.\n\n"
+        "The Name, Alignment, Gender, Species, and Archetype are already shown beside the note, so let them "
+        "shape it but never state them, and don't open it with the name. Do not invent new attributes, do not "
+        "restate these instructions, and do not add anything before or after the paragraph."
     )
 
     def _format_note_only(raw_text: str, name: str) -> Dict[str, Any]:
@@ -1190,13 +1190,13 @@ def register_routes():
         "Line 1: just the creature's name, nothing else. If a Name is already given "
         "below, repeat it verbatim. If Name is blank, invent one that fits the given "
         "Creature Type, Archetype, and Role.\n"
-        "Line 2: Name (Creature Type, Archetype, Role). [2-3 sentences describing how "
-        "this creature behaves in and around a fight, weaving in its Signature Feature "
-        "and its other features into a vivid but concise tactical sketch.]\n\n"
-        "Use the exact Creature Type, Archetype, and Role values given verbatim, and "
-        "use the same name on both lines. Do not invent new features or mechanics, do "
-        "not restate these instructions, and do not add anything before, between, or "
-        "after these two lines."
+        "Line 2: 2-3 sentences describing how this creature behaves in and around a "
+        "fight, weaving its Signature Feature and other features into a vivid but "
+        "concise tactical sketch.\n\n"
+        "The name, Creature Type, Archetype, and Role are already shown beside the note, "
+        "so let them shape the description but never state them in Line 2, and don't "
+        "open it with the name. Do not invent new features or mechanics, do not restate "
+        "these instructions, and do not add anything before, between, or after these two lines."
     )
 
     def _build_crucible_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
@@ -1247,13 +1247,14 @@ def register_routes():
         "Line 1: just the wonder's name, nothing else. If a Name is already given "
         "below, repeat it verbatim. If Name is blank, invent one that fits the given "
         "Properties and Signature Feature.\n"
-        "Line 2: Name (comma-separated Properties). [2-3 sentences describing what "
-        "this wonder does and how it feels to use, weaving in its Signature Feature "
-        "and its other features into a vivid but concise flavor note.]\n\n"
-        "Use the exact Properties and Signature Feature values given verbatim, and "
-        "use the same name on both lines. Do not invent new features or mechanics, do "
-        "not restate these instructions, and do not add anything before, between, or "
-        "after these two lines."
+        "Line 2: 2-3 sentences describing how this wonder looks, what it does and how "
+        "it feels to use, weaving its Signature Feature and other features into a vivid "
+        "but concise flavor note.\n\n"
+        "The name and Properties (rarity, activation, form, base item, spell level and "
+        "the like) are already shown beside the note, so let them shape the description "
+        "but never state them in Line 2, and don't open it with the name. Do not invent "
+        "new features or mechanics, do not restate these instructions, and do not add "
+        "anything before, between, or after these two lines."
     )
 
     def _build_vault_note_content(payload: Dict[str, Any]) -> tuple[str, str]:
@@ -1304,13 +1305,12 @@ def register_routes():
         "Line 1: just the location's name, nothing else. If a Name is already given "
         "below, repeat it verbatim. If Name is blank, invent one that fits the given "
         "Type, Purpose, and Environment.\n"
-        "Line 2: Name (Type, Purpose, Environment). [2-3 sentences describing what "
-        "this place is like and why it matters, weaving in its Features and any "
-        "notable Assets/Needs into a vivid but concise sketch.]\n\n"
-        "Use the exact Type, Purpose, and Environment values given verbatim, and use "
-        "the same name on both lines. Do not invent new features or mechanics, do "
-        "not restate these instructions, and do not add anything before, between, or "
-        "after these two lines."
+        "Line 2: 2-3 sentences describing what this place is like and why it matters, "
+        "weaving its Features and any notable Assets/Needs into a vivid but concise sketch.\n\n"
+        "The name, Type, Purpose, and Environment are already shown beside the note, so "
+        "let them shape the description but never state them in Line 2, and don't open "
+        "it with the name. Do not invent new features or mechanics, do not restate these "
+        "instructions, and do not add anything before, between, or after these two lines."
     )
 
     def _build_sanctum_note_content(payload: Dict[str, Any]) -> tuple[str, str]:

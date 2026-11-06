@@ -42,5 +42,13 @@
       "shortName": "+3",
       "budgetCost": 16
     }
-  ]
+  ],
+  "requiresProperties": {
+    "form": [
+      "wand",
+      "staff",
+      "rod",
+      "wondrous-item"
+    ]
+  }
 }

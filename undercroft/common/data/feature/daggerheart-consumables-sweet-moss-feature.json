@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-sweet-moss-feature",
-  "name": "feat.daggerheart-consumables-sweet-moss-feature",
+  "name": "Sweet Moss",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can consume this moss during a rest to clear 1d10 HP or 1d10 Stress."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

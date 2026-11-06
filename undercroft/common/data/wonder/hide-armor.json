@@ -14,5 +14,10 @@
     "form": "armor",
     "armorCategory": "light"
   },
-  "featureIds": []
+  "featureIds": [],
+  "armorClass": {
+    "base": 12,
+    "dexBonus": true,
+    "maxBonus": 2
+  }
 }

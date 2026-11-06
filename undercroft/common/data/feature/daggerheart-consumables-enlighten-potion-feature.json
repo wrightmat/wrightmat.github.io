@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-enlighten-potion-feature",
-  "name": "feat.daggerheart-consumables-enlighten-potion-feature",
+  "name": "Enlighten Potion",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You gain a +1 bonus to your next Knowledge Roll."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-1"
+    ]
+  }
 }

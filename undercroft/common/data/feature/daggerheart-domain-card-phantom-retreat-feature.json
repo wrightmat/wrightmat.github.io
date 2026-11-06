@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-phantom-retreat-feature",
-  "name": "feat.daggerheart-domain-card-phantom-retreat-feature",
+  "name": "Phantom Retreat",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

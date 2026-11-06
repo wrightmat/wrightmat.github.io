@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-improved-arcane-shard-feature",
-  "name": "feat.daggerheart-consumables-improved-arcane-shard-feature",
+  "name": "Improved Arcane Shard",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can make a Finesse Roll to throw this shard at a group of adversaries within Far range. Targets you succeed against take 2d20 magic damage."
   },
-  "budgetCost": 0,
+  "budgetCost": 3,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-2"
+    ]
+  }
 }

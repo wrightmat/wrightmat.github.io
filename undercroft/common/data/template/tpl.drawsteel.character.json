@@ -4070,7 +4070,7 @@
             "roller": "",
             "allowAdd": false,
             "allowRemove": false,
-            "formula": "libraryEntries('feature', 'tags.categories', 'drawsteel-common-maneuver')"
+            "formula": "libraryEntries('feature', 'tags.categories', 'common-maneuver')"
           },
           {
             "type": "repeater",

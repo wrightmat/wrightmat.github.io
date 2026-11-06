@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-bonding-honey-feature",
-  "name": "feat.daggerheart-consumables-bonding-honey-feature",
+  "name": "Bonding Honey",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "This honey can be used to glue two objects together permanently."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

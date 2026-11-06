@@ -14,5 +14,18 @@
     "form": "weapon",
     "weaponCategory": "martial-melee"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d10",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Heavy",
+    "Reach",
+    "Two-Handed"
+  ],
+  "mastery": "Topple"
 }

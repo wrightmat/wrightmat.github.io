@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Physical)",
-    "tier": 2,
+    "tier": "tier-2",
     "trait": "Agility",
     "range": "Far",
     "burden": "Two-Handed"

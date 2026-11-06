@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-astral-projection-feature",
-  "name": "feat.daggerheart-domain-card-astral-projection-feature",
+  "name": "Astral Projection",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

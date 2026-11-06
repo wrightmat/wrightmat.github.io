@@ -51,5 +51,12 @@
         "text": "Lets the wielder use their own spellcasting ability instead of the weapon's usual ability for its attack and damage rolls, upgrades its damage die, and makes it magical if it wasn't already."
       }
     }
-  ]
+  ],
+  "requiresProperties": {
+    "form": [
+      "weapon",
+      "staff",
+      "spell"
+    ]
+  }
 }

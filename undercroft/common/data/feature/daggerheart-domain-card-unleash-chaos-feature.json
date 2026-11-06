@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-unleash-chaos-feature",
-  "name": "feat.daggerheart-domain-card-unleash-chaos-feature",
+  "name": "Unleash Chaos",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

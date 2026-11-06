@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-vanishing-dodge-feature",
-  "name": "feat.daggerheart-domain-card-vanishing-dodge-feature",
+  "name": "Vanishing Dodge",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

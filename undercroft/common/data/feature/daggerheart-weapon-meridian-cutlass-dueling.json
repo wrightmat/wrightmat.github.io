@@ -9,16 +9,29 @@
     "type": "passive",
     "text": "When there are no other creatures within Close range of the target, gain advantage on your attack roll against them."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-3",
+      "tier-4"
+    ],
+    "type": [
+      "Primary (Physical)",
+      "Primary (Magic)"
+    ]
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-transcendent-union-feature",
-  "name": "feat.daggerheart-domain-card-transcendent-union-feature",
+  "name": "Transcendent Union",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

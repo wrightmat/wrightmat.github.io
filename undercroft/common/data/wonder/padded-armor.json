@@ -14,5 +14,10 @@
     "form": "armor",
     "armorCategory": "light"
   },
-  "featureIds": []
+  "featureIds": [],
+  "armorClass": {
+    "base": 11,
+    "dexBonus": true
+  },
+  "stealthDisadvantage": true
 }

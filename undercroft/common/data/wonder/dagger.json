@@ -14,5 +14,18 @@
     "form": "weapon",
     "weaponCategory": "simple-melee"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d4",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Finesse",
+    "Light",
+    "Thrown"
+  ],
+  "mastery": "Nick"
 }

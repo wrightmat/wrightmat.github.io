@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-minor-stamina-potion-recipe-feature",
-  "name": "feat.daggerheart-items-minor-stamina-potion-recipe-feature",
+  "name": "Minor Stamina Potion Recipe",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "As a downtime move, you can use the bone of a creature to craft a Minor Stamina Potion."
   },
-  "budgetCost": 0,
+  "budgetCost": 3,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-2"
+    ]
+  }
 }

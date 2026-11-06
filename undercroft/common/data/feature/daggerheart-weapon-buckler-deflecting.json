@@ -9,16 +9,28 @@
     "type": "passive",
     "text": "When you are attacked, you can mark an Armor Slot to gain a bonus to your Evasion equal to your available Armor Slots against the attack."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-3",
+      "tier-4"
+    ],
+    "type": [
+      "Secondary"
+    ]
+  }
 }

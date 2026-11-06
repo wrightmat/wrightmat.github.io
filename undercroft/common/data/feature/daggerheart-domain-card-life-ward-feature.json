@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-life-ward-feature",
-  "name": "feat.daggerheart-domain-card-life-ward-feature",
+  "name": "Life Ward",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-chains-of-affliction-feature",
-  "name": "feat.daggerheart-domain-card-chains-of-affliction-feature",
+  "name": "Chains of Affliction",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

@@ -5,7 +5,6 @@
   "price": "75 gp",
   "weight": 3,
   "systemIds": [
-    "sys.dnd5e",
     "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/equipment/crossbow-hand",
@@ -14,5 +13,18 @@
     "form": "weapon",
     "weaponCategory": "martial-ranged"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d6",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 30,
+    "long": 120
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Light",
+    "Loading"
+  ]
 }

@@ -9,16 +9,28 @@
     "type": "passive",
     "text": "On a successful attack, you can spend a Hope to knock the target back to Far range."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-4"
+    ],
+    "type": [
+      "Primary (Physical)",
+      "Primary (Magic)"
+    ]
+  }
 }

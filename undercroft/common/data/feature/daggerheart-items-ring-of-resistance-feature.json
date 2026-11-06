@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-ring-of-resistance-feature",
-  "name": "feat.daggerheart-items-ring-of-resistance-feature",
+  "name": "Ring of Resistance",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "Once per long rest, you can activate this ring after a successful attack against you to halve the damage."
   },
-  "budgetCost": 0,
+  "budgetCost": 4,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-3"
+    ]
+  }
 }

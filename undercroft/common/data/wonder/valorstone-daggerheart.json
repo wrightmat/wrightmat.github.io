@@ -5,7 +5,8 @@
     "sys.daggerheart"
   ],
   "properties": {
-    "form": "item"
+    "form": "loot",
+    "tier": "tier-2"
   },
   "features": [
     {
@@ -15,5 +16,6 @@
   ],
   "featureIds": [
     "feat.daggerheart-items-valorstone-feature"
-  ]
+  ],
+  "roll": 15
 }

@@ -9,16 +9,21 @@
     "type": "passive",
     "text": "-2 to Evasion; -1 to Agility"
   },
-  "budgetCost": 0,
+  "budgetCost": -2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ]
+  }
 }

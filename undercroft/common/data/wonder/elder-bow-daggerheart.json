@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Magic)",
-    "tier": 2,
+    "tier": "tier-2",
     "trait": "Instinct",
     "range": "Far",
     "burden": "Two-Handed"

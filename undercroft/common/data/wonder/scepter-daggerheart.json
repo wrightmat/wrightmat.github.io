@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Magic)",
-    "tier": 1,
+    "tier": "tier-1",
     "trait": "Presence",
     "range": "Far",
     "burden": "Two-Handed"

@@ -1674,14 +1674,26 @@ return {
     const price = s.cost?.quantity != null && s.cost?.unit ? `${s.cost.quantity} ${s.cost.unit}` : "";
     const weight = Number.isFinite(s.weight) ? s.weight : undefined;
 
-    // Weapon/armor mechanical stats (damage, range, weapon properties/
-    // 2024 mastery, AC, Strength requirement, Stealth) have no dedicated
-    // Wonder field of their own — matches this suite's own existing
-    // curated equipment (eff.handaxe.json etc.), which never tracks these
-    // as structured data either — folded into the description as plain
-    // "Label: value" lines instead of silently dropped, the same
-    // "no established stats shape for these" reasoning markdownItemStats'
-    // own mundane-equipment fields already follow.
+    // Weapon/armor stats are kept both as readable "Label: value" lines and as record fields, which a magic
+    // item built on this one inherits.
+    const recordFields = {};
+    if (s.damage?.damage_dice) {
+      recordFields.damage = { dice: s.damage.damage_dice, ...(s.damage.damage_type?.name ? { type: s.damage.damage_type.name } : {}) };
+    }
+    if (s.range?.normal) recordFields.range = { normal: s.range.normal, ...(s.range.long ? { long: s.range.long } : {}) };
+    if (Array.isArray(s.properties) && s.properties.length) {
+      recordFields.weaponProperties = s.properties.map((p) => p?.name).filter(Boolean);
+    }
+    if (s.mastery?.name) recordFields.mastery = s.mastery.name;
+    if (s.armor_class?.base != null) {
+      recordFields.armorClass = {
+        base: s.armor_class.base,
+        dexBonus: Boolean(s.armor_class.dex_bonus),
+        ...(s.armor_class.max_bonus != null ? { maxBonus: s.armor_class.max_bonus } : {}),
+      };
+    }
+    if (s.str_minimum) recordFields.strengthMinimum = s.str_minimum;
+    if (s.stealth_disadvantage) recordFields.stealthDisadvantage = true;
     const extraLines = [];
     if (s.damage?.damage_dice) {
       extraLines.push(`Damage: ${s.damage.damage_dice}${s.damage.damage_type?.name ? ` ${s.damage.damage_type.name}` : ""}`);
@@ -1726,6 +1738,7 @@ return {
       description: [...descArr, ...extraLines].join("\n\n"),
       price,
       weight,
+      recordFields,
       tags: [],
       charges,
       properties,

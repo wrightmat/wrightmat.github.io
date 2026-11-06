@@ -20,7 +20,16 @@ import { createReferenceChip } from "../../common/js/lib/library-reference.js";
 import { buildRelationshipGraph } from "../../common/js/lib/relationship-graph.js";
 import { createForceGraph } from "../../common/js/lib/graph-view.js";
 import { listFeaturesForSystem, listWondersForSystem, getSystemPropertyTypes, getSystemClasses } from "./lib/tables.js";
-import { generateWonder, getWonderGenerationBlockReason, computeBudget, matchesCategory, rerollPropertyValue, resolveFeatureBudgetCost } from "./lib/generator.js";
+import {
+  generateWonder,
+  getWonderGenerationBlockReason,
+  computeBudget,
+  matchesCategory,
+  rerollPropertyValue,
+  resolveFeatureBudgetCost,
+  baseItemCandidates,
+  applyBaseItem,
+} from "./lib/generator.js";
 import { createWonderRecord, toPressExportShape } from "./lib/wonder-schema.js";
 import { convertSpellOrItemToFeatures, hasConvertibleSpellItemStats } from "../../common/js/lib/vault-feature-matching.js";
 // Same shared weapon-attack/rider/save-effect/options editor Crucible uses.
@@ -488,6 +497,27 @@ function populatePropertyOverrides() {
     formSelect.addEventListener("change", syncSpellLevelsVisibility);
     syncSpellLevelsVisibility();
   }
+  const baseWrapper = document.createElement("div");
+  baseWrapper.className = "d-flex flex-column gap-1";
+  const baseLabel = document.createElement("label");
+  baseLabel.className = "form-label fw-semibold mb-0";
+  baseLabel.textContent = "Base Item";
+  const baseSelect = document.createElement("select");
+  baseSelect.className = "form-select";
+  baseSelect.dataset.baseItemOverride = "";
+  baseWrapper.append(baseLabel, baseSelect);
+  elements.propertyOverridesContainer.appendChild(baseWrapper);
+  syncBaseItemOverride();
+}
+
+// Offered only once the pinned overrides settle on a Form that builds on a plain item; otherwise the base is random.
+function syncBaseItemOverride() {
+  const select = elements.propertyOverridesContainer?.querySelector("[data-base-item-override]");
+  if (!select) return;
+  const previous = select.value;
+  const candidates = baseItemCandidates(wondersInSystem, readPropertyOverrides(), propertyTypes);
+  renderOptionalSelectOptions(select, candidates, { previousValue: previous, blankLabel: "Random" });
+  setElementVisible(select.parentElement, candidates.length > 0);
 }
 
 function readPropertyOverrides() {
@@ -543,6 +573,7 @@ async function reloadReferenceData() {
   populateLockedFeaturesSelect();
   populateAddFeatureSelect();
   await populateWonderSelect();
+  syncBaseItemOverride();
 }
 
 // Optional override, blank = "Any class" — same convention as Signature
@@ -617,6 +648,42 @@ function renderIdentity(record) {
       })
     );
   });
+  const candidates = baseItemCandidates(wondersInSystem, record.properties, propertyTypes);
+  if (!candidates.length) return;
+  elements.identityFields.appendChild(
+    createFieldBox({
+      key: BASE_ITEM_FIELD_KEY,
+      label: "Base Item",
+      type: "select",
+      value: record.baseItemId || "",
+      options: [{ value: "", label: "—" }, ...candidates.map((entry) => ({ value: entry.id, label: entry.name || entry.id }))],
+      colClass: "col-6 col-md-3",
+      editable: true,
+      rerollable: true,
+      dataAttr: "data-editable-base-item",
+    })
+  );
+  const base = findById(wondersInSystem, record.baseItemId);
+  if (base?.notes) {
+    const stats = document.createElement("div");
+    stats.className = "col-12 small text-body-secondary";
+    stats.appendChild(renderMarkdown(base.notes));
+    elements.identityFields.appendChild(stats);
+  }
+}
+
+const BASE_ITEM_FIELD_KEY = "baseItemId";
+
+// Keeps the base item in step with the properties: a Form that builds on one gets a random one when the current
+// base no longer fits, and any other Form drops it.
+function syncRecordBaseItem(record, nextBaseId = undefined) {
+  const previous = findById(wondersInSystem, record.baseItemId);
+  const candidates = baseItemCandidates(wondersInSystem, record.properties, propertyTypes);
+  let next;
+  if (nextBaseId !== undefined) next = candidates.find((entry) => entry.id === nextBaseId) || null;
+  else if (candidates.some((entry) => entry.id === record.baseItemId)) return;
+  else next = candidates[Math.floor(Math.random() * candidates.length)] || null;
+  applyBaseItem(record, next, previous, propertyTypes);
 }
 
 // Recomputed fresh from whatever's currently selected — kept in sync with
@@ -624,7 +691,13 @@ function renderIdentity(record) {
 // add/remove editing can never disagree about the running total.
 function recomputeBudget(record) {
   const selectedFeatures = record.featureIds.map((id) => findById(features, id)).filter(Boolean);
-  record.budget = computeBudget(selectedFeatures, record.properties, propertyTypes, record.featureTiers || {});
+  record.budget = computeBudget(
+    selectedFeatures,
+    record.properties,
+    propertyTypes,
+    record.featureTiers || {},
+    findById(wondersInSystem, record.baseItemId)
+  );
   return record.budget;
 }
 
@@ -1459,6 +1532,8 @@ function handleGenerate() {
       lockedFeatureIds: readLockedFeatureIds(),
       propertyOverrides: readPropertyOverrides(),
       allowedFeatureTags: selectedClass?.allowedFeatureTags || null,
+      libraryItems: wondersInSystem,
+      baseItemId: elements.propertyOverridesContainer?.querySelector("[data-base-item-override]")?.value || "",
     });
     const record = createWonderRecord(generated);
     dirtyGate.markDirty();
@@ -1577,6 +1652,8 @@ async function handleGenerateNote() {
         const valueId = record.properties?.[propertyType.id];
         if (valueId) propertySummary[propertyType.label || propertyType.id] = propertyValueLabel(propertyType.id, valueId);
       });
+      const base = findById(wondersInSystem, record.baseItemId);
+      if (base) propertySummary["Base Item"] = base.name || base.id;
       return {
         name: record.name || "",
         properties: propertySummary,
@@ -1658,17 +1735,28 @@ async function init() {
   // Changing a property value can change the budget (a ceiling-setting
   // property's own cost, or any other property's cost) — recompute
   // it the same way add/removeFeature already do, not just re-render.
+  elements.propertyOverridesContainer?.addEventListener("change", (event) => {
+    if (event.target.closest("[data-property-override]")) syncBaseItemOverride();
+  });
   elements.identityFields?.addEventListener("change", (event) => {
+    if (!currentRecord) return;
+    const baseSelect = event.target.closest("[data-editable-base-item]");
+    if (baseSelect) {
+      recordHistory("edit base item", () => syncRecordBaseItem(currentRecord, baseSelect.value));
+      recomputeBudget(currentRecord);
+      renderIdentity(currentRecord);
+      refreshWonderView();
+      return;
+    }
     const select = event.target.closest("[data-editable-property]");
-    if (!select || !currentRecord) return;
+    if (!select) return;
     const key = select.dataset.editableProperty;
     recordHistory(`edit ${key}`, () => {
       currentRecord.properties = { ...(currentRecord.properties || {}), [key]: select.value };
+      syncRecordBaseItem(currentRecord);
     });
     recomputeBudget(currentRecord);
-    // Form's own value gates Spell Levels' visibility — only a Form change
-    // needs the whole Identity grid rebuilt to reflect that.
-    if (key === "form") renderIdentity(currentRecord);
+    renderIdentity(currentRecord);
     refreshWonderView();
   });
   // Per-property reroll button (createFieldBox's `rerollable` option) —
@@ -1679,11 +1767,24 @@ async function init() {
     const button = event.target.closest("[data-reroll-attribute]");
     if (!button || !currentRecord) return;
     const key = button.dataset.rerollAttribute;
+    if (key === BASE_ITEM_FIELD_KEY) {
+      const others = baseItemCandidates(wondersInSystem, currentRecord.properties, propertyTypes).filter(
+        (entry) => entry.id !== currentRecord.baseItemId
+      );
+      if (!others.length) return;
+      const pick = others[Math.floor(Math.random() * others.length)];
+      recordHistory("reroll base item", () => syncRecordBaseItem(currentRecord, pick.id));
+      recomputeBudget(currentRecord);
+      renderIdentity(currentRecord);
+      refreshWonderView();
+      return;
+    }
     const propertyType = propertyTypes.find((entry) => entry.id === key);
     const pick = rerollPropertyValue(propertyType, currentRecord.properties?.[key]);
     if (!pick) return;
     recordHistory(`reroll ${key}`, () => {
       currentRecord.properties = { ...(currentRecord.properties || {}), [key]: pick.id };
+      syncRecordBaseItem(currentRecord);
     });
     recomputeBudget(currentRecord);
     renderIdentity(currentRecord);

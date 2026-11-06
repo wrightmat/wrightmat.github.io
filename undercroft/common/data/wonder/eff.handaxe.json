@@ -15,5 +15,17 @@
     "remaining": 0
   },
   "price": "5 gp",
-  "notes": "A small axe balanced for throwing as readily as swinging."
+  "notes": "A small axe balanced for throwing as readily as swinging.",
+  "damage": {
+    "dice": "1d6",
+    "type": "Slashing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Light",
+    "Thrown"
+  ],
+  "mastery": "Vex"
 }

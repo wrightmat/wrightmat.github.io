@@ -15,5 +15,13 @@
     "remaining": 0
   },
   "price": "5 gp",
-  "notes": "A heavy, flanged head on a sturdy haft — brutal against armor."
+  "notes": "A heavy, flanged head on a sturdy haft — brutal against armor.",
+  "damage": {
+    "dice": "1d6",
+    "type": "Bludgeoning"
+  },
+  "range": {
+    "normal": 5
+  },
+  "mastery": "Sap"
 }

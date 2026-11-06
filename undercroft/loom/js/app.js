@@ -5262,7 +5262,7 @@ mountField(
   "feature-budget-cost",
   createCompactField({
     type: "number", id: "loomFeatureBudgetCost", label: "Cost Budget", labelClass: "form-label fw-semibold mb-0",
-    dataAttr: "data-feature-budget-cost", min: "0",
+    dataAttr: "data-feature-budget-cost",
   })
 );
 // "Generic" is the DEFAULT/unreviewed state, not a confirmed judgment —
@@ -5962,7 +5962,8 @@ if (featureSaveButton) {
     currentFeatureEntity.name = (featureNameInput?.value || "").trim() || id;
     currentFeatureEntity.description = featureDescriptionInput?.value || "";
     currentFeatureEntity.mechanics = mechanics;
-    currentFeatureEntity.budgetCost = Math.max(0, Math.round(Number(featureBudgetCostInput?.value)) || 0);
+    // A negative cost is a Refund (a drawback), so it isn't clamped.
+    currentFeatureEntity.budgetCost = Math.round(Number(featureBudgetCostInput?.value)) || 0;
     if (featureScopeSelect?.value === "unique") currentFeatureEntity.mechanics.scope = "unique";
     else delete currentFeatureEntity.mechanics.scope;
     if (featureEditorTiers.length) {

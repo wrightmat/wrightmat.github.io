@@ -9,16 +9,27 @@
     "type": "passive",
     "text": "When you make an attack with your primary weapon, you can deal damage to another target within Melee range."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-4"
+    ],
+    "type": [
+      "Secondary"
+    ]
+  }
 }

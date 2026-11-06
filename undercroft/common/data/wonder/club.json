@@ -14,5 +14,16 @@
     "form": "weapon",
     "weaponCategory": "simple-melee"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d4",
+    "type": "Bludgeoning"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Light"
+  ],
+  "mastery": "Slow"
 }

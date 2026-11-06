@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-belt-of-unity-feature",
-  "name": "feat.daggerheart-items-belt-of-unity-feature",
+  "name": "Belt of Unity",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "Once per session, you can spend 5 Hope to lead a Tag Team Roll with three PCs instead of two."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

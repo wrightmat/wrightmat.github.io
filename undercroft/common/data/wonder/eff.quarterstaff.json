@@ -15,5 +15,16 @@
     "remaining": 0
   },
   "price": "2 sp",
-  "notes": "A plain wooden staff, cheap and surprisingly versatile."
+  "notes": "A plain wooden staff, cheap and surprisingly versatile.",
+  "damage": {
+    "dice": "1d6",
+    "type": "Bludgeoning"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Versatile"
+  ],
+  "mastery": "Topple"
 }

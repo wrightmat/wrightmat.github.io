@@ -14,5 +14,19 @@
     "form": "weapon",
     "weaponCategory": "martial-ranged"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d12",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 40,
+    "long": 120
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Loading",
+    "Two-Handed"
+  ],
+  "mastery": "Slow"
 }

@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-blood-of-the-yorgi-feature",
-  "name": "feat.daggerheart-consumables-blood-of-the-yorgi-feature",
+  "name": "Blood of the Yorgi",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can drink this blood to disappear from where you are and immediately reappear at a point you can see within Very Far range."
   },
-  "budgetCost": 0,
+  "budgetCost": 4,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-3"
+    ]
+  }
 }

@@ -15,5 +15,19 @@
     "remaining": 0
   },
   "price": "50 gp",
-  "notes": "A tall bow with real reach and punch, but awkward indoors."
+  "notes": "A tall bow with real reach and punch, but awkward indoors.",
+  "damage": {
+    "dice": "1d8",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 150,
+    "long": 600
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Heavy",
+    "Two-Handed"
+  ],
+  "mastery": "Slow"
 }

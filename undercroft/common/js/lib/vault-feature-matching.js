@@ -1832,6 +1832,7 @@ export async function convertSpellOrItemToFeatures(record, { dataManager, existi
   if (stats.properties && Object.keys(stats.properties).length) {
     record.properties = { ...stats.properties, ...(record.properties || {}) };
   }
+  if (stats.recordFields) Object.assign(record, stats.recordFields);
 
   record.featureIds = featureIds;
   result.featureIds = featureIds;

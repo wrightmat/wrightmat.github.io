@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Physical)",
-    "tier": 3,
+    "tier": "tier-3",
     "trait": "Strength",
     "range": "Very Close",
     "burden": "Two-Handed"

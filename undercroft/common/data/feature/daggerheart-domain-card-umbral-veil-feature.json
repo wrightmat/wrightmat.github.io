@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-umbral-veil-feature",
-  "name": "feat.daggerheart-domain-card-umbral-veil-feature",
+  "name": "Umbral Veil",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

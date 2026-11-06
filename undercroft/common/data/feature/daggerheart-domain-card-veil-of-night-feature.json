@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-veil-of-night-feature",
-  "name": "feat.daggerheart-domain-card-veil-of-night-feature",
+  "name": "Veil of Night",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

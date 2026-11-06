@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-fire-jar-feature",
-  "name": "feat.daggerheart-items-fire-jar-feature",
+  "name": "Fire Jar",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can pour out the strange liquid contents of this jar to instantly produce fire. The contents regenerate when you take a long rest."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-1"
+    ]
+  }
 }

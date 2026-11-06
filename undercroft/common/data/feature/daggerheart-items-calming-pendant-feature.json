@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-calming-pendant-feature",
-  "name": "feat.daggerheart-items-calming-pendant-feature",
+  "name": "Calming Pendant",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "When you would mark your last Stress, roll a d6. On a result of 5 or higher, don't mark it."
   },
-  "budgetCost": 0,
+  "budgetCost": 4,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-3"
+    ]
+  }
 }

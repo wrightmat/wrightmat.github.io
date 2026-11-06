@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-conjured-steeds-feature",
-  "name": "feat.daggerheart-domain-card-conjured-steeds-feature",
+  "name": "Conjured Steeds",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

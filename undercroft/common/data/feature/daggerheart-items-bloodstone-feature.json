@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-bloodstone-feature",
-  "name": "feat.daggerheart-items-bloodstone-feature",
+  "name": "Bloodstone",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can attach this stone to a weapon that doesn't already have a feature. The weapon gains the following feature: Brutal: When you roll the maximum value on a damage die, roll an additional damage die."
   },
-  "budgetCost": 0,
+  "budgetCost": 4,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-3"
+    ]
+  }
 }

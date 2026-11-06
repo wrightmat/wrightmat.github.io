@@ -15,5 +15,9 @@
     "remaining": 0
   },
   "price": "10 gp",
-  "notes": "A stout wooden shield, banded in steel."
+  "notes": "A stout wooden shield, banded in steel.",
+  "armorClass": {
+    "base": 2,
+    "dexBonus": false
+  }
 }

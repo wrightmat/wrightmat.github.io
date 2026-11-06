@@ -9,16 +9,29 @@
     "type": "passive",
     "text": "When you roll a 1 on a damage die, it deals 6 damage instead."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-3",
+      "tier-4"
+    ],
+    "type": [
+      "Primary (Physical)",
+      "Primary (Magic)"
+    ]
+  }
 }

@@ -5,7 +5,6 @@
   "price": "25 gp",
   "weight": 5,
   "systemIds": [
-    "sys.dnd5e",
     "sys.dnd5e2014"
   ],
   "url": "https://www.dnd5eapi.co/api/2014/equipment/crossbow-light",
@@ -14,5 +13,18 @@
     "form": "weapon",
     "weaponCategory": "simple-ranged"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d8",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 80,
+    "long": 320
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Loading",
+    "Two-Handed"
+  ]
 }

@@ -9,16 +9,30 @@
     "type": "passive",
     "text": "When you deal Severe damage, the target must mark an additional HP."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "tier": [
+      "tier-2",
+      "tier-3",
+      "tier-4"
+    ],
+    "type": [
+      "Primary (Physical)",
+      "Primary (Magic)"
+    ]
+  }
 }

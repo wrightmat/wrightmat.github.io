@@ -6,7 +6,7 @@
   ],
   "properties": {
     "form": "armor",
-    "tier": 4
+    "tier": "tier-4"
   },
   "baseMajorThreshold": 18,
   "baseSevereThreshold": 48,

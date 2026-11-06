@@ -15,5 +15,9 @@
     "remaining": 0
   },
   "price": "45 gp",
-  "notes": "Leather reinforced with close-set rivets for real protection without sacrificing mobility."
+  "notes": "Leather reinforced with close-set rivets for real protection without sacrificing mobility.",
+  "armorClass": {
+    "base": 12,
+    "dexBonus": true
+  }
 }

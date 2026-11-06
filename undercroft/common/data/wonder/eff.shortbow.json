@@ -15,5 +15,18 @@
     "remaining": 0
   },
   "price": "25 gp",
-  "notes": "A compact bow, easy to wield in tight or wooded terrain."
+  "notes": "A compact bow, easy to wield in tight or wooded terrain.",
+  "damage": {
+    "dice": "1d6",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 80,
+    "long": 320
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Two-Handed"
+  ],
+  "mastery": "Vex"
 }

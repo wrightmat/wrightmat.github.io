@@ -15,5 +15,17 @@
     "remaining": 0
   },
   "price": "10 gp",
-  "notes": "A light, quick blade favored for its finesse in close quarters."
+  "notes": "A light, quick blade favored for its finesse in close quarters.",
+  "damage": {
+    "dice": "1d6",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Finesse",
+    "Light"
+  ],
+  "mastery": "Vex"
 }

@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Secondary",
-    "tier": 3,
+    "tier": "tier-3",
     "trait": "Presence",
     "range": "Very Close",
     "burden": "One-Handed"

@@ -9,16 +9,25 @@
     "type": "passive",
     "text": "On a successful attack against a target within Melee range, add a d4 to the damage roll."
   },
-  "budgetCost": 0,
+  "budgetCost": 1,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-3",
+      "tier-4"
+    ]
+  }
 }

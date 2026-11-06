@@ -20,5 +20,17 @@
   },
   "synergizesWith": [],
   "dependsOn": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor",
+      "equipment",
+      "ring",
+      "rod",
+      "staff",
+      "wand",
+      "weapon",
+      "wondrous-item"
+    ]
+  }
 }

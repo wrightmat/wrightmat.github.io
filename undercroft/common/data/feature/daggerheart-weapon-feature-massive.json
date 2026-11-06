@@ -9,16 +9,25 @@
     "type": "passive",
     "text": "-1 to Evasion; on a successful attack, roll an additional damage die and discard the lowest result."
   },
-  "budgetCost": 0,
+  "budgetCost": 1,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "weapon"
+    ],
+    "type": [
+      "Primary (Physical)",
+      "Primary (Magic)"
+    ]
+  }
 }

@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-wall-walk-feature",
-  "name": "feat.daggerheart-domain-card-wall-walk-feature",
+  "name": "Wall Walk",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

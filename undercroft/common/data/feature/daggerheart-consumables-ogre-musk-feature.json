@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-ogre-musk-feature",
-  "name": "feat.daggerheart-consumables-ogre-musk-feature",
+  "name": "Ogre Musk",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can use this musk to prevent anyone from tracking you by mundane or magical means until your next rest."
   },
-  "budgetCost": 0,
+  "budgetCost": 5,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

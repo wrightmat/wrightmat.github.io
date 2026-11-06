@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-items-empty-chest-feature",
-  "name": "feat.daggerheart-items-empty-chest-feature",
+  "name": "Empty Chest",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "This magical chest appears empty. When you speak a specific trigger word or action and open the chest, you can see the items stored within it."
   },
-  "budgetCost": 0,
+  "budgetCost": 2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "loot"
+    ],
+    "tier": [
+      "tier-1"
+    ]
+  }
 }

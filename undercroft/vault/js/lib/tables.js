@@ -52,6 +52,8 @@ function toLegacyPropertyType(field, budgetCeilingKey) {
       id: slugify(value.name),
       label: value.name,
       cost: value.cost,
+      ...(value.featureCategory ? { featureCategory: value.featureCategory } : {}),
+      ...(value.baseItem ? { baseItem: true } : {}),
     })),
   };
 }

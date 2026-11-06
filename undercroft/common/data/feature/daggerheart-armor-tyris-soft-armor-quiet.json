@@ -9,16 +9,26 @@
     "type": "passive",
     "text": "You gain a +2 bonus to rolls you make to move silently."
   },
-  "budgetCost": 0,
+  "budgetCost": 1,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-2",
+      "tier-3",
+      "tier-4"
+    ]
+  }
 }

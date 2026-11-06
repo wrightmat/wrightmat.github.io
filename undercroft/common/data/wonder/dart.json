@@ -14,5 +14,18 @@
     "form": "weapon",
     "weaponCategory": "simple-ranged"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d4",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 20,
+    "long": 60
+  },
+  "weaponProperties": [
+    "Finesse",
+    "Thrown"
+  ],
+  "mastery": "Vex"
 }

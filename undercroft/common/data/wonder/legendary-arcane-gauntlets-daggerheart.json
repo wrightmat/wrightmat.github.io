@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Magic)",
-    "tier": 4,
+    "tier": "tier-4",
     "trait": "Strength",
     "range": "Melee",
     "burden": "Two-Handed"

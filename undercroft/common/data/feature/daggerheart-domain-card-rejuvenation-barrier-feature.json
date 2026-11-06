@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-rejuvenation-barrier-feature",
-  "name": "feat.daggerheart-domain-card-rejuvenation-barrier-feature",
+  "name": "Rejuvenation Barrier",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

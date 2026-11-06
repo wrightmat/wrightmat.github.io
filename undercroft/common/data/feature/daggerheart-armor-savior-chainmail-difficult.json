@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "-1 to all character traits and Evasion"
   },
-  "budgetCost": 0,
+  "budgetCost": -2,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "armor"
+    ],
+    "tier": [
+      "tier-4"
+    ]
+  }
 }

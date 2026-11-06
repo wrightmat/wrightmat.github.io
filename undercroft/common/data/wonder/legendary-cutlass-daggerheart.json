@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Physical)",
-    "tier": 4,
+    "tier": "tier-4",
     "trait": "Presence",
     "range": "Melee",
     "burden": "One-Handed"

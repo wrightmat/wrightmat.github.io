@@ -12,8 +12,7 @@
   "budgetCost": 6,
   "tags": {
     "categories": [
-      "spell",
-      "item"
+      "spell"
     ],
     "propertyHints": [
       "defense"

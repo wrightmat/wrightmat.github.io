@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-natural-familiar-feature",
-  "name": "feat.daggerheart-domain-card-natural-familiar-feature",
+  "name": "Natural Familiar",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

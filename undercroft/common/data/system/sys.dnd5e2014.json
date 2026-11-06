@@ -862,57 +862,70 @@
         {
           "name": "Spell",
           "shortName": "spell",
-          "cost": 0
+          "cost": 0,
+          "featureCategory": "spell"
         },
         {
           "name": "Armor",
           "shortName": "armor",
-          "cost": 1
+          "cost": 1,
+          "featureCategory": "item",
+          "baseItem": true
         },
         {
           "name": "Equipment",
           "shortName": "equipment",
-          "cost": 0
+          "cost": 0,
+          "featureCategory": "item"
         },
         {
           "name": "Potion",
           "shortName": "potion",
-          "cost": -1
+          "cost": -1,
+          "featureCategory": "item"
         },
         {
           "name": "Ring",
           "shortName": "ring",
-          "cost": 1
+          "cost": 1,
+          "featureCategory": "item"
         },
         {
           "name": "Rod",
           "shortName": "rod",
-          "cost": 2
+          "cost": 2,
+          "featureCategory": "item"
         },
         {
           "name": "Scroll",
           "shortName": "scroll",
-          "cost": -2
+          "cost": -2,
+          "featureCategory": "item"
         },
         {
           "name": "Staff",
           "shortName": "staff",
-          "cost": 2
+          "cost": 2,
+          "featureCategory": "item"
         },
         {
           "name": "Wand",
           "shortName": "wand",
-          "cost": 1
+          "cost": 1,
+          "featureCategory": "item"
         },
         {
           "name": "Weapon",
           "shortName": "weapon",
-          "cost": 2
+          "cost": 2,
+          "featureCategory": "item",
+          "baseItem": true
         },
         {
           "name": "Wondrous Item",
           "shortName": "wondrous-item",
-          "cost": 1
+          "cost": 1,
+          "featureCategory": "item"
         }
       ]
     },

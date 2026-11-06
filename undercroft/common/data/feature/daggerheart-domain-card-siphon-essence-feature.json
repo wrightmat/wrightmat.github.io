@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-siphon-essence-feature",
-  "name": "feat.daggerheart-domain-card-siphon-essence-feature",
+  "name": "Siphon Essence",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

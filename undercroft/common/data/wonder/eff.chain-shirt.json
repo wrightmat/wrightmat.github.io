@@ -15,5 +15,10 @@
     "remaining": 0
   },
   "price": "50 gp",
-  "notes": "A shirt of interlocking rings, worn under a coat to stay unnoticed."
+  "notes": "A shirt of interlocking rings, worn under a coat to stay unnoticed.",
+  "armorClass": {
+    "base": 13,
+    "dexBonus": true,
+    "maxBonus": 2
+  }
 }

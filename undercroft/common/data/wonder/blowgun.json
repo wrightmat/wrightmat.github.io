@@ -14,5 +14,18 @@
     "form": "weapon",
     "weaponCategory": "martial-ranged"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 25,
+    "long": 100
+  },
+  "weaponProperties": [
+    "Ammunition",
+    "Loading"
+  ],
+  "mastery": "Vex"
 }

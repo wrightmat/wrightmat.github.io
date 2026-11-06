@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-consumables-morphing-clay-feature",
-  "name": "feat.daggerheart-consumables-morphing-clay-feature",
+  "name": "Morphing Clay",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -9,16 +9,24 @@
     "type": "passive",
     "text": "You can spend a Hope to use this clay, altering your face enough to make you unrecognizable until your next rest."
   },
-  "budgetCost": 0,
+  "budgetCost": 3,
   "tags": {
     "behaviors": [],
     "recipeSlots": [],
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "item"
     ]
   },
   "synergizesWith": [],
-  "conflictsWith": []
+  "conflictsWith": [],
+  "requiresProperties": {
+    "form": [
+      "consumable"
+    ],
+    "tier": [
+      "tier-2"
+    ]
+  }
 }

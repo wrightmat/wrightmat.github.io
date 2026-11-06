@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-encore-feature",
-  "name": "feat.daggerheart-domain-card-encore-feature",
+  "name": "Encore",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

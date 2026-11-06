@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-conjure-swarm-feature",
-  "name": "feat.daggerheart-domain-card-conjure-swarm-feature",
+  "name": "Conjure Swarm",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

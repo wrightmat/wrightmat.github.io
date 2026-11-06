@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-cinder-grasp-feature",
-  "name": "feat.daggerheart-domain-card-cinder-grasp-feature",
+  "name": "Cinder Grasp",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

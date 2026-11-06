@@ -16,8 +16,8 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "drawsteel",
-      "drawsteel-common-maneuver"
+      "character",
+      "common-maneuver"
     ]
   },
   "synergizesWith": [],

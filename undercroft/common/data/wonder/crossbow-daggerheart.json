@@ -7,7 +7,7 @@
   "properties": {
     "form": "weapon",
     "type": "Primary (Physical)",
-    "tier": 1,
+    "tier": "tier-1",
     "trait": "Finesse",
     "range": "Far",
     "burden": "One-Handed"

@@ -14,5 +14,17 @@
     "form": "weapon",
     "weaponCategory": "simple-melee"
   },
-  "featureIds": []
+  "featureIds": [],
+  "damage": {
+    "dice": "1d6",
+    "type": "Piercing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Thrown",
+    "Versatile"
+  ],
+  "mastery": "Sap"
 }

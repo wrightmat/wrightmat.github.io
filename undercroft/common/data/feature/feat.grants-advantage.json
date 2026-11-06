@@ -12,8 +12,7 @@
   "budgetCost": 2,
   "tags": {
     "categories": [
-      "spell",
-      "item"
+      "spell"
     ],
     "propertyHints": [
       "utility",

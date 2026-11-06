@@ -5,7 +5,8 @@
     "sys.daggerheart"
   ],
   "properties": {
-    "form": "item"
+    "form": "loot",
+    "tier": "tier-4"
   },
   "features": [
     {
@@ -15,5 +16,6 @@
   ],
   "featureIds": [
     "feat.daggerheart-items-gem-of-alacrity-feature"
-  ]
+  ],
+  "roll": 53
 }

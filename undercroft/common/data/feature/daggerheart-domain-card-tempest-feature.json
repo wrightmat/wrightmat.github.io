@@ -1,6 +1,6 @@
 {
   "id": "feat.daggerheart-domain-card-tempest-feature",
-  "name": "feat.daggerheart-domain-card-tempest-feature",
+  "name": "Tempest",
   "systemIds": [
     "sys.daggerheart"
   ],
@@ -16,7 +16,7 @@
     "roles": [],
     "creatureTypes": [],
     "categories": [
-      "daggerheart"
+      "character"
     ]
   },
   "synergizesWith": [],

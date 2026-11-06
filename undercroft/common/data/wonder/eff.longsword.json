@@ -15,5 +15,16 @@
     "remaining": 0
   },
   "price": "15 gp",
-  "notes": "A versatile straight blade, equally at home one- or two-handed."
+  "notes": "A versatile straight blade, equally at home one- or two-handed.",
+  "damage": {
+    "dice": "1d8",
+    "type": "Slashing"
+  },
+  "range": {
+    "normal": 5
+  },
+  "weaponProperties": [
+    "Versatile"
+  ],
+  "mastery": "Sap"
 }

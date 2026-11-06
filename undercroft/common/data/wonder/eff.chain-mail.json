@@ -15,5 +15,11 @@
     "remaining": 0
   },
   "price": "75 gp",
-  "notes": "A full suit of interlocking metal rings — heavy, but reliable."
+  "notes": "A full suit of interlocking metal rings — heavy, but reliable.",
+  "armorClass": {
+    "base": 16,
+    "dexBonus": false
+  },
+  "strengthMinimum": 13,
+  "stealthDisadvantage": true
 }
