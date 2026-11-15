@@ -107,7 +107,9 @@ body[data-theme="dark"] .hover-lift:hover {
   right: 0;
   bottom: 1.5rem;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0 1rem;
   pointer-events: none;
   /* Above .dice-overlay's own 2000 (see that rule's comment) — a roll's own
@@ -386,6 +388,12 @@ body[data-theme="dark"] .hover-lift:hover {
   transition: transform 150ms ease, opacity 150ms ease;
   transform: translateY(0);
   opacity: 1;
+}
+
+/* The countdown bar a timed toast closes at the end of; status.js animates its scale. */
+.status-toast-progress {
+  height: 3px;
+  transform-origin: left;
 }
 
 .status-toast-exit {
@@ -700,6 +708,26 @@ body[data-theme="dark"] .hover-lift:hover {
      every other header control — matches the shared height explicitly
      rather than leaving it to Bootstrap's small-size default. */
   height: var(--undercroft-header-control-height);
+  padding-right: 2rem;
+}
+
+/* The browser's own search-field × would sit beside the bar's clear button. */
+.suite-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+/* Only while the bar is in use and has text to clear (suite-search.js sets has-value). */
+.suite-search-clear {
+  position: absolute;
+  right: 0.25rem;
+  display: none !important;
+  padding: 0.125rem 0.25rem;
+  color: var(--bs-secondary-color);
+}
+
+.suite-search-input-wrap.has-value:focus-within .suite-search-clear {
+  display: inline-flex !important;
 }
 
 /* Every plain icon-only trigger in the header (pane toggles, theme
@@ -1157,7 +1185,8 @@ html[data-bs-theme="light"] {
 }
 
 .tooltip {
-  z-index: 1400;
+  /* Above .status-root (2100), so a toast's own buttons can show theirs. */
+  z-index: 2200;
 }
 
 .undercroft-auth-menu {
@@ -2333,7 +2362,7 @@ html[data-bs-theme="light"] {
    document.body once per page and reuses for every roll (plus one more per
    distinct color needed for a multi-color roll — see that file's own
    loadColorBoxEntry). Above modals and everything else in this file's own
-   z-index ladder (topping out at 1400) since a roll can be triggered from
+   z-index ladder (tooltips aside) since a roll can be triggered from
    inside any of those; pointer-events stays off so it never blocks
    clicking through to whatever's underneath it, including while dice are
    visibly settling. The one exception is .status-root's own toasts, kept

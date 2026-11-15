@@ -453,7 +453,7 @@ async function navigateToEncounter({ encounterId, destination, currentSection, s
   if (destination === "existing-tab") {
     const handled = await requestDashboardFocus(encounterId);
     if (handled) return;
-    status?.show("No open Dashboard tab responded — opened a new tab instead.", { type: "info", timeout: 3500 });
+    status?.show("No open Dashboard tab responded — opened a new tab instead.", { type: "info" });
     destination = "new-tab";
   }
   const url = `${resolveToolHref("home", currentSection)}?encounter=${encodeURIComponent(encounterId)}`;

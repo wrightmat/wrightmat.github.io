@@ -18,6 +18,9 @@ import { resolveApiBase } from "./api.js";
 import { buildKindToolUrl, kindToolLabel } from "./kind-tool-route.js";
 import { initTooltip } from "./tooltips.js";
 import { loadHelpTopics } from "./help.js";
+import { suggestCommand, applySuggestion, runCommand } from "./commands.js";
+import { getSystemCatalog } from "./system-catalog.js";
+import { createIconButton } from "./ui-components.js";
 
 // Module-relative, so they resolve the same from every tool's page.
 const HELP_TOPICS_URL = new URL("../../data/help-topics.json", import.meta.url).href;
@@ -65,6 +68,26 @@ const KIND_META = {
 const MIN_QUERY_LENGTH = 2;
 const SERVER_DEBOUNCE_MS = 250;
 const MAX_RESULTS = 20;
+const COMMAND_HISTORY_KEY = "undercroft.commandHistory";
+const MAX_COMMAND_HISTORY = 20;
+
+function readCommandHistory() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(COMMAND_HISTORY_KEY) || "[]");
+    return Array.isArray(stored) ? stored.filter((entry) => typeof entry === "string") : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function rememberCommand(text) {
+  const history = [text, ...readCommandHistory().filter((entry) => entry !== text)].slice(0, MAX_COMMAND_HISTORY);
+  try {
+    window.localStorage.setItem(COMMAND_HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    // A full or blocked localStorage only loses the history, never the command.
+  }
+}
 
 function resolveLocalTitle(payload, id) {
   return payload?.title || payload?.name || payload?.data?.name || id;
@@ -396,9 +419,11 @@ function buildSectionLabel(text) {
 }
 
 export function initSuiteSearch({ container } = {}) {
-  if (!container) return;
+  if (!container) return null;
 
   const dataManager = new DataManager({ baseUrl: resolveApiBase() });
+  const catalog = getSystemCatalog(dataManager);
+  let status = null;
 
   // Read synchronously by runSearch — empty until the (usually already
   // cached) fetch resolves, so a keystroke never waits on it.
@@ -439,12 +464,19 @@ export function initSuiteSearch({ container } = {}) {
   const input = document.createElement("input");
   input.type = "search";
   input.className = "form-control form-control-sm suite-search-input";
-  input.placeholder = "Search Undercroft…";
-  input.setAttribute("aria-label", "Search Undercroft");
+  input.placeholder = "Search, or type / for a command…";
+  input.setAttribute("aria-label", "Search Undercroft, or type / for a command");
   input.setAttribute("autocomplete", "off");
   input.setAttribute("role", "combobox");
   input.setAttribute("aria-expanded", "false");
-  inputWrap.append(searchIcon, input);
+  const clearButton = createIconButton({
+    icon: "tabler:x",
+    label: "Clear",
+    variant: "link",
+    className: "suite-search-clear",
+    tooltipPlacement: "bottom",
+  });
+  inputWrap.append(searchIcon, input, clearButton);
 
   const results = document.createElement("div");
   results.className = "suite-search-results d-none";
@@ -483,6 +515,106 @@ export function initSuiteSearch({ container } = {}) {
   let activeIndex = -1;
   let serverDebounceTimer = 0;
   let requestId = 0;
+  // While the text is a command: the dropdown's suggestions and where in the text the one being typed starts.
+  let commandRows = [];
+  let commandReplaceFrom = 0;
+  let historyIndex = -1;
+
+  const isCommandText = (text) => text.trimStart().startsWith("/");
+  const commandContext = (extra = {}) => ({ dataManager, status, catalog, ...extra });
+
+  function syncClearButton() {
+    inputWrap.classList.toggle("has-value", Boolean(input.value));
+  }
+
+  // The search's own row shape, with the suggestion applied on click rather than followed as a link.
+  function buildCommandRow(row, index) {
+    const element = document.createElement("div");
+    element.className = "suite-search-result";
+    element.setAttribute("role", "option");
+    const main = buildResultMain({ href: null, iconName: row.icon || "tabler:terminal-2", title: row.label, subtitle: row.detail || "" });
+    main.addEventListener("mousedown", (event) => event.preventDefault());
+    main.addEventListener("click", () => completeSuggestion(index));
+    element.appendChild(main);
+    return element;
+  }
+
+  function renderCommandRows({ hint, rows }) {
+    results.innerHTML = "";
+    commandRows = rows;
+    if (hint) {
+      const hintEl = document.createElement("div");
+      hintEl.className = "suite-search-empty";
+      hintEl.textContent = hint;
+      results.appendChild(hintEl);
+    }
+    rows.forEach((row, index) => results.appendChild(buildCommandRow(row, index)));
+    const visible = Boolean(hint || rows.length);
+    results.classList.toggle("d-none", !visible);
+    input.setAttribute("aria-expanded", String(visible));
+    activeIndex = -1;
+  }
+
+  async function runCommandSuggestions(text) {
+    const thisRequest = ++requestId;
+    window.clearTimeout(serverDebounceTimer);
+    const suggestion = await suggestCommand(text, commandContext()).catch((error) => {
+      console.warn("Command bar: suggestions failed", error);
+      return { hint: "", rows: [] };
+    });
+    if (thisRequest !== requestId) return;
+    commandReplaceFrom = suggestion.replaceFrom ?? text.length;
+    renderCommandRows(suggestion);
+  }
+
+  function completeSuggestion(index) {
+    const row = commandRows[index];
+    if (!row) return;
+    input.value = applySuggestion(input.value, row, commandReplaceFrom);
+    syncClearButton();
+    input.focus();
+    void runCommandSuggestions(input.value);
+  }
+
+  let commandNoticeId = null;
+
+  async function executeCommand({ newTab = false } = {}) {
+    const text = input.value.trim();
+    if (!text || text === "/") return;
+    rememberCommand(text);
+    historyIndex = -1;
+    // The last command's problem no longer applies once another command has run, whatever its outcome.
+    if (commandNoticeId) status?.remove(commandNoticeId);
+    commandNoticeId = null;
+    try {
+      await runCommand(text, commandContext({ newTab }));
+      input.value = "";
+      syncClearButton();
+      closeResults();
+    } catch (error) {
+      commandNoticeId = status?.show(error?.message || "That command didn't work.", { type: error?.type || "error" }) || null;
+    }
+  }
+
+  function recallHistory(step) {
+    const history = readCommandHistory();
+    if (!history.length) return false;
+    historyIndex = Math.max(-1, Math.min(history.length - 1, historyIndex + step));
+    input.value = historyIndex >= 0 ? history[historyIndex] : "";
+    syncClearButton();
+    if (input.value) void runCommandSuggestions(input.value);
+    else closeResults();
+    return true;
+  }
+
+  clearButton.addEventListener("mousedown", (event) => event.preventDefault());
+  clearButton.addEventListener("click", () => {
+    input.value = "";
+    historyIndex = -1;
+    syncClearButton();
+    closeResults();
+    input.focus();
+  });
 
   function closeResults() {
     results.classList.add("d-none");
@@ -546,11 +678,34 @@ export function initSuiteSearch({ container } = {}) {
   }
 
   input.addEventListener("input", () => {
-    void runSearch(input.value);
+    syncClearButton();
+    historyIndex = -1;
+    if (isCommandText(input.value)) void runCommandSuggestions(input.value);
+    else void runSearch(input.value);
   });
 
   input.addEventListener("keydown", (event) => {
     const rows = Array.from(results.children).filter((row) => row.matches(".suite-search-result"));
+    const commandMode = isCommandText(input.value);
+    if (event.key === "ArrowUp" && (!input.value || historyIndex >= 0) && recallHistory(1)) {
+      event.preventDefault();
+      return;
+    }
+    if (event.key === "ArrowDown" && historyIndex >= 0 && recallHistory(-1)) {
+      event.preventDefault();
+      return;
+    }
+    if (commandMode && event.key === "Tab" && commandRows.length) {
+      event.preventDefault();
+      completeSuggestion(activeIndex >= 0 ? activeIndex : 0);
+      return;
+    }
+    if (commandMode && event.key === "Enter") {
+      event.preventDefault();
+      if (activeIndex >= 0) completeSuggestion(activeIndex);
+      else void executeCommand({ newTab: event.ctrlKey || event.metaKey });
+      return;
+    }
     if (event.key === "ArrowDown") {
       event.preventDefault();
       if (rows.length) setActive(Math.min(activeIndex + 1, rows.length - 1));
@@ -580,9 +735,27 @@ export function initSuiteSearch({ container } = {}) {
   });
 
   input.addEventListener("focus", () => {
-    if (input.value.trim().length >= MIN_QUERY_LENGTH && results.children.length) {
+    void catalog.systems();
+    void catalog.groupContext();
+    if (isCommandText(input.value)) {
+      void runCommandSuggestions(input.value);
+    } else if (input.value.trim().length >= MIN_QUERY_LENGTH && results.children.length) {
       results.classList.remove("d-none");
       input.setAttribute("aria-expanded", "true");
     }
   });
+
+  return {
+    setStatus(next) {
+      status = next;
+    },
+    // Opens the bar (revealing it on a narrow header) with `text` already typed.
+    focus(text = "") {
+      if (isCompactViewport()) openCompact();
+      input.value = text;
+      syncClearButton();
+      input.focus();
+      if (isCommandText(text)) void runCommandSuggestions(text);
+    },
+  };
 }

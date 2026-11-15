@@ -30,7 +30,7 @@ export async function runMacroReference(ref, { dataManager, groupContext, status
   if (!dataManager) return;
   const macro = await findMacro(dataManager, ref);
   if (!macro) {
-    status?.show?.(`No macro named "${ref}".`, { type: "error", timeout: 3000 });
+    status?.show?.(`No macro named "${ref}".`, { type: "error" });
     return;
   }
   // Without this, a WLED action's `target` alias resolves against runMacro's

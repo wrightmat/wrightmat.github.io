@@ -63,7 +63,7 @@ export function createSystemNamesList({ dataManager, say }) {
           say(`Updated ${plural(result.changed.profiles, "profile")} and ${plural(result.changed.listings, "listing")}.`);
           render(result);
         } catch (error) {
-          say(error.message || "Unable to change the system name.", "danger");
+          say(error.message || "Unable to change the system name.", "warning");
         }
       });
 

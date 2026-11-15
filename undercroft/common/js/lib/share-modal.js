@@ -183,7 +183,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
     try {
       if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
         await navigator.clipboard.writeText(url);
-        if (status) status.show("Copied share link to clipboard", { type: "success", timeout: 1800 });
+        if (status) status.show("Copied share link to clipboard", { type: "success" });
         return true;
       }
     } catch (error) {
@@ -199,11 +199,11 @@ export function initShareModal({ dataManager, status = null } = {}) {
       textarea.select();
       const successful = document.execCommand("copy");
       document.body.removeChild(textarea);
-      if (successful && status) status.show("Copied share link to clipboard", { type: "success", timeout: 1800 });
+      if (successful && status) status.show("Copied share link to clipboard", { type: "success" });
       return successful;
     } catch (error) {
       console.warn("Fallback clipboard copy failed", error);
-      if (status) status.show("Unable to copy link", { type: "danger" });
+      if (status) status.show("Unable to copy link", { type: "warning" });
       return false;
     }
   }
@@ -451,11 +451,11 @@ export function initShareModal({ dataManager, status = null } = {}) {
             } else {
               await dataManager.shareWithUser({ contentType, contentId: record.id, username: entry.username, permissions: selected });
             }
-            if (status) status.show(`Updated access for ${displayName}.`, { type: "success", timeout: 1800 });
+            if (status) status.show(`Updated access for ${displayName}.`, { type: "success" });
             await refreshShareModal();
           } catch (error) {
             console.error("Failed to update share permissions", error);
-            if (status) status.show(error.message || "Unable to update permissions", { type: "danger" });
+            if (status) status.show(error.message || "Unable to update permissions", { type: "warning" });
             permissionSelect.disabled = false;
             removeButton.disabled = false;
           }
@@ -471,11 +471,11 @@ export function initShareModal({ dataManager, status = null } = {}) {
             } else {
               await dataManager.revokeShare({ contentType, contentId: record.id, username: entry.username });
             }
-            if (status) status.show(`Removed ${displayName}.`, { type: "success", timeout: 1800 });
+            if (status) status.show(`Removed ${displayName}.`, { type: "success" });
             await refreshShareModal();
           } catch (error) {
             console.error("Failed to revoke share", error);
-            if (status) status.show(error.message || "Unable to revoke access", { type: "danger" });
+            if (status) status.show(error.message || "Unable to revoke access", { type: "warning" });
             permissionSelect.disabled = false;
             removeButton.disabled = false;
           }
@@ -503,7 +503,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
       shareState.link = result?.link || null;
     } catch (error) {
       console.error("Failed to load share details", error);
-      if (status) status.show(error.message || "Unable to load access", { type: "danger" });
+      if (status) status.show(error.message || "Unable to load access", { type: "warning" });
       shareState.shares = [];
       shareState.link = null;
     } finally {
@@ -536,7 +536,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
       );
     } catch (error) {
       console.error("Failed to load eligible users", error);
-      if (status) status.show(error.message || "Unable to load eligible users", { type: "danger" });
+      if (status) status.show(error.message || "Unable to load eligible users", { type: "warning" });
       shareState.eligibleUsers = [];
     } finally {
       renderShareModal();
@@ -581,10 +581,10 @@ export function initShareModal({ dataManager, status = null } = {}) {
       renderShareModal();
       try {
         await dataManager.createShareLink({ contentType, contentId: shareState.record.id });
-        if (status) status.show("Share link ready.", { type: "success", timeout: 1800 });
+        if (status) status.show("Share link ready.", { type: "success" });
       } catch (error) {
         console.error("Failed to generate share link", error);
-        if (status) status.show(error.message || "Unable to create link", { type: "danger" });
+        if (status) status.show(error.message || "Unable to create link", { type: "warning" });
         shareState.linkStatus = error?.message || "Unable to create link.";
       } finally {
         await refreshShareModal();
@@ -604,10 +604,10 @@ export function initShareModal({ dataManager, status = null } = {}) {
       renderShareModal();
       try {
         await dataManager.revokeShareLink({ contentType, contentId: shareState.record.id });
-        if (status) status.show("Share link disabled.", { type: "success", timeout: 1800 });
+        if (status) status.show("Share link disabled.", { type: "success" });
       } catch (error) {
         console.error("Failed to disable share link", error);
-        if (status) status.show(error.message || "Unable to disable link", { type: "danger" });
+        if (status) status.show(error.message || "Unable to disable link", { type: "warning" });
         shareState.linkStatus = error?.message || "Unable to disable link.";
       } finally {
         await refreshShareModal();
@@ -630,10 +630,10 @@ export function initShareModal({ dataManager, status = null } = {}) {
         // data-manager.js's spotlightToGroup, same reasoning).
         const quickSharePermissions = contentType === "map" ? "edit" : "view";
         await dataManager.shareWithGroup({ contentType, contentId: shareState.record.id, groupId: active.groupId, permissions: quickSharePermissions });
-        if (status) status.show(`Shared with ${active.name || "active group"}.`, { type: "success", timeout: 1800 });
+        if (status) status.show(`Shared with ${active.name || "active group"}.`, { type: "success" });
       } catch (error) {
         console.error("Failed to share with active group", error);
-        if (status) status.show(error.message || "Unable to share", { type: "danger" });
+        if (status) status.show(error.message || "Unable to share", { type: "warning" });
       } finally {
         elements.shareQuickButton.disabled = false;
         await refreshShareModal();
@@ -648,7 +648,7 @@ export function initShareModal({ dataManager, status = null } = {}) {
       const typedValue = (elements.shareUsername?.value || "").trim();
       let permissions = elements.sharePermission?.value || "view";
       if (!typedValue) {
-        if (status) status.show("Enter a username or group to share with.", { type: "warning", timeout: 1800 });
+        if (status) status.show("Enter a username or group to share with.", { type: "warning" });
         return;
       }
       const match = findEligibleShareEntry(typedValue);
@@ -667,10 +667,10 @@ export function initShareModal({ dataManager, status = null } = {}) {
         elements.shareAddForm.reset();
         if (elements.sharePermission) elements.sharePermission.value = "view";
         enforceSharePermissionConstraints();
-        if (status) status.show(`Shared with ${isGroup ? match.name : targetUsername}.`, { type: "success", timeout: 1800 });
+        if (status) status.show(`Shared with ${isGroup ? match.name : targetUsername}.`, { type: "success" });
       } catch (error) {
         console.error("Failed to share", error);
-        if (status) status.show(error.message || "Unable to share", { type: "danger" });
+        if (status) status.show(error.message || "Unable to share", { type: "warning" });
       } finally {
         disableForm(elements.shareAddForm, false);
         await refreshShareModal();

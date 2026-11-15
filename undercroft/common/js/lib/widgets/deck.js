@@ -397,7 +397,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
       try {
         drawn = await drawCards({ dataManager, groupId: groupContext.groupId, groupPayload, deck, count, watcher });
       } catch (error) {
-        status?.show(error.message || "Unable to draw a card.", { type: "danger" });
+        status?.show(error.message || "Unable to draw a card.", { type: "warning" });
         return;
       }
     } else {
@@ -405,13 +405,12 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
       if (drawn) localInstances = drawn.instances;
     }
     if (!drawn) {
-      status?.show(`${deck.label} is empty — shuffle to reset it.`, { type: "info", timeout: 2500 });
+      status?.show(`${deck.label} is empty — shuffle to reset it.`, { type: "info" });
       return;
     }
     if (drawn.cards.length < count) {
       status?.show(`Only ${drawn.cards.length} card${drawn.cards.length === 1 ? "" : "s"} left in ${deck.label}.`, {
         type: "info",
-        timeout: 2500,
       });
     }
     if (sharesState()) {
@@ -459,7 +458,7 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
       localInstances = shuffleDeckInstances(localInstances, deck);
       renderCounts();
       resultLine.textContent = "";
-      status?.show(`${deck.label} shuffled.`, { type: "success", timeout: 1800 });
+      status?.show(`${deck.label} shuffled.`, { type: "success" });
       return;
     }
     const fresh = await fetchGroupPayloadForDeck(dataManager, groupContext.groupId, isGm).catch(() => null);
@@ -469,9 +468,9 @@ export function initDeckWidget(container, { status, dataManager, groupContext = 
       groupPayload = { ...groupPayload, propertyValues: { ...groupPayload.propertyValues, [ACTIVE_DECKS_PROPERTY_KEY]: instances } };
       renderCounts();
       resultLine.textContent = "";
-      status?.show(`${deck.label} shuffled.`, { type: "success", timeout: 1800 });
+      status?.show(`${deck.label} shuffled.`, { type: "success" });
     } catch (error) {
-      status?.show(error.message || "Unable to shuffle that deck.", { type: "danger" });
+      status?.show(error.message || "Unable to shuffle that deck.", { type: "warning" });
     }
   }
   shuffleButton.addEventListener("click", () => void handleShuffle());
@@ -526,7 +525,8 @@ export async function runDeckMacroAction(action, { dataManager, groupContext, st
     throw new Error(`${deck.label} is empty.`);
   }
   const labels = drawn.cards.map((card) => card.label).join(", ");
-  status?.show(`${labels} (${deck.label})`, { type: "success", timeout: 2600 });
+  playCardReveal({ cards: drawn.cards.map((card) => ({ label: card.label, image: card.image || "" })), backImage: deck.backImage || "" });
+  status?.show(`${labels} (${deck.label})`, { type: "success" });
   if (params.announce) {
     await postSystemMessage(dataManager, {
       groupId: groupContext.groupId,

@@ -205,13 +205,13 @@ export function initCharacterVitals(container, { dataManager, status, characterI
   // there. Initiative isn't persistent character state.
   async function pushInitiativeToActiveEncounter(value) {
     if (!groupId && !shareToken) {
-      status?.show("No active group to send initiative to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to send initiative to.", { type: "warning" });
       return;
     }
     try {
       const encounterId = await resolveActiveSpotlightId(dataManager, { groupId, shareToken, kind: "encounter" });
       if (!encounterId) {
-        status?.show("No encounter is currently active for this group.", { type: "info", timeout: 2500 });
+        status?.show("No encounter is currently active for this group.", { type: "info" });
         return;
       }
       const result = await dataManager.get("encounter", encounterId, { preferLocal: false });
@@ -220,13 +220,13 @@ export function initCharacterVitals(container, { dataManager, status, characterI
         (entry) => entry.refKind === "character" && entry.refId === characterId
       );
       if (!combatant) {
-        status?.show("You're not in the active encounter yet.", { type: "info", timeout: 2500 });
+        status?.show("You're not in the active encounter yet.", { type: "info" });
         return;
       }
       combatant.initiative = value;
       const { id: _id, ...body } = encounter;
       await dataManager.save("encounter", encounterId, body);
-      status?.show(`Initiative ${value} sent to the encounter.`, { type: "success", timeout: 2000 });
+      status?.show(`Initiative ${value} sent to the encounter.`, { type: "success" });
     } catch (error) {
       console.warn("Character sheet: unable to push initiative to the active encounter", error);
       status?.show("Unable to send initiative to the active encounter.", { type: "error" });

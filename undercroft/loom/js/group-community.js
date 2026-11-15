@@ -71,7 +71,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
   let loadToken = 0;
   let profileIsPublic = null;
 
-  const say = (message, type = "success") => getStatus?.()?.show(message, { type, timeout: type === "danger" ? 4000 : 1600 });
+  const say = (message, type = "success") => getStatus?.()?.show(message, { type });
 
   // --- Campaigns ---
   const campaignList = el("div", "d-flex flex-column gap-2");
@@ -97,7 +97,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
           onCampaignsChanged?.(campaigns);
           say("Order saved.");
         } catch (error) {
-          say(error.message || "Unable to save the order.", "danger");
+          say(error.message || "Unable to save the order.", "warning");
         }
       },
     },
@@ -131,7 +131,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
           await reloadCampaigns();
           onCampaignsChanged?.(campaigns);
         } catch (error) {
-          say(error.message || "Unable to save the campaign.", "danger");
+          say(error.message || "Unable to save the campaign.", "warning");
         }
       },
     });
@@ -156,7 +156,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
               await reloadCampaigns();
               onCampaignsChanged?.(campaigns);
             } catch (error) {
-              say(error.message || "Unable to delete the campaign.", "danger");
+              say(error.message || "Unable to delete the campaign.", "warning");
             }
           },
         }),
@@ -185,7 +185,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
       campaigns = (await dataManager.getGroupCampaigns(group.id)).campaigns;
     } catch (error) {
       campaigns = [];
-      say(error.message || "Unable to load campaigns.", "danger");
+      say(error.message || "Unable to load campaigns.", "warning");
     }
     renderCampaigns();
   }
@@ -221,7 +221,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
     try {
       usernames = (await dataManager.getAddableGroupPlayers(group.id)).players;
     } catch (error) {
-      say(error.message || "Unable to load accounts.", "danger");
+      say(error.message || "Unable to load accounts.", "warning");
       return;
     }
     const row = el("div", "d-flex flex-nowrap align-items-center gap-2");
@@ -248,7 +248,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
         say(`${added.player.username} added to the group.`);
         onGroupChanged?.();
       } catch (error) {
-        say(error.message || "Unable to add the player.", "danger");
+        say(error.message || "Unable to add the player.", "warning");
       }
     };
     name.addEventListener("keydown", (event) => {
@@ -293,7 +293,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
               say("Offer withdrawn.");
               void renderTransfer();
             } catch (error) {
-              say(error.message || "Unable to withdraw the offer.", "danger");
+              say(error.message || "Unable to withdraw the offer.", "warning");
             }
           },
         }),
@@ -330,7 +330,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
         say(`Offer sent to ${sent.transfer.toUsername}.`);
         void renderTransfer();
       } catch (error) {
-        say(error.message || "Unable to send the offer.", "danger");
+        say(error.message || "Unable to send the offer.", "warning");
       }
     };
     name.addEventListener("keydown", (event) => {
@@ -376,7 +376,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
               say("Player removed.");
               onGroupChanged?.();
             } catch (error) {
-              say(error.message || "Unable to remove the player.", "danger");
+              say(error.message || "Unable to remove the player.", "warning");
             }
           },
         }),
@@ -451,7 +451,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
       listings = result.listings;
     } catch (error) {
       listings = [];
-      say(error.message || "Unable to load listings.", "danger");
+      say(error.message || "Unable to load listings.", "warning");
     }
     renderListings();
     renderInspector();
@@ -638,7 +638,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
             selection = null;
             await reloadListings();
           } catch (error) {
-            say(error.message || "Unable to save the listing.", "danger");
+            say(error.message || "Unable to save the listing.", "warning");
           }
         },
       }),
@@ -664,7 +664,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
               selection = null;
               await reloadListings();
             } catch (error) {
-              say(error.message || "Unable to delete the listing.", "danger");
+              say(error.message || "Unable to delete the listing.", "warning");
             }
           },
         }),
@@ -717,7 +717,7 @@ export function initGroupCommunity({ dataManager, getStatus, campaignsMount, pla
         const profile = await dataManager.getCommunityProfile().catch(() => null);
         profileIsPublic = profile ? Boolean(profile.profile?.public) : null;
       } catch (error) {
-        say(error.message || "Unable to load the community data.", "danger");
+        say(error.message || "Unable to load the community data.", "warning");
         return;
       }
       await Promise.all([reloadCampaigns(), reloadListings()]);

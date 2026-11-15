@@ -203,13 +203,13 @@ export async function rollExpression(
   const tableRef = parseTableReferenceExpression(trimmed);
   if (tableRef) {
     if (!dataManager) {
-      status?.show("Table rolls aren't available here.", { type: "danger" });
+      status?.show("Table rolls aren't available here.", { type: "warning" });
       return null;
     }
     try {
       const outcome = await resolveTableReference(dataManager, tableRef);
       if (!outcome) {
-        status?.show(`Couldn't find "${tableRef.title}#^${tableRef.blockId}".`, { type: "danger" });
+        status?.show(`Couldn't find "${tableRef.title}#^${tableRef.blockId}".`, { type: "warning" });
         return null;
       }
       // No "pageTitle (dN)" parenthetical — the table being rolled is
@@ -217,11 +217,10 @@ export async function rollExpression(
       const prefix = label ? `${label}: ` : "";
       status?.show(`${prefix}${describeTableRow(outcome.row)}`, {
         type: "success",
-        timeout: 2600,
       });
       return { expression: trimmed, isTable: true, ...outcome };
     } catch (error) {
-      status?.show(error?.message || "Unable to roll that table.", { type: "danger" });
+      status?.show(error?.message || "Unable to roll that table.", { type: "warning" });
       return null;
     }
   }
@@ -232,7 +231,7 @@ export async function rollExpression(
     const result = (await tryOverlayRoll(playable, dataManager, dice)) || rollDiceExpression(trimmed, { dice, context });
     if (announce) {
       const prefix = label ? `${label}: ` : "";
-      status?.show(`${prefix}${result.notation || trimmed} → ${result.total}`, { type: "success", timeout: 2200 });
+      status?.show(`${prefix}${result.notation || trimmed} → ${result.total}`, { type: "success" });
     }
     if (post && dataManager && groupContext?.groupId) {
       const prefix = label ? `${label}: ` : "";
@@ -255,9 +254,21 @@ export async function rollExpression(
     }
     return { expression: trimmed, total: result.total, result };
   } catch (error) {
-    status?.show(error.message || "Unable to roll that.", { type: "danger" });
+    status?.show(error.message || "Unable to roll that.", { type: "warning" });
     return null;
   }
+}
+
+// Shows a finished roll animating on everyone's screen — the GM's alone to send. `dieResults` are the physically rolled
+// per-die values, since dice-box can't be made to land a remote roll on a chosen result; a roll that fell back to the
+// plain random path has none and can't be shown this way (its message still posts). Returns whether it was sent.
+export function broadcastRoll({ dataManager, groupContext, label = "", total, dieResults } = {}) {
+  if (groupContext?.access !== "owner" || !dataManager || !groupContext.groupId) return false;
+  if (!Array.isArray(dieResults) || !dieResults.length) return false;
+  void dataManager
+    .postDiceRollBroadcast({ groupId: groupContext.groupId, label, total, dieResults })
+    .catch((error) => console.warn("[dice-roll] Broadcast failed", error));
+  return true;
 }
 
 // Which System's dice are in effect: the active Group's own
@@ -716,7 +727,6 @@ export async function rollSystemMove(
   const notation = rolled.result?.notation || expression;
   rollOptions.status?.show(`${prefix}${notation} → ${rolled.total}${verdictSuffix}`, {
     type: "success",
-    timeout: 2600,
   });
   if (post && dataManager && groupContext?.groupId) {
     void postSystemMessage(dataManager, {

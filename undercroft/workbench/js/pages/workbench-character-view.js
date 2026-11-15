@@ -6,6 +6,7 @@ import {
   createStandardCardChrome,
 } from "../lib/canvas-card.js";
 import { setElementCollapsed, bindCollapsibleToggle } from "../../../common/js/lib/collapsible.js";
+import { handleCommandRequest } from "../../../common/js/lib/command-handoff.js";
 import { createJsonDataPanel, createCollapsibleSection, createIconButton, createCompactField, createToolbarButtonGroup } from "../../../common/js/lib/ui-components.js";
 import { escapeHtml } from "../../../common/js/lib/auth-ui.js";
 import { disposeTooltips, refreshTooltips, setDisabledTooltip, initTooltip } from "../../../common/js/lib/tooltips.js";
@@ -839,7 +840,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     getData: () => state.draft || {},
     onExport: () => {
       if (!state.draft) {
-        status.show("Nothing to export yet.", { type: "info", timeout: 2000 });
+        status.show("Nothing to export yet.", { type: "info" });
         return;
       }
       exportDraft();
@@ -2923,7 +2924,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     await persistDraft({ silent: false });
     syncCharacterActions();
     expandCharacterPropertiesSection();
-    status.show(`Leveled up ${cls.name || "this class"} to level ${nextLevel}.`, { type: "success", timeout: 2400 });
+    status.show(`Leveled up ${cls.name || "this class"} to level ${nextLevel}.`, { type: "success" });
 
     setLevelUpModalStage("resolve");
     renderLevelUpModalResolve(newlyPending);
@@ -3180,7 +3181,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     await persistDraft({ silent: false });
     syncCharacterActions();
     expandCharacterPropertiesSection();
-    status.show(`Added ${classRecord.name || "class"}.`, { type: "success", timeout: 2400 });
+    status.show(`Added ${classRecord.name || "class"}.`, { type: "success" });
 
     setAddClassModalStage("resolve");
     renderAddClassResolvePanel(newlyPending);
@@ -3370,7 +3371,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     await persistDraft({ silent: false });
     syncCharacterActions();
     expandCharacterPropertiesSection();
-    status.show(`Leveled up ${preview.className} to level ${preview.nextLevel}.`, { type: "success", timeout: 2400 });
+    status.show(`Leveled up ${preview.className} to level ${preview.nextLevel}.`, { type: "success" });
 
     setLevelUpModalStage("resolve");
     renderLevelUpModalResolve(newlyPending);
@@ -3574,7 +3575,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     renderPreview();
     await persistDraft({ silent: false });
     syncCharacterActions();
-    status.show("Choice resolved.", { type: "success", timeout: 1800 });
+    status.show("Choice resolved.", { type: "success" });
   }
 
   // A choice a System marked `optional` (e.g. Daggerheart's Secondary
@@ -3598,7 +3599,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     renderPreview();
     await persistDraft({ silent: false });
     syncCharacterActions();
-    status.show("Choice skipped.", { type: "info", timeout: 1800 });
+    status.show("Choice skipped.", { type: "info" });
   }
 
   // Dispatches on choice.type — abilityScoreBonus/abilityScoreImprovement
@@ -3738,7 +3739,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     renderPreview();
     await persistDraft({ silent: false });
     syncCharacterActions();
-    status.show("Choice resolved.", { type: "success", timeout: 1800 });
+    status.show("Choice resolved.", { type: "success" });
   }
 
   // Shared by Background's ability-score bonus and class-granted Ability
@@ -4192,7 +4193,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   async function executeDiceRoll(expression, { label = "", updateInput = true, targetValue = undefined, rollKey = "", item = null } = {}) {
     const trimmed = typeof expression === "string" ? expression.trim() : "";
     if (!trimmed) {
-      status.show("Enter a dice expression like 2d6 + 3.", { type: "info", timeout: 2000 });
+      status.show("Enter a dice expression like 2d6 + 3.", { type: "info" });
       return null;
     }
     if (updateInput && elements.diceExpression) {
@@ -4259,7 +4260,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       combatant.initiative = value;
       const { id: _id, ...body } = encounter;
       await dataManager.save("encounter", encounterId, body);
-      status.show(`Initiative ${value} sent to the encounter.`, { type: "success", timeout: 2000 });
+      status.show(`Initiative ${value} sent to the encounter.`, { type: "success" });
     } catch (error) {
       console.warn("Character editor: unable to push initiative to the active encounter", error);
     }
@@ -4604,7 +4605,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       .map((die) => ({ dieId: die.id, count: symbolPoolCounts.get(die.id) || 0 }))
       .filter((entry) => entry.count > 0);
     if (!poolCounts.length) {
-      status.show("Add at least one die to the pool first.", { type: "info", timeout: 2000 });
+      status.show("Add at least one die to the pool first.", { type: "info" });
       return;
     }
     const rolled = await rollSymbolPoolExpression(poolCounts, { diceById, dataManager });
@@ -4612,7 +4613,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     if (elements.diceSymbolResult) {
       elements.diceSymbolResult.textContent = text;
     }
-    status.show(text, { type: "success", timeout: 2600 });
+    status.show(text, { type: "success" });
     recordGameLogRoll(
       { notation: poolCounts.map((entry) => `${entry.count} ${entry.dieId}`).join(" + ") },
       { label: "Symbol Pool", verdict: text }
@@ -5501,7 +5502,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       groupShareState.status = message;
       setGroupShareStatus(message);
       if (status) {
-        status.show(message, { type: "danger" });
+        status.show(message, { type: "warning" });
       }
     } finally {
       if (button) {
@@ -5523,7 +5524,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       groupShareState.status = "";
       setGroupShareStatus("");
       if (status) {
-        status.show(`Claimed ${label}.`, { type: "success", timeout: 2000 });
+        status.show(`Claimed ${label}.`, { type: "success" });
       }
       const url = new URL(window.location.href);
       url.searchParams.set("record", `characters:${member.content_id}`);
@@ -5543,10 +5544,10 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       button.disabled = false;
       if (error?.status === 401) {
         if (status) {
-          status.show("Sign in to claim a character.", { type: "warning", timeout: 2000 });
+          status.show("Sign in to claim a character.", { type: "warning" });
         }
       } else if (status) {
-        status.show(message, { type: "danger" });
+        status.show(message, { type: "warning" });
       }
       await refreshGroupShareDetails();
       renderGroupSharePanel();
@@ -5614,7 +5615,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       console.error("Character editor: unable to load group share", error);
       groupShareState.error = error?.message || "Unable to load available characters.";
       if (status) {
-        status.show(groupShareState.error, { type: "danger" });
+        status.show(groupShareState.error, { type: "warning" });
       }
     } finally {
       groupShareState.loading = false;
@@ -5653,7 +5654,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } catch (error) {
       console.error("Character editor: unable to load shared character", error);
       if (status) {
-        status.show(error.message || "Unable to load shared character", { type: "danger" });
+        status.show(error.message || "Unable to load shared character", { type: "warning" });
       }
     }
   }
@@ -5684,11 +5685,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
       applyTemplateData(payload, { origin: metadata.source || "remote", id });
       if (announce) {
-        status.show(`Loaded template ${payload.title || id}`, { type: "success", timeout: 1800 });
+        status.show(`Loaded template ${payload.title || id}`, { type: "success" });
       }
     } catch (error) {
       console.error("Character editor: failed to load template", error);
-      status.show("Unable to load template", { type: "error", timeout: 2500 });
+      status.show("Unable to load template", { type: "error" });
     }
   }
 
@@ -5757,7 +5758,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     } catch (error) {
       console.error("Character editor: failed to load group", error);
-      status.show("Unable to load this group", { type: "error", timeout: 2500 });
+      status.show("Unable to load this group", { type: "error" });
       return;
     }
     // The active group may have moved on while this fetch was in flight —
@@ -5933,7 +5934,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       expandCharacterPropertiesSection();
       status.show(`Loaded ${state.draft.name || metadata.title || state.draft.id}`, {
         type: "success",
-        timeout: 2000,
       });
       await syncGameLogContext();
     } catch (error) {
@@ -5943,7 +5943,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         ? "That character is no longer available and was removed from your list."
         : "Unable to load character";
       const type = pruned ? "warning" : "error";
-      status.show(message, { type, timeout: 2800 });
+      status.show(message, { type });
       syncCharacterToolbarVisibility();
       await syncGameLogContext();
     }
@@ -6210,7 +6210,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   async function assignTemplateToCharacter(templateId) {
     const trimmedTemplate = (templateId || "").trim();
     if (!trimmedTemplate) {
-      status.show("Select a template first.", { type: "warning", timeout: 2000 });
+      status.show("Select a template first.", { type: "warning" });
       return;
     }
     if (!state.draft?.id) {
@@ -6218,7 +6218,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const templateMetadata = templateCatalog.get(trimmedTemplate);
     if (!templateMetadata) {
-      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      status.show("Template metadata unavailable.", { type: "warning" });
       return;
     }
     await loadTemplateById(trimmedTemplate);
@@ -8036,7 +8036,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         applyBindingValue(path, resolveNext(current), {});
       }
     } catch (error) {
-      status.show(`Unable to run this action: ${error.message}`, { type: "error", timeout: 4000 });
+      status.show(`Unable to run this action: ${error.message}`, { type: "error" });
     }
   }
 
@@ -9359,7 +9359,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const topLevelKey = groupPathSegments[0];
     if (!isGroupPropertyEditable(topLevelKey)) {
-      status?.show("You don't have permission to edit this.", { type: "warning", timeout: 2200 });
+      status?.show("You don't have permission to edit this.", { type: "warning" });
       return;
     }
     if (!state.groupContext.values || typeof state.groupContext.values !== "object") {
@@ -9378,7 +9378,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     void persistGroupPropertyValue({ dataManager, groupId, key: topLevelKey, value: values[topLevelKey] })
       .then(() => groupWatcher?.noteLocalWrite())
       .catch((error) => {
-        status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+        status?.show(error?.message || "Unable to save that change.", { type: "warning" });
       });
   }
 
@@ -11100,7 +11100,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     // Review), but that was a background step, not its own "done" moment.
     const finishedName = (elements.buildCharacterName?.value || "").trim();
     if (finishedName) {
-      status.show(`Created ${finishedName}`, { type: "success", timeout: 2400 });
+      status.show(`Created ${finishedName}`, { type: "success" });
     }
     // Bootstrap sets aria-hidden as the modal hides — blur first so that
     // never lands on a still-focused element (an a11y violation otherwise).
@@ -11154,17 +11154,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const name = (elements.buildCharacterName?.value || "").trim();
     const templateId = (elements.buildCharacterTemplate?.value || "").trim();
     if (!name || !templateId || !buildWizardState.classId) {
-      status.show("Complete every step before creating the character.", { type: "warning", timeout: 2400 });
+      status.show("Complete every step before creating the character.", { type: "warning" });
       return;
     }
     const id = generateCharacterId(name);
     if (characterCatalog.has(id)) {
-      status.show("Character ID already exists. Choose another name.", { type: "warning", timeout: 2400 });
+      status.show("Character ID already exists. Choose another name.", { type: "warning" });
       return;
     }
     const templateMetadata = templateCatalog.get(templateId);
     if (!templateMetadata) {
-      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      status.show("Template metadata unavailable.", { type: "warning" });
       return;
     }
     if (state.template?.id !== templateId) {
@@ -11211,7 +11211,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       console.error("Character editor: unable to fetch Build Character source records", error);
     }
     if (!classRecord) {
-      status.show("Unable to fetch the selected class.", { type: "danger", timeout: 2800 });
+      status.show("Unable to fetch the selected class.", { type: "warning" });
       return;
     }
 
@@ -12045,12 +12045,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const templateId = (elements.newCharacterTemplate.value || "").trim();
     if (!name) {
       elements.newCharacterForm?.classList.add("was-validated");
-      status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Provide a name for the new character.", { type: "warning" });
       return;
     }
     if (!templateId) {
       elements.newCharacterForm?.classList.add("was-validated");
-      status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Select a template for the new character.", { type: "warning" });
       return;
     }
     let id = "";
@@ -12058,7 +12058,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       id = generateCharacterId(name);
     } while (id && characterCatalog.has(id));
     if (!id) {
-      status.show("Unable to generate a character ID. Try again.", { type: "error", timeout: 2400 });
+      status.show("Unable to generate a character ID. Try again.", { type: "error" });
       return;
     }
     const created = await startNewCharacter({ id, name, templateId });
@@ -12081,7 +12081,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const trimmedName = name.trim();
     if (!trimmedName) {
-      status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Provide a name for the new character.", { type: "warning" });
       return;
     }
     const templateOptions = Array.from(templateCatalog.values()).filter((entry) => entry.id);
@@ -12094,7 +12094,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const trimmedTemplate = templateId.trim();
     if (!trimmedTemplate) {
-      status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Select a template for the new character.", { type: "warning" });
       return;
     }
     const suggestedId = (() => {
@@ -12110,7 +12110,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const trimmedId = idInput.trim();
     if (!trimmedId) {
-      status.show("Provide an ID for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Provide an ID for the new character.", { type: "warning" });
       return;
     }
     await startNewCharacter({ id: trimmedId, name: trimmedName, templateId: trimmedTemplate });
@@ -12121,7 +12121,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // the source is the current draft's own data instead of a blank shape.
   async function duplicateCharacter({ keepName = false } = {}) {
     if (!state.draft?.id) {
-      status.show("Select a character to duplicate.", { type: "warning", timeout: 2000 });
+      status.show("Select a character to duplicate.", { type: "warning" });
       return;
     }
     const sourceName = state.draft.title || state.draft.name || state.draft.id;
@@ -12132,7 +12132,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       id = generateCharacterId(duplicateName);
     } while (id && characterCatalog.has(id));
     if (!id) {
-      status.show("Unable to generate a character ID. Try again.", { type: "error", timeout: 2400 });
+      status.show("Unable to generate a character ID. Try again.", { type: "error" });
       return;
     }
     const draft = cloneCharacter(state.draft);
@@ -12171,7 +12171,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     syncCharacterActions();
     state.shareToken = "";
     clearGameLogContext();
-    status.show(keepName ? `Saved as your own copy, "${duplicateName}"` : `Duplicated as "${duplicateName}"`, { type: "success", timeout: 2400 });
+    status.show(keepName ? `Saved as your own copy, "${duplicateName}"` : `Duplicated as "${duplicateName}"`, { type: "success" });
   }
 
   async function startNewCharacter({ id, name, templateId }) {
@@ -12179,20 +12179,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const trimmedTemplate = (templateId || "").trim();
     const trimmedId = (id || "").trim();
     if (!trimmedId) {
-      status.show("Provide an ID for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Provide an ID for the new character.", { type: "warning" });
       return false;
     }
     if (!trimmedName) {
-      status.show("Provide a name for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Provide a name for the new character.", { type: "warning" });
       return false;
     }
     if (!trimmedTemplate) {
-      status.show("Select a template for the new character.", { type: "warning", timeout: 2000 });
+      status.show("Select a template for the new character.", { type: "warning" });
       return false;
     }
     const templateMetadata = templateCatalog.get(trimmedTemplate);
     if (!templateMetadata) {
-      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      status.show("Template metadata unavailable.", { type: "warning" });
       return false;
     }
     if (state.template?.id !== trimmedTemplate) {
@@ -12202,7 +12202,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     }
     if (characterCatalog.has(trimmedId)) {
-      status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
+      status.show("Character ID already exists. Choose another one.", { type: "warning" });
       return false;
     }
     // systemIds (the same array every Library kind uses for "Assigned
@@ -12256,7 +12256,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     syncCharacterActions();
     state.shareToken = "";
     clearGameLogContext();
-    status.show(`Started ${trimmedName}`, { type: "success", timeout: 2000 });
+    status.show(`Started ${trimmedName}`, { type: "success" });
     return true;
   }
 
@@ -12300,7 +12300,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   async function activateImportMode() {
     if (!elements.importCharacterForm) {
-      status.show("Import isn't available in this browser.", { type: "warning", timeout: 2500 });
+      status.show("Import isn't available in this browser.", { type: "warning" });
       return;
     }
     pendingImport = null;
@@ -12362,11 +12362,11 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const sourceValue = (elements.importCharacterValue?.value || "").trim();
     if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
     if (!mappingId) {
-      status.show("Select what to import.", { type: "warning", timeout: 2000 });
+      status.show("Select what to import.", { type: "warning" });
       return;
     }
     if (!sourceValue) {
-      status.show("Enter a character ID or URL.", { type: "warning", timeout: 2000 });
+      status.show("Enter a character ID or URL.", { type: "warning" });
       return;
     }
     if (elements.importCharacterFetchButton) elements.importCharacterFetchButton.disabled = true;
@@ -12378,7 +12378,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       // silently save garbage.
       if (!mappedData || mappedData.kind !== "character") {
         if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
-        status.show("This mapping doesn't produce a character.", { type: "error", timeout: 3500 });
+        status.show("This mapping doesn't produce a character.", { type: "error" });
         return;
       }
       const suggestedName = (mappedData.name || "").trim() || "Imported Character";
@@ -12404,7 +12404,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } catch (error) {
       console.error("Import Character: fetch failed", error);
       if (elements.importCharacterStatus) elements.importCharacterStatus.textContent = "";
-      status.show(error.message || "Unable to fetch that character.", { type: "error", timeout: 3500 });
+      status.show(error.message || "Unable to fetch that character.", { type: "error" });
     } finally {
       if (elements.importCharacterFetchButton) elements.importCharacterFetchButton.disabled = false;
     }
@@ -12412,7 +12412,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
   async function createImportedCharacterFromForm() {
     if (!pendingImport) {
-      status.show("Fetch a character before creating it.", { type: "warning", timeout: 2200 });
+      status.show("Fetch a character before creating it.", { type: "warning" });
       return;
     }
     let id = pendingImport.id || "";
@@ -12428,17 +12428,17 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       pendingImport.id = id;
     }
     if (!id) {
-      status.show("Unable to generate a character ID. Try fetching again.", { type: "error", timeout: 2400 });
+      status.show("Unable to generate a character ID. Try fetching again.", { type: "error" });
       return;
     }
     if (!name) {
       elements.importCharacterForm?.classList.add("was-validated");
-      status.show("Provide a name for the imported character.", { type: "warning", timeout: 2000 });
+      status.show("Provide a name for the imported character.", { type: "warning" });
       return;
     }
     if (!templateId) {
       elements.importCharacterForm?.classList.add("was-validated");
-      status.show("Select a template for the imported character.", { type: "warning", timeout: 2000 });
+      status.show("Select a template for the imported character.", { type: "warning" });
       return;
     }
     const created = await startImportedCharacter({
@@ -12471,7 +12471,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     }
     const templateMetadata = templateCatalog.get(trimmedTemplate);
     if (!templateMetadata) {
-      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      status.show("Template metadata unavailable.", { type: "warning" });
       return false;
     }
     if (state.template?.id !== trimmedTemplate) {
@@ -12481,7 +12481,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       }
     }
     if (characterCatalog.has(trimmedId)) {
-      status.show("Character ID already exists. Choose another one.", { type: "warning", timeout: 2400 });
+      status.show("Character ID already exists. Choose another one.", { type: "warning" });
       return false;
     }
     const initialSchema = state.template?.schema || templateMetadata?.schema || "";
@@ -12550,20 +12550,20 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     clearGameLogContext();
     // url/mapping are already set on the saved character, so the existing
     // Re-import button works on it immediately with no further wiring.
-    status.show(`Imported ${trimmedName}`, { type: "success", timeout: 2000 });
+    status.show(`Imported ${trimmedName}`, { type: "success" });
     return true;
   }
 
   async function deleteCurrentCharacter() {
     const id = state.draft?.id;
     if (!id) {
-      status.show("Select a character before deleting.", { type: "warning", timeout: 2000 });
+      status.show("Select a character before deleting.", { type: "warning" });
       return;
     }
     const metadata = characterCatalog.get(id) || {};
     const origin = state.characterOrigin || metadata.source || metadata.origin || state.character?.origin || "";
     if (origin === "builtin") {
-      status.show("Built-in characters cannot be deleted.", { type: "info", timeout: 2400 });
+      status.show("Built-in characters cannot be deleted.", { type: "info" });
       return;
     }
     const label = state.draft.name || metadata.title || id;
@@ -12582,7 +12582,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } catch (error) {
       console.error("Character editor: unable to delete character", error);
       if (status) {
-        status.show(error.message || "Unable to delete character", { type: "danger" });
+        status.show(error.message || "Unable to delete character", { type: "warning" });
       }
       if (button) {
         button.disabled = false;
@@ -12631,7 +12631,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       syncCharacterActions();
       clearGameLogContext();
     }
-    status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+    status.show(`Deleted ${label}`, { type: "success" });
     // Same fix as reimportCurrentCharacter's own finally block: the error
     // path above already clears this manually-added "disabled" class, but
     // nothing on THIS success path did — syncCharacterActions' own
@@ -12806,7 +12806,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         cancelLabel: "Cancel",
       });
       if (!confirmed) {
-        status.show("Re-import cancelled.", { type: "info", timeout: 2000 });
+        status.show("Re-import cancelled.", { type: "info" });
         resetButton();
         return;
       }
@@ -12842,7 +12842,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
         }
       }
       await dataManager.save("character", id, merged);
-      status.show(`Re-imported ${merged.name || label}.`, { type: "success", timeout: 2200 });
+      status.show(`Re-imported ${merged.name || label}.`, { type: "success" });
       // loadCharacter's own syncCharacterActions call recomputes this
       // button's disabled/aria-disabled state fresh via updateToolbarButton
       // — but that only ever touches disabled/aria-disabled, never this
@@ -12852,8 +12852,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } catch (error) {
       console.error("Character editor: unable to re-import character", error);
       status.show(error?.message ? `Unable to re-import: ${error.message}` : "Unable to re-import this character.", {
-        type: "danger",
-        timeout: 4000,
+        type: "warning",
       });
       resetButton();
     } finally {
@@ -12885,7 +12884,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     anchor.click();
     document.body.removeChild(anchor);
     URL.revokeObjectURL(url);
-    status.show("Downloaded character JSON", { timeout: 2000 });
+    status.show("Downloaded character JSON");
   }
 
   async function persistDraft({ silent = true } = {}) {
@@ -12955,7 +12954,6 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     } else if (dataManager.isAuthenticated() && !dataManager.baseUrl && !silent && status) {
       status.show("Server connection not configured. Start the Workbench server to sync.", {
         type: "warning",
-        timeout: 3000,
       });
     }
 
@@ -12963,7 +12961,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
     const denied = Boolean(remoteError) && (remoteError.status === 403 || (remoteError.status === 401 && /not permitted|permission/i.test(remoteError.message || "")));
     if (denied) {
       state.editDeniedId = id;
-      status?.show("Not saved: you don't have permission to edit this character. Use \"Save as my own copy\" to keep your changes.", { type: "warning", timeout: 7000 });
+      status?.show("Not saved: you don't have permission to edit this character. Use \"Save as my own copy\" to keep your changes.", { type: "warning" });
       renderCanvas();
       syncCharacterActions();
       return false;
@@ -12975,7 +12973,7 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
       } catch (error) {
         console.warn("Character editor: unable to save character locally", error);
         if (status) {
-          status.show("Failed to save character locally", { type: "danger", timeout: 2200 });
+          status.show("Failed to save character locally", { type: "warning" });
         }
         return false;
       }
@@ -13009,12 +13007,12 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
 
     if (remoteError && status) {
       const message = remoteError.message || "Unable to sync character with the server";
-      status.show(message, { type: "danger" });
+      status.show(message, { type: "warning" });
     } else if (!silent) {
       if (remoteSucceeded) {
-        status.show(`Saved ${label} to the server`, { type: "success", timeout: 2200 });
+        status.show(`Saved ${label} to the server`, { type: "success" });
       } else {
-        status.show("Character saved locally", { type: "success", timeout: 2000 });
+        status.show("Character saved locally", { type: "success" });
       }
     }
 
@@ -13258,6 +13256,16 @@ export async function initCharacterView({ status, undoStack, dataManager, onStat
   // syncGameLogContext's sole source of truth for the signed-in case.
   window.addEventListener("workbench:active-group-changed", () => {
     void syncGameLogContext();
+  });
+
+  handleCommandRequest({
+    status,
+    makes: {
+      character: () => {
+        openNewCharacterDialog();
+        setAddCharacterMode("build");
+      },
+    },
   });
 
   return {

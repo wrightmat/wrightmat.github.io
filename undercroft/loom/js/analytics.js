@@ -49,7 +49,7 @@ function labelled(text, node) {
 }
 
 export function initAnalytics({ dataManager, getStatus, listMount, resultMount, builderMount }) {
-  const say = (message, type = "success") => getStatus?.()?.show(message, { type, timeout: type === "danger" ? 5000 : 2000 });
+  const say = (message, type = "success") => getStatus?.()?.show(message, { type });
   let catalog = null;
   let reports = [];
   let current = null; // {id, name, preset, spec, view}
@@ -441,7 +441,7 @@ export function initAnalytics({ dataManager, getStatus, listMount, resultMount, 
       await reloadReports(saved.id);
       say("Report saved.");
     } catch (error) {
-      say(error.message || "Unable to save the report.", "danger");
+      say(error.message || "Unable to save the report.", "warning");
     }
     syncToolbar();
   }
@@ -456,7 +456,7 @@ export function initAnalytics({ dataManager, getStatus, listMount, resultMount, 
       open(blankReport());
       say("Report deleted.");
     } catch (error) {
-      say(error.message || "Unable to delete the report.", "danger");
+      say(error.message || "Unable to delete the report.", "warning");
     }
   }
 
@@ -487,7 +487,7 @@ export function initAnalytics({ dataManager, getStatus, listMount, resultMount, 
         open(reports[0] || blankReport());
       } catch (error) {
         loaded = false;
-        say(error.message || "Unable to load analytics.", "danger");
+        say(error.message || "Unable to load analytics.", "warning");
       }
     },
   };

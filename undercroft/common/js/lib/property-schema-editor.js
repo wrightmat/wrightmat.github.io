@@ -888,7 +888,6 @@ export function collectValueRow(valueRow, options, ctx = {}) {
     } catch (error) {
       ctx.status?.show(`"${name || "This entry"}"'s extra properties aren't valid JSON — saved without them.`, {
         type: "warning",
-        timeout: 4000,
       });
     }
   }

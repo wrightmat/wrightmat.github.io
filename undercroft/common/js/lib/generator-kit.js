@@ -235,10 +235,10 @@ export async function generateNoteForRecord({ record, elements, status, generate
     record.notes = note;
     if (elements.nameInput) elements.nameInput.value = name;
     if (elements.notesText) elements.notesText.value = note;
-    status?.show("Note generated.", { type: "success", timeout: 1500 });
+    status?.show("Note generated.", { type: "success" });
     return true;
   } catch (error) {
-    status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
+    status?.show(`Unable to generate note: ${error.message}`, { type: "error" });
     return false;
   } finally {
     if (elements.generateNoteButton) {

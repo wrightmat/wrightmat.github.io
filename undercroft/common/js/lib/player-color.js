@@ -101,7 +101,7 @@ export function createPlayerColorControl({ dataManager, status, label = "Player 
   async function commit(color, message) {
     try {
       await savePlayerColor(dataManager, color);
-      status?.show(message, { type: "success", timeout: 1500 });
+      status?.show(message, { type: "success" });
     } catch (error) {
       status?.show(error.message || "Unable to save your Player color.", { type: "error" });
     }

@@ -1,6 +1,16 @@
 import { disposeTooltips, initTooltip, flashTooltipMessage } from "./tooltips.js";
 
-const DEFAULT_TIMEOUT = 4000;
+// How long each type stays; an error stays until dismissed.
+const TIMEOUTS = { info: 10000, success: 10000, warning: 20000, error: 0 };
+// Past this many, the oldest timed toast makes way, so a burst of messages can't fill the screen.
+const MAX_VISIBLE = 5;
+const TYPE_CLASSES = {
+  error: ["border-danger-subtle", "bg-danger-subtle", "text-danger-emphasis"],
+  warning: ["border-warning-subtle", "bg-warning-subtle", "text-warning-emphasis"],
+  success: ["border-success-subtle", "bg-success-subtle", "text-success-emphasis"],
+  info: ["border-body-tertiary", "bg-body-tertiary"],
+};
+const PROGRESS_CLASSES = { warning: "bg-warning", success: "bg-success", info: "bg-secondary" };
 let counter = 0;
 
 export class StatusManager {
@@ -9,68 +19,69 @@ export class StatusManager {
     if (!this.root.classList.contains("status-root")) {
       this.root.classList.add("status-root");
     }
-    this.queue = [];
-    this.active = null;
+    this.toasts = new Map();
   }
 
-  show(message, { type = "info", timeout = DEFAULT_TIMEOUT } = {}) {
+  show(message, { type = "info" } = {}) {
     const id = `status-${counter++}`;
-    // Errors always persist until manually dismissed (see the close button
-    // in _render), regardless of a caller-passed timeout.
-    const resolvedTimeout = type === "error" ? 0 : timeout;
-    const item = { id, message, type, timeout: resolvedTimeout };
-    this.queue.push(item);
-    if (!this.active) {
-      this._dequeue();
+    const kind = TYPE_CLASSES[type] ? type : "info";
+    const timeout = TIMEOUTS[kind];
+    const element = this._render({ id, message, type: kind, timeout });
+    this.root.appendChild(element);
+    const toast = { element, timeout, countdown: null };
+    this.toasts.set(id, toast);
+    requestAnimationFrame(() => {
+      element.classList.add("status-toast-enter-active");
+      element.classList.remove("status-toast-enter");
+    });
+    if (timeout > 0) {
+      toast.countdown = element
+        .querySelector(".status-toast-progress")
+        .animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], { duration: timeout, easing: "linear", fill: "forwards" });
+      toast.countdown.onfinish = () => this.remove(id);
+      element.addEventListener("mouseenter", () => toast.countdown.pause());
+      element.addEventListener("mouseleave", () => toast.countdown.play());
+    }
+    const timed = [...this.toasts].filter(([, entry]) => entry.timeout > 0);
+    while (this.toasts.size > MAX_VISIBLE && timed.length) {
+      this.remove(timed.shift()[0]);
     }
     return id;
   }
 
   remove(id) {
-    if (this.active && this.active.id === id) {
-      this._clearActive();
-      this._dequeue();
-      return;
-    }
-    this.queue = this.queue.filter((item) => item.id !== id);
+    const toast = this.toasts.get(id);
+    if (!toast) return;
+    this.toasts.delete(id);
+    toast.countdown?.cancel();
+    const { element } = toast;
+    element.classList.remove("status-toast-enter-active");
+    element.classList.add("status-toast-exit", "status-toast-exit-active");
+    // A timer rather than transitionend: a toast removed before it finished entering has no opacity change to end.
+    // Its tooltips go with it, once a clicked button's own tooltip has finished hiding.
+    window.setTimeout(() => {
+      disposeTooltips(element);
+      element.remove();
+    }, 200);
   }
 
   _render(item) {
     const wrapper = document.createElement("div");
     wrapper.dataset.statusId = item.id;
-    const classes = [
-      "status-toast",
-      "status-toast-enter",
-      "rounded-pill",
-      "border",
-      "px-4",
-      "py-2",
-      "fw-medium",
-      "fs-6",
-      "shadow-theme",
-      "bg-body",
-      "text-body",
-    ];
+    wrapper.className = ["status-toast", "status-toast-enter", "rounded", "overflow-hidden", "border", "fw-medium", "fs-6", "shadow-theme", "bg-body", "text-body", ...TYPE_CLASSES[item.type]].join(" ");
 
-    if (item.type === "error") {
-      classes.push("border-danger-subtle", "bg-danger-subtle", "text-danger-emphasis");
-    } else if (item.type === "success") {
-      classes.push("border-success-subtle", "bg-success-subtle", "text-success-emphasis");
-    } else {
-      classes.push("border-body-tertiary", "bg-body-tertiary");
-    }
-
-    wrapper.className = classes.join(" ");
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-center px-4 py-2";
+    wrapper.appendChild(row);
 
     const text = document.createElement("span");
     text.className = "status-toast-message";
     text.textContent = item.message;
-    wrapper.appendChild(text);
+    row.appendChild(text);
 
     // Iconify only renders icons when an element is added to the DOM — it
     // doesn't watch data-icon changes — so swapping copy->check replaces the
-    // whole <span> rather than mutating its attribute (same as app.js's
-    // replaceTypeIcon).
+    // whole <span> rather than mutating its attribute.
     const setCopyIcon = (iconName) => {
       const fresh = document.createElement("span");
       fresh.className = "iconify";
@@ -100,73 +111,30 @@ export class StatusManager {
         }, 1200);
       }, () => {});
     });
-    wrapper.appendChild(copyButton);
+    row.appendChild(copyButton);
 
-    // Errors don't auto-dismiss (see show()'s resolvedTimeout), so they need
-    // an explicit close.
-    if (item.type === "error") {
-      const closeButton = document.createElement("button");
-      closeButton.type = "button";
-      closeButton.className = "btn btn-sm btn-link status-toast-close p-0 ms-2 align-baseline lh-1";
-      const closeIcon = document.createElement("span");
-      closeIcon.className = "iconify";
-      closeIcon.dataset.icon = "tabler:x";
-      closeIcon.setAttribute("aria-hidden", "true");
-      closeButton.appendChild(closeIcon);
-      closeButton.setAttribute("aria-label", "Dismiss");
-      initTooltip(closeButton, { title: "Dismiss" });
-      closeButton.addEventListener("click", (event) => {
-        event.stopPropagation();
-        this.remove(item.id);
-      });
-      wrapper.appendChild(closeButton);
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "btn btn-sm btn-link status-toast-close p-0 ms-2 align-baseline lh-1";
+    const closeIcon = document.createElement("span");
+    closeIcon.className = "iconify";
+    closeIcon.dataset.icon = "tabler:x";
+    closeIcon.setAttribute("aria-hidden", "true");
+    closeButton.appendChild(closeIcon);
+    closeButton.setAttribute("aria-label", "Dismiss");
+    initTooltip(closeButton, { title: "Dismiss" });
+    closeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      this.remove(item.id);
+    });
+    row.appendChild(closeButton);
+
+    if (item.timeout > 0) {
+      const progress = document.createElement("div");
+      progress.className = `status-toast-progress ${PROGRESS_CLASSES[item.type]}`;
+      wrapper.appendChild(progress);
     }
 
     return wrapper;
-  }
-
-  _dequeue() {
-    if (this.active || !this.queue.length) {
-      return;
-    }
-    const next = this.queue.shift();
-    this.active = next;
-    const element = this._render(next);
-    disposeTooltips(this.root);
-    this.root.innerHTML = "";
-    this.root.appendChild(element);
-    requestAnimationFrame(() => {
-      element.classList.add("status-toast-enter-active");
-      element.classList.remove("status-toast-enter");
-    });
-    if (next.timeout > 0) {
-      this.timeoutId = window.setTimeout(() => {
-        this._clearActive();
-        this._dequeue();
-      }, next.timeout);
-    }
-  }
-
-  _clearActive() {
-    if (!this.active) {
-      return;
-    }
-    if (this.timeoutId) {
-      window.clearTimeout(this.timeoutId);
-      this.timeoutId = null;
-    }
-    const element = this.root.querySelector("[data-status-id]");
-    if (element) {
-      element.classList.remove("status-toast-enter-active");
-      element.classList.add("status-toast-exit", "status-toast-exit-active");
-      const removeLater = () => {
-        element.removeEventListener("transitionend", removeLater);
-        if (element.parentElement === this.root) {
-          this.root.removeChild(element);
-        }
-      };
-      element.addEventListener("transitionend", removeLater);
-    }
-    this.active = null;
   }
 }

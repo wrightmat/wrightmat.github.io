@@ -501,14 +501,14 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     }
     const metadata = templateCatalog.get(selectedId);
     if (!metadata) {
-      status.show("Template metadata unavailable.", { type: "warning", timeout: 2200 });
+      status.show("Template metadata unavailable.", { type: "warning" });
       return;
     }
     if (state.template?.id === selectedId && state.template?.origin === metadata.source) {
       return;
     }
     if (metadata.source === "draft") {
-      status.show("Save the template before reloading it.", { type: "info", timeout: 2200 });
+      status.show("Save the template before reloading it.", { type: "info" });
       ensureTemplateSelectValue();
       return;
     }
@@ -556,7 +556,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       if (metadata.source === "builtin") {
         markBuiltinMissing("templates", metadata.id || selectedId);
       }
-      status.show("Failed to load template", { type: "error", timeout: 2500 });
+      status.show("Failed to load template", { type: "error" });
     }
   }
 
@@ -1209,11 +1209,11 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       // captured above, so deleting it here can't affect anything below.
       delete payload.id;
       if (!templateId) {
-        status.show("Set a template ID before saving.", { type: "warning", timeout: 2400 });
+        status.show("Set a template ID before saving.", { type: "warning" });
         return;
       }
       if (!payload.schema) {
-        status.show("Select a system for this template before saving.", { type: "warning", timeout: 2400 });
+        status.show("Select a system for this template before saving.", { type: "warning" });
         return;
       }
       if (!dataManager.hasWriteAccess("templates")) {
@@ -1221,7 +1221,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         const message = required
           ? `Saving templates requires a ${required} tier.`
           : "Your tier cannot save templates.";
-        status.show(message, { type: "warning", timeout: 2800 });
+        status.show(message, { type: "warning" });
         return;
       }
       state.template.id = templateId;
@@ -1231,7 +1231,6 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       if (wantsRemote && !dataManager.baseUrl) {
         status.show("Server connection not configured. Start the Workbench server to save.", {
           type: "error",
-          timeout: 3000,
         });
         return;
       }
@@ -1290,17 +1289,16 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         );
         const label = payload.title || templateId;
         if (savedToServer) {
-          status.show(`Saved ${label} to the server`, { type: "success", timeout: 2500 });
+          status.show(`Saved ${label} to the server`, { type: "success" });
         } else {
           status.show(`Saved ${label} locally. Log in to sync with the server.`, {
             type: "info",
-            timeout: 3000,
           });
         }
       } catch (error) {
         console.error("Failed to save template", error);
         const message = error?.message || "Unable to save template";
-        status.show(message, { type: "error", timeout: 3000 });
+        status.show(message, { type: "error" });
       } finally {
         // Not a blind `button.disabled = false` — syncTemplateActions() is
         // the single source of truth for whether Save should be enabled,
@@ -1331,15 +1329,15 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
   async function handleDeleteTemplateRequest() {
     if (!state.template?.id) {
-      status.show("Select a template before deleting.", { type: "warning", timeout: 2000 });
+      status.show("Select a template before deleting.", { type: "warning" });
       return;
     }
     if (state.template.origin === "builtin") {
-      status.show("Built-in templates cannot be deleted.", { type: "info", timeout: 2200 });
+      status.show("Built-in templates cannot be deleted.", { type: "info" });
       return;
     }
     if (state.template.origin === "draft") {
-      status.show("Save the template before deleting it.", { type: "info", timeout: 2200 });
+      status.show("Save the template before deleting it.", { type: "info" });
       return;
     }
     const label = state.template.title || state.template.id;
@@ -1361,11 +1359,11 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       renderCanvas();
       renderInspector();
       syncTemplateActions();
-      status.show(`Deleted ${label}`, { type: "success", timeout: 2200 });
+      status.show(`Deleted ${label}`, { type: "success" });
     } catch (error) {
       console.error("Failed to delete template", error);
       const message = error?.message || "Unable to delete template";
-      status.show(message, { type: "error", timeout: 3000 });
+      status.show(message, { type: "error" });
     }
   }
 
@@ -1409,7 +1407,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       const versionInput = window.prompt("Enter a version", baseTemplate.version || "0.1") || baseTemplate.version || "0.1";
       const schema = baseTemplate.schema || "";
       if (!schema) {
-        status.show("Templates must reference a system.", { type: "warning", timeout: 2400 });
+        status.show("Templates must reference a system.", { type: "warning" });
         return;
       }
       const components = cloneComponentCollection(state.components);
@@ -2534,7 +2532,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     } catch (error) {
       console.error("Template editor: unable to load shared template", error);
       if (status) {
-        status.show(error.message || "Unable to load shared template", { type: "danger" });
+        status.show(error.message || "Unable to load shared template", { type: "warning" });
       }
     }
   }
@@ -2567,7 +2565,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         index,
         previousSelectedId,
       });
-      status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, { type: "success", timeout: 1800 });
+      status.show(`${COMPONENT_DEFINITIONS[type].label} added to canvas`, { type: "success" });
       event.item.remove();
       renderCanvas();
       renderInspector();
@@ -2577,7 +2575,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
     if (componentId) {
       if (parentId && (parentId === componentId || isDescendantOf(parentId, componentId))) {
-        status.show("Cannot move a component into itself", { type: "error", timeout: 2000 });
+        status.show("Cannot move a component into itself", { type: "error" });
         event.item.remove();
         renderCanvas();
         return;
@@ -2591,7 +2589,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
           from: moveResult.from,
           to: moveResult.to,
         });
-        status.show("Moved component", { timeout: 1500 });
+        status.show("Moved component");
       }
     }
 
@@ -3887,7 +3885,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
   function clearCanvas({ skipHistory = false, silent = false, suppressRender = false } = {}) {
     if (!state.components.length) {
-      status.show("Canvas is already empty", { timeout: 1200 });
+      status.show("Canvas is already empty");
       return;
     }
     const previousComponents = cloneComponentCollection(state.components);
@@ -3907,7 +3905,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       });
     }
     if (!silent) {
-      status.show("Cleared template canvas", { type: "info", timeout: 1500 });
+      status.show("Cleared template canvas", { type: "info" });
     }
     if (!suppressRender) {
       renderCanvas();
@@ -3937,7 +3935,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       });
     }
     if (!silent) {
-      status.show("Removed component", { type: "info", timeout: 1500 });
+      status.show("Removed component", { type: "info" });
     }
     if (state.selectedId === uid) {
       state.selectedId = parentId || null;
@@ -3960,7 +3958,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     if (!found) return;
     componentClipboard = { component: cloneComponentTree(found.component) };
     const label = COMPONENT_DEFINITIONS[found.component.type]?.label || "component";
-    status.show(`Copied ${label} — select a target, then Ctrl+V to paste`, { timeout: 2200 });
+    status.show(`Copied ${label} — select a target, then Ctrl+V to paste`);
   }
 
   function cutSelectedComponent() {
@@ -3972,7 +3970,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     // silent: true — removeComponent's own "Removed component" toast would
     // otherwise immediately replace this more specific one.
     removeComponent(uid, { silent: true });
-    status.show(`Cut ${label} — select a target, then Ctrl+V to paste`, { type: "info", timeout: 2600 });
+    status.show(`Cut ${label} — select a target, then Ctrl+V to paste`, { type: "info" });
   }
 
   // Where Paste lands: no selection -> end of the root canvas. A
@@ -4002,7 +4000,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
 
   function pasteClipboardComponent() {
     if (!componentClipboard?.component) {
-      status.show("Nothing to paste — Copy or Cut a component first", { type: "warning", timeout: 2000 });
+      status.show("Nothing to paste — Copy or Cut a component first", { type: "warning" });
       return;
     }
     const gate = canInsertComponent();
@@ -4025,7 +4023,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
       previousSelectedId,
     });
     const label = COMPONENT_DEFINITIONS[component.type]?.label || "component";
-    status.show(`Pasted ${label}`, { type: "success", timeout: 1800 });
+    status.show(`Pasted ${label}`, { type: "success" });
     renderCanvas();
     renderInspector();
     expandInspectorPane();
@@ -4280,7 +4278,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     setPaletteCollapsed(false);
     if (typeof onStateChange === "function") onStateChange();
     if (emitStatus && statusMessage) {
-      status.show(statusMessage, { type: "success", timeout: 2000 });
+      status.show(statusMessage, { type: "success" });
     }
   }
 
@@ -4337,7 +4335,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     const trimmedTitle = (title || "").trim();
     const trimmedSchema = (schema || "").trim();
     if (!trimmedId || !trimmedTitle || !trimmedSchema) {
-      status.show("Provide an ID, title, and system for the template.", { type: "warning", timeout: 2200 });
+      status.show("Provide an ID, title, and system for the template.", { type: "warning" });
       return;
     }
     const componentClones = Array.isArray(components) ? cloneComponentCollection(components) : [];
@@ -4531,7 +4529,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
           renderCanvas();
         }),
       canAddFont: () => dataManager.meetsTier("creator"),
-      onAddDenied: () => status.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+      onAddDenied: () => status.show("Creator tier or higher required to add fonts.", { type: "warning" }),
       onDeleteFont: (option) => handleDeleteCustomFont(option),
       canDeleteFont: () => dataManager.meetsTier("admin"),
       excludeDefault: true,
@@ -5628,7 +5626,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
           }, { rerenderCanvas: true, rerenderInspector: true });
         }),
       canAddFont: () => dataManager.meetsTier("creator"),
-      onAddDenied: () => status.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+      onAddDenied: () => status.show("Creator tier or higher required to add fonts.", { type: "warning" }),
       onDeleteFont: (option) => handleDeleteCustomFont(option),
       canDeleteFont: () => dataManager.meetsTier("admin"),
     });
@@ -7258,9 +7256,9 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
     deleteCustomFont(option.id);
     try {
       await saveCustomFontDeletion(option.id, dataManager?.session?.token);
-      status.show(`Deleted "${option.label}" from the font library.`, { type: "success", timeout: 2500 });
+      status.show(`Deleted "${option.label}" from the font library.`, { type: "success" });
     } catch (error) {
-      status.show(error.message || "Unable to delete this font.", { type: "error", timeout: 4000 });
+      status.show(error.message || "Unable to delete this font.", { type: "error" });
     }
     renderInspector();
   }
@@ -7289,7 +7287,7 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         // Defense in depth — the autocomplete already blocks opening this
         // modal for ineligible users; real enforcement is server-side.
         if (!dataManager.meetsTier("creator")) {
-          status.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 });
+          status.show("Creator tier or higher required to add fonts.", { type: "warning" });
           return;
         }
         if (!pendingValidatedFont || !addFontApplyCallback) return;
@@ -7303,9 +7301,9 @@ export async function initTemplateView({ status, undoStack, dataManager, onState
         window.bootstrap?.Modal?.getInstance(elements.addFontModal)?.hide();
         try {
           await saveCustomFont(registered, dataManager?.session?.token);
-          status.show(`Added "${registered.label}" to the font library.`, { type: "success", timeout: 2500 });
+          status.show(`Added "${registered.label}" to the font library.`, { type: "success" });
         } catch (error) {
-          status.show(error.message || "Unable to save the new font.", { type: "error", timeout: 4000 });
+          status.show(error.message || "Unable to save the new font.", { type: "error" });
         }
       });
     }

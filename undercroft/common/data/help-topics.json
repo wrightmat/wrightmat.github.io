@@ -36,12 +36,30 @@
     {
       "id": "suite.search",
       "title": "Search",
-      "summary": "The search box in the header finds your saved records and help topics from any tool.",
+      "summary": "The search box in the header finds your saved records and help topics from any tool, and runs commands that start with /.",
       "details": [
         "Type at least two letters. Results show the record's name, its type and the tool that owns it, and help topics are listed in their own group above them.",
         "Use the arrow keys and Enter, or click, to open a result. A record opens in the tool that edits it; a help topic opens on the documentation page.",
         "Search covers records you own, records shared with you, public records, and anything you've saved only in this browser.",
-        "On a narrow window the box collapses to a search icon in the header."
+        "On a narrow window the box collapses to a search icon in the header.",
+        "While the box has text, a × at its right edge clears it."
+      ],
+      "category": "Suite Basics"
+    },
+    {
+      "id": "suite.commands",
+      "title": "Commands",
+      "summary": "Type / in the header's search box to roll dice, post to your table, look things up, or make something new in any tool.",
+      "details": [
+        "Type / to see every command, or press / anywhere outside a text box to start one (Ctrl+K opens the box empty). Keep typing to narrow the list, Tab or a click fills in the highlighted suggestion, and Enter runs the command. With the box empty, the Up arrow brings back the commands you ran recently.",
+        "After the command come its words and options, as in /new npc species:elf archetype:guard. Put an option's value in quotes when it has spaces, such as species:\"High Elf\". The first line of the suggestions shows what the command takes, with options in square brackets, and the rows below offer those options and the choices your active group's System has for them.",
+        "/roll rolls anything the Dice Roller can: dice like 2d6+3, a System Move by its short name, or a journal table link. It posts to your active thread unless you add private; the group's GM can add broadcast to animate it on everyone's screen (this needs 3D dice).",
+        "/new (or /generate) makes something in the tool that owns it: npc, monster, wonder, item, spell or location are generated straight away, and character, map, page, template or setting start a new blank one. Options fill in that tool's own choices first; if one doesn't match a choice there, nothing is made and you're told which. Ctrl+Enter opens the result in a new tab.",
+        "/new name shows a random name in a window, with Copy and Reroll. Add species:, location: or count: to choose who it's for and how many.",
+        "/say posts a message to your active thread, and /dm @name sends a direct message to someone in your active group.",
+        "/draw draws from one of the group's decks (add count: for more than one, or private to keep it out of the thread). /macro runs one of your saved Macros by name.",
+        "The group's GM can /show a record to the table by name, and /hide it again; /hide on its own stops showing everything.",
+        "/lookup finds a rule, condition, Feature or other entry from your active System and shows its text in a window. /help opens this page."
       ],
       "category": "Suite Basics"
     },

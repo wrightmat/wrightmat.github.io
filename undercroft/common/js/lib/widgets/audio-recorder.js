@@ -269,7 +269,6 @@ export function initAudioRecorderWidget(
       } catch (error) {
         status?.show?.(error?.message || "Transcription failed for this chunk — recording continues.", {
           type: "warning",
-          timeout: 3000,
         });
       }
       if (!destroyed) render();

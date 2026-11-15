@@ -223,7 +223,7 @@ export function createTokenImageField({
       const name = addNameInput.value.trim();
       const url = input.value.trim();
       if (!name || !url) {
-        status?.show("Enter a name, and set the Image URL above first.", { type: "warning", timeout: 2500 });
+        status?.show("Enter a name, and set the Image URL above first.", { type: "warning" });
         return;
       }
       const token = { id: randomId(), name, url };

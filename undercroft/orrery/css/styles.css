@@ -411,8 +411,7 @@
 
 .orrery-shell .workbench-header,
 .orrery-shell .workbench-pane,
-.orrery-shell .orrery-floating-panel,
-.status-root {
+.orrery-shell .orrery-floating-panel {
   pointer-events: auto;
 }
 

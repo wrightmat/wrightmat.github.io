@@ -40,7 +40,7 @@ export async function listHaEntities(dataManager, { domainFilter, status } = {})
     const allowedDomains = Array.isArray(domainFilter) ? domainFilter : [domainFilter];
     return sorted.filter((entity) => allowedDomains.includes(entity.domain));
   } catch (error) {
-    status?.show?.(error?.message || "Unable to load Home Assistant entities.", { type: "error", timeout: 4000 });
+    status?.show?.(error?.message || "Unable to load Home Assistant entities.", { type: "error" });
     return [];
   }
 }

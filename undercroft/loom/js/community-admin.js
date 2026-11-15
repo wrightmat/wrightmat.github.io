@@ -90,7 +90,7 @@ function card(title, helpTopic, content, actions = [], collapsed = false) {
 }
 
 export function initCommunityAdmin({ dataManager, getStatus, mount }) {
-  const say = (message, type = "success") => getStatus?.()?.show(message, { type, timeout: type === "danger" ? 4000 : 1600 });
+  const say = (message, type = "success") => getStatus?.()?.show(message, { type });
   const root = el("div", "d-flex flex-column gap-4");
   mount.appendChild(root);
 
@@ -99,7 +99,7 @@ export function initCommunityAdmin({ dataManager, getStatus, mount }) {
       await work();
       if (success) say(success);
     } catch (error) {
-      say(error.message || failure, "danger");
+      say(error.message || failure, "warning");
     }
   }
 

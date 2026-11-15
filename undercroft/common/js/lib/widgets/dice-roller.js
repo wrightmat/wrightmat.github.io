@@ -18,6 +18,7 @@ import {
   extractSystemSymbolDice,
   rollSystemMove,
   rollSymbolPoolExpression,
+  broadcastRoll,
 } from "./dice-roll.js";
 import { formatSymbolPoolResult } from "../../../../workbench/js/lib/symbol-dice.js";
 import { listRollableTables, describeTableRow } from "../../../../repository/js/lib/journal-tables.js";
@@ -38,24 +39,14 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
   // screen. Each is offered only to someone who can use it (see
   // visibilityOptions); everyone else just rolls privately, with no toggle.
   let mode = "default";
-  const isGm = groupContext?.access === "owner";
 
   function resolveVisibility() {
     return { post: mode !== "private" };
   }
 
-  // Fires the "show this on everyone's screen" broadcast after a successful
-  // roll (separate from resolveVisibility, since the result isn't known until
-  // the roll resolves). `dieResults` are the real physically-rolled per-die
-  // values — required, since dice-box can't force a remote roll onto a chosen
-  // result; a roll that fell through to the plain Math.random path has none
-  // and simply can't broadcast a visual reveal (the message still posts).
+  // Separate from resolveVisibility, since the result isn't known until the roll resolves.
   function maybeBroadcastRoll(label, total, dieResults) {
-    if (mode !== "broadcast" || !isGm || !dataManager || !groupContext?.groupId) return;
-    if (!Array.isArray(dieResults) || !dieResults.length) return;
-    void dataManager
-      .postDiceRollBroadcast({ groupId: groupContext.groupId, label, total, dieResults })
-      .catch((error) => console.warn("[dice-roller] Broadcast failed", error));
+    if (mode === "broadcast") broadcastRoll({ dataManager, groupContext, label, total, dieResults });
   }
 
   const modeToggleContainer = el("div");
@@ -298,7 +289,7 @@ export function initDiceRollerWidget(container, { status, dataManager, groupCont
       .map((die) => ({ dieId: die.id, count: symbolPoolCounts.get(die.id) || 0 }))
       .filter((entry) => entry.count > 0);
     if (!poolCounts.length) {
-      status?.show("Add at least one die to the pool first.", { type: "info", timeout: 2000 });
+      status?.show("Add at least one die to the pool first.", { type: "info" });
       return;
     }
     const notation = poolCounts

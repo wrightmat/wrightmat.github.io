@@ -153,11 +153,11 @@ export async function promptConnectionModal({
       const model = modelInput ? modelInput.value.trim() : "";
       const token = keyInput.value.trim();
       if (!baseUrl) {
-        status?.show?.("A server URL is required.", { type: "warning", timeout: 2400 });
+        status?.show?.("A server URL is required.", { type: "warning" });
         return;
       }
       if (keyRequired && !token && !existing?.configured) {
-        status?.show?.("A key/token is required.", { type: "warning", timeout: 2400 });
+        status?.show?.("A key/token is required.", { type: "warning" });
         return;
       }
       try {

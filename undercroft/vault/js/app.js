@@ -56,6 +56,7 @@ import {
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { setElementVisible, markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 // Repository's own markdown renderer, reused for the Notes View mode — same
 // as Crucible/Forge/Sanctum's Notes preview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
@@ -1544,9 +1545,9 @@ function handleGenerate() {
     if (elements.wonderSelect) elements.wonderSelect.value = "";
     updateGenerationFieldsVisibility();
     recordHistory("generate wonder", () => renderWonder(record));
-    status?.show("Wonder generated.", { type: "success", timeout: 1500 });
+    status?.show("Wonder generated.", { type: "success" });
   } catch (error) {
-    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to generate: ${error.message}`, { type: "error" });
   }
 }
 
@@ -1584,13 +1585,13 @@ async function handleSave() {
     if (conversionErrors.length) {
       status?.show(
         `Saved, but ${conversionErrors.length} feature${conversionErrors.length === 1 ? "" : "s"} couldn't be converted (see console).`,
-        { type: "warning", timeout: 5000 }
+        { type: "warning" }
       );
     } else {
-      status?.show("Saved.", { type: "success", timeout: 1500 });
+      status?.show("Saved.", { type: "success" });
     }
   } catch (error) {
-    status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to save: ${error.message}`, { type: "error" });
   }
 }
 
@@ -1600,13 +1601,13 @@ async function handleDelete() {
   if (!confirmDelete({ label: `"${label}"` })) return;
   try {
     await dataManager.delete("wonder", currentRecord.id);
-    status?.show("Deleted.", { type: "success", timeout: 1500 });
+    status?.show("Deleted.", { type: "success" });
     dirtyGate.markDirty();
     currentWonderId = null;
     renderWonder(null);
     await populateWonderSelect();
   } catch (error) {
-    status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to delete: ${error.message}`, { type: "error" });
   }
 }
 
@@ -1633,7 +1634,7 @@ function handleDuplicate() {
   currentWonderId = null;
   if (elements.wonderSelect) elements.wonderSelect.value = "";
   renderWonder(duplicate);
-  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+  status?.show("Duplicated — not yet saved.", { type: "info" });
 }
 
 async function handleGenerateNote() {
@@ -1828,7 +1829,7 @@ async function init() {
       // list-then-fetch-each path, just missed at this single-record load.
       const result = await dataManager.get("wonder", id, { preferLocal: false });
       if (!result?.payload) {
-        status?.show("Unable to load that wonder.", { type: "error", timeout: 4000 });
+        status?.show("Unable to load that wonder.", { type: "error" });
         return;
       }
       // Not createWonderRecord — that always stamps a fresh id and
@@ -1838,7 +1839,7 @@ async function init() {
       dirtyGate.markClean(toPressExportShape(currentRecord));
       updateActionButtons();
     } catch (error) {
-      status?.show(`Unable to load wonder: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to load wonder: ${error.message}`, { type: "error" });
     }
   }
   elements.wonderSelect?.addEventListener("change", () => selectWonder(elements.wonderSelect.value));
@@ -1924,7 +1925,7 @@ async function init() {
       })();
       return true;
     } catch (error) {
-      status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+      status?.show("Unable to open the linked record.", { type: "error" });
       return false;
     }
   }
@@ -1954,6 +1955,11 @@ async function init() {
     updateGenerateButtonReadiness();
   }
 
+  handleCommandRequest({
+    status,
+    makes: { wonder: elements.generateButton, item: elements.generateButton, spell: elements.generateButton },
+    fields: [{ param: "system", select: elements.systemSelect, onChange: handleSystemSelectChange }],
+  });
   initHelpSystem();
   refreshTooltips();
 }

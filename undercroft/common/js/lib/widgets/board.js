@@ -121,7 +121,7 @@ export function initBoardWidget(
   // without losing the dashboard you're running the game from.
   function handleWikiLinkNavigate(target) {
     if (target.missing) {
-      status?.show(`No journal page named "${target.title}" yet.`, { type: "warning", timeout: 3000 });
+      status?.show(`No journal page named "${target.title}" yet.`, { type: "warning" });
       return;
     }
     const url = `${resolveToolHref("repository", resolveToolContextPath())}?page=${encodeURIComponent(target.id)}`;
@@ -131,14 +131,14 @@ export function initBoardWidget(
   async function handleOpenReference(kindId, name) {
     const record = await findKindReferenceRecord(dataManager, kindId, name);
     if (!record) {
-      status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error", timeout: 3000 });
+      status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error" });
       return;
     }
     if (kindId === "map") {
       window.open(`${resolveToolHref("orrery", resolveToolContextPath())}?map=${encodeURIComponent(record.id)}`, "_blank", "noopener");
       return;
     }
-    status?.show(`${kindLabelsMap[kindId] || kindId}: ${record.name}`, { type: "info", timeout: 3000 });
+    status?.show(`${kindLabelsMap[kindId] || kindId}: ${record.name}`, { type: "info" });
   }
 
   function renderCardMarkdown(card) {

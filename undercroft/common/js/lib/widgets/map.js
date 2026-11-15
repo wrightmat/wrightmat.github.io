@@ -438,7 +438,7 @@ export function initMapWidget(
     if (event.button !== 0 || !baseMapManager || !map) return;
     if (activeTool === "ping") {
       if (!groupId) {
-        status?.show("No active group to ping in.", { type: "warning", timeout: 2500 });
+        status?.show("No active group to ping in.", { type: "warning" });
         return;
       }
       const overlay = baseMapManager.getOverlayContainer();
@@ -450,7 +450,7 @@ export function initMapWidget(
       // for feedback on your own click.
       overlay.appendChild(createPingMarker(baseMapManager, map, position, dataManager.session?.user?.username || "You"));
       void dataManager.postMapPing({ groupId, position }).catch((error) => {
-        status?.show(error.message || "Unable to send ping.", { type: "error", timeout: 3000 });
+        status?.show(error.message || "Unable to send ping.", { type: "error" });
       });
       return;
     }
@@ -657,16 +657,16 @@ export function initMapWidget(
 
   async function toggleVisibility() {
     if (!groupId) {
-      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning" });
       return;
     }
     try {
       if (visible) {
         await dataManager.clearSpotlight({ groupId, kind: "map", id: mapId });
-        status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Stopped showing to the table.", { type: "success" });
       } else {
         await dataManager.spotlightToGroup({ groupId, contentType: "map", contentId: mapId });
-        status?.show("Showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Showing to the table.", { type: "success" });
       }
     } catch (error) {
       status?.show(error.message || "Unable to update visibility.", { type: "error" });
@@ -1475,16 +1475,16 @@ export function initMapWidget(
           });
           closeMarkerEditor();
           if (!result) {
-            status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+            status?.show("That's already been claimed.", { type: "info" });
             return;
           }
           map = result.map;
           watcher?.noteLocalWrite();
           renderLayers();
-          status?.show(`Claimed ${result.label} for ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+          status?.show(`Claimed ${result.label} for ${result.destinationLabel}.`, { type: "success" });
         } catch (error) {
           claimButton.disabled = false;
-          status?.show(error?.message || "Unable to claim that item.", { type: "error", timeout: 4000 });
+          status?.show(error?.message || "Unable to claim that item.", { type: "error" });
         }
       });
       row.append(label, claimButton);
@@ -1538,15 +1538,15 @@ export function initMapWidget(
             });
             closeMarkerEditor();
             if (!result) {
-              status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+              status?.show("That's already been claimed.", { type: "info" });
               return;
             }
             map = result.map;
             watcher?.noteLocalWrite();
             renderLayers();
-            status?.show(`Gave ${result.label} to ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+            status?.show(`Gave ${result.label} to ${result.destinationLabel}.`, { type: "success" });
           } catch (error) {
-            status?.show(error?.message || "Unable to give that item.", { type: "error", timeout: 4000 });
+            status?.show(error?.message || "Unable to give that item.", { type: "error" });
             giveToSelect.disabled = false;
             giveToSelect.value = "";
           }

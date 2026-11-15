@@ -81,6 +81,10 @@ None of the generator tools require signing in. An anonymous visitor's saves go 
 
 Every Library kind supports the same model: a record can be made public, or shared with a specific user or a Player Group, each grant carrying `view` or `edit` permission. A share targeting a group applies to every current member and stays current as membership changes. "Public" isn't its own mechanism — it's sharing with a special "All Users" pseudo-target, always view-only; Loom's Public checkbox is a one-click shortcut for exactly that.
 
+### Commands
+
+The header's search box also runs slash commands (`/roll`, `/new`, `/say`, ...), every one defined in a single registry (`common/js/lib/commands.js`) and built on the module its widget or tool already uses; `/new` reaches a tool through one shared handoff (`command-handoff.js`) that each tool registers its own Generate/New buttons with, so a new command or tool needs no change to the search box itself.
+
 ---
 
 ## Groups

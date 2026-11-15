@@ -353,14 +353,14 @@ async function handleUpgradeClick(plan) {
     await dataManager.upgradeTier({ tier: plan.value });
     renderUpgrade();
     if (status) {
-      status.show(`Upgraded to ${plan.label}`, { type: "success", timeout: 2000 });
+      status.show(`Upgraded to ${plan.label}`, { type: "success" });
     }
     if (auth && typeof auth.refreshDisplay === "function") {
       auth.refreshDisplay();
     }
   } catch (error) {
     if (status) {
-      status.show(error.message || "Unable to switch tiers", { type: "danger" });
+      status.show(error.message || "Unable to switch tiers", { type: "warning" });
     }
   }
 }
@@ -448,7 +448,7 @@ async function saveDiceSettings() {
   const themeColor = getThemeColorSupport(theme) ? elements.diceColorInput?.value || "" : "";
   try {
     await dataManager.saveUserSettings({ diceSettings: { theme, themeColor } });
-    status?.show("Dice appearance saved", { type: "success", timeout: 1500 });
+    status?.show("Dice appearance saved", { type: "success" });
   } catch (error) {
     status?.show(error.message || "Unable to save your dice appearance.", { type: "error" });
   }
@@ -495,7 +495,7 @@ async function loadUsers({ force = false } = {}) {
     }
   } catch (error) {
     if (status) {
-      status.show(error.message || "Unable to load users", { type: "danger" });
+      status.show(error.message || "Unable to load users", { type: "warning" });
     }
   }
 }
@@ -852,13 +852,13 @@ function renderOwnedItems(rawItems, owner) {
         try {
           await dataManager.updateContentOwner(item.bucket, item.id, selected);
           if (status) {
-            status.show(`Transferred ownership to ${selected}.`, { type: "success", timeout: 2000 });
+            status.show(`Transferred ownership to ${selected}.`, { type: "success" });
           }
           await loadOwnedContent({ refresh: true });
         } catch (error) {
           console.error("Failed to change owner", error);
           if (status) {
-            status.show(error.message || "Unable to update owner", { type: "danger" });
+            status.show(error.message || "Unable to update owner", { type: "warning" });
           }
           ownerSelect.value = currentOwnerUsername;
           ownerSelect.disabled = false;
@@ -877,13 +877,13 @@ function renderOwnedItems(rawItems, owner) {
       try {
         await dataManager.delete(item.bucket, item.id, { mode: "remote" });
         if (status) {
-          status.show(`${typeLabel} deleted.`, { type: "success", timeout: 2000 });
+          status.show(`${typeLabel} deleted.`, { type: "success" });
         }
         await loadOwnedContent({ refresh: true });
       } catch (error) {
         console.error("Failed to delete content", error);
         if (status) {
-          status.show(error.message || "Unable to delete content", { type: "danger" });
+          status.show(error.message || "Unable to delete content", { type: "warning" });
         }
         deleteButton.disabled = false;
         ownerSelect.disabled = !isAdminSession() || ownerOptions.length <= 1;
@@ -956,7 +956,7 @@ async function loadOwnedContent({ refresh = false } = {}) {
   } catch (error) {
     console.error("Failed to load owned content", error);
     if (status) {
-      status.show(error.message || "Unable to load content", { type: "danger" });
+      status.show(error.message || "Unable to load content", { type: "warning" });
     }
     setOwnedLoading("Unable to load content");
     updateOwnedSortIndicators();
@@ -1147,7 +1147,7 @@ if (elements.emailForm) {
       if (result && result.user) {
         populateSettings({ force: true });
         if (status) {
-          status.show("Email updated", { type: "success", timeout: 2000 });
+          status.show("Email updated", { type: "success" });
         }
         if (auth && typeof auth.refreshDisplay === "function") {
           auth.refreshDisplay();
@@ -1168,7 +1168,7 @@ if (elements.emailForm) {
 elements.revokeSessionsButton?.addEventListener("click", async () => {
   try {
     await dataManager.revokeOtherSessions();
-    status?.show("Signed out of your other devices.", { type: "success", timeout: 2500 });
+    status?.show("Signed out of your other devices.", { type: "success" });
   } catch (error) {
     status?.show(error.message || "Unable to sign out other devices.", { type: "error" });
   }
@@ -1199,7 +1199,7 @@ if (elements.passwordForm) {
       await dataManager.updatePassword({ current_password: currentPassword, new_password: newPassword });
       elements.passwordForm.reset();
       if (status) {
-        status.show("Password updated", { type: "success", timeout: 2000 });
+        status.show("Password updated", { type: "success" });
       }
     } catch (error) {
       setPasswordError(error.message || "Unable to change password");

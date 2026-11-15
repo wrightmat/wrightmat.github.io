@@ -369,10 +369,10 @@ export function initShopWidget(
         treasury,
       });
       watcher?.noteLocalWrite();
-      status?.show("Shop opened.", { type: "success", timeout: 1500 });
+      status?.show("Shop opened.", { type: "success" });
       await refreshShopState();
     } catch (error) {
-      status?.show(`Unable to open shop: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to open shop: ${error.message}`, { type: "error" });
     } finally {
       openButton.disabled = false;
     }
@@ -385,10 +385,10 @@ export function initShopWidget(
     try {
       await closeShop({ dataManager, groupId, locationId: config.followId, persistToLocation });
       watcher?.noteLocalWrite();
-      status?.show("Shop closed.", { type: "success", timeout: 1500 });
+      status?.show("Shop closed.", { type: "success" });
       await refreshShopState();
     } catch (error) {
-      status?.show(`Unable to close shop: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to close shop: ${error.message}`, { type: "error" });
     } finally {
       closeButton.disabled = false;
     }
@@ -454,7 +454,7 @@ export function initShopWidget(
             watcher?.noteLocalWrite();
             await refreshShopState();
           } catch (error) {
-            status?.show(error.message || "Unable to update price.", { type: "error", timeout: 3000 });
+            status?.show(error.message || "Unable to update price.", { type: "error" });
           }
         });
         row.appendChild(priceInput);
@@ -513,13 +513,12 @@ export function initShopWidget(
           watcher?.noteLocalWrite();
           status?.show(`Bought ${result.label} for ${formatPriceAmount(result.price, result.denomination, currencyDenominations)}.`, {
             type: "success",
-            timeout: 2000,
           });
           await refreshShopState();
           await refreshBuyerCurrency();
           if (sellTargetCharacterId) void refreshSellInventory();
         } catch (error) {
-          status?.show(error.message, { type: "error", timeout: 4000 });
+          status?.show(error.message, { type: "error" });
           buyButton.disabled = false;
         }
       });
@@ -736,12 +735,11 @@ export function initShopWidget(
           const soldLabel = result.quantity > 1 ? `${result.quantity} × ${result.label}` : result.label;
           status?.show(`Sold ${soldLabel} for ${formatPriceAmount(result.totalPrice, result.denomination, currencyDenominations)}.`, {
             type: "success",
-            timeout: 2000,
           });
           await refreshShopState();
           await refreshSellInventory();
         } catch (error) {
-          status?.show(error.message, { type: "error", timeout: 4000 });
+          status?.show(error.message, { type: "error" });
           sellButton.disabled = false;
         }
       });
@@ -834,20 +832,20 @@ export function initShopWidget(
 
   async function toggleVisibility() {
     if (!groupId || !config.followId) {
-      status?.show("Pick a shop first.", { type: "warning", timeout: 2500 });
+      status?.show("Pick a shop first.", { type: "warning" });
       return;
     }
     try {
       if (visible) {
         await dataManager.clearSpotlight({ groupId, kind: "shop", id: config.followId });
-        status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Stopped showing to the table.", { type: "success" });
       } else {
         // skipShare: true — "shop" isn't a real Library kind (nothing to
         // grant access to; its live state is the Group's own
         // property, already readable by every member), same as every
         // other INLINE_FOLLOW_KINDS widget's spotlightToGroup call.
         await dataManager.spotlightToGroup({ groupId, contentType: "shop", contentId: config.followId, skipShare: true });
-        status?.show("Showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Showing to the table.", { type: "success" });
       }
     } catch (error) {
       status?.show(error.message || "Unable to update visibility.", { type: "error" });

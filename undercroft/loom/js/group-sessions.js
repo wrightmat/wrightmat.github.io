@@ -356,7 +356,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
   let loadToken = 0;
 
   const status = () => getStatus?.();
-  const say = (message, type = "success") => status()?.show(message, { type, timeout: type === "danger" ? 4000 : 1600 });
+  const say = (message, type = "success") => status()?.show(message, { type });
 
   // --- center: the list ---
   const listHost = el("div", "d-flex flex-column gap-2");
@@ -485,7 +485,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
       if (token !== loadToken) return;
       data = next;
     } catch (error) {
-      say(error.message || "Unable to load sessions.", "danger");
+      say(error.message || "Unable to load sessions.", "warning");
       return;
     }
     renderList();
@@ -596,7 +596,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
             selection = null;
             await reload();
           } catch (error) {
-            say(error.message || "Unable to create the session.", "danger");
+            say(error.message || "Unable to create the session.", "warning");
           }
         },
       }),
@@ -617,7 +617,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
           say("Series updated.");
           await reload();
         } catch (error) {
-          say(error.message || "Unable to save the series.", "danger");
+          say(error.message || "Unable to save the series.", "warning");
         }
       },
     });
@@ -639,7 +639,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
           selection = null;
           await reload();
         } catch (error) {
-          say(error.message || "Unable to end the series.", "danger");
+          say(error.message || "Unable to end the series.", "warning");
         }
       },
     });
@@ -662,7 +662,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
           selection = null;
           await reload();
         } catch (error) {
-          say(error.message || "Unable to delete the session.", "danger");
+          say(error.message || "Unable to delete the session.", "warning");
         }
       },
     });
@@ -685,7 +685,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
         await reload();
         select_({ kind: "occurrence", id: occurrence.id });
       } catch (error) {
-        say(error.message || "Unable to open that date.", "danger");
+        say(error.message || "Unable to open that date.", "warning");
       }
     });
     inspectorBody.append(
@@ -796,7 +796,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
           say("Date updated.");
           await reload();
         } catch (error) {
-          say(error.message || "Unable to save this date.", "danger");
+          say(error.message || "Unable to save this date.", "warning");
         }
       },
     });
@@ -817,7 +817,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
           say("Date cancelled.");
           await reload();
         } catch (error) {
-          say(error.message || "Unable to cancel.", "danger");
+          say(error.message || "Unable to cancel.", "warning");
         }
       },
     });
@@ -860,7 +860,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
                   await dataManager.rsvpSessionOccurrenceFor(summary.id, person.userId, answer.value || null);
                   await reload();
                 } catch (error) {
-                  say(error.message || "Unable to respond for that player.", "danger");
+                  say(error.message || "Unable to respond for that player.", "warning");
                   answer.value = person.response || "";
                 }
               });
@@ -913,7 +913,7 @@ export function initGroupSessions({ dataManager, getStatus, centerMount, inspect
             say("Saved.");
             await reload();
           } catch (error) {
-            say(error.message || "Unable to save.", "danger");
+            say(error.message || "Unable to save.", "warning");
           }
         });
         panel.append(row, note, field("Thread it covered", recapThread), field("Recap page", recapPage), actionRow(save));

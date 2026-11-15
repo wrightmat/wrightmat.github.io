@@ -195,7 +195,6 @@ export async function runMacro(macro, { dataManager, groupContext, status, wledD
     if (!handler) {
       status?.show?.(`"${macro?.name || "Macro"}": unknown action type "${action?.type}".`, {
         type: "error",
-        timeout: 3000,
       });
       continue;
     }
@@ -235,7 +234,7 @@ export async function runMacro(macro, { dataManager, groupContext, status, wledD
       // overall "Ran ..." summary, so a multi-step macro (lights + music +
       // a handout) would otherwise give no confirmation of which effects
       // actually fired.
-      status?.show?.(`✓ ${describeMacroAction(action)}`, { type: "success", timeout: 1800 });
+      status?.show?.(`✓ ${describeMacroAction(action)}`, { type: "success" });
     } catch (error) {
       // One bad step (an unreachable WLED device, an unresolved alias, a
       // missing clip) doesn't abort the rest of the macro — a GM firing a
@@ -243,7 +242,6 @@ export async function runMacro(macro, { dataManager, groupContext, status, wledD
       // fire even if one light is unplugged.
       status?.show?.(`✗ ${describeMacroAction(action)}: ${error?.message || error}`, {
         type: "error",
-        timeout: 4000,
       });
     }
   }

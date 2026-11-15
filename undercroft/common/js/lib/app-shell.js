@@ -460,7 +460,7 @@ function buildThemeSwitcherDropdown() {
 function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr }) {
   const mount = root.querySelector("[data-app-shell-header]");
   if (!mount) {
-    return;
+    return {};
   }
 
   const header = document.createElement("header");
@@ -520,8 +520,11 @@ function buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlot
   header.appendChild(grid);
 
   mount.replaceWith(header);
-  initSuiteSearch({ container: searchMount });
-  return header;
+  return { header, search: initSuiteSearch({ container: searchMount }) };
+}
+
+function isTypingTarget(target) {
+  return Boolean(target?.closest?.("input, textarea, select, [contenteditable='true'], [contenteditable='']"));
 }
 
 // Builds one left/right `<aside>` pane shell — the border/shadow/sizing/
@@ -576,12 +579,12 @@ function showFeedback(status, feedback, fallbackMessage) {
   }
   if (!feedback) {
     if (fallbackMessage) {
-      status.show(fallbackMessage, { type: "info", timeout: 1500 });
+      status.show(fallbackMessage, { type: "info" });
     }
     return;
   }
   if (typeof feedback === "string") {
-    status.show(feedback, { timeout: 1500 });
+    status.show(feedback);
     return;
   }
   if (typeof feedback === "object") {
@@ -634,7 +637,7 @@ export function initAppShell({
 } = {}) {
   installTooltipAutoInit();
   initEnvironmentTitle();
-  const headerEl = buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
+  const { header: headerEl, search } = buildAppShellHeader(root, { leftPaneLabel, rightPaneLabel, settingsSlotAttr });
   if (leftPane) buildPaneShell(root.querySelector('[data-pane-content="left"]'), { side: "left", ...leftPane });
   if (rightPane) buildPaneShell(root.querySelector('[data-pane-content="right"]'), { side: "right", ...rightPane });
   const statusRoot = root.querySelector("[data-status-root]") || document.createElement("div");
@@ -642,6 +645,7 @@ export function initAppShell({
   if (!statusRoot.parentElement) {
     document.body.appendChild(statusRoot);
   }
+  search?.setStatus(status);
 
   initThemeControls(root);
 
@@ -721,7 +725,7 @@ export function initAppShell({
     const entry = undoStack.undoStep();
     if (!entry) {
       if (!silent) {
-        status.show("Nothing to undo", { type: "info", timeout: 1200 });
+        status.show("Nothing to undo", { type: "info" });
       }
       return null;
     }
@@ -745,7 +749,7 @@ export function initAppShell({
     const entry = undoStack.redoStep();
     if (!entry) {
       if (!silent) {
-        status.show("Nothing to redo", { type: "info", timeout: 1200 });
+        status.show("Nothing to redo", { type: "info" });
       }
       return null;
     }
@@ -765,6 +769,17 @@ export function initAppShell({
     return applied ? entry : null;
   }
 
+  // "/" opens the command bar, as in Discord, except while typing somewhere else.
+  keyboard.register(
+    "/",
+    (event) => {
+      if (!search || isTypingTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey) return;
+      event.preventDefault();
+      search.focus("/");
+    },
+    { preventDefault: false }
+  );
+  keyboard.register("ctrl+k", () => search?.focus(""));
   keyboard.register("ctrl+z", (event) => {
     if (event && typeof event.preventDefault === "function") {
       event.preventDefault();

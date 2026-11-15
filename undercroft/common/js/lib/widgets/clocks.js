@@ -248,13 +248,13 @@ export function initClockWidget(
 
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
-      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning" });
       return;
     }
     try {
       if (visible) {
         await dataManager.clearSpotlight({ groupId, kind: "clock", id: instanceId });
-        status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Stopped showing to the table.", { type: "success" });
       } else {
         // skipShare — no Library record to grant view permission on; the
         // server enforces the same allowance independently for kind
@@ -266,7 +266,7 @@ export function initClockWidget(
           skipShare: true,
           data: config,
         });
-        status?.show("Showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Showing to the table.", { type: "success" });
       }
     } catch (error) {
       status?.show(error.message || "Unable to update visibility.", { type: "error" });

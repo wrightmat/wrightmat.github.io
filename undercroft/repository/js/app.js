@@ -1,6 +1,7 @@
 import { fetchChatBacklinks, renderChatBacklinkList } from "../../common/js/lib/chat/backlinks.js";
 import { openMessageSummary } from "../../common/js/lib/chat/open-message.js";
 import { initAppShell, resolveToolContextPath } from "../../common/js/lib/app-shell.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 import { buildKindToolUrl } from "../../common/js/lib/kind-tool-route.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
 import { initHelpSystem } from "../../common/js/lib/help.js";
@@ -514,7 +515,7 @@ function goToSearchMatch(direction) {
     searchMatchMarkIndex = -1;
   }
   if (!searchMatchPageIds.length) {
-    status?.show("No pages match.", { type: "warning", timeout: 2000 });
+    status?.show("No pages match.", { type: "warning" });
     return;
   }
   // Checked against selectedId, not just "marks left over" — the user could
@@ -905,7 +906,7 @@ async function openChatMessageReference(messageId) {
     const resolved = await dataManager.resolveChatMessages([messageId]);
     const info = resolved.messages?.[String(messageId)];
     if (!info) {
-      status?.show("That message isn't available to you.", { type: "info", timeout: 3000 });
+      status?.show("That message isn't available to you.", { type: "info" });
       return;
     }
     if (info.archived && info.archivePageId && findEntry(info.archivePageId)) {
@@ -914,7 +915,7 @@ async function openChatMessageReference(messageId) {
     }
     openMessageSummary(dataManager, info);
   } catch (error) {
-    status?.show(error.message || "Unable to open that message.", { type: "error", timeout: 3000 });
+    status?.show(error.message || "Unable to open that message.", { type: "error" });
   }
 }
 
@@ -1108,7 +1109,7 @@ const REFERENCE_PREVIEW_MODAL_ID = "repository-reference-preview-modal";
 async function handleOpenReference(kindId, id) {
   const record = await findKindReferenceRecord(dataManager, kindId, id);
   if (!record) {
-    status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error", timeout: 3000 });
+    status?.show(`Couldn't find that ${kindLabelsMap[kindId] || kindId}.`, { type: "error" });
     return;
   }
   const url = buildKindToolUrl(kindId, record.id);
@@ -1208,7 +1209,7 @@ async function handleConvertWikiLinksToReferences() {
   }
 
   if (!replacements.size) {
-    status?.show("No wiki-links matching a saved Library record were found on this page.", { type: "info", timeout: 3500 });
+    status?.show("No wiki-links matching a saved Library record were found on this page.", { type: "info" });
     return;
   }
 
@@ -1224,7 +1225,7 @@ async function handleConvertWikiLinksToReferences() {
   if (currentMode === "view") renderPreview();
   status?.show(
     `Converted ${replacements.size} wiki-link${replacements.size === 1 ? "" : "s"} to reference${replacements.size === 1 ? "" : "s"}.`,
-    { type: "success", timeout: 3000 }
+    { type: "success" }
   );
 }
 
@@ -1880,7 +1881,7 @@ async function handleSave() {
   timelineData = null;
   await refreshEntries();
   updateToolbarState();
-  status?.show("Saved.", { type: "success", timeout: 1500 });
+  status?.show("Saved.", { type: "success" });
 }
 
 async function handleDelete() {
@@ -1897,7 +1898,7 @@ async function handleDelete() {
   relationshipsData = null;
   timelineData = null;
   await refreshEntries();
-  status?.show("Deleted.", { type: "success", timeout: 1500 });
+  status?.show("Deleted.", { type: "success" });
 }
 
 function handleDuplicate() {
@@ -2684,7 +2685,7 @@ if (bodyTextarea) {
   imageSubmitButton.addEventListener("click", () => {
     const url = imageUrlInput.value.trim();
     if (!url) {
-      status?.show("Enter an image URL.", { type: "error", timeout: 3000 });
+      status?.show("Enter an image URL.", { type: "error" });
       imageUrlInput.focus();
       return;
     }
@@ -2804,5 +2805,6 @@ void refreshEntries().then(() => {
   const requestedQuery = deepLinkParams.get("q") || "";
   if (resolvedId) selectPage(resolvedId, { heading: requestedHeading, block: requestedBlock, remember: true, pushHistory: false });
   if (resolvedId && requestedQuery) jumpToSearchQuery(requestedQuery);
+  handleCommandRequest({ status, makes: { page: newButton } });
   replacePageHistory(resolvedId);
 });

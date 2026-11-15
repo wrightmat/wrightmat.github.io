@@ -341,7 +341,7 @@ export function initSoundboardWidget(
       }
       playerState[type] = state === "error" ? { state, detail } : null;
       if (state === "error") {
-        status?.show(`Soundboard — ${TYPE_LABEL[type]}: ${detail}`, { type: "error", timeout: 4500 });
+        status?.show(`Soundboard — ${TYPE_LABEL[type]}: ${detail}`, { type: "error" });
       }
       if (state !== "playing" && state !== "paused") {
         progressState[type] = null;
@@ -434,13 +434,13 @@ export function initSoundboardWidget(
 
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
-      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning" });
       return;
     }
     try {
       if (visible) {
         await dataManager.clearSpotlight({ groupId, kind: "soundboard", id: instanceId });
-        status?.show("Stopped broadcasting.", { type: "success", timeout: 2000 });
+        status?.show("Stopped broadcasting.", { type: "success" });
       } else {
         // skipShare — no Library record for this widget instance at all
         // (see this file's own header comment); the server enforces the
@@ -455,7 +455,7 @@ export function initSoundboardWidget(
           skipShare: true,
           data: buildBroadcastData(),
         });
-        status?.show("Broadcasting to the table.", { type: "success", timeout: 2000 });
+        status?.show("Broadcasting to the table.", { type: "success" });
       }
     } catch (error) {
       status?.show(error.message || "Unable to update visibility.", { type: "error" });
@@ -568,7 +568,7 @@ export function initSoundboardWidget(
     const name = nextName.trim();
     const url = nextUrl.trim();
     if (!name || !url) {
-      status?.show("Enter a name and a URL first.", { type: "warning", timeout: 2000 });
+      status?.show("Enter a name and a URL first.", { type: "warning" });
       return;
     }
     const previousClip = { ...clip };
@@ -738,7 +738,7 @@ export function initSoundboardWidget(
       const name = nameInput.value.trim();
       const url = urlInput.value.trim();
       if (!name || !url) {
-        status?.show("Enter a name and a URL first.", { type: "warning", timeout: 2000 });
+        status?.show("Enter a name and a URL first.", { type: "warning" });
         return;
       }
       const clip = { id: randomId(), name, url, type: addType, loop: addType === "music" };

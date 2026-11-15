@@ -502,17 +502,17 @@ export function initCalendarWidget(
 
   async function toggleVisibility() {
     if (!groupId || !instanceId) {
-      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning" });
       return;
     }
     if (!settingId) {
-      status?.show("This group has no Setting assigned yet — nothing to show.", { type: "warning", timeout: 2500 });
+      status?.show("This group has no Setting assigned yet — nothing to show.", { type: "warning" });
       return;
     }
     try {
       if (visible) {
         await dataManager.clearSpotlight({ groupId, kind: "calendar", id: instanceId });
-        status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Stopped showing to the table.", { type: "success" });
       } else {
         // Grants read access to the Setting — the spotlight entry itself
         // carries no Library record (skipShare:true), only day/time; a
@@ -525,7 +525,7 @@ export function initCalendarWidget(
           skipShare: true,
           data: { settingId, dayIndex, time: { ...time, minutesOfDay } },
         });
-        status?.show("Showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Showing to the table.", { type: "success" });
       }
     } catch (error) {
       status?.show(error.message || "Unable to update visibility.", { type: "error" });

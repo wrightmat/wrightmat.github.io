@@ -379,7 +379,6 @@ export function initCombatTrackerWidget(
             sceneFailureShown = true;
             status?.show?.(`Table lighting: ${error?.message || "couldn't reach the lighting device."}`, {
               type: "error",
-              timeout: 4000,
             });
           }
         }
@@ -735,13 +734,13 @@ export function initCombatTrackerWidget(
     if (!state.encounter || !groupId) return;
     const members = await fetchGroupMemberCharacters(dataManager, groupId);
     if (!members.length) {
-      status?.show("This group has no party members yet.", { type: "info", timeout: 3000 });
+      status?.show("This group has no party members yet.", { type: "info" });
       return;
     }
     const existingIds = new Set(state.encounter.combatants.filter((c) => c.refKind === "character").map((c) => c.refId));
     const toAdd = members.filter((member) => !existingIds.has(member.id));
     if (!toAdd.length) {
-      status?.show("Every party member is already in this encounter.", { type: "info", timeout: 3000 });
+      status?.show("Every party member is already in this encounter.", { type: "info" });
       return;
     }
     // Sequential, not Promise.all — addCombatant's own uniquifyCombatantName
@@ -928,7 +927,6 @@ export function initCombatTrackerWidget(
     if (!active?.groupId) {
       status?.show("Pick an active group first (see the group menu in the header).", {
         type: "warning",
-        timeout: 3000,
       });
       return;
     }
@@ -941,7 +939,7 @@ export function initCombatTrackerWidget(
         data: { hidden: false },
       });
       state.announced = true;
-      status?.show("Showing to the table.", { type: "success", timeout: 2000 });
+      status?.show("Showing to the table.", { type: "success" });
       render();
     } catch (error) {
       status?.show(error.message || "Unable to show the encounter to the table.", { type: "error" });
@@ -972,7 +970,7 @@ export function initCombatTrackerWidget(
       // used to desync client from server on failure: the toggle turned off
       // immediately, then flipped back on after a refresh, with no obvious explanation why.
       state.announced = false;
-      status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+      status?.show("Stopped showing to the table.", { type: "success" });
       render();
     } catch (error) {
       status?.show(error.message || "Unable to stop showing.", { type: "error" });

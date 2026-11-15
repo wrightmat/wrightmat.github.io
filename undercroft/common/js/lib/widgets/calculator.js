@@ -674,7 +674,7 @@ export function initCalculatorWidget(
   function computeTrip() {
     const means = selectedMeans();
     if (!means) {
-      status?.show("This System has no Travel Means defined.", { type: "info", timeout: 2500 });
+      status?.show("This System has no Travel Means defined.", { type: "info" });
       return;
     }
     const distance = Math.max(0, Number(distanceField.input.value) || 0);
@@ -721,12 +721,12 @@ export function initCalculatorWidget(
   function renderDiceProbability() {
     const terms = parseDicePool(poolInput.value);
     if (!terms) {
-      status?.show("Enter a valid dice pool, e.g. 3d6 or 2d8+1d4+1.", { type: "info", timeout: 3000 });
+      status?.show("Enter a valid dice pool, e.g. 3d6 or 2d8+1d4+1.", { type: "info" });
       return;
     }
     const distribution = computeDicePoolDistribution(terms);
     if (!distribution) {
-      status?.show(`That pool has too many dice to chart (max ${MAX_POOL_DICE}).`, { type: "info", timeout: 3000 });
+      status?.show(`That pool has too many dice to chart (max ${MAX_POOL_DICE}).`, { type: "info" });
       return;
     }
     const entries = Array.from(distribution.entries()).sort((a, b) => a[0] - b[0]);
@@ -808,10 +808,10 @@ export function initCalculatorWidget(
     if (skipped > 0) {
       status?.show(
         `${skipped} group member${skipped === 1 ? "" : "s"} have no resolvable level and were skipped — add them manually if needed.`,
-        { type: "info", timeout: 3500 }
+        { type: "info" }
       );
     } else if (!roster.length) {
-      status?.show("No group members with a resolvable level were found.", { type: "info", timeout: 2500 });
+      status?.show("No group members with a resolvable level were found.", { type: "info" });
     }
   });
 
@@ -976,7 +976,7 @@ export function initCalculatorWidget(
 
     if (scopeSelect.value === "group") {
       if (!groupContext?.groupId || !dataManager) {
-        status?.show("No group selected.", { type: "info", timeout: 2000 });
+        status?.show("No group selected.", { type: "info" });
         return;
       }
       inventoryResultBox.appendChild(el("div", "text-body-secondary", "Loading group roster…"));
@@ -1050,7 +1050,7 @@ export function initCalculatorWidget(
 
     const characterId = characterSelect.value;
     if (!characterId || !dataManager) {
-      status?.show("Pick a character.", { type: "info", timeout: 2000 });
+      status?.show("Pick a character.", { type: "info" });
       return;
     }
     let payload = null;
@@ -1136,7 +1136,7 @@ export function initCalculatorWidget(
   function computeItemPrice() {
     const range = itemPriceRanges.find((entry) => entry.id === itemRaritySelect.value);
     if (!range) {
-      status?.show("Pick a Rarity with a configured price range.", { type: "info", timeout: 2500 });
+      status?.show("Pick a Rarity with a configured price range.", { type: "info" });
       return;
     }
     // A single roll drives both figures — the check tier's multiplier

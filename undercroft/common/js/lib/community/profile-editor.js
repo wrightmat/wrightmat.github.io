@@ -168,7 +168,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
   function addOtherSystem() {
     const typed = systemText.value.trim();
     if (!typed) {
-      status?.show("Enter the name of the system.", { type: "warning", timeout: 2500 });
+      status?.show("Enter the name of the system.", { type: "warning" });
       return;
     }
     // A name that is really a Library System is added as that System, not as a free-text one.
@@ -228,7 +228,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
   function addAccount() {
     const username = accountName.value.trim();
     if (!serviceSelect.value || !username) {
-      status?.show("Choose a service and enter your username there.", { type: "warning", timeout: 2500 });
+      status?.show("Choose a service and enter your username there.", { type: "warning" });
       return;
     }
     profile.externalAccounts = profile.externalAccounts.filter((account) => account.serviceId !== serviceSelect.value);
@@ -332,7 +332,7 @@ export async function mountProfileEditor(container, { dataManager, status } = {}
       const result = await dataManager.saveCommunityProfile(payload());
       Object.assign(profile, result.profile);
       savedSnapshot = JSON.stringify(payload());
-      status?.show("Profile saved.", { type: "success", timeout: 2500 });
+      status?.show("Profile saved.", { type: "success" });
     } catch (error) {
       status?.show(error.message || "Could not save the profile.", { type: "error" });
     } finally {

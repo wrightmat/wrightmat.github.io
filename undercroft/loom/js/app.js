@@ -677,7 +677,6 @@ async function runSystemDiagnostics({ silent = false } = {}) {
     if (!silent) {
       status?.show(`Reserved Key Diagnostics found ${findings.length} issue${findings.length === 1 ? "" : "s"}.`, {
         type: "warning",
-        timeout: 4000,
       });
     }
   }
@@ -1937,7 +1936,7 @@ if (nodePalette) {
     }
 
     if (!selectedNode) {
-      status?.show("Select a node first (or remove the root to start over).", { type: "warning", timeout: 2500 });
+      status?.show("Select a node first (or remove the root to start over).", { type: "warning" });
       return;
     }
 
@@ -1965,7 +1964,7 @@ if (nodePalette) {
       return;
     }
 
-    status?.show(`A ${selectedNode.type} node can't have children added this way.`, { type: "warning", timeout: 2500 });
+    status?.show(`A ${selectedNode.type} node can't have children added this way.`, { type: "warning" });
   });
 }
 
@@ -1974,7 +1973,7 @@ if (stepPalette) {
     const button = event.target.closest("[data-palette-step-type]");
     if (!button) return;
     if (!selectedNode || selectedNode.type !== "pipeline") {
-      status?.show("Select a pipeline node first.", { type: "warning", timeout: 2000 });
+      status?.show("Select a pipeline node first.", { type: "warning" });
       return;
     }
     recordUndoableChange("mapping", () => {
@@ -2009,10 +2008,10 @@ if (sampleDataApplyButton) {
   sampleDataApplyButton.addEventListener("click", () => {
     try {
       sampleData = JSON.parse(sampleDataInput.value || "{}");
-      status?.show("Sample data applied.", { type: "success", timeout: 1500 });
+      status?.show("Sample data applied.", { type: "success" });
       runLivePreview();
     } catch (error) {
-      status?.show(`Sample data isn't valid JSON: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Sample data isn't valid JSON: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -2127,7 +2126,7 @@ if (sourceFetchButton) {
       if (source.file) {
         const files = Array.from(pickedFiles || []);
         if (!files.length) {
-          status?.show("Choose a file to load.", { type: "warning", timeout: 2000 });
+          status?.show("Choose a file to load.", { type: "warning" });
           return;
         }
         if (files.length > 1) {
@@ -2137,19 +2136,19 @@ if (sourceFetchButton) {
           beginBulkImport(items);
           const summary = bulkFetchSummary(items);
           if (!summary.ok) statusMessage = summary.message;
-          status?.show(summary.message, { type: summary.ok ? "success" : "warning", timeout: summary.ok ? 2000 : 6000 });
+          status?.show(summary.message, { type: summary.ok ? "success" : "warning" });
           return;
         }
         const raw = await loadSourceDataRaw(source, files[0]);
         sampleData = raw;
         if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
         runLivePreview();
-        status?.show("Fetched.", { type: "success", timeout: 1500 });
+        status?.show("Fetched.", { type: "success" });
         return;
       }
       const value = (sourceValueInput?.value || "").trim();
       if (!value) {
-        status?.show("Enter a value to fetch.", { type: "warning", timeout: 2000 });
+        status?.show("Enter a value to fetch.", { type: "warning" });
         return;
       }
       if (source.id === "srd") {
@@ -2159,23 +2158,23 @@ if (sourceFetchButton) {
           beginBulkImport(result);
           const summary = bulkFetchSummary(result);
           if (!summary.ok) statusMessage = summary.message;
-          status?.show(summary.message, { type: summary.ok ? "success" : "warning", timeout: summary.ok ? 2000 : 6000 });
+          status?.show(summary.message, { type: summary.ok ? "success" : "warning" });
           return;
         }
         sampleData = result;
         if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
         runLivePreview();
-        status?.show("Fetched.", { type: "success", timeout: 1500 });
+        status?.show("Fetched.", { type: "success" });
         return;
       }
       const raw = await loadSourceDataRaw(source, value);
       sampleData = raw;
       if (sampleDataInput) sampleDataInput.value = JSON.stringify(sampleData, null, 2);
       runLivePreview();
-      status?.show("Fetched.", { type: "success", timeout: 1500 });
+      status?.show("Fetched.", { type: "success" });
     } catch (error) {
       statusMessage = `Fetch failed: ${error.message}`;
-      status?.show(statusMessage, { type: "error", timeout: 6000 });
+      status?.show(statusMessage, { type: "error" });
     } finally {
       sourceFetchButton.disabled = false;
       setFetchStatus(statusMessage);
@@ -2261,12 +2260,12 @@ if (bulkSelectNoneButton) {
 if (bulkImportSelectedButton) {
   bulkImportSelectedButton.addEventListener("click", async () => {
     if (!mappingDefinition) {
-      status?.show("Load or build a mapping before importing.", { type: "warning", timeout: 2500 });
+      status?.show("Load or build a mapping before importing.", { type: "warning" });
       return;
     }
     const indices = Array.from(bulkSelected).sort((a, b) => a - b);
     if (!indices.length) {
-      status?.show("Select at least one record to import.", { type: "warning", timeout: 2000 });
+      status?.show("Select at least one record to import.", { type: "warning" });
       return;
     }
     bulkImportSelectedButton.disabled = true;
@@ -2308,7 +2307,7 @@ if (bulkImportSelectedButton) {
     loadRecentSaves();
     const summary = `Imported ${imported} of ${indices.length}${failures.length ? `, ${failures.length} failed` : ""}.`;
     if (bulkProgress) bulkProgress.textContent = summary;
-    status?.show(summary, { type: failures.length ? "warning" : "success", timeout: 5000 });
+    status?.show(summary, { type: failures.length ? "warning" : "success" });
     if (failures.length) console.warn("Bulk import failures:", failures);
   });
 }
@@ -2464,12 +2463,12 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
           errors = errors.concat(outcome.errors);
         }
         if (!quiet && (matchedCount || createdCount || updatedCount)) {
-          status?.show(describeFeaturePromotionOutcome({ matchedCount, createdCount, updatedCount }), { type: "info", timeout: 4000 });
+          status?.show(describeFeaturePromotionOutcome({ matchedCount, createdCount, updatedCount }), { type: "info" });
         }
         if (errors.length) {
           status?.show(
             `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the character saved fine.`,
-            { type: "warning", timeout: 6000 }
+            { type: "warning" }
           );
         }
       }
@@ -2503,7 +2502,7 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         if (!quiet && (matchedCount || createdCount)) {
           status?.show(
             `Matched ${matchedCount} trait${matchedCount === 1 ? "" : "s"}/action${matchedCount === 1 ? "" : "s"} to existing Features, created ${createdCount} new one${createdCount === 1 ? "" : "s"}.`,
-            { type: "info", timeout: 4000 }
+            { type: "info" }
           );
         }
         // Surfaced regardless of `quiet` — a monster still saves fine with
@@ -2513,7 +2512,7 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         if (errors?.length) {
           status?.show(
             `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the monster saved fine.`,
-            { type: "warning", timeout: 6000 }
+            { type: "warning" }
           );
         }
       }
@@ -2543,13 +2542,13 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
         if (!quiet && (matchedCount || createdCount)) {
           status?.show(
             `Matched ${matchedCount} feature${matchedCount === 1 ? "" : "s"} to existing Features, created ${createdCount} new one${createdCount === 1 ? "" : "s"}.`,
-            { type: "info", timeout: 4000 }
+            { type: "info" }
           );
         }
         if (errors?.length) {
           status?.show(
             `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the wonder saved fine.`,
-            { type: "warning", timeout: 6000 }
+            { type: "warning" }
           );
         }
       }
@@ -2640,24 +2639,24 @@ async function saveEntity(entity, { autoId, url: urlOverride, quiet = false } = 
           existingFeatures,
         });
         if (!quiet && (matchedCount || createdCount || updatedCount)) {
-          status?.show(describeFeaturePromotionOutcome({ matchedCount, createdCount, updatedCount }), { type: "info", timeout: 4000 });
+          status?.show(describeFeaturePromotionOutcome({ matchedCount, createdCount, updatedCount }), { type: "info" });
         }
         if (errors?.length) {
           status?.show(
             `${entity.name || id}: ${errors.length} feature${errors.length === 1 ? "" : "s"} couldn't be converted (see console) — the rest of the ${entity.kind} saved fine.`,
-            { type: "warning", timeout: 6000 }
+            { type: "warning" }
           );
         }
       }
     }
     await dataManager.save(entity.kind, id, data);
     if (!quiet) {
-      status?.show(`Saved ${entity.kind}/${id}.json.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved ${entity.kind}/${id}.json.`, { type: "success" });
       loadRecentSaves();
     }
     await autoLinkEntityToSystems(entity.kind, id, data);
   } catch (error) {
-    status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to save: ${error.message}`, { type: "error" });
   }
 }
 
@@ -3159,7 +3158,7 @@ async function loomLoadUsers({ force = false } = {}) {
     loomPopulateUsersTierFilter();
     loomRenderUsersSelect();
   } catch (error) {
-    if (status) status.show(error.message || "Unable to load users", { type: "danger" });
+    if (status) status.show(error.message || "Unable to load users", { type: "warning" });
   }
 }
 
@@ -3255,7 +3254,6 @@ if (loomUserDuplicateButton) {
     loomUpdateUserToolbarState();
     status?.show(`New user prefilled with ${loomFormatTier(sourceUser.tier)} tier — enter a username, email, and password.`, {
       type: "info",
-      timeout: 3500,
     });
     loomUserUsernameInput?.focus();
   });
@@ -3272,11 +3270,11 @@ if (loomUserSaveButton) {
       loomUserSaveButton.disabled = true;
       try {
         await dataManager.createUser({ username, email, password, tier });
-        if (status) status.show(`Created ${username}.`, { type: "success", timeout: 2000 });
+        if (status) status.show(`Created ${username}.`, { type: "success" });
         loomUsersState.selectedUsername = username;
         await loomLoadUsers({ force: true });
       } catch (error) {
-        if (status) status.show(error.message || "Unable to create user", { type: "danger" });
+        if (status) status.show(error.message || "Unable to create user", { type: "warning" });
       } finally {
         loomUpdateUserToolbarState();
       }
@@ -3303,11 +3301,11 @@ if (loomUserSaveButton) {
         await dataManager.updateUserStatus(user.username, current.status === "1");
         user.is_active = current.status === "1";
       }
-      if (status) status.show(`Saved ${user.username}.`, { type: "success", timeout: 2000 });
+      if (status) status.show(`Saved ${user.username}.`, { type: "success" });
       loomUsersState.clean = loomUserFormSnapshot();
       loomRenderUsersSelect();
     } catch (error) {
-      if (status) status.show(error.message || "Unable to save user", { type: "danger" });
+      if (status) status.show(error.message || "Unable to save user", { type: "warning" });
     } finally {
       loomUpdateUserToolbarState();
     }
@@ -3330,7 +3328,6 @@ if (loomUserDeleteButton) {
       if (status) {
         status.show(isSelf ? "Your account has been deleted." : `Deleted ${user.username}.`, {
           type: "success",
-          timeout: 2000,
         });
       }
       if (isSelf) {
@@ -3341,7 +3338,7 @@ if (loomUserDeleteButton) {
       loomUsersState.selectedUsername = "";
       await loomLoadUsers({ force: true });
     } catch (error) {
-      if (status) status.show(error.message || "Unable to delete user", { type: "danger" });
+      if (status) status.show(error.message || "Unable to delete user", { type: "warning" });
       loomUpdateUserToolbarState();
     }
   });
@@ -3404,7 +3401,7 @@ async function loomCopyShareLink(url) {
   try {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
       await navigator.clipboard.writeText(url);
-      if (status) status.show("Copied share link to clipboard", { type: "success", timeout: 1800 });
+      if (status) status.show("Copied share link to clipboard", { type: "success" });
       return true;
     }
   } catch (error) {
@@ -3420,11 +3417,11 @@ async function loomCopyShareLink(url) {
     textarea.select();
     const successful = document.execCommand("copy");
     document.body.removeChild(textarea);
-    if (successful && status) status.show("Copied share link to clipboard", { type: "success", timeout: 1800 });
+    if (successful && status) status.show("Copied share link to clipboard", { type: "success" });
     return successful;
   } catch (error) {
     console.warn("Fallback clipboard copy failed", error);
-    if (status) status.show("Unable to copy link", { type: "danger" });
+    if (status) status.show("Unable to copy link", { type: "warning" });
     return false;
   }
 }
@@ -3650,7 +3647,7 @@ async function loomPopulateGroupTemplateSelect(systemId, currentTemplateId) {
         loomGroupTemplateSelect.appendChild(option);
       });
   } catch (error) {
-    status?.show(`Unable to list templates: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to list templates: ${error.message}`, { type: "error" });
   }
   if (Array.from(loomGroupTemplateSelect.options).some((option) => option.value === previous)) {
     loomGroupTemplateSelect.value = previous;
@@ -3736,7 +3733,7 @@ async function loomOpenAddGroupCharacter() {
   try {
     characters = (await dataManager.getAddableGroupCharacters(group.id)).characters;
   } catch (error) {
-    if (status) status.show(error.message || "Unable to load characters", { type: "danger" });
+    if (status) status.show(error.message || "Unable to load characters", { type: "warning" });
     return;
   }
   const systemId = loomGroupSystemSelect?.value || "";
@@ -3759,10 +3756,10 @@ async function loomOpenAddGroupCharacter() {
         const current = Array.from(loomGroupMembersList.querySelectorAll("[data-loom-group-member-checkbox]:checked")).map((input) => input.value);
         try {
           await dataManager.updateGroupMembers({ id: group.id, characterIds: [...current, picker.value] });
-          if (status) status.show("Character added.", { type: "success", timeout: 1400 });
+          if (status) status.show("Character added.", { type: "success" });
           await loomLoadGroups({ refresh: true });
         } catch (error) {
-          if (status) status.show(error.message || "Unable to add the character", { type: "danger" });
+          if (status) status.show(error.message || "Unable to add the character", { type: "warning" });
         }
       },
     });
@@ -3821,7 +3818,7 @@ async function loomLoadGroupProperties(groupId) {
     properties = Array.isArray(result?.payload?.properties) ? result.payload.properties : [];
   } catch (error) {
     console.error("Failed to load group properties", error);
-    if (status) status.show(error.message || "Unable to load this group's Properties.", { type: "danger" });
+    if (status) status.show(error.message || "Unable to load this group's Properties.", { type: "warning" });
   }
   // The GM may have already clicked a different group by the time this
   // resolves — a stale response landing after that would otherwise silently
@@ -3869,7 +3866,7 @@ async function loomLoadGroups({ refresh = false } = {}) {
     loomRenderGroupsSelect();
   } catch (error) {
     console.error("Failed to load groups", error);
-    if (status) status.show(error.message || "Unable to load groups", { type: "danger" });
+    if (status) status.show(error.message || "Unable to load groups", { type: "warning" });
     if (loomGroupsState.items.length) {
       loomRenderGroupsSelect();
     } else {
@@ -3928,7 +3925,7 @@ function addGroupProperty() {
 if (loomGroupNewButton) {
   loomGroupNewButton.addEventListener("click", async () => {
     if (!dataManager.isAuthenticated()) {
-      if (status) status.show("Sign in to manage groups.", { type: "warning", timeout: 1800 });
+      if (status) status.show("Sign in to manage groups.", { type: "warning" });
       return;
     }
     const baseName = "Player group";
@@ -3942,12 +3939,12 @@ if (loomGroupNewButton) {
     loomGroupNewButton.disabled = true;
     try {
       const result = await dataManager.createGroup({ name: candidate });
-      if (status) status.show("Group created.", { type: "success", timeout: 1600 });
+      if (status) status.show("Group created.", { type: "success" });
       loomGroupsState.selectedId = result?.id || "";
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to create group", error);
-      if (status) status.show(error.message || "Unable to create group", { type: "danger" });
+      if (status) status.show(error.message || "Unable to create group", { type: "warning" });
     } finally {
       loomGroupNewButton.disabled = false;
     }
@@ -3982,12 +3979,12 @@ if (loomGroupDuplicateButton) {
         templateId: loomGroupTemplateSelect?.value || "",
         properties: collectGroupProperties(),
       });
-      if (status) status.show("Group duplicated.", { type: "success", timeout: 1600 });
+      if (status) status.show("Group duplicated.", { type: "success" });
       loomGroupsState.selectedId = result?.id || "";
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to duplicate group", error);
-      if (status) status.show(error.message || "Unable to duplicate group", { type: "danger" });
+      if (status) status.show(error.message || "Unable to duplicate group", { type: "warning" });
     } finally {
       loomGroupDuplicateButton.disabled = false;
     }
@@ -4026,11 +4023,11 @@ if (loomGroupSaveButton) {
         templateId: newTemplateId,
         properties: newProperties,
       });
-      if (status) status.show("Group saved.", { type: "success", timeout: 1600 });
+      if (status) status.show("Group saved.", { type: "success" });
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to save group", error);
-      if (status) status.show(error.message || "Unable to save group", { type: "danger" });
+      if (status) status.show(error.message || "Unable to save group", { type: "warning" });
     } finally {
       if (loomGroupNameInput) loomGroupNameInput.disabled = false;
       if (loomGroupSystemSelect) loomGroupSystemSelect.disabled = false;
@@ -4050,12 +4047,12 @@ if (loomGroupDeleteButton) {
     if (loomGroupSaveButton) loomGroupSaveButton.disabled = true;
     try {
       await dataManager.deleteGroup(group.id);
-      if (status) status.show("Group deleted.", { type: "success", timeout: 1600 });
+      if (status) status.show("Group deleted.", { type: "success" });
       loomGroupsState.selectedId = "";
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to delete group", error);
-      if (status) status.show(error.message || "Unable to delete group", { type: "danger" });
+      if (status) status.show(error.message || "Unable to delete group", { type: "warning" });
       loomUpdateGroupsToolbarState();
     }
   });
@@ -4081,7 +4078,7 @@ if (loomGroupMembersList) {
     const pendingSettingId = loomGroupSettingSelect?.value || "";
     try {
       await dataManager.updateGroupMembers({ id: group.id, characterIds: selected });
-      if (status) status.show("Group updated.", { type: "success", timeout: 1400 });
+      if (status) status.show("Group updated.", { type: "success" });
       await loomLoadGroups({ refresh: true });
       const refreshed = loomFindGroup(loomGroupsState.selectedId);
       let needsToolbarUpdate = false;
@@ -4097,7 +4094,7 @@ if (loomGroupMembersList) {
       if (needsToolbarUpdate) loomUpdateGroupsToolbarState();
     } catch (error) {
       console.error("Unable to update group members", error);
-      if (status) status.show(error.message || "Unable to update group", { type: "danger" });
+      if (status) status.show(error.message || "Unable to update group", { type: "warning" });
       checkboxes.forEach((input) => (input.disabled = false));
     }
   });
@@ -4115,7 +4112,7 @@ if (loomGroupMembersList) {
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to change a character's active state", error);
-      if (status) status.show(error.message || "Unable to change that character", { type: "danger" });
+      if (status) status.show(error.message || "Unable to change that character", { type: "warning" });
       toggle.checked = !toggle.checked;
       toggle.disabled = false;
     }
@@ -4130,11 +4127,11 @@ if (loomGroupShareGenerateButton) {
     try {
       const link = await dataManager.createGroupShareLink(group.id);
       loomUpdateGroupShareDisplay(group, link);
-      if (status) status.show("Share link created.", { type: "success", timeout: 1600 });
+      if (status) status.show("Share link created.", { type: "success" });
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to create group link", error);
-      if (status) status.show(error.message || "Unable to create link", { type: "danger" });
+      if (status) status.show(error.message || "Unable to create link", { type: "warning" });
     } finally {
       loomGroupShareGenerateButton.disabled = false;
     }
@@ -4157,11 +4154,11 @@ if (loomGroupShareDisableButton) {
     try {
       await dataManager.revokeGroupShareLink(group.id);
       loomUpdateGroupShareDisplay(group, null);
-      if (status) status.show("Share link disabled.", { type: "success", timeout: 1600 });
+      if (status) status.show("Share link disabled.", { type: "success" });
       await loomLoadGroups({ refresh: true });
     } catch (error) {
       console.error("Unable to disable group link", error);
-      if (status) status.show(error.message || "Unable to disable link", { type: "danger" });
+      if (status) status.show(error.message || "Unable to disable link", { type: "warning" });
     } finally {
       loomGroupShareDisableButton.disabled = false;
     }
@@ -4231,7 +4228,7 @@ async function loomCheckAuthNow() {
   try {
     await dataManager.checkDdbAuthStatus();
   } catch (error) {
-    if (status) status.show(error.message || "Unable to check D&D Beyond session", { type: "danger" });
+    if (status) status.show(error.message || "Unable to check D&D Beyond session", { type: "warning" });
   }
   await loomRenderAuthStatus();
 }
@@ -4287,7 +4284,7 @@ async function loomRenderAuthStatus() {
     loomRenderAuthDdbStatus(payload?.ddb);
     loomRenderAuthAnthropicStatus(payload?.anthropic);
   } catch (error) {
-    if (status) status.show(error.message || "Unable to load auth status", { type: "danger" });
+    if (status) status.show(error.message || "Unable to load auth status", { type: "warning" });
   }
 }
 
@@ -4299,11 +4296,11 @@ if (loomAuthDdbSaveButton) {
     try {
       await dataManager.saveDdbSessionCookie(cookie);
       if (loomAuthDdbCookieInput) loomAuthDdbCookieInput.value = "";
-      if (status) status.show("D&D Beyond session saved.", { type: "success", timeout: 1600 });
+      if (status) status.show("D&D Beyond session saved.", { type: "success" });
       const payload = await dataManager.checkDdbAuthStatus();
       loomRenderAuthDdbStatus(payload?.ddb);
     } catch (error) {
-      if (status) status.show(error.message || "Unable to save D&D Beyond session", { type: "danger" });
+      if (status) status.show(error.message || "Unable to save D&D Beyond session", { type: "warning" });
     } finally {
       loomAuthDdbSaveButton.disabled = false;
     }
@@ -4318,10 +4315,10 @@ if (loomAuthAnthropicSaveButton) {
     try {
       await dataManager.saveAnthropicApiKey(apiKey);
       if (loomAuthAnthropicKeyInput) loomAuthAnthropicKeyInput.value = "";
-      if (status) status.show("Anthropic API key saved.", { type: "success", timeout: 1600 });
+      if (status) status.show("Anthropic API key saved.", { type: "success" });
       await loomRenderAuthStatus();
     } catch (error) {
-      if (status) status.show(error.message || "Unable to save Anthropic API key", { type: "danger" });
+      if (status) status.show(error.message || "Unable to save Anthropic API key", { type: "warning" });
     } finally {
       loomAuthAnthropicSaveButton.disabled = false;
     }
@@ -4800,11 +4797,11 @@ if (loomLibraryInspectorRenameButton) {
       // records of any kind.
       const affectedKinds = new Set([item.bucket, ...result.touched.map((entry) => entry.kind)]);
       affectedKinds.forEach((kind) => window.dispatchEvent(new CustomEvent("workbench:content-saved", { detail: { bucket: kind } })));
-      status?.show(`Renamed to "${newId}".`, { type: "success", timeout: 2500 });
+      status?.show(`Renamed to "${newId}".`, { type: "success" });
       loomLibraryTableState.selectedKey = loomLibraryItemKey({ bucket: item.bucket, id: newId });
       await loomLoadLibraryTable({ refresh: true });
     } catch (error) {
-      status?.show(error.message || "Unable to rename this record.", { type: "danger" });
+      status?.show(error.message || "Unable to rename this record.", { type: "warning" });
     } finally {
       loomLibraryInspectorRenameButton.disabled = false;
     }
@@ -4882,7 +4879,7 @@ async function loomLoadLibraryTable({ refresh = false } = {}) {
     loomRenderLibraryTableSelect();
   } catch (error) {
     console.error("Failed to load library contents", error);
-    if (status) status.show(error.message || "Unable to load library contents", { type: "danger" });
+    if (status) status.show(error.message || "Unable to load library contents", { type: "warning" });
     loomLibraryTableShowMessage("Unable to load library contents.");
   } finally {
     loomLibraryTableState.loading = false;
@@ -5038,7 +5035,7 @@ async function refreshLibraryEntryCatalog(kind) {
       });
     });
   } catch (error) {
-    status?.show(`Unable to list ${kind}s: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to list ${kind}s: ${error.message}`, { type: "error" });
   }
 }
 
@@ -5163,7 +5160,7 @@ async function populateLibraryTemplateSelect(entity) {
         libraryTemplateSelect.appendChild(option);
       });
   } catch (error) {
-    status?.show(`Unable to list templates: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to list templates: ${error.message}`, { type: "error" });
   }
   const current = entity?.template || "";
   if (Array.from(libraryTemplateSelect.options).some((option) => option.value === current)) {
@@ -5882,7 +5879,7 @@ async function loadFeatureIntoEditor(id) {
     if (featureSuggestStatus) featureSuggestStatus.classList.add("d-none");
     markClean("feature");
   } catch (error) {
-    status?.show(`Unable to load feature: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to load feature: ${error.message}`, { type: "error" });
   }
 }
 
@@ -5943,7 +5940,7 @@ if (featureSaveButton) {
     const id = featureRecordSelect.value;
     const mechanics = currentFeatureMechanics();
     if (!mechanics.type) {
-      status?.show("Choose a Mechanics Type before saving.", { type: "error", timeout: 3000 });
+      status?.show("Choose a Mechanics Type before saving.", { type: "error" });
       return;
     }
     // Every tier needs its own non-blank, unique id — it's the storage key
@@ -5952,11 +5949,11 @@ if (featureSaveButton) {
     // silently break that lookup.
     const tierIds = featureEditorTiers.map((tier) => (tier.id || "").trim());
     if (tierIds.some((tierId) => !tierId)) {
-      status?.show("Every tier needs an id before saving.", { type: "error", timeout: 3000 });
+      status?.show("Every tier needs an id before saving.", { type: "error" });
       return;
     }
     if (new Set(tierIds).size !== tierIds.length) {
-      status?.show("Tier ids must be unique.", { type: "error", timeout: 3000 });
+      status?.show("Tier ids must be unique.", { type: "error" });
       return;
     }
     currentFeatureEntity.name = (featureNameInput?.value || "").trim() || id;
@@ -5981,7 +5978,7 @@ if (featureSaveButton) {
     Object.assign(currentFeatureEntity, readFeatureReferenceLists());
     try {
       await dataManager.save("feature", id, currentFeatureEntity);
-      status?.show(`Saved feature ${id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved feature ${id}.`, { type: "success" });
       markClean("feature");
       // A new name/tag/category value from this save should be visible next
       // time it's needed — populateFeatureSelect resets the vocabulary
@@ -5989,7 +5986,7 @@ if (featureSaveButton) {
       await populateFeatureSelect();
       featureRecordSelect.value = id;
     } catch (error) {
-      status?.show(`Unable to save feature: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to save feature: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -6022,12 +6019,12 @@ if (featureDuplicateButton) {
     const duplicate = { ...currentFeatureEntity, id: newId, name: `${currentFeatureEntity.name || sourceId} Copy` };
     try {
       await dataManager.save("feature", newId, duplicate);
-      status?.show(`Duplicated as "${newId}".`, { type: "success", timeout: 2500 });
+      status?.show(`Duplicated as "${newId}".`, { type: "success" });
       await populateFeatureSelect();
       featureRecordSelect.value = newId;
       await loadFeatureIntoEditor(newId);
     } catch (error) {
-      status?.show(`Unable to duplicate feature: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to duplicate feature: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -6039,10 +6036,10 @@ if (featureDeleteButton) {
     if (!confirmDelete({ label: `feature "${id}"` })) return;
     try {
       await dataManager.delete("feature", id);
-      status?.show(`Deleted feature ${id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Deleted feature ${id}.`, { type: "success" });
     } catch (error) {
       dataManager.removeLocal("feature", id);
-      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning", timeout: 4000 });
+      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning" });
     }
     currentFeatureEntity = null;
     featureRecordSelect.value = "";
@@ -6114,7 +6111,7 @@ async function handleSuggestFeatureTags() {
       featureSuggestStatus.classList.remove("d-none");
     }
   } catch (error) {
-    status?.show(`Unable to suggest tags: ${error.message}`, { type: "error", timeout: 5000 });
+    status?.show(`Unable to suggest tags: ${error.message}`, { type: "error" });
   } finally {
     if (featureSuggestButton) {
       featureSuggestButton.disabled = false;
@@ -6806,7 +6803,7 @@ async function loadMacroIntoEditor(id) {
     await refreshLibraryEntryCatalog("macro");
     markClean("macro");
   } catch (error) {
-    status?.show(`Unable to load macro: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to load macro: ${error.message}`, { type: "error" });
   }
 }
 
@@ -6820,7 +6817,7 @@ async function populateMacroSelect() {
     // macro's full body just to populate a dropdown.
     entries = await fetchKindEntrySummaries(dataManager, "macro");
   } catch (error) {
-    status?.show(`Unable to list macros: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to list macros: ${error.message}`, { type: "error" });
   }
   macroRecordSelect.innerHTML = "";
   const blank = document.createElement("option");
@@ -6892,7 +6889,7 @@ if (macroDuplicateButton) {
       }
     });
     if (macroRecordSelect) macroRecordSelect.value = "";
-    status?.show(`Duplicated "${sourceId}" — review the new Id/Name, then Save.`, { type: "info", timeout: 3000 });
+    status?.show(`Duplicated "${sourceId}" — review the new Id/Name, then Save.`, { type: "info" });
   });
 }
 
@@ -6916,7 +6913,7 @@ if (macroSaveButton) {
     if (!dataManager) return;
     const id = (macroIdInput?.value || "").trim();
     if (!id) {
-      status?.show("Macro id is required.", { type: "error", timeout: 3000 });
+      status?.show("Macro id is required.", { type: "error" });
       return;
     }
     const payload = {
@@ -6929,13 +6926,13 @@ if (macroSaveButton) {
       // content — loadMacroIntoEditor falls back to the known id when a
       // loaded payload doesn't carry one.
       await dataManager.save("macro", id, payload);
-      status?.show(`Saved macro ${id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved macro ${id}.`, { type: "success" });
       if (macroIdInput) macroIdInput.disabled = true;
       await populateMacroSelect();
       macroRecordSelect.value = id;
       markClean("macro");
     } catch (error) {
-      status?.show(`Unable to save macro: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to save macro: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -6945,16 +6942,16 @@ if (macroDeleteButton) {
     if (!dataManager) return;
     const id = (macroIdInput?.value || "").trim() || macroRecordSelect?.value;
     if (!id) {
-      status?.show("Select a macro to delete first.", { type: "warning", timeout: 2500 });
+      status?.show("Select a macro to delete first.", { type: "warning" });
       return;
     }
     if (!confirmDelete({ label: `macro "${id}"` })) return;
     try {
       await dataManager.delete("macro", id);
-      status?.show(`Deleted macro ${id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Deleted macro ${id}.`, { type: "success" });
     } catch (error) {
       dataManager.removeLocal("macro", id);
-      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning", timeout: 4000 });
+      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning" });
     }
     newMacroEditor();
     if (macroRecordSelect) macroRecordSelect.value = "";
@@ -7063,7 +7060,6 @@ async function loadLibraryEntry(kind, id) {
         await deleteLibraryEntry(kind, id);
         status?.show(`${kind}/${id} had no matching file — removed the orphaned entry.`, {
           type: "warning",
-          timeout: 4000,
         });
         loomLibraryTableState.selectedKey = "";
         if (loomLibraryTableSelect) loomLibraryTableSelect.value = "";
@@ -7071,7 +7067,7 @@ async function loadLibraryEntry(kind, id) {
         await loomLoadLibraryTable({ refresh: true });
         loadRecentSaves();
       } catch (cleanupError) {
-        status?.show(`Unable to clean up ${kind}/${id}: ${cleanupError.message}`, { type: "error", timeout: 4000 });
+        status?.show(`Unable to clean up ${kind}/${id}: ${cleanupError.message}`, { type: "error" });
       }
       return;
     }
@@ -7086,7 +7082,7 @@ async function loadLibraryEntry(kind, id) {
       libraryIdInput.disabled = true;
     }
     updateToolbarState();
-    status?.show(`Unable to load ${kind}/${id}: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to load ${kind}/${id}: ${error.message}`, { type: "error" });
   }
 }
 
@@ -7108,7 +7104,7 @@ if (libraryNewButton) {
   libraryNewButton.addEventListener("click", () => {
     const kind = loomLibraryTableState.selectedType || "";
     if (!kind) {
-      status?.show("Select a Type in the left pane first.", { type: "warning", timeout: 2500 });
+      status?.show("Select a Type in the left pane first.", { type: "warning" });
       return;
     }
     recordUndoableChange("library", () => {
@@ -7160,7 +7156,7 @@ if (libraryDuplicateButton) {
     });
     loomLibraryTableState.selectedKey = "";
     if (loomLibraryTableSelect) loomLibraryTableSelect.value = "";
-    status?.show(`Duplicated "${sourceId}" — review the new Id/Name, then Save.`, { type: "info", timeout: 3000 });
+    status?.show(`Duplicated "${sourceId}" — review the new Id/Name, then Save.`, { type: "info" });
   });
 }
 
@@ -7251,7 +7247,6 @@ async function autoLinkEntityToSystems(kind, id, entity) {
         await dataManager.save("systems", systemId, payload);
         status?.show(`Linked ${entity.name || id} to ${payload.title || systemId}.`, {
           type: "success",
-          timeout: 2500,
         });
       } catch (error) {
         // Non-fatal — the entity itself already saved successfully.
@@ -7265,27 +7260,27 @@ if (librarySaveButton) {
     const kind = loomLibraryTableState.activeKind;
     const id = (libraryIdInput?.value || "").trim();
     if (!kind) {
-      status?.show("Select a Type in the left pane first.", { type: "warning", timeout: 2500 });
+      status?.show("Select a Type in the left pane first.", { type: "warning" });
       return;
     }
     if (!id) {
-      status?.show("Enter an id to save as.", { type: "warning", timeout: 2000 });
+      status?.show("Enter an id to save as.", { type: "warning" });
       return;
     }
     if (!isDirty("library") && loomLibraryMetaChanges) {
       try {
         await loomApplyLibraryMetaChanges();
-        status?.show(`Saved ${kind}/${id}.json.`, { type: "success", timeout: 2000 });
+        status?.show(`Saved ${kind}/${id}.json.`, { type: "success" });
         await loomLoadLibraryTable({ refresh: true });
         updateToolbarState();
       } catch (error) {
-        status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+        status?.show(`Unable to save: ${error.message}`, { type: "error" });
       }
       return;
     }
     const entity = currentLibraryEntity();
     if (!entity) {
-      status?.show("Entity JSON isn't valid — fix it before saving.", { type: "error", timeout: 3000 });
+      status?.show("Entity JSON isn't valid — fix it before saving.", { type: "error" });
       return;
     }
     // Every character or monster needs at least one Assigned System —
@@ -7300,7 +7295,7 @@ if (librarySaveButton) {
       (kind === "character" || kind === "monster") &&
       (!Array.isArray(entity.systemIds) || !entity.systemIds.length)
     ) {
-      status?.show(`Check at least one Assigned System before saving a ${kind}.`, { type: "warning", timeout: 3000 });
+      status?.show(`Check at least one Assigned System before saving a ${kind}.`, { type: "warning" });
       return;
     }
     try {
@@ -7309,7 +7304,7 @@ if (librarySaveButton) {
       // Staged Owner / Public edits belong to the record they were made on, not to a Save-as copy.
       const stagedItem = loomLibraryMetaChanges?.item;
       if (stagedItem && stagedItem.bucket === kind && stagedItem.id === id) await loomApplyLibraryMetaChanges();
-      status?.show(`Saved ${kind}/${id}.json.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved ${kind}/${id}.json.`, { type: "success" });
       await autoLinkEntityToSystems(kind, id, entity);
       await refreshLibraryEntryCatalog(kind);
       loomLibraryTableState.selectedType = kind;
@@ -7319,7 +7314,7 @@ if (librarySaveButton) {
       loadRecentSaves();
       markClean("library");
     } catch (error) {
-      status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to save: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -7334,20 +7329,20 @@ if (libraryDeleteButton) {
     const kind = loomLibraryTableState.activeKind;
     const id = (libraryIdInput?.value || "").trim();
     if (!kind || !id) {
-      status?.show("Select an entity to delete first.", { type: "warning", timeout: 2500 });
+      status?.show("Select an entity to delete first.", { type: "warning" });
       return;
     }
     if (!confirmDelete({ label: `${kind}/${id}` })) return;
     try {
       await deleteLibraryEntry(kind, id);
-      status?.show(`Deleted ${kind}/${id}.json.`, { type: "success", timeout: 2000 });
+      status?.show(`Deleted ${kind}/${id}.json.`, { type: "success" });
       loomLibraryTableState.selectedKey = "";
       if (loomLibraryTableSelect) loomLibraryTableSelect.value = "";
       newLibraryEntry();
       await loomLoadLibraryTable({ refresh: true });
       loadRecentSaves();
     } catch (error) {
-      status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to delete: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -7716,7 +7711,7 @@ async function loadSystemIntoEditor(id) {
     systemPropertyInspector.selectRow(null);
     markClean("system");
   } catch (error) {
-    status?.show(`Unable to load system: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to load system: ${error.message}`, { type: "error" });
   }
 }
 
@@ -7762,7 +7757,7 @@ if (systemDuplicateButton) {
       }
     });
     if (systemSelect) systemSelect.value = "";
-    status?.show(`Duplicated "${sourceId}" — review the new Id/Title, then Save.`, { type: "info", timeout: 3000 });
+    status?.show(`Duplicated "${sourceId}" — review the new Id/Title, then Save.`, { type: "info" });
   });
 }
 
@@ -7803,7 +7798,7 @@ if (systemSaveButton) {
     if (!dataManager) return;
     const payload = buildSystemPayload();
     if (!payload.id) {
-      status?.show("System id is required.", { type: "error", timeout: 3000 });
+      status?.show("System id is required.", { type: "error" });
       return;
     }
     const unnamed = findUnnamedValueEntries(payload.fields);
@@ -7823,7 +7818,7 @@ if (systemSaveButton) {
       // below, never persisted inside the body itself.
       const { id: _systemId, ...bodyWithoutId } = payload;
       await dataManager.save("systems", payload.id, bodyWithoutId);
-      status?.show(`Saved system ${payload.id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved system ${payload.id}.`, { type: "success" });
       await populateSystemSelect();
       systemSelect.value = payload.id;
       await populateLibrarySystemCheckboxes(currentLibraryEntity()?.systemIds);
@@ -7833,7 +7828,7 @@ if (systemSaveButton) {
       void runSystemDiagnostics();
       void renderSystemBindingsChecklist();
     } catch (error) {
-      status?.show(`Unable to save system: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to save system: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -7843,19 +7838,19 @@ if (systemDeleteButton) {
     if (!dataManager) return;
     const id = (systemIdInput?.value || "").trim() || systemSelect.value;
     if (!id) {
-      status?.show("Select a system to delete first.", { type: "warning", timeout: 2500 });
+      status?.show("Select a system to delete first.", { type: "warning" });
       return;
     }
     if (!confirmDelete({ label: `system "${id}"` })) return;
     try {
       await dataManager.delete("systems", id);
-      status?.show(`Deleted system ${id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Deleted system ${id}.`, { type: "success" });
     } catch (error) {
       // Covers an orphaned local-only record, or a remote delete failing
       // (e.g. a DB row with no matching file) — either way, a "not found"
       // system otherwise has no way to leave the picker.
       dataManager.removeLocal("systems", id);
-      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning", timeout: 4000 });
+      status?.show(`Removed ${id} locally (server delete failed: ${error.message}).`, { type: "warning" });
     }
     newSystemEditor();
     systemSelect.value = "";
@@ -7921,7 +7916,7 @@ if (mappingSelect) {
     try {
       await loadMapping(id);
     } catch (error) {
-      status?.show(`Unable to load mapping: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to load mapping: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -7963,7 +7958,7 @@ window.addEventListener("beforeunload", (event) => {
 if (saveButton) {
   saveButton.addEventListener("click", async () => {
     if (!mappingDefinition) {
-      status?.show("Nothing to save yet.", { type: "warning", timeout: 2000 });
+      status?.show("Nothing to save yet.", { type: "warning" });
       return;
     }
     // Unconditional — Data Source is never disabled/locked, so whatever's
@@ -7985,12 +7980,12 @@ if (saveButton) {
     try {
       await saveMapping(id);
       currentMappingId = id;
-      status?.show(`Saved ${id}.json.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved ${id}.json.`, { type: "success" });
       await populateMappingSelect();
       enterMappingMode(mappingDefinition);
       markClean("mapping");
     } catch (error) {
-      status?.show(`Unable to save mapping: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to save mapping: ${error.message}`, { type: "error" });
     }
   });
 }
@@ -7998,7 +7993,7 @@ if (saveButton) {
 if (renameButton) {
   renameButton.addEventListener("click", async () => {
     if (!currentMappingId) {
-      status?.show("Save this mapping first, then you can rename it.", { type: "warning", timeout: 2500 });
+      status?.show("Save this mapping first, then you can rename it.", { type: "warning" });
       return;
     }
     const newId = promptKey(`Rename "${currentMappingId}" to:`);
@@ -8014,10 +8009,10 @@ if (renameButton) {
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
       currentMappingId = newId;
-      status?.show(`Renamed to ${newId}.json.`, { type: "success", timeout: 2000 });
+      status?.show(`Renamed to ${newId}.json.`, { type: "success" });
       await populateMappingSelect();
     } catch (error) {
-      status?.show(`Unable to rename mapping: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to rename mapping: ${error.message}`, { type: "error" });
     }
   });
 }

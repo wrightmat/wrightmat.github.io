@@ -59,6 +59,7 @@ import {
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl, setElementVisible } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 import { allowsDelete, refreshOwnershipCatalog, confirmDelete } from "../../common/js/lib/ownership.js";
 import { createTokenImageField } from "../../common/js/lib/token-picker.js";
 import { abilityModifier, averageDiceRoll, computeAttackBonus, computeSaveDC, computeAverageDamage } from "../../common/js/lib/derived-formulas.js";
@@ -2089,9 +2090,9 @@ async function handleGenerate() {
     updateGenerationFieldsVisibility();
     recordHistory("generate monster", () => renderMonster(record));
     expandMonsterPropertiesSection();
-    status?.show("Monster generated.", { type: "success", timeout: 1500 });
+    status?.show("Monster generated.", { type: "success" });
   } catch (error) {
-    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to generate: ${error.message}`, { type: "error" });
   }
 }
 
@@ -2126,15 +2127,15 @@ async function handleSave() {
     if (conversionErrors.length) {
       status?.show(
         `Saved, but ${conversionErrors.length} feature${conversionErrors.length === 1 ? "" : "s"} couldn't be converted (see console).`,
-        { type: "warning", timeout: 6000 }
+        { type: "warning" }
       );
     } else {
-      status?.show("Saved.", { type: "success", timeout: 1500 });
+      status?.show("Saved.", { type: "success" });
     }
     await populateMonsterSelect();
     updateActionButtons();
   } catch (error) {
-    status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to save: ${error.message}`, { type: "error" });
   }
 }
 
@@ -2144,13 +2145,13 @@ async function handleDelete() {
   if (!confirmDelete({ label: `"${label}"` })) return;
   try {
     await dataManager.delete("monster", currentRecord.id);
-    status?.show("Deleted.", { type: "success", timeout: 1500 });
+    status?.show("Deleted.", { type: "success" });
     dirtyGate.markDirty();
     currentMonsterId = null;
     renderMonster(null);
     await populateMonsterSelect();
   } catch (error) {
-    status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to delete: ${error.message}`, { type: "error" });
   }
 }
 
@@ -2178,7 +2179,7 @@ function handleDuplicate() {
   if (elements.monsterSelect) elements.monsterSelect.value = "";
   renderMonster(duplicate);
   expandMonsterPropertiesSection();
-  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+  status?.show("Duplicated — not yet saved.", { type: "info" });
 }
 
 // --- Convert to Character -------------------------------------------------
@@ -2289,7 +2290,7 @@ elements.convertCharacterForm?.addEventListener("submit", async (event) => {
   // unsaved and throws up a prompt on the next line's navigation.
   dirtyGate.markClean();
   convertToCharacterModalInstance?.hide();
-  status?.show(`Converted to ${name}.`, { type: "success", timeout: 2000 });
+  status?.show(`Converted to ${name}.`, { type: "success" });
   const href = buildKindToolUrl("character", id);
   if (href) window.location.href = href;
 });
@@ -2427,7 +2428,7 @@ async function init() {
     try {
       const result = await dataManager.get("monster", id, { preferLocal: false });
       if (!result?.payload) {
-        status?.show("Unable to load that monster.", { type: "error", timeout: 4000 });
+        status?.show("Unable to load that monster.", { type: "error" });
         return;
       }
       // Not createMonsterRecord — that always stamps a fresh id/createdAt,
@@ -2438,7 +2439,7 @@ async function init() {
       expandMonsterPropertiesSection();
       updateActionButtons();
     } catch (error) {
-      status?.show(`Unable to load monster: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to load monster: ${error.message}`, { type: "error" });
     }
   }
   elements.monsterSelect?.addEventListener("change", () => selectMonster(elements.monsterSelect.value));
@@ -2610,7 +2611,7 @@ async function init() {
       })();
       return true;
     } catch (error) {
-      status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+      status?.show("Unable to open the linked record.", { type: "error" });
       return false;
     }
   }
@@ -2638,6 +2639,11 @@ async function init() {
     updateGenerateButtonReadiness();
   }
 
+  handleCommandRequest({
+    status,
+    makes: { monster: elements.generateButton },
+    fields: [{ param: "system", select: elements.systemSelect, onChange: handleSystemSelectChange }],
+  });
   initHelpSystem();
   refreshTooltips();
 }

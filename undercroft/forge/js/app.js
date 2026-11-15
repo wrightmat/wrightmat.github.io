@@ -68,6 +68,7 @@ import {
 } from "../../common/js/lib/generator-kit.js";
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 // Repository's own markdown renderer — reused as-is for the Note field's
 // View mode, same as Crucible/Vault/Sanctum's own identical Notes preview.
 import { renderMarkdown } from "../../repository/js/lib/markdown.js";
@@ -1514,7 +1515,7 @@ async function selectLocation(id) {
     try {
       currentLocation = await loadLocation(dataManager, id);
     } catch (error) {
-      status?.show(`Unable to load location: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to load location: ${error.message}`, { type: "error" });
       return;
     }
   }
@@ -1744,7 +1745,7 @@ generateButton.addEventListener("click", () => {
     recordHistory("generate NPC", () => renderNpc(record));
     expandNpcPropertiesSection();
   } catch (error) {
-    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to generate: ${error.message}`, { type: "error" });
   }
 });
 
@@ -1878,9 +1879,9 @@ generateNoteButton.addEventListener("click", async () => {
       currentRecord = { ...currentRecord, note };
       renderNpc(currentRecord);
     });
-    status?.show("Note generated.", { type: "success", timeout: 1500 });
+    status?.show("Note generated.", { type: "success" });
   } catch (error) {
-    status?.show(`Unable to generate note: ${error.message}`, { type: "error", timeout: 5000 });
+    status?.show(`Unable to generate note: ${error.message}`, { type: "error" });
   } finally {
     generateNoteButton.disabled = false;
     generateNoteButton.innerHTML = originalHtml;
@@ -1970,9 +1971,9 @@ saveButton.addEventListener("click", async () => {
     currentNpcId = currentRecord.id;
     await populateNpcSelect();
     refreshActionButtons();
-    status?.show("Saved.", { type: "success", timeout: 1500 });
+    status?.show("Saved.", { type: "success" });
   } catch (error) {
-    status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to save: ${error.message}`, { type: "error" });
   }
 });
 
@@ -1982,13 +1983,13 @@ deleteButton.addEventListener("click", async () => {
   if (!confirmDelete({ label: `"${label}"` })) return;
   try {
     await dataManager.delete("npc", currentRecord.id);
-    status?.show("Deleted.", { type: "success", timeout: 1500 });
+    status?.show("Deleted.", { type: "success" });
     dirtyGate.markDirty();
     currentNpcId = null;
     renderNpc(null);
     await populateNpcSelect();
   } catch (error) {
-    status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to delete: ${error.message}`, { type: "error" });
   }
 });
 
@@ -2020,7 +2021,7 @@ duplicateButton.addEventListener("click", () => {
   if (npcSelect) npcSelect.value = "";
   renderNpc(duplicate);
   expandNpcPropertiesSection();
-  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+  status?.show("Duplicated — not yet saved.", { type: "info" });
 });
 
 undoButton.addEventListener("click", () => performUndo());
@@ -2133,7 +2134,7 @@ convertCharacterForm?.addEventListener("submit", async (event) => {
   // unsaved and throws up a prompt on the next line's navigation.
   dirtyGate.markClean();
   convertToCharacterModalInstance?.hide();
-  status?.show(`Converted to ${name}.`, { type: "success", timeout: 2000 });
+  status?.show(`Converted to ${name}.`, { type: "success" });
   const href = buildKindToolUrl("character", id);
   if (href) window.location.href = href;
 });
@@ -2220,7 +2221,7 @@ async function selectNpc(id) {
   try {
     const result = await dataManager.get("npc", id);
     if (!result?.payload) {
-      status?.show("Unable to load that NPC.", { type: "error", timeout: 4000 });
+      status?.show("Unable to load that NPC.", { type: "error" });
       return;
     }
     // Not createNpcRecord — that always stamps a fresh id/createdAt, right
@@ -2231,14 +2232,14 @@ async function selectNpc(id) {
     expandNpcPropertiesSection();
     refreshActionButtons();
   } catch (error) {
-    status?.show(`Unable to load NPC: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to load NPC: ${error.message}`, { type: "error" });
   }
 }
 npcSelect?.addEventListener("change", () => selectNpc(npcSelect.value));
 
 exportLocationTemplateButton.addEventListener("click", async () => {
   if (!currentLocation) {
-    status?.show("Select a location first.", { type: "error", timeout: 3000 });
+    status?.show("Select a location first.", { type: "error" });
     return;
   }
   try {
@@ -2247,9 +2248,9 @@ exportLocationTemplateButton.addEventListener("click", async () => {
     const template = await buildLocationPressTemplate(currentLocation, tables, templateId, dataManager, { settingName });
     template.category = "print";
     await dataManager.save("templates", templateId, template);
-    status?.show(`Exported Press template ${templateId}.`, { type: "success", timeout: 2500 });
+    status?.show(`Exported Press template ${templateId}.`, { type: "success" });
   } catch (error) {
-    status?.show(`Unable to export template: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to export template: ${error.message}`, { type: "error" });
   }
 });
 
@@ -2301,7 +2302,7 @@ async function applyDeepLinkParams() {
     })();
     return true;
   } catch (error) {
-    status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+    status?.show("Unable to open the linked record.", { type: "error" });
     return false;
   }
 }
@@ -2404,6 +2405,15 @@ async function init() {
     }
     renderNpc(null);
   }
+  handleCommandRequest({
+    status,
+    makes: { npc: generateButton },
+    fields: [
+      { param: "system", select: systemSelect, onChange: handleSystemSelectChange },
+      { param: "setting", select: settingSelect, onChange: handleSettingSelectChange },
+      { param: "location", select: locationSelect, onChange: () => selectLocation(locationSelect.value) },
+    ],
+  });
   initHelpSystem({ root: document });
   refreshTooltips(document);
 }

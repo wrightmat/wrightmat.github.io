@@ -35,7 +35,7 @@ export async function renderMyGroups(container, { dataManager, status } = {}) {
       if (!confirmed) return;
       try {
         await dataManager.leaveGroup(group.id);
-        status?.show(`You left ${group.name}.`, { type: "success", timeout: 2000 });
+        status?.show(`You left ${group.name}.`, { type: "success" });
         await renderMyGroups(container, { dataManager, status });
       } catch (error) {
         status?.show(error.message || "Unable to leave the group.", { type: "error" });

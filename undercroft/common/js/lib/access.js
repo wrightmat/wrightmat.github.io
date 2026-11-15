@@ -96,7 +96,7 @@ export function initTierGate({
       const message = label
         ? `This tool requires ${label} access or higher.`
         : "Your tier cannot access this tool.";
-      status.show(message, { type: "warning", timeout: 2600 });
+      status.show(message, { type: "warning" });
     }
     return allowed;
   };
@@ -240,7 +240,7 @@ export function initTierVisibility({
       const message = label
         ? `This feature requires ${label} access.`
         : "Your tier cannot access this feature.";
-      status.show(message, { type: "warning", timeout: 2600 });
+      status.show(message, { type: "warning" });
     }
   };
 

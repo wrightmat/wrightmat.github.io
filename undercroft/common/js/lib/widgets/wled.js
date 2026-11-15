@@ -679,7 +679,7 @@ export function initWledWidget(
       await wledPostState(target, body, { source });
       await refreshState({ silent: true });
     } catch (error) {
-      status?.show?.(error?.message || "Unable to send command to WLED.", { type: "error", timeout: 3000 });
+      status?.show?.(error?.message || "Unable to send command to WLED.", { type: "error" });
     }
   }
 
@@ -740,7 +740,6 @@ export function initWledWidget(
     if (new Set(names.map((name) => name.toLowerCase())).size !== names.length) {
       status?.show?.("Two segments share a name — rename one in WLED first, names identify segments.", {
         type: "warning",
-        timeout: 4000,
       });
       return;
     }
@@ -750,11 +749,11 @@ export function initWledWidget(
     try {
       if (unnamed.length) await wledPostState(currentTarget(), { seg: unnamed });
     } catch (error) {
-      status?.show?.(error?.message || "Unable to name those segments on the device.", { type: "error", timeout: 3000 });
+      status?.show?.(error?.message || "Unable to name those segments on the device.", { type: "error" });
       return;
     }
     setRememberedLayout(live.map((seg, index) => segmentGeometry(seg, names[index])));
-    status?.show?.(`Remembered ${live.length} segment${live.length === 1 ? "" : "s"}.`, { type: "success", timeout: 2000 });
+    status?.show?.(`Remembered ${live.length} segment${live.length === 1 ? "" : "s"}.`, { type: "success" });
     await refreshState({ silent: true });
   }
 
@@ -767,12 +766,12 @@ export function initWledWidget(
     const live = liveSegments();
     const maxSegments = deviceState?.info?.leds?.maxseg;
     if (Number.isFinite(maxSegments) && remembered.length > maxSegments) {
-      status?.show?.(`This device supports at most ${maxSegments} segments.`, { type: "warning", timeout: 4000 });
+      status?.show?.(`This device supports at most ${maxSegments} segments.`, { type: "warning" });
       return;
     }
     const ledCount = deviceState?.info?.leds?.count;
     if (Number.isFinite(ledCount) && remembered.some((seg) => seg.stop > ledCount)) {
-      status?.show?.(`The remembered layout needs more than this device's ${ledCount} LEDs.`, { type: "warning", timeout: 4000 });
+      status?.show?.(`The remembered layout needs more than this device's ${ledCount} LEDs.`, { type: "warning" });
       return;
     }
     // Pre-v16 firmware never reports bm, so it's only sent where it exists.
@@ -1180,11 +1179,11 @@ export function initWledWidget(
       confirmAdd = () => {
         const entityId = entitySelect.value;
         if (!entityId) {
-          status?.show?.("Pick a light first.", { type: "warning", timeout: 2400 });
+          status?.show?.("Pick a light first.", { type: "warning" });
           return;
         }
         if (deviceList.some((device) => device.type === "haLight" && device.entityId === entityId)) {
-          status?.show?.("That device is already saved.", { type: "warning", timeout: 2400 });
+          status?.show?.("That device is already saved.", { type: "warning" });
           return;
         }
         // Falls back to HA's own friendly name (already fetched to build
@@ -1225,11 +1224,11 @@ export function initWledWidget(
         const alias = aliasInput.value.trim();
         if (!alias) {
           aliasInput.focus();
-          status?.show?.("Give the device an alias; it is what Macros and the rest of Undercroft use to refer to it.", { type: "warning", timeout: 3200 });
+          status?.show?.("Give the device an alias; it is what Macros and the rest of Undercroft use to refer to it.", { type: "warning" });
           return;
         }
         if (deviceList.some((device) => device !== editing && device.type !== "haLight" && aliasKey(device.alias) === aliasKey(alias))) {
-          status?.show?.("Another device already uses that alias.", { type: "warning", timeout: 2400 });
+          status?.show?.("Another device already uses that alias.", { type: "warning" });
           aliasInput.focus();
           return;
         }
@@ -1244,7 +1243,7 @@ export function initWledWidget(
           if (aliasKey(previous) !== aliasKey(alias)) {
             wledChoicesCache.delete(aliasKey(previous));
             window.dispatchEvent(new CustomEvent(WLED_DEVICE_EDITED_EVENT, { detail: { from: previous, to: alias } }));
-            status?.show?.(`Macros that use the alias "${previous}" need the new alias, "${alias}".`, { type: "warning", timeout: 4200 });
+            status?.show?.(`Macros that use the alias "${previous}" need the new alias, "${alias}".`, { type: "warning" });
           }
           void refreshState();
           render();
@@ -1419,7 +1418,7 @@ export function initWledWidget(
       try {
         body = JSON.parse(textarea.value);
       } catch (error) {
-        status?.show?.("That's not valid JSON.", { type: "error", timeout: 2400 });
+        status?.show?.("That's not valid JSON.", { type: "error" });
         return;
       }
       void sendRaw(body);
@@ -1543,7 +1542,7 @@ export function initWledWidget(
         haLightState = { ...(haLightState || {}), ...nextState };
         render();
       } catch (error) {
-        status?.show?.(error?.message || "Unable to send command to this light.", { type: "error", timeout: 3000 });
+        status?.show?.(error?.message || "Unable to send command to this light.", { type: "error" });
       }
     };
     // The same control the Lighting card uses, with only what an HA light
@@ -1910,7 +1909,7 @@ export async function promptForWledAlias({ dataManager, status, alias, devices }
   if (!deviceList.length) {
     status?.show?.(
       `No WLED device aliased "${alias}", and none saved to pick from yet — add one in the WLED widget first.`,
-      { type: "warning", timeout: 4000 }
+      { type: "warning" }
     );
     return null;
   }

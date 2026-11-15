@@ -1369,7 +1369,7 @@ export function buildRestrictedMapOptions({
     const element = layer.elements?.find((entry) => entry.id === elementId);
     if (!element) return;
     if (element.locked) {
-      status?.show?.("This door is locked.", { type: "warning", timeout: 2000 });
+      status?.show?.("This door is locked.", { type: "warning" });
       return;
     }
     onDoorToggled?.(layer, elementId);

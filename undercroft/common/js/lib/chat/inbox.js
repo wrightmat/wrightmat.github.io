@@ -490,7 +490,7 @@ function buildInbox({ dataManager, status, compose = null, onLeave = () => {} })
     const respond = async (accept) => {
       try {
         await dataManager.respondToGroupTransfer(item.groupId, accept);
-        status?.show(accept ? `You are now the GM of ${item.groupName}.` : "Offer declined.", { type: "success", timeout: 3000 });
+        status?.show(accept ? `You are now the GM of ${item.groupName}.` : "Offer declined.", { type: "success" });
         items = items.filter((entry) => entry !== item);
         selectedId = null;
         window.dispatchEvent(new CustomEvent(INBOX_CHANGED_EVENT));

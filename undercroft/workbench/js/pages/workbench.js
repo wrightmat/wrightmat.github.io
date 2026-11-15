@@ -210,6 +210,8 @@ async function init() {
     emptyStateMount.appendChild(createEmptyStateCard({ message, variant: "inline" }));
   }
 
+  // Read before the Character view takes `?new=character` off the address to open its New Character dialog.
+  const opensNewCharacter = new URLSearchParams(window.location.search).get("new") === "character";
   templateView = await initTemplateView({ status, undoStack, dataManager, onStateChange: renderEmptyState });
   characterView = await initCharacterView({
     status,
@@ -391,7 +393,7 @@ async function init() {
     } else if (viewParam === "edit") {
       initialMode = "character";
       initialSubView = "edit";
-    } else if (viewParam === "play") {
+    } else if (viewParam === "play" || opensNewCharacter) {
       initialMode = "character";
       initialSubView = "view";
     } else {

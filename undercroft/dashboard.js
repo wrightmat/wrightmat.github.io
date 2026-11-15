@@ -969,7 +969,7 @@ function removeSpotlightItemFromDashboard({ kind, id }) {
   const widgetType = KIND_WIDGET_MAP[kind];
   if (widgetType === "combat") {
     if (groupContext?.access === "owner") {
-      status?.show("Remove the Combat Tracker widget itself to take this off your dashboard.", { type: "info", timeout: 3000 });
+      status?.show("Remove the Combat Tracker widget itself to take this off your dashboard.", { type: "info" });
       return;
     }
     const combatInstance = layout.widgets.find((entry) => entry.widgetType === "combat");
@@ -997,7 +997,7 @@ function acceptSpotlight({ kind, id, templateId }) {
   if (isSpotlightItemOnMyDashboard({ kind, id })) return;
   const widgetType = KIND_WIDGET_MAP[kind];
   if (!widgetType || !findCatalogEntry(widgetType)) {
-    status?.show("This can't be added to your dashboard yet.", { type: "info", timeout: 2500 });
+    status?.show("This can't be added to your dashboard yet.", { type: "info" });
     return;
   }
   if (AUTO_DISCOVER_WIDGET_TYPES.has(widgetType)) {
@@ -1010,7 +1010,7 @@ function acceptSpotlight({ kind, id, templateId }) {
   } else {
     addWidget(widgetType, { kind, id, templateId: templateId || "" });
   }
-  status?.show("Added to your dashboard.", { type: "success", timeout: 2000 });
+  status?.show("Added to your dashboard.", { type: "success" });
 }
 
 // Add-if-absent, remove-if-present — the click behavior both the spotlight

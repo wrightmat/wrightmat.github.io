@@ -50,7 +50,7 @@ async function renderClaimPanel(container, application, { dataManager, status, o
   const run = async (work, success) => {
     try {
       await work();
-      status?.show(success, { type: "success", timeout: 2500 });
+      status?.show(success, { type: "success" });
       await renderClaimPanel(container, application, { dataManager, status, onChanged });
     } catch (error) {
       status?.show(error.message || "That didn't work.", { type: "error" });

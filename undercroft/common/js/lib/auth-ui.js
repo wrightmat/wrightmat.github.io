@@ -214,7 +214,7 @@ export function initAuthControls({
   function handleSession(result, message) {
     if (result && result.token && result.user) {
       if (status) {
-        status.show(message || `Welcome, ${result.user.username}!`, { type: "success", timeout: 2500 });
+        status.show(message || `Welcome, ${result.user.username}!`, { type: "success" });
       }
       state.pendingVerification = null;
       updateAuthDisplay();
@@ -394,11 +394,11 @@ export function initAuthControls({
         try {
           await manager.logout();
           if (status) {
-            status.show("Signed out", { type: "info", timeout: 2000 });
+            status.show("Signed out", { type: "info" });
           }
         } catch (error) {
           if (status) {
-            status.show(error.message || "Unable to sign out", { type: "danger" });
+            status.show(error.message || "Unable to sign out", { type: "warning" });
           }
         } finally {
           updateAuthDisplay();
@@ -551,7 +551,7 @@ export function initAuthControls({
           verifyMessage.textContent = `Enter the verification code sent to ${email}.`;
         }
         if (result.message && status) {
-          status.show(result.message, { type: "info", timeout: 2500 });
+          status.show(result.message, { type: "info" });
         }
         // Reuses openModal (rather than a third inline copy) even though
         // the modal is already open mid-registration here.
@@ -560,7 +560,7 @@ export function initAuthControls({
       }
       if (result && result.message) {
         if (status) {
-          status.show(result.message, { type: "info", timeout: 2500 });
+          status.show(result.message, { type: "info" });
         }
       }
     } catch (error) {

@@ -48,7 +48,7 @@ export async function renderEndorsePanel(container, { dataManager, status, group
       button.disabled = true;
       try {
         await dataManager.endorsePerson({ userId: person.userId, scopeKey: person.scopeKey, tagId: select.value });
-        status?.show(`Endorsed ${person.username}.`, { type: "success", timeout: 2000 });
+        status?.show(`Endorsed ${person.username}.`, { type: "success" });
         row.remove();
       } catch (error) {
         status?.show(error.message || "Unable to endorse.", { type: "error" });

@@ -15,6 +15,7 @@ import {
 } from "../../common/js/lib/class-name-picker.js";
 import { TEXT_SIZE_PX, pxToPt, ptToPx } from "../../common/js/lib/text-size.js";
 import { initAppShell, collapseLeftPaneOnPhone } from "../../common/js/lib/app-shell.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 import { DataManager } from "../../common/js/lib/data-manager.js";
 import { resolveApiBase } from "../../common/js/lib/api.js";
 import { initAuthControls } from "../../common/js/lib/auth-ui.js";
@@ -866,7 +867,7 @@ const jsonDataPanel = createJsonDataPanel({
   onExport: () => {
     const context = getSelectionContext();
     if (!context.template) {
-      status?.show("Select a template to export.", { type: "info", timeout: 2000 });
+      status?.show("Select a template to export.", { type: "info" });
       return;
     }
     const previewData = resolveBasePreviewData();
@@ -2222,13 +2223,13 @@ async function saveTemplateChanges({ template = getActiveTemplate() } = {}) {
     }
     markLayoutSaved(createLayoutSnapshot(template));
     if (status) {
-      status.show("Template saved", { type: "success", timeout: 2000 });
+      status.show("Template saved", { type: "success" });
     }
     return true;
   } catch (error) {
     console.error("Failed to save template", error);
     if (status) {
-      status.show(error.message || "Unable to save template", { type: "error", timeout: 2500 });
+      status.show(error.message || "Unable to save template", { type: "error" });
     }
     return false;
   } finally {
@@ -2413,11 +2414,11 @@ async function deleteActiveTemplate() {
   const template = getActiveTemplate();
   if (!template) return;
   if (template.origin === "draft") {
-    status?.show("Save the template before deleting it.", { type: "info", timeout: 2200 });
+    status?.show("Save the template before deleting it.", { type: "info" });
     return;
   }
   if (!templateAllowsDelete(template)) {
-    status?.show("You don't have permission to delete this template.", { type: "error", timeout: 3000 });
+    status?.show("You don't have permission to delete this template.", { type: "error" });
     return;
   }
   if (!confirmDelete({ label: template.name || template.id })) {
@@ -2427,10 +2428,10 @@ async function deleteActiveTemplate() {
     await dataManager.delete("templates", template.id, { mode: "remote" });
   } catch (error) {
     console.error("Failed to delete template", error);
-    status?.show(error.message || "Unable to delete template", { type: "error", timeout: 3000 });
+    status?.show(error.message || "Unable to delete template", { type: "error" });
     return;
   }
-  status?.show(`Deleted ${template.name || template.id}`, { type: "success", timeout: 2200 });
+  status?.show(`Deleted ${template.name || template.id}`, { type: "success" });
   const templates = getTemplates();
   const index = templates.findIndex((entry) => entry.id === template.id);
   if (index >= 0) {
@@ -2521,7 +2522,7 @@ function duplicateActiveTemplate() {
   // duplicate happened) is scrolled out of view and the only sign it worked
   // is a toast that's easy to miss.
   queryRightPane()?.querySelector(".workbench-sticky-pane")?.scrollTo({ top: 0, behavior: "smooth" });
-  status?.show(`Duplicated as "${name}"`, { type: "success", timeout: 2000 });
+  status?.show(`Duplicated as "${name}"`, { type: "success" });
 }
 
 function setTemplateFormatSelections(template) {
@@ -2699,7 +2700,7 @@ function bindTemplateInspectorControls() {
           renderPreview();
         }),
       canAddFont: () => userMeetsTier("creator"),
-      onAddDenied: () => status?.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+      onAddDenied: () => status?.show("Creator tier or higher required to add fonts.", { type: "warning" }),
       onDeleteFont: (option) => handleDeleteCustomFont(option),
       canDeleteFont: () => userMeetsTier("admin"),
       excludeDefault: true,
@@ -2763,7 +2764,7 @@ function bindTemplateInspectorControls() {
       const height = parseFloat(customSizeHeightInput?.value);
       if (!label || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
         if (status) {
-          status.show("Enter a label, width, and height for the custom size.", { type: "warning", timeout: 3000 });
+          status.show("Enter a label, width, and height for the custom size.", { type: "warning" });
         }
         return;
       }
@@ -2782,11 +2783,11 @@ function bindTemplateInspectorControls() {
       try {
         await saveCustomPageSize(size);
         if (status) {
-          status.show(`Added custom size "${label}".`, { type: "success", timeout: 2000 });
+          status.show(`Added custom size "${label}".`, { type: "success" });
         }
       } catch (error) {
         if (status) {
-          status.show(error.message || "Unable to save custom page size.", { type: "error", timeout: 4000 });
+          status.show(error.message || "Unable to save custom page size.", { type: "error" });
         }
       }
     });
@@ -3170,7 +3171,7 @@ function copySelectedNode({ silent = false } = {}) {
     placementMeta: getPlacementMetaForSelection(layout, selectedNodeId),
   };
   if (!silent) {
-    status?.show("Copied.", { type: "info", timeout: 1200 });
+    status?.show("Copied.", { type: "info" });
   }
 }
 
@@ -3188,7 +3189,7 @@ function cutSelectedNode() {
   if (!layout || !selectedNodeId || !findParentNode(layout, selectedNodeId)) return;
   copySelectedNode({ silent: true });
   removeSelectedNode();
-  status?.show("Cut.", { type: "info", timeout: 1200 });
+  status?.show("Cut.", { type: "info" });
 }
 
 function pasteClipboard() {
@@ -3866,9 +3867,9 @@ async function handleDeleteCustomFont(option) {
   deleteCustomFont(option.id);
   try {
     await saveCustomFontDeletion(option.id, dataManager?.session?.token);
-    status?.show(`Deleted "${option.label}" from the font library.`, { type: "success", timeout: 2500 });
+    status?.show(`Deleted "${option.label}" from the font library.`, { type: "success" });
   } catch (error) {
-    status?.show(error.message || "Unable to delete this font.", { type: "error", timeout: 4000 });
+    status?.show(error.message || "Unable to delete this font.", { type: "error" });
   }
 }
 
@@ -3924,7 +3925,7 @@ function initBindingAutocompletes() {
         updateSaveState();
       }),
     canAddFont: () => userMeetsTier("creator"),
-    onAddDenied: () => status?.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 }),
+    onAddDenied: () => status?.show("Creator tier or higher required to add fonts.", { type: "warning" }),
     onDeleteFont: (option) => handleDeleteCustomFont(option),
     canDeleteFont: () => userMeetsTier("admin"),
   });
@@ -4732,7 +4733,7 @@ function clearAllUniqueness() {
     (side) => editablePages?.[side]?.cardOverrides && Object.keys(editablePages[side].cardOverrides).length > 0
   );
   if (!hasAnyOverrides) {
-    status?.show("No per-card uniqueness to clear.", { type: "info", timeout: 2000 });
+    status?.show("No per-card uniqueness to clear.", { type: "info" });
     return;
   }
   const confirmed = window.confirm("Clear all per-card uniqueness on this template?");
@@ -4746,7 +4747,7 @@ function clearAllUniqueness() {
     renderPreview();
     updateInspector();
   });
-  status?.show("Cleared all per-card uniqueness.", { type: "success", timeout: 2000 });
+  status?.show("Cleared all per-card uniqueness.", { type: "success" });
 }
 
 function updateSelectedNode(updater) {
@@ -5530,14 +5531,14 @@ async function handleGeneratePrint() {
   const { source, sourceValue } = context;
   if (!source) {
     if (status) {
-      status.show("Select a source before generating.", { type: "warning", timeout: 2000 });
+      status.show("Select a source before generating.", { type: "warning" });
     }
     return;
   }
   const requiresInput = source?.input?.type !== "textarea";
   if (requiresInput && !sourceValue) {
     if (status) {
-      status.show("Enter a source value before generating.", { type: "warning", timeout: 2000 });
+      status.show("Enter a source value before generating.", { type: "warning" });
     }
     return;
   }
@@ -5571,15 +5572,15 @@ async function handleGeneratePrint() {
     const mismatchWarning = describeBindingMismatch(context.template, data);
     if (status) {
       if (mismatchWarning) {
-        status.show(mismatchWarning, { type: "warning", timeout: 5000 });
+        status.show(mismatchWarning, { type: "warning" });
       } else {
-        status.show("Source data loaded for printing.", { type: "success", timeout: 2000 });
+        status.show("Source data loaded for printing.", { type: "success" });
       }
     }
   } catch (error) {
     console.error("Unable to generate print data", error);
     if (status) {
-      status.show(error.message || "Unable to load source data.", { type: "error", timeout: 4000 });
+      status.show(error.message || "Unable to load source data.", { type: "error" });
     }
   } finally {
     isGenerating = false;
@@ -6046,7 +6047,6 @@ function handleGridAdd(event, gridId) {
     event.item?.remove();
     status.show("A Layer can only be used as the top-level layout, not nested inside a Grid.", {
       type: "warning",
-      timeout: 4000,
     });
     return;
   }
@@ -6099,7 +6099,6 @@ function handleSlotAdd(event, slotElement) {
     event.item?.remove();
     status.show("A Layer can only be used as the top-level layout, not nested inside a cell.", {
       type: "warning",
-      timeout: 4000,
     });
     return;
   }
@@ -6770,7 +6769,7 @@ function bindInspectorControls() {
       // modal is ever reachable another way (defense in depth; the real
       // enforcement is server-side regardless).
       if (!userMeetsTier("creator")) {
-        status?.show("Creator tier or higher required to add fonts.", { type: "warning", timeout: 3000 });
+        status?.show("Creator tier or higher required to add fonts.", { type: "warning" });
         return;
       }
       // The button is only ever enabled once handleAddFontValueBlur has
@@ -6789,9 +6788,9 @@ function bindInspectorControls() {
       window.bootstrap?.Modal?.getInstance(addFontModalElement)?.hide();
       try {
         await saveCustomFont(registered, dataManager?.session?.token);
-        status?.show(`Added "${registered.label}" to the font library.`, { type: "success", timeout: 2500 });
+        status?.show(`Added "${registered.label}" to the font library.`, { type: "success" });
       } catch (error) {
-        status?.show(error.message || "Unable to save the new font.", { type: "error", timeout: 4000 });
+        status?.show(error.message || "Unable to save the new font.", { type: "error" });
       }
     });
   }
@@ -7601,7 +7600,7 @@ async function initPress() {
     // The whole app is unusable from here (no templates loaded), so surface
     // it to the page, not just the console. loadJson (templates.js) already
     // prefixes the error with which file failed to parse.
-    status?.show(error?.message || "Unable to load templates.", { type: "error", timeout: 0 });
+    status?.show(error?.message || "Unable to load templates.", { type: "error" });
     return;
   }
 
@@ -7643,6 +7642,7 @@ async function initPress() {
   // these elements are only ever shown/hidden (hidden attribute/display),
   // never destroyed and recreated, so the listeners this attaches stay
   // valid for the life of the page.
+  handleCommandRequest({ status, makes: { template: newTemplateButton } });
   refreshTooltips(document);
 }
 

@@ -50,7 +50,7 @@ function badge(text, variant = "secondary") {
 }
 
 export function initInvitesAdmin({ dataManager, getStatus, mount, inspectorMount }) {
-  const say = (message, type = "success") => getStatus?.()?.show(message, { type, timeout: type === "danger" ? 4000 : 1600 });
+  const say = (message, type = "success") => getStatus?.()?.show(message, { type });
   let invites = [];
   let selection = null; // { kind: "new" } | { kind: "invite", code }
 
@@ -58,7 +58,7 @@ export function initInvitesAdmin({ dataManager, getStatus, mount, inspectorMount
     try {
       await work();
     } catch (error) {
-      say(error.message || failure, "danger");
+      say(error.message || failure, "warning");
     }
   }
 

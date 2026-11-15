@@ -52,6 +52,7 @@ import {
 import { markRequiredControl } from "../../common/js/lib/dom.js";
 import { createArchetypeEntriesEditor } from "../../common/js/lib/archetype-entries.js";
 import { resolveGroupContext, pickGroupDefaultId } from "../../common/js/lib/widgets/group-context.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 import { openShop, closeShop, locationIsShop } from "../../common/js/lib/shop-transactions.js";
 // Repository's own markdown renderer, reused for the Notes View mode — same
 // as Crucible/Forge/Vault's own Notes preview.
@@ -1237,15 +1238,15 @@ elements.openShopButton?.addEventListener("click", async () => {
   if (!currentRecord?.id) return;
   const groupId = await loadShopGroupId();
   if (!groupId) {
-    status?.show("No active group to open this shop in.", { type: "warning", timeout: 3000 });
+    status?.show("No active group to open this shop in.", { type: "warning" });
     return;
   }
   try {
     await openShop({ dataManager, groupId, locationId: currentRecord.id });
-    status?.show("Shop opened.", { type: "success", timeout: 1500 });
+    status?.show("Shop opened.", { type: "success" });
     await renderShopControls(currentRecord);
   } catch (error) {
-    status?.show(`Unable to open shop: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to open shop: ${error.message}`, { type: "error" });
   }
 });
 
@@ -1256,10 +1257,10 @@ elements.closeShopButton?.addEventListener("click", async () => {
   const persistToLocation = window.confirm("Write the shop's final stock back onto this Location's Assets?");
   try {
     await closeShop({ dataManager, groupId, locationId: currentRecord.id, persistToLocation });
-    status?.show("Shop closed.", { type: "success", timeout: 1500 });
+    status?.show("Shop closed.", { type: "success" });
     await renderShopControls(currentRecord);
   } catch (error) {
-    status?.show(`Unable to close shop: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to close shop: ${error.message}`, { type: "error" });
   }
 });
 
@@ -1569,7 +1570,7 @@ function handleGenerateAction() {
   if (roomCountInput === null) return;
   const roomCount = Math.floor(Number(roomCountInput));
   if (!Number.isFinite(roomCount) || roomCount < 1) {
-    status?.show("Enter a whole number of 1 or more.", { type: "warning", timeout: 2500 });
+    status?.show("Enter a whole number of 1 or more.", { type: "warning" });
     return;
   }
   if (roomCount === 1) {
@@ -1607,9 +1608,9 @@ function handleGenerate() {
     updateGenerationFieldsVisibility();
     locationCleanSnapshot = null;
     recordHistory("generate location", () => renderLocation(record));
-    status?.show("Location generated.", { type: "success", timeout: 1500 });
+    status?.show("Location generated.", { type: "success" });
   } catch (error) {
-    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to generate: ${error.message}`, { type: "error" });
   }
 }
 
@@ -1628,7 +1629,7 @@ function handleGenerate() {
 async function handleGenerateMultiRoom(roomCount) {
   const settingId = currentSettingId || elements.settingSelect?.value;
   if (!settingId) {
-    status?.show("Select or save a Setting first.", { type: "warning", timeout: 2500 });
+    status?.show("Select or save a Setting first.", { type: "warning" });
     return;
   }
   if (!dataManager) return;
@@ -1736,7 +1737,6 @@ async function handleGenerateMultiRoom(roomCount) {
 
     status?.show(`Generated "${parentRecord.name}" with ${roomCount} rooms.`, {
       type: "success",
-      timeout: 2500,
     });
     await reloadLocationsForSetting(settingId);
     if (elements.locationSelect) elements.locationSelect.value = parentRecord.id;
@@ -1744,7 +1744,7 @@ async function handleGenerateMultiRoom(roomCount) {
     renderLocation(parentRecord);
     markLocationClean();
   } catch (error) {
-    status?.show(`Unable to generate: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to generate: ${error.message}`, { type: "error" });
   } finally {
     // Not a plain `disabled = false` — restores the button through the same
     // readiness check every other path uses, so `.disabled`/tooltip state
@@ -1789,19 +1789,19 @@ async function handleSave() {
   if (!currentRecord || !dataManager) return;
   const settingId = currentSettingId || elements.settingSelect?.value;
   if (!settingId) {
-    status?.show("Select or save a Setting first.", { type: "warning", timeout: 2500 });
+    status?.show("Select or save a Setting first.", { type: "warning" });
     return;
   }
   const name = elements.nameInput?.value.trim() || "";
   if (!name) {
-    status?.show("Enter a Location name first.", { type: "warning", timeout: 2500 });
+    status?.show("Enter a Location name first.", { type: "warning" });
     return;
   }
   let npcConfig;
   try {
     npcConfig = collectNpcConfigFromForm();
   } catch (error) {
-    status?.show(error.message, { type: "warning", timeout: 3500 });
+    status?.show(error.message, { type: "warning" });
     return;
   }
   // Captured before currentRecord.name is overwritten below — Name isn't
@@ -1825,7 +1825,7 @@ async function handleSave() {
   try {
     await dataManager.save("location", id, toPressExportShape(currentRecord));
     currentLocationId = id;
-    status?.show("Saved.", { type: "success", timeout: 1500 });
+    status?.show("Saved.", { type: "success" });
     if (renaming) {
       await renameChildRoomsIfConfirmed(id, previousName, name);
     }
@@ -1833,7 +1833,7 @@ async function handleSave() {
     if (elements.locationSelect) elements.locationSelect.value = id;
     markLocationClean();
   } catch (error) {
-    status?.show(`Unable to save: ${error.message}`, { type: "error", timeout: 4000 });
+    status?.show(`Unable to save: ${error.message}`, { type: "error" });
   }
 }
 
@@ -1852,7 +1852,7 @@ function handleDuplicate() {
   currentLocationId = null;
   if (elements.locationSelect) elements.locationSelect.value = "";
   renderLocation(duplicate);
-  status?.show("Duplicated — not yet saved.", { type: "info", timeout: 2000 });
+  status?.show("Duplicated — not yet saved.", { type: "info" });
 }
 
 async function handleGenerateNote() {
@@ -2302,12 +2302,12 @@ async function init() {
     if (!dataManager) return;
     const systemId = currentSystemId();
     if (!systemId) {
-      status?.show("Select a System first.", { type: "warning", timeout: 2000 });
+      status?.show("Select a System first.", { type: "warning" });
       return;
     }
     const name = elements.settingNameInput?.value.trim();
     if (!name) {
-      status?.show("Enter a Setting name first.", { type: "warning", timeout: 2500 });
+      status?.show("Enter a Setting name first.", { type: "warning" });
       return;
     }
     const id = currentSettingId || slugify(name);
@@ -2326,13 +2326,13 @@ async function init() {
         ...(speciesWeights.length ? { speciesWeights } : {}),
       });
       currentSettingId = id;
-      status?.show(`Saved Setting ${id}.`, { type: "success", timeout: 2000 });
+      status?.show(`Saved Setting ${id}.`, { type: "success" });
       await populateSettingSelect(systemId);
       elements.settingSelect.value = id;
       await reloadLocationsForSetting(id);
       markSettingClean();
     } catch (error) {
-      status?.show(`Unable to save Setting: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to save Setting: ${error.message}`, { type: "error" });
     }
   });
 
@@ -2341,14 +2341,14 @@ async function init() {
     if (!confirmDelete({ label: `setting "${currentSettingId}"` })) return;
     try {
       await dataManager.delete("setting", currentSettingId);
-      status?.show("Deleted.", { type: "success", timeout: 2000 });
+      status?.show("Deleted.", { type: "success" });
       currentSettingId = null;
       populateSettingForm(null);
       await populateSettingSelect(currentSystemId());
       await reloadLocationsForSetting(null);
       renderLocation(null);
     } catch (error) {
-      status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to delete: ${error.message}`, { type: "error" });
     }
   });
 
@@ -2369,7 +2369,7 @@ async function init() {
       renderLocation(createLocationRecord(result?.payload || {}, id));
       markLocationClean();
     } catch (error) {
-      status?.show(`Unable to load location: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to load location: ${error.message}`, { type: "error" });
     }
   }
 
@@ -2417,14 +2417,14 @@ async function init() {
         deleteDescendants
           ? `Deleted, along with ${descendants.length} child location${descendants.length === 1 ? "" : "s"}.`
           : "Deleted.",
-        { type: "success", timeout: 2000 }
+        { type: "success" }
       );
       currentLocationId = null;
       if (elements.locationSelect) elements.locationSelect.value = "";
       renderLocation(null);
       await reloadLocationsForSetting(settingId);
     } catch (error) {
-      status?.show(`Unable to delete: ${error.message}`, { type: "error", timeout: 4000 });
+      status?.show(`Unable to delete: ${error.message}`, { type: "error" });
     }
   });
 
@@ -2491,7 +2491,7 @@ async function init() {
       })();
       return true;
     } catch (error) {
-      status?.show("Unable to open the linked record.", { type: "error", timeout: 3000 });
+      status?.show("Unable to open the linked record.", { type: "error" });
       return false;
     }
   }
@@ -2531,6 +2531,14 @@ async function init() {
     updateGenerateButtonReadiness();
   }
 
+  handleCommandRequest({
+    status,
+    makes: { location: elements.generateButton, setting: elements.newSettingButton },
+    fields: [
+      { param: "system", select: elements.systemSelect, onChange: handleSystemSelectChange },
+      { param: "setting", select: elements.settingSelect, onChange: handleSettingSelectChange },
+    ],
+  });
   initHelpSystem();
   refreshTooltips();
 }

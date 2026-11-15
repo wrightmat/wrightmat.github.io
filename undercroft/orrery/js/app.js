@@ -1,5 +1,6 @@
 import { bindCollapsibleToggle } from "../../common/js/lib/collapsible.js";
 import { initAppShell } from "../../common/js/lib/app-shell.js";
+import { handleCommandRequest } from "../../common/js/lib/command-handoff.js";
 import {
   createJsonDataPanel,
   createIconButton,
@@ -1423,7 +1424,7 @@ function autoSaveHistoryEntry(entry) {
         mapWatcher?.noteLocalWrite();
       })
       .catch((error) => {
-        status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+        status?.show(error?.message || "Unable to save that change.", { type: "warning" });
       });
     return;
   }
@@ -1444,7 +1445,7 @@ function autoSaveHistoryEntry(entry) {
   })
     .then(() => mapWatcher?.noteLocalWrite())
     .catch((error) => {
-      status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+      status?.show(error?.message || "Unable to save that change.", { type: "warning" });
     });
 }
 
@@ -1757,7 +1758,7 @@ async function autoSaveHiddenFromPlayersView(elementIds, hidden) {
       }
     }
   } catch (error) {
-    status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+    status?.show(error?.message || "Unable to save that change.", { type: "warning" });
   }
 }
 
@@ -1788,7 +1789,7 @@ async function autoSaveRemovedMarkerElements(idsByLayer) {
       ids.forEach((elementId) => syncCleanSnapshotForElement(layerId, elementId, null));
     });
   } catch (error) {
-    status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+    status?.show(error?.message || "Unable to save that change.", { type: "warning" });
   }
 }
 
@@ -3516,7 +3517,7 @@ function triggerShapeEffectElement(layer, shapeElement) {
   void dataManager
     .postEffectBroadcast({ groupId, mapId: state.map.id, elementId: shapeElement.id })
     .catch((error) => {
-      status.show(error.message || "Unable to broadcast this effect.", { type: "error", timeout: 3000 });
+      status.show(error.message || "Unable to broadcast this effect.", { type: "error" });
     });
 }
 
@@ -3638,7 +3639,7 @@ function renderLayerOverlays() {
           })
             .then(() => mapWatcher?.noteLocalWrite())
             .catch((error) => {
-              status?.show(error?.message || "Unable to save that move.", { type: "danger" });
+              status?.show(error?.message || "Unable to save that move.", { type: "warning" });
             });
         }
       }
@@ -3867,14 +3868,14 @@ function openRestrictedMarkerLinkPopover(layer, markerElement, dotEl) {
         });
         closeRestrictedMarkerLinkPopover();
         if (!result) {
-          status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+          status?.show("That's already been claimed.", { type: "info" });
           return;
         }
         applyRemoteMapLayers(result.map);
-        status?.show(`Claimed ${result.label} for ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+        status?.show(`Claimed ${result.label} for ${result.destinationLabel}.`, { type: "success" });
       } catch (error) {
         claimButton.disabled = false;
-        status?.show(error?.message || "Unable to claim that item.", { type: "error", timeout: 4000 });
+        status?.show(error?.message || "Unable to claim that item.", { type: "error" });
       }
     });
     row.append(label, claimButton);
@@ -4554,7 +4555,7 @@ function renderLayerSelectionEditor(layer) {
   copyButton.addEventListener("click", () => {
     state.propertyClipboard = JSON.parse(JSON.stringify(layer.properties || {}));
     renderSelection();
-    status.show("Copied layer properties", { type: "info", timeout: 1200 });
+    status.show("Copied layer properties", { type: "info" });
   });
 
   const pasteButton = document.createElement("button");
@@ -4572,7 +4573,7 @@ function renderLayerSelectionEditor(layer) {
     applyLayerSettingsChange("paste layer properties", () => {
       layer.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
     });
-    status.show("Pasted layer properties", { type: "success", timeout: 1200 });
+    status.show("Pasted layer properties", { type: "success" });
   });
 
   actionGroup.appendChild(addButton);
@@ -5287,7 +5288,7 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
       })
         .then(() => mapWatcher?.noteLocalWrite())
         .catch((error) => {
-          status?.show(error?.message || "Unable to save that change.", { type: "danger" });
+          status?.show(error?.message || "Unable to save that change.", { type: "warning" });
         });
     }
   }
@@ -5979,14 +5980,14 @@ async function renderMarkerElementSelectionEditor(layer, markerElement) {
             recipient,
           });
           if (!result) {
-            status?.show("That's already been claimed.", { type: "info", timeout: 2500 });
+            status?.show("That's already been claimed.", { type: "info" });
             return;
           }
           markerElement.contents = (markerElement.contents || []).filter((item) => item.id !== entry.id);
           renderContentsList();
-          status?.show(`Gave ${result.label} to ${result.destinationLabel}.`, { type: "success", timeout: 2500 });
+          status?.show(`Gave ${result.label} to ${result.destinationLabel}.`, { type: "success" });
         } catch (error) {
-          status?.show(error?.message || "Unable to give that item.", { type: "error", timeout: 4000 });
+          status?.show(error?.message || "Unable to give that item.", { type: "error" });
           giveToSelect.disabled = false;
           giveToSelect.value = "";
         }
@@ -6392,7 +6393,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
     const props = primaryCell?.properties || {};
     state.propertyClipboard = JSON.parse(JSON.stringify(props));
     renderSelection();
-    status.show("Copied cell properties", { type: "info", timeout: 1200 });
+    status.show("Copied cell properties", { type: "info" });
   });
 
   const pasteButton = document.createElement("button");
@@ -6413,7 +6414,7 @@ function renderGridCellSelectionEditor(layer, selectedCells) {
         cell.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
       });
     });
-    status.show("Pasted cell properties", { type: "success", timeout: 1200 });
+    status.show("Pasted cell properties", { type: "success" });
   });
 
   actionGroup.appendChild(addButton);
@@ -6732,7 +6733,7 @@ function renderGroupSelectionEditor(group) {
   copyButton.addEventListener("click", () => {
     state.propertyClipboard = JSON.parse(JSON.stringify(group.properties || {}));
     renderSelection();
-    status.show("Copied group properties", { type: "info", timeout: 1200 });
+    status.show("Copied group properties", { type: "info" });
   });
 
   const pasteButton = document.createElement("button");
@@ -6750,7 +6751,7 @@ function renderGroupSelectionEditor(group) {
     applyGroupChange("paste group properties", () => {
       group.properties = JSON.parse(JSON.stringify(state.propertyClipboard));
     });
-    status.show("Pasted group properties", { type: "success", timeout: 1200 });
+    status.show("Pasted group properties", { type: "success" });
   });
 
   actionGroup.appendChild(addButton);
@@ -6963,7 +6964,7 @@ function setupBaseMapEvents() {
       baseMapManager.setBaseMap(state.map.baseMap, state.map.view);
       setSelection(null);
       renderAll();
-      status.show(`Switched to ${radio.value} base map`, { type: "info", timeout: 1500 });
+      status.show(`Switched to ${radio.value} base map`, { type: "info" });
     });
   });
 
@@ -7089,7 +7090,7 @@ function setupLayerEvents() {
       if (layer) {
         setSelection("layer", layer.id);
       }
-      status.show("Layer added", { type: "success", timeout: 1200 });
+      status.show("Layer added", { type: "success" });
     });
   });
 }
@@ -7110,7 +7111,7 @@ function setupGroupEvents() {
     if (group) {
       setSelection("group", group.id);
     }
-    status.show("Group created", { type: "success", timeout: 1200 });
+    status.show("Group created", { type: "success" });
   });
 }
 
@@ -7134,7 +7135,7 @@ function setupViewsListEvents() {
     if (view) {
       setSelection("view", view.id);
     }
-    status.show("View created", { type: "success", timeout: 1200 });
+    status.show("View created", { type: "success" });
   });
 }
 
@@ -7341,7 +7342,7 @@ function setupDrawTool() {
               mapWatcher?.noteLocalWrite();
             })
             .catch((error) => {
-              status?.show(error?.message || "Unable to save your drawing.", { type: "danger" });
+              status?.show(error?.message || "Unable to save your drawing.", { type: "warning" });
             });
         }
       }
@@ -8091,7 +8092,7 @@ function initMoveMarkerModal() {
       updateMapTimestamp(destPayload);
       await dataManager.save("map", destId, destPayload);
     } catch (error) {
-      status.show(`Unable to move marker(s): ${error.message}`, { type: "error", timeout: 4000 });
+      status.show(`Unable to move marker(s): ${error.message}`, { type: "error" });
       elements.moveMarkerApply.disabled = false;
       return;
     }
@@ -8117,7 +8118,6 @@ function initMoveMarkerModal() {
     const destName = elements.moveMarkerMapSelect?.selectedOptions?.[0]?.textContent || "the destination map";
     status.show(`Moved ${entries.length} marker${entries.length === 1 ? "" : "s"} to ${destName}.`, {
       type: "success",
-      timeout: 2500,
     });
     window.bootstrap?.Modal?.getInstance(elements.moveMarkerModal)?.hide();
     moveMarkerModalEntries = [];
@@ -8304,7 +8304,7 @@ function setupShapeTool() {
               mapWatcher?.noteLocalWrite();
             })
             .catch((error) => {
-              status?.show(error?.message || "Unable to save that shape.", { type: "danger" });
+              status?.show(error?.message || "Unable to save that shape.", { type: "warning" });
             });
         }
       } else {
@@ -8581,7 +8581,7 @@ function setupPingTool() {
     // own click to depend on. Every other viewer still gets it via the echo.
     renderIncomingPing({ position, by: dataManager.session?.user?.username || "You" });
     void dataManager.postMapPing({ groupId, position }).catch((error) => {
-      status.show(error.message || "Unable to send ping.", { type: "error", timeout: 3000 });
+      status.show(error.message || "Unable to send ping.", { type: "error" });
     });
   });
 }
@@ -8826,7 +8826,7 @@ function setupMapEvents() {
       // A brand-new, never-edited map has nothing worth saving yet.
       markMapClean();
       watchCurrentMap(null);
-      status.show("Started a new map.", { type: "info", timeout: 1500 });
+      status.show("Started a new map.", { type: "info" });
     });
   }
 
@@ -8841,7 +8841,7 @@ function setupMapEvents() {
       applyMapSnapshot(JSON.stringify(duplicate));
       if (elements.mapSelect) elements.mapSelect.value = "";
       watchCurrentMap(null);
-      status.show(`Duplicated as "${duplicate.name}".`, { type: "success", timeout: 2000 });
+      status.show(`Duplicated as "${duplicate.name}".`, { type: "success" });
     });
   }
 
@@ -8919,7 +8919,7 @@ function setupMapEvents() {
         // pattern workbench-character-view.js's persistDraft already uses).
         const { id: _mapId, ...bodyWithoutId } = state.map;
         await dataManager.save("map", state.map.id, bodyWithoutId);
-        status.show(`Saved "${name}".`, { type: "success", timeout: 2000 });
+        status.show(`Saved "${name}".`, { type: "success" });
         // Now a real record — currentUserHasFullMapAccess stops giving it
         // an unconditional pass and starts checking real ownership instead.
         mapExistsOnServer = true;
@@ -8931,7 +8931,7 @@ function setupMapEvents() {
         watchCurrentMap(state.map.id);
         await populateMapSelect();
       } catch (error) {
-        status.show(`Unable to save map: ${error.message}`, { type: "error", timeout: 4000 });
+        status.show(`Unable to save map: ${error.message}`, { type: "error" });
       }
     });
   }
@@ -8942,13 +8942,13 @@ function setupMapEvents() {
       if (!confirmDelete({ label: `map "${state.map.name}"` })) return;
       try {
         await dataManager.delete("map", state.map.id);
-        status.show("Deleted.", { type: "success", timeout: 2000 });
+        status.show("Deleted.", { type: "success" });
         applyMapSnapshot(JSON.stringify(createMapModel()));
         markMapClean();
         watchCurrentMap(null);
         await populateMapSelect();
       } catch (error) {
-        status.show(`Unable to delete map: ${error.message}`, { type: "error", timeout: 4000 });
+        status.show(`Unable to delete map: ${error.message}`, { type: "error" });
       }
     });
   }
@@ -8968,11 +8968,11 @@ function setupMapEvents() {
     try {
       parsed = JSON.parse(await file.text());
     } catch (error) {
-      status.show("That file isn't valid JSON.", { type: "error", timeout: 3000 });
+      status.show("That file isn't valid JSON.", { type: "error" });
       return;
     }
     if (!parsed || !Array.isArray(parsed.layers) || !parsed.baseMap || typeof parsed.baseMap !== "object") {
-      status.show("That file doesn't look like an Orrery map.", { type: "error", timeout: 3000 });
+      status.show("That file doesn't look like an Orrery map.", { type: "error" });
       return;
     }
     // Funnels through the same snapshot path New/Load/Undo/Redo use, so
@@ -8981,7 +8981,7 @@ function setupMapEvents() {
     applyMapSnapshot(JSON.stringify(parsed));
     if (elements.mapSelect) elements.mapSelect.value = "";
     watchCurrentMap(null);
-    status.show(`Imported "${state.map.name || "map"}".`, { type: "success", timeout: 2000 });
+    status.show(`Imported "${state.map.name || "map"}".`, { type: "success" });
   });
   document.body.appendChild(importInput);
 
@@ -9033,7 +9033,7 @@ async function loadMapById(id, shareToken = "") {
     markMapClean();
     watchCurrentMap(state.map.id, shareToken);
   } catch (error) {
-    status.show(`Unable to load map: ${error.message}`, { type: "error", timeout: 4000 });
+    status.show(`Unable to load map: ${error.message}`, { type: "error" });
   }
 }
 
@@ -9165,4 +9165,5 @@ if (elements.mapEmptyState) {
 // a real ?map= to load, calls loadMapById -> applyMapSnapshot ->
 // hideMapEmptyState() and reveals it immediately.
 showMapEmptyState();
+handleCommandRequest({ status, makes: { map: elements.newMapButton } });
 void populateMapSelect().then(() => loadMapFromUrlParam());

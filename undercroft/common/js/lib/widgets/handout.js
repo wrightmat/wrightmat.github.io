@@ -714,13 +714,13 @@ export function initHandoutWidget(
 
   async function toggleVisibility() {
     if (!groupId) {
-      status?.show("No active group to show this to.", { type: "warning", timeout: 2500 });
+      status?.show("No active group to show this to.", { type: "warning" });
       return;
     }
     try {
       if (visible) {
         await dataManager.clearSpotlight({ groupId, kind, id });
-        status?.show("Stopped showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Stopped showing to the table.", { type: "success" });
       } else {
         await dataManager.spotlightToGroup({
           groupId,
@@ -728,7 +728,7 @@ export function initHandoutWidget(
           contentId: id,
           templateId: templateId || undefined,
         });
-        status?.show("Showing to the table.", { type: "success", timeout: 2000 });
+        status?.show("Showing to the table.", { type: "success" });
       }
     } catch (error) {
       status?.show(error.message || "Unable to update visibility.", { type: "error" });

@@ -125,11 +125,6 @@
         "id": "63fb5895-b3d5-4c5b-ac5f-09752e5d0f84",
         "deckName": "Standard Playing Cards",
         "remainingCardIds": [
-          "9C",
-          "4D",
-          "5D",
-          "6S",
-          "JC",
           "AH",
           "4S",
           "2H",
@@ -178,7 +173,13 @@
           "QH",
           "10H"
         ],
-        "discardCardIds": []
+        "discardCardIds": [
+          "9C",
+          "4D",
+          "5D",
+          "6S",
+          "JC"
+        ]
       },
       {
         "id": "e6a6ea7d-871c-40b0-bc12-e393d5c579c4",
